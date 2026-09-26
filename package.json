@@ -6,7 +6,7 @@
   "scripts": {
     "android": "react-native run-android --mode developmentDebug",
     "ios": "cross-env ENVFILE=.env.development ruby ./node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb . ios/tmp.xcconfig && cp .env.development .env && cross-env ENVFILE=.env.development react-native run-ios --scheme Development --mode DebugDev --simulator \"iPhone 17\"",
-    "lint": "eslint . && node scripts/check-module-boundaries.js",
+    "lint": "eslint . && node scripts/check-module-boundaries.js && node scripts/check-eslint-warning-budget.js",
     "lint:boundaries": "node scripts/check-module-boundaries.js",
     "lint:budget": "node scripts/check-eslint-warning-budget.js",
     "lint:content": "node tools/content-lint/lint.mjs",
