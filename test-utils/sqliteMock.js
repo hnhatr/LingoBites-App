@@ -82,6 +82,170 @@ function createMockDatabase() {
       }
     }
 
+    if (normalized.startsWith('pragma table_info')) {
+      const match = normalized.match(/pragma table_info\(([^)]+)\)/);
+      const tableName = match ? match[1].trim() : '';
+      if (droppedTables.has(tableName) || tableName === 'non_existent_table') {
+        return toRows([]);
+      }
+      const schemas = {
+        grammar_bookmarks: [
+          { name: 'lesson_id', pk: 1 },
+          { name: 'grammar_id', pk: 2 },
+          { name: 'package_id', pk: 0 },
+          { name: 'saved_at', pk: 0 },
+          { name: 'reactivated_at', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'updated_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        review_schedule: [
+          { name: 'card_id', pk: 1 },
+          { name: 'lesson_id', pk: 0 },
+          { name: 'interval_days', pk: 0 },
+          { name: 'next_review_at', pk: 0 },
+          { name: 'last_reviewed_at', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'updated_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        content_lesson_state: [
+          { name: 'lesson_id', pk: 1 },
+          { name: 'is_saved', pk: 0 },
+          { name: 'is_started', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'updated_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        flashcards: [
+          { name: 'id', pk: 1 },
+          { name: 'lesson_id', pk: 0 },
+          { name: 'vocabulary_id', pk: 0 },
+          { name: 'word', pk: 0 },
+          { name: 'meaning_vi', pk: 0 },
+          { name: 'is_saved', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'updated_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        review_sessions: [
+          { name: 'id', pk: 1 },
+          { name: 'card_id', pk: 0 },
+          { name: 'lesson_id', pk: 0 },
+          { name: 'rating', pk: 0 },
+          { name: 'reviewed_at', pk: 0 },
+          { name: 'interval_days', pk: 0 },
+          { name: 'next_review_at', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        gamification_events: [
+          { name: 'id', pk: 1 },
+          { name: 'event_type', pk: 0 },
+          { name: 'points', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        content_review_items: [
+          { name: 'id', pk: 1 },
+          { name: 'srs_item_id', pk: 0 },
+          { name: 'lesson_id', pk: 0 },
+          { name: 'next_review_at', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        youtube_lessons: [
+          { name: 'id', pk: 1 },
+          { name: 'video_id', pk: 0 },
+          { name: 'title', pk: 0 },
+          { name: 'created_at', pk: 0 },
+          { name: 'updated_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        youtube_sentences: [
+          { name: 'lesson_id', pk: 1 },
+          { name: 'sentence_id', pk: 2 },
+          { name: 'en', pk: 0 },
+          { name: 'vi', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        youtube_progress: [
+          { name: 'lesson_id', pk: 1 },
+          { name: 'position_ms', pk: 0 },
+          { name: 'segment_index', pk: 0 },
+          { name: 'updated_at', pk: 0 },
+          { name: 'revision', pk: 0 },
+          { name: 'tombstone', pk: 0 },
+        ],
+        app_settings: [
+          { name: 'key', pk: 1 },
+          { name: 'value', pk: 0 },
+          { name: 'updated_at', pk: 0 },
+        ],
+      };
+      const tableCols = schemas[tableName] || [
+        { name: 'id', pk: 1 },
+        { name: 'revision', pk: 0 },
+        { name: 'tombstone', pk: 0 },
+        { name: 'updated_at', pk: 0 },
+      ];
+      return toRows(tableCols);
+    }
+
+    if (normalized.startsWith('insert or replace into grammar_bookmarks')) {
+      const match = normalized.match(/insert or replace into grammar_bookmarks \(([^)]+)\)/);
+      if (match) {
+        const cols = match[1].split(',').map(c => c.trim());
+        const row = {};
+        cols.forEach((col, idx) => {
+          row[col] = params[idx];
+        });
+        const index = grammarBookmarks.findIndex(b => b.lesson_id === row.lesson_id && b.grammar_id === row.grammar_id);
+        if (index === -1) grammarBookmarks.push(row);
+        else grammarBookmarks[index] = { ...grammarBookmarks[index], ...row };
+        return { rowsAffected: 1 };
+      }
+    }
+
+    if (normalized.startsWith('insert or replace into review_schedule')) {
+      const match = normalized.match(/insert or replace into review_schedule \(([^)]+)\)/);
+      if (match) {
+        const cols = match[1].split(',').map(c => c.trim());
+        const row = {};
+        cols.forEach((col, idx) => {
+          row[col] = params[idx];
+        });
+        const index = reviewSchedule.findIndex(r => r.card_id === row.card_id);
+        if (index === -1) reviewSchedule.push(row);
+        else reviewSchedule[index] = { ...reviewSchedule[index], ...row };
+        return { rowsAffected: 1 };
+      }
+    }
+
+    if (normalized.startsWith('insert or replace into content_lesson_state')) {
+      const match = normalized.match(/insert or replace into content_lesson_state \(([^)]+)\)/);
+      if (match) {
+        const cols = match[1].split(',').map(c => c.trim());
+        const row = {};
+        cols.forEach((col, idx) => {
+          row[col] = params[idx];
+        });
+        const index = contentLessonState.findIndex(r => r.lesson_id === row.lesson_id);
+        if (index === -1) contentLessonState.push(row);
+        else contentLessonState[index] = { ...contentLessonState[index], ...row };
+        return { rowsAffected: 1 };
+      }
+    }
+
     if (normalized.startsWith('insert or replace into youtube_lessons')) {
       const index = youtubeLessons.findIndex(row => row.id === params[0]);
       const previous = index === -1 ? null : youtubeLessons[index];
@@ -832,11 +996,18 @@ function createMockDatabase() {
       if (normalized.includes('synced_at is null')) {
         rows = rows.filter(row => row.synced_at === null);
       }
+      if (normalized.includes('attempt_count < ?')) {
+        const maxAttempts = params[0];
+        rows = rows.filter(row => row.attempt_count < maxAttempts);
+      }
       rows.sort((a, b) =>
         String(a.created_at).localeCompare(String(b.created_at)),
       );
-      if (normalized.includes('limit') && params.length > 0) {
-        rows = rows.slice(0, Number(params[0]));
+      if (normalized.includes('limit')) {
+        const limitParam = normalized.includes('attempt_count < ?') ? params[1] : params[0];
+        if (limitParam !== undefined) {
+          rows = rows.slice(0, Number(limitParam));
+        }
       }
       return toRows(rows);
     }

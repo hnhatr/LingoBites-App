@@ -23,7 +23,9 @@ import type {
   SyncPullSuccessResponse,
 } from '../schemas/sync';
 import {
-  SYNC_CONTRACT_VERSION
+  SYNC_CONTRACT_VERSION,
+  SyncPushSuccessResponseSchema,
+  SyncPullSuccessResponseSchema,
 } from '../schemas/sync';
 
 export type SyncPushClientResult =
@@ -67,7 +69,17 @@ export async function syncPush(
         retryable: response.status >= 500 || response.status === 429,
       };
     }
-    const data = (await response.json()) as SyncPushSuccessResponse;
+    const json = await response.json();
+    const parsed = SyncPushSuccessResponseSchema.safeParse(json);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        errorCode: 'INVALID_RESPONSE',
+        message: parsed.error.message,
+        retryable: false,
+      };
+    }
+    const data = parsed.data;
     if (data.contract_version !== SYNC_CONTRACT_VERSION) {
        return {
         ok: false,
@@ -115,7 +127,17 @@ export async function syncPull(
         retryable: response.status >= 500 || response.status === 429,
       };
     }
-    const data = (await response.json()) as SyncPullSuccessResponse;
+    const json = await response.json();
+    const parsed = SyncPullSuccessResponseSchema.safeParse(json);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        errorCode: 'INVALID_RESPONSE',
+        message: parsed.error.message,
+        retryable: false,
+      };
+    }
+    const data = parsed.data;
     if (data.contract_version !== SYNC_CONTRACT_VERSION) {
        return {
         ok: false,

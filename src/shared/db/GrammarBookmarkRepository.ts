@@ -82,7 +82,14 @@ export function saveGrammarBookmark(
           id: createRequestId(),
           eventType: 'grammar_bookmarks',
           entityId: `${input.lessonId}:${input.grammarId}`,
-          payload: { lessonId: input.lessonId, grammarId: input.grammarId, active: true },
+          payload: {
+            lessonId: input.lessonId,
+            grammarId: input.grammarId,
+            packageId: existing.package_id || input.packageId,
+            savedAt: now,
+            reactivatedAt: now,
+            active: true,
+          },
           createdAt: now
         });
       });
@@ -109,7 +116,14 @@ export function saveGrammarBookmark(
         id: createRequestId(),
         eventType: 'grammar_bookmarks',
         entityId: `${input.lessonId}:${input.grammarId}`,
-        payload: { lessonId: input.lessonId, grammarId: input.grammarId, active: true },
+        payload: {
+          lessonId: input.lessonId,
+          grammarId: input.grammarId,
+          packageId: input.packageId,
+          savedAt: now,
+          reactivatedAt: now,
+          active: true,
+        },
         createdAt: now
       });
     });

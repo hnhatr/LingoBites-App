@@ -19,7 +19,7 @@ import {
   pushPracticeEvents,
   type SyncPracticeEvent,
 } from '@shared/api/practiceEventsClient';
-import {SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';
+import {MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';
 import {syncPush} from '@shared/api/syncClient';
 import {SyncCollectionSchema, type SyncPushMutation} from '@shared/schemas/sync';
 
@@ -105,17 +105,20 @@ function toPracticeWireEvent(event: SyncOutboxRecord): SyncPracticeEvent | null 
 export async function drainOutboxOnce(
   deps: DrainDeps = {},
 ): Promise<SyncDrainOutcome> {
-  const events = listPendingSyncEvents({limit: SYNC_BATCH_LIMIT});
+  const maxAttempts = deps.includeStuck ? undefined : MAX_SYNC_ATTEMPTS;
+  const events = listPendingSyncEvents({
+    limit: SYNC_BATCH_LIMIT,
+    maxAttempts,
+  });
   if (events.length === 0) {
+    const totalPending = countPendingSyncEvents();
+    if (totalPending > 0 && !deps.includeStuck) {
+      return {status: 'stuck'};
+    }
     return {status: 'idle'};
   }
 
-  const eligible = deps.includeStuck
-    ? events
-    : events.filter(event => !isSyncStuck(event.attemptCount));
-  if (eligible.length === 0) {
-    return {status: 'stuck'};
-  }
+  const eligible = events;
 
   const reviewEvents = eligible.filter(
     event => event.eventType === REVIEW_EVENT_TYPE,
@@ -126,14 +129,13 @@ export async function drainOutboxOnce(
   const genericEvents = eligible.filter(
     event => isGenericSyncCollection(event.eventType)
   );
-  // Forward-compat: rows with an unknown type that are NOT in SyncCollection drain through the review endpoint
   const unknownEvents = eligible.filter(
     event =>
       event.eventType !== REVIEW_EVENT_TYPE &&
       event.eventType !== PRACTICE_EVENT_TYPE &&
       !isGenericSyncCollection(event.eventType)
   );
-  const reviewBatch = [...reviewEvents, ...unknownEvents];
+  const reviewBatch = reviewEvents;
 
   const syncedIds: string[] = [];
   let firstRetryableFailure:
@@ -142,6 +144,15 @@ export async function drainOutboxOnce(
   let firstPermanentFailure:
     | {errorCode: string; message: string}
     | undefined;
+
+  if (unknownEvents.length > 0) {
+    const unknownIds = unknownEvents.map(e => e.id);
+    markSyncEventsFailed(unknownIds, 'UNKNOWN_EVENT_TYPE');
+    firstPermanentFailure ??= {
+      errorCode: 'UNKNOWN_EVENT_TYPE',
+      message: `Unknown event type: ${unknownEvents[0].eventType}`,
+    };
+  }
 
   if (reviewBatch.length > 0) {
     const result = await pushReviewEvents(

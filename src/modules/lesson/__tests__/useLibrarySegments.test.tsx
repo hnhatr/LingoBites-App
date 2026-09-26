@@ -1,120 +1,183 @@
-import {useLibrarySegments} from '../useLibrarySegments';
+import React from 'react';
+import ReactTestRenderer, { act } from 'react-test-renderer';
+import { useLibrarySegments, UseLibrarySegmentsResult } from '../useLibrarySegments';
+import { listSavedLessons, listStartedLessons } from '@shared/db/ContentLessonStateRepository';
+import { listAllBookmarkedGrammar } from '@shared/db/GrammarBookmarkRepository';
+import { listFlashcards } from '@shared/db/FlashcardRepository';
+import { useContentLibrary } from '@modules/content';
 
-// Mock the repositories and stores
 jest.mock('@shared/db/ContentLessonStateRepository', () => ({
   listSavedLessons: jest.fn(),
   listStartedLessons: jest.fn(),
 }));
+
 jest.mock('@shared/db/GrammarBookmarkRepository', () => ({
   listAllBookmarkedGrammar: jest.fn(),
 }));
+
 jest.mock('@shared/db/FlashcardRepository', () => ({
   listFlashcards: jest.fn(),
 }));
-jest.mock('@modules/content');
 
-import {listSavedLessons, listStartedLessons} from '@shared/db/ContentLessonStateRepository';
-import {listAllBookmarkedGrammar} from '@shared/db/GrammarBookmarkRepository';
-import {listFlashcards} from '@shared/db/FlashcardRepository';
-import {useContentLibrary} from '@modules/content';
+jest.mock('@modules/content', () => ({
+  useContentLibrary: jest.fn(),
+}));
+
+function TestWrapper({ hookRef }: { hookRef: { current: UseLibrarySegmentsResult } }) {
+  hookRef.current = useLibrarySegments();
+  return null;
+}
 
 describe('useLibrarySegments', () => {
+  let mockListActivePackageLessons: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
 
-    (listSavedLessons as jest.Mock).mockReturnValue([]);
-    (listStartedLessons as jest.Mock).mockReturnValue([]);
+    (listSavedLessons as jest.Mock).mockReturnValue([
+      { lessonId: 'lesson-1', isSaved: true, isStarted: false, updatedAt: '2026-01-01T00:00:00Z' },
+    ]);
+    (listStartedLessons as jest.Mock).mockReturnValue([
+      { lessonId: 'lesson-2', isSaved: false, isStarted: true, updatedAt: '2026-01-02T00:00:00Z' },
+    ]);
     (listAllBookmarkedGrammar as jest.Mock).mockReturnValue([
       {
         lessonId: 'lesson-1',
-        grammarId: 'grammar-1',
-        packageId: 'pkg-1',
-        savedAt: '2026-01-01T00:00:00.000Z',
-        reactivatedAt: '2026-01-01T00:00:00.000Z',
-        createdAt: '2026-01-01T00:00:00.000Z',
-        updatedAt: '2026-01-01T00:00:00.000Z',
-        title: 'Present Simple',
-        content: 'The present simple is used for facts and habits',
+        grammarId: 'g1',
+        packageId: 'pkg1',
+        savedAt: '2026-01-01T00:00:00Z',
+        reactivatedAt: '2026-01-01T00:00:00Z',
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+        title: 'Present Perfect',
+        content: 'Action in the past with relevance now',
+        sourceType: 'offline',
       },
     ]);
     (listFlashcards as jest.Mock).mockReturnValue([
       {
         id: 'card-1',
         lessonId: 'lesson-1',
-        vocabularyId: 'vocab-1',
-        word: 'hello',
-        meaningVi: 'xin chào',
-        example: 'Hello, how are you?',
+        vocabularyId: 'v1',
+        word: 'Ubiquitous',
+        meaningVi: 'Phổ biến',
+        example: 'Smartphones are ubiquitous.',
         isSaved: true,
+        sourceType: 'camera',
+      },
+      {
+        id: 'card-2',
+        lessonId: 'lesson-2',
+        vocabularyId: 'v2',
+        word: 'Ephemeral',
+        meaningVi: 'Phù du',
+        example: 'Fame can be ephemeral.',
+        isSaved: true,
+        sourceType: 'paste_text',
       },
     ]);
+
+    mockListActivePackageLessons = jest.fn().mockReturnValue([
+      { id: 'lesson-1', title: 'Basic English', summary: 'Intro to basic words', sourceType: 'offline' },
+      { id: 'lesson-2', title: 'Advanced Grammar', summary: 'Deep dive into tense', sourceType: 'paste_text' },
+    ]);
     (useContentLibrary as jest.Mock).mockReturnValue({
-      listActivePackageLessons: jest.fn().mockReturnValue([]),
+      listActivePackageLessons: mockListActivePackageLessons,
     });
   });
 
-  it('should export the useLibrarySegments hook', () => {
-    expect(typeof useLibrarySegments).toBe('function');
-  });
-
-  it('should have SegmentFilterState with searchQuery and sourceFilter', () => {
-    // Verify the expected filter interface
-    const testFilter = {
-      searchQuery: 'hello',
-      sourceFilter: 'all' as const,
+  function renderHook() {
+    const hookRef = { current: null as unknown as UseLibrarySegmentsResult };
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    act(() => {
+      tree = ReactTestRenderer.create(<TestWrapper hookRef={hookRef} />);
+    });
+    return {
+      get current() {
+        return hookRef.current;
+      },
+      rerender() {
+        act(() => {
+          tree.update(<TestWrapper hookRef={hookRef} />);
+        });
+      },
     };
-    expect(testFilter).toHaveProperty('searchQuery', 'hello');
-    expect(testFilter).toHaveProperty('sourceFilter', 'all');
+  }
+
+  it('renders hook and fetches initial lessons, vocabulary, and grammar data', () => {
+    const hook = renderHook();
+
+    expect(hook.current.packagedLessons).toHaveLength(2);
+    expect(hook.current.packagedLessons[0].lessonId).toBe('lesson-1');
+    expect(hook.current.packagedLessons[0].title).toBe('Basic English');
+    expect(hook.current.packagedLessons[1].lessonId).toBe('lesson-2');
+
+    expect(hook.current.vocabulary).toHaveLength(2);
+    expect(hook.current.vocabulary[0].word).toBe('Ubiquitous');
+
+    expect(hook.current.grammar).toHaveLength(1);
+    expect(hook.current.grammar[0].title).toBe('Present Perfect');
   });
 
-  it('should support sourceFilter values: all, offline, image_ocr, paste', () => {
-    const sourceFilters: Array<'all' | 'offline' | 'image_ocr' | 'paste'> = [
-      'all',
-      'offline',
-      'image_ocr',
-      'paste',
-    ];
-    expect(sourceFilters).toHaveLength(4);
-    expect(sourceFilters).toContain('all');
-    expect(sourceFilters).toContain('image_ocr');
+  it('filters packaged lessons by searchQuery and sourceFilter', () => {
+    const hook = renderHook();
+
+    act(() => {
+      hook.current.setLessonsFilter({ searchQuery: 'Basic', sourceFilter: 'all' });
+    });
+    expect(hook.current.packagedLessons).toHaveLength(1);
+    expect(hook.current.packagedLessons[0].lessonId).toBe('lesson-1');
+
+    act(() => {
+      hook.current.setLessonsFilter({ searchQuery: '', sourceFilter: 'paste' });
+    });
+    expect(hook.current.packagedLessons).toHaveLength(1);
+    expect(hook.current.packagedLessons[0].lessonId).toBe('lesson-2');
   });
 
-  it('should normalize camera and gallery to image_ocr', () => {
-    // Test the normalization logic
-    const sourceTypeMap = {
-      camera: 'image_ocr',
-      gallery: 'image_ocr',
-      paste_text: 'paste',
-      offline: 'offline',
-    };
-    expect(sourceTypeMap.camera).toBe('image_ocr');
-    expect(sourceTypeMap.gallery).toBe('image_ocr');
+  it('filters vocabulary by searchQuery and normalized sourceFilter', () => {
+    const hook = renderHook();
+
+    // 'camera' is normalized to 'image_ocr'
+    act(() => {
+      hook.current.setVocabularyFilter({ searchQuery: '', sourceFilter: 'image_ocr' });
+    });
+    expect(hook.current.vocabulary).toHaveLength(1);
+    expect(hook.current.vocabulary[0].word).toBe('Ubiquitous');
+
+    act(() => {
+      hook.current.setVocabularyFilter({ searchQuery: 'Phù du', sourceFilter: 'all' });
+    });
+    expect(hook.current.vocabulary).toHaveLength(1);
+    expect(hook.current.vocabulary[0].word).toBe('Ephemeral');
   });
 
-  it('should handle case-insensitive search', () => {
-    // Verify case-insensitive matching works
-    const word = 'hello';
-    const searchTerm = 'HELLO';
-    expect(word.toLowerCase()).toBe(searchTerm.toLowerCase());
+  it('filters grammar bookmarks by searchQuery and sourceFilter', () => {
+    const hook = renderHook();
+
+    act(() => {
+      hook.current.setGrammarFilter({ searchQuery: 'Perfect', sourceFilter: 'all' });
+    });
+    expect(hook.current.grammar).toHaveLength(1);
+
+    act(() => {
+      hook.current.setGrammarFilter({ searchQuery: 'NonExistent', sourceFilter: 'all' });
+    });
+    expect(hook.current.grammar).toHaveLength(0);
   });
 
-  it('should provide refresh method', () => {
-    const mockRefresh = jest.fn();
-    expect(typeof mockRefresh).toBe('function');
-  });
+  it('re-evaluates data when refresh is invoked', () => {
+    const hook = renderHook();
+    expect(hook.current.packagedLessons).toHaveLength(2);
 
-  it('should maintain independent filter states for lessons, vocabulary, and grammar', () => {
-    // Verify three separate filter states can be managed
-    const lessonsFilter = {searchQuery: 'lessons', sourceFilter: 'paste' as const};
-    const vocabFilter = {searchQuery: 'vocab', sourceFilter: 'offline' as const};
-    const grammarFilter = {searchQuery: 'grammar', sourceFilter: 'image_ocr' as const};
+    // Update repository mocks
+    (listSavedLessons as jest.Mock).mockReturnValue([]);
+    (listStartedLessons as jest.Mock).mockReturnValue([]);
 
-    expect(lessonsFilter.searchQuery).not.toBe(vocabFilter.searchQuery);
-    expect(vocabFilter.sourceFilter).not.toBe(grammarFilter.sourceFilter);
-  });
+    act(() => {
+      hook.current.refresh();
+    });
 
-  it('should return arrays for all data types', () => {
-    // Verify the hook returns expected array types
-    expect(Array.isArray([])).toBe(true);
+    expect(hook.current.packagedLessons).toHaveLength(0);
   });
 });
