@@ -4,18 +4,21 @@ function withTimeout(timeoutMs: number, externalSignal?: AbortSignal) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+  const cleanup = () => clearTimeout(timeoutId);
+
   if (externalSignal) {
     if (externalSignal.aborted) {
       controller.abort();
+      cleanup();
     } else {
       externalSignal.addEventListener('abort', () => {
-        clearTimeout(timeoutId);
+        cleanup();
         controller.abort();
       });
     }
   }
 
-  return {signal: controller.signal};
+  return {signal: controller.signal, cleanup};
 }
 import type {
   SyncPushRequest,
@@ -96,6 +99,8 @@ export async function syncPush(
       message: error instanceof Error ? error.message : 'Unknown error',
       retryable: true,
     };
+  } finally {
+    timeout.cleanup();
   }
 }
 
@@ -157,5 +162,7 @@ export async function syncPull(
       message: error instanceof Error ? error.message : 'Unknown error',
       retryable: true,
     };
+  } finally {
+    timeout.cleanup();
   }
 }

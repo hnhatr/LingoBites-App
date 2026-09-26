@@ -11,7 +11,11 @@ jest.mock('../src/app/navigation/AppNavigator', () => ({
 }));
 
 test('renders correctly', async () => {
-  await ReactTestRenderer.act(() => {
-    ReactTestRenderer.create(<App />);
+  let tree!: ReactTestRenderer.ReactTestRenderer;
+  await ReactTestRenderer.act(async () => {
+    tree = ReactTestRenderer.create(<App />);
+  });
+  await ReactTestRenderer.act(async () => {
+    tree.unmount();
   });
 });
