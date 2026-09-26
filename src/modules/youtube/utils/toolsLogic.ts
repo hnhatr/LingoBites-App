@@ -70,7 +70,7 @@ export function abWrap(
 export function normalizeForDictation(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"–—]/g, ' ')
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()?"–—]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -95,8 +95,6 @@ export function checkDictation(
   const correct = normalizedInput === normalizedTarget;
   return {
     correct,
-    message: correct
-      ? '✓ Chính xác!'
-      : 'Chưa đúng, nghe lại và thử tiếp.',
+    message: correct ? '✓ Chính xác!' : 'Chưa đúng, nghe lại và thử tiếp.',
   };
 }

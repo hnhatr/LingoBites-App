@@ -16,8 +16,8 @@
 
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import { Platform } from 'react-native';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import {Platform} from 'react-native';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import type {SpeakingMode} from '@shared/db/types';
 
 function nativeFsAvailable(): boolean {
@@ -50,12 +50,14 @@ export function sanitizeRecordingSegment(segment: string): string {
 
 let recorder: AudioRecorderPlayer | null = null;
 
+export async function preflightMicrophonePermission(): Promise<
+  'granted' | 'denied' | 'not_requested' | 'unavailable'
+> {
+  const permission =
+    Platform.OS === 'ios'
+      ? PERMISSIONS.IOS.MICROPHONE
+      : PERMISSIONS.ANDROID.RECORD_AUDIO;
 
-export async function preflightMicrophonePermission(): Promise<'granted' | 'denied' | 'not_requested' | 'unavailable'> {
-  const permission = Platform.OS === 'ios'
-    ? PERMISSIONS.IOS.MICROPHONE
-    : PERMISSIONS.ANDROID.RECORD_AUDIO;
-  
   const status = await check(permission);
   if (status === RESULTS.UNAVAILABLE) return 'unavailable';
   if (status === RESULTS.GRANTED) return 'granted';
@@ -63,11 +65,14 @@ export async function preflightMicrophonePermission(): Promise<'granted' | 'deni
   return 'denied';
 }
 
-export async function requestMicrophonePermission(): Promise<'granted' | 'denied' | 'unavailable'> {
-  const permission = Platform.OS === 'ios'
-    ? PERMISSIONS.IOS.MICROPHONE
-    : PERMISSIONS.ANDROID.RECORD_AUDIO;
-  
+export async function requestMicrophonePermission(): Promise<
+  'granted' | 'denied' | 'unavailable'
+> {
+  const permission =
+    Platform.OS === 'ios'
+      ? PERMISSIONS.IOS.MICROPHONE
+      : PERMISSIONS.ANDROID.RECORD_AUDIO;
+
   const status = await request(permission);
   if (status === RESULTS.UNAVAILABLE) return 'unavailable';
   if (status === RESULTS.GRANTED) return 'granted';
@@ -85,7 +90,11 @@ export type StartRecordingResult =
   | {ok: true; filePath: string}
   | {
       ok: false;
-      errorCode: 'UNAVAILABLE' | 'PERMISSION_DENIED' | 'NO_INPUT_DEVICE' | 'TRANSIENT_FAILURE';
+      errorCode:
+        | 'UNAVAILABLE'
+        | 'PERMISSION_DENIED'
+        | 'NO_INPUT_DEVICE'
+        | 'TRANSIENT_FAILURE';
       message: string;
     };
 
@@ -107,15 +116,27 @@ export async function startRecording(
 
   const perm = await preflightMicrophonePermission();
   if (perm === 'unavailable') {
-    return { ok: false, errorCode: 'NO_INPUT_DEVICE', message: 'Không tìm thấy micro trên thiết bị này.' };
+    return {
+      ok: false,
+      errorCode: 'NO_INPUT_DEVICE',
+      message: 'Không tìm thấy micro trên thiết bị này.',
+    };
   }
   if (perm === 'not_requested') {
     const requested = await requestMicrophonePermission();
     if (requested !== 'granted') {
-      return { ok: false, errorCode: 'PERMISSION_DENIED', message: 'LingoBites cần micro để ghi âm phần luyện nói của bạn.' };
+      return {
+        ok: false,
+        errorCode: 'PERMISSION_DENIED',
+        message: 'LingoBites cần micro để ghi âm phần luyện nói của bạn.',
+      };
     }
   } else if (perm === 'denied') {
-    return { ok: false, errorCode: 'PERMISSION_DENIED', message: 'LingoBites cần micro để ghi âm phần luyện nói của bạn.' };
+    return {
+      ok: false,
+      errorCode: 'PERMISSION_DENIED',
+      message: 'LingoBites cần micro để ghi âm phần luyện nói của bạn.',
+    };
   }
 
   const directory = `${recordingsRoot()}/${sanitizeRecordingSegment(mode)}`;

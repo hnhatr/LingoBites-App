@@ -15,10 +15,10 @@ the LingoBites UI consumes theme tokens and reusable `App*` components.
 
 **Do not start UI implementation until Phase 0 theme is complete.**
 
-| Step | Document | Exit |
-|---|---|---|
-| 1 — Theme foundation | [`plans/2026-06-05-theme-system.md`](../plans/2026-06-05-theme-system.md) (implements theme spec) | Done criteria checked; TC-024..030 |
-| 2 — UI handoff (this spec) | [`plans/2026-06-05-lingobites-ui.md`](../plans/2026-06-05-lingobites-ui.md) | This spec §12 + Done criteria in UI plan |
+| Step                       | Document                                                                                          | Exit                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| 1 — Theme foundation       | [`plans/2026-06-05-theme-system.md`](../plans/2026-06-05-theme-system.md) (implements theme spec) | Done criteria checked; TC-024..030       |
+| 2 — UI handoff (this spec) | [`plans/2026-06-05-lingobites-ui.md`](../plans/2026-06-05-lingobites-ui.md)                       | This spec §12 + Done criteria in UI plan |
 
 Roadmap index: [`docs/superpowers/README.md`](../README.md).
 
@@ -42,6 +42,7 @@ rather than copying it literally — the visual language (palette, type scale, s
 component shapes) is preserved exactly; the Expo-specific plumbing is replaced with CLI equivalents.
 
 ### In scope (full fidelity)
+
 - 3-tab shell only: **Home · Lessons · Profile**. Scan/upload actions live on Home, not in a tab.
 - Core loop screens: **Home, PasteText, Confirm Text, Lesson Result (single scroll), Library,
   Profile.**
@@ -49,9 +50,11 @@ component shapes) is preserved exactly; the Expo-specific plumbing is replaced w
 - Mock data + Zustand stores; loading / empty / error / disabled states per handoff §9.
 
 ### Stubs (visually-correct placeholder + TODO)
+
 - Profile body detail and later-milestone service entry points.
 
 ### Explicitly NOT in scope
+
 - Real camera capture, OCR, AI analysis, audio/TTS, network, on-device persistence.
 - Custom font binaries, icon font binaries, image/icon resolvers, and `AppIcon`/`AppImage`
   scaffolding (deferred per `AGENTS.md` and D-003).
@@ -60,26 +63,26 @@ component shapes) is preserved exactly; the Expo-specific plumbing is replaced w
 
 ## 2. Decisions (confirmed with user)
 
-| Topic | Decision |
-|---|---|
-| Screen scope | Core loop full within locked P0 shell; Profile as stub |
-| State | **Zustand** for domain state: `useScanStore`, `useLibraryStore` (in-memory + mock seed). `useProgressStore` (streak/stats) is **out-of-P0** — see §11. **Theme state is owned by `ThemeProvider` (React Context) + AsyncStorage per the theme spec — NOT a Zustand `useThemeStore`.** Lesson persistence → SQLite at M4. |
-| Theme API | Align to the theme spec — `useAppTheme()`, `AppText`/`AppButton`/`AppCard`/`AppScreen`. The **handoff's** teal/coral/gold values define the **`pastel-kids`** theme, not `default`; `default` keeps the current app identity (BR-THEME-007). Type presets per §8. |
-| Fonts | System font now; typography presets carry size/weight/line-height so `fontFamily` (Lexend/Quicksand) can be dropped in later (TODO) |
-| Icons | Deferred. Use text labels or existing platform primitives until the asset/icon batch is approved. |
+| Topic        | Decision                                                                                                                                                                                                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Screen scope | Core loop full within locked P0 shell; Profile as stub                                                                                                                                                                                                                                                                   |
+| State        | **Zustand** for domain state: `useScanStore`, `useLibraryStore` (in-memory + mock seed). `useProgressStore` (streak/stats) is **out-of-P0** — see §11. **Theme state is owned by `ThemeProvider` (React Context) + AsyncStorage per the theme spec — NOT a Zustand `useThemeStore`.** Lesson persistence → SQLite at M4. |
+| Theme API    | Align to the theme spec — `useAppTheme()`, `AppText`/`AppButton`/`AppCard`/`AppScreen`. The **handoff's** teal/coral/gold values define the **`pastel-kids`** theme, not `default`; `default` keeps the current app identity (BR-THEME-007). Type presets per §8.                                                        |
+| Fonts        | System font now; typography presets carry size/weight/line-height so `fontFamily` (Lexend/Quicksand) can be dropped in later (TODO)                                                                                                                                                                                      |
+| Icons        | Deferred. Use text labels or existing platform primitives until the asset/icon batch is approved.                                                                                                                                                                                                                        |
 
 ## 3. Adaptation map (Handoff → this build)
 
-| Handoff (Expo) | This build (RN CLI) |
-|---|---|
-| `theme/tokens.ts`, `theme/typography.ts`, `useTheme()` | folded into `theme/` with `useAppTheme()` exposing `{ colors, typography, spacing, radius, shadow, components }` |
-| `expo-font` Lexend/Quicksand | system font + presets (TODO fontFamily) |
-| `@expo/vector-icons` | Deferred until the asset/icon batch |
-| `expo-blur` BlurView (camera) | semi-opaque overlay `View` (TODO blur) |
-| `expo-speech` TTS | no-op audio handler that toggles "playing" state on the tapped icon (TODO services/tts) |
-| Live camera | Deferred to M3; use `react-native-image-picker` native UI, not a custom in-app camera |
-| `zustand/middleware persist` + AsyncStorage/MMKV | Domain stores stay in-memory (lesson persistence → SQLite at M4). **Theme selection persists now via AsyncStorage inside `ThemeProvider`** (theme spec) — the one sanctioned AsyncStorage use in P0. |
-| OCR/AI `services/*` | `services/ocr.ts`, `services/ai.ts` return mock `AIOutput` after a delay (TODO real API) |
+| Handoff (Expo)                                         | This build (RN CLI)                                                                                                                                                                                  |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `theme/tokens.ts`, `theme/typography.ts`, `useTheme()` | folded into `theme/` with `useAppTheme()` exposing `{ colors, typography, spacing, radius, shadow, components }`                                                                                     |
+| `expo-font` Lexend/Quicksand                           | system font + presets (TODO fontFamily)                                                                                                                                                              |
+| `@expo/vector-icons`                                   | Deferred until the asset/icon batch                                                                                                                                                                  |
+| `expo-blur` BlurView (camera)                          | semi-opaque overlay `View` (TODO blur)                                                                                                                                                               |
+| `expo-speech` TTS                                      | no-op audio handler that toggles "playing" state on the tapped icon (TODO services/tts)                                                                                                              |
+| Live camera                                            | Deferred to M3; use `react-native-image-picker` native UI, not a custom in-app camera                                                                                                                |
+| `zustand/middleware persist` + AsyncStorage/MMKV       | Domain stores stay in-memory (lesson persistence → SQLite at M4). **Theme selection persists now via AsyncStorage inside `ThemeProvider`** (theme spec) — the one sanctioned AsyncStorage use in P0. |
+| OCR/AI `services/*`                                    | `services/ocr.ts`, `services/ai.ts` return mock `AIOutput` after a delay (TODO real API)                                                                                                             |
 
 ## 4. Architecture & folder structure
 
@@ -140,7 +143,7 @@ components. `modules/ai-analysis/MockAIAnalysisService` is reused/wrapped by `se
   `AIOutput` objects (extend the existing `validLessonOutput` fixture) and pass `validateAIOutput()`
   before render.
 - **Library card** = lightweight derived view: `{ id, title, category, blurb, wordCount, minutes,
-  createdAt }`, mapped from a stored `AIOutput`.
+createdAt }`, mapped from a stored `AIOutput`.
 - Handoff field names map onto canonical ones: handoff `words[]`→`vocabulary[]`,
   handoff sentence `chunks`→`breakdown`, handoff `grammar[]`→`grammar_points[]`.
 
@@ -160,6 +163,7 @@ Domain `persist` (SQLite) is a TODO for M4; in P0 only the theme selection persi
 ## 7. Navigation (React Navigation v6)
 
 `RootStack` (native-stack)
+
 - `MainTabs` (bottom-tabs, custom `TabBar`):
   - `HomeStack` → Home → PasteText → ConfirmText → LessonResult
   - `LessonsStack` → Library → LessonResult
@@ -204,6 +208,7 @@ with clamped multiplier on display sizes.
 ## 11. TODO markers (required by the task)
 
 Explicit `// TODO(...)` comments placed at integration seams:
+
 - **OCR:** Home image-picker CTAs and M3 service boundary.
 - **AI analysis:** `services/ai.ts`, ScanResult/LessonDetail generation.
 - **Saved lessons:** `useLibraryStore` persist → **SQLite at M4** (AsyncStorage is reserved for the

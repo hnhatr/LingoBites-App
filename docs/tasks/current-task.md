@@ -23,7 +23,7 @@ Per `docs/superpowers/plans/2026-06-05-lingobites-ui.md`: extended tokens (if ne
 
 In scope: UI plan Tasks 0–10; D-002 (3 tabs, single-scroll lesson).
 
-Out of scope: useProgressStore, Review CTA, Scan/Vocabulary tab, re-implementing theme/*.
+Out of scope: useProgressStore, Review CTA, Scan/Vocabulary tab, re-implementing theme/\*.
 
 ## Acceptance Criteria
 

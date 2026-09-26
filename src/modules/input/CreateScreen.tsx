@@ -96,7 +96,10 @@ export function CreateScreen({navigation}: Props) {
         <AppText color="secondary">{t('create.subtitle')}</AppText>
       </View>
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, {paddingBottom: feedClearance}]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {paddingBottom: feedClearance},
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {!hasAnySource ? (
@@ -166,10 +169,7 @@ export function CreateScreen({navigation}: Props) {
                       name={tile.icon}
                       size={22}
                     />
-                    <AppText
-                      style={styles.tileLabel}
-                      numberOfLines={2}
-                    >
+                    <AppText style={styles.tileLabel} numberOfLines={2}>
                       {t(tile.labelKey)}
                     </AppText>
                   </Pressable>
@@ -186,9 +186,7 @@ export function CreateScreen({navigation}: Props) {
                 onPress={() =>
                   navigation
                     .getParent<NavigationProp<RootTabParamList>>()
-                    ?.getParent<NavigationProp<RootStackParamList>>(
-                      'RootStack',
-                    )
+                    ?.getParent<NavigationProp<RootStackParamList>>('RootStack')
                     ?.navigate('YouTubeHistory')
                 }
                 style={({pressed}) => [
@@ -202,7 +200,11 @@ export function CreateScreen({navigation}: Props) {
                   name="history_edu"
                   size={20}
                 />
-                <AppText variant="label" style={styles.historyLabel} numberOfLines={1}>
+                <AppText
+                  variant="label"
+                  style={styles.historyLabel}
+                  numberOfLines={1}
+                >
                   {t('home.youtube_history')}
                 </AppText>
               </Pressable>
@@ -214,10 +216,7 @@ export function CreateScreen({navigation}: Props) {
                   name="tips_and_updates"
                   size={22}
                 />
-                <AppText
-                  variant="label"
-                  style={styles.tipText}
-                >
+                <AppText variant="label" style={styles.tipText}>
                   {t('home.tip')}
                 </AppText>
               </View>

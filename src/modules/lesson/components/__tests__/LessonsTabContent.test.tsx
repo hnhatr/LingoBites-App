@@ -61,9 +61,7 @@ describe('LessonsTabContent', () => {
 
   it('renders section title for packaged lessons', () => {
     const tree = render(
-      <LessonsTabContent
-        packagedLessons={[mockPackagedLesson]}
-      />,
+      <LessonsTabContent packagedLessons={[mockPackagedLesson]} />,
     );
 
     const sectionList = tree.root.findByProps({testID: 'lessons-section-list'});
@@ -72,9 +70,7 @@ describe('LessonsTabContent', () => {
   });
 
   it('shows empty state when no lessons', () => {
-    const tree = render(
-      <LessonsTabContent packagedLessons={[]} />,
-    );
+    const tree = render(<LessonsTabContent packagedLessons={[]} />);
 
     const emptyState = tree.root.findByProps({
       testID: 'empty-state-message-lessons',
@@ -84,9 +80,7 @@ describe('LessonsTabContent', () => {
 
   it('displays packaged lesson cards', () => {
     const tree = render(
-      <LessonsTabContent
-        packagedLessons={[mockPackagedLesson]}
-      />,
+      <LessonsTabContent packagedLessons={[mockPackagedLesson]} />,
     );
 
     const titleText = tree.root.findByProps({
@@ -102,9 +96,7 @@ describe('LessonsTabContent', () => {
 
   it('navigates to ContentLessonRuntime when packaged lesson is pressed', () => {
     const tree = render(
-      <LessonsTabContent
-        packagedLessons={[mockPackagedLesson]}
-      />,
+      <LessonsTabContent packagedLessons={[mockPackagedLesson]} />,
     );
 
     const pressable = tree.root.findByProps({
@@ -133,9 +125,7 @@ describe('LessonsTabContent', () => {
 
   it('keeps sticky headers enabled so sections stay grouped', () => {
     const tree = render(
-      <LessonsTabContent
-        packagedLessons={[mockPackagedLesson]}
-      />,
+      <LessonsTabContent packagedLessons={[mockPackagedLesson]} />,
     );
 
     const sectionList = tree.root.findByProps({testID: 'lessons-section-list'});
@@ -144,9 +134,7 @@ describe('LessonsTabContent', () => {
 
   it('gives section headers an opaque background so cards never show through (SETE-210 P0)', () => {
     const tree = render(
-      <LessonsTabContent
-        packagedLessons={[mockPackagedLesson]}
-      />,
+      <LessonsTabContent packagedLessons={[mockPackagedLesson]} />,
     );
 
     const sectionList = tree.root.findByProps({testID: 'lessons-section-list'});

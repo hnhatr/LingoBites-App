@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import {z} from 'zod';
 
 export const PRACTICE_CONTRACT_VERSION = 1;
 export const PRACTICE_GENERATOR_VERSION = 'generator-v1';
@@ -114,7 +114,11 @@ export const PracticeSessionSchema = z.object({
   lesson_id: z.string(),
   lesson_revision: z.number(),
   status: z.enum(['in_progress', 'completed', 'abandoned']),
-  question_order: z.array(z.string()).refine(arr => new Set(arr).size === arr.length, { message: 'question_order must contain unique IDs' }),
+  question_order: z
+    .array(z.string())
+    .refine(arr => new Set(arr).size === arr.length, {
+      message: 'question_order must contain unique IDs',
+    }),
   current_index: z.number(),
   attempt_no: z.number(),
   started_at: z.string(),
@@ -153,33 +157,46 @@ export const ResultSummarySchema = z.object({
     translation: z.number().optional(),
     sentence: z.number().optional(),
   }),
-  review_candidates: z.array(z.object({
-    source_kind: z.enum(['sentence', 'vocabulary', 'grammar']),
-    source_id: z.string(),
-    wrong_count: z.number(),
-  })),
+  review_candidates: z.array(
+    z.object({
+      source_kind: z.enum(['sentence', 'vocabulary', 'grammar']),
+      source_id: z.string(),
+      wrong_count: z.number(),
+    }),
+  ),
   calculated_at: z.string(),
   calculator_version: z.string(),
 });
 
 export const PracticeEventBatchSchema = z.object({
   contract_version: z.number(),
-  events: z.array(z.object({
-    event_id: z.string(),
-    event_type: z.literal('practice_answered'),
-    session_id: z.string(),
-    sequence: z.number(),
-    occurred_at: z.string(),
-    payload: AnswerEventSchema,
-  })).refine(events => {
-    const keys = new Set(events.map(e => `${e.session_id}:${e.sequence}`));
-    return keys.size === events.length;
-  }, { message: 'events must be unique by session_id and sequence' })
+  events: z
+    .array(
+      z.object({
+        event_id: z.string(),
+        event_type: z.literal('practice_answered'),
+        session_id: z.string(),
+        sequence: z.number(),
+        occurred_at: z.string(),
+        payload: AnswerEventSchema,
+      }),
+    )
+    .refine(
+      events => {
+        const keys = new Set(events.map(e => `${e.session_id}:${e.sequence}`));
+        return keys.size === events.length;
+      },
+      {message: 'events must be unique by session_id and sequence'},
+    ),
 });
 
-export type PracticeQuestionOption = z.infer<typeof PracticeQuestionOptionSchema>;
+export type PracticeQuestionOption = z.infer<
+  typeof PracticeQuestionOptionSchema
+>;
 export type PracticeSourceRef = z.infer<typeof PracticeSourceRefSchema>;
-export type PracticeSourceSnapshot = z.infer<typeof PracticeSourceSnapshotSchema>;
+export type PracticeSourceSnapshot = z.infer<
+  typeof PracticeSourceSnapshotSchema
+>;
 export type PracticeProvenance = z.infer<typeof PracticeProvenanceSchema>;
 export type PracticeValidation = z.infer<typeof PracticeValidationSchema>;
 export type MeaningChoice = z.infer<typeof MeaningChoiceSchema>;

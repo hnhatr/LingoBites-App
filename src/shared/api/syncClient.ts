@@ -1,5 +1,5 @@
-import { authenticatedFetch } from './authenticatedFetch';
-import { getAppConfig } from './appConfig';
+import {authenticatedFetch} from './authenticatedFetch';
+import {getAppConfig} from './appConfig';
 function withTimeout(timeoutMs: number, externalSignal?: AbortSignal) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -15,7 +15,7 @@ function withTimeout(timeoutMs: number, externalSignal?: AbortSignal) {
     }
   }
 
-  return { signal: controller.signal };
+  return {signal: controller.signal};
 }
 import type {
   SyncPushRequest,
@@ -29,12 +29,12 @@ import {
 } from '../schemas/sync';
 
 export type SyncPushClientResult =
-  | { ok: true; data: SyncPushSuccessResponse }
-  | { ok: false; errorCode: string; message: string; retryable: boolean };
+  | {ok: true; data: SyncPushSuccessResponse}
+  | {ok: false; errorCode: string; message: string; retryable: boolean};
 
 export type SyncPullClientResult =
-  | { ok: true; data: SyncPullSuccessResponse }
-  | { ok: false; errorCode: string; message: string; retryable: boolean };
+  | {ok: true; data: SyncPullSuccessResponse}
+  | {ok: false; errorCode: string; message: string; retryable: boolean};
 
 export type SyncClientOptions = {
   signal?: AbortSignal;
@@ -45,7 +45,7 @@ export async function syncPush(
   request: SyncPushRequest,
   options: SyncClientOptions = {},
 ): Promise<SyncPushClientResult> {
-  const { apiBaseUrl } = getAppConfig();
+  const {apiBaseUrl} = getAppConfig();
   const timeout = withTimeout(15000, options.signal);
   try {
     const response = await authenticatedFetch(
@@ -81,14 +81,14 @@ export async function syncPush(
     }
     const data = parsed.data;
     if (data.contract_version !== SYNC_CONTRACT_VERSION) {
-       return {
+      return {
         ok: false,
         errorCode: 'CONTRACT_MISMATCH',
         message: `Expected contract version ${SYNC_CONTRACT_VERSION}`,
         retryable: false,
       };
     }
-    return { ok: true, data };
+    return {ok: true, data};
   } catch (error) {
     return {
       ok: false,
@@ -104,10 +104,13 @@ export async function syncPull(
   limit: number,
   options: SyncClientOptions = {},
 ): Promise<SyncPullClientResult> {
-  const { apiBaseUrl } = getAppConfig();
+  const {apiBaseUrl} = getAppConfig();
   const timeout = withTimeout(15000, options.signal);
   try {
-    const query = new URLSearchParams({ cursor, limit: limit.toString() }).toString();
+    const query = new URLSearchParams({
+      cursor,
+      limit: limit.toString(),
+    }).toString();
     const response = await authenticatedFetch(
       `${apiBaseUrl}/v1/sync/pull?${query}`,
       {
@@ -139,14 +142,14 @@ export async function syncPull(
     }
     const data = parsed.data;
     if (data.contract_version !== SYNC_CONTRACT_VERSION) {
-       return {
+      return {
         ok: false,
         errorCode: 'CONTRACT_MISMATCH',
         message: `Expected contract version ${SYNC_CONTRACT_VERSION}`,
         retryable: false,
       };
     }
-    return { ok: true, data };
+    return {ok: true, data};
   } catch (error) {
     return {
       ok: false,

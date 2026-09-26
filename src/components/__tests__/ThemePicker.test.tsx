@@ -60,7 +60,10 @@ describe('ThemePicker', () => {
       await render(makeTestReleaseConfig(FULL_FEATURE_SHOWCASE_FLAGS)),
     );
     expect(labels).toHaveLength(9);
-    expect(labels).toEqual([...themeIds.map(id => themes[id].name), 'Theo hệ thống']);
+    expect(labels).toEqual([
+      ...themeIds.map(id => themes[id].name),
+      'Theo hệ thống',
+    ]);
   });
 
   it('offers exactly Sáng / Tối / Sticker / Theo hệ thống on production builds', async () => {

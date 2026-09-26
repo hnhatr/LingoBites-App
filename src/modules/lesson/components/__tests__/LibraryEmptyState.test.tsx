@@ -113,7 +113,7 @@ describe('LibraryEmptyState', () => {
       'no-results',
     ];
 
-    const expectedMessages: Record<typeof types[number], string> = {
+    const expectedMessages: Record<(typeof types)[number], string> = {
       lessons: 'Chưa có bài học nào',
       vocabulary: 'Chưa lưu từ vựng nào',
       grammar: 'Chưa lưu ngữ pháp nào',

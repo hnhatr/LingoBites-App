@@ -103,7 +103,10 @@ export function VocabularyTabContent({vocabulary}: VocabularyTabContentProps) {
   return (
     <View style={styles.container}>
       <FlatList
-        contentContainerStyle={[styles.contentContainer, {paddingBottom: feedClearance}]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          {paddingBottom: feedClearance},
+        ]}
         data={vocabulary}
         keyExtractor={item => item.id}
         renderItem={renderItem}

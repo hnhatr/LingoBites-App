@@ -116,7 +116,9 @@ export function ExitCheckCard({data, onComplete, onSkip}: Props) {
           style={{alignSelf: 'center', paddingVertical: theme.spacing.xs}}
           testID="exit-check-skip-link"
         >
-          <AppText color="secondary" variant="label">Bỏ qua</AppText>
+          <AppText color="secondary" variant="label">
+            Bỏ qua
+          </AppText>
         </Pressable>
       </View>
     </View>

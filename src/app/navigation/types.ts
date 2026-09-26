@@ -1,9 +1,10 @@
 import type {OCRSourceType} from '@shared/api/types';
 import type {NavigatorScreenParams} from '@react-navigation/native';
+import type {PracticeQuestion as LegacyPracticeQuestion} from '@/modules/practice/practiceQuestion';
 
 export type LearningDetailParamList = {
   Practice:
-    | {questions: any[]; title?: string}
+    | {questions: LegacyPracticeQuestion[]; title?: string}
     | {lessonId: string; sessionId: string; title?: string};
 };
 

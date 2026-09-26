@@ -1,5 +1,8 @@
 import i18n from '@/i18n';
-import {persistNewSession, resetRefreshStateForTests} from '../../../../shared/auth/authSession';
+import {
+  persistNewSession,
+  resetRefreshStateForTests,
+} from '../../../../shared/auth/authSession';
 import type {AuthSession, AuthUser} from '../../../../shared/auth/authTypes';
 import {installKeychainVault} from '../../../../test-support/keychainVault';
 import {parseYouTubeVideoId, runYouTubeJob} from '../youtubeApi';
@@ -382,9 +385,7 @@ describe('runYouTubeJob - authenticated requests (SETE-309)', () => {
 
     const pending = runYouTubeJob(URL);
     await advanceUntilCalls(2);
-    await expect(pending).resolves.toEqual(
-      expect.objectContaining({ok: true}),
-    );
+    await expect(pending).resolves.toEqual(expect.objectContaining({ok: true}));
 
     expect(mockFetch).toHaveBeenNthCalledWith(
       1,

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type {FeatureRegistryEntry} from './types';
 
 export const featureRegistry = [
@@ -48,7 +47,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'foundation',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'themeSystem',
@@ -136,7 +135,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'wordMatchGame',
@@ -144,7 +143,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'fillBlankGame',
@@ -152,7 +151,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'tenseQuizGame',
@@ -160,7 +159,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'sentenceOrderGame',
@@ -168,7 +167,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'flashcardChallenge',
@@ -176,7 +175,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'situationLearning',
@@ -184,7 +183,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'dialogueGenerator',
@@ -192,7 +191,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
-    limitations: ["Not implemented yet"],
+    limitations: ['Not implemented yet'],
   },
   {
     key: 'phraseExtractor',

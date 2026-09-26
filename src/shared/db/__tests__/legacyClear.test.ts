@@ -216,16 +216,14 @@ describe('executeLegacyClear', () => {
         null,
       ],
     );
-    db.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);', [
-      'legacy_key',
-      '1',
-      CREATED_AT,
-    ]);
-    db.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);', [
-      'current_account_id',
-      'user1',
-      CREATED_AT,
-    ]);
+    db.execute(
+      'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      ['legacy_key', '1', CREATED_AT],
+    );
+    db.execute(
+      'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      ['current_account_id', 'user1', CREATED_AT],
+    );
 
     const before = lessonRowCounts(db);
     expectAllOne(before);
@@ -291,11 +289,10 @@ describe('executeLegacyClear', () => {
   it('a pre-existing old marker short-circuits without canonical evidence', async () => {
     const db = getDatabase();
     seedLessonFixtures(db);
-    db.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);', [
-      LEGACY_CLEAR_MARKER,
-      '1',
-      CREATED_AT,
-    ]);
+    db.execute(
+      'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      [LEGACY_CLEAR_MARKER, '1', CREATED_AT],
+    );
 
     await executeLegacyClear();
 
@@ -313,14 +310,16 @@ describe('executeLegacyClear', () => {
     const db = getDatabase();
     seedLessonFixtures(db);
     const realExecute = db.execute.bind(db);
-    const spy = jest.spyOn(db, 'execute').mockImplementation(
-      (sql: string, params?: Array<string | number | null>) => {
-        if (sql.toLowerCase().includes('delete from flashcards')) {
-          throw new Error('SQLITE_IOERR');
-        }
-        return realExecute(sql, params as never);
-      },
-    );
+    const spy = jest
+      .spyOn(db, 'execute')
+      .mockImplementation(
+        (sql: string, params?: Array<string | number | null>) => {
+          if (sql.toLowerCase().includes('delete from flashcards')) {
+            throw new Error('SQLITE_IOERR');
+          }
+          return realExecute(sql, params as never);
+        },
+      );
 
     try {
       await expect(executeLegacyClear()).rejects.toThrow('SQLITE_IOERR');
@@ -354,9 +353,7 @@ describe('executeCanonicalLegacyClear', () => {
       'Explicit Checkpoint B authorization reference required for canonical legacy cleanup',
     );
 
-    await expect(
-      executeCanonicalLegacyClear(undefined as any),
-    ).rejects.toThrow(
+    await expect(executeCanonicalLegacyClear(undefined as any)).rejects.toThrow(
       'Explicit Checkpoint B authorization reference required for canonical legacy cleanup',
     );
   });
@@ -365,16 +362,10 @@ describe('executeCanonicalLegacyClear', () => {
     const db = getDatabase();
     seedLessonFixtures(db);
 
-    db.execute('INSERT INTO flashcards (id, lesson_id, vocabulary_id, word, meaning_vi, is_saved, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?);', [
-      'fc1',
-      V1_LESSON_ID,
-      'v1',
-      'word',
-      'nghĩa',
-      0,
-      CREATED_AT,
-      CREATED_AT,
-    ]);
+    db.execute(
+      'INSERT INTO flashcards (id, lesson_id, vocabulary_id, word, meaning_vi, is_saved, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+      ['fc1', V1_LESSON_ID, 'v1', 'word', 'nghĩa', 0, CREATED_AT, CREATED_AT],
+    );
 
     const result = await executeCanonicalLegacyClear({
       authorizationRef: '01a0de32-7f74-7145-a78f-a546b4b5d54b',
@@ -407,7 +398,9 @@ describe('executeCanonicalLegacyClear', () => {
       '01a0de32-7f74-7145-a78f-a546b4b5d54b',
     );
 
-    expect(countRows(db, 'SELECT * FROM flashcards WHERE id = ?;', ['fc1'])).toBe(1);
+    expect(
+      countRows(db, 'SELECT * FROM flashcards WHERE id = ?;', ['fc1']),
+    ).toBe(1);
   });
 
   it('is idempotent and short-circuits when marker is present', async () => {
@@ -415,7 +408,11 @@ describe('executeCanonicalLegacyClear', () => {
     seedLessonFixtures(db);
     db.execute(
       'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
-      [CANONICAL_LEGACY_CLEAR_MARKER, '01a0de32-7f74-7145-a78f-a546b4b5d54b', CREATED_AT],
+      [
+        CANONICAL_LEGACY_CLEAR_MARKER,
+        '01a0de32-7f74-7145-a78f-a546b4b5d54b',
+        CREATED_AT,
+      ],
     );
 
     const result = await executeCanonicalLegacyClear({
@@ -459,14 +456,18 @@ describe('executeCanonicalLegacyClear', () => {
     seedLessonFixtures(db);
 
     const realExecute = db.execute.bind(db);
-    const spy = jest.spyOn(db, 'execute').mockImplementation(
-      (sql: string, params?: Array<string | number | null>) => {
-        if (sql.toLowerCase().includes('drop table if exists lesson_v2_units')) {
-          throw new Error('SQLITE_BUSY');
-        }
-        return realExecute(sql, params as never);
-      },
-    );
+    const spy = jest
+      .spyOn(db, 'execute')
+      .mockImplementation(
+        (sql: string, params?: Array<string | number | null>) => {
+          if (
+            sql.toLowerCase().includes('drop table if exists lesson_v2_units')
+          ) {
+            throw new Error('SQLITE_BUSY');
+          }
+          return realExecute(sql, params as never);
+        },
+      );
 
     try {
       await expect(

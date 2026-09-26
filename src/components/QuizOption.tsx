@@ -114,8 +114,8 @@ export function QuizOption({
     (resolved === 'correct'
       ? `${label}, đúng`
       : resolved === 'wrong'
-        ? `${label}, sai`
-        : label);
+      ? `${label}, sai`
+      : label);
 
   return (
     <Pressable

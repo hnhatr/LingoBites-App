@@ -370,7 +370,6 @@ describe('SentenceCarousel (SETE-330)', () => {
       expect(flatList.props.initialScrollIndex).toBe(119);
       // The resumed card is rendered immediately — no scroll interaction needed.
       expect(hasNode(tree, `${CAROUSEL_TEST_ID}-card-119`)).toBe(true);
-
     });
 
     it('clamps an out-of-range activeIndex instead of crashing FlatList', () => {

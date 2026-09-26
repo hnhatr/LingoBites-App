@@ -9,7 +9,7 @@ import {ScreenHeader} from '@components/ScreenHeader';
 import type {CreateStackParamList} from '@/app/navigation/types';
 import {runYouTubeJob, type YouTubeJobProgress} from '../api/youtubeApi';
 import {useTranslation} from 'react-i18next';
-import {saveYouTubeLesson} from '@shared/db/YoutubeLessonRepository';
+import {saveYouTubeLesson} from '@shared/db/YouTubeLessonRepository';
 import {useAppTheme} from '@theme';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'YouTubeProcessing'>;
@@ -30,7 +30,7 @@ export function YouTubeProcessingScreen({navigation, route}: Props) {
     setError(null);
     setProgress({percent: 0, stage: null});
     const controller = new AbortController();
-    void runYouTubeJob(
+    runYouTubeJob(
       route.params.url,
       route.params.manualCues,
       setProgress,

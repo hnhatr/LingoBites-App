@@ -1,5 +1,5 @@
 import {getAppConfig} from './appConfig';
-import { authenticatedFetch } from './authenticatedFetch';
+import {authenticatedFetch} from './authenticatedFetch';
 import type {PracticeSet} from '../schemas/practice';
 
 export type PracticeConfigInput = {
@@ -102,8 +102,7 @@ export async function getPracticeSetApi(
 
   const response = await authenticatedFetch(url, {
     method: 'GET',
-    headers: {
-    },
+    headers: {},
   });
 
   if (response.status === 200) {

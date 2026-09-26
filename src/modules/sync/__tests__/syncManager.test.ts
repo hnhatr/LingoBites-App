@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
@@ -266,9 +265,9 @@ describe('createSyncManager', () => {
   it('stop() during a pending fetch prevents further drains if the drain succeeds but rows remain', async () => {
     seedEvent('event-1');
     seedEvent('event-2');
-    
+
     let resolveFetch: (res: any) => void;
-    const fetchPromise = new Promise((res) => {
+    const fetchPromise = new Promise(res => {
       resolveFetch = res;
     });
     mockFetch.mockReturnValueOnce(fetchPromise);

@@ -29,6 +29,17 @@ function navigation() {
   };
 }
 
+let activeRenderers: ReactTestRenderer.ReactTestRenderer[] = [];
+
+afterEach(async () => {
+  await act(async () => {
+    for (const tree of activeRenderers) {
+      tree.unmount();
+    }
+    activeRenderers = [];
+  });
+});
+
 async function renderHome() {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
@@ -43,6 +54,7 @@ async function renderHome() {
     );
     await Promise.resolve();
   });
+  activeRenderers.push(tree);
   return tree;
 }
 

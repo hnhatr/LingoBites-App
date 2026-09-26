@@ -172,9 +172,9 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
         }
       };
 
-      void pollCurrentTime();
+      pollCurrentTime().catch(() => {});
       const intervalId = setInterval(() => {
-        void pollCurrentTime();
+        pollCurrentTime().catch(() => {});
       }, TIME_UPDATE_INTERVAL_MS);
 
       return () => {

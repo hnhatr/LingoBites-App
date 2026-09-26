@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './authenticatedFetch';
+import {authenticatedFetch} from './authenticatedFetch';
 import i18n from '@/i18n';
 import type {ReviewEventPayload} from '../db/types';
 import {getAppConfig} from './appConfig';

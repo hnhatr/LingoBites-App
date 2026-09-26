@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './authenticatedFetch';
+import {authenticatedFetch} from './authenticatedFetch';
 import {Platform} from 'react-native';
 import {createRequestId} from './requestId';
 import {getAppConfig} from './appConfig';

@@ -2,11 +2,11 @@
 
 ## How to read
 
-| Order | File | Purpose |
-|---|---|---|
-| 1 | `01-cost-estimate.md` | Fixed cost estimates, cost per lesson, budget guardrails |
-| 2 | `02-ai-key-strategy.md` | Pointer to BA canonical doc on BYOK/paid managed AI |
-| 3 | `03-ios-staging-testflight-ci.md` | iOS Staging → TestFlight GitHub Actions workflow: secrets, dispatch, verification |
+| Order | File                              | Purpose                                                                           |
+| ----- | --------------------------------- | --------------------------------------------------------------------------------- |
+| 1     | `01-cost-estimate.md`             | Fixed cost estimates, cost per lesson, budget guardrails                          |
+| 2     | `02-ai-key-strategy.md`           | Pointer to BA canonical doc on BYOK/paid managed AI                               |
+| 3     | `03-ios-staging-testflight-ci.md` | iOS Staging → TestFlight GitHub Actions workflow: secrets, dispatch, verification |
 
 ## Minimal duplication
 

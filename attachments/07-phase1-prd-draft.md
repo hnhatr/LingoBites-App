@@ -32,13 +32,13 @@ FACT — nguồn: `02-personas-journey.md`, tổng hợp qua Stage 3 (VIB-117 §
 
 ## 5. In-Scope Features (lát cắt lõi P1)
 
-| Feature ID | Feature | Priority | Mô tả |
-|---|---|---|---|
-| P1-F-01 | Flashcards | Must | Lưu 1 `VocabularyItem` thành flashcard, xem danh sách, xem chi tiết, lật thẻ front/back |
-| P1-F-02 | Unsave/Delete flashcard | Must | Gỡ 1 flashcard riêng lẻ (soft delete), re-save khôi phục đúng schedule cũ |
-| P1-F-03 | Spaced Repetition cơ bản | Must | Tính lịch ôn tiếp theo dựa trên phản hồi user (fixed interval, rating 2 outcome + skip) — xem §9.2 (đã chốt, DD-04) |
-| P1-F-04 | Daily Review | Must | Hàng đợi thẻ due, snapshot cố định theo phiên, điều kiện hoàn thành phiên |
-| P1-F-05 | Due count indicator | Should | Hiển thị số thẻ due tại entry point (vị trí UI — xem §9.4 open decision) |
+| Feature ID | Feature                  | Priority | Mô tả                                                                                                               |
+| ---------- | ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| P1-F-01    | Flashcards               | Must     | Lưu 1 `VocabularyItem` thành flashcard, xem danh sách, xem chi tiết, lật thẻ front/back                             |
+| P1-F-02    | Unsave/Delete flashcard  | Must     | Gỡ 1 flashcard riêng lẻ (soft delete), re-save khôi phục đúng schedule cũ                                           |
+| P1-F-03    | Spaced Repetition cơ bản | Must     | Tính lịch ôn tiếp theo dựa trên phản hồi user (fixed interval, rating 2 outcome + skip) — xem §9.2 (đã chốt, DD-04) |
+| P1-F-04    | Daily Review             | Must     | Hàng đợi thẻ due, snapshot cố định theo phiên, điều kiện hoàn thành phiên                                           |
+| P1-F-05    | Due count indicator      | Should   | Hiển thị số thẻ due tại entry point (vị trí UI — xem §9.4 open decision)                                            |
 
 **Ngoài scope P1 phiên này** (để lại phiên sau theo Gate 1): streak, quiz history, favorite lessons, search, level setting.
 
@@ -62,51 +62,51 @@ FACT — hội tụ Stage 4 (completion rule, VIB-120 CRIT-001 + VIB-121 xác nh
 
 ### Flashcards
 
-| ID | Requirement | Priority |
-|---|---|---|
-| FR-FLASH-001 | Lưu 1 `VocabularyItem` từ lesson thành flashcard | Must |
-| FR-FLASH-002 | Hiển thị trạng thái đã lưu/chưa lưu trên vocabulary item | Must |
-| FR-FLASH-003 | Xem danh sách toàn bộ flashcard đã lưu | Must |
-| FR-FLASH-004 | Xem chi tiết + lật thẻ front/back | Must |
-| FR-FLASH-005 | Ngăn tạo flashcard trùng lặp cho cùng `VocabularyItem` | Must |
-| FR-FLASH-006 | Nội dung flashcard lấy từ dữ liệu cục bộ, không gọi AI mới | Must |
-| FR-FLASH-007 | Cho phép unsave (gỡ) 1 flashcard riêng lẻ | Must |
-| FR-FLASH-008 | Gỡ khỏi mọi daily review queue ngay lập tức, kể cả session đang mở, tính lại remaining/total | Must |
-| FR-FLASH-009 | Re-save khôi phục đúng schedule SRS cũ, không reset về thẻ mới | Must |
-| FR-FLASH-010 | Xác nhận trước khi unsave thẻ đã có lịch sử ôn tập | Should |
+| ID           | Requirement                                                                                  | Priority |
+| ------------ | -------------------------------------------------------------------------------------------- | -------- |
+| FR-FLASH-001 | Lưu 1 `VocabularyItem` từ lesson thành flashcard                                             | Must     |
+| FR-FLASH-002 | Hiển thị trạng thái đã lưu/chưa lưu trên vocabulary item                                     | Must     |
+| FR-FLASH-003 | Xem danh sách toàn bộ flashcard đã lưu                                                       | Must     |
+| FR-FLASH-004 | Xem chi tiết + lật thẻ front/back                                                            | Must     |
+| FR-FLASH-005 | Ngăn tạo flashcard trùng lặp cho cùng `VocabularyItem`                                       | Must     |
+| FR-FLASH-006 | Nội dung flashcard lấy từ dữ liệu cục bộ, không gọi AI mới                                   | Must     |
+| FR-FLASH-007 | Cho phép unsave (gỡ) 1 flashcard riêng lẻ                                                    | Must     |
+| FR-FLASH-008 | Gỡ khỏi mọi daily review queue ngay lập tức, kể cả session đang mở, tính lại remaining/total | Must     |
+| FR-FLASH-009 | Re-save khôi phục đúng schedule SRS cũ, không reset về thẻ mới                               | Must     |
+| FR-FLASH-010 | Xác nhận trước khi unsave thẻ đã có lịch sử ôn tập                                           | Should   |
 
 ### Spaced Repetition
 
-| ID | Requirement | Priority |
-|---|---|---|
-| FR-SRS-001 | Khởi tạo trạng thái + due ngay lập tức cho thẻ mới | Must |
-| FR-SRS-002 | Tính `due_at`/interval/state tiếp theo dựa trên phản hồi user — **thuật toán: fixed interval, xem §9.2 (đã chốt DD-04)** | Must |
-| FR-SRS-003 | Persist state/schedule bền vững qua session, cập nhật trong transaction nguyên tử | Must |
+| ID         | Requirement                                                                                                              | Priority |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------ | -------- |
+| FR-SRS-001 | Khởi tạo trạng thái + due ngay lập tức cho thẻ mới                                                                       | Must     |
+| FR-SRS-002 | Tính `due_at`/interval/state tiếp theo dựa trên phản hồi user — **thuật toán: fixed interval, xem §9.2 (đã chốt DD-04)** | Must     |
+| FR-SRS-003 | Persist state/schedule bền vững qua session, cập nhật trong transaction nguyên tử                                        | Must     |
 
 ### Daily Review
 
-| ID | Requirement | Priority |
-|---|---|---|
-| FR-REVIEW-001 | Dựng snapshot cố định các thẻ `due_at <= now` khi bắt đầu phiên | Must |
-| FR-REVIEW-002 | Cho phép rating hoặc skip từng thẻ trong phiên | Must |
-| FR-REVIEW-003 | Phiên hoàn thành khi mọi thẻ trong snapshot đã được xử lý (rating hoặc skip), không ngưỡng % đúng | Must |
-| FR-REVIEW-004 | Empty state phân biệt "chưa từng lưu thẻ" vs "đã ôn hết hôm nay" | Must |
-| FR-REVIEW-005 | Hiển thị số đếm thẻ due tại entry point | Should |
+| ID            | Requirement                                                                                       | Priority |
+| ------------- | ------------------------------------------------------------------------------------------------- | -------- |
+| FR-REVIEW-001 | Dựng snapshot cố định các thẻ `due_at <= now` khi bắt đầu phiên                                   | Must     |
+| FR-REVIEW-002 | Cho phép rating hoặc skip từng thẻ trong phiên                                                    | Must     |
+| FR-REVIEW-003 | Phiên hoàn thành khi mọi thẻ trong snapshot đã được xử lý (rating hoặc skip), không ngưỡng % đúng | Must     |
+| FR-REVIEW-004 | Empty state phân biệt "chưa từng lưu thẻ" vs "đã ôn hết hôm nay"                                  | Must     |
+| FR-REVIEW-005 | Hiển thị số đếm thẻ due tại entry point                                                           | Should   |
 
 ## 8. Business Rules (consolidated)
 
-| ID | Rule |
-|---|---|
-| BR-FLASH-001 | Flashcard tham chiếu `VocabularyItem` + lesson gốc, không nhân bản nội dung |
-| BR-FLASH-002 | Lưu trùng 1 `VocabularyItem` không tạo bản ghi thứ 2 |
-| BR-FLASH-003 | Phạm vi "card" P1 chỉ gồm `VocabularyItem` — không gồm grammar point/sentence pattern |
-| BR-FLASH-004 | Unsave = soft delete; gỡ khỏi mọi queue kể cả session đang mở ngay lập tức; lịch sử review giữ lại (không hiển thị P1) |
-| BR-FLASH-005 | Re-save khôi phục đúng bản ghi cũ (schedule, lịch sử SRS), không tạo thẻ "new" |
-| BR-SRS-002 | Card state/due date persist bền vững qua session (local-first) |
-| BR-SRS-003 | SRS không dùng `learning_level` làm input |
-| BR-REVIEW-001 | 1 thẻ "due" khi `due_at <= now` |
+| ID            | Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| BR-FLASH-001  | Flashcard tham chiếu `VocabularyItem` + lesson gốc, không nhân bản nội dung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| BR-FLASH-002  | Lưu trùng 1 `VocabularyItem` không tạo bản ghi thứ 2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| BR-FLASH-003  | Phạm vi "card" P1 chỉ gồm `VocabularyItem` — không gồm grammar point/sentence pattern                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| BR-FLASH-004  | Unsave = soft delete; gỡ khỏi mọi queue kể cả session đang mở ngay lập tức; lịch sử review giữ lại (không hiển thị P1)                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| BR-FLASH-005  | Re-save khôi phục đúng bản ghi cũ (schedule, lịch sử SRS), không tạo thẻ "new"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| BR-SRS-002    | Card state/due date persist bền vững qua session (local-first)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| BR-SRS-003    | SRS không dùng `learning_level` làm input                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| BR-REVIEW-001 | 1 thẻ "due" khi `due_at <= now`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | BR-REVIEW-002 | 1 phiên hoàn thành khi mọi thẻ trong **snapshot cố định lúc bắt đầu phiên** đã nhận đúng 1 phản hồi (rating `remembered`/`forgot` hoặc skip tường minh); snapshot dựng theo **soft cap N thẻ/phiên (oldest-due-first), phần dư carry-over sang phiên sau** (D4, chốt Gate 1 — xem §9.3); mẫu số tiến độ (progress) là **kích thước snapshot đã cap**, không phải tổng số thẻ due trước cap; skip không đổi `due_at`; cả `remembered` và `forgot` đều cập nhật `due_at` theo lịch fixed-interval, không lặp lại thẻ trong session hiện tại, chỉ due lại ở phiên sau |
-| BR-REVIEW-003 | Daily queue cap — **open decision §9.3** |
+| BR-REVIEW-003 | Daily queue cap — **open decision §9.3**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 ## 9. Open Decisions (chưa chốt tại Gate 2 — TranHoangNha approve chung nhưng không chọn cụ thể từng mục; giữ nguyên dạng option theo đúng thiết kế gate)
 
@@ -156,14 +156,14 @@ FACT — hội tụ Stage 4 (completion rule, VIB-120 CRIT-001 + VIB-121 xác nh
 
 ## 11. Non-Functional Requirements (bổ sung cho P1, xem đầy đủ tại VIB-122 §2.5)
 
-| ID | Requirement | Target |
-|---|---|---|
-| NFR-REL-SESSION | Resume đúng snapshot + vị trí sau crash/force-kill | Bắt buộc, không mất tiến độ |
-| NFR-PERF-01 | Due-count/list p95, rating transaction p95 | ≤200ms / ≤100ms trên fixture 10k cards (benchmark đề xuất, chưa phải NFR đã duyệt chính thức) |
-| NFR-PRI-01 | `clearAllLocalData` xóa 100% dữ liệu P1 trong 1 transaction | Bắt buộc |
-| NFR-SEC-01 | Không log raw vocabulary/nội dung vào telemetry | Bắt buộc |
-| NFR-AVAIL-01 | Toàn bộ luồng flashcard/review hoạt động 100% offline | Bắt buộc |
-| A-02 (limitation) | Local-only P1: mất toàn bộ flashcard/schedule/history nếu reinstall/mất máy, không backup/restore — **cần user-facing communication tường minh** (onboarding/settings copy) | Must ghi rõ cho user |
+| ID                | Requirement                                                                                                                                                                 | Target                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| NFR-REL-SESSION   | Resume đúng snapshot + vị trí sau crash/force-kill                                                                                                                          | Bắt buộc, không mất tiến độ                                                                   |
+| NFR-PERF-01       | Due-count/list p95, rating transaction p95                                                                                                                                  | ≤200ms / ≤100ms trên fixture 10k cards (benchmark đề xuất, chưa phải NFR đã duyệt chính thức) |
+| NFR-PRI-01        | `clearAllLocalData` xóa 100% dữ liệu P1 trong 1 transaction                                                                                                                 | Bắt buộc                                                                                      |
+| NFR-SEC-01        | Không log raw vocabulary/nội dung vào telemetry                                                                                                                             | Bắt buộc                                                                                      |
+| NFR-AVAIL-01      | Toàn bộ luồng flashcard/review hoạt động 100% offline                                                                                                                       | Bắt buộc                                                                                      |
+| A-02 (limitation) | Local-only P1: mất toàn bộ flashcard/schedule/history nếu reinstall/mất máy, không backup/restore — **cần user-facing communication tường minh** (onboarding/settings copy) | Must ghi rõ cho user                                                                          |
 
 ## 12. Limitations (P1)
 

@@ -1,6 +1,6 @@
-import { getDatabase, withTransaction } from './database';
-import { enqueueSyncOutboxEvent } from './SyncOutboxRepository';
-import { createRequestId } from '../api/requestId';
+import {getDatabase, withTransaction} from './database';
+import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {createRequestId} from '../api/requestId';
 import type {
   GrammarBookmark,
   SaveGrammarBookmarkInput,
@@ -90,7 +90,7 @@ export function saveGrammarBookmark(
             reactivatedAt: now,
             active: true,
           },
-          createdAt: now
+          createdAt: now,
         });
       });
       return {ok: true, duplicate: true};
@@ -102,15 +102,7 @@ export function saveGrammarBookmark(
           lesson_id, grammar_id, package_id, saved_at, reactivated_at,
           created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?);`,
-        [
-          input.lessonId,
-          input.grammarId,
-          input.packageId,
-          now,
-          now,
-          now,
-          now,
-        ],
+        [input.lessonId, input.grammarId, input.packageId, now, now, now, now],
       );
       enqueueSyncOutboxEvent({
         id: createRequestId(),
@@ -124,7 +116,7 @@ export function saveGrammarBookmark(
           reactivatedAt: now,
           active: true,
         },
-        createdAt: now
+        createdAt: now,
       });
     });
     return {ok: true, duplicate: false};
@@ -155,8 +147,8 @@ export function unsaveGrammarBookmark(
           id: createRequestId(),
           eventType: 'grammar_bookmarks',
           entityId: `${lessonId}:${grammarId}`,
-          payload: { lessonId, grammarId, active: false },
-          createdAt: updatedAt
+          payload: {lessonId, grammarId, active: false},
+          createdAt: updatedAt,
         });
       }
       return res;

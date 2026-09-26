@@ -265,7 +265,6 @@ async function runBoot(deps: BootDeps): Promise<BootResult> {
   };
 }
 
-
 function enforceAccountIsolation(userId: string): void {
   const db = getDatabase();
   const current = readSetting('current_account_id');

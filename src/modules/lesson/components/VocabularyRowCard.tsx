@@ -80,7 +80,10 @@ export function VocabularyRowCard({
           <AppText
             variant="label"
             color="secondary"
-            style={[styles.meaning, !flashcard.example && styles.meaningNoExample]}
+            style={[
+              styles.meaning,
+              !flashcard.example && styles.meaningNoExample,
+            ]}
             testID="meaning-text"
           >
             {flashcard.meaningVi}

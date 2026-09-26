@@ -8,7 +8,9 @@ import {AccessibilityInfo} from 'react-native';
 
 jest.mock('react-native', () => {
   const rn = jest.requireActual('react-native');
-  rn.AccessibilityInfo.isReduceMotionEnabled = jest.fn(() => Promise.resolve(false));
+  rn.AccessibilityInfo.isReduceMotionEnabled = jest.fn(() =>
+    Promise.resolve(false),
+  );
   return rn;
 });
 
@@ -29,20 +31,29 @@ describe('ShelfSurface', () => {
     const tree = await render(
       <ShelfSurface shelfHeight={4} shelfColor="#ff0000" faceTestID="face">
         <Text>Content</Text>
-      </ShelfSurface>
+      </ShelfSurface>,
     );
     // Absolute fill view is the shelf
     const views = tree.root.findAllByType('View' as any);
-    const shelf = views.find((v: any) => v.props.style && StyleSheet.flatten(v.props.style).backgroundColor === '#ff0000');
+    const shelf = views.find(
+      (v: any) =>
+        v.props.style &&
+        StyleSheet.flatten(v.props.style).backgroundColor === '#ff0000',
+    );
     expect(shelf).toBeDefined();
     expect(StyleSheet.flatten(shelf!.props.style).top).toBe(4);
   });
 
   it('translates the face down when pressed', async () => {
     const tree = await render(
-      <ShelfSurface shelfHeight={4} shelfColor="#ff0000" isPressed={true} faceTestID="face">
+      <ShelfSurface
+        shelfHeight={4}
+        shelfColor="#ff0000"
+        isPressed={true}
+        faceTestID="face"
+      >
         <Text>Content</Text>
-      </ShelfSurface>
+      </ShelfSurface>,
     );
     // The animated view translates Y by shelfHeight - 2
     const face = tree.root.findByProps({testID: 'face'});
@@ -50,11 +61,18 @@ describe('ShelfSurface', () => {
   });
 
   it('falls back to opacity fading when reduceMotion is enabled', async () => {
-    (AccessibilityInfo.isReduceMotionEnabled as jest.Mock).mockResolvedValueOnce(true);
+    (
+      AccessibilityInfo.isReduceMotionEnabled as jest.Mock
+    ).mockResolvedValueOnce(true);
     const tree = await render(
-      <ShelfSurface shelfHeight={4} shelfColor="#ff0000" isPressed={true} faceTestID="face">
+      <ShelfSurface
+        shelfHeight={4}
+        shelfColor="#ff0000"
+        isPressed={true}
+        faceTestID="face"
+      >
         <Text>Content</Text>
-      </ShelfSurface>
+      </ShelfSurface>,
     );
     const face = tree.root.findByProps({testID: 'face'});
     expect(face).toBeDefined();

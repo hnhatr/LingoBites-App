@@ -71,8 +71,7 @@ describe('TextField', () => {
     );
 
     const errors = tree.root.findAll(
-      node =>
-        node.type === Text && node.props.children === 'Cần nhập nội dung',
+      node => node.type === Text && node.props.children === 'Cần nhập nội dung',
     );
     expect(errors).toHaveLength(1);
     expect(errors[0].props.accessibilityRole).toBe('alert');
@@ -97,9 +96,13 @@ describe('TextField', () => {
     const tree = await render(<TextField value="" />);
 
     const flattened = flattenStyle(tree.root.findByType(TextInput).props.style);
-    expect(flattened.borderRadius).toBe(themes['pastel-kids'].components.input.radius);
+    expect(flattened.borderRadius).toBe(
+      themes['pastel-kids'].components.input.radius,
+    );
     expect(flattened.borderWidth).toBe(2);
-    expect(flattened.borderColor).toBe(themes['pastel-kids'].components.input.border);
+    expect(flattened.borderColor).toBe(
+      themes['pastel-kids'].components.input.border,
+    );
   });
 
   it('uses the standard radius for multiline inputs', async () => {

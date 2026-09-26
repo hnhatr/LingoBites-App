@@ -150,6 +150,5 @@ describe('SETE-194 design QA stage 3 (pastel-kids)', () => {
     const style = flattenStyle(cards[0].props.style);
     expect(style.padding).toBe(24);
     expect(style.borderRadius).toBe(24);
-    
   });
 });

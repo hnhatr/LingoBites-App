@@ -42,9 +42,9 @@ export function FeatureFlagProvider({
 
     if (!validation.valid) {
       throw new Error(
-        `Invalid release config "${config.releaseName}":\n${validation.errors.join(
-          '\n',
-        )}`,
+        `Invalid release config "${
+          config.releaseName
+        }":\n${validation.errors.join('\n')}`,
       );
     }
 

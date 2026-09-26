@@ -129,9 +129,7 @@ describe('VocabularyTabContent', () => {
   });
 
   it('renders vocabulary card items with correct data', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard1]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard1]} />);
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
     expect(card).toBeDefined();
@@ -143,17 +141,19 @@ describe('VocabularyTabContent', () => {
       <VocabularyTabContent vocabulary={[mockFlashcard1, mockFlashcard2]} />,
     );
 
-    const card1 = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
+    const card1 = tree.root.findByProps({
+      testID: 'vocabulary-card-flashcard-1',
+    });
     expect(card1.props.isSaved).toBe(false);
 
-    const card2 = tree.root.findByProps({testID: 'vocabulary-card-flashcard-2'});
+    const card2 = tree.root.findByProps({
+      testID: 'vocabulary-card-flashcard-2',
+    });
     expect(card2.props.isSaved).toBe(true);
   });
 
   it('calls onPress callback when vocabulary card is pressed', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard1]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard1]} />);
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
 
@@ -167,9 +167,7 @@ describe('VocabularyTabContent', () => {
   });
 
   it('navigates with correct vocabularyId on card press', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard2]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard2]} />);
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-2'});
 
@@ -183,9 +181,7 @@ describe('VocabularyTabContent', () => {
   });
 
   it('handles save callback', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard1]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard1]} />);
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
 
@@ -207,9 +203,7 @@ describe('VocabularyTabContent', () => {
   });
 
   it('handles unsave callback', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard1]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard1]} />);
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
 
@@ -230,9 +224,15 @@ describe('VocabularyTabContent', () => {
     const flatList = tree.root.findByProps({testID: 'vocabulary-flat-list'});
     expect(flatList.props.data).toHaveLength(3);
 
-    const card1 = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
-    const card2 = tree.root.findByProps({testID: 'vocabulary-card-flashcard-2'});
-    const card3 = tree.root.findByProps({testID: 'vocabulary-card-flashcard-3'});
+    const card1 = tree.root.findByProps({
+      testID: 'vocabulary-card-flashcard-1',
+    });
+    const card2 = tree.root.findByProps({
+      testID: 'vocabulary-card-flashcard-2',
+    });
+    const card3 = tree.root.findByProps({
+      testID: 'vocabulary-card-flashcard-3',
+    });
 
     expect(card1.props.flashcard.word).toBe('apple');
     expect(card2.props.flashcard.word).toBe('banana');
@@ -240,18 +240,14 @@ describe('VocabularyTabContent', () => {
   });
 
   it('handles flashcards without examples', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard3]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard3]} />);
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-3'});
     expect(card.props.flashcard.example).toBeNull();
   });
 
   it('updates when vocabulary prop changes', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard1]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard1]} />);
 
     let flatList = tree.root.findByProps({testID: 'vocabulary-flat-list'});
     expect(flatList.props.data).toHaveLength(1);
@@ -273,12 +269,15 @@ describe('VocabularyTabContent', () => {
   });
 
   it('handles large vocabulary lists efficiently', () => {
-    const largeVocabularyList: FlashcardRecord[] = Array.from({length: 100}, (_, i) => ({
-      ...mockFlashcard1,
-      id: `flashcard-${i}`,
-      vocabularyId: `vocab-${i}`,
-      word: `word-${i}`,
-    }));
+    const largeVocabularyList: FlashcardRecord[] = Array.from(
+      {length: 100},
+      (_, i) => ({
+        ...mockFlashcard1,
+        id: `flashcard-${i}`,
+        vocabularyId: `vocab-${i}`,
+        word: `word-${i}`,
+      }),
+    );
 
     const tree = render(
       <VocabularyTabContent vocabulary={largeVocabularyList} />,
@@ -299,9 +298,7 @@ describe('VocabularyTabContent', () => {
   });
 
   it('passes save and unsave callbacks to VocabularyRowCard', () => {
-    const tree = render(
-      <VocabularyTabContent vocabulary={[mockFlashcard1]} />,
-    );
+    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard1]} />);
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
     expect(typeof card.props.onSave).toBe('function');

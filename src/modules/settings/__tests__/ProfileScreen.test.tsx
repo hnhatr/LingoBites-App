@@ -52,7 +52,6 @@ jest.mock('../useProgressReport', () => ({
   }),
 }));
 
-
 const navigation = {
   navigate: mockNavigate,
 } as unknown as React.ComponentProps<typeof ProfileScreen>['navigation'];

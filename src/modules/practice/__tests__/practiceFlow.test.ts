@@ -1,5 +1,8 @@
 import {preparePracticeSet, hashPracticeConfig} from '../practiceFlow';
-import {createPracticeSetApi, getPracticeSetApi} from '../../../shared/api/practiceClient';
+import {
+  createPracticeSetApi,
+  getPracticeSetApi,
+} from '../../../shared/api/practiceClient';
 import {
   findActiveSessionLocally,
   findReusablePracticeSetLocally,
@@ -22,16 +25,28 @@ describe('practiceFlow', () => {
     jest.clearAllMocks();
   });
 
-  const baseConfig = {types: ['meaning_choice' as const], difficulty: 'beginner', question_count: 5};
+  const baseConfig = {
+    types: ['meaning_choice' as const],
+    difficulty: 'beginner',
+    question_count: 5,
+  };
   const idempotencyKey = 'test-key';
   const lessonId = 'lesson-1';
-  
+
   it('resumes active session if one exists', async () => {
-    mockFindActiveSession.mockReturnValue({id: 'session-1', practice_set_id: 'set-1'});
+    mockFindActiveSession.mockReturnValue({
+      id: 'session-1',
+      practice_set_id: 'set-1',
+    });
     mockGetSet.mockReturnValue({id: 'set-1', lesson_revision: 2});
-    
+
     // Requesting with revision 2 (match)
-    const res = await preparePracticeSet(lessonId, 2, baseConfig, idempotencyKey);
+    const res = await preparePracticeSet(
+      lessonId,
+      2,
+      baseConfig,
+      idempotencyKey,
+    );
     expect(res).toEqual({
       status: 'ready',
       practiceSet: {id: 'set-1', lesson_revision: 2},
@@ -42,11 +57,19 @@ describe('practiceFlow', () => {
   });
 
   it('resumes active session with warning if lesson_revision drifts', async () => {
-    mockFindActiveSession.mockReturnValue({id: 'session-1', practice_set_id: 'set-1'});
+    mockFindActiveSession.mockReturnValue({
+      id: 'session-1',
+      practice_set_id: 'set-1',
+    });
     mockGetSet.mockReturnValue({id: 'set-1', lesson_revision: 1}); // old revision
-    
+
     // Requesting with revision 2 (drift)
-    const res = await preparePracticeSet(lessonId, 2, baseConfig, idempotencyKey);
+    const res = await preparePracticeSet(
+      lessonId,
+      2,
+      baseConfig,
+      idempotencyKey,
+    );
     expect(res).toEqual({
       status: 'ready',
       practiceSet: {id: 'set-1', lesson_revision: 1},
@@ -59,33 +82,55 @@ describe('practiceFlow', () => {
     mockFindActiveSession.mockReturnValue(null);
     const mockSet = {id: 'set-local', lesson_revision: 2};
     mockFindReusable.mockReturnValue(mockSet);
-    
-    const res = await preparePracticeSet(lessonId, 2, baseConfig, idempotencyKey);
+
+    const res = await preparePracticeSet(
+      lessonId,
+      2,
+      baseConfig,
+      idempotencyKey,
+    );
     expect(res).toEqual({
       status: 'ready',
       practiceSet: mockSet,
       hasVersionMismatchWarning: false,
     });
-    expect(mockFindReusable).toHaveBeenCalledWith(lessonId, 2, hashPracticeConfig(baseConfig));
+    expect(mockFindReusable).toHaveBeenCalledWith(
+      lessonId,
+      2,
+      hashPracticeConfig(baseConfig),
+    );
     expect(mockCreateApi).not.toHaveBeenCalled();
   });
 
   it('creates new set and polls if no local reuse', async () => {
     mockFindActiveSession.mockReturnValue(null);
     mockFindReusable.mockReturnValue(null);
-    
-    mockCreateApi.mockResolvedValue({status: 'generating', practiceSetId: 'set-new', pollAfterMs: 10});
+
+    mockCreateApi.mockResolvedValue({
+      status: 'generating',
+      practiceSetId: 'set-new',
+      pollAfterMs: 10,
+    });
     mockGetApi
-      .mockResolvedValueOnce({status: 'generating', practiceSetId: 'set-new', pollAfterMs: 10})
+      .mockResolvedValueOnce({
+        status: 'generating',
+        practiceSetId: 'set-new',
+        pollAfterMs: 10,
+      })
       .mockResolvedValueOnce({status: 'ready', practiceSet: {id: 'set-new'}});
-      
-    const res = await preparePracticeSet(lessonId, 2, baseConfig, idempotencyKey);
+
+    const res = await preparePracticeSet(
+      lessonId,
+      2,
+      baseConfig,
+      idempotencyKey,
+    );
     expect(res).toEqual({
       status: 'ready',
       practiceSet: {id: 'set-new'},
       hasVersionMismatchWarning: false,
     });
-    
+
     expect(mockCreateApi).toHaveBeenCalledTimes(1);
     expect(mockGetApi).toHaveBeenCalledTimes(2);
     expect(mockSaveSet).toHaveBeenCalledWith({id: 'set-new'});
@@ -95,8 +140,13 @@ describe('practiceFlow', () => {
     mockFindActiveSession.mockReturnValue(null);
     mockFindReusable.mockReturnValue(null);
     mockCreateApi.mockRejectedValue(new Error('Network disconnected'));
-    
-    const res = await preparePracticeSet(lessonId, 2, baseConfig, idempotencyKey);
+
+    const res = await preparePracticeSet(
+      lessonId,
+      2,
+      baseConfig,
+      idempotencyKey,
+    );
     expect(res.status).toBe('network_error');
     expect(mockSaveSet).not.toHaveBeenCalled();
   });
@@ -109,7 +159,12 @@ describe('practiceFlow', () => {
       code: 'INSUFFICIENT_VALIDATED_SOURCE',
     });
 
-    const res = await preparePracticeSet(lessonId, 2, baseConfig, idempotencyKey);
+    const res = await preparePracticeSet(
+      lessonId,
+      2,
+      baseConfig,
+      idempotencyKey,
+    );
     expect(res).toEqual({
       status: 'rejected',
       code: 'INSUFFICIENT_VALIDATED_SOURCE',

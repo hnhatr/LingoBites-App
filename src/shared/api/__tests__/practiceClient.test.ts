@@ -12,9 +12,17 @@ const config = {
 
 beforeEach(() => {
   mockFetch.mockReset();
-  jest
-    .spyOn(AuthSession, 'ensureValidSession')
-    .mockResolvedValue({status: 'valid', session: {access_token: 'test-token', session_id: '1', refresh_token: '2', access_expires_at: '2050', refresh_expires_at: '2050'}, userId: 'user1'});
+  jest.spyOn(AuthSession, 'ensureValidSession').mockResolvedValue({
+    status: 'valid',
+    session: {
+      access_token: 'test-token',
+      session_id: '1',
+      refresh_token: '2',
+      access_expires_at: '2050',
+      refresh_expires_at: '2050',
+    },
+    userId: 'user1',
+  });
 });
 
 afterEach(() => {

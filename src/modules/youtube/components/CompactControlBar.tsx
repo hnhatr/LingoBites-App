@@ -270,7 +270,10 @@ export function CompactControlBar({
         onAccessibilityAction={event => {
           if (disabled || segments.length === 0) return;
           if (event.nativeEvent.actionName === 'increment') {
-            const next = Math.min(segments.length - 1, Math.max(0, activeIndex) + 1);
+            const next = Math.min(
+              segments.length - 1,
+              Math.max(0, activeIndex) + 1,
+            );
             onSeekToIndex(next);
           } else if (event.nativeEvent.actionName === 'decrement') {
             const prev = Math.max(0, activeIndex - 1);

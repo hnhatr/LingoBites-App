@@ -53,8 +53,7 @@ describe('ContextCard', () => {
                 ...data,
                 contextSentenceEn:
                   'In our daily work: "This is an intentionally long English phrase that should wrap instead of pushing controls away".',
-                contextSentenceVi:
-                  'Trong công việc hàng ngày: "Cụm từ dài".',
+                contextSentenceVi: 'Trong công việc hàng ngày: "Cụm từ dài".',
               }}
               onComplete={jest.fn()}
               onPlayAudio={jest.fn()}
@@ -65,7 +64,9 @@ describe('ContextCard', () => {
       );
     });
 
-    expect(tree.root.findByProps({testID: 'context-explanation-vi'})).toBeTruthy();
+    expect(
+      tree.root.findByProps({testID: 'context-explanation-vi'}),
+    ).toBeTruthy();
     const rendered = JSON.stringify(tree.toJSON());
     expect(rendered).not.toContain('In our daily work');
     expect(rendered).not.toContain('Trong công việc hàng ngày');

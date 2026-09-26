@@ -1,15 +1,15 @@
-import { __resetMockDatabases } from '../../../../test-utils/sqliteMock';
-import { getDatabase, resetDatabaseForTests } from '@shared/db/database';
+import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {
   enqueueSyncOutboxEvent,
   listPendingSyncEvents,
   markSyncEventsFailed,
 } from '@shared/db/SyncOutboxRepository';
-import { drainOutboxOnce } from '../outboxSync';
-import { applySyncRecord } from '../pullWorker';
-import { SyncCollectionSchema } from '@shared/schemas/sync';
-import { getGrammarBookmark } from '@shared/db/GrammarBookmarkRepository';
-import { saveContentLesson } from '@shared/db/ContentLessonStateRepository';
+import {drainOutboxOnce} from '../outboxSync';
+import {applySyncRecord} from '../pullWorker';
+import {SyncCollectionSchema} from '@shared/schemas/sync';
+import {getGrammarBookmark} from '@shared/db/GrammarBookmarkRepository';
+import {saveContentLesson} from '@shared/db/ContentLessonStateRepository';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
@@ -23,11 +23,13 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
 
   describe('CR-001: Event Type & Schema Routing', () => {
     it('validates content_lesson_state is in SyncCollectionSchema', () => {
-      expect(SyncCollectionSchema.safeParse('content_lesson_state').success).toBe(true);
+      expect(
+        SyncCollectionSchema.safeParse('content_lesson_state').success,
+      ).toBe(true);
     });
 
     it('drains content_lesson_state as generic sync push event', async () => {
-      saveContentLesson({ lessonId: 'lesson-cr1', now: '2026-01-01T00:00:00Z' });
+      saveContentLesson({lessonId: 'lesson-cr1', now: '2026-01-01T00:00:00Z'});
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -48,7 +50,7 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
         }),
       });
 
-      const outcome = await drainOutboxOnce({ fetchImpl: mockFetch });
+      const outcome = await drainOutboxOnce({fetchImpl: mockFetch});
       expect(outcome.status).toBe('synced');
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch.mock.calls[0][0]).toContain('/v1/sync/push');
@@ -59,10 +61,10 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
         id: 'unk-1',
         eventType: 'unknown_custom_type' as any,
         entityId: 'e1',
-        payload: { foo: 'bar' },
+        payload: {foo: 'bar'},
       });
 
-      const outcome = await drainOutboxOnce({ fetchImpl: mockFetch });
+      const outcome = await drainOutboxOnce({fetchImpl: mockFetch});
       expect(outcome.status).toBe('failed');
       if (outcome.status === 'failed') {
         expect(outcome.errorCode).toBe('UNKNOWN_EVENT_TYPE');
@@ -77,7 +79,10 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
   describe('CR-002: Pull Worker Error & Cursor Safety', () => {
     it('does not advance cursor if any record fails to apply in page', async () => {
       const db = getDatabase();
-      db.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);", ['sync_cursor', 'c0', '2026-01-01T00:00:00Z']);
+      db.execute(
+        'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+        ['sync_cursor', 'c0', '2026-01-01T00:00:00Z'],
+      );
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -107,7 +112,10 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
       startModule.stopPullWorker();
 
-      const res = db.execute("SELECT value FROM app_settings WHERE key = ? LIMIT 1;", ['sync_cursor']);
+      const res = db.execute(
+        'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
+        ['sync_cursor'],
+      );
       expect(res.rows?.item(0).value).toBe('c0');
     });
   });
@@ -153,7 +161,10 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
         tombstone: false,
       });
 
-      const res = db.execute("SELECT * FROM review_schedule WHERE card_id = ?;", ['card-abc']);
+      const res = db.execute(
+        'SELECT * FROM review_schedule WHERE card_id = ?;',
+        ['card-abc'],
+      );
       expect(res.rows?.length).toBe(1);
     });
   });
@@ -168,7 +179,7 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
           createdAt: `2026-01-01T00:00:${String(i).padStart(2, '0')}Z`,
         });
       }
-      const stuckIds = listPendingSyncEvents({ limit: 100 }).map(e => e.id);
+      const stuckIds = listPendingSyncEvents({limit: 100}).map(e => e.id);
       for (let k = 0; k < 8; k++) {
         markSyncEventsFailed(stuckIds, 'STUCK_ERR');
       }
@@ -193,7 +204,7 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
         }),
       });
 
-      const outcome = await drainOutboxOnce({ fetchImpl: mockFetch });
+      const outcome = await drainOutboxOnce({fetchImpl: mockFetch});
       expect(outcome.status).toBe('synced');
       if (outcome.status === 'synced') {
         expect(outcome.syncedIds).toContain('fresh-101');

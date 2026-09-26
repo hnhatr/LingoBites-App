@@ -188,8 +188,10 @@ describe('ImageCaptureScreen', () => {
       extractButton?.props.onPress();
     });
 
-    const firstSignal = jest.mocked(extractText).mock.calls[0][1] as AbortSignal;
-    const secondSignal = jest.mocked(extractText).mock.calls[1][1] as AbortSignal;
+    const firstSignal = jest.mocked(extractText).mock
+      .calls[0][1] as AbortSignal;
+    const secondSignal = jest.mocked(extractText).mock
+      .calls[1][1] as AbortSignal;
     expect(firstSignal.aborted).toBe(true);
     expect(secondSignal.aborted).toBe(false);
 

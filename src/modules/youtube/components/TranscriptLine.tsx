@@ -62,7 +62,10 @@ export function TranscriptLine({
   // SETE-325 (C-2): tappable words only when a handler is wired and the
   // line is interactive — offline reading stays plain readable text.
   const wordInteractive = onPressWord != null && !disabled;
-  const wordParts = React.useMemo(() => segment.en.split(/(\s+)/), [segment.en]);
+  const wordParts = React.useMemo(
+    () => segment.en.split(/(\s+)/),
+    [segment.en],
+  );
 
   return (
     <View
@@ -140,8 +143,20 @@ export function TranscriptLine({
       </Pressable>
       {onToggleSave && (
         <IconButton
-          accessibilityHint={isSaved ? t('youtube.unsave_sentence_hint', {defaultValue: 'Xóa câu này khỏi thẻ ghi nhớ'}) : t('youtube.save_sentence_hint', {defaultValue: 'Lưu câu này vào thẻ ghi nhớ'})}
-          accessibilityLabel={isSaved ? t('youtube.unsave_sentence_a11y', {defaultValue: 'Bỏ lưu câu'}) : t('youtube.save_sentence_a11y', {defaultValue: 'Lưu câu'})}
+          accessibilityHint={
+            isSaved
+              ? t('youtube.unsave_sentence_hint', {
+                  defaultValue: 'Xóa câu này khỏi thẻ ghi nhớ',
+                })
+              : t('youtube.save_sentence_hint', {
+                  defaultValue: 'Lưu câu này vào thẻ ghi nhớ',
+                })
+          }
+          accessibilityLabel={
+            isSaved
+              ? t('youtube.unsave_sentence_a11y', {defaultValue: 'Bỏ lưu câu'})
+              : t('youtube.save_sentence_a11y', {defaultValue: 'Lưu câu'})
+          }
           icon={isSaved ? 'heart' : 'heart_outline'}
           onPress={() => onToggleSave(segment)}
           testID={testID ? `${testID}-save` : undefined}
@@ -150,8 +165,12 @@ export function TranscriptLine({
       )}
       {onPracticeSentence && (
         <IconButton
-          accessibilityHint={t('youtube.practice_sentence_hint', {defaultValue: 'Luyện nói câu này trong Speaking Room'})}
-          accessibilityLabel={t('youtube.practice_sentence_a11y', {defaultValue: 'Luyện nói câu này'})}
+          accessibilityHint={t('youtube.practice_sentence_hint', {
+            defaultValue: 'Luyện nói câu này trong Speaking Room',
+          })}
+          accessibilityLabel={t('youtube.practice_sentence_a11y', {
+            defaultValue: 'Luyện nói câu này',
+          })}
           icon="mic"
           onPress={() => onPracticeSentence(segment)}
           testID={testID ? `${testID}-practice` : undefined}

@@ -186,12 +186,22 @@ describe('FlashcardRepository', () => {
     const results = [
       saveFlashcard({
         lessonId,
-        vocabulary: {...base, id: 'v-with', word: 'offer', meaning_vi: 'cung cấp'},
+        vocabulary: {
+          ...base,
+          id: 'v-with',
+          word: 'offer',
+          meaning_vi: 'cung cấp',
+        },
         now,
       }),
       saveFlashcard({
         lessonId,
-        vocabulary: {...base, id: 'v-empty', word: 'empty-word', meaning_vi: ''},
+        vocabulary: {
+          ...base,
+          id: 'v-empty',
+          word: 'empty-word',
+          meaning_vi: '',
+        },
         now,
       }),
       saveFlashcard({
@@ -324,9 +334,9 @@ describe('FlashcardRepository', () => {
       reviewed_at: '2026-08-17T12:00:00.000Z',
       interval_days: 3,
     });
-    expect(
-      (pending[0].payload as ReviewEventPayload).next_review_at,
-    ).toBe(result.ok ? result.nextReviewAt : '');
+    expect((pending[0].payload as ReviewEventPayload).next_review_at).toBe(
+      result.ok ? result.nextReviewAt : '',
+    );
   });
 
   it('does not enqueue an outbox event when the rating fails', () => {

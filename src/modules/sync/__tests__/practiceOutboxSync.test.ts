@@ -14,7 +14,10 @@ import {
   savePracticeSet,
 } from '@shared/db/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
-import {answerCurrentQuestion, createSession} from '@modules/practice/sessionEngine';
+import {
+  answerCurrentQuestion,
+  createSession,
+} from '@modules/practice/sessionEngine';
 import {drainOutboxOnce} from '../outboxSync';
 import {MAX_SYNC_ATTEMPTS} from '../syncPolicy';
 
@@ -225,7 +228,9 @@ describe('P12 practice outbox sync', () => {
       json: jest.fn().mockResolvedValue({
         accepted_ids: [],
         duplicate_ids: [],
-        rejected: [{event_id: 'ev-1', code: 'PAYLOAD_CONFLICT', retryable: false}],
+        rejected: [
+          {event_id: 'ev-1', code: 'PAYLOAD_CONFLICT', retryable: false},
+        ],
       }),
     });
 

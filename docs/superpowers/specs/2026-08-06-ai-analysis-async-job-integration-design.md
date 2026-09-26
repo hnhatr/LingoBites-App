@@ -58,10 +58,12 @@ poll loop or the mock's simulated one; both go through the same
 ### Files
 
 New:
+
 - `src/shared/api/analysisJobClient.ts` — create+poll orchestration.
 - `src/shared/api/__tests__/analysisJobClient.test.ts`
 
 Edited:
+
 - `src/shared/api/types.ts` — new request/response types, extended `ApiErrorCode`.
 - `src/modules/ai-analysis/types.ts` — `AnalysisProgress`, `AnalysisProgressCallback`.
 - `src/modules/ai-analysis/AIAnalysisService.ts` — call `runAnalysisJob` instead of `analyzeTextWithApi`; thread progress callback through.
@@ -72,6 +74,7 @@ Edited:
 - `src/modules/ai-analysis/__tests__/AnalyzingScreen.test.tsx`
 
 Deleted:
+
 - `src/shared/api/analyzeClient.ts`
 - `src/shared/api/__tests__/analyzeClient.test.ts`
 
@@ -97,12 +100,18 @@ export type ApiErrorCode =
   | 'AI_JOB_TIMEOUT'
   | 'AI_FINAL_VALIDATION_FAILED'
   | 'AI_JOB_NOT_FOUND'
-  | 'AI_POLL_GIVE_UP'   // client-only: local poll timeout, no server code for this
+  | 'AI_POLL_GIVE_UP' // client-only: local poll timeout, no server code for this
   | 'NETWORK_ERROR';
 
 export type AnalysisJobStage = {
   name: string;
-  status: 'pending' | 'processing' | 'retrying' | 'completed' | 'failed' | 'skipped';
+  status:
+    | 'pending'
+    | 'processing'
+    | 'retrying'
+    | 'completed'
+    | 'failed'
+    | 'skipped';
   attempts: number;
 };
 
@@ -150,7 +159,12 @@ export type AnalysisJobStatusBody =
       analysis_id: string;
       status: 'failed';
       progress: AnalysisJobProgressBody;
-      error: {code: ApiErrorCode; message: string; stage?: string; retryable?: boolean};
+      error: {
+        code: ApiErrorCode;
+        message: string;
+        stage?: string;
+        retryable?: boolean;
+      };
       partial_data: null;
       created_at: string;
       updated_at: string;
@@ -165,8 +179,8 @@ export type AnalysisJobStatusBody =
 
 ```ts
 export type AnalysisProgress = {
-  percent: number;        // 0-100
-  stage: string | null;   // current_stage
+  percent: number; // 0-100
+  stage: string | null; // current_stage
   message: string | null; // ready-to-display Vietnamese string
   stages: AnalysisJobStage[];
 };
@@ -228,7 +242,7 @@ Promise<AnalyzeTextResult>`:
 9. On `status: 'completed'` → validate `data` via `validateAIOutput` (same
    validator used by the sync path today); invalid → `AI_INVALID_OUTPUT`.
 10. On `status: 'failed'` → map `error.code` to a display message via the
-   table below.
+    table below.
 
 The result type at the service boundary becomes:
 
@@ -236,7 +250,12 @@ The result type at the service boundary becomes:
 export type AnalyzeTextResult =
   | {ok: true; lesson: AIOutput}
   | {ok: false; cancelled: true}
-  | {ok: false; cancelled?: false; errorCode: AnalyzeErrorCode; message: string};
+  | {
+      ok: false;
+      cancelled?: false;
+      errorCode: AnalyzeErrorCode;
+      message: string;
+    };
 ```
 
 `AIAnalysisService.analyzeText()` threads the optional signal to both real and
@@ -251,14 +270,14 @@ separate from the deferred AppState/background-polling policy.
 All codes map to existing copy in `src/shared/copy/userMessages.ts` — no new
 strings needed:
 
-| Code(s) | Message |
-|---|---|
-| `VALIDATION_EMPTY_TEXT` | `EMPTY_INPUT_MESSAGE` |
-| `VALIDATION_TEXT_TOO_LONG` | `TEXT_TOO_LONG_MESSAGE` |
-| `VALIDATION_MISSING_IDEMPOTENCY_KEY`, `IDEMPOTENCY_CONFLICT` | `AI_ANALYSIS_FAILED_MESSAGE` (client always generates the key; these indicate a client bug, not a user-recoverable state) |
+| Code(s)                                                                                                                                                                                              | Message                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VALIDATION_EMPTY_TEXT`                                                                                                                                                                              | `EMPTY_INPUT_MESSAGE`                                                                                                                         |
+| `VALIDATION_TEXT_TOO_LONG`                                                                                                                                                                           | `TEXT_TOO_LONG_MESSAGE`                                                                                                                       |
+| `VALIDATION_MISSING_IDEMPOTENCY_KEY`, `IDEMPOTENCY_CONFLICT`                                                                                                                                         | `AI_ANALYSIS_FAILED_MESSAGE` (client always generates the key; these indicate a client bug, not a user-recoverable state)                     |
 | `AI_STAGE_PROVIDER_ERROR`, `AI_STAGE_INVALID_OUTPUT`, `AI_STAGE_TIMEOUT`, `AI_JOB_TIMEOUT`, `AI_FINAL_VALIDATION_FAILED`, `AI_JOB_NOT_FOUND`, `AI_INVALID_OUTPUT`, `AI_PROVIDER_ERROR`, `AI_TIMEOUT` | `AI_ANALYSIS_FAILED_MESSAGE` (matches today's handling of generic AI failures — the code is what analytics tracks, the message stays generic) |
-| `AI_POLL_GIVE_UP` (client-only) | `AI_ANALYSIS_FAILED_MESSAGE` |
-| create-request fetch throw / non-JSON response | `NETWORK_LOST_MESSAGE` (unchanged) |
+| `AI_POLL_GIVE_UP` (client-only)                                                                                                                                                                      | `AI_ANALYSIS_FAILED_MESSAGE`                                                                                                                  |
+| create-request fetch throw / non-JSON response                                                                                                                                                       | `NETWORK_LOST_MESSAGE` (unchanged)                                                                                                            |
 
 A poll fetch throw, poll JSON parse failure, `429`, or `5xx` is transient and
 does not produce a user-facing result unless the 75s deadline is reached. A
@@ -275,14 +294,14 @@ Replace the 3-item fake `STEPS` array and its `setInterval` simulation with
 the 6 real stages from the doc, using the doc's Vietnamese labels as static
 step labels:
 
-| Stage | Label |
-|---|---|
-| `source_analysis` | Đang dịch và sắp xếp nội dung |
-| `sentence_analysis` | Đang phân tích từng câu |
-| `learning_points` | Đang tìm ngữ pháp và từ vựng |
-| `pronunciation` | Đang chuẩn bị hướng dẫn phát âm |
-| `practice` | Đang tạo bài luyện tập |
-| `finalizing` | Đang kiểm tra bài học |
+| Stage               | Label                           |
+| ------------------- | ------------------------------- |
+| `source_analysis`   | Đang dịch và sắp xếp nội dung   |
+| `sentence_analysis` | Đang phân tích từng câu         |
+| `learning_points`   | Đang tìm ngữ pháp và từ vựng    |
+| `pronunciation`     | Đang chuẩn bị hướng dẫn phát âm |
+| `practice`          | Đang tạo bài luyện tập          |
+| `finalizing`        | Đang kiểm tra bài học           |
 
 Each stage's UI state (`done`/`active`/`pending`) is derived deterministically
 from `progress.stages[]`: `completed` and `skipped` → `done`; `processing`,

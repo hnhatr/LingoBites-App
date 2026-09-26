@@ -477,8 +477,6 @@ const DOWN_MIGRATIONS_M6: string[] = [
   `DROP TABLE IF EXISTS content_lesson_state;`,
 ];
 
-
-
 const DOWN_MIGRATIONS_M8: string[] = [
   `DROP INDEX IF EXISTS idx_practice_events_sync_status;`,
   `DROP INDEX IF EXISTS idx_practice_events_session_sequence;`,
@@ -594,8 +592,6 @@ export function downgradeLibraryPersistenceMigrations(
     db.execute(sql);
   }
 }
-
-
 
 /** Reverse the M8 practice schema migration. */
 export function downgradePracticeMigrations(db: QuickSQLiteConnection): void {

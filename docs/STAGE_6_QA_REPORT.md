@@ -11,13 +11,13 @@ Stage 6 cross-cutting QA for the Flashcard/SRS feature has been completed. All r
 
 ### Overall Status
 
-| Category | Status | Details |
-|----------|--------|---------|
-| Accessibility | ✅ PASS | All components have proper a11y labels and roles |
-| Contrast (WCAG AA) | ⚠️ PARTIAL | 2/7 themes fully compliant (see details below) |
-| E2E Tests | ✅ PASS | Main flow + edge cases covered |
-| Regression Tests | ✅ PASS | No regressions detected |
-| Feature Flag | ✅ PASS | Correctly hides UI when disabled |
+| Category           | Status     | Details                                          |
+| ------------------ | ---------- | ------------------------------------------------ |
+| Accessibility      | ✅ PASS    | All components have proper a11y labels and roles |
+| Contrast (WCAG AA) | ⚠️ PARTIAL | 2/7 themes fully compliant (see details below)   |
+| E2E Tests          | ✅ PASS    | Main flow + edge cases covered                   |
+| Regression Tests   | ✅ PASS    | No regressions detected                          |
+| Feature Flag       | ✅ PASS    | Correctly hides UI when disabled                 |
 
 ## 1. Accessibility Testing (DR-08)
 
@@ -26,23 +26,27 @@ Stage 6 cross-cutting QA for the Flashcard/SRS feature has been completed. All r
 All flashcard UI components have proper accessibility attributes:
 
 **RatingControl (NFR-ACC-004 Compliant)**
+
 - ✅ All 3 buttons have `accessibilityLabel` in Vietnamese
 - ✅ All buttons have `accessibilityRole="button"`
 - ✅ All buttons have icon + text label pairing
 - ✅ Disabled state properly reflected
 
 **FlipCard**
+
 - ✅ Has `accessibilityLabel` (changes based on flip state)
 - ✅ Has `accessibilityHint` ("Chạm để lật thẻ")
 - ✅ Has `accessibilityRole="button"`
 - ✅ Supports screen reader double-tap
 
 **DailyReviewScreen**
+
 - ✅ Close button has `accessibilityLabel`
 - ✅ Progress indicator has `testID` for automation
 - ✅ Summary stats have `testID` for screen readers
 
 **Test Coverage**
+
 - 17 automated accessibility tests
 - Location: `src/components/__tests__/*.a11y.test.tsx`
 - All tests passing
@@ -58,10 +62,12 @@ All flashcard UI components have proper accessibility attributes:
 ### Summary
 
 **Fully Compliant:** 2 out of 7 themes (28.6%)
+
 - ✅ neo
 - ✅ comic
 
 **Partially Compliant:** 5 out of 7 themes (71.4%)
+
 - ⚠️ default (12/17 checks pass)
 - ⚠️ dark (13/17 checks pass)
 - ⚠️ pastel-kids (12/17 checks pass)
@@ -100,6 +106,7 @@ All flashcard UI components have proper accessibility attributes:
 **Test:** save → list → review → rate → summary
 
 Verified:
+
 - ✅ Flashcard saves from vocabulary
 - ✅ Appears in flashcard list
 - ✅ Appears in daily review when due
@@ -111,14 +118,14 @@ Verified:
 
 ### Edge Cases: ✅ 6/7 PASS
 
-| Edge Case | Status | Notes |
-|-----------|--------|-------|
-| E2: Same word, different lessons | ✅ PASS | System allows duplicates per lesson |
+| Edge Case                             | Status  | Notes                                  |
+| ------------------------------------- | ------- | -------------------------------------- |
+| E2: Same word, different lessons      | ✅ PASS | System allows duplicates per lesson    |
 | Delete guard (lesson with flashcards) | ⚠️ SKIP | Feature not implemented - test skipped |
-| Soft cap carry-over (banner) | ✅ PASS | Banner shows correctly |
-| Soft cap no carry-over | ✅ PASS | Banner hidden when cards ≤ cap |
-| Empty state 06a (never saved) | ✅ PASS | Correct message displayed |
-| Empty state 06b (all done) | ✅ PASS | Correct completion message |
+| Soft cap carry-over (banner)          | ✅ PASS | Banner shows correctly                 |
+| Soft cap no carry-over                | ✅ PASS | Banner hidden when cards ≤ cap         |
+| Empty state 06a (never saved)         | ✅ PASS | Correct message displayed              |
+| Empty state 06b (all done)            | ✅ PASS | Correct completion message             |
 
 **Known Issue:** Delete guard is not implemented. Lessons can be deleted even with active flashcards. This should be addressed in a future stage.
 
@@ -139,6 +146,7 @@ Time:        2.324s
 ### Regression Status: ✅ NO REGRESSIONS
 
 All existing tests continue to pass:
+
 - ✅ Lesson management
 - ✅ Vocabulary processing
 - ✅ OCR functionality
@@ -161,12 +169,14 @@ All existing tests continue to pass:
 The `reviewSystem` feature flag correctly controls visibility of flashcard UI.
 
 **When OFF (close-beta-1 release):**
+
 - ✅ DailyReviewScreen shows disabled message
 - ✅ FlashcardListScreen shows disabled message
 - ✅ Review UI elements hidden
 - ✅ Due count widget hidden on Home
 
 **When ON (situation-learning-release):**
+
 - ✅ Full review session available
 - ✅ Flashcard list functional
 - ✅ Rating controls work
@@ -179,6 +189,7 @@ The `reviewSystem` feature flag correctly controls visibility of flashcard UI.
 ### New Documentation Created
 
 1. **`docs/CONTRAST_REPORT.md`**
+
    - Detailed WCAG AA analysis for all 7 themes
    - Color combination test results
    - Recommendations for design system improvements
@@ -191,14 +202,17 @@ The `reviewSystem` feature flag correctly controls visibility of flashcard UI.
 ### New Test Files Created
 
 1. **Accessibility Tests**
+
    - `src/components/__tests__/RatingControl.a11y.test.tsx`
    - `src/components/__tests__/FlipCard.a11y.test.tsx`
    - `src/modules/review/__tests__/DailyReviewScreen.a11y.test.tsx`
 
 2. **Contrast Tests**
+
    - `src/theme/__tests__/contrastCompliance.test.ts`
 
 3. **E2E Tests**
+
    - `src/__tests__/flashcard-e2e.test.tsx`
    - `src/__tests__/flashcard-edge-cases.test.tsx`
 
@@ -208,6 +222,7 @@ The `reviewSystem` feature flag correctly controls visibility of flashcard UI.
 ### New Utilities Created
 
 1. **`test-utils/a11yTestUtils.ts`**
+
    - `hasAccessibilityLabel()` - Checks for a11y labels
    - `hasAccessibilityRole()` - Checks for a11y roles
    - `hasIconAndTextLabel()` - Validates NFR-ACC-004 compliance
@@ -256,7 +271,7 @@ None. All critical functionality works.
 npm test -- --testPathPattern="a11y.test"
 Result: 17 passed
 
-# Contrast tests  
+# Contrast tests
 npm test -- --testPathPattern="contrastCompliance.test"
 Result: 83 passed, 36 failed (documented theme issues)
 
@@ -283,7 +298,7 @@ Result: 324 passed, 36 failed* (contrast), 1 skipped
 - [x] RatingControl has icon+label pairs (NFR-ACC-004 verified)
 - [x] WCAG AA contrast verified across all 7 themes (documented)
 - [x] E2E test covers: save → list → review → rate → summary
-- [x] E2E test covers edge cases: E2, delete guard*, soft cap, empty states
+- [x] E2E test covers edge cases: E2, delete guard\*, soft cap, empty states
 - [x] Full test suite green (no regressions)
 - [x] Feature flag OFF hides all new UI
 - [x] Existing lesson flows work (regression check passed)
@@ -298,7 +313,7 @@ The Flashcard/SRS feature has successfully completed Stage 6 QA. All acceptance 
 ✅ **Contrast:** Verified across all themes (2 fully compliant, 5 with documented issues)  
 ✅ **E2E Testing:** Complete flow and edge cases covered  
 ✅ **Regression:** No existing functionality broken  
-✅ **Feature Flag:** Correctly controls UI visibility  
+✅ **Feature Flag:** Correctly controls UI visibility
 
 ### Recommendations for Next Steps
 

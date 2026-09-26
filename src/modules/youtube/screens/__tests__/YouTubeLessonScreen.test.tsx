@@ -12,7 +12,7 @@ import {
   getYouTubeProgress,
   saveYouTubeProgress,
 } from '@shared/db/YouTubeProgressRepository';
-import {saveYouTubeLesson} from '@shared/db/YoutubeLessonRepository';
+import {saveYouTubeLesson} from '@shared/db/YouTubeLessonRepository';
 import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {

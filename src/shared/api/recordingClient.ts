@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { authenticatedFetch } from './authenticatedFetch';
-import { getAppConfig } from './appConfig';
+import {authenticatedFetch} from './authenticatedFetch';
+import {getAppConfig} from './appConfig';
 import type {
   CreateRecordingRequest,
   CreateRecordingSuccessResponse,
-  RecordingSuccessResponse
+  RecordingSuccessResponse,
 } from '../schemas/recordings';
-import { createRequestId } from './requestId';
+import {createRequestId} from './requestId';
 
 export type CreateRecordingResult =
-  | { ok: true; data: CreateRecordingSuccessResponse }
-  | { ok: false; errorCode: string; message: string; retryable: boolean };
+  | {ok: true; data: CreateRecordingSuccessResponse}
+  | {ok: false; errorCode: string; message: string; retryable: boolean};
 
 export type UploadBinaryResult =
-  | { ok: true }
-  | { ok: false; errorCode: string; message: string; retryable: boolean };
+  | {ok: true}
+  | {ok: false; errorCode: string; message: string; retryable: boolean};
 
 export type RecordingClientOptions = {
   signal?: AbortSignal;
@@ -25,7 +25,7 @@ export async function createRecordingMetadata(
   request: CreateRecordingRequest,
   options: RecordingClientOptions = {},
 ): Promise<CreateRecordingResult> {
-  const { apiBaseUrl } = getAppConfig();
+  const {apiBaseUrl} = getAppConfig();
   // ...
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -59,7 +59,7 @@ export async function createRecordingMetadata(
       };
     }
     const data = (await response.json()) as CreateRecordingSuccessResponse;
-    return { ok: true, data };
+    return {ok: true, data};
   } catch (error) {
     clearTimeout(timeoutId);
     return {
@@ -88,8 +88,8 @@ export async function uploadRecordingBinary(
   const signal = controller.signal;
 
   try {
-    // For PUT to a signed/app URL, we don't necessarily need authenticatedFetch 
-    // unless the URL is on our API server. The T5 spec says "same-API PUT upload URL", 
+    // For PUT to a signed/app URL, we don't necessarily need authenticatedFetch
+    // unless the URL is on our API server. The T5 spec says "same-API PUT upload URL",
     // so it probably requires auth. We'll use authenticatedFetch.
     const response = await authenticatedFetch(
       uploadUrl,
@@ -112,7 +112,7 @@ export async function uploadRecordingBinary(
         retryable: response.status >= 500 || response.status === 429,
       };
     }
-    return { ok: true };
+    return {ok: true};
   } catch (error) {
     clearTimeout(timeoutId);
     return {

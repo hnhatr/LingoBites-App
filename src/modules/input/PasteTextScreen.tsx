@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Pressable, ScrollView, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {NavigationProp} from '@react-navigation/native';
 import type {
@@ -172,14 +172,7 @@ export function PasteTextScreen({navigation, route}: Props) {
           </AppText>
         </Pressable>
 
-        <View
-          style={{
-            alignItems: 'center',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 8,
-          }}
-        >
+        <View style={styles.tagsRow}>
           {hasText ? (
             <Chip label="Phát hiện: Tiếng Anh" tone="accentSoft" />
           ) : null}
@@ -196,7 +189,9 @@ export function PasteTextScreen({navigation, route}: Props) {
         {screenState.type === 'error' ? (
           <ErrorCard
             message={screenState.message}
-            onRetry={() => void handleAnalyze()}
+            onRetry={() => {
+              handleAnalyze();
+            }}
             retryLabel={t('common.retry')}
           />
         ) : null}
@@ -212,10 +207,21 @@ export function PasteTextScreen({navigation, route}: Props) {
         <PrimaryActionButton
           accessibilityLabel="Trích xuất từ vựng"
           disabled={creating || !hasText}
-          onPress={() => void handleAnalyze()}
+          onPress={() => {
+            handleAnalyze();
+          }}
           label={creating ? 'Đang khởi tạo bài học…' : 'Trích xuất từ vựng'}
         />
       </BottomActionBar>
     </AppScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  tagsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+});

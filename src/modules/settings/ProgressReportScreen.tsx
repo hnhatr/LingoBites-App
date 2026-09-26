@@ -187,8 +187,8 @@ export function ProgressReportScreen({navigation}: Props) {
               : 'Chưa đủ dữ liệu'}
           </AppText>
           <AppText color="secondary" variant="caption">
-            Số lượng bài kiểm tra tình huống (tuần và theo giai đoạn) đã đạt
-            yêu cầu.
+            Số lượng bài kiểm tra tình huống (tuần và theo giai đoạn) đã đạt yêu
+            cầu.
           </AppText>
         </AppCard>
 

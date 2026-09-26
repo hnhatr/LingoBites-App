@@ -103,7 +103,9 @@ describe('FlipCard - Accessibility', () => {
     const flippedCardButton = flippedTree.root.findByProps({
       testID: 'flip-card',
     });
-    expect(flippedCardButton.props.accessibilityState).toEqual({expanded: true});
+    expect(flippedCardButton.props.accessibilityState).toEqual({
+      expanded: true,
+    });
   });
 
   it('has accessibilityValue indicating front or back face', async () => {
@@ -131,7 +133,9 @@ describe('FlipCard - Accessibility', () => {
     const flippedCardButton = flippedTree.root.findByProps({
       testID: 'flip-card',
     });
-    expect(flippedCardButton.props.accessibilityValue).toEqual({text: 'Mặt sau'});
+    expect(flippedCardButton.props.accessibilityValue).toEqual({
+      text: 'Mặt sau',
+    });
   });
 
   it('announces the card content to screen readers, not just a static label', async () => {

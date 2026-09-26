@@ -16,18 +16,18 @@ const keysToRemove = [
   'dialogueGenerator',
   'phraseExtractor',
   'situationPractice',
-  'lingobitesMvpReviewFlow'
+  'lingobitesMvpReviewFlow',
 ];
 
 for (const file of files) {
   const filePath = path.join(configsDir, file);
   let content = fs.readFileSync(filePath, 'utf8');
-  
+
   const lines = content.split('\n');
   const newLines = lines.filter(line => {
     return !keysToRemove.some(key => line.includes(`${key}:`));
   });
-  
+
   fs.writeFileSync(filePath, newLines.join('\n'));
 }
 

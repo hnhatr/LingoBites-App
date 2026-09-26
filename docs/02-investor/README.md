@@ -14,12 +14,12 @@ Optimization principles:
 
 ## 2. Recommended reading flow
 
-| If you only have | Read |
-|---|---|
-| 3 minutes | `01-one-page-brief.md` |
-| 10 minutes | `01-one-page-brief.md` + `02-pitch-deck-outline.md` |
-| 20 minutes | Add `03-business-model-and-unit-economics.md` + `04-go-to-market-and-traction-plan.md` |
-| Q&A | `05-investor-faq.md` |
+| If you only have | Read                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| 3 minutes        | `01-one-page-brief.md`                                                                 |
+| 10 minutes       | `01-one-page-brief.md` + `02-pitch-deck-outline.md`                                    |
+| 20 minutes       | Add `03-business-model-and-unit-economics.md` + `04-go-to-market-and-traction-plan.md` |
+| Q&A              | `05-investor-faq.md`                                                                   |
 
 The `90-*` files are appendices—open only when you need to go deeper.
 
@@ -27,21 +27,21 @@ The `90-*` files are appendices—open only when you need to go deeper.
 
 ## 3. Core files
 
-| File | Use when |
-|---|---|
-| `01-one-page-brief.md` | You need problem, solution, user, wedge, and business model on one page |
-| `02-pitch-deck-outline.md` | Preparing an investor/advisor deck or call |
-| `03-business-model-and-unit-economics.md` | Discussing pricing, BYOK, paid managed AI, cost per lesson |
-| `04-go-to-market-and-traction-plan.md` | Discussing beta, user channels, 30/60/90-day metrics |
-| `05-investor-faq.md` | Answering recurring questions quickly |
+| File                                      | Use when                                                                |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| `01-one-page-brief.md`                    | You need problem, solution, user, wedge, and business model on one page |
+| `02-pitch-deck-outline.md`                | Preparing an investor/advisor deck or call                              |
+| `03-business-model-and-unit-economics.md` | Discussing pricing, BYOK, paid managed AI, cost per lesson              |
+| `04-go-to-market-and-traction-plan.md`    | Discussing beta, user channels, 30/60/90-day metrics                    |
+| `05-investor-faq.md`                      | Answering recurring questions quickly                                   |
 
 ## 4. Optional appendices
 
-| File | Can skip if |
-|---|---|
-| `90-market-opportunity-appendix.md` | You have read the one-page brief/deck and do not need a detailed market thesis yet |
-| `91-competitive-landscape-appendix.md` | You do not need a deep comparison with Translate/Lens/Duolingo/ELSA/ChatGPT yet |
-| `92-risk-and-mitigation-appendix.md` | You only need the risk summary in the FAQ/deck |
+| File                                   | Can skip if                                                                        |
+| -------------------------------------- | ---------------------------------------------------------------------------------- |
+| `90-market-opportunity-appendix.md`    | You have read the one-page brief/deck and do not need a detailed market thesis yet |
+| `91-competitive-landscape-appendix.md` | You do not need a deep comparison with Translate/Lens/Duolingo/ELSA/ChatGPT yet    |
+| `92-risk-and-mitigation-appendix.md`   | You only need the risk summary in the FAQ/deck                                     |
 
 ---
 

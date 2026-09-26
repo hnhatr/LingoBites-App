@@ -14,7 +14,9 @@ describe('handoff UI components', () => {
     it(`renders WordCard, ChunkRow, QuizOption, LessonCard under "${theme.id}"`, async () => {
       await act(async () => {
         ReactTestRenderer.create(
-          <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}>
+          <FeatureFlagProvider
+            releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+          >
             <AppThemeProvider>
               <>
                 <WordCard word="hello" meaning="xin chào" />

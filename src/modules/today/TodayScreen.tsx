@@ -231,7 +231,8 @@ export function TodayScreen() {
                 variant="body"
                 style={styles.shortfallText}
               >
-                Chỉ còn ~{plan.totalEstimatedMinutes} phút nội dung đến hạn hôm nay.
+                Chỉ còn ~{plan.totalEstimatedMinutes} phút nội dung đến hạn hôm
+                nay.
               </AppText>
               <AppButton
                 title="Thêm bài mới"

@@ -17,14 +17,16 @@ jest.mock('react-native-youtube-iframe', () => {
     INVALID_PARAMETER: 'invalid_parameter',
   };
 
-  const YoutubeIframe = ReactActual.forwardRef((_props: unknown, ref: unknown) => {
-    ReactActual.useImperativeHandle(ref, () => ({
-      seekTo: jest.fn(),
-      getCurrentTime: jest.fn().mockResolvedValue(12.5),
-    }));
+  const YoutubeIframe = ReactActual.forwardRef(
+    (_props: unknown, ref: unknown) => {
+      ReactActual.useImperativeHandle(ref, () => ({
+        seekTo: jest.fn(),
+        getCurrentTime: jest.fn().mockResolvedValue(12.5),
+      }));
 
-    return <View testID="youtube-iframe" {...(_props as object)} ref={ref} />;
-  });
+      return <View testID="youtube-iframe" {...(_props as object)} ref={ref} />;
+    },
+  );
 
   return {
     __esModule: true,

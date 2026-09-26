@@ -24,11 +24,24 @@ function navigation(tabNavigate = jest.fn()) {
   };
 }
 
+let activeRenderers: ReactTestRenderer.ReactTestRenderer[] = [];
+
+afterEach(async () => {
+  await act(async () => {
+    for (const tree of activeRenderers) {
+      tree.unmount();
+    }
+    activeRenderers = [];
+  });
+});
+
 async function renderHome(nav = navigation()) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(
-      <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}>
+      <FeatureFlagProvider
+        releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}
+      >
         <AppThemeProvider>
           <HomeScreen navigation={nav as never} route={{} as never} />
         </AppThemeProvider>
@@ -38,6 +51,7 @@ async function renderHome(nav = navigation()) {
     await Promise.resolve();
     await Promise.resolve();
   });
+  activeRenderers.push(tree);
   return tree;
 }
 

@@ -48,7 +48,7 @@ export function AppButton({
   const spec =
     theme.components.button[variant] ||
     theme.components.button['primary-accent'] ||
-    theme.components.button['primary'] ||
+    theme.components.button.primary ||
     Object.values(theme.components.button)[0];
   if (__DEV__ && !theme.components.button[variant]) {
     console.warn(
@@ -61,15 +61,16 @@ export function AppButton({
     : {...accessibilityState, disabled: isDisabled};
 
   const shadowStyle = spec.shadow ? theme.shadow[spec.shadow] : undefined;
-  
+
   const shelfRoleMap: Record<string, string> = {
     'primary-accent': 'accent',
     'secondary-coral': 'coral',
-    'deep': 'primary',
-    'ghost': 'ghost',
+    deep: 'primary',
+    ghost: 'ghost',
   };
   const shelfRole = shelfRoleMap[variant];
-  const shelf = theme.shelf && shelfRole ? (theme.shelf as any)[shelfRole] : undefined;
+  const shelf =
+    theme.shelf && shelfRole ? (theme.shelf as any)[shelfRole] : undefined;
 
   return (
     <Pressable
@@ -101,8 +102,12 @@ export function AppButton({
               borderColor: spec.border,
               borderWidth: 2,
             },
-            (!shelf && pressed && !isDisabled) && {opacity: theme.states.pressedOpacity},
-            (!shelf && isDisabled && !loading) && {opacity: theme.states.disabledOpacity},
+            !shelf &&
+              pressed &&
+              !isDisabled && {opacity: theme.states.pressedOpacity},
+            !shelf &&
+              isDisabled &&
+              !loading && {opacity: theme.states.disabledOpacity},
           ]}
         >
           {loading ? (

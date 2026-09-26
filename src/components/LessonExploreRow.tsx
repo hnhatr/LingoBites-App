@@ -109,7 +109,9 @@ export function LessonExploreRow({
           containerStyle={theme.shadow.soft}
           faceStyle={[
             faceStyle,
-            !shelf && pressed && !disabled && {opacity: theme.states.pressedOpacity}
+            !shelf &&
+              pressed &&
+              !disabled && {opacity: theme.states.pressedOpacity},
           ]}
         >
           {rowContent}

@@ -77,7 +77,10 @@ function createMockDatabase() {
     }
 
     for (const dropped of droppedTables) {
-      if (normalized.includes(`from ${dropped}`) || normalized.includes(`into ${dropped}`)) {
+      if (
+        normalized.includes(`from ${dropped}`) ||
+        normalized.includes(`into ${dropped}`)
+      ) {
         throw new Error(`no such table: ${dropped}`);
       }
     }
@@ -90,134 +93,140 @@ function createMockDatabase() {
       }
       const schemas = {
         grammar_bookmarks: [
-          { name: 'lesson_id', pk: 1 },
-          { name: 'grammar_id', pk: 2 },
-          { name: 'package_id', pk: 0 },
-          { name: 'saved_at', pk: 0 },
-          { name: 'reactivated_at', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'updated_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'lesson_id', pk: 1},
+          {name: 'grammar_id', pk: 2},
+          {name: 'package_id', pk: 0},
+          {name: 'saved_at', pk: 0},
+          {name: 'reactivated_at', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'updated_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         review_schedule: [
-          { name: 'card_id', pk: 1 },
-          { name: 'lesson_id', pk: 0 },
-          { name: 'interval_days', pk: 0 },
-          { name: 'next_review_at', pk: 0 },
-          { name: 'last_reviewed_at', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'updated_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'card_id', pk: 1},
+          {name: 'lesson_id', pk: 0},
+          {name: 'interval_days', pk: 0},
+          {name: 'next_review_at', pk: 0},
+          {name: 'last_reviewed_at', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'updated_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         content_lesson_state: [
-          { name: 'lesson_id', pk: 1 },
-          { name: 'is_saved', pk: 0 },
-          { name: 'is_started', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'updated_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'lesson_id', pk: 1},
+          {name: 'is_saved', pk: 0},
+          {name: 'is_started', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'updated_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         flashcards: [
-          { name: 'id', pk: 1 },
-          { name: 'lesson_id', pk: 0 },
-          { name: 'vocabulary_id', pk: 0 },
-          { name: 'word', pk: 0 },
-          { name: 'meaning_vi', pk: 0 },
-          { name: 'is_saved', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'updated_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'id', pk: 1},
+          {name: 'lesson_id', pk: 0},
+          {name: 'vocabulary_id', pk: 0},
+          {name: 'word', pk: 0},
+          {name: 'meaning_vi', pk: 0},
+          {name: 'is_saved', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'updated_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         review_sessions: [
-          { name: 'id', pk: 1 },
-          { name: 'card_id', pk: 0 },
-          { name: 'lesson_id', pk: 0 },
-          { name: 'rating', pk: 0 },
-          { name: 'reviewed_at', pk: 0 },
-          { name: 'interval_days', pk: 0 },
-          { name: 'next_review_at', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'id', pk: 1},
+          {name: 'card_id', pk: 0},
+          {name: 'lesson_id', pk: 0},
+          {name: 'rating', pk: 0},
+          {name: 'reviewed_at', pk: 0},
+          {name: 'interval_days', pk: 0},
+          {name: 'next_review_at', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         gamification_events: [
-          { name: 'id', pk: 1 },
-          { name: 'event_type', pk: 0 },
-          { name: 'points', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'id', pk: 1},
+          {name: 'event_type', pk: 0},
+          {name: 'points', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         content_review_items: [
-          { name: 'id', pk: 1 },
-          { name: 'srs_item_id', pk: 0 },
-          { name: 'lesson_id', pk: 0 },
-          { name: 'next_review_at', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'id', pk: 1},
+          {name: 'srs_item_id', pk: 0},
+          {name: 'lesson_id', pk: 0},
+          {name: 'next_review_at', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         youtube_lessons: [
-          { name: 'id', pk: 1 },
-          { name: 'video_id', pk: 0 },
-          { name: 'title', pk: 0 },
-          { name: 'created_at', pk: 0 },
-          { name: 'updated_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'id', pk: 1},
+          {name: 'video_id', pk: 0},
+          {name: 'title', pk: 0},
+          {name: 'created_at', pk: 0},
+          {name: 'updated_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         youtube_sentences: [
-          { name: 'lesson_id', pk: 1 },
-          { name: 'sentence_id', pk: 2 },
-          { name: 'en', pk: 0 },
-          { name: 'vi', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'lesson_id', pk: 1},
+          {name: 'sentence_id', pk: 2},
+          {name: 'en', pk: 0},
+          {name: 'vi', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         youtube_progress: [
-          { name: 'lesson_id', pk: 1 },
-          { name: 'position_ms', pk: 0 },
-          { name: 'segment_index', pk: 0 },
-          { name: 'updated_at', pk: 0 },
-          { name: 'revision', pk: 0 },
-          { name: 'tombstone', pk: 0 },
+          {name: 'lesson_id', pk: 1},
+          {name: 'position_ms', pk: 0},
+          {name: 'segment_index', pk: 0},
+          {name: 'updated_at', pk: 0},
+          {name: 'revision', pk: 0},
+          {name: 'tombstone', pk: 0},
         ],
         app_settings: [
-          { name: 'key', pk: 1 },
-          { name: 'value', pk: 0 },
-          { name: 'updated_at', pk: 0 },
+          {name: 'key', pk: 1},
+          {name: 'value', pk: 0},
+          {name: 'updated_at', pk: 0},
         ],
       };
       const tableCols = schemas[tableName] || [
-        { name: 'id', pk: 1 },
-        { name: 'revision', pk: 0 },
-        { name: 'tombstone', pk: 0 },
-        { name: 'updated_at', pk: 0 },
+        {name: 'id', pk: 1},
+        {name: 'revision', pk: 0},
+        {name: 'tombstone', pk: 0},
+        {name: 'updated_at', pk: 0},
       ];
       return toRows(tableCols);
     }
 
     if (normalized.startsWith('insert or replace into grammar_bookmarks')) {
-      const match = normalized.match(/insert or replace into grammar_bookmarks \(([^)]+)\)/);
+      const match = normalized.match(
+        /insert or replace into grammar_bookmarks \(([^)]+)\)/,
+      );
       if (match) {
         const cols = match[1].split(',').map(c => c.trim());
         const row = {};
         cols.forEach((col, idx) => {
           row[col] = params[idx];
         });
-        const index = grammarBookmarks.findIndex(b => b.lesson_id === row.lesson_id && b.grammar_id === row.grammar_id);
+        const index = grammarBookmarks.findIndex(
+          b => b.lesson_id === row.lesson_id && b.grammar_id === row.grammar_id,
+        );
         if (index === -1) grammarBookmarks.push(row);
-        else grammarBookmarks[index] = { ...grammarBookmarks[index], ...row };
-        return { rowsAffected: 1 };
+        else grammarBookmarks[index] = {...grammarBookmarks[index], ...row};
+        return {rowsAffected: 1};
       }
     }
 
     if (normalized.startsWith('insert or replace into review_schedule')) {
-      const match = normalized.match(/insert or replace into review_schedule \(([^)]+)\)/);
+      const match = normalized.match(
+        /insert or replace into review_schedule \(([^)]+)\)/,
+      );
       if (match) {
         const cols = match[1].split(',').map(c => c.trim());
         const row = {};
@@ -226,23 +235,27 @@ function createMockDatabase() {
         });
         const index = reviewSchedule.findIndex(r => r.card_id === row.card_id);
         if (index === -1) reviewSchedule.push(row);
-        else reviewSchedule[index] = { ...reviewSchedule[index], ...row };
-        return { rowsAffected: 1 };
+        else reviewSchedule[index] = {...reviewSchedule[index], ...row};
+        return {rowsAffected: 1};
       }
     }
 
     if (normalized.startsWith('insert or replace into content_lesson_state')) {
-      const match = normalized.match(/insert or replace into content_lesson_state \(([^)]+)\)/);
+      const match = normalized.match(
+        /insert or replace into content_lesson_state \(([^)]+)\)/,
+      );
       if (match) {
         const cols = match[1].split(',').map(c => c.trim());
         const row = {};
         cols.forEach((col, idx) => {
           row[col] = params[idx];
         });
-        const index = contentLessonState.findIndex(r => r.lesson_id === row.lesson_id);
+        const index = contentLessonState.findIndex(
+          r => r.lesson_id === row.lesson_id,
+        );
         if (index === -1) contentLessonState.push(row);
-        else contentLessonState[index] = { ...contentLessonState[index], ...row };
-        return { rowsAffected: 1 };
+        else contentLessonState[index] = {...contentLessonState[index], ...row};
+        return {rowsAffected: 1};
       }
     }
 
@@ -774,7 +787,7 @@ function createMockDatabase() {
       const isSaved = params[0];
       const updatedAt = params[1];
       const lessonId = params[2];
-      const row = lessonV2.find(row => row.lesson_id === lessonId);
+      const row = lessonV2.find(item => item.lesson_id === lessonId);
       if (!row) {
         return {rowsAffected: 0};
       }
@@ -1004,7 +1017,9 @@ function createMockDatabase() {
         String(a.created_at).localeCompare(String(b.created_at)),
       );
       if (normalized.includes('limit')) {
-        const limitParam = normalized.includes('attempt_count < ?') ? params[1] : params[0];
+        const limitParam = normalized.includes('attempt_count < ?')
+          ? params[1]
+          : params[0];
         if (limitParam !== undefined) {
           rows = rows.slice(0, Number(limitParam));
         }
@@ -1127,7 +1142,10 @@ function createMockDatabase() {
       return toRows(limited);
     }
 
-    if (normalized.startsWith('select') && normalized.includes('from lessons')) {
+    if (
+      normalized.startsWith('select') &&
+      normalized.includes('from lessons')
+    ) {
       return toRows(lessons);
     }
 
@@ -1144,23 +1162,24 @@ function createMockDatabase() {
     }
 
     // SETE-303 / T6: keyed setting delete (signup idempotency key cleanup).
-    
+
     if (normalized.includes('delete from app_settings where key not in')) {
-      const remaining = appSettings.filter(row => [
-        'account.install_completed_v1',
-        'account.fallback_device_id',
-        'account.signup_idempotency_key',
-        'current_account_id',
-        'account.legacy_clear_completed_v1',
-        'lesson.canonical_legacy_clear_v1',
-      ].includes(row.key));
+      const remaining = appSettings.filter(row =>
+        [
+          'account.install_completed_v1',
+          'account.fallback_device_id',
+          'account.signup_idempotency_key',
+          'current_account_id',
+          'account.legacy_clear_completed_v1',
+          'lesson.canonical_legacy_clear_v1',
+        ].includes(row.key),
+      );
       const removed = appSettings.length - remaining.length;
       appSettings.length = 0;
       appSettings.push(...remaining);
       return {rowsAffected: removed};
     }
     if (normalized.startsWith('delete from app_settings where key')) {
-
       const before = appSettings.length;
       const remaining = appSettings.filter(row => row.key !== params[0]);
       appSettings.length = 0;
@@ -1390,13 +1409,17 @@ function createMockDatabase() {
       return {rowsAffected: count};
     }
 
-    
-    if (normalized.includes('select count(*) as count from app_settings where key = ?')) {
+    if (
+      normalized.includes(
+        'select count(*) as count from app_settings where key = ?',
+      )
+    ) {
       const key = params[0];
-      return toRows([{count: appSettings.filter(row => row.key === key).length}]);
+      return toRows([
+        {count: appSettings.filter(row => row.key === key).length},
+      ]);
     }
     if (normalized.includes('from app_settings where key')) {
-
       const key = params[0];
       return toRows(appSettings.filter(row => row.key === key));
     }

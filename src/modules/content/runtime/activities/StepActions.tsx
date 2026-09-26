@@ -36,7 +36,9 @@ export function StepActions({
           style={{alignSelf: 'center', paddingVertical: theme.spacing.xs}}
           testID={skipTestID}
         >
-          <AppText color="secondary" variant="label">Bỏ qua</AppText>
+          <AppText color="secondary" variant="label">
+            Bỏ qua
+          </AppText>
         </Pressable>
       ) : null}
     </View>

@@ -403,7 +403,11 @@ export function DailyReviewScreen({
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          {flexGrow: 1, justifyContent: 'center', paddingHorizontal: theme.gutter},
+          {
+            flexGrow: 1,
+            justifyContent: 'center',
+            paddingHorizontal: theme.gutter,
+          },
         ]}
         style={{flex: 1}}
       >

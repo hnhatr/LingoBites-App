@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { z } from 'zod';
+import {z} from 'zod';
 
 /**
  * Speaking-recording contracts (SETE-292 T5).
@@ -58,11 +57,18 @@ export const DeleteRecordingSuccessResponseSchema = z.object({
   deleted: z.literal(true),
 });
 
-
 export type CreateRecordingRequest = z.infer<
   typeof CreateRecordingRequestSchema
 >;
-export type CreateRecordingSuccessResponse = z.infer<typeof CreateRecordingSuccessResponseSchema>;
-export type RecordingSuccessResponse = z.infer<typeof RecordingSuccessResponseSchema>;
-export type ListRecordingsSuccessResponse = z.infer<typeof ListRecordingsSuccessResponseSchema>;
-export type DeleteRecordingSuccessResponse = z.infer<typeof DeleteRecordingSuccessResponseSchema>;
+export type CreateRecordingSuccessResponse = z.infer<
+  typeof CreateRecordingSuccessResponseSchema
+>;
+export type RecordingSuccessResponse = z.infer<
+  typeof RecordingSuccessResponseSchema
+>;
+export type ListRecordingsSuccessResponse = z.infer<
+  typeof ListRecordingsSuccessResponseSchema
+>;
+export type DeleteRecordingSuccessResponse = z.infer<
+  typeof DeleteRecordingSuccessResponseSchema
+>;

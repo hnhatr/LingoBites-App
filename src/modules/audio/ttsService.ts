@@ -48,7 +48,9 @@ function voiceUnavailableMessage(): string {
 }
 
 function hasEnglishUsVoice(voices: Voice[]): boolean {
-  return voices.some(voice => voice.language.toLowerCase() === TTS_LOCALE.toLowerCase());
+  return voices.some(
+    voice => voice.language.toLowerCase() === TTS_LOCALE.toLowerCase(),
+  );
 }
 
 /** Checks whether the device exposes an installed en-US voice. */
@@ -81,7 +83,11 @@ export async function speak(
   rate: number = DEFAULT_TTS_RATE,
 ): Promise<TtsSpeakResult> {
   if (locale.toLowerCase() !== TTS_LOCALE.toLowerCase()) {
-    return {ok: false, errorCode: 'VOICE_UNAVAILABLE', message: voiceUnavailableMessage()};
+    return {
+      ok: false,
+      errorCode: 'VOICE_UNAVAILABLE',
+      message: voiceUnavailableMessage(),
+    };
   }
 
   const availability = await isEnUsVoiceAvailable();
@@ -89,7 +95,11 @@ export async function speak(
     return availability;
   }
   if (!availability.available) {
-    return {ok: false, errorCode: 'VOICE_UNAVAILABLE', message: voiceUnavailableMessage()};
+    return {
+      ok: false,
+      errorCode: 'VOICE_UNAVAILABLE',
+      message: voiceUnavailableMessage(),
+    };
   }
 
   const tts = getNativeTts();
@@ -98,7 +108,10 @@ export async function speak(
   }
 
   try {
-    if (Platform.OS === 'ios' && typeof tts.setIgnoreSilentSwitch === 'function') {
+    if (
+      Platform.OS === 'ios' &&
+      typeof tts.setIgnoreSilentSwitch === 'function'
+    ) {
       try {
         await tts.setIgnoreSilentSwitch('ignore');
       } catch {

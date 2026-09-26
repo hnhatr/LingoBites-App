@@ -14,11 +14,11 @@ Approved by the project owner (2026-09-08, comment on SETE-125): **Option B — 
 
 ## Groups and values
 
-| Group | Variants | Cap | Rationale |
-|---|---|---|---|
-| Headings | `display`, `h1`, `h2`, `h3`, `title` | 1.5 | Large type already reads well scaled; layouts (headers, cards) have the least vertical slack for these. |
-| Body | `subtitle`, `bodyLg`, `body` | 2.0 | Reading text benefits most from scaling; these mostly sit in scrollable containers with room to grow. |
-| Labels/captions | `label`, `caption` | 1.3 | Smallest text, often inside tight rows (chips, list rows, badges) where uncontrolled growth breaks layout fastest. |
+| Group           | Variants                             | Cap | Rationale                                                                                                          |
+| --------------- | ------------------------------------ | --- | ------------------------------------------------------------------------------------------------------------------ |
+| Headings        | `display`, `h1`, `h2`, `h3`, `title` | 1.5 | Large type already reads well scaled; layouts (headers, cards) have the least vertical slack for these.            |
+| Body            | `subtitle`, `bodyLg`, `body`         | 2.0 | Reading text benefits most from scaling; these mostly sit in scrollable containers with room to grow.              |
+| Labels/captions | `label`, `caption`                   | 1.3 | Smallest text, often inside tight rows (chips, list rows, badges) where uncontrolled growth breaks layout fastest. |
 
 These are the same three groups from the issue's Option B proposal. `title` was grouped with headings (32px/xxl scale, used for hero-style copy) and `subtitle` was grouped with body (16px/md scale, prose-like usage) — both variants existed in the codebase but weren't explicitly named in the issue, so this note records where they landed.
 

@@ -64,4 +64,3 @@ export {
   SENTENCE_LOOP_OPTIONS,
   type SentenceLoopCount,
 } from './utils/toolsLogic';
-

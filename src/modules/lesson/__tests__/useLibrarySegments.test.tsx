@@ -1,10 +1,16 @@
 import React from 'react';
-import ReactTestRenderer, { act } from 'react-test-renderer';
-import { useLibrarySegments, UseLibrarySegmentsResult } from '../useLibrarySegments';
-import { listSavedLessons, listStartedLessons } from '@shared/db/ContentLessonStateRepository';
-import { listAllBookmarkedGrammar } from '@shared/db/GrammarBookmarkRepository';
-import { listFlashcards } from '@shared/db/FlashcardRepository';
-import { useContentLibrary } from '@modules/content';
+import ReactTestRenderer, {act} from 'react-test-renderer';
+import {
+  useLibrarySegments,
+  UseLibrarySegmentsResult,
+} from '../useLibrarySegments';
+import {
+  listSavedLessons,
+  listStartedLessons,
+} from '@shared/db/ContentLessonStateRepository';
+import {listAllBookmarkedGrammar} from '@shared/db/GrammarBookmarkRepository';
+import {listFlashcards} from '@shared/db/FlashcardRepository';
+import {useContentLibrary} from '@modules/content';
 
 jest.mock('@shared/db/ContentLessonStateRepository', () => ({
   listSavedLessons: jest.fn(),
@@ -23,7 +29,11 @@ jest.mock('@modules/content', () => ({
   useContentLibrary: jest.fn(),
 }));
 
-function TestWrapper({ hookRef }: { hookRef: { current: UseLibrarySegmentsResult } }) {
+function TestWrapper({
+  hookRef,
+}: {
+  hookRef: {current: UseLibrarySegmentsResult};
+}) {
   hookRef.current = useLibrarySegments();
   return null;
 }
@@ -35,10 +45,20 @@ describe('useLibrarySegments', () => {
     jest.clearAllMocks();
 
     (listSavedLessons as jest.Mock).mockReturnValue([
-      { lessonId: 'lesson-1', isSaved: true, isStarted: false, updatedAt: '2026-01-01T00:00:00Z' },
+      {
+        lessonId: 'lesson-1',
+        isSaved: true,
+        isStarted: false,
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
     ]);
     (listStartedLessons as jest.Mock).mockReturnValue([
-      { lessonId: 'lesson-2', isSaved: false, isStarted: true, updatedAt: '2026-01-02T00:00:00Z' },
+      {
+        lessonId: 'lesson-2',
+        isSaved: false,
+        isStarted: true,
+        updatedAt: '2026-01-02T00:00:00Z',
+      },
     ]);
     (listAllBookmarkedGrammar as jest.Mock).mockReturnValue([
       {
@@ -78,8 +98,18 @@ describe('useLibrarySegments', () => {
     ]);
 
     mockListActivePackageLessons = jest.fn().mockReturnValue([
-      { id: 'lesson-1', title: 'Basic English', summary: 'Intro to basic words', sourceType: 'offline' },
-      { id: 'lesson-2', title: 'Advanced Grammar', summary: 'Deep dive into tense', sourceType: 'paste_text' },
+      {
+        id: 'lesson-1',
+        title: 'Basic English',
+        summary: 'Intro to basic words',
+        sourceType: 'offline',
+      },
+      {
+        id: 'lesson-2',
+        title: 'Advanced Grammar',
+        summary: 'Deep dive into tense',
+        sourceType: 'paste_text',
+      },
     ]);
     (useContentLibrary as jest.Mock).mockReturnValue({
       listActivePackageLessons: mockListActivePackageLessons,
@@ -87,7 +117,7 @@ describe('useLibrarySegments', () => {
   });
 
   function renderHook() {
-    const hookRef = { current: null as unknown as UseLibrarySegmentsResult };
+    const hookRef = {current: null as unknown as UseLibrarySegmentsResult};
     let tree!: ReactTestRenderer.ReactTestRenderer;
     act(() => {
       tree = ReactTestRenderer.create(<TestWrapper hookRef={hookRef} />);
@@ -123,13 +153,16 @@ describe('useLibrarySegments', () => {
     const hook = renderHook();
 
     act(() => {
-      hook.current.setLessonsFilter({ searchQuery: 'Basic', sourceFilter: 'all' });
+      hook.current.setLessonsFilter({
+        searchQuery: 'Basic',
+        sourceFilter: 'all',
+      });
     });
     expect(hook.current.packagedLessons).toHaveLength(1);
     expect(hook.current.packagedLessons[0].lessonId).toBe('lesson-1');
 
     act(() => {
-      hook.current.setLessonsFilter({ searchQuery: '', sourceFilter: 'paste' });
+      hook.current.setLessonsFilter({searchQuery: '', sourceFilter: 'paste'});
     });
     expect(hook.current.packagedLessons).toHaveLength(1);
     expect(hook.current.packagedLessons[0].lessonId).toBe('lesson-2');
@@ -140,13 +173,19 @@ describe('useLibrarySegments', () => {
 
     // 'camera' is normalized to 'image_ocr'
     act(() => {
-      hook.current.setVocabularyFilter({ searchQuery: '', sourceFilter: 'image_ocr' });
+      hook.current.setVocabularyFilter({
+        searchQuery: '',
+        sourceFilter: 'image_ocr',
+      });
     });
     expect(hook.current.vocabulary).toHaveLength(1);
     expect(hook.current.vocabulary[0].word).toBe('Ubiquitous');
 
     act(() => {
-      hook.current.setVocabularyFilter({ searchQuery: 'Phù du', sourceFilter: 'all' });
+      hook.current.setVocabularyFilter({
+        searchQuery: 'Phù du',
+        sourceFilter: 'all',
+      });
     });
     expect(hook.current.vocabulary).toHaveLength(1);
     expect(hook.current.vocabulary[0].word).toBe('Ephemeral');
@@ -156,12 +195,18 @@ describe('useLibrarySegments', () => {
     const hook = renderHook();
 
     act(() => {
-      hook.current.setGrammarFilter({ searchQuery: 'Perfect', sourceFilter: 'all' });
+      hook.current.setGrammarFilter({
+        searchQuery: 'Perfect',
+        sourceFilter: 'all',
+      });
     });
     expect(hook.current.grammar).toHaveLength(1);
 
     act(() => {
-      hook.current.setGrammarFilter({ searchQuery: 'NonExistent', sourceFilter: 'all' });
+      hook.current.setGrammarFilter({
+        searchQuery: 'NonExistent',
+        sourceFilter: 'all',
+      });
     });
     expect(hook.current.grammar).toHaveLength(0);
   });

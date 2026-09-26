@@ -15,6 +15,8 @@ import {useAppTheme} from './useAppTheme';
 export function ThemedStatusBar() {
   const {theme} = useAppTheme();
   return (
-    <StatusBar barStyle={theme.id === 'dark' ? 'light-content' : 'dark-content'} />
+    <StatusBar
+      barStyle={theme.id === 'dark' ? 'light-content' : 'dark-content'}
+    />
   );
 }

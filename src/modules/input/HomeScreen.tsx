@@ -22,8 +22,8 @@ import {
 } from '@shared/db/ContentLessonStateRepository';
 import {
   listYouTubeLessons,
-  countYoutubeLessons,
-} from '@shared/db/YoutubeLessonRepository';
+  countYouTubeLessons,
+} from '@shared/db/YouTubeLessonRepository';
 import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
 import {useFeatureFlags} from '@/release';
 import {
@@ -176,13 +176,15 @@ export function HomeScreen({navigation}: Props) {
       if (unifiedMode) {
         canonicalRefresh();
       }
-      fetchContinueLearning().then(res => {
-        if (res.ok && res.progress) {
-          setContinueLearningId(res.progress.lesson_id);
-        } else {
-          setContinueLearningId(null);
-        }
-      }).catch(() => undefined);
+      fetchContinueLearning()
+        .then(res => {
+          if (res.ok && res.progress) {
+            setContinueLearningId(res.progress.lesson_id);
+          } else {
+            setContinueLearningId(null);
+          }
+        })
+        .catch(() => undefined);
       setStreak(getGamificationSnapshot().currentStreak);
       const started = listStartedLessons()[0];
       const startedRow = started
@@ -244,7 +246,7 @@ export function HomeScreen({navigation}: Props) {
       );
 
       try {
-        setYoutubeLessonCount(countYoutubeLessons());
+        setYoutubeLessonCount(countYouTubeLessons());
       } catch {
         setYoutubeLessonCount(null);
       }

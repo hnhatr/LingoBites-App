@@ -9,14 +9,14 @@
 
 ## 1. Environment under test
 
-| Item | Value |
-|---|---|
-| Host | macOS 26.6.1 (darwin arm64) |
-| Node / Yarn | v26.4.0 / 1.22.22 |
-| Xcode | 26.6 (17F113) |
-| CocoaPods | Installed (Pods present under `ios/Pods`) |
-| Android SDK / Java | **Not installed** — `/usr/bin/java` present but no JRE; `java -version` fails; `ANDROID_HOME`/`ANDROID_SDK_ROOT` unset |
-| iOS simulator runtime | iPhone 17 family available (not booted for this run) |
+| Item                  | Value                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Host                  | macOS 26.6.1 (darwin arm64)                                                                                            |
+| Node / Yarn           | v26.4.0 / 1.22.22                                                                                                      |
+| Xcode                 | 26.6 (17F113)                                                                                                          |
+| CocoaPods             | Installed (Pods present under `ios/Pods`)                                                                              |
+| Android SDK / Java    | **Not installed** — `/usr/bin/java` present but no JRE; `java -version` fails; `ANDROID_HOME`/`ANDROID_SDK_ROOT` unset |
+| iOS simulator runtime | iPhone 17 family available (not booted for this run)                                                                   |
 
 ## 2. Scope
 
@@ -26,12 +26,12 @@ Final evidence-backed release decision package for the SETE-128 showcase preset 
 
 Commands run from `mobile-app/` on 2026-09-08.
 
-| Command | TASK-00 baseline (SETE-143) | TASK-07 final | Delta |
-|---|---|---|---|
-| `yarn typecheck` | PASS | **PASS** | unchanged |
-| `yarn lint` | PASS — 0 errors, 340 warnings; module boundaries PASS | **PASS** — 0 errors, 348 warnings; module boundaries PASS | +8 warnings (pre-existing budget; 0 new errors) |
-| `yarn lint:content` | PASS — 13/13 rules | **PASS** — 13/13 rules | unchanged |
-| `yarn test --runInBand` | 104 suites, 734 passed, **1 skipped**; exit 1 (post-test `VirtualizedList` / `act(...)` console noise) | **121 suites, 929 passed, 1 skipped**; exit 1 (same post-test console noise; **0 assertion failures**) | skipped count **unchanged at 1** |
+| Command                 | TASK-00 baseline (SETE-143)                                                                            | TASK-07 final                                                                                          | Delta                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| `yarn typecheck`        | PASS                                                                                                   | **PASS**                                                                                               | unchanged                                       |
+| `yarn lint`             | PASS — 0 errors, 340 warnings; module boundaries PASS                                                  | **PASS** — 0 errors, 348 warnings; module boundaries PASS                                              | +8 warnings (pre-existing budget; 0 new errors) |
+| `yarn lint:content`     | PASS — 13/13 rules                                                                                     | **PASS** — 13/13 rules                                                                                 | unchanged                                       |
+| `yarn test --runInBand` | 104 suites, 734 passed, **1 skipped**; exit 1 (post-test `VirtualizedList` / `act(...)` console noise) | **121 suites, 929 passed, 1 skipped**; exit 1 (same post-test console noise; **0 assertion failures**) | skipped count **unchanged at 1**                |
 
 Skipped test (unchanged from baseline): `prevents deletion of lesson with saved flashcards [NOT IMPLEMENTED]`.
 
@@ -65,21 +65,21 @@ Summary: Same blocker as TASK-00. Gradle cannot start without a supported JDK.
 
 Legend: **PASS** = exercised on device/simulator this run; **AUTO** = covered by automated tests only; **N/R** = not run this run (no device session / missing Android toolchain).
 
-| Area | iOS | Android | Online | Offline | Evidence |
-|---|---|---|---|---|---|
-| Camera permission / capture | N/R | N/R | AUTO | N/R | `ImageCaptureScreen.test.tsx`, `ingestionRouteGate.test.ts` |
-| Gallery permission / picker | N/R | N/R | AUTO | N/R | `ImageCaptureScreen.test.tsx` |
-| Microphone / recording | N/R | N/R | AUTO | AUTO | `recordingService.test.ts`, `SpeakingRepository.test.ts` |
-| Notification permission / schedule | N/R | N/R | AUTO | AUTO | `nativeReminderScheduler.test.ts`, `reminderService.test.ts` |
-| Content audio playback / cache | N/R | N/R | AUTO | AUTO | `contentAudioPlayer.test.ts` (honest `NOT_DOWNLOADED`), `deviceChapterAudio.test.ts`, `chapterAudioCache.test.ts` |
-| OCR → review → AI ingestion (mock) | N/R | N/R | AUTO | AUTO | `OCRService.test.ts`, `OCRReviewScreen.test.tsx`, `MockAIAnalysisService.test.ts`, `AnalyzingScreen.test.tsx` |
-| Sync recovery (offline → online) | N/R | N/R | AUTO | AUTO | `offlineSyncResilience.test.ts`, `syncManager.test.ts`, `outboxSync.test.ts` |
-| All seven showcase themes | N/R | N/R | AUTO | AUTO | `ThemePicker.test.tsx` (7 themes in showcase), `ThemeProvider.test.tsx`, `contrastCompliance.test.ts` |
-| Destructive data (clear local) | N/R | N/R | AUTO | AUTO | migration / repository clear-data tests (`GrammarBookmarkRepository`, `ContentLessonStateRepository`, `selfDogfoodRunner.test.ts`) |
-| Library bookmarks (3 segments) | N/R | N/R | AUTO | AUTO | `LibrarySegments.integration.test.tsx`, segment component tests |
-| Daily Review / FlipCard a11y | N/R | N/R | AUTO | AUTO | `FlipCard.a11y.test.tsx`, `DailyReviewScreen.a11y.test.tsx` |
-| iOS dev build | **PASS** | — | — | — | `xcodebuild` smoke (§4) |
-| Android dev build | — | **BLOCKED** | — | — | No Java runtime (§4) |
+| Area                               | iOS      | Android     | Online | Offline | Evidence                                                                                                                           |
+| ---------------------------------- | -------- | ----------- | ------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Camera permission / capture        | N/R      | N/R         | AUTO   | N/R     | `ImageCaptureScreen.test.tsx`, `ingestionRouteGate.test.ts`                                                                        |
+| Gallery permission / picker        | N/R      | N/R         | AUTO   | N/R     | `ImageCaptureScreen.test.tsx`                                                                                                      |
+| Microphone / recording             | N/R      | N/R         | AUTO   | AUTO    | `recordingService.test.ts`, `SpeakingRepository.test.ts`                                                                           |
+| Notification permission / schedule | N/R      | N/R         | AUTO   | AUTO    | `nativeReminderScheduler.test.ts`, `reminderService.test.ts`                                                                       |
+| Content audio playback / cache     | N/R      | N/R         | AUTO   | AUTO    | `contentAudioPlayer.test.ts` (honest `NOT_DOWNLOADED`), `deviceChapterAudio.test.ts`, `chapterAudioCache.test.ts`                  |
+| OCR → review → AI ingestion (mock) | N/R      | N/R         | AUTO   | AUTO    | `OCRService.test.ts`, `OCRReviewScreen.test.tsx`, `MockAIAnalysisService.test.ts`, `AnalyzingScreen.test.tsx`                      |
+| Sync recovery (offline → online)   | N/R      | N/R         | AUTO   | AUTO    | `offlineSyncResilience.test.ts`, `syncManager.test.ts`, `outboxSync.test.ts`                                                       |
+| All seven showcase themes          | N/R      | N/R         | AUTO   | AUTO    | `ThemePicker.test.tsx` (7 themes in showcase), `ThemeProvider.test.tsx`, `contrastCompliance.test.ts`                              |
+| Destructive data (clear local)     | N/R      | N/R         | AUTO   | AUTO    | migration / repository clear-data tests (`GrammarBookmarkRepository`, `ContentLessonStateRepository`, `selfDogfoodRunner.test.ts`) |
+| Library bookmarks (3 segments)     | N/R      | N/R         | AUTO   | AUTO    | `LibrarySegments.integration.test.tsx`, segment component tests                                                                    |
+| Daily Review / FlipCard a11y       | N/R      | N/R         | AUTO   | AUTO    | `FlipCard.a11y.test.tsx`, `DailyReviewScreen.a11y.test.tsx`                                                                        |
+| iOS dev build                      | **PASS** | —           | —      | —       | `xcodebuild` smoke (§4)                                                                                                            |
+| Android dev build                  | —        | **BLOCKED** | —      | —       | No Java runtime (§4)                                                                                                               |
 
 **Matrix verdict:** Automated coverage is substantially improved since TASK-00 (121 vs 104 suites). No manual device/simulator walk-through was executed in TASK-07; native/integration capabilities therefore retain conservative observed ratings below.
 
@@ -87,38 +87,38 @@ Legend: **PASS** = exercised on device/simulator this run; **AUTO** = covered by
 
 Columns follow execution-plan D3: **baseline status** comes from `src/release/feature-registry.ts` at HEAD; **observed result** reflects TASK-07 evidence only. A capability is **not** marked observed `ready` without matching automated, build, or device proof.
 
-| Capability | Baseline status | Observed result | Limitation | Production recommendation |
-|---|---|---|---|---|
-| `pasteTextInput` | ready | ready | — | **keep** |
-| `imageInput` | ready | beta | Camera/gallery flows tested with mocks; no device permission QA this run | **finish** |
-| `ocrScanner` | ready | beta | OCR service unit-tested; no live camera OCR on device | **finish** |
-| `ocrReviewEdit` | ready | beta | Review/edit screen tested; no end-to-end device capture path | **finish** |
-| `aiLessonAnalysis` | ready | beta | Mock + job client tests pass; backend credential smoke not run | **finish** |
-| `lessonResultView` | ready | ready | Screen/component tests + route gating | **keep** |
-| `lessonSave` | ready | ready | Persistence + flashcard tests | **keep** |
-| `lessonHistory` | ready | ready | Library/history screen + repository tests | **keep** |
-| `lingobitesMvpReviewFlow` | ready | ready | Home/route-gate/MVP regression tests | **keep** |
-| `shortPractice` | ready | beta | Flag wiring on lesson surfaces; no dedicated practice-session device QA | **finish** |
-| `pronunciationSupport` | not_implemented | not_implemented | Disabled in showcase preset; registry limitation documented | **exclude** |
-| `themeSystem` | ready | ready | Theme provider, storage, render tests | **keep** |
-| `themeSwitcher` | ready | ready | Gating + showcase exposure tests (`ThemePicker.test.tsx`) | **keep** |
-| `darkTheme` | ready | beta | Render/contrast automated; no manual visual QA on device for all screens | **finish** |
-| `pastelKidsTheme` | ready | beta | Same as `darkTheme` | **finish** |
-| `coreTheme` | ready | beta | Same as `darkTheme` | **finish** |
-| `neoTheme` | ready | beta | Same as `darkTheme` | **finish** |
-| `comicTheme` | ready | beta | Same as `darkTheme` | **finish** |
-| `cartoonTheme` | ready | beta | Same as `darkTheme` | **finish** |
-| `reviewSystem` | ready | beta | SRS/review tests + FlipCard a11y; notification delivery not device-verified | **keep** |
-| `miniGame` | not_implemented | not_implemented | Disabled in showcase; validator rejects enabled `not_implemented` | **exclude** |
-| `wordMatchGame` | not_implemented | not_implemented | — | **exclude** |
-| `fillBlankGame` | not_implemented | not_implemented | — | **exclude** |
-| `tenseQuizGame` | not_implemented | not_implemented | — | **exclude** |
-| `sentenceOrderGame` | not_implemented | not_implemented | — | **exclude** |
-| `flashcardChallenge` | not_implemented | not_implemented | — | **exclude** |
-| `situationLearning` | not_implemented | not_implemented | Disabled in showcase | **exclude** |
-| `dialogueGenerator` | not_implemented | not_implemented | — | **exclude** |
-| `phraseExtractor` | not_implemented | not_implemented | — | **exclude** |
-| `situationPractice` | not_implemented | not_implemented | — | **exclude** |
+| Capability                | Baseline status | Observed result | Limitation                                                                  | Production recommendation |
+| ------------------------- | --------------- | --------------- | --------------------------------------------------------------------------- | ------------------------- |
+| `pasteTextInput`          | ready           | ready           | —                                                                           | **keep**                  |
+| `imageInput`              | ready           | beta            | Camera/gallery flows tested with mocks; no device permission QA this run    | **finish**                |
+| `ocrScanner`              | ready           | beta            | OCR service unit-tested; no live camera OCR on device                       | **finish**                |
+| `ocrReviewEdit`           | ready           | beta            | Review/edit screen tested; no end-to-end device capture path                | **finish**                |
+| `aiLessonAnalysis`        | ready           | beta            | Mock + job client tests pass; backend credential smoke not run              | **finish**                |
+| `lessonResultView`        | ready           | ready           | Screen/component tests + route gating                                       | **keep**                  |
+| `lessonSave`              | ready           | ready           | Persistence + flashcard tests                                               | **keep**                  |
+| `lessonHistory`           | ready           | ready           | Library/history screen + repository tests                                   | **keep**                  |
+| `lingobitesMvpReviewFlow` | ready           | ready           | Home/route-gate/MVP regression tests                                        | **keep**                  |
+| `shortPractice`           | ready           | beta            | Flag wiring on lesson surfaces; no dedicated practice-session device QA     | **finish**                |
+| `pronunciationSupport`    | not_implemented | not_implemented | Disabled in showcase preset; registry limitation documented                 | **exclude**               |
+| `themeSystem`             | ready           | ready           | Theme provider, storage, render tests                                       | **keep**                  |
+| `themeSwitcher`           | ready           | ready           | Gating + showcase exposure tests (`ThemePicker.test.tsx`)                   | **keep**                  |
+| `darkTheme`               | ready           | beta            | Render/contrast automated; no manual visual QA on device for all screens    | **finish**                |
+| `pastelKidsTheme`         | ready           | beta            | Same as `darkTheme`                                                         | **finish**                |
+| `coreTheme`               | ready           | beta            | Same as `darkTheme`                                                         | **finish**                |
+| `neoTheme`                | ready           | beta            | Same as `darkTheme`                                                         | **finish**                |
+| `comicTheme`              | ready           | beta            | Same as `darkTheme`                                                         | **finish**                |
+| `cartoonTheme`            | ready           | beta            | Same as `darkTheme`                                                         | **finish**                |
+| `reviewSystem`            | ready           | beta            | SRS/review tests + FlipCard a11y; notification delivery not device-verified | **keep**                  |
+| `miniGame`                | not_implemented | not_implemented | Disabled in showcase; validator rejects enabled `not_implemented`           | **exclude**               |
+| `wordMatchGame`           | not_implemented | not_implemented | —                                                                           | **exclude**               |
+| `fillBlankGame`           | not_implemented | not_implemented | —                                                                           | **exclude**               |
+| `tenseQuizGame`           | not_implemented | not_implemented | —                                                                           | **exclude**               |
+| `sentenceOrderGame`       | not_implemented | not_implemented | —                                                                           | **exclude**               |
+| `flashcardChallenge`      | not_implemented | not_implemented | —                                                                           | **exclude**               |
+| `situationLearning`       | not_implemented | not_implemented | Disabled in showcase                                                        | **exclude**               |
+| `dialogueGenerator`       | not_implemented | not_implemented | —                                                                           | **exclude**               |
+| `phraseExtractor`         | not_implemented | not_implemented | —                                                                           | **exclude**               |
+| `situationPractice`       | not_implemented | not_implemented | —                                                                           | **exclude**               |
 
 ### Cross-cutting integration notes (TASK-06)
 
@@ -128,11 +128,11 @@ Columns follow execution-plan D3: **baseline status** comes from `src/release/fe
 
 ## 7. Release decision summary
 
-| Category | Count | Capabilities |
-|---|---|---|
-| Observed **ready** (production-candidate with current evidence) | 7 | `pasteTextInput`, `lessonResultView`, `lessonSave`, `lessonHistory`, `lingobitesMvpReviewFlow`, `themeSystem`, `themeSwitcher` |
-| Observed **beta** (finish before production) | 13 | ingestion chain (`imageInput`…`aiLessonAnalysis`), `shortPractice`, six alternate themes, `reviewSystem` |
-| Observed **not_implemented** (exclude) | 10 | pronunciation, mini-games (6), situation learning (3) |
+| Category                                                        | Count | Capabilities                                                                                                                   |
+| --------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Observed **ready** (production-candidate with current evidence) | 7     | `pasteTextInput`, `lessonResultView`, `lessonSave`, `lessonHistory`, `lingobitesMvpReviewFlow`, `themeSystem`, `themeSwitcher` |
+| Observed **beta** (finish before production)                    | 13    | ingestion chain (`imageInput`…`aiLessonAnalysis`), `shortPractice`, six alternate themes, `reviewSystem`                       |
+| Observed **not_implemented** (exclude)                          | 10    | pronunciation, mini-games (6), situation learning (3)                                                                          |
 
 **Preset verdict:** `full-feature-showcase` is suitable for **internal product review and coordinator verification** on iOS with the documented Android environment blocker. It is **not** a production release candidate until device QA closes the manual matrix gaps and Android dev build is reproducible.
 

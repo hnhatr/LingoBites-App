@@ -1,4 +1,7 @@
-import {executeLegacyClear, executeCanonicalLegacyClear} from '../../db/legacyClear';
+import {
+  executeLegacyClear,
+  executeCanonicalLegacyClear,
+} from '../../db/legacyClear';
 jest.mock('../../db/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
@@ -308,7 +311,9 @@ describe('submitOnboardingName idempotency (SETE-303 / T6)', () => {
 describe('accountBootstrap lesson quarantine (Checkpoint A)', () => {
   const realLegacyClear = jest.requireActual('../../db/legacyClear') as {
     executeLegacyClear: () => Promise<void>;
-    executeCanonicalLegacyClear: (opts: {authorizationRef: string}) => Promise<any>;
+    executeCanonicalLegacyClear: (opts: {
+      authorizationRef: string;
+    }) => Promise<any>;
     CANONICAL_LEGACY_CLEAR_MARKER: string;
   };
 
@@ -441,9 +446,9 @@ describe('accountBootstrap lesson quarantine (Checkpoint A)', () => {
   function lessonRowCounts(): Record<string, number> {
     const db = getDatabase();
     const counts: Record<string, number> = {
-      lessons: db.execute(
-        'SELECT * FROM lessons ORDER BY datetime(created_at) DESC;',
-      ).rows?.length ?? 0,
+      lessons:
+        db.execute('SELECT * FROM lessons ORDER BY datetime(created_at) DESC;')
+          .rows?.length ?? 0,
     };
     for (const table of V2_TABLES) {
       counts[table] =
@@ -475,14 +480,16 @@ describe('accountBootstrap lesson quarantine (Checkpoint A)', () => {
     (executeLegacyClear as unknown as jest.Mock).mockImplementation(() =>
       realLegacyClear.executeLegacyClear(),
     );
-    (executeCanonicalLegacyClear as unknown as jest.Mock).mockImplementation(opts =>
-      realLegacyClear.executeCanonicalLegacyClear(opts),
+    (executeCanonicalLegacyClear as unknown as jest.Mock).mockImplementation(
+      opts => realLegacyClear.executeCanonicalLegacyClear(opts),
     );
   });
 
   afterEach(() => {
     (executeLegacyClear as unknown as jest.Mock).mockResolvedValue(undefined);
-    (executeCanonicalLegacyClear as unknown as jest.Mock).mockResolvedValue(undefined);
+    (executeCanonicalLegacyClear as unknown as jest.Mock).mockResolvedValue(
+      undefined,
+    );
   });
 
   it('fresh-install boot preserves populated v1/v2 lesson rows', async () => {

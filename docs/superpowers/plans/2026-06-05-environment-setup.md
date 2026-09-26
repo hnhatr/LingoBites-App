@@ -11,6 +11,7 @@
 **Source spec:** `docs/superpowers/specs/2026-06-05-environment-setup-design.md`
 
 **Current repo gaps (baseline — verify before each task):**
+
 - Root `.gitignore` does not exclude real env files or `ios/tmp.xcconfig`
 - `.env.example` missing `APP_ENV`, native build vars; default port is `3001` (spec/API use `3000`)
 - `package.json` references `Development`/`Staging`/`Production` schemes and `stagingDebug`, but iOS has only `ScanLearnEnglish` scheme + `Debug`/`Release`; Android has no flavors
@@ -29,6 +30,7 @@
 ## File Structure
 
 **Create:**
+
 - `ios/Config.xcconfig` — includes generated `tmp.xcconfig`, maps env keys to Xcode settings
 - `ios/ScanLearnEnglish.xcodeproj/xcshareddata/xcschemes/Development.xcscheme`
 - `ios/ScanLearnEnglish.xcodeproj/xcshareddata/xcschemes/Staging.xcscheme`
@@ -38,6 +40,7 @@
 - `scripts/verify-env-setup.sh` — runs automated checks from spec Testing section
 
 **Modify:**
+
 - `.gitignore`
 - `.env.example`
 - `LingoBites-Server/.env.example`
@@ -52,6 +55,7 @@
 - `LingoBites-Server/src/config/env.ts`
 
 **Do not commit (developer creates locally from `.env.example`):**
+
 - `.env.development`, `.env.staging`, `.env.production`
 - `LingoBites-Server/.env`
 
@@ -71,6 +75,7 @@
 ## Task 1: Gitignore and env templates
 
 **Files:**
+
 - Modify: `.gitignore`
 - Modify: `.env.example`
 - Modify: `LingoBites-Server/.env.example`
@@ -197,6 +202,7 @@ git commit -m "chore: gitignore real env files and expand env templates"
 ## Task 2: Mobile `getAppConfig()` — types, guards, tests
 
 **Files:**
+
 - Modify: `src/shared/api/appConfig.ts`
 - Create: `src/shared/api/__tests__/appConfig.test.ts`
 - Modify: `jest.setup.js`
@@ -301,7 +307,9 @@ function normalizeBaseUrl(url: string): string {
 function resolveApiBaseUrl(appEnv: AppEnvLabel): string {
   const raw = Config.API_BASE_URL?.trim() ?? '';
   if (__DEV__ && !raw) {
-    throw new Error('API_BASE_URL is required. Copy .env.example to .env.development.');
+    throw new Error(
+      'API_BASE_URL is required. Copy .env.example to .env.development.',
+    );
   }
   const normalized = normalizeBaseUrl(raw || 'http://localhost:3000');
   if (__DEV__ && appEnv !== 'local' && !normalized.startsWith('https://')) {
@@ -378,6 +386,7 @@ git commit -m "feat(mobile): add APP_ENV-aware app config with dev safety guards
 ## Task 3: API `loadEnv()` — `APP_ENV` and schema version
 
 **Files:**
+
 - Modify: `LingoBites-Server/src/config/env.ts`
 - Create: `LingoBites-Server/test/envConfig.test.ts`
 
@@ -405,7 +414,8 @@ test('loadEnv defaults APP_ENV to local and aiSchemaVersion to ai-output-v1', ()
 
   if (previous.APP_ENV === undefined) delete process.env.APP_ENV;
   else process.env.APP_ENV = previous.APP_ENV;
-  if (previous.AI_SCHEMA_VERSION === undefined) delete process.env.AI_SCHEMA_VERSION;
+  if (previous.AI_SCHEMA_VERSION === undefined)
+    delete process.env.AI_SCHEMA_VERSION;
   else process.env.AI_SCHEMA_VERSION = previous.AI_SCHEMA_VERSION;
 });
 
@@ -462,8 +472,7 @@ export function loadEnv(): AppEnv {
     aiProvider,
     aiApiKey: process.env.AI_API_KEY?.trim() ?? '',
     aiModel:
-      process.env.AI_MODEL?.trim() ||
-      defaultModelForProvider(aiProvider),
+      process.env.AI_MODEL?.trim() || defaultModelForProvider(aiProvider),
     ocrProvider: parseOCRProvider(process.env.OCR_PROVIDER),
     ocrApiKey: process.env.OCR_API_KEY?.trim() ?? '',
     maxTextLength: Number(process.env.MAX_TEXT_LENGTH ?? 3000),
@@ -495,6 +504,7 @@ git commit -m "feat(api): add APP_ENV and aiSchemaVersion to typed env config"
 ## Task 4: Mobile package scripts and `cross-env`
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Add `cross-env` devDependency**
@@ -531,6 +541,7 @@ git commit -m "chore(mobile): add cross-env and wire android scripts to flavor v
 ## Task 5: Android product flavors + `react-native-config`
 
 **Files:**
+
 - Modify: `android/app/build.gradle`
 
 - [ ] **Step 1: Add `envConfigFiles` and `dotenv.gradle` at top of `build.gradle`**
@@ -665,6 +676,7 @@ git commit -m "feat(android): add env product flavors with react-native-config m
 ## Task 6: iOS `Config.xcconfig` and `Info.plist`
 
 **Files:**
+
 - Create: `ios/Config.xcconfig`
 - Modify: `ios/ScanLearnEnglish/Info.plist`
 
@@ -709,6 +721,7 @@ git commit -m "feat(ios): add Config.xcconfig and plist env substitutions"
 ## Task 7: iOS build configurations in `project.pbxproj` + Podfile
 
 **Files:**
+
 - Modify: `ios/ScanLearnEnglish.xcodeproj/project.pbxproj`
 - Modify: `ios/Podfile`
 
@@ -717,6 +730,7 @@ This task duplicates the existing `Debug`/`Release` target and project configura
 - [ ] **Step 1: Add `Config.xcconfig` file reference to pbxproj**
 
 In Xcode (recommended) or by editing `project.pbxproj`:
+
 1. Add `Config.xcconfig` to the project navigator under `ios/`
 2. Duplicate target build configurations:
    - `Debug` → `DebugDev`, `DebugStag`, `DebugProd`
@@ -765,17 +779,18 @@ git commit -m "feat(ios): add per-env Xcode build configurations for react-nativ
 ## Task 8: iOS schemes with pre-actions
 
 **Files:**
+
 - Create: `ios/ScanLearnEnglish.xcodeproj/xcshareddata/xcschemes/Development.xcscheme`
 - Create: `ios/ScanLearnEnglish.xcodeproj/xcshareddata/xcschemes/Staging.xcscheme`
 - Create: `ios/ScanLearnEnglish.xcodeproj/xcshareddata/xcschemes/Production.xcscheme`
 
 Use `ScanLearnEnglish.xcscheme` as template. For each scheme, set:
 
-| Scheme | Run/Test/Analyze config | Archive config | Env copy source |
-|---|---|---|---|
-| `Development` | `DebugDev` | `ReleaseDev` | `.env.development` |
-| `Staging` | `DebugStag` | `ReleaseStag` | `.env.staging` |
-| `Production` | `DebugProd` | `ReleaseProd` | `.env.production` |
+| Scheme        | Run/Test/Analyze config | Archive config | Env copy source    |
+| ------------- | ----------------------- | -------------- | ------------------ |
+| `Development` | `DebugDev`              | `ReleaseDev`   | `.env.development` |
+| `Staging`     | `DebugStag`             | `ReleaseStag`  | `.env.staging`     |
+| `Production`  | `DebugProd`             | `ReleaseProd`  | `.env.production`  |
 
 - [ ] **Step 1: Add Build Pre-action to each scheme**
 
@@ -821,6 +836,7 @@ git commit -m "feat(ios): add Development/Staging/Production schemes with env pr
 ## Task 9: Environment verification script
 
 **Files:**
+
 - Create: `scripts/verify-env-setup.sh`
 
 - [ ] **Step 1: Create verification script**
@@ -890,6 +906,7 @@ Manual/automated checklist — all must pass before marking environment setup do
 - [ ] **API gemini no key:** `aiAnalysisProviderConfig.test.ts` returns `AI_PROVIDER_ERROR` — already covered.
 
 - [ ] **Script wiring:**
+
   - `yarn ios:dev` → scheme `Development`, mode `DebugDev`
   - `yarn ios:staging` → scheme `Staging`, mode `DebugStag`
   - `yarn android:dev` → `developmentDebug`
@@ -906,24 +923,24 @@ Manual/automated checklist — all must pass before marking environment setup do
 
 ## Self-Review (spec coverage)
 
-| Spec section | Task(s) |
-|---|---|
-| Three environments, no cloud dev | Task 1, architecture header |
-| Mobile safe vs forbidden vars | Task 1, 2, 10 |
-| `.gitignore` rules | Task 1 |
-| `APP_ENV` not `ENV` | Tasks 1–3 |
-| Build-time native values (iOS/Android tables) | Tasks 5–8 |
-| Runtime values via `getAppConfig()` | Task 2 |
-| CodePush deferred | Out of scope note |
-| Env file examples | Task 1 Step 4 |
-| iOS schemes + xcconfig + pre-actions | Tasks 6–8 |
-| Android flavors + cleartext placeholder | Task 5 |
-| Backend config + `APP_ENV` | Task 3 |
-| Data flow (mock vs API) | Tasks 2, 10 |
-| Error handling / production `USE_MOCK_AI` | Task 2 |
-| Testing checklist | Tasks 9–10 |
+| Spec section                                  | Task(s)                                                                              |
+| --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Three environments, no cloud dev              | Task 1, architecture header                                                          |
+| Mobile safe vs forbidden vars                 | Task 1, 2, 10                                                                        |
+| `.gitignore` rules                            | Task 1                                                                               |
+| `APP_ENV` not `ENV`                           | Tasks 1–3                                                                            |
+| Build-time native values (iOS/Android tables) | Tasks 5–8                                                                            |
+| Runtime values via `getAppConfig()`           | Task 2                                                                               |
+| CodePush deferred                             | Out of scope note                                                                    |
+| Env file examples                             | Task 1 Step 4                                                                        |
+| iOS schemes + xcconfig + pre-actions          | Tasks 6–8                                                                            |
+| Android flavors + cleartext placeholder       | Task 5                                                                               |
+| Backend config + `APP_ENV`                    | Task 3                                                                               |
+| Data flow (mock vs API)                       | Tasks 2, 10                                                                          |
+| Error handling / production `USE_MOCK_AI`     | Task 2                                                                               |
+| Testing checklist                             | Tasks 9–10                                                                           |
 | Fastlane alignment (read env at lane runtime) | No change — already uses `IOS_BUNDLE_ID` / `ANDROID_BUNDLE_ID`; depends on Tasks 5–8 |
-| Preserve unrelated user changes | Verify `git diff` before each commit; do not revert M5 analytics/privacy work |
+| Preserve unrelated user changes               | Verify `git diff` before each commit; do not revert M5 analytics/privacy work        |
 
 **Placeholder scan:** No TBD steps. All code blocks are complete.
 

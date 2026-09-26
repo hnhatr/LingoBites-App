@@ -3,7 +3,7 @@ import {ensureValidSession} from '../auth/authSession';
 
 function mergeHeaders(
   initHeaders?: any,
-  extra?: Record<string, string>
+  extra?: Record<string, string>,
 ): Record<string, string> {
   const result: Record<string, string> = {};
   if (initHeaders) {
@@ -35,11 +35,13 @@ export async function authenticatedFetch(
   let sessionResult = await ensureValidSession({client: authClient});
 
   let accessToken =
-    sessionResult.status === 'valid' ? sessionResult.session.access_token : null;
+    sessionResult.status === 'valid'
+      ? sessionResult.session.access_token
+      : null;
 
   const headers = mergeHeaders(
     init?.headers,
-    accessToken ? {Authorization: `Bearer ${accessToken}`} : undefined
+    accessToken ? {Authorization: `Bearer ${accessToken}`} : undefined,
   );
 
   let response = await fetchImpl(url, {...init, headers});
@@ -50,10 +52,9 @@ export async function authenticatedFetch(
       forceRefresh: true,
     });
     if (sessionResult.status === 'valid') {
-      const retryHeaders = mergeHeaders(
-        init?.headers,
-        {Authorization: `Bearer ${sessionResult.session.access_token}`}
-      );
+      const retryHeaders = mergeHeaders(init?.headers, {
+        Authorization: `Bearer ${sessionResult.session.access_token}`,
+      });
       response = await fetchImpl(url, {...init, headers: retryHeaders});
     }
   }

@@ -123,7 +123,7 @@ export function ProfileScreen({navigation}: Props) {
       : 'Hoàn thành một phiên ôn tập để bắt đầu chuỗi.';
 
   function executeClearData() {
-    void (async () => {
+    (async () => {
       const result = await clearAllLocalDataWithFiles();
       if (!result.dbCleared) {
         setStatusMessage(t('settings.clear_data_partial_failure'));
@@ -147,7 +147,7 @@ export function ProfileScreen({navigation}: Props) {
           text: 'Xóa',
           style: 'destructive',
           onPress: () => {
-            void (async () => {
+            (async () => {
               const result = await clearSpeakingLocalData();
               setStatusMessage(
                 result.ok
@@ -308,7 +308,7 @@ export function ProfileScreen({navigation}: Props) {
                 Độ chính xác
               </AppText>
             </View>
-            <View style={{flex: 1}} />
+            <View style={themedStyles.flex1} />
           </View>
         </View>
 
@@ -507,15 +507,15 @@ export function ProfileScreen({navigation}: Props) {
       >
         <View style={themedStyles.modalOverlay}>
           <AppCard style={themedStyles.modalContent}>
-            <AppText variant="h2" style={{marginBottom: 8}}>
+            <AppText variant="h2" style={themedStyles.mb8}>
               Xóa dữ liệu học trên máy
             </AppText>
-            <AppText color="secondary" style={{marginBottom: 16}}>
+            <AppText color="secondary" style={themedStyles.mb16}>
               Hành động này sẽ xóa toàn bộ tiến trình học, XP, và lịch sử. Không
               thể khôi phục.
             </AppText>
-            <AppText style={{marginBottom: 8}}>
-              Nhập chữ <AppText style={{fontWeight: 'bold'}}>XOA</AppText> để
+            <AppText style={themedStyles.mb8}>
+              Nhập chữ <AppText style={themedStyles.boldText}>XOA</AppText> để
               xác nhận:
             </AppText>
             <TextField
@@ -532,7 +532,7 @@ export function ProfileScreen({navigation}: Props) {
                   setIsClearDataModalVisible(false);
                   setClearDataConfirmText('');
                 }}
-                style={{flex: 1}}
+                style={themedStyles.flex1}
               />
               <AppButton
                 title="Xóa"
@@ -543,7 +543,10 @@ export function ProfileScreen({navigation}: Props) {
                   setClearDataConfirmText('');
                   executeClearData();
                 }}
-                style={{backgroundColor: theme.colors.danger, flex: 1}}
+                style={[
+                  themedStyles.flex1,
+                  {backgroundColor: theme.colors.danger},
+                ]}
               />
             </View>
           </AppCard>
@@ -725,6 +728,18 @@ function makeStyles(theme: AppTheme) {
     },
     themeCard: {
       gap: theme.spacing.sm,
+    },
+    flex1: {
+      flex: 1,
+    },
+    mb8: {
+      marginBottom: 8,
+    },
+    mb16: {
+      marginBottom: 16,
+    },
+    boldText: {
+      fontWeight: 'bold',
     },
   });
 }

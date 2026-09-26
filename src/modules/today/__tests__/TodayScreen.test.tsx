@@ -14,14 +14,14 @@ import {captureErrorEvent} from '@shared/db/SpeakingRepository';
 const mockNavigate = jest.fn();
 
 jest.mock('@react-navigation/native', () => {
-  const React = require('react');
+  const ReactModule = require('react');
   return {
     useNavigation: () => ({
       navigate: mockNavigate,
       goBack: jest.fn(),
     }),
     useFocusEffect: (cb: () => void) => {
-      React.useEffect(() => {
+      ReactModule.useEffect(() => {
         cb();
       }, [cb]);
     },
@@ -40,7 +40,9 @@ async function renderTodayScreen() {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(
-      <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}>
+      <FeatureFlagProvider
+        releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}
+      >
         <AppThemeProvider>
           <TodayScreen />
         </AppThemeProvider>

@@ -1,3 +1,4 @@
+/* eslint-disable no-regex-spaces */
 const fs = require('fs');
 
 let content = fs.readFileSync('src/modules/sync/outboxSync.ts', 'utf8');
@@ -5,7 +6,7 @@ let content = fs.readFileSync('src/modules/sync/outboxSync.ts', 'utf8');
 // Add import for syncPush and SyncCollectionSchema
 content = content.replace(
   /import \{SYNC_BATCH_LIMIT, isSyncStuck\} from '\.\/syncPolicy';/,
-  "import {SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';\nimport {syncPush} from '@shared/api/syncClient';\nimport {SyncCollectionSchema, type SyncPushMutation} from '@shared/schemas/sync';"
+  "import {SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';\nimport {syncPush} from '@shared/api/syncClient';\nimport {SyncCollectionSchema, type SyncPushMutation} from '@shared/schemas/sync';",
 );
 
 // We need a helper to check if an event is a generic sync push collection
@@ -15,12 +16,12 @@ content = content.replace(
   return SyncCollectionSchema.safeParse(eventType).success;
 }
 
-function toReviewWireEvent(`
+function toReviewWireEvent(`,
 );
 
 // Inside drainOutboxOnce, after separating practice and review, we separate generic events
 content = content.replace(
-  /  const reviewEvents = eligible\.filter\(\n    event => event\.eventType === REVIEW_EVENT_TYPE,\n  \);\n  const practiceEvents = eligible\.filter\(\n    event => event\.eventType === PRACTICE_EVENT_TYPE,\n  \);\n  \/\/ Forward-compat: rows with an unknown type drain through the review\n  \/\/ endpoint so they are never silently stuck\.\n  const unknownEvents = eligible\.filter\(\n    event =>\n      event\.eventType \!\=\= REVIEW_EVENT_TYPE &&\n      event\.eventType \!\=\= PRACTICE_EVENT_TYPE,\n  \);\n  const reviewBatch = \[\.\.\.reviewEvents, \.\.\.unknownEvents\];/,
+  /[ ]{2}const reviewEvents = eligible\.filter\(\n[ ]{4}event => event\.eventType === REVIEW_EVENT_TYPE,\n[ ]{2}\);\n[ ]{2}const practiceEvents = eligible\.filter\(\n[ ]{4}event => event\.eventType === PRACTICE_EVENT_TYPE,\n[ ]{2}\);\n[ ]{2}\/\/ Forward-compat: rows with an unknown type drain through the review\n[ ]{2}\/\/ endpoint so they are never silently stuck\.\n[ ]{2}const unknownEvents = eligible\.filter\(\n[ ]{4}event =>\n      event\.eventType !== REVIEW_EVENT_TYPE &&\n      event\.eventType !== PRACTICE_EVENT_TYPE,\n  \);\n  const reviewBatch = \[\.\.\.reviewEvents, \.\.\.unknownEvents\];/,
   `  const reviewEvents = eligible.filter(
     event => event.eventType === REVIEW_EVENT_TYPE,
   );
@@ -37,7 +38,7 @@ content = content.replace(
       event.eventType !== PRACTICE_EVENT_TYPE &&
       !isGenericSyncCollection(event.eventType)
   );
-  const reviewBatch = [...reviewEvents, ...unknownEvents];`
+  const reviewBatch = [...reviewEvents, ...unknownEvents];`,
 );
 
 // After processing practiceEvents, we process genericEvents
@@ -81,8 +82,8 @@ const genericProcessing = `
 `;
 
 content = content.replace(
-  /  if \(syncedIds\.length > 0\) \{/,
-  `${genericProcessing}\n  if (syncedIds.length > 0) {`
+  / {2}if \(syncedIds\.length > 0\) \{/,
+  `${genericProcessing}\n  if (syncedIds.length > 0) {`,
 );
 
 fs.writeFileSync('src/modules/sync/outboxSync.ts', content);

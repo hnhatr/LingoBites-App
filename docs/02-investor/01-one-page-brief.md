@@ -32,15 +32,15 @@ Scan/Input → Confirm Text → Generate Lesson → Learn → Save → Review
 
 The app uses OCR and AI structured output to create mini lessons in Vietnamese:
 
-| Component | Value for user |
-|---|---|
-| Full translation | Quick meaning |
-| Sentence split | Know what each sentence says |
-| Breakdown | Understand sentence structure |
-| Grammar | Learn tenses/patterns from real text |
-| Vocabulary | Highlight important words/phrases |
-| Pronunciation | Basic reading guidance |
-| Save/review | Turn real-world content into study material |
+| Component        | Value for user                              |
+| ---------------- | ------------------------------------------- |
+| Full translation | Quick meaning                               |
+| Sentence split   | Know what each sentence says                |
+| Breakdown        | Understand sentence structure               |
+| Grammar          | Learn tenses/patterns from real text        |
+| Vocabulary       | Highlight important words/phrases           |
+| Pronunciation    | Basic reading guidance                      |
+| Save/review      | Turn real-world content into study material |
 
 ---
 
@@ -72,12 +72,12 @@ Secondary segments:
 
 ## 6. Differentiation
 
-| Alternative | Does well | Gap |
-|---|---|---|
-| Google Translate/Lens | Fast translate/scan | Does not create structured lessons |
-| Duolingo | Learning path | Does not teach from real-world text users encounter |
-| ELSA | Pronunciation practice | Does not explain sentences/vocabulary from image/text |
-| ChatGPT | Flexible | No dedicated mobile UX with clear OCR/review/save lesson flow |
+| Alternative           | Does well              | Gap                                                           |
+| --------------------- | ---------------------- | ------------------------------------------------------------- |
+| Google Translate/Lens | Fast translate/scan    | Does not create structured lessons                            |
+| Duolingo              | Learning path          | Does not teach from real-world text users encounter           |
+| ELSA                  | Pronunciation practice | Does not explain sentences/vocabulary from image/text         |
+| ChatGPT               | Flexible               | No dedicated mobile UX with clear OCR/review/save lesson flow |
 
 Positioning:
 
@@ -89,10 +89,10 @@ Learning-first scan app for Vietnamese beginners, not a generic translator.
 
 ## 7. Business model
 
-| Tier | Model |
-|---|---|
-| Free | BYOK: users can enter their own API key or use a small demo/trial quota |
-| Paid | Managed AI: users pay for the app, no separate token needed |
+| Tier   | Model                                                                       |
+| ------ | --------------------------------------------------------------------------- |
+| Free   | BYOK: users can enter their own API key or use a small demo/trial quota     |
+| Paid   | Managed AI: users pay for the app, no separate token needed                 |
 | Future | Flashcard/review, advanced practice, speaking, content import, subscription |
 
 Cost strategy:
@@ -127,10 +127,10 @@ Exit criteria:
 
 Priority resource allocation:
 
-| Area | Goal |
-|---|---|
-| Product engineering | Ship closed beta M1–M5 |
-| AI/OCR quality | Stabilize schema, prompt, retry, sample eval |
-| UX testing | Verify beginners understand lessons |
-| Growth testing | Find first user channels and measure retention |
-| Operations | Cost guard, privacy, release readiness |
+| Area                | Goal                                           |
+| ------------------- | ---------------------------------------------- |
+| Product engineering | Ship closed beta M1–M5                         |
+| AI/OCR quality      | Stabilize schema, prompt, retry, sample eval   |
+| UX testing          | Verify beginners understand lessons            |
+| Growth testing      | Find first user channels and measure retention |
+| Operations          | Cost guard, privacy, release readiness         |

@@ -35,7 +35,18 @@ function isSessionParams(
 function isLegacyParams(
   params: HomeStackParamList['Practice'],
 ): params is {questions: LegacyPracticeQuestion[]; title?: string} {
-  return 'questions' in params && Array.isArray(params.questions);
+  return (
+    'questions' in params &&
+    Array.isArray(params.questions) &&
+    params.questions.every(
+      q =>
+        q != null &&
+        typeof q === 'object' &&
+        typeof (q as LegacyPracticeQuestion).id === 'string' &&
+        typeof (q as LegacyPracticeQuestion).question === 'string' &&
+        typeof (q as LegacyPracticeQuestion).answer === 'string',
+    )
+  );
 }
 
 export function PracticeScreen({navigation, route}: Props) {
@@ -87,22 +98,26 @@ function SessionPracticeScreen({
 
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={() => navigation.goBack()}
-        title={headerTitle}
-      />
+      <ScreenHeader onBack={() => navigation.goBack()} title={headerTitle} />
       <ScrollView
         contentContainerStyle={themedStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {pendingSync ? (
-          <AppText color="secondary" testID="practice-sync-banner" variant="caption">
+          <AppText
+            color="secondary"
+            testID="practice-sync-banner"
+            variant="caption"
+          >
             Kết quả sẽ đồng bộ khi có mạng.
           </AppText>
         ) : null}
 
         <HandoffProgressTrack
-          label={`${Math.min(answeredCount + (pendingFeedback ? 0 : 1), total)} / ${total}`}
+          label={`${Math.min(
+            answeredCount + (pendingFeedback ? 0 : 1),
+            total,
+          )} / ${total}`}
           progress={progress}
         />
 
@@ -278,7 +293,9 @@ function SessionResultCard({
         <AppText style={themedStyles.resultScore} variant="display">
           {summary.correct}/{summary.answered}
         </AppText>
-        <AppText color="secondary">Độ chính xác {summary.score_percent}%</AppText>
+        <AppText color="secondary">
+          Độ chính xác {summary.score_percent}%
+        </AppText>
       </AppCard>
       {breakdownEntries.length > 0 ? (
         <AppCard style={themedStyles.breakdownCard}>
@@ -294,7 +311,10 @@ function SessionResultCard({
         <AppCard style={themedStyles.breakdownCard}>
           <AppText variant="label">Cần ôn lại</AppText>
           {summary.review_candidates.map(candidate => (
-            <AppText color="secondary" key={`${candidate.source_kind}:${candidate.source_id}`}>
+            <AppText
+              color="secondary"
+              key={`${candidate.source_kind}:${candidate.source_id}`}
+            >
               {candidate.source_kind} · sai {candidate.wrong_count} lần
             </AppText>
           ))}
@@ -321,17 +341,15 @@ function LegacyPracticeScreen({
   const quiz = useQuiz(questions);
   const headerTitle = title ?? 'Luyện tập nhanh';
 
-  const tabNavigation = navigation.getParent<
-    import('@react-navigation/native').NavigationProp<RootTabParamList>
-  >();
+  const tabNavigation =
+    navigation.getParent<
+      import('@react-navigation/native').NavigationProp<RootTabParamList>
+    >();
 
   if (questions.length === 0) {
     return (
       <AppScreen>
-        <ScreenHeader
-          onBack={() => navigation.goBack()}
-          title={headerTitle}
-        />
+        <ScreenHeader onBack={() => navigation.goBack()} title={headerTitle} />
         <View style={themedStyles.emptyState} testID="practice-quick-empty">
           <AppText style={styles.centerText} variant="label">
             {t('practice.quick_empty_cause')}
@@ -355,10 +373,7 @@ function LegacyPracticeScreen({
 
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={() => navigation.goBack()}
-        title={headerTitle}
-      />
+      <ScreenHeader onBack={() => navigation.goBack()} title={headerTitle} />
       <ScrollView
         contentContainerStyle={themedStyles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -397,7 +412,10 @@ function LegacyQuestionBlock({quiz}: {quiz: ReturnType<typeof useQuiz>}) {
   // `từ vựng: English`. Offer a skip instead of an unanswerable question.
   if (isMultipleChoice && hasInvalidMetaOptions(current)) {
     return (
-      <View style={themedStyles.questionBlock} testID="practice-invalid-question">
+      <View
+        style={themedStyles.questionBlock}
+        testID="practice-invalid-question"
+      >
         <AppText variant="h2">{current.question}</AppText>
         <AppText color="muted">
           Câu hỏi này bị lỗi dữ liệu nên không hiển thị đáp án. Bạn có thể bỏ

@@ -42,7 +42,10 @@ export function ShelfSurface({
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    const sub = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      setReduceMotion,
+    );
     return () => sub.remove();
   }, []);
 
@@ -61,12 +64,24 @@ export function ShelfSurface({
 
   const hasShelf = shelfHeight > 0 && shelfColor;
   const showShelf = hasShelf && (!isDisabled || preserveShelfSpace);
-  const opacity = (isDisabled && !preserveShelfSpace) 
-    ? theme.states.disabledOpacity 
-    : (isPressed && reduceMotion ? theme.states.pressedOpacity : 1);
+  const opacity =
+    isDisabled && !preserveShelfSpace
+      ? theme.states.disabledOpacity
+      : isPressed && reduceMotion
+      ? theme.states.pressedOpacity
+      : 1;
 
   return (
-    <View testID={containerTestID} style={[containerStyle, { paddingBottom: showShelf ? shelfHeight : 0, marginTop: (!showShelf && hasShelf) ? shelfHeight : 0 }]}>
+    <View
+      testID={containerTestID}
+      style={[
+        containerStyle,
+        {
+          paddingBottom: showShelf ? shelfHeight : 0,
+          marginTop: !showShelf && hasShelf ? shelfHeight : 0,
+        },
+      ]}
+    >
       {showShelf && (
         <View
           style={[

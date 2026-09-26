@@ -37,7 +37,9 @@ describe('buildRetryUrl', () => {
 
 describe('buildSegmentEnrichmentUrl', () => {
   it('builds URL for fetching a single segment enrichment', () => {
-    expect(buildSegmentEnrichmentUrl(VIDEO_ID, 2, 'http://localhost:3000')).toBe(
+    expect(
+      buildSegmentEnrichmentUrl(VIDEO_ID, 2, 'http://localhost:3000'),
+    ).toBe(
       'http://localhost:3000/v1/youtube/transcripts/dQw4w9WgXcQ/segments/2/enrichment',
     );
   });
@@ -73,9 +75,7 @@ describe('fetchLessonEnrichment', () => {
   it('fetches whole-lesson enrichments map and parses successfully', async () => {
     const enrichment0 = makeEnrichment({keyWord: 'first'});
     const enrichment1 = makeEnrichment({keyWord: 'second'});
-    mockFetch.mockResolvedValueOnce(
-      response({0: enrichment0, 1: enrichment1}),
-    );
+    mockFetch.mockResolvedValueOnce(response({0: enrichment0, 1: enrichment1}));
 
     const result = await fetchLessonEnrichment(
       {videoId: VIDEO_ID},

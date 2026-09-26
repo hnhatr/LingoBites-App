@@ -15,6 +15,7 @@ type Props = {
   trailing?: 'chevron' | {text: string} | {chip: string; chipTone?: ChipTone};
   onPress?: () => void;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
 };
 
 function medallionColors(
@@ -40,6 +41,7 @@ export function ProfileSettingsRow({
   trailing,
   onPress,
   accessibilityLabel,
+  accessibilityHint,
 }: Props) {
   const {theme} = useAppTheme();
   const medallion = medallionColors(theme, medallionTone);
@@ -114,6 +116,7 @@ export function ProfileSettingsRow({
 
   return (
     <Pressable
+      accessibilityHint={accessibilityHint ?? 'Chạm để chọn'}
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
       onPress={onPress}
@@ -127,7 +130,7 @@ export function ProfileSettingsRow({
           containerStyle={theme.shadow.soft}
           faceStyle={[
             faceStyle,
-            !shelf && pressed && {opacity: theme.states.pressedOpacity}
+            !shelf && pressed && {opacity: theme.states.pressedOpacity},
           ]}
         >
           {rowContent}

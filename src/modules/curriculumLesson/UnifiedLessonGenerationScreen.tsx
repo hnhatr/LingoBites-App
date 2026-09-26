@@ -437,7 +437,9 @@ export function UnifiedLessonGenerationScreen({navigation, route}: Props) {
         canRetry={confirmedText != null && confirmedText.length > 0}
         retrying={retrying}
         notice={notice}
-        onRetry={() => void handleRetry()}
+        onRetry={() => {
+          handleRetry();
+        }}
         onBack={handleBack}
         parts={parts}
         retryingPart={retryingPart}

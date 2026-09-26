@@ -43,6 +43,7 @@ cp .env.example .env.development
 ```
 
 Edit `.env.development` and set:
+
 - `API_BASE_URL`: The URL of your local or staging backend API proxy (e.g., `http://localhost:3000` or the Cloud Run URL).
 - `USE_MOCK_AI`: Set to `true` to use mock AI fixtures (no backend API request) or `false` to connect to the actual backend API.
 - `USE_MOCK_OCR`: Set to `true` to mock OCR extraction.
@@ -58,11 +59,13 @@ yarn start
 In a new terminal window/pane, build and run the app:
 
 #### iOS
+
 ```sh
 yarn ios
 ```
 
 #### Android
+
 ```sh
 yarn android
 ```

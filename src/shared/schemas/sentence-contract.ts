@@ -62,7 +62,10 @@ export interface LessonPayloadV1 {
 export function isPublishable(payload: LessonPayloadV1): boolean {
   return (
     payload.segments.length > 0 &&
-    payload.segments.every((s: YouTubeSegmentV1): boolean => s.en.trim() !== '' && s.vi.trim() !== '')
+    payload.segments.every(
+      (s: YouTubeSegmentV1): boolean =>
+        s.en.trim() !== '' && s.vi.trim() !== '',
+    )
   );
 }
 

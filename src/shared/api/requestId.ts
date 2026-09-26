@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 export function createRequestId(): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
     return globalThis.crypto.randomUUID();

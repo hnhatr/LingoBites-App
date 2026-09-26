@@ -538,7 +538,10 @@ export function SentenceCard({
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    const sub = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      setReduceMotion,
+    );
     return () => sub.remove();
   }, []);
 
@@ -646,7 +649,9 @@ export function SentenceCard({
         accessibilityHint={t('youtube.sentence_header_hint', {
           defaultValue: 'Phần đầu thẻ chứa thông tin câu',
         })}
-        accessibilityLabel={`Câu ${segment.index + 1} trên ${totalSegments ?? 1}`}
+        accessibilityLabel={`Câu ${segment.index + 1} trên ${
+          totalSegments ?? 1
+        }`}
         accessibilityRole="header"
         style={styles.header}
         testID={testID ? `${testID}-header` : undefined}
@@ -1081,7 +1086,9 @@ export function SentenceCard({
                       />
                     ) : null}
                   </View>
-                  <AppText selectable={true} variant="bodyLg">{point.name}</AppText>
+                  <AppText selectable={true} variant="bodyLg">
+                    {point.name}
+                  </AppText>
                   {point.description !== '' ? (
                     <AppText
                       color="secondary"
@@ -1109,13 +1116,19 @@ export function SentenceCard({
                           defaultValue: 'Công thức',
                         })}
                         {': '}
-                        <AppText selectable={true} style={styles.formulaText} variant="caption">
+                        <AppText
+                          selectable={true}
+                          style={styles.formulaText}
+                          variant="caption"
+                        >
                           {point.formula}
                         </AppText>
                       </AppText>
                     </View>
                   ) : null}
-                  <AppText color="secondary" selectable={true}>{point.analysis}</AppText>
+                  <AppText color="secondary" selectable={true}>
+                    {point.analysis}
+                  </AppText>
                 </View>
               );
             })}

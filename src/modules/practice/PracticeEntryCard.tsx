@@ -83,8 +83,14 @@ export function PracticeEntryCard({
       <View style={styles.headerRow}>
         <AppText variant="h3">Luyện tập</AppText>
         {projection.state === 'ready' ? (
-          <View style={[styles.badge, {backgroundColor: theme.colors.accentSoft}]}>
-            <MaterialIcon color={theme.colors.accent} name="bookmark" size={16} />
+          <View
+            style={[styles.badge, {backgroundColor: theme.colors.accentSoft}]}
+          >
+            <MaterialIcon
+              color={theme.colors.accent}
+              name="bookmark"
+              size={16}
+            />
             <AppText color="secondary" variant="caption">
               Đã tải
             </AppText>
@@ -93,7 +99,11 @@ export function PracticeEntryCard({
       </View>
 
       {versionMismatchWarning ? (
-        <AppText color="secondary" testID="practice-version-warning" variant="caption">
+        <AppText
+          color="secondary"
+          testID="practice-version-warning"
+          variant="caption"
+        >
           Bài học đã cập nhật; bạn đang tiếp tục trên bản cũ.
         </AppText>
       ) : null}
@@ -112,7 +122,7 @@ export function PracticeEntryCard({
             disabled={isOffline}
             loading={isPreparing}
             onPress={() => {
-              void handleCreate();
+              handleCreate();
             }}
             testID="practice-create-button"
             title="Luyện tập nhanh"
@@ -144,7 +154,7 @@ export function PracticeEntryCard({
             disabled={isOffline}
             loading={isPreparing}
             onPress={() => {
-              void handleRetryGeneration();
+              handleRetryGeneration();
             }}
             testID="practice-retry-generation"
             title="Thử lại"
@@ -156,8 +166,8 @@ export function PracticeEntryCard({
       {projection.state === 'ready' ? (
         <View style={styles.body} testID="practice-ready">
           <AppText color="secondary">
-            Bài luyện tập đã sẵn sàng ({projection.practiceSet?.questions.length ?? 0}{' '}
-            câu).
+            Bài luyện tập đã sẵn sàng (
+            {projection.practiceSet?.questions.length ?? 0} câu).
           </AppText>
           <AppButton
             onPress={handleContinue}

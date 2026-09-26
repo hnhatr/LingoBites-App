@@ -15,10 +15,10 @@ This is a disposable validation path, not the reusable `ttsService`.
 
 Record the exact device/simulator, commands, voice inventory, missing-voice behavior, and offline playback result here after platform smoke runs.
 
-| Platform | Device / OS | Commands | Native setup / patch | `en-US` voices | Playback | Offline |
-| --- | --- | --- | --- | --- | --- | --- |
-| iOS | iPhone 17 Pro simulator, iOS 26.5 | `yarn ios:dev` | No patch; CocoaPods autolinked `TextToSpeech (4.1.1)` | Pending manual UI readout | App built and launched; tap/audio assertion pending | Pending manual audio check |
-| Android | No emulator/device available (`adb devices` empty) | `./gradlew app:assembleDevelopmentDebug --no-daemon` attempted | No patch; RN config reports autolinked `TextToSpeechPackage` | Pending | Not run | Pending |
+| Platform | Device / OS                                        | Commands                                                       | Native setup / patch                                         | `en-US` voices            | Playback                                            | Offline                    |
+| -------- | -------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------- | --------------------------------------------------- | -------------------------- |
+| iOS      | iPhone 17 Pro simulator, iOS 26.5                  | `yarn ios:dev`                                                 | No patch; CocoaPods autolinked `TextToSpeech (4.1.1)`        | Pending manual UI readout | App built and launched; tap/audio assertion pending | Pending manual audio check |
+| Android  | No emulator/device available (`adb devices` empty) | `./gradlew app:assembleDevelopmentDebug --no-daemon` attempted | No patch; RN config reports autolinked `TextToSpeechPackage` | Pending                   | Not run                                             | Pending                    |
 
 ### API observations
 

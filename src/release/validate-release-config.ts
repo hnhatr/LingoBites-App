@@ -27,16 +27,18 @@ export function validateReleaseConfig(
 
     const entry = registry.find(e => e.key === key);
     if (entry && entry.status === 'not_implemented') {
-      errors.push(`Cannot enable feature "${key}" because its status is "not_implemented".`);
+      errors.push(
+        `Cannot enable feature "${key}" because its status is "not_implemented".`,
+      );
     }
 
     const depGroups = dependencies[key] ?? [];
     if (depGroups.length > 0) {
       // At least one group must be fully satisfied
-      const isSatisfied = depGroups.some(group => 
-        group.every(dep => enabled[dep])
+      const isSatisfied = depGroups.some(group =>
+        group.every(dep => enabled[dep]),
       );
-      
+
       if (!isSatisfied) {
         const reqStr = depGroups.map(group => group.join(' AND ')).join(' OR ');
         errors.push(

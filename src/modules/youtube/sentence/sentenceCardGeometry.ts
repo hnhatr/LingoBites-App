@@ -48,10 +48,7 @@ export function getCardPeekWidth(screenWidth: number): number {
   const cardWidth = getCardWidth(screenWidth);
   // When card 0 is at x=0, next card starts at snapInterval (cardWidth + CARD_SPACING_PT).
   // Visible slice of next card is screenWidth - snapInterval.
-  return Math.max(
-    0,
-    screenWidth - (cardWidth + CARD_SPACING_PT),
-  );
+  return Math.max(0, screenWidth - (cardWidth + CARD_SPACING_PT));
 }
 
 export type SnapIndexParams = {

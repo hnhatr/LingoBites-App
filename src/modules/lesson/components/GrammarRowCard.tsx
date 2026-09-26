@@ -70,7 +70,11 @@ export function GrammarRowCard({
     <AppCard>
       <View style={styles.innerContainer}>
         <View style={styles.contentWrapper}>
-          <AppText variant="h3" style={styles.title} testID="grammar-title-text">
+          <AppText
+            variant="h3"
+            style={styles.title}
+            testID="grammar-title-text"
+          >
             {grammarTitle}
           </AppText>
           <AppText
@@ -83,7 +87,9 @@ export function GrammarRowCard({
           </AppText>
         </View>
         <IconButton
-          accessibilityLabel={isSaved ? 'Bỏ lưu quy tắc ngữ pháp này' : 'Lưu quy tắc ngữ pháp này'}
+          accessibilityLabel={
+            isSaved ? 'Bỏ lưu quy tắc ngữ pháp này' : 'Lưu quy tắc ngữ pháp này'
+          }
           icon={isSaved ? 'heart' : 'heart_outline'}
           onPress={handleBookmarkPress}
           size={40}

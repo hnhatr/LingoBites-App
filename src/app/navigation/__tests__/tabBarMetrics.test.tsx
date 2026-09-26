@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {Text} from 'react-native';
@@ -40,9 +39,7 @@ function clearanceWith(theme?: AppTheme): number {
             </ThemeContext.Provider>,
           );
   });
-  return Number(
-    tree.root.findByProps({testID: 'clearance'}).props.children,
-  );
+  return Number(tree.root.findByProps({testID: 'clearance'}).props.children);
 }
 
 describe('tabBarMetrics theme-aware clearance (SETE-269 P1)', () => {
@@ -54,7 +51,8 @@ describe('tabBarMetrics theme-aware clearance (SETE-269 P1)', () => {
 
   it('uses the 66pt face plus shelf for Sticker', () => {
     expect(getTabBarVisualHeight(stickerSoftTheme)).toBe(
-      STICKER_TAB_BAR_FACE_HEIGHT + (stickerSoftTheme.shelf?.tabBar.height ?? 0),
+      STICKER_TAB_BAR_FACE_HEIGHT +
+        (stickerSoftTheme.shelf?.tabBar.height ?? 0),
     );
     expect(getTabBarVisualHeight(stickerSoftTheme)).toBe(73);
   });

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Repository for the content-package tables added in SETE-107 / M2.
  *

@@ -15,7 +15,7 @@ import {useTranslation} from 'react-i18next';
 import {
   deleteYouTubeLesson,
   listYouTubeLessons,
-} from '@shared/db/YoutubeLessonRepository';
+} from '@shared/db/YouTubeLessonRepository';
 import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'YouTubeHistory'>;
@@ -77,8 +77,7 @@ export function YouTubeHistoryScreen({navigation}: Props) {
   // the last row clear of the home indicator. Read via context (not the
   // throwing hook) so Jest renders fall back to a zero inset.
   const insets = useContext(SafeAreaInsetsContext);
-  const bottomClearance =
-    (insets?.bottom ?? 0) + theme.spacing.md;
+  const bottomClearance = (insets?.bottom ?? 0) + theme.spacing.md;
   const styles = React.useMemo(() => createStyles(theme), [theme]);
   const [lessons, setLessons] = useState<YouTubeTranscript[]>([]);
   const [loadError, setLoadError] = useState(false);
@@ -158,10 +157,7 @@ export function YouTubeHistoryScreen({navigation}: Props) {
   if (loadError) {
     return (
       <AppScreen>
-        <ScreenHeader
-          onBack={goBack}
-          title={t('youtube.history_title')}
-        />
+        <ScreenHeader onBack={goBack} title={t('youtube.history_title')} />
         <View style={styles.errorWrap}>
           <AppText color="danger" testID="youtube-history-error">
             {t('youtube.history_load_failed')}
@@ -183,15 +179,10 @@ export function YouTubeHistoryScreen({navigation}: Props) {
   if (lessons.length === 0) {
     return (
       <AppScreen>
-        <ScreenHeader
-          onBack={goBack}
-          title={t('youtube.history_title')}
-        />
+        <ScreenHeader onBack={goBack} title={t('youtube.history_title')} />
         <View style={styles.emptyWrap} testID="youtube-history-empty">
           <AppText variant="h2">{t('youtube.history_empty_title')}</AppText>
-          <AppText color="secondary">
-            {t('youtube.history_empty_body')}
-          </AppText>
+          <AppText color="secondary">{t('youtube.history_empty_body')}</AppText>
           <AppButton
             accessibilityLabel={t('youtube.history_create_new_a11y')}
             accessibilityHint={t('youtube.history_create_new_hint')}
@@ -208,10 +199,7 @@ export function YouTubeHistoryScreen({navigation}: Props) {
 
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={goBack}
-        title={t('youtube.history_title')}
-      />
+      <ScreenHeader onBack={goBack} title={t('youtube.history_title')} />
       <View style={{paddingHorizontal: theme.gutter}}>
         <AppButton
           accessibilityLabel={t('youtube.history_create_new_a11y')}

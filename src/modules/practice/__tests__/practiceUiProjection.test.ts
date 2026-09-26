@@ -1,9 +1,7 @@
 import type {PracticeSession, PracticeSet} from '@shared/schemas/practice';
 import {projectPracticeUi} from '../practiceUiProjection';
 
-function makeSet(
-  overrides: Partial<PracticeSet> = {},
-): PracticeSet {
+function makeSet(overrides: Partial<PracticeSet> = {}): PracticeSet {
   return {
     id: 'set-1',
     contract_version: 1,
@@ -58,9 +56,9 @@ describe('projectPracticeUi', () => {
 
   it('returns generating when set is generating', () => {
     const set = makeSet({status: 'generating', ready_at: undefined});
-    expect(
-      projectPracticeUi({latestSet: set, latestSession: null}).state,
-    ).toBe('generating');
+    expect(projectPracticeUi({latestSet: set, latestSession: null}).state).toBe(
+      'generating',
+    );
   });
 
   it('returns generating when client is preparing', () => {

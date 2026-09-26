@@ -1,7 +1,4 @@
-import {
-  saveFlashcard,
-  unsaveFlashcard,
-} from '@shared/db/FlashcardRepository';
+import {saveFlashcard, unsaveFlashcard} from '@shared/db/FlashcardRepository';
 import {
   saveGrammarBookmark,
   unsaveGrammarBookmark,
@@ -20,17 +17,19 @@ export interface UseBookmarkOptimisticResult {
   grammarSaveState: OptimisticStateMap;
   onVocabularySave: (
     vocabularyId: string,
-    input: SaveFlashcardInput
+    input: SaveFlashcardInput,
   ) => Promise<void>;
   onVocabularyUnsave: (vocabularyId: string) => Promise<void>;
   onGrammarSave: (
     grammarId: string,
-    input: SaveGrammarBookmarkInput
+    input: SaveGrammarBookmarkInput,
   ) => Promise<void>;
   onGrammarUnsave: (grammarId: string, lessonId?: string) => Promise<void>;
 }
 
-export function useBookmarkOptimistic(defaultLessonId?: string): UseBookmarkOptimisticResult {
+export function useBookmarkOptimistic(
+  defaultLessonId?: string,
+): UseBookmarkOptimisticResult {
   // Use plain Map objects for state management (compatible with both React and pure JS)
   const vocabularySavedMap = new Map<string, boolean>();
   const grammarSavedMap = new Map<string, boolean>();
@@ -50,7 +49,7 @@ export function useBookmarkOptimistic(defaultLessonId?: string): UseBookmarkOpti
   // Vocabulary save with optimistic update
   const onVocabularySave = async (
     vocabularyId: string,
-    input: SaveFlashcardInput
+    input: SaveFlashcardInput,
   ): Promise<void> => {
     // Optimistic update: set to true immediately
     vocabularySavedMap.set(vocabularyId, true);
@@ -104,7 +103,7 @@ export function useBookmarkOptimistic(defaultLessonId?: string): UseBookmarkOpti
   // Grammar save with optimistic update
   const onGrammarSave = async (
     grammarId: string,
-    input: SaveGrammarBookmarkInput
+    input: SaveGrammarBookmarkInput,
   ): Promise<void> => {
     // Optimistic update: set to true immediately
     grammarSavedMap.set(grammarId, true);
@@ -127,7 +126,7 @@ export function useBookmarkOptimistic(defaultLessonId?: string): UseBookmarkOpti
   // Grammar unsave with optimistic update
   const onGrammarUnsave = async (
     grammarId: string,
-    lessonId?: string
+    lessonId?: string,
   ): Promise<void> => {
     // Use provided lessonId or fall back to default
     const resolvedLessonId = lessonId || defaultLessonId;

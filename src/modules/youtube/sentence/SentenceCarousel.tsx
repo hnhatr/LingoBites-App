@@ -19,10 +19,7 @@ import {AppText} from '@components/AppText';
 import {MaterialIcon} from '@components/MaterialIcon';
 import {useAppTheme, type AppTheme} from '@theme';
 import type {SentenceEnrichment} from '@shared/schemas/sentence-contract';
-import type {
-  GrammarPoint,
-  VocabEntry,
-} from '@shared/schemas/sentence-contract';
+import type {GrammarPoint, VocabEntry} from '@shared/schemas/sentence-contract';
 import {SentenceCard, type SentenceCardSegment} from './SentenceCard';
 import type {RetryBlockFn} from './useSentenceEnrichment';
 import {
@@ -464,7 +461,11 @@ export const SentenceCarousel = React.forwardRef<
           testID="youtube-carousel-prev"
         >
           <MaterialIcon
-            color={activeIndex <= 0 ? theme.colors.text.muted : theme.colors.text.primary}
+            color={
+              activeIndex <= 0
+                ? theme.colors.text.muted
+                : theme.colors.text.primary
+            }
             name="chevron_left"
             size={24}
           />
@@ -485,7 +486,11 @@ export const SentenceCarousel = React.forwardRef<
           testID="youtube-carousel-next"
         >
           <MaterialIcon
-            color={activeIndex >= segments.length - 1 ? theme.colors.text.muted : theme.colors.text.primary}
+            color={
+              activeIndex >= segments.length - 1
+                ? theme.colors.text.muted
+                : theme.colors.text.primary
+            }
             name="chevron_right"
             size={24}
           />
@@ -537,7 +542,9 @@ export const SentenceCarousel = React.forwardRef<
           style={styles.backChip}
           testID="youtube-back-to-active-chip"
         >
-          <AppText variant="label">{`↩ Câu ${activeIndex + 1} đang phát`}</AppText>
+          <AppText variant="label">{`↩ Câu ${
+            activeIndex + 1
+          } đang phát`}</AppText>
         </Pressable>
       ) : null}
     </View>

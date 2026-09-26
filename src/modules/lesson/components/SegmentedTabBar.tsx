@@ -1,5 +1,10 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {View, Pressable, StyleSheet, type LayoutChangeEvent} from 'react-native';
+import {
+  View,
+  Pressable,
+  StyleSheet,
+  type LayoutChangeEvent,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -68,9 +73,9 @@ export function SegmentedTabBar({
   const {theme} = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const reducedMotion = useReducedMotion();
-  const [layouts, setLayouts] = useState<Partial<Record<LibraryTabId, TabLayout>>>(
-    {},
-  );
+  const [layouts, setLayouts] = useState<
+    Partial<Record<LibraryTabId, TabLayout>>
+  >({});
   // UI-thread values: the indicator keeps sliding smoothly even while the
   // JS thread is busy rendering the newly selected tab's content.
   const translateX = useSharedValue(0);
@@ -118,7 +123,8 @@ export function SegmentedTabBar({
       style={styles.container}
       accessibilityRole="tablist"
       accessibilityLabel="Danh mục thư viện"
-      accessibilityHint="Chứa các tab Bài học, Từ vựng và Ngữ pháp">
+      accessibilityHint="Chứa các tab Bài học, Từ vựng và Ngữ pháp"
+    >
       {activeLayout ? (
         <Animated.View
           testID="library-tab-indicator"

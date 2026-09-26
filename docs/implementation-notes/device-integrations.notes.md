@@ -116,7 +116,7 @@ cd ios && bundle exec pod install
 1. Make sure a chapter's audio is cached on the device. The manifest
    (`GET /v1/chapters/{chapterId}/audio-manifest`) is served by the backend;
    call `ensureChapterAudioOnDevice(chapterId)` once while online (the in-app
-   download trigger is the open content decision — see *Left open* below), then
+   download trigger is the open content decision — see _Left open_ below), then
    confirm `getAudioCacheStats()` shows ready bytes.
 2. Enable **Airplane mode** (no Wi-Fi).
 3. Open **Hồ sơ → Âm thanh chương học** (tap the row) — it plays the first

@@ -4,11 +4,11 @@
 
 Schema versions follow **Semantic Versioning** (MAJOR.MINOR.PATCH):
 
-| Change type | Version bump |
-|---|---|
-| New optional field added | PATCH |
-| New required field added, new enum value, field renamed | MINOR |
-| Field removed, type changed, ID strategy changed | MAJOR |
+| Change type                                             | Version bump |
+| ------------------------------------------------------- | ------------ |
+| New optional field added                                | PATCH        |
+| New required field added, new enum value, field renamed | MINOR        |
+| Field removed, type changed, ID strategy changed        | MAJOR        |
 
 The `schema_version` field in every `manifest.json` and lesson JSON **must** match the version exported by the tool.  
 If a consumer reads a package whose `schema_version` does not match the expected version, it **must** reject the package with a clear error rather than silently applying wrong defaults.

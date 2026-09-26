@@ -34,15 +34,23 @@ const airplaneMode = () => {
 };
 
 const acceptAllPractice = () => {
-  mockFetch.mockImplementation(async (url: unknown, init?: {body?: unknown}) => {
-    const body = JSON.parse(String((init?.body as string) ?? '{}'));
-    const ids = (body.events ?? []).map((e: {event_id: string}) => e.event_id);
-    return {
-      ok: true,
-      status: 200,
-      json: async () => ({accepted_ids: ids, duplicate_ids: [], rejected: []}),
-    };
-  });
+  mockFetch.mockImplementation(
+    async (url: unknown, init?: {body?: unknown}) => {
+      const body = JSON.parse(String((init?.body as string) ?? '{}'));
+      const ids = (body.events ?? []).map(
+        (e: {event_id: string}) => e.event_id,
+      );
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          accepted_ids: ids,
+          duplicate_ids: [],
+          rejected: [],
+        }),
+      };
+    },
+  );
 };
 
 function makeSet(id = 'set-e2e', lessonRevision = 3): PracticeSet {
@@ -143,7 +151,9 @@ beforeEach(() => {
   getDatabase();
   runMigrations(getDatabase());
   mockFetch.mockReset();
-  jest.spyOn(TokenStore, 'getLessonToken').mockResolvedValue({ok: true, token: 'test-token'});
+  jest
+    .spyOn(TokenStore, 'getLessonToken')
+    .mockResolvedValue({ok: true, token: 'test-token'});
 });
 
 afterEach(() => {
@@ -167,12 +177,18 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     // Run: graded by option ID, fully offline — q1's duplicate texts must
     // not change the outcome (HI-4).
     expect(
-      answerCurrentQuestion({sessionId: 'sess-happy', selectedOptionId: 'q1-opt-2', eventId: 'ev-1'})
-        .event.is_correct,
+      answerCurrentQuestion({
+        sessionId: 'sess-happy',
+        selectedOptionId: 'q1-opt-2',
+        eventId: 'ev-1',
+      }).event.is_correct,
     ).toBe(true);
     expect(
-      answerCurrentQuestion({sessionId: 'sess-happy', selectedOptionId: 'q2-opt-2', eventId: 'ev-2'})
-        .event.is_correct,
+      answerCurrentQuestion({
+        sessionId: 'sess-happy',
+        selectedOptionId: 'q2-opt-2',
+        eventId: 'ev-2',
+      }).event.is_correct,
     ).toBe(false);
     const last = answerCurrentQuestion({
       sessionId: 'sess-happy',
@@ -182,8 +198,15 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     expect(last.session.status).toBe('completed');
 
     // Result reconciles from the event log.
-    const summary = summarizeSession({sessionId: 'sess-happy', summaryId: 'sum-happy'});
-    expect(summary).toMatchObject({total_questions: 3, answered: 3, correct: 2});
+    const summary = summarizeSession({
+      sessionId: 'sess-happy',
+      summaryId: 'sum-happy',
+    });
+    expect(summary).toMatchObject({
+      total_questions: 3,
+      answered: 3,
+      correct: 2,
+    });
 
     // Sync: one drain pushes every buffered event; the server accepts all.
     expect(listPendingSyncEvents()).toHaveLength(3);
@@ -193,9 +216,13 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
       syncedIds: expect.arrayContaining(['ev-1', 'ev-2', 'ev-3']),
     });
     expect(listPendingSyncEvents()).toHaveLength(0);
-    expect(getAnswerEvents('sess-happy').every(e => e.sync_status === 'synced')).toBe(true);
+    expect(
+      getAnswerEvents('sess-happy').every(e => e.sync_status === 'synced'),
+    ).toBe(true);
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:3000/v1/practice-events:batch');
+    expect(mockFetch.mock.calls[0][0]).toBe(
+      'http://localhost:3000/v1/practice-events:batch',
+    );
   });
 
   it('2. retry generation: practice-only error surfaces, retry succeeds, lesson untouched (HI-1)', async () => {
@@ -211,7 +238,11 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
         lesson_id: 'lesson-e2e',
         lesson_revision: 3,
         questions: [],
-        error: {code: 'MOCK_GENERATION_FAILED', message: 'mocked failure', retryable: false},
+        error: {
+          code: 'MOCK_GENERATION_FAILED',
+          message: 'mocked failure',
+          retryable: false,
+        },
       }),
     });
     const failed = await getPracticeSetApi('lesson-e2e', 'set-retry');
@@ -229,7 +260,12 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({request_id: 'r2', contract_version: 1, ...JSON.parse(JSON.stringify(readySet)), status: 'ready'}),
+      json: async () => ({
+        request_id: 'r2',
+        contract_version: 1,
+        ...JSON.parse(JSON.stringify(readySet)),
+        status: 'ready',
+      }),
     });
     const retried = await getPracticeSetApi('lesson-e2e', 'set-retry');
     expect(retried.status).toBe('ready');
@@ -244,8 +280,16 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     airplaneMode();
     savePracticeSet(makeSet());
     createSession({set: makeSet(), sessionId: 'sess-crash'});
-    answerCurrentQuestion({sessionId: 'sess-crash', selectedOptionId: 'q1-opt-2', eventId: 'ev-1'});
-    answerCurrentQuestion({sessionId: 'sess-crash', selectedOptionId: 'q2-opt-1', eventId: 'ev-2'});
+    answerCurrentQuestion({
+      sessionId: 'sess-crash',
+      selectedOptionId: 'q1-opt-2',
+      eventId: 'ev-1',
+    });
+    answerCurrentQuestion({
+      sessionId: 'sess-crash',
+      selectedOptionId: 'q2-opt-1',
+      eventId: 'ev-2',
+    });
 
     // Kill: drop every handle and reopen as a fresh process would.
     const fresh = open({name: DB_NAME});
@@ -269,9 +313,13 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     });
     expect(last.event.sequence).toBe(3);
     expect(last.session.status).toBe('completed');
-    const sequences = getAnswerEvents('sess-crash').map(e => e.sequence).sort();
+    const sequences = getAnswerEvents('sess-crash')
+      .map(e => e.sequence)
+      .sort();
     expect(sequences).toEqual([1, 2, 3]);
-    expect(summarizeSession({sessionId: 'sess-crash', summaryId: 'sum-crash'})).toMatchObject({
+    expect(
+      summarizeSession({sessionId: 'sess-crash', summaryId: 'sum-crash'}),
+    ).toMatchObject({
       answered: 3,
       correct: 3,
     });
@@ -281,9 +329,21 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     airplaneMode();
     savePracticeSet(makeSet());
     createSession({set: makeSet(), sessionId: 'sess-offline'});
-    answerCurrentQuestion({sessionId: 'sess-offline', selectedOptionId: 'q1-opt-1', eventId: 'ev-1'});
-    answerCurrentQuestion({sessionId: 'sess-offline', selectedOptionId: 'q2-opt-1', eventId: 'ev-2'});
-    answerCurrentQuestion({sessionId: 'sess-offline', selectedOptionId: 'q3-opt-1', eventId: 'ev-3'});
+    answerCurrentQuestion({
+      sessionId: 'sess-offline',
+      selectedOptionId: 'q1-opt-1',
+      eventId: 'ev-1',
+    });
+    answerCurrentQuestion({
+      sessionId: 'sess-offline',
+      selectedOptionId: 'q2-opt-1',
+      eventId: 'ev-2',
+    });
+    answerCurrentQuestion({
+      sessionId: 'sess-offline',
+      selectedOptionId: 'q3-opt-1',
+      eventId: 'ev-3',
+    });
     expect(mockFetch).not.toHaveBeenCalled();
 
     // Back online: a single batch syncs the whole result…
@@ -302,14 +362,25 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     // Server-side duplicate also marks synced without a retry loop.
     savePracticeSet(makeSet('set-dup'));
     createSession({set: makeSet('set-dup'), sessionId: 'sess-dup'});
-    answerCurrentQuestion({sessionId: 'sess-dup', selectedOptionId: 'q1-opt-2', eventId: 'ev-dup'});
+    answerCurrentQuestion({
+      sessionId: 'sess-dup',
+      selectedOptionId: 'q1-opt-2',
+      eventId: 'ev-dup',
+    });
     mockFetch.mockReset();
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => ({accepted_ids: [], duplicate_ids: ['ev-dup'], rejected: []}),
+      json: async () => ({
+        accepted_ids: [],
+        duplicate_ids: ['ev-dup'],
+        rejected: [],
+      }),
     });
-    await expect(drainOutboxOnce()).resolves.toEqual({status: 'synced', syncedIds: ['ev-dup']});
+    await expect(drainOutboxOnce()).resolves.toEqual({
+      status: 'synced',
+      syncedIds: ['ev-dup'],
+    });
     await expect(drainOutboxOnce()).resolves.toEqual({status: 'idle'});
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
@@ -318,7 +389,11 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     // An old downloaded set with an in-progress session and a pending event.
     savePracticeSet({...makeSet(), ready_at: '2025-01-01T00:00:00.000Z'});
     createSession({set: makeSet(), sessionId: 'sess-purge'});
-    answerCurrentQuestion({sessionId: 'sess-purge', selectedOptionId: 'q1-opt-2', eventId: 'ev-1'});
+    answerCurrentQuestion({
+      sessionId: 'sess-purge',
+      selectedOptionId: 'q1-opt-2',
+      eventId: 'ev-1',
+    });
 
     purgeExpiredPracticeData('2026-09-10T00:00:00.000Z');
 
@@ -342,9 +417,13 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
     });
 
     // Lesson moved to revision 4: the same-revision set is still reusable…
-    expect(findReusablePracticeSetLocally('lesson-e2e', 3, 'hash-e2e')?.id).toBe('set-e2e');
+    expect(
+      findReusablePracticeSetLocally('lesson-e2e', 3, 'hash-e2e')?.id,
+    ).toBe('set-e2e');
     // …but there is no stale reuse for the new revision…
-    expect(findReusablePracticeSetLocally('lesson-e2e', 4, 'hash-e2e')).toBeNull();
+    expect(
+      findReusablePracticeSetLocally('lesson-e2e', 4, 'hash-e2e'),
+    ).toBeNull();
     // …but the started session continues on its frozen snapshot, with a
     // mismatch warning surfaced by the active-session lookup.
     expect(findActiveSessionLocally('lesson-e2e')?.id).toBe('sess-purge');
@@ -354,7 +433,9 @@ describe('practice E2E cross-cutting (P13, device side)', () => {
       eventId: 'ev-3',
     });
     expect(last.session.status).toBe('completed');
-    expect(summarizeSession({sessionId: 'sess-purge', summaryId: 'sum-purge'})).toMatchObject({
+    expect(
+      summarizeSession({sessionId: 'sess-purge', summaryId: 'sum-purge'}),
+    ).toMatchObject({
       answered: 3,
       correct: 3,
     });

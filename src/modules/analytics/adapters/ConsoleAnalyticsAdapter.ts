@@ -10,7 +10,6 @@ export function createConsoleAnalyticsAdapter(): AnalyticsAdapter {
     track(event: AnalyticsEventName, properties?: AnalyticsProperties) {
       const payload = sanitizeAnalyticsPayload(properties ?? {});
       if (__DEV__) {
-        // eslint-disable-next-line no-console
         console.info('[analytics]', event, payload);
       }
     },

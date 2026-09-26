@@ -31,12 +31,12 @@ Phase 2 — Environment (parallel) [Optional / when shipping builds]
 
 ## Phase 0 — Theme (what to build)
 
-| Deliverable | Owner doc |
-|---|---|
-| `theme/` registry, Provider, AsyncStorage | theme plan Tasks 1–5 |
-| `AppText`, `AppButton`, `AppCard`, `AppScreen`, `ThemePicker` | theme plan Tasks 6–10 |
+| Deliverable                                                    | Owner doc              |
+| -------------------------------------------------------------- | ---------------------- |
+| `theme/` registry, Provider, AsyncStorage                      | theme plan Tasks 1–5   |
+| `AppText`, `AppButton`, `AppCard`, `AppScreen`, `ThemePicker`  | theme plan Tasks 6–10  |
 | Migrate `PasteTextScreen`, `LessonResultView`, `ProfileScreen` | theme plan Tasks 11–13 |
-| `AppThemeProvider` on `AppNavigator` | theme plan Task 14 |
+| `AppThemeProvider` on `AppNavigator`                           | theme plan Task 14     |
 
 **Do not start Phase 1 until** theme plan Done criteria are all checked.
 
@@ -44,14 +44,14 @@ Phase 2 — Environment (parallel) [Optional / when shipping builds]
 
 ## Phase 1 — UI handoff (what to build)
 
-| Deliverable | Owner doc |
-|---|---|
-| Extend `AppTheme` (typography presets, extra semantic colors if needed) | UI plan Task 1 |
-| Component library (`WordCard`, `LessonCard`, `TabBar`, …) | UI plan Tasks 2–3 |
-| Zustand `useScanStore`, `useLibraryStore` + mock data | UI plan Task 4 |
-| Navigation shell (3 tab, stacks) | UI plan Task 5 |
-| Screen polish: Home, Library, OCR review, lesson shells | UI plan Tasks 6–8 |
-| Loading / empty / error states (handoff §9) | UI plan Task 9 |
+| Deliverable                                                             | Owner doc         |
+| ----------------------------------------------------------------------- | ----------------- |
+| Extend `AppTheme` (typography presets, extra semantic colors if needed) | UI plan Task 1    |
+| Component library (`WordCard`, `LessonCard`, `TabBar`, …)               | UI plan Tasks 2–3 |
+| Zustand `useScanStore`, `useLibraryStore` + mock data                   | UI plan Task 4    |
+| Navigation shell (3 tab, stacks)                                        | UI plan Task 5    |
+| Screen polish: Home, Library, OCR review, lesson shells                 | UI plan Tasks 6–8 |
+| Loading / empty / error states (handoff §9)                             | UI plan Task 9    |
 
 **Do not re-implement:** `theme/`, `ThemeProvider`, registry, or `ThemePicker` placement (already Phase 0).
 
@@ -59,14 +59,14 @@ Phase 2 — Environment (parallel) [Optional / when shipping builds]
 
 ## File index
 
-| Path | Type | Purpose |
-|---|---|---|
-| `specs/2026-06-05-theme-driven-architecture-design.md` | Spec | Theme architecture contract |
-| `plans/2026-06-05-theme-system.md` | Plan | Theme implementation (Tasks 0–16) |
-| `specs/2026-06-05-lingobites-ui-design.md` | Spec | Full mobile UI handoff scope |
-| `plans/2026-06-05-lingobites-ui.md` | Plan | UI implementation (after theme) |
-| `specs/2026-06-05-environment-setup-design.md` | Spec | iOS/Android/API env matrix |
-| `plans/2026-06-05-environment-setup.md` | Plan | Environment wiring |
+| Path                                                   | Type | Purpose                           |
+| ------------------------------------------------------ | ---- | --------------------------------- |
+| `specs/2026-06-05-theme-driven-architecture-design.md` | Spec | Theme architecture contract       |
+| `plans/2026-06-05-theme-system.md`                     | Plan | Theme implementation (Tasks 0–16) |
+| `specs/2026-06-05-lingobites-ui-design.md`             | Spec | Full mobile UI handoff scope      |
+| `plans/2026-06-05-lingobites-ui.md`                    | Plan | UI implementation (after theme)   |
+| `specs/2026-06-05-environment-setup-design.md`         | Spec | iOS/Android/API env matrix        |
+| `plans/2026-06-05-environment-setup.md`                | Plan | Environment wiring                |
 
 **BA mirrors:** `docs/01-ba/06-design/03-theme-system.md` (theme FR/TC), `04-html-handoff-to-code-spec.md` (visual tokens).
 

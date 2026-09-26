@@ -4,6 +4,7 @@ import {
   Image,
   Pressable,
   ScrollView,
+  StyleSheet,
   View,
 } from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -202,7 +203,9 @@ export function ImageCaptureScreen({navigation, route}: Props) {
         >
           <ErrorCard
             message={t('errors.permission_denied')}
-            onRetry={() => void launchPicker()}
+            onRetry={() => {
+              launchPicker();
+            }}
           />
           <AppButton
             title="Nhập text thủ công"
@@ -241,13 +244,17 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           {screenState.image ? (
             <AppButton
               title="Thử OCR lại"
-              onPress={() => void handleContinue(screenState.image!)}
+              onPress={() => {
+                handleContinue(screenState.image!);
+              }}
             />
           ) : null}
           <AppButton
             title="Chọn ảnh khác"
             variant="secondary"
-            onPress={() => void launchPicker()}
+            onPress={() => {
+              launchPicker();
+            }}
           />
           <AppButton
             title="Nhập text thủ công"
@@ -284,7 +291,9 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           <AppButton
             title="Chọn ảnh khác"
             variant="secondary"
-            onPress={() => void launchPicker()}
+            onPress={() => {
+              launchPicker();
+            }}
           />
         </ScrollView>
         <BottomActionBar
@@ -297,7 +306,9 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           <Pressable
             accessibilityLabel="Trích xuất text"
             accessibilityRole="button"
-            onPress={() => void handleContinue(screenState.image)}
+            onPress={() => {
+              handleContinue(screenState.image);
+            }}
             style={({pressed}) => [
               {
                 alignItems: 'center',
@@ -346,7 +357,9 @@ export function ImageCaptureScreen({navigation, route}: Props) {
         <Pressable
           accessibilityLabel="Chọn ảnh từ thư viện"
           accessibilityRole="button"
-          onPress={() => void launchPicker()}
+          onPress={() => {
+            launchPicker();
+          }}
           style={({pressed}) => [
             {
               alignItems: 'center',
@@ -383,7 +396,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             />
           </View>
           <AppText
-            style={{color: theme.colors.primary, fontWeight: '600'}}
+            style={[styles.pickText, {color: theme.colors.primary}]}
             variant="h3"
           >
             Chạm để chọn ảnh
@@ -395,24 +408,22 @@ export function ImageCaptureScreen({navigation, route}: Props) {
 
         <View>
           <SectionHeader title="Ảnh gần đây" />
-          <View style={{flexDirection: 'row', gap: 10}}>
+          <View style={styles.recentRow}>
             {RECENT_PLACEHOLDERS.map(label => (
-              <View key={label} style={{flex: 1}}>
+              <View key={label} style={styles.flex1}>
                 <ImagePlaceholder height={96} label={label} />
               </View>
             ))}
           </View>
         </View>
 
-        <AppCard
-          style={{alignItems: 'flex-start', flexDirection: 'row', gap: 12}}
-        >
+        <AppCard style={styles.ocrCard}>
           <MaterialIcon
             color={theme.colors.primary}
             name="auto_awesome"
             size={22}
           />
-          <View style={{flex: 1, gap: 2}}>
+          <View style={styles.ocrTextContainer}>
             <AppText variant="label">OCR thông minh</AppText>
             <AppText color="muted" variant="caption">
               Tự phát hiện ngôn ngữ và trích các từ đáng học từ ảnh của bạn.
@@ -431,7 +442,9 @@ export function ImageCaptureScreen({navigation, route}: Props) {
         <Pressable
           accessibilityLabel="Trích xuất text"
           accessibilityRole="button"
-          onPress={() => void launchPicker()}
+          onPress={() => {
+            launchPicker();
+          }}
           style={({pressed}) => [
             {
               alignItems: 'center',
@@ -464,3 +477,32 @@ export function ImageCaptureScreen({navigation, route}: Props) {
     </AppScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  centerText: {
+    textAlign: 'center',
+  },
+  pickText: {
+    fontWeight: '600',
+  },
+  recentRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  flex1: {
+    flex: 1,
+  },
+  ocrCard: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  ocrTextContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  actionText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});

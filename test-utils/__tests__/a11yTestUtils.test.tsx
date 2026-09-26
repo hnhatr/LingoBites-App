@@ -1,3 +1,4 @@
+/* eslint-disable react-native-a11y/has-accessibility-hint */
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {Pressable, Text, View} from 'react-native';

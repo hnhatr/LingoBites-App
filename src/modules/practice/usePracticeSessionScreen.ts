@@ -21,9 +21,8 @@ export function usePracticeSessionScreen(sessionId: string) {
   const [snapshot, setSnapshot] = useState<SessionSnapshot>(() =>
     resumeSession(sessionId),
   );
-  const [pendingFeedback, setPendingFeedback] = useState<PendingFeedback | null>(
-    null,
-  );
+  const [pendingFeedback, setPendingFeedback] =
+    useState<PendingFeedback | null>(null);
 
   const pendingSync = useMemo(
     () => hasPendingPracticeSync(sessionId),
@@ -83,4 +82,6 @@ export function usePracticeSessionScreen(sessionId: string) {
   };
 }
 
-export type UsePracticeSessionScreen = ReturnType<typeof usePracticeSessionScreen>;
+export type UsePracticeSessionScreen = ReturnType<
+  typeof usePracticeSessionScreen
+>;

@@ -16,7 +16,9 @@ describe('every registered theme renders App* components', () => {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, theme.id);
       await act(async () => {
         ReactTestRenderer.create(
-          <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}>
+          <FeatureFlagProvider
+            releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+          >
             <AppThemeProvider>
               <>
                 <AppText variant="title">{theme.name}</AppText>

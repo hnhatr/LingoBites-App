@@ -54,7 +54,12 @@ describe('themeRegistry', () => {
   });
 
   it('exposes the production picker options plus the system preference', () => {
-    expect(productionThemeOptions).toEqual(['default', 'dark', 'sticker-soft', SYSTEM_THEME_ID]);
+    expect(productionThemeOptions).toEqual([
+      'default',
+      'dark',
+      'sticker-soft',
+      SYSTEM_THEME_ID,
+    ]);
     expect(isThemePreference('system')).toBe(true);
     expect(isThemePreference('dark')).toBe(true);
     expect(isThemePreference('nope')).toBe(false);

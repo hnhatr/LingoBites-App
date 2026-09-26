@@ -14,7 +14,7 @@ jest.mock('../../api/youtubeApi', () => ({
   runYouTubeJob: (...args: unknown[]) => mockRunYouTubeJob(...args),
 }));
 
-jest.mock('@shared/db/YoutubeLessonRepository', () => ({
+jest.mock('@shared/db/YouTubeLessonRepository', () => ({
   saveYouTubeLesson: (...args: unknown[]) => mockSaveYouTubeLesson(...args),
 }));
 

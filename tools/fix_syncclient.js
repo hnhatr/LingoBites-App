@@ -19,6 +19,6 @@ content = content.replace(
   }
 
   return { signal: controller.signal };
-}`
+}`,
 );
 fs.writeFileSync('src/shared/api/syncClient.ts', content);

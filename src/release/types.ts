@@ -4,7 +4,12 @@ export type FeatureReleaseGroup =
   | 'practice'
   | 'expansion';
 
-export type FeatureStatus = 'ready' | 'beta' | 'incomplete' | 'not_implemented' | 'blocked';
+export type FeatureStatus =
+  | 'ready'
+  | 'beta'
+  | 'incomplete'
+  | 'not_implemented'
+  | 'blocked';
 
 export type FeatureRegistryEntry = {
   key: string;

@@ -28,14 +28,14 @@ Apply HTML handoff UI on completed theme layer: components, TabBar, screen migra
 
 ## Files Changed
 
-| File | Change | Reason |
-|---|---|---|
-| `src/theme/types.ts`, `tokens.ts`, `themes/*` | Extend | Handoff presets + semantic colors |
-| `src/components/*` (15+) | Create | Handoff building blocks + ErrorCard |
-| `src/app/navigation/TabBar.tsx` | Create | Token-driven 3-tab bar |
-| `src/types/*`, `src/store/*`, `src/services/ai.ts`, `src/data/*` | Create | Async types, stores, AI seam, mocks |
-| `src/modules/**` (10 screens) | Migrate | Tokens + App* + handoff components |
-| Screen/component tests | Update | AppThemeProvider wrappers |
+| File                                                             | Change  | Reason                              |
+| ---------------------------------------------------------------- | ------- | ----------------------------------- |
+| `src/theme/types.ts`, `tokens.ts`, `themes/*`                    | Extend  | Handoff presets + semantic colors   |
+| `src/components/*` (15+)                                         | Create  | Handoff building blocks + ErrorCard |
+| `src/app/navigation/TabBar.tsx`                                  | Create  | Token-driven 3-tab bar              |
+| `src/types/*`, `src/store/*`, `src/services/ai.ts`, `src/data/*` | Create  | Async types, stores, AI seam, mocks |
+| `src/modules/**` (10 screens)                                    | Migrate | Tokens + App\* + handoff components |
+| Screen/component tests                                           | Update  | AppThemeProvider wrappers           |
 
 ## Tests / Verification
 
