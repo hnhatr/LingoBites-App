@@ -197,8 +197,13 @@ export async function runPullWorker() {
 
     while (hasMore && isEnabled) {
       const res = await syncPull(cursor, 100);
+      if (!isEnabled) {
+        break;
+      }
       if (!res.ok) {
-        retryTimer = setTimeout(runPullWorker, 5000);
+        if (isEnabled) {
+          retryTimer = setTimeout(runPullWorker, 5000);
+        }
         break;
       }
 
@@ -215,7 +220,9 @@ export async function runPullWorker() {
         pageApplied = true;
       } catch (_err) {
         // Rollback occurred. Do not advance cursor, schedule retry.
-        retryTimer = setTimeout(runPullWorker, 5000);
+        if (isEnabled) {
+          retryTimer = setTimeout(runPullWorker, 5000);
+        }
         break;
       }
 
@@ -246,6 +253,10 @@ export function startPullWorker() {
 
 export function stopPullWorker() {
   isEnabled = false;
-  if (retryTimer) clearTimeout(retryTimer);
+  if (retryTimer) {
+    clearTimeout(retryTimer);
+    retryTimer = null;
+  }
   subscription?.remove();
+  subscription = null;
 }
