@@ -21,7 +21,7 @@ const apply = (file, replacements) => {
   fs.writeFileSync(p, content);
 };
 
-apply('YoutubeLessonRepository.ts', [
+apply('YouTubeLessonRepository.ts', [
   {
     search:
       /return \{ok: true, lessonId: lesson\.video\.id, duplicate: existing !== null\};/g,
