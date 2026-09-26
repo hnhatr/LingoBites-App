@@ -25,8 +25,7 @@ function hostTestIDs(tree: renderer.ReactTestRenderer): string[] {
   return tree.root
     .findAll(
       node =>
-        typeof node.type === 'string' &&
-        typeof node.props?.testID === 'string',
+        typeof node.type === 'string' && typeof node.props?.testID === 'string',
     )
     .map(node => node.props.testID as string);
 }
@@ -82,9 +81,9 @@ describe('StepActions accessibility (SETE-265)', () => {
     expect(ids).toContain('lesson-step-complete');
     expect(ids).not.toContain('lesson-step-skip');
     expect(
-      tree.root.findAllByType(AppButton).filter(
-        node => node.props.testID === 'lesson-step-complete',
-      ),
+      tree.root
+        .findAllByType(AppButton)
+        .filter(node => node.props.testID === 'lesson-step-complete'),
     ).toHaveLength(1);
   });
 });

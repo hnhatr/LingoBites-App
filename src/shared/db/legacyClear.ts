@@ -14,8 +14,7 @@ export const LEGACY_CLEAR_MARKER = 'account.legacy_clear_completed_v1';
  * first (and only) write of this marker alongside the lesson token clear
  * and the seven v1/v2 lesson table drops.
  */
-export const CANONICAL_LEGACY_CLEAR_MARKER =
-  'lesson.canonical_legacy_clear_v1';
+export const CANONICAL_LEGACY_CLEAR_MARKER = 'lesson.canonical_legacy_clear_v1';
 
 export interface CanonicalLegacyClearOptions {
   authorizationRef: string;
@@ -48,7 +47,10 @@ export const CANONICAL_LEGACY_INDEXES_TO_DROP = [
 export async function executeLegacyClear(): Promise<void> {
   const db = getDatabase();
 
-  const marker = db.execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [LEGACY_CLEAR_MARKER]);
+  const marker = db.execute(
+    'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
+    [LEGACY_CLEAR_MARKER],
+  );
   if (marker.rows?.length) {
     return; // Already cleared
   }
@@ -89,7 +91,9 @@ export async function executeLegacyClear(): Promise<void> {
     // Speaking / Error Notebook (user-created Analysis)
     db.execute('DELETE FROM speaking_recordings;');
     db.execute('DELETE FROM error_events;');
-    db.execute("DELETE FROM content_review_items WHERE item_type = 'speaking_error';");
+    db.execute(
+      "DELETE FROM content_review_items WHERE item_type = 'speaking_error';",
+    );
 
     // Clear settings, preserving approved keys + the new marker
     db.execute(`
@@ -107,7 +111,7 @@ export async function executeLegacyClear(): Promise<void> {
     // Mark completed
     db.execute(
       'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
-      [LEGACY_CLEAR_MARKER, '1', new Date().toISOString()]
+      [LEGACY_CLEAR_MARKER, '1', new Date().toISOString()],
     );
 
     db.execute('COMMIT');

@@ -21,7 +21,7 @@ export async function confirmFirstFlashcardSave(
       {
         text: 'Đã hiểu, lưu từ',
         onPress: () => {
-          void (async () => {
+          (async () => {
             await saveFlashcardDisclosureAcknowledged();
             await onConfirm();
           })();

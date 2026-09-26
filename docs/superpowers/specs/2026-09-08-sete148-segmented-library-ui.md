@@ -12,6 +12,7 @@
 Build the three-segment Library (Thư viện) UI with independent search/filter per segment and explicit save/unsave controls for vocabulary and grammar items. The implementation leverages repositories from TASK-03 (persistence) and navigation from TASK-02.
 
 **Key Design Decisions:**
+
 - Segmented tabs (Bài học | Từ vựng | Ngữ pháp) instead of stacked sections
 - Independent search/filter per segment
 - Optimistic update pattern for save/unsave actions
@@ -54,6 +55,7 @@ LessonsHistoryScreen (main container)
 ### 3.2 Tab Specifications
 
 #### **Tab 1: Bài học (Lessons)**
+
 - **Data Sources:**
   - Personal generated lessons (from existing `useLibraryStore`)
   - Packaged/curriculum lessons: saved OR started (from `ContentLessonStateRepository`)
@@ -68,6 +70,7 @@ LessonsHistoryScreen (main container)
   - Search yielded nothing: "Không tìm thấy kết quả"
 
 #### **Tab 2: Từ vựng (Vocabulary)**
+
 - **Data Source:** `FlashcardRepository.listFlashcards({includeUnsaved: false})`
 - **Content per Row:**
   - Word + pronunciation guide
@@ -82,6 +85,7 @@ LessonsHistoryScreen (main container)
   - Search yielded nothing: "Không tìm thấy kết quả"
 
 #### **Tab 3: Ngữ pháp (Grammar)**
+
 - **Data Source:** `GrammarBookmarkRepository.listAllBookmarkedGrammar()`
 - **Content per Row:**
   - Grammar rule title
@@ -99,6 +103,7 @@ LessonsHistoryScreen (main container)
 ## 4. State Management
 
 ### 4.1 Tab State
+
 ```typescript
 interface LibrarySegmentState {
   activeTab: 'lessons' | 'vocabulary' | 'grammar';
@@ -107,6 +112,7 @@ interface LibrarySegmentState {
 ```
 
 ### 4.2 Per-Tab Search & Filter State
+
 ```typescript
 interface SegmentFilterState {
   searchQuery: string;
@@ -122,12 +128,17 @@ const [grammarFilter, setGrammarFilter] = useState<SegmentFilterState>(...);
 ```
 
 ### 4.3 Optimistic Save/Unsave State
+
 ```typescript
 // Local optimistic state for vocabulary bookmarks
-const [vocabularySaveState, setVocabularySaveState] = useState<Map<string, boolean>>(new Map());
+const [vocabularySaveState, setVocabularySaveState] = useState<
+  Map<string, boolean>
+>(new Map());
 
 // Local optimistic state for grammar bookmarks
-const [grammarSaveState, setGrammarSaveState] = useState<Map<string, boolean>>(new Map());
+const [grammarSaveState, setGrammarSaveState] = useState<Map<string, boolean>>(
+  new Map(),
+);
 ```
 
 ---
@@ -135,6 +146,7 @@ const [grammarSaveState, setGrammarSaveState] = useState<Map<string, boolean>>(n
 ## 5. Data Flow
 
 ### 5.1 Lessons Tab Data Flow
+
 ```
 Query ContentLessonStateRepository (listSavedLessons + listStartedLessons)
   ↓ (enrich with ContentLessonListItem metadata)
@@ -144,6 +156,7 @@ Render FlatList with two sections
 ```
 
 ### 5.2 Vocabulary Tab Data Flow
+
 ```
 Query FlashcardRepository.listFlashcards({includeUnsaved: false})
   ↓ (filter by searchQuery: case-insensitive word/meaning/example)
@@ -153,6 +166,7 @@ Render FlatList of VocabularyRowCards with heart buttons
 ```
 
 ### 5.3 Grammar Tab Data Flow
+
 ```
 Query GrammarBookmarkRepository.listAllBookmarkedGrammar()
   ↓ (enrich with grammar content from lesson package)
@@ -169,6 +183,7 @@ Render FlatList of GrammarRowCards with heart buttons
 ### 6.1 Optimistic Update Pattern
 
 **On Save (heart ♡ → ❤️):**
+
 1. User taps heart button
 2. [Optimistic] Update local state immediately: `Map.set(itemId, true)`
 3. [UI Update] Heart icon fills (visual feedback)
@@ -176,6 +191,7 @@ Render FlatList of GrammarRowCards with heart buttons
 5. [Result] If error, revert local state + show toast: "Lỗi lưu. Vui lòng thử lại."
 
 **On Unsave (❤️ → ♡):**
+
 1. User taps filled heart button
 2. [Optimistic] Update local state immediately: `Map.set(itemId, false)`
 3. [UI Update] Heart icon empties (visual feedback)
@@ -193,23 +209,27 @@ Render FlatList of GrammarRowCards with heart buttons
 ## 7. Error Handling
 
 ### 7.1 DB Errors
+
 - **Catch:** `LOCAL_DB_ERROR` from repository methods
 - **Action:** Revert optimistic state update
 - **UI:** Show error toast: "Lỗi lưu. Vui lòng thử lại."
 - **Recovery:** User can retry by tapping the button again
 
 ### 7.2 Missing Record Errors
+
 - **Scenario:** Detail navigation tries to open a record that doesn't exist
 - **Action:** Catch in detail screen
 - **UI:** Show error screen with "Bản ghi không tìm thấy" + back button
 - **Note:** Already handled by existing detail screen logic
 
 ### 7.3 Navigation Errors
+
 - **Scenario:** Navigation fails (bad lessonId, route not found, etc.)
 - **Action:** Catch and log
 - **UI:** Show toast: "Không thể mở bài học. Vui lòng thử lại."
 
 ### 7.4 Empty States
+
 - **No data:** Show segment-specific message + icon
 - **No search results:** Show "Không tìm thấy kết quả"
 
@@ -220,6 +240,7 @@ Render FlatList of GrammarRowCards with heart buttons
 ### 8.1 Unit Tests
 
 **Hooks & Utilities:**
+
 1. `useLibrarySegments` hook — verify fetch, filter, and state management for each tab
 2. Search filtering — case-insensitive across all searchable fields
 3. Source filter logic — verify `camera`/`gallery` maps to `image_ocr`
@@ -228,6 +249,7 @@ Render FlatList of GrammarRowCards with heart buttons
 ### 8.2 Component Tests
 
 **Rendering & Interaction:**
+
 1. Segment tabs render correctly; switching tabs works
 2. Search input updates items in current tab only (not other tabs)
 3. Source filter updates items in current tab only
@@ -239,6 +261,7 @@ Render FlatList of GrammarRowCards with heart buttons
 ### 8.3 Integration Tests
 
 **End-to-End Flows:**
+
 1. Save vocabulary → verify appears in Vocabulary tab
 2. Unsave vocabulary → verify disappears from Vocabulary tab
 3. Save grammar → verify appears in Grammar tab
@@ -247,6 +270,7 @@ Render FlatList of GrammarRowCards with heart buttons
 6. Restart app → saved/unsaved state persists
 
 **Test Data Fixture:**
+
 - 10+ saved lessons (mix of personal and packaged)
 - 20+ saved flashcards (mix of sources: offline, image_ocr, paste)
 - 5+ saved grammar bookmarks
@@ -257,6 +281,7 @@ Render FlatList of GrammarRowCards with heart buttons
 ## 9. Files to Create/Modify
 
 ### 9.1 New/Modified Components
+
 - `src/modules/lesson/LessonsHistoryScreen.tsx` — refactor to support segments
 - `src/modules/lesson/components/LessonsTabContent.tsx` — new (lessons tab)
 - `src/modules/lesson/components/VocabularyTabContent.tsx` — new (vocabulary tab)
@@ -267,10 +292,12 @@ Render FlatList of GrammarRowCards with heart buttons
 - `src/modules/lesson/components/GrammarRowCard.tsx` — new (grammar row)
 
 ### 9.2 New/Modified Hooks
+
 - `src/modules/lesson/useLibrarySegments.ts` — new (unified segment data hook)
 - `src/modules/lesson/useLessonLibrary.ts` — potentially refactor to fit new pattern
 
 ### 9.3 New Tests
+
 - `src/modules/lesson/__tests__/useLibrarySegments.test.ts`
 - `src/modules/lesson/__tests__/LessonsHistoryScreen.test.tsx`
 - `src/modules/lesson/__tests__/VocabularyTabContent.test.tsx`
@@ -282,6 +309,7 @@ Render FlatList of GrammarRowCards with heart buttons
 ## 10. Dependencies & Assumptions
 
 ### 10.1 Dependencies (from TASK-02 & TASK-03)
+
 - ✓ `ContentLessonStateRepository` — listSavedLessons, listStartedLessons
 - ✓ `GrammarBookmarkRepository` — listAllBookmarkedGrammar, saveGrammarBookmark, unsaveGrammarBookmark
 - ✓ `FlashcardRepository` — listFlashcards, saveFlashcard, unsaveFlashcard
@@ -289,6 +317,7 @@ Render FlatList of GrammarRowCards with heart buttons
 - ✓ Navigation routes — SavedLessonDetail, ContentLessonRuntime, FlashcardDetail, GrammarDetail
 
 ### 10.2 Assumptions
+
 - All detail screens already exist and can accept repository lookup parameters
 - Source type normalization (camera/gallery → image_ocr) happens at the query boundary
 - Database idempotency handles rapid-tap safety at the storage layer

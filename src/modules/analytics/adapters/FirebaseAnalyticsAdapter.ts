@@ -17,7 +17,6 @@ export function createFirebaseAnalyticsAdapter(): AnalyticsAdapter {
   return {
     track(event: AnalyticsEventName, properties?: AnalyticsProperties) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
         console.info(
           '[analytics:firebase-stub]',
           'Replace with @react-native-firebase/analytics when Firebase project is ready.',

@@ -23,10 +23,10 @@ jest.mock('../useLibrarySegments', () => ({
 }));
 
 jest.mock('@react-navigation/native', () => {
-  const React = require('react');
+  const ReactModule = require('react');
   return {
     useFocusEffect: (callback: () => void) =>
-      React.useEffect(callback, [callback]),
+      ReactModule.useEffect(callback, [callback]),
     useNavigation: () => ({
       navigate: jest.fn(),
     }),

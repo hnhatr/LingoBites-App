@@ -21,6 +21,7 @@ The Design Team transforms approved BA packages into validated user flows, wiref
 Design Lead announces lane choice with rationale in first comment. TranHoangNha may override.
 
 **Full Lane** (9 stages with 3 gates) — if ANY of:
+
 - 3+ new screens
 - Adding/modifying shared components in `src/components/`
 - Touching theme/tokens
@@ -28,6 +29,7 @@ Design Lead announces lane choice with rationale in first comment. TranHoangNha 
 - TranHoangNha requests it
 
 **Fast Lane** (5 stages with 1 gate) — otherwise:
+
 - 1-2 screens
 - No shared component changes
 
@@ -35,27 +37,27 @@ If full lane conditions appear mid-work, Design Lead must escalate — do not se
 
 ## Full Lane Stage Chain
 
-| Stage | Work | Owner |
-|---|---|---|
-| 1 | Design brief, scope, screen inventory, clarification log, traceability register | Design Lead |
-| 2 | **Human Gate 1** — user flow approval | TranHoangNha |
-| 3 | IA, task/user/screen flows, states, exception/recovery paths (Mermaid) | UX Flow & IA Designer |
-| 4 | Wireframe + state matrix + responsive ∥ Content copy deck + error matrix (parallel) | UI & Wireframe Designer, Content Designer |
-| 5 | **Human Gate 2** — wireframe business/usability approval | TranHoangNha |
-| 6 | UI spec with tokens, design-system gap list, HTML handoff, motion spec | UI & Wireframe Designer |
-| 7 | Heuristic review, contrast check, a11y checklist, severity-ranked issue log | UX & Accessibility Critic |
-| 8 | Synthesis: final handoff package, traceability matrix, assumption/question/risk/decision logs | Design Lead |
-| 9 | **Human Gate 3** — final handoff approval before code | TranHoangNha |
+| Stage | Work                                                                                          | Owner                                     |
+| ----- | --------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| 1     | Design brief, scope, screen inventory, clarification log, traceability register               | Design Lead                               |
+| 2     | **Human Gate 1** — user flow approval                                                         | TranHoangNha                              |
+| 3     | IA, task/user/screen flows, states, exception/recovery paths (Mermaid)                        | UX Flow & IA Designer                     |
+| 4     | Wireframe + state matrix + responsive ∥ Content copy deck + error matrix (parallel)           | UI & Wireframe Designer, Content Designer |
+| 5     | **Human Gate 2** — wireframe business/usability approval                                      | TranHoangNha                              |
+| 6     | UI spec with tokens, design-system gap list, HTML handoff, motion spec                        | UI & Wireframe Designer                   |
+| 7     | Heuristic review, contrast check, a11y checklist, severity-ranked issue log                   | UX & Accessibility Critic                 |
+| 8     | Synthesis: final handoff package, traceability matrix, assumption/question/risk/decision logs | Design Lead                               |
+| 9     | **Human Gate 3** — final handoff approval before code                                         | TranHoangNha                              |
 
 ## Fast Lane Stage Chain
 
-| Stage | Work | Owner |
-|---|---|---|
-| 1 | Brief + flow | Design Lead |
-| 2 | Wireframe + UI spec + HTML handoff | UI & Wireframe Designer |
-| 3 | Heuristic + accessibility review | UX & Accessibility Critic |
-| 4 | Synthesize final package | Design Lead |
-| 5 | **Human Gate 3** (only 1 gate) | TranHoangNha |
+| Stage | Work                               | Owner                     |
+| ----- | ---------------------------------- | ------------------------- |
+| 1     | Brief + flow                       | Design Lead               |
+| 2     | Wireframe + UI spec + HTML handoff | UI & Wireframe Designer   |
+| 3     | Heuristic + accessibility review   | UX & Accessibility Critic |
+| 4     | Synthesize final package           | Design Lead               |
+| 5     | **Human Gate 3** (only 1 gate)     | TranHoangNha              |
 
 ## Human Gate Protocol
 
@@ -78,6 +80,7 @@ If full lane conditions appear mid-work, Design Lead must escalate — do not se
 ## Escalation
 
 Maximum 2 revision rounds between Critic and designers. Remaining critical conflicts escalate to TranHoangNha with:
+
 - Disagreement summary
 - Each position with evidence
 - Recommended resolution
@@ -91,6 +94,7 @@ Design Lead maintains traceability register. Every critical design element must 
 ## Completion Rule
 
 Declare complete only when:
+
 - User flow passed Gate 1
 - Wireframes passed Gate 2
 - Every critical requirement and state represented in design or documented as non-visual
@@ -101,6 +105,7 @@ Declare complete only when:
 ## Classification Labels
 
 All team members use these:
+
 - `FACT` — verified from requirements, code, or design system
 - `ASSUMPTION` — hypothesis needing validation
 - `QUESTION` — unresolved, needs answer from BA/Product Owner/stakeholders
@@ -113,19 +118,23 @@ All team members use these:
 LingoBites-App design system exists in code. All agents must read and reuse, never build parallel:
 
 **Theme:**
+
 - `src/theme/tokens.ts`, `src/theme/themeRegistry.ts`, `src/theme/ThemeProvider.tsx`, `src/theme/useAppTheme.ts`
 - 7 themes: `default`, `dark`, `core`, `cartoon`, `comic`, `neo`, `pastelKids` in `src/theme/themes/`
 
 **Components:**
+
 - 31 shared components in `src/components/`: `AppButton`, `AppCard`, `AppScreen`, `AppText`, `TextField`, `QuizOption`, `ScanFrame`, `LessonCard`, `ListRow`, `Chip`, `Medallion`, etc.
 
 **Design Docs:**
+
 - `docs/01-ba/06-design/01-user-flow-screen-spec.md`
 - `docs/01-ba/06-design/02-ui-wireframes.md`
 - `docs/01-ba/06-design/03-theme-system.md`
 - `docs/01-ba/06-design/04-html-handoff-to-code-spec.md`
 
 **Doc Convention:**
+
 - `docs/01-ba/00-DOC-CONVENTION.md` — 3 doc layers, placement rules, format standards
 
 All new artifacts must follow `00-DOC-CONVENTION.md` and match existing design doc format.

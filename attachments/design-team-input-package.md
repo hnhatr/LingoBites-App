@@ -33,20 +33,21 @@ Must: US-016 (save vocab as flashcard), US-017 (view saved list), US-018 (flip c
 **Luồng chính:** xem PRD §6.
 
 **Luồng thay thế:**
+
 - User mở Daily Review khi không có thẻ nào due → empty state "đã ôn hết hôm nay" (khác với "chưa từng lưu thẻ nào").
 - User skip 1 thẻ thay vì rating → thẻ tính là đã xử lý, `due_at` không đổi.
 
 **Ngoại lệ / Edge case (E1–E7, đầy đủ tại VIB-117 §11 + VIB-120 CRIT-003):**
 
-| # | Edge case | Yêu cầu UI liên quan |
-|---|---|---|
-| E1/CRIT-002 | Lesson gốc bị xóa còn flashcard active | Tùy phương án Gate (§9.1 PRD) — nếu Option A: cần màn hình lỗi/hướng dẫn unsave trước khi xóa |
-| E2 | Cùng 1 từ ở 2 lesson khác nhau | Hiển thị như 2 card riêng biệt trong list, có thể cần chỉ báo ngữ cảnh/nguồn khác nhau |
-| E3 | Queue tích lũy lớn sau nhiều ngày không mở app | Tùy phương án §9.3 — nếu cap: cần UI thể hiện "còn N thẻ chưa ôn, sẽ tiếp tục ngày mai" |
-| E4 | 2 empty state khác nhau (chưa từng lưu vs đã ôn hết) | 2 màn/message riêng biệt, không dùng chung 1 empty state |
-| E5 | App crash giữa phiên review | Resume đúng vị trí thẻ đang ôn, không mất tiến độ — yêu cầu kỹ thuật, không cần UI riêng nhưng cần loading/resume state mượt |
-| E6 | Unsave đúng thẻ cuối đang ôn dở | Session tự động chuyển sang màn hoàn thành ngay |
-| E7 | Unsave rồi re-save nhanh | Không cần UI đặc biệt — hành vi ngầm khôi phục đúng schedule cũ |
+| #           | Edge case                                            | Yêu cầu UI liên quan                                                                                                         |
+| ----------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| E1/CRIT-002 | Lesson gốc bị xóa còn flashcard active               | Tùy phương án Gate (§9.1 PRD) — nếu Option A: cần màn hình lỗi/hướng dẫn unsave trước khi xóa                                |
+| E2          | Cùng 1 từ ở 2 lesson khác nhau                       | Hiển thị như 2 card riêng biệt trong list, có thể cần chỉ báo ngữ cảnh/nguồn khác nhau                                       |
+| E3          | Queue tích lũy lớn sau nhiều ngày không mở app       | Tùy phương án §9.3 — nếu cap: cần UI thể hiện "còn N thẻ chưa ôn, sẽ tiếp tục ngày mai"                                      |
+| E4          | 2 empty state khác nhau (chưa từng lưu vs đã ôn hết) | 2 màn/message riêng biệt, không dùng chung 1 empty state                                                                     |
+| E5          | App crash giữa phiên review                          | Resume đúng vị trí thẻ đang ôn, không mất tiến độ — yêu cầu kỹ thuật, không cần UI riêng nhưng cần loading/resume state mượt |
+| E6          | Unsave đúng thẻ cuối đang ôn dở                      | Session tự động chuyển sang màn hoàn thành ngay                                                                              |
+| E7          | Unsave rồi re-save nhanh                             | Không cần UI đặc biệt — hành vi ngầm khôi phục đúng schedule cũ                                                              |
 
 ## 7. Business Rules
 
@@ -62,12 +63,12 @@ Không có role/permission mới — P1 kế thừa mô hình P0 (`anonymous_use
 
 ## 10. Acceptance Criteria
 
-Đầy đủ ~30 AC Given-When-Then tại [VIB-122](mention://issue/190d0509-731b-4875-a49d-6bc3b2fda582) §2. Design nên đọc trực tiếp AC-FLASH-001..012, AC-SRS-*, AC-REV-001..008 để hiểu chính xác trạng thái/tương tác cần thiết kế (vd. AC-REV-007 — 2 empty state; AC-FLASH-009 — cập nhật counter tức thời khi unsave giữa session).
+Đầy đủ ~30 AC Given-When-Then tại [VIB-122](mention://issue/190d0509-731b-4875-a49d-6bc3b2fda582) §2. Design nên đọc trực tiếp AC-FLASH-001..012, AC-SRS-\*, AC-REV-001..008 để hiểu chính xác trạng thái/tương tác cần thiết kế (vd. AC-REV-007 — 2 empty state; AC-FLASH-009 — cập nhật counter tức thời khi unsave giữa session).
 
 ## 11. NFR liên quan đến Design
 
 - NFR-USE-004 (kế thừa P0): tránh quá tải — đặc biệt quan trọng cho §6 E3 (queue tích lũy) và danh sách flashcard dài.
-- NFR-ACC-* (kế thừa P0): flip card, rating buttons cần đủ tap area + accessible label (đặc biệt 4 nút rating nếu chọn SM-2 §9.2 Option 1).
+- NFR-ACC-\* (kế thừa P0): flip card, rating buttons cần đủ tap area + accessible label (đặc biệt 4 nút rating nếu chọn SM-2 §9.2 Option 1).
 - Local-only, offline-first — không có loading state chờ network cho các thao tác flashcard/review (khác biệt so với AI-analysis flow ở P0).
 
 ## 12. Ràng buộc kỹ thuật
@@ -81,9 +82,9 @@ Không có role/permission mới — P1 kế thừa mô hình P0 (`anonymous_use
 
 ### Assumption Log (còn mở, cần theo dõi)
 
-| # | Assumption | Owner |
-|---|---|---|
-| A1 (Gate 1) | Local-first, không backend mới | Technical & Risk Analyst — đã xác nhận Stage 3 |
+| #                     | Assumption                                                                                                                                | Owner                                          |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| A1 (Gate 1)           | Local-first, không backend mới                                                                                                            | Technical & Risk Analyst — đã xác nhận Stage 3 |
 | A-QA-01..05 (Stage 5) | Thẻ mới due ngay; unsave loại khỏi session ngay; re-save khôi phục schedule; local-only có giới hạn tường minh; SRS không phụ thuộc level | Xem VIB-122 §8, đa số đã hội tụ thành DECISION |
 
 ### Question Log (mở, owner TranHoangNha — xem PRD §9 đầy đủ)
@@ -92,19 +93,19 @@ Q-GATE-01 (CRIT-002 survival policy), Q-GATE-02 (Q1 thuật toán SRS), Q-GATE-0
 
 ### Risk Register (còn mở)
 
-| ID | Risk | Owner |
-|---|---|---|
-| R2 | Migration mới chạm vào lớp migration P0 vừa sửa lỗi cú pháp — cần version ledger/transaction, chưa implement | Mobile Tech Lead |
-| R4 (persona) | Nhu cầu sentence pattern của Lan không được đáp ứng (nếu §9.5 xác nhận) | Product Owner |
-| Benchmark 10k cards (LOW-001) | Target p95 chưa có baseline thật, chỉ là đề xuất | Mobile Tech Lead |
+| ID                            | Risk                                                                                                         | Owner            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------- |
+| R2                            | Migration mới chạm vào lớp migration P0 vừa sửa lỗi cú pháp — cần version ledger/transaction, chưa implement | Mobile Tech Lead |
+| R4 (persona)                  | Nhu cầu sentence pattern của Lan không được đáp ứng (nếu §9.5 xác nhận)                                      | Product Owner    |
+| Benchmark 10k cards (LOW-001) | Target p95 chưa có baseline thật, chỉ là đề xuất                                                             | Mobile Tech Lead |
 
 ### Decision Log (đã chốt qua Stage 3–6)
 
-| Quyết định | Decision-maker |
-|---|---|
-| Full Lane (Gate 1) | TranHoangNha (approve) |
-| Completion rule hợp nhất (CRIT-001) | Requirements + Technical & Risk Analyst, hội tụ Stage 4 |
-| `reviewSystem` là feature key đúng, không tạo key mới (Q9) | Technical & Risk Analyst |
-| R3 đóng — SRS không dùng user level | Technical & Risk Analyst |
-| Session phải persist qua crash (A-03) | Technical & Risk Analyst |
-| FR/AC package (Gate 2) | TranHoangNha (approve, không chọn từng option cụ thể — xem PRD §9) |
+| Quyết định                                                 | Decision-maker                                                     |
+| ---------------------------------------------------------- | ------------------------------------------------------------------ |
+| Full Lane (Gate 1)                                         | TranHoangNha (approve)                                             |
+| Completion rule hợp nhất (CRIT-001)                        | Requirements + Technical & Risk Analyst, hội tụ Stage 4            |
+| `reviewSystem` là feature key đúng, không tạo key mới (Q9) | Technical & Risk Analyst                                           |
+| R3 đóng — SRS không dùng user level                        | Technical & Risk Analyst                                           |
+| Session phải persist qua crash (A-03)                      | Technical & Risk Analyst                                           |
+| FR/AC package (Gate 2)                                     | TranHoangNha (approve, không chọn từng option cụ thể — xem PRD §9) |

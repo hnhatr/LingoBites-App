@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Image, Pressable, ScrollView, View} from 'react-native';
+import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {CreateStackParamList} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
@@ -193,7 +193,7 @@ export function OCRReviewScreen({navigation, route}: Props) {
             accessibilityIgnoresInvertColors
             resizeMode="cover"
             source={{uri: imageUri}}
-            style={{height: 180, width: '100%'}}
+            style={styles.previewImage}
           />
         </View>
 
@@ -221,14 +221,7 @@ export function OCRReviewScreen({navigation, route}: Props) {
           value={text}
         />
 
-        <View
-          style={{
-            alignItems: 'center',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 8,
-          }}
-        >
+        <View style={styles.tagsRow}>
           <Chip label="Text từ ảnh" tone="accentSoft" />
           <Chip label={`${wordCount} từ`} tone="neutral" />
           <Chip
@@ -246,7 +239,9 @@ export function OCRReviewScreen({navigation, route}: Props) {
         {screenState.type === 'error' ? (
           <ErrorCard
             message={screenState.message}
-            onRetry={() => void handleAnalyze()}
+            onRetry={() => {
+              handleAnalyze();
+            }}
             retryLabel={t('common.retry')}
           />
         ) : null}
@@ -255,7 +250,9 @@ export function OCRReviewScreen({navigation, route}: Props) {
           accessibilityLabel="Thử OCR lại"
           accessibilityRole="button"
           disabled={busy}
-          onPress={() => void handleRetryOcr()}
+          onPress={() => {
+            handleRetryOcr();
+          }}
           style={({pressed}) => [
             {
               alignItems: 'center',
@@ -288,10 +285,28 @@ export function OCRReviewScreen({navigation, route}: Props) {
         <PrimaryActionButton
           accessibilityLabel="Phân tích & học ngay"
           disabled={busy || creating}
-          onPress={() => void handleAnalyze()}
+          onPress={() => {
+            handleAnalyze();
+          }}
           label={creating ? 'Đang khởi tạo bài học…' : 'Phân tích & học ngay'}
         />
       </BottomActionBar>
     </AppScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  previewImage: {
+    height: 180,
+    width: '100%',
+  },
+  tagsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  btnText: {
+    fontWeight: '600',
+  },
+});

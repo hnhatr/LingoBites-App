@@ -29,9 +29,7 @@ describe('theme consistency (SETE-280)', () => {
   it.each(Object.keys(themes))(
     'theme %s spacing matches the shared token',
     id => {
-      expect(themes[id as keyof typeof themes].spacing).toEqual(
-        sharedSpacing,
-      );
+      expect(themes[id as keyof typeof themes].spacing).toEqual(sharedSpacing);
     },
   );
 });

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {getDatabase, withTransaction} from './database';
 import type {
   PracticeSet,
@@ -224,7 +223,9 @@ export function getPracticeSession(id: string): PracticeSession | null {
  * Allowlist payload pushed to the server (P12 / P7 §5). Only source IDs +
  * outcome + timing — never snapshot text, never SRS fields.
  */
-export function toPracticeOutboxPayload(event: AnswerEvent): PracticeEventPayload {
+export function toPracticeOutboxPayload(
+  event: AnswerEvent,
+): PracticeEventPayload {
   return {
     event_id: event.event_id,
     contract_version: event.contract_version,
@@ -436,7 +437,7 @@ export function findReusablePracticeSetLocally(
   const db = getDatabase();
   const res = db.execute(
     'SELECT id FROM practice_sets WHERE lesson_id = ? AND lesson_revision = ? AND config_hash = ? AND status = ? LIMIT 1',
-    [lessonId, lessonRevision, configHash, 'ready']
+    [lessonId, lessonRevision, configHash, 'ready'],
   );
   if (res.rows && res.rows.length > 0) {
     return getPracticeSet(res.rows.item(0).id);
@@ -444,11 +445,13 @@ export function findReusablePracticeSetLocally(
   return null;
 }
 
-export function findActiveSessionLocally(lessonId: string): PracticeSession | null {
+export function findActiveSessionLocally(
+  lessonId: string,
+): PracticeSession | null {
   const db = getDatabase();
   const res = db.execute(
     'SELECT id FROM practice_sessions WHERE lesson_id = ? AND status = ? ORDER BY updated_at DESC LIMIT 1',
-    [lessonId, 'in_progress']
+    [lessonId, 'in_progress'],
   );
   if (res.rows && res.rows.length > 0) {
     return getPracticeSession(res.rows.item(0).id);

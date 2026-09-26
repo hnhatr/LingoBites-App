@@ -69,7 +69,10 @@ describe('useBookmarkOptimistic', () => {
     it('should update optimistic state immediately', async () => {
       const hook = testHook(() => useBookmarkOptimistic());
 
-      (saveFlashcard as jest.Mock).mockReturnValue({ok: true, flashcardId: 'fc-1'});
+      (saveFlashcard as jest.Mock).mockReturnValue({
+        ok: true,
+        flashcardId: 'fc-1',
+      });
 
       const input = {
         lessonId: 'lesson-1',
@@ -89,7 +92,10 @@ describe('useBookmarkOptimistic', () => {
     it('should call saveFlashcard without waiting', async () => {
       const hook = testHook(() => useBookmarkOptimistic());
 
-      (saveFlashcard as jest.Mock).mockReturnValue({ok: true, flashcardId: 'fc-1'});
+      (saveFlashcard as jest.Mock).mockReturnValue({
+        ok: true,
+        flashcardId: 'fc-1',
+      });
 
       const input = {
         lessonId: 'lesson-1',
@@ -343,7 +349,10 @@ describe('useBookmarkOptimistic', () => {
     it('should maintain independent vocabulary and grammar save states', async () => {
       const hook = testHook(() => useBookmarkOptimistic('lesson-1'));
 
-      (saveFlashcard as jest.Mock).mockReturnValue({ok: true, flashcardId: 'fc-1'});
+      (saveFlashcard as jest.Mock).mockReturnValue({
+        ok: true,
+        flashcardId: 'fc-1',
+      });
       (saveGrammarBookmark as jest.Mock).mockReturnValue({ok: true});
 
       await hook.onVocabularySave('vocab-1', {

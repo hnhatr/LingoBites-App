@@ -44,10 +44,12 @@
 ### Task 1: Define the async job and cancellation contracts
 
 **Files:**
+
 - Modify: `src/shared/api/types.ts:3-92`
 - Modify: `src/modules/ai-analysis/types.ts:1-19`
 
 **Interfaces:**
+
 - Consumes: Existing `AIOutput`, `AnalyzeTextRequestBody`, and `ApiErrorCode` types.
 - Produces: `AnalysisJobStage`, `AnalysisJobProgressBody`, `CreateAnalysisJobSuccessBody`, `AnalysisJobStatusBody`, `AnalysisProgress`, `AnalysisProgressCallback`, and the cancellation branch of `AnalyzeTextResult`.
 
@@ -180,12 +182,14 @@ Expected: only additive job types, new error-code literals, and the cancellation
 ### Task 2: Build and test the create-and-poll API client
 
 **Files:**
+
 - Create: `src/shared/api/analysisJobClient.ts`
 - Create: `src/shared/api/__tests__/analysisJobClient.test.ts`
 - Delete: `src/shared/api/analyzeClient.ts`
 - Delete: `src/shared/api/__tests__/analyzeClient.test.ts`
 
 **Interfaces:**
+
 - Consumes: `AnalyzeTextRequestBody`, `ApiErrorBody`, `CreateAnalysisJobSuccessBody`, `AnalysisJobStatusBody`, `AnalyzeTextResult`, `AnalysisProgressCallback`, `createRequestId()`, `getAppConfig()`, and `validateAIOutput()`.
 - Produces: `runAnalysisJob(confirmedText: string, sourceType?: AnalyzeTextRequestBody['source_type'], onProgress?: AnalysisProgressCallback, signal?: AbortSignal): Promise<AnalyzeTextResult>`.
 
@@ -233,7 +237,10 @@ const created = (statusUrl = '/v1/ai/analyses/job-1') => ({
   status_url: statusUrl,
 });
 
-const inProgress = (status: 'queued' | 'processing' | 'paused', percent: number) => ({
+const inProgress = (
+  status: 'queued' | 'processing' | 'paused',
+  percent: number,
+) => ({
   analysis_id: 'job-1',
   request_id: 'mock-uuid',
   status,
@@ -256,21 +263,21 @@ mockFetch
   .mockResolvedValueOnce(response(created(), {status: 202, retryAfter: '1'}))
   .mockResolvedValueOnce(response(inProgress('queued', 0)))
   .mockResolvedValueOnce(response(inProgress('processing', 40)))
-  .mockResolvedValueOnce(response({
-    ...inProgress('processing', 100),
-    status: 'completed',
-    model: 'staged-pipeline',
-    schema_version: 'ai-output-v1',
-    prompt_version: 'lesson-analysis-v1',
-    data: {...validFullOutput, original_text: 'Sample text.'},
-  }));
+  .mockResolvedValueOnce(
+    response({
+      ...inProgress('processing', 100),
+      status: 'completed',
+      model: 'staged-pipeline',
+      schema_version: 'ai-output-v1',
+      prompt_version: 'lesson-analysis-v1',
+      data: {...validFullOutput, original_text: 'Sample text.'},
+    }),
+  );
 
 const onProgress = jest.fn();
 const pending = runAnalysisJob('Sample text.', 'paste_text', onProgress);
 await jest.advanceTimersByTimeAsync(1_000 + 1_500 + 1_500);
-await expect(pending).resolves.toEqual(
-  expect.objectContaining({ok: true}),
-);
+await expect(pending).resolves.toEqual(expect.objectContaining({ok: true}));
 expect(mockFetch).toHaveBeenNthCalledWith(
   1,
   'http://localhost:3000/v1/ai/analyses',
@@ -304,10 +311,12 @@ it.each([
   ['VALIDATION_MISSING_IDEMPOTENCY_KEY', AI_ANALYSIS_FAILED_MESSAGE],
   ['IDEMPOTENCY_CONFLICT', AI_ANALYSIS_FAILED_MESSAGE],
 ])('maps create error %s', async (code, message) => {
-  mockFetch.mockResolvedValue(response(
-    {request_id: 'r', status: 'failed', error: {code, message: 'server'}},
-    {ok: false, status: code === 'IDEMPOTENCY_CONFLICT' ? 409 : 400},
-  ));
+  mockFetch.mockResolvedValue(
+    response(
+      {request_id: 'r', status: 'failed', error: {code, message: 'server'}},
+      {ok: false, status: code === 'IDEMPOTENCY_CONFLICT' ? 409 : 400},
+    ),
+  );
   await expect(runAnalysisJob('Sample text.')).resolves.toEqual({
     ok: false,
     errorCode: code,
@@ -437,7 +446,12 @@ export async function runAnalysisJob(
     // failed => map error.code and return failure.
     // unknown successful body => AI_INVALID_OUTPUT.
     if (Date.now() >= deadline) break;
-    if (!(await waitFor(Math.min(POLL_INTERVAL_MS, deadline - Date.now()), signal))) {
+    if (
+      !(await waitFor(
+        Math.min(POLL_INTERVAL_MS, deadline - Date.now()),
+        signal,
+      ))
+    ) {
       return cancelledResult();
     }
   }
@@ -488,12 +502,14 @@ Expected: the sync endpoint is gone, async client tests cover every deterministi
 ### Task 3: Add staged progress and cancellation to the mock and service seam
 
 **Files:**
+
 - Modify: `src/modules/ai-analysis/MockAIAnalysisService.ts:1-43`
 - Modify: `src/modules/ai-analysis/__tests__/MockAIAnalysisService.test.ts:1-29`
 - Modify: `src/modules/ai-analysis/AIAnalysisService.ts:1-52`
 - Modify: `src/modules/ai-analysis/__tests__/AIAnalysisService.test.ts:1-67`
 
 **Interfaces:**
+
 - Consumes: `runAnalysisJob`, `AnalysisProgressCallback`, `AbortSignal`, existing fixture selection/validation, and existing analytics helpers.
 - Produces: `simulateAnalysisJob(confirmedText, options?, onProgress?, signal?)` and `analyzeText(confirmedText, options?, onProgress?, signal?)`, both returning the expanded `AnalyzeTextResult`.
 
@@ -542,10 +558,22 @@ Define the exact stage metadata and a short abort-aware delay:
 ```ts
 const MOCK_STAGE_INTERVAL_MS = 450;
 const MOCK_STAGES = [
-  {name: 'source_analysis', weight: 15, message: 'Đang dịch và sắp xếp nội dung'},
+  {
+    name: 'source_analysis',
+    weight: 15,
+    message: 'Đang dịch và sắp xếp nội dung',
+  },
   {name: 'sentence_analysis', weight: 35, message: 'Đang phân tích từng câu'},
-  {name: 'learning_points', weight: 25, message: 'Đang tìm ngữ pháp và từ vựng'},
-  {name: 'pronunciation', weight: 10, message: 'Đang chuẩn bị hướng dẫn phát âm'},
+  {
+    name: 'learning_points',
+    weight: 25,
+    message: 'Đang tìm ngữ pháp và từ vựng',
+  },
+  {
+    name: 'pronunciation',
+    weight: 10,
+    message: 'Đang chuẩn bị hướng dẫn phát âm',
+  },
   {name: 'practice', weight: 10, message: 'Đang tạo bài luyện tập'},
   {name: 'finalizing', weight: 5, message: 'Đang kiểm tra bài học'},
 ] as const;
@@ -559,7 +587,7 @@ export async function simulateAnalysisJob(
   options?: AnalyzeOptions,
   onProgress?: AnalysisProgressCallback,
   signal?: AbortSignal,
-): Promise<AnalyzeTextResult>
+): Promise<AnalyzeTextResult>;
 ```
 
 For each stage, wait, return cancellation if aborted, increment percent by weight, and emit a newly created six-item stage array. After the final update, run the existing forced-invalid and fixture validation logic unchanged so the resulting lesson remains identical to the old mock.
@@ -590,7 +618,12 @@ Mock `simulateAnalysisJob` instead of `analyzeTextWithMock`, retain a named `moc
 ```ts
 const onProgress = jest.fn();
 const controller = new AbortController();
-await analyzeText(' Sample text. ', {sourceType: 'camera'}, onProgress, controller.signal);
+await analyzeText(
+  ' Sample text. ',
+  {sourceType: 'camera'},
+  onProgress,
+  controller.signal,
+);
 expect(mockRunAnalysisJob).toHaveBeenCalledWith(
   'Sample text.',
   'camera',
@@ -657,10 +690,12 @@ Expected: PASS; real and mock branches expose the same four-argument contract an
 ### Task 4: Render backend progress and abort polling on screen cleanup
 
 **Files:**
+
 - Modify: `src/modules/ai-analysis/AnalyzingScreen.tsx:1-189`
 - Modify: `src/modules/ai-analysis/__tests__/AnalyzingScreen.test.tsx:1-151`
 
 **Interfaces:**
+
 - Consumes: `analyzeText(..., onProgress, signal)`, immutable `AnalysisProgress` snapshots, and existing navigation contract.
 - Produces: six static labels, deterministic `StepState` derivation, server-driven percent/subtitle UI, and cleanup cancellation.
 
@@ -670,7 +705,11 @@ Replace immediate mocked resolutions with a deferred result and capture `mockAna
 
 ```ts
 function textContent(root: ReactTestRenderer.ReactTestInstance): string {
-  return root.findAllByType('Text').map(node => node.props.children).flat(Infinity).join(' ');
+  return root
+    .findAllByType('Text')
+    .map(node => node.props.children)
+    .flat(Infinity)
+    .join(' ');
 }
 
 function stage(name: string, status: string) {
@@ -795,9 +834,12 @@ On cleanup set `isActive = false`, call `controller.abort()`, and clear only the
 Derive:
 
 ```ts
-const normalizedProgress = done ? 1 : Math.max(0, Math.min(1, progress.percent / 100));
+const normalizedProgress = done
+  ? 1
+  : Math.max(0, Math.min(1, progress.percent / 100));
 const percentLabel = `${done ? 100 : Math.round(progress.percent)}%`;
-const subtitle = progress.message ??
+const subtitle =
+  progress.message ??
   'App đang phân tích đoạn text bạn xác nhận. Giữ app mở một chút nhé.';
 ```
 
@@ -828,9 +870,11 @@ Expected: no `setInterval`, random cap, three-stage copy, cancel button, or AppS
 ### Task 5: Verify the full integration and dead-code removal
 
 **Files:**
+
 - Verify all files listed in the File Map.
 
 **Interfaces:**
+
 - Consumes: Completed Tasks 1-4.
 - Produces: A fully tested async analysis path with no synchronous client imports.
 

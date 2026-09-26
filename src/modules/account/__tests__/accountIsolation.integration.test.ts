@@ -2,7 +2,10 @@
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {useAccountStore} from '../useAccountStore';
-import {saveYouTubeProgress, getYouTubeProgress} from '@shared/db/YouTubeProgressRepository';
+import {
+  saveYouTubeProgress,
+  getYouTubeProgress,
+} from '@shared/db/YouTubeProgressRepository';
 
 describe('cross-account cache isolation', () => {
   beforeEach(() => {
@@ -12,13 +15,17 @@ describe('cross-account cache isolation', () => {
 
   it('switch account → wipe → no leakage', async () => {
     // 1. Setup user 1
-    saveYouTubeProgress({lessonId: 'user1-lesson', positionMs: 1000, segmentIndex: 0});
+    saveYouTubeProgress({
+      lessonId: 'user1-lesson',
+      positionMs: 1000,
+      segmentIndex: 0,
+    });
     expect(getYouTubeProgress('user1-lesson')).toBeTruthy();
-    
+
     // 2. Wipe database (simulating switch account)
     __resetMockDatabases();
     resetDatabaseForTests();
-    
+
     // 3. Verify wiped
     expect(getYouTubeProgress('user1-lesson')).toBeNull();
   });

@@ -5,11 +5,7 @@ export function getRootStackRouteNames(features: {
 }): Array<Extract<keyof RootStackParamList, string>> {
   const names: Array<Extract<keyof RootStackParamList, string>> = ['Tabs'];
   if (features?.youtubeLearning) {
-    names.push(
-      'YouTubeHistory',
-      'YouTubeLesson',
-      'Practice',
-    );
+    names.push('YouTubeHistory', 'YouTubeLesson', 'Practice');
   }
   return names;
 }

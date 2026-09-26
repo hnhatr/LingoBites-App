@@ -2,7 +2,7 @@ const fs = require('fs');
 
 let content = fs.readFileSync('src/shared/db/anonymousUserId.ts', 'utf8');
 content = content.replace(
-  /  const row = existing\.rows\?\.item\(0\) as \{value\?: string\} \| undefined;\n  if \(row\?\.value\) \{\n    return row\.value;\n  \}/,
+  / {2}const row = existing\.rows\?\.item\(0\) as \{value\?: string\} \| undefined;\n {2}if \(row\?\.value\) \{\n {4}return row\.value;\n {2}\}/,
   `
   // T8: If an authenticated account is active, use its ID instead of the legacy anonymous ID.
   const authAccount = db.execute(
@@ -16,6 +16,6 @@ content = content.replace(
   const row = existing.rows?.item(0) as {value?: string} | undefined;
   if (row?.value) {
     return row.value;
-  }`
+  }`,
 );
 fs.writeFileSync('src/shared/db/anonymousUserId.ts', content);

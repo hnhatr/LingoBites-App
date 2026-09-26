@@ -80,6 +80,7 @@ mobile-app/
 ## Task 1: Install Approved Runtime Dependencies
 
 **Files:**
+
 - Modify: `mobile-app/package.json`
 - Modify: `mobile-app/babel.config.js`
 - Modify: `mobile-app/ios/Podfile.lock`
@@ -87,8 +88,10 @@ mobile-app/
 - Verify/adjust: `mobile-app/tsconfig.json`
 
 **Interfaces:**
+
 - Consumes: existing RN 0.85.3 app.
 - Produces: installed packages importable by later tasks:
+
   - `react-native-reanimated`
   - `react-native-gesture-handler`
   - `i18next`
@@ -157,12 +160,14 @@ git commit -m "chore: add LingoBites MVP runtime dependencies"
 ## Task 2: Add i18n Bootstrap and Vietnamese Copy
 
 **Files:**
+
 - Create: `mobile-app/src/i18n/index.ts`
 - Create: `mobile-app/src/i18n/vi.json`
 - Create: `mobile-app/src/i18n/en.json`
 - Modify: `mobile-app/App.tsx`
 
 **Interfaces:**
+
 - Consumes: `i18next`, `react-i18next`.
 - Produces: `i18n` initialized before app screens render; `useTranslation()` available in screens and components.
 
@@ -295,6 +300,7 @@ git commit -m "feat: initialize Vietnamese i18n"
 ## Task 3: Create and Activate LingoBites MVP Release Config
 
 **Files:**
+
 - Modify: `mobile-app/src/release/feature-registry.ts`
 - Modify: `mobile-app/src/release/feature-dependencies.ts` (only if a dependency edge blocks `lingobites-mvp` validation; see Step 2 note)
 - Modify: `mobile-app/src/release/release-manifest.ts`
@@ -305,6 +311,7 @@ git commit -m "feat: initialize Vietnamese i18n"
 - Modify: `mobile-app/.env.development` (and any other env file used by the MVP build) with `RELEASE_NAME=lingobites-mvp`
 
 **Interfaces:**
+
 - Consumes: existing `FeatureFlagProvider`, `useFeatureEnabled()`, and release config validation.
 - Produces: release config named `lingobites-mvp` with review enabled and legacy ingestion disabled, activated for the MVP build through build-time env selection. The compile-time `DEFAULT_RELEASE_NAME` is left unchanged; only the MVP build's env opts in to `lingobites-mvp`.
 
@@ -358,13 +365,13 @@ Import `DEFAULT_RELEASE_NAME` from `release-manifest.ts`. Expected before implem
 In `feature-registry.ts`, set these entries to `required: false` (the seven flags listed in SETE-82; do not include `lessonResultView`):
 
 ```ts
-pasteTextInput
-imageInput
-ocrScanner
-ocrReviewEdit
-aiLessonAnalysis
-lessonSave
-lessonHistory
+pasteTextInput;
+imageInput;
+ocrScanner;
+ocrReviewEdit;
+aiLessonAnalysis;
+lessonSave;
+lessonHistory;
 ```
 
 `lessonResultView` stays `required: true` per SETE-82; the MVP config keeps `lessonResultView: true` because saved lesson detail and vocabulary save are part of the MVP path. Do not relax its `required` flag without separate requester approval.
@@ -499,12 +506,14 @@ git commit -m "feat: add LingoBites MVP release config"
 ## Task 4: Hide Legacy Ingestion Routes and CTAs in MVP Mode
 
 **Files:**
+
 - Modify: `mobile-app/src/app/navigation/AppNavigator.tsx`
 - Modify: `mobile-app/src/app/navigation/types.ts`
 - Modify: `mobile-app/src/modules/input/HomeScreen.tsx`
 - Modify: `mobile-app/src/modules/input/__tests__/HomeScreenDailyReview.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `useFeatureEnabled('lingobitesMvpReviewFlow')`, `useFeatureEnabled('pasteTextInput')`, `useFeatureEnabled('imageInput')`, `useFeatureEnabled('ocrScanner')`.
 - Produces: MVP UI that shows review and saved lessons, while not offering OCR/image/paste content ingestion.
 
@@ -586,21 +595,23 @@ const subtitle = lingobitesMvp ? t('home.subtitle') : t('home.legacySubtitle');
 When there are no recent lessons and no due review cards in MVP mode, render explicit copy explaining that the MVP uses existing local lessons:
 
 ```tsx
-{lingobitesMvp && emptyRecent && dueReviewCount === 0 ? (
-  <View testID="lingobites-mvp-empty-state">
-    <AppText variant="h3">{t('home.mvpEmptyTitle')}</AppText>
-    <AppText color="secondary">{t('home.mvpEmptyCopy')}</AppText>
-  </View>
-) : null}
+{
+  lingobitesMvp && emptyRecent && dueReviewCount === 0 ? (
+    <View testID="lingobites-mvp-empty-state">
+      <AppText variant="h3">{t('home.mvpEmptyTitle')}</AppText>
+      <AppText color="secondary">{t('home.mvpEmptyCopy')}</AppText>
+    </View>
+  ) : null;
+}
 ```
 
 Also replace touched Home strings with i18n keys:
 
 ```tsx
-t('home.reviewTitle')
-t('home.dueCount', {count: dueReviewCount})
-t('home.mvpEmptyTitle')
-t('home.mvpEmptyCopy')
+t('home.reviewTitle');
+t('home.dueCount', {count: dueReviewCount});
+t('home.mvpEmptyTitle');
+t('home.mvpEmptyCopy');
 ```
 
 - [ ] **Step 6: Add Home copy tests**
@@ -610,7 +621,11 @@ Add assertions:
 ```tsx
 expect(screen.getByText('Hôm nay bạn ôn gì?')).toBeTruthy();
 expect(screen.getByTestId('lingobites-mvp-empty-state')).toBeTruthy();
-expect(screen.getByText('Bản MVP dùng bài học đã lưu sẵn. Hãy thêm dữ liệu fixture trong dev/QA hoặc dùng bài học đã có trên thiết bị.')).toBeTruthy();
+expect(
+  screen.getByText(
+    'Bản MVP dùng bài học đã lưu sẵn. Hãy thêm dữ liệu fixture trong dev/QA hoặc dùng bài học đã có trên thiết bị.',
+  ),
+).toBeTruthy();
 ```
 
 - [ ] **Step 7: Verify**
@@ -634,12 +649,14 @@ git commit -m "feat: gate legacy input in LingoBites MVP"
 ## Task 5: Lock Scheduler and Persistence Contracts
 
 **Files:**
+
 - Modify: `mobile-app/src/shared/db/__tests__/reviewScheduler.test.ts`
 - Modify: `mobile-app/src/shared/db/__tests__/FlashcardRepository.test.ts`
 - Modify: `mobile-app/src/shared/db/reviewScheduler.ts` only if a test exposes a scheduler bug
 - Modify: `mobile-app/src/shared/db/FlashcardRepository.ts` only if a test exposes a persistence bug
 
 **Interfaces:**
+
 - Consumes: `calculateNextReviewState()`, `saveFlashcard()`, `getDueFlashcards()`, `recordFlashcardRating()`.
 - Produces: verified MVP contracts for SETE-81 FR-001 through FR-003 and FR-007 through FR-011.
 
@@ -768,12 +785,14 @@ git commit -m "test: lock offline review persistence contracts"
 ## Task 6: Polish Daily Review Flow
 
 **Files:**
+
 - Modify: `mobile-app/src/modules/review/DailyReviewScreen.tsx`
 - Modify: `mobile-app/src/modules/review/__tests__/DailyReviewScreen.test.tsx`
 - Modify: `mobile-app/src/modules/review/__tests__/DailyReviewScreen.a11y.test.tsx`
 - Modify: `mobile-app/src/components/RatingControl.tsx` only if rating labels/a11y are missing
 
 **Interfaces:**
+
 - Consumes: `getDueFlashcards({limit})`, `recordFlashcardRating()`, `ReviewRating`.
 - Produces: active-recall review session with Vietnamese i18n copy, two ratings, summary, carry-over, empty states, and privacy-safe error display.
 
@@ -825,13 +844,13 @@ Use:
 
 ```tsx
 const {t} = useTranslation();
-t('review.todayTitle')
-t('review.noCardsTitle')
-t('review.completeTitle')
-t('review.summaryTitle')
-t('review.carryOver', {count: carryOverCount})
-t('rating.forgotA11y')
-t('rating.rememberedA11y')
+t('review.todayTitle');
+t('review.noCardsTitle');
+t('review.completeTitle');
+t('review.summaryTitle');
+t('review.carryOver', {count: carryOverCount});
+t('rating.forgotA11y');
+t('rating.rememberedA11y');
 ```
 
 - [ ] **Step 5: Gate rating after reveal**
@@ -879,6 +898,7 @@ git commit -m "feat: polish offline daily review flow"
 ## Task 7: Verify Save-From-Lesson Entry Point
 
 **Files:**
+
 - Modify: `mobile-app/src/modules/lesson/LessonResultScreen.tsx` only if save entry is incomplete
 - Modify: `mobile-app/src/modules/lesson/SavedLessonDetailScreen.tsx` only if save state is incomplete
 - Modify: `mobile-app/src/modules/lesson/WordDetailScreen.tsx` only if save state is incomplete
@@ -887,6 +907,7 @@ git commit -m "feat: polish offline daily review flow"
 - Add/modify: `mobile-app/src/modules/lesson/__tests__/WordDetailScreen.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `saveFlashcard({lessonId, vocabulary})`.
 - Produces: idempotent vocabulary save path from existing local lessons across all three save entry points (lesson result, saved lesson detail, and word detail).
 
@@ -914,6 +935,7 @@ expect(screen.getByText(validFullOutput.vocabulary[0].word)).toBeTruthy();
 - [ ] **Step 3: Extend save verification to WordDetailScreen**
 
 `WordDetailScreen.tsx` is a first-class save entry point in SETE-82 (same group as `LessonResultScreen`/`SavedLessonDetailScreen`). Add a `WordDetailScreen.test.tsx` case that renders a vocabulary word from a saved lesson, presses the save control (`Lưu từ` label / the flashcard save affordance in `WordDetailScreen`), presses it again, and asserts:
+
 - a single flashcard row exists for `(lessonId, vocabularyId)` (no duplicate);
 - saved state is reflected in the UI after the second press;
 - `mockFetch` was not called.
@@ -933,7 +955,7 @@ Match the exact accessibility label used in `WordDetailScreen.tsx`; if the label
 If the test exposes a bug, ensure the UI calls:
 
 ```ts
-saveFlashcard({lessonId, vocabulary})
+saveFlashcard({lessonId, vocabulary});
 ```
 
 Then render saved state from `listFlashcards({lessonId})` or an equivalent existing selector.
@@ -959,12 +981,14 @@ git commit -m "test: verify lesson vocabulary save flow"
 ## Task 8: Archive Legacy Docs Without Deleting History
 
 **Files:**
+
 - Create: `mobile-app/docs/legacy/`
 - Move: legacy ScanLearnEnglish BA/technical docs currently under `mobile-app/docs/01-ba/`
 - Modify: `mobile-app/docs/README.md`
 - Mark deprecated (comment header only): `.cursorrules`, `.opencode.json`, `GEMINI.md`, `QODER.md`
 
 **Interfaces:**
+
 - Consumes: existing docs tree.
 - Produces: clear separation between legacy ScanLearnEnglish docs and current LingoBites MVP plan, and one canonical agent-config convention.
 
@@ -990,6 +1014,7 @@ git mv docs/01-ba docs/legacy/01-ba
 - [ ] **Step 3: Mark deprecated multi-agent config files**
 
 SETE-82 chooses `CLAUDE.md` + `AGENTS.md` as the canonical agent instruction files. Mark the others deprecated without deleting content:
+
 - `GEMINI.md`, `QODER.md`, `.cursorrules`: add an HTML comment header `<!-- DEPRECATED: superseded by CLAUDE.md and AGENTS.md. Kept for reference only. -->` at the top.
 - `.opencode.json`: add a top-level metadata key instead of a comment (JSON has no comments), e.g. `"_deprecated": "Superseded by CLAUDE.md and AGENTS.md. Kept for reference only."`, and confirm the file still parses as valid JSON for the tooling that reads it.
 
@@ -1026,10 +1051,12 @@ git commit -m "docs: archive legacy ScanLearnEnglish planning"
 ## Task 9: Offline Manual QA and Release Acceptance
 
 **Files:**
+
 - Modify: `mobile-app/docs/01-ba/05-qa/02-p0-manual-qa-runbook.md` if not archived yet
 - Or create: `mobile-app/docs/qa/lingobites-offline-review-mvp.md`
 
 **Interfaces:**
+
 - Consumes: emulator/simulator with local lesson data.
 - Produces: documented QA evidence for SETE-81 NFR-001, NFR-002, NFR-003, and NFR-005.
 

@@ -29,7 +29,11 @@ export type PreparePracticeResult =
       hasVersionMismatchWarning: boolean;
     }
   | {
-      status: 'generation_failed' | 'invalidated' | 'not_found' | 'network_error';
+      status:
+        | 'generation_failed'
+        | 'invalidated'
+        | 'not_found'
+        | 'network_error';
       message?: string;
     }
   | {
@@ -98,7 +102,10 @@ export async function preparePracticeSet(
       return {status: 'rejected', code: createRes.code};
     }
 
-    if (createRes.status === 'generation_failed' || createRes.status === 'invalidated') {
+    if (
+      createRes.status === 'generation_failed' ||
+      createRes.status === 'invalidated'
+    ) {
       return {status: createRes.status};
     }
 

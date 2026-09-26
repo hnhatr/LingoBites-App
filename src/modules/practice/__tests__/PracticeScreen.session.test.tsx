@@ -87,7 +87,10 @@ function renderSessionScreen(sessionId: string) {
     tree = ReactTestRenderer.create(
       <FeatureFlagProvider>
         <AppThemeProvider>
-          <PracticeScreen navigation={navigation as never} route={route as never} />
+          <PracticeScreen
+            navigation={navigation as never}
+            route={route as never}
+          />
         </AppThemeProvider>
       </FeatureFlagProvider>,
     );
@@ -113,11 +116,14 @@ describe('PracticeScreen session mode', () => {
     });
 
     const tree = renderSessionScreen('session-ui');
-    expect(tree.root.findByProps({testID: 'practice-option-opt-a'})).toBeTruthy();
+    expect(
+      tree.root.findByProps({testID: 'practice-option-opt-a'}),
+    ).toBeTruthy();
     expect(
       tree.root.findAll(
         node =>
-          node.props.state === 'correct' || node.props.accessibilityLabel === 'quả táo, đúng',
+          node.props.state === 'correct' ||
+          node.props.accessibilityLabel === 'quả táo, đúng',
       ),
     ).toHaveLength(0);
   });
@@ -139,7 +145,9 @@ describe('PracticeScreen session mode', () => {
     });
 
     const tree = renderSessionScreen('session-ui');
-    const correctOption = tree.root.findByProps({testID: 'practice-option-opt-a'});
+    const correctOption = tree.root.findByProps({
+      testID: 'practice-option-opt-a',
+    });
 
     ReactTestRenderer.act(() => {
       correctOption.props.onPress();
@@ -174,7 +182,9 @@ describe('PracticeScreen session mode', () => {
     });
 
     const tree = renderSessionScreen('session-offline');
-    const correctOption = tree.root.findByProps({testID: 'practice-option-opt-a'});
+    const correctOption = tree.root.findByProps({
+      testID: 'practice-option-opt-a',
+    });
 
     ReactTestRenderer.act(() => {
       correctOption.props.onPress();

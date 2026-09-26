@@ -2,7 +2,7 @@ const fs = require('fs');
 let content = fs.readFileSync('src/shared/api/lessonV2Client.ts', 'utf8');
 
 content = content.replace(
-  /async function request\(\n  fetchImpl: FetchImpl,\n  url: string,\n  init: RequestInit,\n  signal: AbortSignal \| undefined,\n  timeoutMs: number,\n\): Promise<\{response\?: Response; error\?: LessonV2ClientError\}> \{\n  const timeout = withTimeout\(timeoutMs, signal\);\n  try \{\n    return \{response: await fetchImpl\(url, \{\.\.\.init, signal: timeout\.signal\}\)\};\n  \} catch \{/g,
+  /async function request\(\n {2}fetchImpl: FetchImpl,\n {2}url: string,\n {2}init: RequestInit,\n {2}signal: AbortSignal \| undefined,\n {2}timeoutMs: number,\n\): Promise<\{response\?: Response; error\?: LessonV2ClientError\}> \{\n {2}const timeout = withTimeout\(timeoutMs, signal\);\n {2}try \{\n {4}return \{response: await fetchImpl\(url, \{\.\.\.init, signal: timeout\.signal\}\)\};\n {2}\} catch \{/g,
   `async function request(
   fetchImpl: FetchImpl | undefined,
   url: string,
@@ -13,13 +13,13 @@ content = content.replace(
   const timeout = withTimeout(timeoutMs, signal);
   try {
     return {response: await authenticatedFetch(url, {...init, signal: timeout.signal}, fetchImpl)};
-  } catch {`
+  } catch {`,
 );
 
 // We need to pass options.fetchImpl down to request instead of options.fetchImpl ?? authenticatedFetch
 content = content.replace(
   /options\.fetchImpl \?\? authenticatedFetch,/g,
-  "options.fetchImpl,"
+  'options.fetchImpl,',
 );
 
 fs.writeFileSync('src/shared/api/lessonV2Client.ts', content);

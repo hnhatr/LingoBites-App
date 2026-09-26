@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Repository for the lesson runtime (SETE-108 / M3).
  *
@@ -12,9 +11,9 @@
  * `node:crypto` import into the RN bundle.
  */
 
-import { getDatabase, withTransaction } from './database';
-import { enqueueSyncOutboxEvent } from './SyncOutboxRepository';
-import { createRequestId } from '../api/requestId';
+import {getDatabase, withTransaction} from './database';
+import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {createRequestId} from '../api/requestId';
 import {getActivePackage} from './ContentPackageRepository';
 import type {ContentReviewItemRecord} from './types';
 import type {
@@ -512,18 +511,18 @@ export function recordContentReviewEvent(
         WHERE id = ?;`,
       [next.state, next.nextReviewAt, reviewedAt, input.reviewItemId],
     );
-    
+
     enqueueSyncOutboxEvent({
       id: createRequestId(),
       eventType: 'content_review_items',
       entityId: input.reviewItemId,
-      payload: { 
-        reviewItemId: input.reviewItemId, 
+      payload: {
+        reviewItemId: input.reviewItemId,
         masteryState: next.state,
         nextReviewAt: next.nextReviewAt,
-        updatedAt: reviewedAt
+        updatedAt: reviewedAt,
       },
-      createdAt: reviewedAt
+      createdAt: reviewedAt,
     });
   });
 

@@ -6,6 +6,7 @@ import {
   LayoutAnimation,
   Platform,
   ScrollView,
+  StyleSheet,
   UIManager,
   View,
   type KeyboardEvent,
@@ -524,8 +525,10 @@ export function YouTubeInputScreen({navigation, route}: Props) {
           />
           <AppButton
             iconLeft="content_paste"
-            onPress={() => void pasteFromClipboard()}
-            style={{alignSelf: 'flex-start', minHeight: 44}}
+            onPress={() => {
+              pasteFromClipboard();
+            }}
+            style={styles.minHeight44}
             testID="youtube-paste-url"
             title={t('youtube.input_paste')}
             variant="ghost"
@@ -593,26 +596,21 @@ export function YouTubeInputScreen({navigation, route}: Props) {
                   mirroring PasteTextScreen. */}
               {transcriptFocused || transcript.length > 0 ? (
                 <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    gap: theme.spacing.sm,
-                  }}
+                  style={[styles.rowEnd, {gap: theme.spacing.sm}]}
                   testID="youtube-transcript-actions"
                 >
                   <AppButton
                     disabled={transcript.length === 0}
                     iconLeft="delete"
                     onPress={handleClearTranscript}
-                    style={{minHeight: 44}}
+                    style={styles.minHeight44}
                     testID="youtube-transcript-clear"
                     title={t('common.clear_all')}
                     variant="ghost"
                   />
                   <AppButton
                     onPress={() => Keyboard.dismiss()}
-                    style={{minHeight: 44}}
+                    style={styles.minHeight44}
                     testID="youtube-transcript-done"
                     title={t('common.done')}
                     variant="ghost"
@@ -654,3 +652,18 @@ export function YouTubeInputScreen({navigation, route}: Props) {
     </AppScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  flex1: {
+    flex: 1,
+  },
+  minHeight44: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+  },
+  rowEnd: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+});

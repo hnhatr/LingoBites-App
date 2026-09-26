@@ -93,11 +93,11 @@ export function usePracticeController({
         return result;
       }
       if (result.status === 'network_error') {
-        setActionError('Không thể tạo bài luyện tập. Kiểm tra mạng và thử lại.');
-      } else if (result.status === 'rejected') {
         setActionError(
-          'Bài học chưa có đủ nội dung để tạo bài luyện tập.',
+          'Không thể tạo bài luyện tập. Kiểm tra mạng và thử lại.',
         );
+      } else if (result.status === 'rejected') {
+        setActionError('Bài học chưa có đủ nội dung để tạo bài luyện tập.');
       } else if (result.status === 'generation_failed') {
         setActionError('Không tạo được bài luyện tập. Thử lại.');
       } else {

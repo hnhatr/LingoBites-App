@@ -5,8 +5,10 @@ export function mapTranscriptToPractice(
   segments: YouTubeSegment[],
   limit = 10,
 ): PracticeQuestion[] {
-  const validSegments = segments.filter(s => s.en.trim() !== '' && s.vi?.trim());
-  
+  const validSegments = segments.filter(
+    s => s.en.trim() !== '' && s.vi?.trim(),
+  );
+
   // Need at least 2 valid segments to form a multiple choice question with 1 distractor
   if (validSegments.length < 2) {
     return [];
@@ -26,7 +28,7 @@ export function mapTranscriptToPractice(
 
     // Pick up to 3 random distractors
     const distractors = otherVi.sort(() => 0.5 - Math.random()).slice(0, 3);
-    
+
     // Combine with correct answer and shuffle
     const options = [segment.vi, ...distractors].sort(
       () => 0.5 - Math.random(),

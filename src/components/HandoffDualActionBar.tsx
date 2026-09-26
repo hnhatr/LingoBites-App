@@ -31,6 +31,7 @@ export function HandoffDualActionBar({
     >
       <View style={{flexDirection: 'row', gap: theme.spacing.sm}}>
         <AppButton
+          accessibilityHint="Quay lại bước trước"
           accessibilityLabel={backLabel}
           title={backLabel}
           variant="ghost"
@@ -40,6 +41,7 @@ export function HandoffDualActionBar({
         />
         {onContinue ? (
           <AppButton
+            accessibilityHint="Tiếp tục bước tiếp theo"
             accessibilityLabel={continueLabel}
             title={continueLabel}
             variant="primary-accent"

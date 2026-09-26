@@ -1,4 +1,8 @@
-import type {ContentLessonState, FlashcardRecord, GrammarBookmark} from '@shared/db/types';
+import type {
+  ContentLessonState,
+  FlashcardRecord,
+  GrammarBookmark,
+} from '@shared/db/types';
 
 export function makeLesson(overrides: Record<string, unknown> = {}) {
   return {
@@ -14,7 +18,7 @@ export function makeLesson(overrides: Record<string, unknown> = {}) {
 }
 
 export function makeContentLessonState(
-  overrides: Partial<ContentLessonState>
+  overrides: Partial<ContentLessonState>,
 ): ContentLessonState {
   return {
     lessonId: 'content-lesson-1',
@@ -28,7 +32,9 @@ export function makeContentLessonState(
   };
 }
 
-export function makeFlashcard(overrides: Partial<FlashcardRecord>): FlashcardRecord {
+export function makeFlashcard(
+  overrides: Partial<FlashcardRecord>,
+): FlashcardRecord {
   return {
     id: 'card-1',
     lessonId: 'lesson-1',
@@ -53,7 +59,7 @@ export function makeFlashcard(overrides: Partial<FlashcardRecord>): FlashcardRec
 }
 
 export function makeGrammarBookmark(
-  overrides: Partial<GrammarBookmark & {title?: string; content?: string}>
+  overrides: Partial<GrammarBookmark & {title?: string; content?: string}>,
 ): GrammarBookmark & {title?: string; content?: string} {
   return {
     lessonId: 'lesson-1',

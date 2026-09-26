@@ -20,11 +20,11 @@ This spec does not implement the environment files, deployment scripts, hosting 
 
 Use three environments:
 
-| Env | Mobile build | API URL | Provider keys | Purpose |
-|---|---|---|---|---|
-| `local` | Debug build | `http://localhost:3000` or local machine URL | none by default; optional limited dev key | daily development |
-| `staging` | TestFlight / Android internal testing | team-owned staging HTTPS API domain | staging AI/OCR keys with low quota | QA and closed beta |
-| `production` | Store / public beta | team-owned production HTTPS API domain | production AI/OCR keys with budget alert | real users |
+| Env          | Mobile build                          | API URL                                      | Provider keys                             | Purpose            |
+| ------------ | ------------------------------------- | -------------------------------------------- | ----------------------------------------- | ------------------ |
+| `local`      | Debug build                           | `http://localhost:3000` or local machine URL | none by default; optional limited dev key | daily development  |
+| `staging`    | TestFlight / Android internal testing | team-owned staging HTTPS API domain          | staging AI/OCR keys with low quota        | QA and closed beta |
+| `production` | Store / public beta                   | team-owned production HTTPS API domain       | production AI/OCR keys with budget alert  | real users         |
 
 Do not create a separate shared cloud `development` environment for Phase 0. It adds deploy and secret management surface before the core loop is complete. Local development plus staging is sufficient until team size or QA flow proves otherwise.
 
@@ -63,12 +63,12 @@ GOOGLE_PLAY_SERVICE_ACCOUNT
 
 Recommended local files:
 
-| File | Commit? | Purpose |
-|---|---|---|
-| `.env.example` | yes | safe template only |
-| `.env.development` | no | local debug config |
-| `.env.staging` | no | staging build config |
-| `.env.production` | no | production build config |
+| File               | Commit? | Purpose                 |
+| ------------------ | ------- | ----------------------- |
+| `.env.example`     | yes     | safe template only      |
+| `.env.development` | no      | local debug config      |
+| `.env.staging`     | no      | staging build config    |
+| `.env.production`  | no      | production build config |
 
 ### Version Control And `.gitignore`
 
@@ -100,17 +100,17 @@ Local mobile defaults should keep `USE_MOCK_AI=true` so M1 mock lesson rendering
 
 These values configure the generated iOS/Android app binary and should be consumed by native build settings:
 
-| Variable | iOS | Android | Runtime JS needs it? |
-|---|---|---|---|
-| `APP_NAME` | `CFBundleDisplayName` | `@string/app_name` | optional |
-| `IOS_BUNDLE_ID` | `PRODUCT_BUNDLE_IDENTIFIER` | no | no |
-| `IOS_APP_VERSION_NAME` | `MARKETING_VERSION` | no | no |
-| `IOS_APP_VERSION_CODE` | `CURRENT_PROJECT_VERSION` | no | no |
-| `IOS_APP_ICON_NAME` | `ASSETCATALOG_COMPILER_APPICON_NAME` | no | no |
-| `LAUNCH_SCREEN_NAME` | `UILaunchStoryboardName` | no | no |
-| `ANDROID_BUNDLE_ID` | no | `applicationId` | no |
-| `ANDROID_APP_VERSION_NAME` | no | `versionName` | optional |
-| `ANDROID_APP_VERSION_CODE` | no | `versionCode` | no |
+| Variable                   | iOS                                  | Android            | Runtime JS needs it? |
+| -------------------------- | ------------------------------------ | ------------------ | -------------------- |
+| `APP_NAME`                 | `CFBundleDisplayName`                | `@string/app_name` | optional             |
+| `IOS_BUNDLE_ID`            | `PRODUCT_BUNDLE_IDENTIFIER`          | no                 | no                   |
+| `IOS_APP_VERSION_NAME`     | `MARKETING_VERSION`                  | no                 | no                   |
+| `IOS_APP_VERSION_CODE`     | `CURRENT_PROJECT_VERSION`            | no                 | no                   |
+| `IOS_APP_ICON_NAME`        | `ASSETCATALOG_COMPILER_APPICON_NAME` | no                 | no                   |
+| `LAUNCH_SCREEN_NAME`       | `UILaunchStoryboardName`             | no                 | no                   |
+| `ANDROID_BUNDLE_ID`        | no                                   | `applicationId`    | no                   |
+| `ANDROID_APP_VERSION_NAME` | no                                   | `versionName`      | optional             |
+| `ANDROID_APP_VERSION_CODE` | no                                   | `versionCode`      | no                   |
 
 These values are build-time native config. Do not rely on JavaScript to decide bundle IDs, version codes, app icon names, or launch screen names.
 
@@ -118,12 +118,12 @@ These values are build-time native config. Do not rely on JavaScript to decide b
 
 These values may be read by the TypeScript app through a single wrapper such as `getAppConfig()`:
 
-| Variable | Purpose |
-|---|---|
-| `APP_ENV` | app environment label for diagnostics and conditional safe behavior |
-| `API_BASE_URL` | backend origin for `/v1/*` routes |
-| `USE_MOCK_AI` | switches M1 fixture path vs M2 API path |
-| `AI_SCHEMA_VERSION` | expected AI schema version label |
+| Variable            | Purpose                                                             |
+| ------------------- | ------------------------------------------------------------------- |
+| `APP_ENV`           | app environment label for diagnostics and conditional safe behavior |
+| `API_BASE_URL`      | backend origin for `/v1/*` routes                                   |
+| `USE_MOCK_AI`       | switches M1 fixture path vs M2 API path                             |
+| `AI_SCHEMA_VERSION` | expected AI schema version label                                    |
 
 ### CodePush (Deferred — Not Phase 0)
 
@@ -217,24 +217,24 @@ yarn ios:production -> scheme Production, mode DebugProd, ENVFILE=.env.productio
 
 Required schemes:
 
-| Scheme | Run configuration | Archive configuration | Env file |
-|---|---|---|---|
-| `Development` | `DebugDev` | `ReleaseDev` | `.env.development` |
-| `Staging` | `DebugStag` | `ReleaseStag` | `.env.staging` |
-| `Production` | `DebugProd` | `ReleaseProd` | `.env.production` |
+| Scheme        | Run configuration | Archive configuration | Env file           |
+| ------------- | ----------------- | --------------------- | ------------------ |
+| `Development` | `DebugDev`        | `ReleaseDev`          | `.env.development` |
+| `Staging`     | `DebugStag`       | `ReleaseStag`         | `.env.staging`     |
+| `Production`  | `DebugProd`       | `ReleaseProd`         | `.env.production`  |
 
 The Archive action must use the matching release configuration. Do not archive staging with a production configuration, and do not archive production with a staging configuration.
 
 Required iOS build setting mapping:
 
-| Xcode setting / Info.plist key | Value |
-|---|---|
-| `PRODUCT_BUNDLE_IDENTIFIER` | `$(IOS_BUNDLE_ID)` |
-| `MARKETING_VERSION` | `$(IOS_APP_VERSION_NAME)` |
-| `CURRENT_PROJECT_VERSION` | `$(IOS_APP_VERSION_CODE)` |
-| `ASSETCATALOG_COMPILER_APPICON_NAME` | `$(IOS_APP_ICON_NAME)` |
-| `CFBundleDisplayName` | `$(APP_NAME)` |
-| `UILaunchStoryboardName` | `$(LAUNCH_SCREEN_NAME)` |
+| Xcode setting / Info.plist key       | Value                     |
+| ------------------------------------ | ------------------------- |
+| `PRODUCT_BUNDLE_IDENTIFIER`          | `$(IOS_BUNDLE_ID)`        |
+| `MARKETING_VERSION`                  | `$(IOS_APP_VERSION_NAME)` |
+| `CURRENT_PROJECT_VERSION`            | `$(IOS_APP_VERSION_CODE)` |
+| `ASSETCATALOG_COMPILER_APPICON_NAME` | `$(IOS_APP_ICON_NAME)`    |
+| `CFBundleDisplayName`                | `$(APP_NAME)`             |
+| `UILaunchStoryboardName`             | `$(LAUNCH_SCREEN_NAME)`   |
 
 ### `react-native-config` iOS Wiring
 
@@ -306,11 +306,11 @@ Android should use product flavors for environment-specific application IDs, ver
 
 Required flavors:
 
-| Flavor | Build variants | Env file |
-|---|---|---|
+| Flavor        | Build variants                           | Env file           |
+| ------------- | ---------------------------------------- | ------------------ |
 | `development` | `developmentDebug`, `developmentRelease` | `.env.development` |
-| `staging` | `stagingDebug`, `stagingRelease` | `.env.staging` |
-| `production` | `productionDebug`, `productionRelease` | `.env.production` |
+| `staging`     | `stagingDebug`, `stagingRelease`         | `.env.staging`     |
+| `production`  | `productionDebug`, `productionRelease`   | `.env.production`  |
 
 Required `react-native-config` Gradle mapping:
 
@@ -366,11 +366,11 @@ productFlavors {
 
 `AndroidManifest.xml` already references `android:usesCleartextTraffic="${usesCleartextTraffic}"`. Each flavor must set `manifestPlaceholders` as shown above:
 
-| Flavor | `usesCleartextTraffic` | Reason |
-|---|---|---|
-| `development` | `true` | local API uses `http://localhost:3000` |
-| `staging` | `false` | HTTPS-only API |
-| `production` | `false` | HTTPS-only API |
+| Flavor        | `usesCleartextTraffic` | Reason                                 |
+| ------------- | ---------------------- | -------------------------------------- |
+| `development` | `true`                 | local API uses `http://localhost:3000` |
+| `staging`     | `false`                | HTTPS-only API                         |
+| `production`  | `false`                | HTTPS-only API                         |
 
 Without the development placeholder, local HTTP calls fail silently or at runtime even when `API_BASE_URL` is correct. Do not hard-code cleartext in the manifest; keep the placeholder so flavor config controls it.
 
@@ -433,12 +433,12 @@ AI_SCHEMA_VERSION=ai-output-v1
 
 Recommended local files and hosting secrets:
 
-| Location | Commit? | Purpose |
-|---|---|---|
-| `LingoBites-Server/.env.example` | yes | safe template only |
-| `LingoBites-Server/.env` | no | local backend config |
-| hosting secret store, staging service | no | staging runtime config |
-| hosting secret store, production service | no | production runtime config |
+| Location                                 | Commit? | Purpose                   |
+| ---------------------------------------- | ------- | ------------------------- |
+| `LingoBites-Server/.env.example`         | yes     | safe template only        |
+| `LingoBites-Server/.env`                 | no      | local backend config      |
+| hosting secret store, staging service    | no      | staging runtime config    |
+| hosting secret store, production service | no      | production runtime config |
 
 For Phase 0 local development, backend should default to `AI_PROVIDER=mock`. For real-AI testing, use `AI_PROVIDER=gemini`, `AI_MODEL=gemini-2.0-flash`, and a limited non-production `AI_API_KEY`.
 
@@ -523,14 +523,14 @@ The repo already has mobile scripts for `.env.development`, `.env.staging`, and 
 
 **Fastlane alignment (done in scaffold cleanup):** `fastlane/Fastfile` no longer hard-codes identifiers from the previous project. It now:
 
-| Setting | Source |
-|---|---|
-| iOS bundle ID | `IOS_BUNDLE_ID` from `.env.staging` / `.env.production` at lane runtime |
-| Android package name | `ANDROID_BUNDLE_ID` from matching env files |
-| Xcode project / workspace | `ios/ScanLearnEnglish.xcodeproj`, `ios/ScanLearnEnglish.xcworkspace` |
-| IPA output name | `LingoBites-{Scheme}.ipa` |
-| Android release variants | `stagingRelease`, `productionRelease` (requires product flavors from this spec) |
-| Apple development team | `IOS_DEVELOPMENT_TEAM` in `.env.ios-build.local` (not committed) |
+| Setting                   | Source                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| iOS bundle ID             | `IOS_BUNDLE_ID` from `.env.staging` / `.env.production` at lane runtime         |
+| Android package name      | `ANDROID_BUNDLE_ID` from matching env files                                     |
+| Xcode project / workspace | `ios/ScanLearnEnglish.xcodeproj`, `ios/ScanLearnEnglish.xcworkspace`            |
+| IPA output name           | `LingoBites-{Scheme}.ipa`                                                       |
+| Android release variants  | `stagingRelease`, `productionRelease` (requires product flavors from this spec) |
+| Apple development team    | `IOS_DEVELOPMENT_TEAM` in `.env.ios-build.local` (not committed)                |
 
 Before any TestFlight or Play upload, ensure `.env.staging` / `.env.production` exist with real bundle IDs, Android flavors are implemented, and store credentials (`APP_STORE_CONNECT_*`, `PLAY_STORE_JSON_KEY_FILE`, provisioning profiles) are filled in locally.
 

@@ -11,17 +11,17 @@ and no trigger that can reach the `production` lane/scheme/bundle id.
 
 Set these as repository (or environment) **secrets** â€” never commit values, never echo them in a step:
 
-| Secret | Used for |
-|---|---|
-| `IOS_APP_STORE_CONNECT_KEY_ID` | App Store Connect API key id |
-| `IOS_APP_STORE_CONNECT_ISSUER_ID` | App Store Connect API key issuer id |
-| `IOS_APP_STORE_CONNECT_API_KEY` | Base64-encoded `.p8` App Store Connect API key content |
-| `IOS_DEVELOPMENT_TEAM` | Apple Developer Team ID used for code signing |
-| `IOS_DISTRIBUTION_CERTIFICATE_BASE64` | Base64-encoded Apple Distribution `.p12` containing its private key |
-| `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password used when the Apple Distribution `.p12` was exported |
-| `IOS_PROVISIONING_PROFILE_BASE64` | Base64-encoded App Store Connect `.mobileprovision` for the staging bundle id |
-| `IOS_APPLE_ID` | Optional. Apple ID, only needed if fastlane falls back to it |
-| `IOS_APP_STORE_CONNECT_TEAM_ID` | Optional. App Store Connect team id, only needed for accounts on multiple teams |
+| Secret                                  | Used for                                                                        |
+| --------------------------------------- | ------------------------------------------------------------------------------- |
+| `IOS_APP_STORE_CONNECT_KEY_ID`          | App Store Connect API key id                                                    |
+| `IOS_APP_STORE_CONNECT_ISSUER_ID`       | App Store Connect API key issuer id                                             |
+| `IOS_APP_STORE_CONNECT_API_KEY`         | Base64-encoded `.p8` App Store Connect API key content                          |
+| `IOS_DEVELOPMENT_TEAM`                  | Apple Developer Team ID used for code signing                                   |
+| `IOS_DISTRIBUTION_CERTIFICATE_BASE64`   | Base64-encoded Apple Distribution `.p12` containing its private key             |
+| `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password used when the Apple Distribution `.p12` was exported                   |
+| `IOS_PROVISIONING_PROFILE_BASE64`       | Base64-encoded App Store Connect `.mobileprovision` for the staging bundle id   |
+| `IOS_APPLE_ID`                          | Optional. Apple ID, only needed if fastlane falls back to it                    |
+| `IOS_APP_STORE_CONNECT_TEAM_ID`         | Optional. App Store Connect team id, only needed for accounts on multiple teams |
 
 Create the Base64 values on macOS without printing them to the terminal:
 
@@ -41,9 +41,9 @@ Set these as repository (or environment) **variables** (`vars.*`, not secrets â€
 "Materialize .env.staging" step comment in the workflow for why these are not treated
 as secret):
 
-| Variable | Used for |
-|---|---|
-| `STAGING_API_BASE_URL` | Staging backend base URL, written into `.env.staging` |
+| Variable                | Used for                                                                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STAGING_API_BASE_URL`  | Staging backend base URL, written into `.env.staging`                                                                                                 |
 | `STAGING_IOS_BUNDLE_ID` | Staging iOS bundle id (e.g. `com.lingobites.staging`), written into `.env.staging` and asserted against the resolved Xcode bundle id before archiving |
 
 `.env.staging` itself is gitignored and never committed. The workflow rebuilds it

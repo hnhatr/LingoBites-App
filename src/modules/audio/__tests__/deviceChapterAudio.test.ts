@@ -63,7 +63,6 @@ import {
   readyAudioPathOnDevice,
   sanitizeFileSegment,
 } from '../deviceChapterAudio';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const RNFSMock = require('@dr.pogodin/react-native-fs') as {
   DocumentDirectoryPath: string | undefined;
   mkdir: jest.Mock;
@@ -80,7 +79,6 @@ type MockSoundInstance = {
   onEnd: (() => void) | null;
   play: (onEnd?: () => void) => MockSoundInstance;
 };
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const SoundMock = require('react-native-sound') as {
   new (filename: string): MockSoundInstance;
   __instances: MockSoundInstance[];
@@ -299,10 +297,10 @@ describe('offline playback', () => {
         release() {}
       };
     });
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const {playReadyChapterAudio: playWithBrokenSound} =
       require('../deviceChapterAudio') as typeof import('../deviceChapterAudio');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const repository = require('@shared/db/AudioAssetRepository') as {
       insertPendingChapterAudioAsset: (input: {
         chapterId: string;
@@ -344,7 +342,7 @@ describe('offline playback', () => {
       unlink: jest.fn(async () => {}),
       exists: jest.fn(async () => true),
     }));
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const {deviceChapterAudioFileStore: storeWithoutFs} =
       require('../deviceChapterAudio') as typeof import('../deviceChapterAudio');
 

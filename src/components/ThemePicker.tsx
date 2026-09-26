@@ -41,8 +41,7 @@ export function ThemePicker() {
   if (!__DEV__) {
     options = productionThemeOptions.map(id => ({
       id,
-      label:
-        id === SYSTEM_THEME_ID ? SYSTEM_THEME_LABEL : themes[id].name,
+      label: id === SYSTEM_THEME_ID ? SYSTEM_THEME_LABEL : themes[id].name,
     }));
   } else {
     const visibleIds = themeIds.filter(id => {
@@ -50,7 +49,10 @@ export function ThemePicker() {
       return flag === undefined || isFeatureEnabled(flag);
     });
     options = [
-      ...visibleIds.map(id => ({id: id as ThemePreference, label: themes[id].name})),
+      ...visibleIds.map(id => ({
+        id: id as ThemePreference,
+        label: themes[id].name,
+      })),
       {id: SYSTEM_THEME_ID as ThemePreference, label: SYSTEM_THEME_LABEL},
     ];
   }

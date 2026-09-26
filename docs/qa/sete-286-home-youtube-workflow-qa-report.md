@@ -22,24 +22,25 @@
 
 ## 2. Ma trận Test Case (Test Case Specification & Traceability Matrix)
 
-| Test ID | Mục tiêu kiểm thử | Điều kiện tiên quyết (Preconditions) | Dữ liệu đầu vào (Test Data) | Các bước thực hiện (Test Steps) | Kết quả kỳ vọng (Expected Result) | Kết quả thực tế (Actual Result) | Mức độ ưu tiên | Trạng thái |
-|---|---|---|---|---|---|---|---|---|
-| **TC-HVB-01** | Điều hướng khi có bài học đã lưu (HVB-01) | App đang ở màn Home; DB có ít nhất 1 bài YouTube (`youtube_lessons` count > 0) | Video `Mz-Hne9h_aE` ("The Little Bear...") | 1. Nhấn nút "Học qua video" (`home-explore-video`). | Điều hướng thẳng vào `YouTubeHistoryScreen` (`Create` tab, `fromHome: true`). Hiển thị danh sách bài đã lưu và nút CTA "Tạo bài học từ video YouTube mới". | Đúng kỳ vọng. Màn hình "Bài YouTube đã lưu" hiển thị với ID `youtube-history-item-Mz-Hne9h_aE`. | P0 (Critical) | **PASS** |
-| **TC-HVB-02** | Điều hướng khi chưa có bài học nào (HVB-01) | App đang ở màn Home; DB không có bài YouTube nào (`youtube_lessons` count = 0) | Bảng `youtube_lessons` rỗng | 1. Nhấn nút "Học qua video" (`home-explore-video`). | Điều hướng thẳng vào `YouTubeInputScreen` (`Create` tab, `fromHome: true`). Hiển thị trường nhập link YouTube và các nút hành động. | Đúng kỳ vọng. Màn hình "Học từ YouTube" hiển thị trường nhập `youtube-url-input`. | P0 (Critical) | **PASS** |
-| **TC-HVB-03** | Quay lại từ History về Home (HVB-04) | Đang ở màn `YouTubeHistoryScreen` được mở từ Home (`fromHome: true`) | Không có | 1. Nhấn nút "Quay lại" ở góc trên bên trái header. | App gọi `navigation.popToTop()` và chuyển thẳng về tab `Home`, không dừng ở màn hình `CreateMain`. Không phát sinh Console Error / LogBox. | Chuyển về Home thành công, nhưng kích hoạt RedBox / Console Error do `popToTop()` trên stack depth = 1 (Xem `DEFECT-SETE-286-01`). | P0 (Critical) | **PASS W/ DEFECT** |
-| **TC-HVB-04** | Quay lại từ Input về Home (HVB-04) | Đang ở màn `YouTubeInputScreen` được mở từ Home (khi rỗng bài) (`fromHome: true`) | Không có | 1. Nhấn nút "Quay lại" ở góc trên bên trái header. | App gọi `navigation.popToTop()` và chuyển thẳng về tab `Home`, không dừng ở màn hình `CreateMain`. Không phát sinh Console Error / LogBox. | Chuyển về Home thành công, nhưng kích hoạt RedBox / Console Error do `popToTop()` trên stack depth = 1 (Xem `DEFECT-SETE-286-01`). | P0 (Critical) | **PASS W/ DEFECT** |
-| **TC-HVB-05** | Mở bài học đã lưu từ History | Đang ở màn `YouTubeHistoryScreen` có bài học đã lưu | Card bài học `youtube-history-item-Mz-Hne9h_aE` | 1. Nhấn vào card bài học đã lưu. | Điều hướng vào `YouTubeLessonScreen`. Khởi tạo player video YouTube, các nút điều khiển (tốc độ, lặp câu, bật/tắt dịch, IPA) và danh sách transcript đồng bộ. | Đúng kỳ vọng. Player hiển thị video, danh sách câu thoại với nút lưu từ vựng/câu. | P0 (Critical) | **PASS** |
-| **TC-HVB-06** | Quay lại từ Lesson về History | Đang ở màn `YouTubeLessonScreen` | Không có | 1. Nhấn nút "Quay lại" trên header. | Quay lại màn `YouTubeHistoryScreen`. Danh sách bài học vẫn đầy đủ. | Đúng kỳ vọng. Quay về màn "Bài YouTube đã lưu". | P1 (High) | **PASS** |
-| **TC-HVB-07** | Tạo bài mới từ History (HVB-11) | Đang ở màn `YouTubeHistoryScreen` | Nút CTA `youtube-history-create-new` | 1. Nhấn nút "Tạo bài học từ video YouTube mới". | Điều hướng vào `YouTubeInputScreen` với input rỗng (không có flag `fromHome`). | Đúng kỳ vọng. Màn hình "Học từ YouTube" mở ra, ô link rỗng. | P1 (High) | **PASS** |
-| **TC-HVB-08** | Quay lại từ Input về History (khi mở từ History) | Đang ở màn `YouTubeInputScreen` được mở từ `YouTubeHistoryScreen` | Không có | 1. Nhấn nút "Quay lại" trên header. | Quay trở lại `YouTubeHistoryScreen` theo stack thông thường (`navigation.goBack()`). | Đúng kỳ vọng. Quay về màn `YouTubeHistoryScreen`. | P1 (High) | **PASS** |
-| **TC-HVB-09** | Validation link YouTube rỗng / không hợp lệ | Đang ở màn `YouTubeInputScreen` | Link rỗng hoặc string không phải định dạng YouTube | 1. Để trống link hoặc nhập string rác.<br>2. Nhấn nút "Tạo bài học" (`youtube-submit`). | Không chuyển màn. Hiển thị thông báo lỗi inline: "Vui lòng nhập link YouTube hợp lệ (watch, youtu.be, Shorts hoặc embed)." | Đúng kỳ vọng. Lỗi màu đỏ hiển thị ngay dưới ô nhập liệu. | P1 (High) | **PASS** |
-| **TC-HVB-10** | Trạng thái tắt cờ tính năng (Feature Gate HVB-03) | Cấu hình release `config.features.youtubeLearning = false` | Nút `home-explore-video` trên Home | 1. Quan sát nút "Học qua video".<br>2. Thử tương tác nhấn vào nút. | Nút bị vô hiệu hóa (`accessibilityState.disabled = true`), nhãn thông báo "Tính năng đang chưa khả dụng". Nhấn vào không kích hoạt điều hướng. | Đúng kỳ vọng (xác thực qua automated unit test trong `HomeScreenMvp.test.tsx`). | P1 (High) | **PASS** |
+| Test ID       | Mục tiêu kiểm thử                                 | Điều kiện tiên quyết (Preconditions)                                              | Dữ liệu đầu vào (Test Data)                        | Các bước thực hiện (Test Steps)                                                         | Kết quả kỳ vọng (Expected Result)                                                                                                                             | Kết quả thực tế (Actual Result)                                                                                                    | Mức độ ưu tiên | Trạng thái         |
+| ------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------ |
+| **TC-HVB-01** | Điều hướng khi có bài học đã lưu (HVB-01)         | App đang ở màn Home; DB có ít nhất 1 bài YouTube (`youtube_lessons` count > 0)    | Video `Mz-Hne9h_aE` ("The Little Bear...")         | 1. Nhấn nút "Học qua video" (`home-explore-video`).                                     | Điều hướng thẳng vào `YouTubeHistoryScreen` (`Create` tab, `fromHome: true`). Hiển thị danh sách bài đã lưu và nút CTA "Tạo bài học từ video YouTube mới".    | Đúng kỳ vọng. Màn hình "Bài YouTube đã lưu" hiển thị với ID `youtube-history-item-Mz-Hne9h_aE`.                                    | P0 (Critical)  | **PASS**           |
+| **TC-HVB-02** | Điều hướng khi chưa có bài học nào (HVB-01)       | App đang ở màn Home; DB không có bài YouTube nào (`youtube_lessons` count = 0)    | Bảng `youtube_lessons` rỗng                        | 1. Nhấn nút "Học qua video" (`home-explore-video`).                                     | Điều hướng thẳng vào `YouTubeInputScreen` (`Create` tab, `fromHome: true`). Hiển thị trường nhập link YouTube và các nút hành động.                           | Đúng kỳ vọng. Màn hình "Học từ YouTube" hiển thị trường nhập `youtube-url-input`.                                                  | P0 (Critical)  | **PASS**           |
+| **TC-HVB-03** | Quay lại từ History về Home (HVB-04)              | Đang ở màn `YouTubeHistoryScreen` được mở từ Home (`fromHome: true`)              | Không có                                           | 1. Nhấn nút "Quay lại" ở góc trên bên trái header.                                      | App gọi `navigation.popToTop()` và chuyển thẳng về tab `Home`, không dừng ở màn hình `CreateMain`. Không phát sinh Console Error / LogBox.                    | Chuyển về Home thành công, nhưng kích hoạt RedBox / Console Error do `popToTop()` trên stack depth = 1 (Xem `DEFECT-SETE-286-01`). | P0 (Critical)  | **PASS W/ DEFECT** |
+| **TC-HVB-04** | Quay lại từ Input về Home (HVB-04)                | Đang ở màn `YouTubeInputScreen` được mở từ Home (khi rỗng bài) (`fromHome: true`) | Không có                                           | 1. Nhấn nút "Quay lại" ở góc trên bên trái header.                                      | App gọi `navigation.popToTop()` và chuyển thẳng về tab `Home`, không dừng ở màn hình `CreateMain`. Không phát sinh Console Error / LogBox.                    | Chuyển về Home thành công, nhưng kích hoạt RedBox / Console Error do `popToTop()` trên stack depth = 1 (Xem `DEFECT-SETE-286-01`). | P0 (Critical)  | **PASS W/ DEFECT** |
+| **TC-HVB-05** | Mở bài học đã lưu từ History                      | Đang ở màn `YouTubeHistoryScreen` có bài học đã lưu                               | Card bài học `youtube-history-item-Mz-Hne9h_aE`    | 1. Nhấn vào card bài học đã lưu.                                                        | Điều hướng vào `YouTubeLessonScreen`. Khởi tạo player video YouTube, các nút điều khiển (tốc độ, lặp câu, bật/tắt dịch, IPA) và danh sách transcript đồng bộ. | Đúng kỳ vọng. Player hiển thị video, danh sách câu thoại với nút lưu từ vựng/câu.                                                  | P0 (Critical)  | **PASS**           |
+| **TC-HVB-06** | Quay lại từ Lesson về History                     | Đang ở màn `YouTubeLessonScreen`                                                  | Không có                                           | 1. Nhấn nút "Quay lại" trên header.                                                     | Quay lại màn `YouTubeHistoryScreen`. Danh sách bài học vẫn đầy đủ.                                                                                            | Đúng kỳ vọng. Quay về màn "Bài YouTube đã lưu".                                                                                    | P1 (High)      | **PASS**           |
+| **TC-HVB-07** | Tạo bài mới từ History (HVB-11)                   | Đang ở màn `YouTubeHistoryScreen`                                                 | Nút CTA `youtube-history-create-new`               | 1. Nhấn nút "Tạo bài học từ video YouTube mới".                                         | Điều hướng vào `YouTubeInputScreen` với input rỗng (không có flag `fromHome`).                                                                                | Đúng kỳ vọng. Màn hình "Học từ YouTube" mở ra, ô link rỗng.                                                                        | P1 (High)      | **PASS**           |
+| **TC-HVB-08** | Quay lại từ Input về History (khi mở từ History)  | Đang ở màn `YouTubeInputScreen` được mở từ `YouTubeHistoryScreen`                 | Không có                                           | 1. Nhấn nút "Quay lại" trên header.                                                     | Quay trở lại `YouTubeHistoryScreen` theo stack thông thường (`navigation.goBack()`).                                                                          | Đúng kỳ vọng. Quay về màn `YouTubeHistoryScreen`.                                                                                  | P1 (High)      | **PASS**           |
+| **TC-HVB-09** | Validation link YouTube rỗng / không hợp lệ       | Đang ở màn `YouTubeInputScreen`                                                   | Link rỗng hoặc string không phải định dạng YouTube | 1. Để trống link hoặc nhập string rác.<br>2. Nhấn nút "Tạo bài học" (`youtube-submit`). | Không chuyển màn. Hiển thị thông báo lỗi inline: "Vui lòng nhập link YouTube hợp lệ (watch, youtu.be, Shorts hoặc embed)."                                    | Đúng kỳ vọng. Lỗi màu đỏ hiển thị ngay dưới ô nhập liệu.                                                                           | P1 (High)      | **PASS**           |
+| **TC-HVB-10** | Trạng thái tắt cờ tính năng (Feature Gate HVB-03) | Cấu hình release `config.features.youtubeLearning = false`                        | Nút `home-explore-video` trên Home                 | 1. Quan sát nút "Học qua video".<br>2. Thử tương tác nhấn vào nút.                      | Nút bị vô hiệu hóa (`accessibilityState.disabled = true`), nhãn thông báo "Tính năng đang chưa khả dụng". Nhấn vào không kích hoạt điều hướng.                | Đúng kỳ vọng (xác thực qua automated unit test trong `HomeScreenMvp.test.tsx`).                                                    | P1 (High)      | **PASS**           |
 
 ---
 
 ## 3. Nhật ký Thực thi Kiểm thử Live qua Orca CLI (Simulator Execution Log)
 
 ### 3.1. Kết nối và đính kèm thiết bị giả lập (Orca Emulator Attach)
+
 - Lệnh thực thi:
   ```bash
   orca emulator attach "iPhone 17 Pro" --json
@@ -59,6 +60,7 @@
   ```
 
 ### 3.2. Quét Accessibility Tree ban đầu trên màn hình Home
+
 - Nhận diện phần tử:
   ```json
   {
@@ -73,7 +75,9 @@
 - Ảnh chụp chứng cứ: `attachments/sete-286/01-home-screen.png`.
 
 ### 3.3. Kiểm thử Luồng 1: Có bài học đã lưu (Store có data)
+
 1. **Tap nút Học qua video:**
+
    - Lệnh: `orca emulator tap 0.2649 0.5972 --json`
    - Kết quả ax tree: Chuyển sang `YouTubeHistoryScreen` ("Bài YouTube đã lưu").
    - Nhận diện phần tử:
@@ -82,6 +86,7 @@
    - Ảnh chụp chứng cứ: `attachments/sete-286/02-youtube-history-screen.png`.
 
 2. **Mở bài học chi tiết:**
+
    - Lệnh: `orca emulator tap 0.50 0.2542 --json`
    - Kết quả ax tree: Mở `YouTubeLessonScreen` với:
      - YouTube player nhúng
@@ -90,16 +95,19 @@
    - Ảnh chụp chứng cứ: `attachments/sete-286/03-youtube-lesson-screen.png`.
 
 3. **Quay lại màn hình History:**
+
    - Lệnh: `orca emulator tap 0.0945 0.1052 --json`
    - Kết quả ax tree: Trở lại `YouTubeHistoryScreen`.
 
 4. **Nhấn CTA tạo bài học mới (`youtube-history-create-new`):**
+
    - Lệnh: `orca emulator tap 0.50 0.1670 --json`
    - Kết quả ax tree: Mở `YouTubeInputScreen` ("Học từ YouTube").
    - Nhận diện: `youtube-url-input`, `youtube-paste-url`, `youtube-submit`, `youtube-open-history`.
    - Ảnh chụp chứng cứ: `attachments/sete-286/04-youtube-input-screen.png`.
 
 5. **Kiểm tra Validation lỗi:**
+
    - Nhấn `youtube-submit` khi để trống link (tọa độ `0.50, 0.6652`).
    - Kết quả ax tree: Xuất hiện `StaticText`: `"Vui lòng nhập link YouTube hợp lệ (watch, youtu.be, Shorts hoặc embed)."`.
    - Ảnh chụp chứng cứ: `attachments/sete-286/05-youtube-input-validation-error.png`.
@@ -109,6 +117,7 @@
    - Back từ History -> gọi `popToTop()` và `navigate('Home')` -> trở về màn hình `HomeScreen`.
 
 ### 3.4. Kiểm thử Luồng 2: Chưa có bài học nào (Empty Store)
+
 1. **Làm rỗng bảng `youtube_lessons` trong SQLite:**
    - Lệnh: `DELETE FROM youtube_lessons; DELETE FROM youtube_sentences;`
 2. **Tap nút Học qua video từ Home:**
@@ -122,6 +131,7 @@
 4. **Phục hồi dữ liệu SQLite:** Hoàn trả nguyên trạng bài học mẫu từ bản sao lưu.
 
 ### 3.5. Dọn dẹp phiên Orca
+
 - Lệnh: `orca emulator kill --device "iPhone 17 Pro" --json`
 - Tiến trình helper được đóng sạch sẽ, thiết bị simulator duy trì trạng thái ổn định.
 
@@ -180,7 +190,9 @@
     const goBack = useCallback(() => {
       if (route.params?.fromHome === true) {
         navigation.popToTop(); // <--- GỌI VÔ ĐIỀU KIỆN KHI STACK CHỈ CÓ 1 SCREEN
-        navigation.getParent<NavigationProp<RootTabParamList>>()?.navigate('Home');
+        navigation
+          .getParent<NavigationProp<RootTabParamList>>()
+          ?.navigate('Home');
         return;
       }
       navigation.goBack();
@@ -198,7 +210,9 @@
         if (navigation.canGoBack()) {
           navigation.popToTop();
         }
-        navigation.getParent<NavigationProp<RootTabParamList>>()?.navigate('Home');
+        navigation
+          .getParent<NavigationProp<RootTabParamList>>()
+          ?.navigate('Home');
         return;
       }
       navigation.goBack();

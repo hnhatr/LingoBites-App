@@ -52,16 +52,13 @@ describe('PracticeScreen', () => {
 
   it('shows quick-practice empty state with a create CTA when there are no questions', () => {
     const tree = renderWith({questions: []});
+    expect(findText(tree, 'Chưa có bài học nào để luyện nhanh.')).toBe(true);
     expect(
-      findText(tree, 'Chưa có bài học nào để luyện nhanh.'),
+      findText(tree, 'Luyện nhanh lấy câu từ các bài học bạn đã tạo.'),
     ).toBe(true);
-    expect(
-      findText(
-        tree,
-        'Luyện nhanh lấy câu từ các bài học bạn đã tạo.',
-      ),
-    ).toBe(true);
-    const create = tree.root.findByProps({testID: 'practice-quick-empty-create'});
+    const create = tree.root.findByProps({
+      testID: 'practice-quick-empty-create',
+    });
     ReactTestRenderer.act(() => {
       create.props.onPress();
     });
@@ -102,7 +99,9 @@ describe('PracticeScreen', () => {
       ],
     });
 
-    expect(tree.root.findByProps({testID: 'practice-invalid-question'})).toBeDefined();
+    expect(
+      tree.root.findByProps({testID: 'practice-invalid-question'}),
+    ).toBeDefined();
     const skip = tree.root.findByProps({testID: 'practice-skip-button'});
     expect(skip).toBeDefined();
     ReactTestRenderer.act(() => {

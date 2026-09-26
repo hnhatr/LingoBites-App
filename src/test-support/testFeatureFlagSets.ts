@@ -66,12 +66,13 @@ export const THEME_UI_FLAGS: Partial<Record<FeatureKey, boolean>> = {
 };
 
 /** Dev showcase: core + themes + review; expansion betas stay off. */
-export const FULL_FEATURE_SHOWCASE_FLAGS: Partial<Record<FeatureKey, boolean>> = {
-  ...MT_CORE_INGESTION,
-  ...FULL_THEME_STACK,
-  reviewSystem: true,
-  youtubeLearning: false,
-};
+export const FULL_FEATURE_SHOWCASE_FLAGS: Partial<Record<FeatureKey, boolean>> =
+  {
+    ...MT_CORE_INGESTION,
+    ...FULL_THEME_STACK,
+    reviewSystem: true,
+    youtubeLearning: false,
+  };
 
 /** Every implemented feature flag on (matches dev/production presets). */
 export const ALL_IMPLEMENTED_FEATURES: Partial<Record<FeatureKey, boolean>> = {

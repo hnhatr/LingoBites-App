@@ -9,49 +9,52 @@
 ## Stage Plan
 
 ### Full Lane (9 stages, 3 gates)
-| Stage | Work | Assignee | Status |
-|---|---|---|---|
-| 1 | Design brief, scope, screen inventory, clarification log, traceability register | Design Lead | todo |
-| 2 | **Human Gate 1** — user flow approval | TranHoangNha | backlog |
-| 3 | IA, task/user/screen flows, states, exception/recovery paths | UX Flow & IA Designer | backlog |
-| 4a | Wireframe + state matrix + responsive | UI & Wireframe Designer | backlog |
-| 4b | Content copy deck + error matrix | Content Designer | backlog |
-| 5 | **Human Gate 2** — wireframe business/usability approval | TranHoangNha | backlog |
-| 6 | UI spec, design-system gap list, HTML handoff, motion spec | UI & Wireframe Designer | backlog |
-| 7 | Heuristic review, contrast check, a11y checklist, issue log | UX & Accessibility Critic | backlog |
-| 8 | Synthesis: final handoff package, traceability matrix, logs | Design Lead | backlog |
-| 9 | **Human Gate 3** — final handoff approval | TranHoangNha | backlog |
+
+| Stage | Work                                                                            | Assignee                  | Status  |
+| ----- | ------------------------------------------------------------------------------- | ------------------------- | ------- |
+| 1     | Design brief, scope, screen inventory, clarification log, traceability register | Design Lead               | todo    |
+| 2     | **Human Gate 1** — user flow approval                                           | TranHoangNha              | backlog |
+| 3     | IA, task/user/screen flows, states, exception/recovery paths                    | UX Flow & IA Designer     | backlog |
+| 4a    | Wireframe + state matrix + responsive                                           | UI & Wireframe Designer   | backlog |
+| 4b    | Content copy deck + error matrix                                                | Content Designer          | backlog |
+| 5     | **Human Gate 2** — wireframe business/usability approval                        | TranHoangNha              | backlog |
+| 6     | UI spec, design-system gap list, HTML handoff, motion spec                      | UI & Wireframe Designer   | backlog |
+| 7     | Heuristic review, contrast check, a11y checklist, issue log                     | UX & Accessibility Critic | backlog |
+| 8     | Synthesis: final handoff package, traceability matrix, logs                     | Design Lead               | backlog |
+| 9     | **Human Gate 3** — final handoff approval                                       | TranHoangNha              | backlog |
 
 ### Fast Lane (5 stages, 1 gate)
-| Stage | Work | Assignee | Status |
-|---|---|---|---|
-| 1 | Brief + flow | Design Lead | todo |
-| 2 | Wireframe + UI spec + HTML handoff | UI & Wireframe Designer | backlog |
-| 3 | Heuristic + accessibility review | UX & Accessibility Critic | backlog |
-| 4 | Synthesize final package | Design Lead | backlog |
-| 5 | **Human Gate 3** (only 1 gate) | TranHoangNha | backlog |
+
+| Stage | Work                               | Assignee                  | Status  |
+| ----- | ---------------------------------- | ------------------------- | ------- |
+| 1     | Brief + flow                       | Design Lead               | todo    |
+| 2     | Wireframe + UI spec + HTML handoff | UI & Wireframe Designer   | backlog |
+| 3     | Heuristic + accessibility review   | UX & Accessibility Critic | backlog |
+| 4     | Synthesize final package           | Design Lead               | backlog |
+| 5     | **Human Gate 3** (only 1 gate)     | TranHoangNha              | backlog |
 
 ## Screen Inventory
 
 [List screens affected by this design session]
 
-| Screen ID | Screen Name | Type | Notes |
-|---|---|---|---|
-| | | [New / Modified / Reference] | |
+| Screen ID | Screen Name | Type                         | Notes |
+| --------- | ----------- | ---------------------------- | ----- |
+|           |             | [New / Modified / Reference] |       |
 
 ## State Matrix
 
 [Track states for each screen - to be filled during design]
 
 | Screen | Normal | Loading | Empty | Error | Success | Disabled | Permission Denied | Other |
-|---|---|---|---|---|---|---|---|---|
-| | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | ☐ | |
+| ------ | ------ | ------- | ----- | ----- | ------- | -------- | ----------------- | ----- |
+|        | ☐      | ☐       | ☐     | ☐     | ☐       | ☐        | ☐                 |       |
 
 ## Input Package from BA Team
 
 **Source Issue:** [VIB-XXX or reference]
 
 **Included:**
+
 - [ ] Problem statement and scope
 - [ ] Personas or user groups
 - [ ] User goals / JTBD
@@ -70,39 +73,44 @@
 ## Design Logs
 
 ### Assumptions
-| ID | Assumption | Validation Status | Owner |
-|---|---|---|---|
-| | | [Pending / Validated / Invalidated] | |
+
+| ID  | Assumption | Validation Status                   | Owner |
+| --- | ---------- | ----------------------------------- | ----- |
+|     |            | [Pending / Validated / Invalidated] |       |
 
 ### Questions
-| ID | Question | Target | Answer | Status |
-|---|---|---|---|---|
-| | | [BA Team / TranHoangNha / Design Team] | | [Open / Answered] |
+
+| ID  | Question | Target                                 | Answer | Status            |
+| --- | -------- | -------------------------------------- | ------ | ----------------- |
+|     |          | [BA Team / TranHoangNha / Design Team] |        | [Open / Answered] |
 
 **Q8 from VIB-115 (inherited):** Entry point của flashcard — có cần tab thứ tư trong navigation không? Design Lead phải đưa lên Gate 1 kèm phương án và khuyến nghị, không tự chọn.
 
 ### Risks
-| ID | Risk | Likelihood | Impact | Mitigation | Owner |
-|---|---|---|---|---|---|
-| | | [Low / Medium / High] | [Low / Medium / High] | | |
+
+| ID  | Risk | Likelihood            | Impact                | Mitigation | Owner |
+| --- | ---- | --------------------- | --------------------- | ---------- | ----- |
+|     |      | [Low / Medium / High] | [Low / Medium / High] |            |       |
 
 ### Decisions
-| ID | Decision | Rationale | Date | Decider |
-|---|---|---|---|---|
-| | | | | |
+
+| ID  | Decision | Rationale | Date | Decider |
+| --- | -------- | --------- | ---- | ------- |
+|     |          |           |      |         |
 
 ### Conflicts
-| ID | Conflict | Parties | Resolution | Status |
-|---|---|---|---|---|
-| | | | | [Open / Resolved / Escalated] |
+
+| ID  | Conflict | Parties | Resolution | Status                        |
+| --- | -------- | ------- | ---------- | ----------------------------- |
+|     |          |         |            | [Open / Resolved / Escalated] |
 
 ## Traceability Matrix
 
 [To be maintained by Design Lead]
 
-| Requirement ID | User Story / Use Case | Flow Step | Screen | Component | State | Acceptance Criteria | Status |
-|---|---|---|---|---|---|---|---|
-| | | | | | | | [Mapped / Pending / N/A] |
+| Requirement ID | User Story / Use Case | Flow Step | Screen | Component | State | Acceptance Criteria | Status                   |
+| -------------- | --------------------- | --------- | ------ | --------- | ----- | ------------------- | ------------------------ |
+|                |                       |           |        |           |       |                     | [Mapped / Pending / N/A] |
 
 ## Design System Changes
 
@@ -144,6 +152,7 @@ Per Design Team Completion Rule:
 ---
 
 **Instructions for Design Lead:**
+
 1. Fill in lane selection and rationale
 2. Create sub-issues for each stage according to the selected lane
 3. Stage 1 sub-issue is `todo`, all others start as `backlog`

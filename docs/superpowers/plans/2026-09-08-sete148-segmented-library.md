@@ -21,6 +21,7 @@
 ## File Structure Overview
 
 ### Files to Create
+
 ```
 src/modules/lesson/
 ├── components/
@@ -46,6 +47,7 @@ src/modules/lesson/
 ```
 
 ### Files to Modify
+
 - `src/modules/lesson/LessonsHistoryScreen.tsx` — refactor main screen component
 - `src/modules/lesson/useLessonLibrary.ts` — adapt existing hook to new architecture (if needed)
 
@@ -56,13 +58,16 @@ src/modules/lesson/
 ### Task 1: Create useLibrarySegments Hook (Data Layer)
 
 **Files:**
+
 - Create: `src/modules/lesson/useLibrarySegments.ts`
 - Create: `src/modules/lesson/__tests__/useLibrarySegments.test.ts`
 - Create: `src/modules/lesson/__tests__/fixtures/libraryTestData.ts`
 
 **Interfaces:**
+
 - Consumes: `ContentLessonStateRepository`, `GrammarBookmarkRepository`, `FlashcardRepository`, `useContentLibrary`, `useLibraryStore`
 - Produces:
+
   ```typescript
   interface SegmentData {
     lessons: LibraryLessonCardView[];
@@ -71,12 +76,12 @@ src/modules/lesson/
     vocabulary: FlashcardRecord[];
     grammar: GrammarBookmark[];
   }
-  
+
   interface SegmentFilterState {
     searchQuery: string;
     sourceFilter: 'all' | 'offline' | 'image_ocr' | 'paste';
   }
-  
+
   function useLibrarySegments(): {
     lessons: SegmentData['lessons'];
     personalLessons: SegmentData['personalLessons'];
@@ -90,7 +95,7 @@ src/modules/lesson/
     setVocabularyFilter: (filter: SegmentFilterState) => void;
     setGrammarFilter: (filter: SegmentFilterState) => void;
     refresh: () => void;
-  }
+  };
   ```
 
 #### Step 1: Write test for lessons data fetching (case-insensitive search)
@@ -104,31 +109,31 @@ describe('useLibrarySegments', () => {
   describe('lessons filtering', () => {
     it('should filter personal lessons by search query (case-insensitive)', () => {
       const {result} = renderHook(() => useLibrarySegments());
-      
+
       act(() => {
         result.current.setLessonsFilter({
           searchQuery: 'HELLO',
           sourceFilter: 'all',
         });
       });
-      
+
       // Filtered results should include lessons with 'hello' in title/summary
       const hasHello = result.current.personalLessons.some(lesson =>
-        lesson.title.toLowerCase().includes('hello')
+        lesson.title.toLowerCase().includes('hello'),
       );
       expect(hasHello).toBe(true);
     });
-    
+
     it('should filter by source type (offline, image_ocr, paste)', () => {
       const {result} = renderHook(() => useLibrarySegments());
-      
+
       act(() => {
         result.current.setLessonsFilter({
           searchQuery: '',
           sourceFilter: 'offline',
         });
       });
-      
+
       result.current.personalLessons.forEach(lesson => {
         expect(['offline', 'image_ocr', 'paste']).toContain(lesson.sourceType);
       });
@@ -214,13 +219,13 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
     const startedLessons = listStartedLessons();
     const combined = [...savedLessons, ...startedLessons];
     const deduped = Array.from(
-      new Map(combined.map(l => [l.lessonId, l])).values()
+      new Map(combined.map(l => [l.lessonId, l])).values(),
     );
-    
+
     // Enrich with content library metadata
     const enriched = deduped.map(state => {
       const contentItem = listActivePackageLessons().find(
-        item => item.id === state.lessonId
+        item => item.id === state.lessonId,
       );
       return {...contentItem, ...state};
     });
@@ -262,16 +267,18 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
 // Helper: filter lessons by search + source
 function filterLessonsByQueryAndSource(
   lessons: any[],
-  filter: SegmentFilterState
+  filter: SegmentFilterState,
 ): any[] {
   return lessons.filter(lesson => {
-    const matchesSearch = !filter.searchQuery ||
+    const matchesSearch =
+      !filter.searchQuery ||
       lesson.title?.toLowerCase().includes(filter.searchQuery.toLowerCase()) ||
       lesson.summary?.toLowerCase().includes(filter.searchQuery.toLowerCase());
-    
-    const matchesSource = filter.sourceFilter === 'all' ||
+
+    const matchesSource =
+      filter.sourceFilter === 'all' ||
       normalizeSourceType(lesson.sourceType) === filter.sourceFilter;
-    
+
     return matchesSearch && matchesSource;
   });
 }
@@ -280,17 +287,19 @@ function filterLessonsByQueryAndSource(
 function filterBySearchAndSource(
   items: any[],
   filter: SegmentFilterState,
-  options: {searchFields: string[]}
+  options: {searchFields: string[]},
 ): any[] {
   return items.filter(item => {
-    const matchesSearch = !filter.searchQuery ||
+    const matchesSearch =
+      !filter.searchQuery ||
       options.searchFields.some(field =>
-        item[field]?.toLowerCase?.().includes(filter.searchQuery.toLowerCase())
+        item[field]?.toLowerCase?.().includes(filter.searchQuery.toLowerCase()),
       );
-    
-    const matchesSource = filter.sourceFilter === 'all' ||
+
+    const matchesSource =
+      filter.sourceFilter === 'all' ||
       normalizeSourceType(item.sourceType) === filter.sourceFilter;
-    
+
     return matchesSearch && matchesSource;
   });
 }
@@ -323,18 +332,21 @@ git commit -m "feat: add useLibrarySegments hook for unified segment data fetchi
 ### Task 2: Create useBookmarkOptimistic Hook (Optimistic Update Logic)
 
 **Files:**
+
 - Create: `src/modules/lesson/useBookmarkOptimistic.ts`
 - Create: `src/modules/lesson/__tests__/useBookmarkOptimistic.test.ts`
 
 **Interfaces:**
+
 - Consumes: `saveFlashcard`, `unsaveFlashcard`, `saveGrammarBookmark`, `unsaveGrammarBookmark`
 - Produces:
+
   ```typescript
   interface OptimisticBookmarkState {
     isSaved: Map<string, boolean>;
     getIsSaved: (itemId: string, dbValue: boolean) => boolean;
   }
-  
+
   function useBookmarkOptimistic(): {
     vocabularySaveState: OptimisticBookmarkState;
     grammarSaveState: OptimisticBookmarkState;
@@ -342,7 +354,7 @@ git commit -m "feat: add useLibrarySegments hook for unified segment data fetchi
     onVocabularyUnsave: (itemId: string) => Promise<void>;
     onGrammarSave: (itemId: string, grammarData: any) => Promise<void>;
     onGrammarUnsave: (itemId: string) => Promise<void>;
-  }
+  };
   ```
 
 #### Step 1: Write failing test for optimistic save
@@ -355,31 +367,37 @@ import {useBookmarkOptimistic} from '../useBookmarkOptimistic';
 describe('useBookmarkOptimistic', () => {
   it('should immediately update state on save, then confirm via DB', async () => {
     const {result} = renderHook(() => useBookmarkOptimistic());
-    
-    expect(result.current.vocabularySaveState.getIsSaved('vocab-1', false)).toBe(false);
-    
+
+    expect(
+      result.current.vocabularySaveState.getIsSaved('vocab-1', false),
+    ).toBe(false);
+
     act(() => {
       result.current.onVocabularySave('vocab-1', true);
     });
-    
+
     // Optimistic: should show as saved immediately
-    expect(result.current.vocabularySaveState.getIsSaved('vocab-1', false)).toBe(true);
+    expect(
+      result.current.vocabularySaveState.getIsSaved('vocab-1', false),
+    ).toBe(true);
   });
-  
+
   it('should revert state on DB error', async () => {
     const {result} = renderHook(() => useBookmarkOptimistic());
-    
+
     act(() => {
       // Simulate DB error
       result.current.onVocabularySave('vocab-1', false).catch(() => {});
     });
-    
+
     // Should revert to false after error
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 100));
     });
-    
-    expect(result.current.vocabularySaveState.getIsSaved('vocab-1', false)).toBe(false);
+
+    expect(
+      result.current.vocabularySaveState.getIsSaved('vocab-1', false),
+    ).toBe(false);
   });
 });
 ```
@@ -416,17 +434,29 @@ interface OptimisticStateMap {
 export interface UseBookmarkOptimisticResult {
   vocabularySaveState: OptimisticStateMap;
   grammarSaveState: OptimisticStateMap;
-  onVocabularySave: (vocabularyId: string, input: SaveFlashcardInput) => Promise<void>;
+  onVocabularySave: (
+    vocabularyId: string,
+    input: SaveFlashcardInput,
+  ) => Promise<void>;
   onVocabularyUnsave: (vocabularyId: string) => Promise<void>;
-  onGrammarSave: (grammarId: string, input: SaveGrammarBookmarkInput) => Promise<void>;
+  onGrammarSave: (
+    grammarId: string,
+    input: SaveGrammarBookmarkInput,
+  ) => Promise<void>;
   onGrammarUnsave: (grammarId: string) => Promise<void>;
 }
 
 export function useBookmarkOptimistic(): UseBookmarkOptimisticResult {
-  const [vocabularySaveState, setVocabularySaveState] = useState<Map<string, boolean>>(new Map());
-  const [grammarSaveState, setGrammarSaveState] = useState<Map<string, boolean>>(new Map());
+  const [vocabularySaveState, setVocabularySaveState] = useState<
+    Map<string, boolean>
+  >(new Map());
+  const [grammarSaveState, setGrammarSaveState] = useState<
+    Map<string, boolean>
+  >(new Map());
 
-  const createOptimisticState = (map: Map<string, boolean>): OptimisticStateMap => ({
+  const createOptimisticState = (
+    map: Map<string, boolean>,
+  ): OptimisticStateMap => ({
     isSaved: map,
     getIsSaved: (itemId: string, dbValue: boolean) => {
       return map.has(itemId) ? map.get(itemId)! : dbValue;
@@ -437,7 +467,7 @@ export function useBookmarkOptimistic(): UseBookmarkOptimisticResult {
     async (vocabularyId: string, input: SaveFlashcardInput) => {
       // Optimistic update
       setVocabularySaveState(prev => new Map(prev).set(vocabularyId, true));
-      
+
       try {
         const result = await new Promise<any>((resolve, reject) => {
           try {
@@ -462,42 +492,39 @@ export function useBookmarkOptimistic(): UseBookmarkOptimisticResult {
         showToast({message: 'Lỗi lưu. Vui lòng thử lại.', type: 'error'});
       }
     },
-    []
+    [],
   );
 
-  const onVocabularyUnsave = useCallback(
-    async (vocabularyId: string) => {
-      // Optimistic update
+  const onVocabularyUnsave = useCallback(async (vocabularyId: string) => {
+    // Optimistic update
+    setVocabularySaveState(prev => {
+      const next = new Map(prev);
+      next.set(vocabularyId, false);
+      return next;
+    });
+
+    try {
+      const result = unsaveFlashcard(vocabularyId);
+      if (!result) {
+        throw new Error('Unsave failed');
+      }
+      // Success
+    } catch (error) {
+      // Error: revert to saved state
       setVocabularySaveState(prev => {
         const next = new Map(prev);
-        next.set(vocabularyId, false);
+        next.delete(vocabularyId);
         return next;
       });
-      
-      try {
-        const result = unsaveFlashcard(vocabularyId);
-        if (!result) {
-          throw new Error('Unsave failed');
-        }
-        // Success
-      } catch (error) {
-        // Error: revert to saved state
-        setVocabularySaveState(prev => {
-          const next = new Map(prev);
-          next.delete(vocabularyId);
-          return next;
-        });
-        showToast({message: 'Lỗi bỏ lưu. Vui lòng thử lại.', type: 'error'});
-      }
-    },
-    []
-  );
+      showToast({message: 'Lỗi bỏ lưu. Vui lòng thử lại.', type: 'error'});
+    }
+  }, []);
 
   const onGrammarSave = useCallback(
     async (grammarId: string, input: SaveGrammarBookmarkInput) => {
       // Optimistic update
       setGrammarSaveState(prev => new Map(prev).set(grammarId, true));
-      
+
       try {
         const result = await new Promise<any>((resolve, reject) => {
           try {
@@ -522,36 +549,33 @@ export function useBookmarkOptimistic(): UseBookmarkOptimisticResult {
         showToast({message: 'Lỗi lưu. Vui lòng thử lại.', type: 'error'});
       }
     },
-    []
+    [],
   );
 
-  const onGrammarUnsave = useCallback(
-    async (grammarId: string) => {
-      // Optimistic update
+  const onGrammarUnsave = useCallback(async (grammarId: string) => {
+    // Optimistic update
+    setGrammarSaveState(prev => {
+      const next = new Map(prev);
+      next.set(grammarId, false);
+      return next;
+    });
+
+    try {
+      const result = unsaveGrammarBookmark(grammarId);
+      if (!result) {
+        throw new Error('Unsave failed');
+      }
+      // Success
+    } catch (error) {
+      // Error: revert
       setGrammarSaveState(prev => {
         const next = new Map(prev);
-        next.set(grammarId, false);
+        next.delete(grammarId);
         return next;
       });
-      
-      try {
-        const result = unsaveGrammarBookmark(grammarId);
-        if (!result) {
-          throw new Error('Unsave failed');
-        }
-        // Success
-      } catch (error) {
-        // Error: revert
-        setGrammarSaveState(prev => {
-          const next = new Map(prev);
-          next.delete(grammarId);
-          return next;
-        });
-        showToast({message: 'Lỗi bỏ lưu. Vui lòng thử lại.', type: 'error'});
-      }
-    },
-    []
-  );
+      showToast({message: 'Lỗi bỏ lưu. Vui lòng thử lại.', type: 'error'});
+    }
+  }, []);
 
   return {
     vocabularySaveState: createOptimisticState(vocabularySaveState),
@@ -583,10 +607,12 @@ git commit -m "feat: add useBookmarkOptimistic hook for optimistic bookmark upda
 ### Task 3: Create SegmentedTabBar Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/SegmentedTabBar.tsx`
 - Create: `src/modules/lesson/components/__tests__/SegmentedTabBar.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `AppText`, `Pressable`
 - Produces:
   ```typescript
@@ -607,32 +633,32 @@ import {SegmentedTabBar} from '../SegmentedTabBar';
 describe('SegmentedTabBar', () => {
   it('should render three tabs', () => {
     const {getByText} = render(
-      <SegmentedTabBar activeTab="lessons" onTabChange={jest.fn()} />
+      <SegmentedTabBar activeTab="lessons" onTabChange={jest.fn()} />,
     );
-    
+
     expect(getByText('Bài học')).toBeTruthy();
     expect(getByText('Từ vựng')).toBeTruthy();
     expect(getByText('Ngữ pháp')).toBeTruthy();
   });
-  
+
   it('should call onTabChange when tab is pressed', () => {
     const onTabChange = jest.fn();
     const {getByText} = render(
-      <SegmentedTabBar activeTab="lessons" onTabChange={onTabChange} />
+      <SegmentedTabBar activeTab="lessons" onTabChange={onTabChange} />,
     );
-    
+
     fireEvent.press(getByText('Từ vựng'));
     expect(onTabChange).toHaveBeenCalledWith('vocabulary');
   });
-  
+
   it('should highlight active tab', () => {
     const {getByTestId} = render(
-      <SegmentedTabBar activeTab="vocabulary" onTabChange={jest.fn()} />
+      <SegmentedTabBar activeTab="vocabulary" onTabChange={jest.fn()} />,
     );
-    
+
     const vocabTab = getByTestId('tab-vocabulary');
     expect(vocabTab.props.style).toContainEqual(
-      expect.objectContaining({color: expect.any(String)}) // active color
+      expect.objectContaining({color: expect.any(String)}), // active color
     );
   });
 });
@@ -665,7 +691,10 @@ const TABS = [
   {id: 'grammar', label: 'Ngữ pháp'},
 ] as const;
 
-export function SegmentedTabBar({activeTab, onTabChange}: SegmentedTabBarProps) {
+export function SegmentedTabBar({
+  activeTab,
+  onTabChange,
+}: SegmentedTabBarProps) {
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
 
@@ -743,10 +772,12 @@ git commit -m "feat: add SegmentedTabBar component for tab switching"
 ### Task 4: Create SearchAndFilterBar Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/SearchAndFilterBar.tsx`
 - Create: `src/modules/lesson/components/__tests__/SearchAndFilterBar.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `TextField`, `Chip`, `MaterialIcon`
 - Produces:
   ```typescript
@@ -775,14 +806,14 @@ describe('SearchAndFilterBar', () => {
         sourceFilter="all"
         onSearchChange={onSearchChange}
         onFilterChange={jest.fn()}
-      />
+      />,
     );
-    
+
     const input = getByPlaceholderText('Tìm kiếm...');
     fireEvent.changeText(input, 'hello');
     expect(onSearchChange).toHaveBeenCalledWith('hello');
   });
-  
+
   it('should render filter chips', () => {
     const {getByText} = render(
       <SearchAndFilterBar
@@ -790,15 +821,15 @@ describe('SearchAndFilterBar', () => {
         sourceFilter="all"
         onSearchChange={jest.fn()}
         onFilterChange={jest.fn()}
-      />
+      />,
     );
-    
+
     expect(getByText('Tất cả')).toBeTruthy();
     expect(getByText('Offline')).toBeTruthy();
     expect(getByText('Ảnh / OCR')).toBeTruthy();
     expect(getByText('Dán văn bản')).toBeTruthy();
   });
-  
+
   it('should call onFilterChange when filter chip is pressed', () => {
     const onFilterChange = jest.fn();
     const {getByText} = render(
@@ -807,9 +838,9 @@ describe('SearchAndFilterBar', () => {
         sourceFilter="all"
         onSearchChange={jest.fn()}
         onFilterChange={onFilterChange}
-      />
+      />,
     );
-    
+
     fireEvent.press(getByText('Offline'));
     expect(onFilterChange).toHaveBeenCalledWith('offline');
   });
@@ -862,11 +893,7 @@ export function SearchAndFilterBar({
       {/* Search */}
       <View style={themedStyles.searchContainer}>
         <View pointerEvents="none" style={themedStyles.searchIcon}>
-          <MaterialIcon
-            color={theme.colors.primary}
-            name="search"
-            size={20}
-          />
+          <MaterialIcon color={theme.colors.primary} name="search" size={20} />
         </View>
         <TextField
           value={searchQuery}
@@ -943,9 +970,11 @@ git commit -m "feat: add SearchAndFilterBar component for per-segment filtering"
 ### Task 5: Create LibraryEmptyState Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/LibraryEmptyState.tsx`
 
 **Interfaces:**
+
 - Consumes: `Medallion`, `AppText`
 - Produces:
   ```typescript
@@ -967,17 +996,17 @@ describe('LibraryEmptyState', () => {
     const {getByText} = render(<LibraryEmptyState type="lessons" />);
     expect(getByText(/Chưa có bài học nào/)).toBeTruthy();
   });
-  
+
   it('should show correct message for empty vocabulary', () => {
     const {getByText} = render(<LibraryEmptyState type="vocabulary" />);
     expect(getByText(/Chưa lưu từ vựng nào/)).toBeTruthy();
   });
-  
+
   it('should show correct message for empty grammar', () => {
     const {getByText} = render(<LibraryEmptyState type="grammar" />);
     expect(getByText(/Chưa lưu ngữ pháp nào/)).toBeTruthy();
   });
-  
+
   it('should show no results message when search yields nothing', () => {
     const {getByText} = render(<LibraryEmptyState type="no-results" />);
     expect(getByText(/Không tìm thấy kết quả/)).toBeTruthy();
@@ -1062,10 +1091,12 @@ git commit -m "feat: add LibraryEmptyState component for per-segment empty messa
 ### Task 6: Create VocabularyRowCard Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/VocabularyRowCard.tsx`
 - Create: `src/modules/lesson/components/__tests__/VocabularyRowCard.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `FlashcardRecord`, bookmark optimistic state
 - Produces:
   ```typescript
@@ -1103,13 +1134,13 @@ describe('VocabularyRowCard', () => {
         onSave={jest.fn()}
         onUnsave={jest.fn()}
         onPress={jest.fn()}
-      />
+      />,
     );
-    
+
     expect(getByText('hello')).toBeTruthy();
     expect(getByText('xin chào')).toBeTruthy();
   });
-  
+
   it('should show unsaved heart when not saved', () => {
     const {getByTestId} = render(
       <VocabularyRowCard
@@ -1118,12 +1149,15 @@ describe('VocabularyRowCard', () => {
         onSave={jest.fn()}
         onUnsave={jest.fn()}
         onPress={jest.fn()}
-      />
+      />,
     );
-    
-    expect(getByTestId('bookmark-button')).toHaveProperty('icon', 'heart-outline');
+
+    expect(getByTestId('bookmark-button')).toHaveProperty(
+      'icon',
+      'heart-outline',
+    );
   });
-  
+
   it('should call onSave when unsaved heart is pressed', () => {
     const onSave = jest.fn();
     const {getByTestId} = render(
@@ -1133,13 +1167,13 @@ describe('VocabularyRowCard', () => {
         onSave={onSave}
         onUnsave={jest.fn()}
         onPress={jest.fn()}
-      />
+      />,
     );
-    
+
     fireEvent.press(getByTestId('bookmark-button'));
     expect(onSave).toHaveBeenCalled();
   });
-  
+
   it('should call onUnsave when saved heart is pressed', () => {
     const onUnsave = jest.fn();
     const {getByTestId} = render(
@@ -1149,9 +1183,9 @@ describe('VocabularyRowCard', () => {
         onSave={jest.fn()}
         onUnsave={onUnsave}
         onPress={jest.fn()}
-      />
+      />,
     );
-    
+
     fireEvent.press(getByTestId('bookmark-button'));
     expect(onUnsave).toHaveBeenCalled();
   });
@@ -1271,10 +1305,12 @@ git commit -m "feat: add VocabularyRowCard component with bookmark button"
 ### Task 7: Create GrammarRowCard Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/GrammarRowCard.tsx`
 - Create: `src/modules/lesson/components/__tests__/GrammarRowCard.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `GrammarBookmark`, bookmark optimistic state
 - Produces:
   ```typescript
@@ -1305,10 +1341,12 @@ git commit -m "feat: add GrammarRowCard component with bookmark button"
 ### Task 8: Create LessonsTabContent Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/LessonsTabContent.tsx`
 - Create: `src/modules/lesson/components/__tests__/LessonsTabContent.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `useLibrarySegments`, `useNavigation`
 - Produces:
   ```typescript
@@ -1332,30 +1370,30 @@ describe('LessonsTabContent', () => {
       <LessonsTabContent
         personalLessons={[{id: '1', title: 'Personal Lesson'}]}
         packagedLessons={[{id: '2', titleVi: 'Packaged Lesson'}]}
-      />
+      />,
     );
-    
+
     expect(getByText('Bài học cá nhân')).toBeTruthy();
     expect(getByText('Bài học theo lộ trình')).toBeTruthy();
   });
-  
+
   it('should show empty state when no lessons', () => {
     const {getByText} = render(
-      <LessonsTabContent personalLessons={[]} packagedLessons={[]} />
+      <LessonsTabContent personalLessons={[]} packagedLessons={[]} />,
     );
-    
+
     expect(getByText(/Chưa có bài học nào/)).toBeTruthy();
   });
-  
+
   it('should navigate to detail when lesson is pressed', () => {
     // Mock navigation and verify it's called
     const {getByTestId} = render(
       <LessonsTabContent
         personalLessons={[{id: '1', title: 'Personal Lesson'}]}
         packagedLessons={[]}
-      />
+      />,
     );
-    
+
     fireEvent.press(getByTestId('lesson-card-1'));
     // Verify navigation call
   });
@@ -1389,11 +1427,12 @@ export function LessonsTabContent({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
 
   const sections = useMemo(
-    () => [
-      {title: 'Bài học cá nhân', data: personalLessons},
-      {title: 'Bài học theo lộ trình', data: packagedLessons},
-    ].filter(s => s.data.length > 0),
-    [personalLessons, packagedLessons]
+    () =>
+      [
+        {title: 'Bài học cá nhân', data: personalLessons},
+        {title: 'Bài học theo lộ trình', data: packagedLessons},
+      ].filter(s => s.data.length > 0),
+    [personalLessons, packagedLessons],
   );
 
   if (sections.length === 0) {
@@ -1426,9 +1465,7 @@ export function LessonsTabContent({
             <AppText style={themedStyles.title}>
               {item.title || item.titleVi}
             </AppText>
-            <AppText color="secondary">
-              {item.summary || item.blurbVi}
-            </AppText>
+            <AppText color="secondary">{item.summary || item.blurbVi}</AppText>
           </AppCard>
         </Pressable>
       )}
@@ -1466,10 +1503,12 @@ git commit -m "feat: add LessonsTabContent component for lessons tab"
 ### Task 9: Create VocabularyTabContent Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/VocabularyTabContent.tsx`
 - Create: `src/modules/lesson/components/__tests__/VocabularyTabContent.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `useLibrarySegments`, `useBookmarkOptimistic`, `VocabularyRowCard`
 - Produces: Similar to LessonsTabContent
 
@@ -1486,6 +1525,7 @@ git commit -m "feat: add VocabularyTabContent component for vocabulary tab"
 ### Task 10: Create GrammarTabContent Component
 
 **Files:**
+
 - Create: `src/modules/lesson/components/GrammarTabContent.tsx`
 - Create: `src/modules/lesson/components/__tests__/GrammarTabContent.test.tsx`
 
@@ -1502,10 +1542,12 @@ git commit -m "feat: add GrammarTabContent component for grammar tab"
 ### Task 11: Refactor LessonsHistoryScreen
 
 **Files:**
+
 - Modify: `src/modules/lesson/LessonsHistoryScreen.tsx`
 - Create: `src/modules/lesson/__tests__/LessonsHistoryScreen.test.tsx`
 
 **Interfaces:**
+
 - Consumes: All component and hooks from Tasks 1-10
 - Produces: Main screen component with tabs
 
@@ -1520,21 +1562,21 @@ import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 describe('LessonsHistoryScreen', () => {
   it('should render three tabs', () => {
     const {getByText} = render(<LessonsHistoryScreen />);
-    
+
     expect(getByText('Bài học')).toBeTruthy();
     expect(getByText('Từ vựng')).toBeTruthy();
     expect(getByText('Ngữ pháp')).toBeTruthy();
   });
-  
+
   it('should start with lessons tab active', () => {
     const {getByTestId} = render(<LessonsHistoryScreen />);
-    
+
     expect(getByTestId('lessons-tab-content')).toBeTruthy();
   });
-  
+
   it('should switch to vocabulary tab', () => {
     const {getByText, getByTestId} = render(<LessonsHistoryScreen />);
-    
+
     fireEvent.press(getByText('Từ vựng'));
     expect(getByTestId('vocabulary-tab-content')).toBeTruthy();
   });
@@ -1570,11 +1612,11 @@ type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
 export function LessonsHistoryScreen({}: Props) {
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  
-  const [activeTab, setActiveTab] = useState<'lessons' | 'vocabulary' | 'grammar'>(
-    'lessons'
-  );
-  
+
+  const [activeTab, setActiveTab] = useState<
+    'lessons' | 'vocabulary' | 'grammar'
+  >('lessons');
+
   const {
     personalLessons,
     packagedLessons,
@@ -1695,6 +1737,7 @@ git commit -m "feat: refactor LessonsHistoryScreen to support three segments wit
 ### Task 12: Integration Tests & Error Scenarios
 
 **Files:**
+
 - Create: `src/modules/lesson/__tests__/LibrarySegments.integration.test.tsx`
 
 **Purpose:** Test end-to-end flows, error recovery, rapid taps, etc.
@@ -1709,26 +1752,26 @@ describe('Library Segments Integration', () => {
     // Save a vocabulary item
     // Verify it appears in the list
   });
-  
+
   it('should handle DB error on save with graceful recovery', async () => {
     // Mock DB error
     // Attempt save
     // Verify error toast
     // Verify state reverted
   });
-  
+
   it('should debounce rapid bookmark taps', async () => {
     // Mock DB spy
     // Rapid tap bookmark button
     // Verify only one DB call
   });
-  
+
   it('should persist saved state across app restart', async () => {
     // Save an item
     // Restart app
     // Verify item still saved
   });
-  
+
   it('should navigate to detail with repository lookup', async () => {
     // Navigate to vocabulary detail
     // Verify it uses lesson repository lookup
@@ -1751,6 +1794,7 @@ git commit -m "test: add integration tests for library segments"
 ## Self-Review Against Spec
 
 **1. Spec Coverage:**
+
 - ✓ Three segments (Bài học, Từ vựng, Ngữ pháp) — Tasks 8, 9, 10, 11
 - ✓ Independent search/filter per segment — Tasks 1, 4
 - ✓ Optimistic bookmark updates — Task 2
@@ -1761,16 +1805,19 @@ git commit -m "test: add integration tests for library segments"
 - ✓ Testing strategy — Tasks 1-12 + Task 12 integration tests
 
 **2. Placeholder Scan:**
+
 - ✓ No "TBD", "TODO", or vague steps
 - ✓ All code shown in full
 - ✓ All test commands specified with expected results
 
 **3. Type Consistency:**
+
 - ✓ `useLibrarySegments` types used consistently in all tab components
 - ✓ `SegmentFilterState` structure consistent across all three tabs
 - ✓ `useBookmarkOptimistic` return types match bookmark button expectations
 
 **4. No Gaps:**
+
 - ✓ All acceptance criteria mapped to tasks
 - ✓ All files listed in spec are created/modified
 - ✓ Module boundary rules addressed (barrel imports)
@@ -1798,11 +1845,13 @@ git commit -m "test: add integration tests for library segments"
 **Two execution options:**
 
 **1. Subagent-Driven (Recommended)**
+
 - Fresh subagent per task
 - Two-stage review between tasks
 - Faster iteration, better isolation
 
 **2. Inline Execution**
+
 - Batch tasks in this session
 - Checkpoints for review
 - Single-session completion

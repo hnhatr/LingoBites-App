@@ -132,27 +132,17 @@ describe('isUnifiedLessonReady', () => {
     expect(isUnifiedLessonReady({}, on)).toBe(true);
     expect(isUnifiedLessonReady({unifiedLesson: false}, on)).toBe(false);
     expect(isUnifiedLessonReady({}, off)).toBe(false);
-    expect(
-      isUnifiedLessonReady({}, {...on, catalog: false}),
-    ).toBe(false);
-    expect(
-      isUnifiedLessonReady(
-        {},
-        {...on, aiMaterialization: false},
-      ),
-    ).toBe(false);
+    expect(isUnifiedLessonReady({}, {...on, catalog: false})).toBe(false);
+    expect(isUnifiedLessonReady({}, {...on, aiMaterialization: false})).toBe(
+      false,
+    );
   });
 
   it('stays off when targeted retry or the private library is unavailable', () => {
-    expect(
-      isUnifiedLessonReady({}, {...on, partialRetry: false}),
-    ).toBe(false);
-    expect(
-      isUnifiedLessonReady(
-        {},
-        {...on, privateLibrary: false},
-      ),
-    ).toBe(false);
+    expect(isUnifiedLessonReady({}, {...on, partialRetry: false})).toBe(false);
+    expect(isUnifiedLessonReady({}, {...on, privateLibrary: false})).toBe(
+      false,
+    );
   });
 
   it('does not gate on packaged import (separate content concern)', () => {

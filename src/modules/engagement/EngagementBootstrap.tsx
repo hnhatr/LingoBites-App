@@ -19,7 +19,7 @@ export function EngagementBootstrap() {
     if (!reviewSystemEnabled) {
       return;
     }
-    void bootstrapGoldenHourReminders();
+    bootstrapGoldenHourReminders().catch(() => {});
   }, [reviewSystemEnabled]);
 
   return null;

@@ -48,9 +48,9 @@ export function buildLessonEnrichmentUrl(
   videoId: string,
   apiBaseUrl: string,
 ): string {
-  return (
-    `${apiBaseUrl}/v1/youtube/transcripts/${encodeURIComponent(videoId)}/enrichment`
-  );
+  return `${apiBaseUrl}/v1/youtube/transcripts/${encodeURIComponent(
+    videoId,
+  )}/enrichment`;
 }
 
 /**

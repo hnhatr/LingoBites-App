@@ -54,7 +54,7 @@ export function wipeDatabase(db: QuickSQLiteConnection): void {
   // Disables foreign keys temporarily to truncate all tables
   db.execute('PRAGMA foreign_keys = OFF;');
   const result = db.execute(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
+    "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';",
   );
   if (result.rows) {
     db.execute('BEGIN');

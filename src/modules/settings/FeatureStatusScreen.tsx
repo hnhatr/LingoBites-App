@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {AppScreen} from '@components/AppScreen';
@@ -11,7 +10,7 @@ import type {FeatureRegistryEntry} from '@/release/types';
 export function FeatureStatusScreen() {
   const {theme} = useAppTheme();
   const themedStyles = makeStyles(theme);
-  const { isFeatureEnabled } = useFeatureFlags();
+  const {isFeatureEnabled} = useFeatureFlags();
 
   return (
     <AppScreen>
@@ -19,7 +18,7 @@ export function FeatureStatusScreen() {
         <AppText style={themedStyles.headerTitle}>Feature Status</AppText>
       </View>
       <ScrollView contentContainerStyle={themedStyles.scrollContent}>
-        {featureRegistry.map((item) => {
+        {featureRegistry.map(item => {
           const entry = item as unknown as FeatureRegistryEntry;
           const isEnabled = isFeatureEnabled(entry.key as any);
           const isMissing = entry.status === 'not_implemented';
@@ -28,26 +27,45 @@ export function FeatureStatusScreen() {
             <AppCard key={entry.key} style={themedStyles.card}>
               <View style={themedStyles.row}>
                 <AppText style={themedStyles.title}>{entry.key}</AppText>
-                <View style={[themedStyles.badge, isEnabled ? themedStyles.badgeEnabled : themedStyles.badgeDisabled]}>
+                <View
+                  style={[
+                    themedStyles.badge,
+                    isEnabled
+                      ? themedStyles.badgeEnabled
+                      : themedStyles.badgeDisabled,
+                  ]}
+                >
                   <AppText style={themedStyles.badgeText}>
                     {isEnabled ? 'Enabled' : 'Disabled'}
                   </AppText>
                 </View>
               </View>
-              <AppText color="secondary" variant="caption">Module: {entry.module}</AppText>
-              <AppText color="secondary" variant="caption">Status: {entry.status}</AppText>
-              <AppText color="secondary" variant="caption">Group: {entry.releaseGroup}</AppText>
+              <AppText color="secondary" variant="caption">
+                Module: {entry.module}
+              </AppText>
+              <AppText color="secondary" variant="caption">
+                Status: {entry.status}
+              </AppText>
+              <AppText color="secondary" variant="caption">
+                Group: {entry.releaseGroup}
+              </AppText>
               {entry.limitations && entry.limitations.length > 0 && (
                 <View style={themedStyles.limitations}>
-                  <AppText variant="caption" color="danger">Limitations:</AppText>
+                  <AppText variant="caption" color="danger">
+                    Limitations:
+                  </AppText>
                   {entry.limitations.map((limit: string, idx: number) => (
-                    <AppText key={idx} variant="caption" color="danger">- {limit}</AppText>
+                    <AppText key={idx} variant="caption" color="danger">
+                      - {limit}
+                    </AppText>
                   ))}
                 </View>
               )}
               {entry.entryPoint && !isMissing && (
                 <View style={themedStyles.launchContainer}>
-                  <AppText variant="caption" color="primary">Entry Point: {entry.entryPoint}</AppText>
+                  <AppText variant="caption" color="primary">
+                    Entry Point: {entry.entryPoint}
+                  </AppText>
                 </View>
               )}
             </AppCard>

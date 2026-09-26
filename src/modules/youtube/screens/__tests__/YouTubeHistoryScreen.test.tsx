@@ -12,10 +12,9 @@ const mockDeleteYouTubeLesson = jest.fn();
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
 
-jest.mock('@shared/db/YoutubeLessonRepository', () => ({
+jest.mock('@shared/db/YouTubeLessonRepository', () => ({
   listYouTubeLessons: (...args: unknown[]) => mockListYouTubeLessons(...args),
-  deleteYouTubeLesson: (...args: unknown[]) =>
-    mockDeleteYouTubeLesson(...args),
+  deleteYouTubeLesson: (...args: unknown[]) => mockDeleteYouTubeLesson(...args),
 }));
 
 jest.mock('@react-navigation/native', () => {
@@ -61,19 +60,14 @@ function makeLesson(videoId: string, title: string): YouTubeTranscript {
 const navigation = {
   navigate: mockNavigate,
   goBack: mockGoBack,
-} as unknown as React.ComponentProps<
-  typeof YouTubeHistoryScreen
->['navigation'];
+} as unknown as React.ComponentProps<typeof YouTubeHistoryScreen>['navigation'];
 
 const route = {
   key: 'YouTubeHistory',
   name: 'YouTubeHistory',
 } as unknown as React.ComponentProps<typeof YouTubeHistoryScreen>['route'];
 
-function renderScreen(
-  nav = navigation,
-  screenRoute = route,
-) {
+function renderScreen(nav = navigation, screenRoute = route) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   act(() => {
     tree = ReactTestRenderer.create(
@@ -121,7 +115,9 @@ describe('YouTubeHistoryScreen', () => {
 
     const tree = renderScreen();
 
-    expect(tree.root.findByProps({testID: 'youtube-history-list'})).toBeTruthy();
+    expect(
+      tree.root.findByProps({testID: 'youtube-history-list'}),
+    ).toBeTruthy();
     expect(
       tree.root.findByProps({testID: 'youtube-history-item-dQw4w9WgXcQ'}),
     ).toBeTruthy();
@@ -153,7 +149,7 @@ describe('YouTubeHistoryScreen', () => {
     expect(Alert.alert).toHaveBeenCalledTimes(1);
     const confirmButton = (Alert.alert as jest.Mock).mock.calls[0][2].find(
       (button: {text: string; style?: string; onPress?: () => void}) =>
-      button.style === 'destructive',
+        button.style === 'destructive',
     );
 
     mockListYouTubeLessons.mockReturnValue([]);
@@ -299,7 +295,7 @@ describe('YouTubeHistoryScreen', () => {
 
     const confirmButton = (Alert.alert as jest.Mock).mock.calls[0][2].find(
       (button: {text: string; style?: string; onPress?: () => void}) =>
-      button.style === 'destructive',
+        button.style === 'destructive',
     );
     act(() => {
       confirmButton.onPress();

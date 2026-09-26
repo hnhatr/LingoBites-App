@@ -21,7 +21,10 @@ import {
 } from '@shared/api/practiceEventsClient';
 import {MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';
 import {syncPush} from '@shared/api/syncClient';
-import {SyncCollectionSchema, type SyncPushMutation} from '@shared/schemas/sync';
+import {
+  SyncCollectionSchema,
+  type SyncPushMutation,
+} from '@shared/schemas/sync';
 
 export type SyncDrainOutcome =
   | {status: 'idle'}
@@ -59,9 +62,7 @@ function toReviewWireEvent(event: SyncOutboxRecord): SyncReviewEvent {
   };
 }
 
-function isPracticePayload(
-  payload: unknown,
-): payload is PracticeEventPayload {
+function isPracticePayload(payload: unknown): payload is PracticeEventPayload {
   if (typeof payload !== 'object' || payload === null) {
     return false;
   }
@@ -74,7 +75,9 @@ function isPracticePayload(
   );
 }
 
-function toPracticeWireEvent(event: SyncOutboxRecord): SyncPracticeEvent | null {
+function toPracticeWireEvent(
+  event: SyncOutboxRecord,
+): SyncPracticeEvent | null {
   if (!isPracticePayload(event.payload)) {
     return null;
   }
@@ -126,24 +129,20 @@ export async function drainOutboxOnce(
   const practiceEvents = eligible.filter(
     event => event.eventType === PRACTICE_EVENT_TYPE,
   );
-  const genericEvents = eligible.filter(
-    event => isGenericSyncCollection(event.eventType)
+  const genericEvents = eligible.filter(event =>
+    isGenericSyncCollection(event.eventType),
   );
   const unknownEvents = eligible.filter(
     event =>
       event.eventType !== REVIEW_EVENT_TYPE &&
       event.eventType !== PRACTICE_EVENT_TYPE &&
-      !isGenericSyncCollection(event.eventType)
+      !isGenericSyncCollection(event.eventType),
   );
   const reviewBatch = reviewEvents;
 
   const syncedIds: string[] = [];
-  let firstRetryableFailure:
-    | {errorCode: string; message: string}
-    | undefined;
-  let firstPermanentFailure:
-    | {errorCode: string; message: string}
-    | undefined;
+  let firstRetryableFailure: {errorCode: string; message: string} | undefined;
+  let firstPermanentFailure: {errorCode: string; message: string} | undefined;
 
   if (unknownEvents.length > 0) {
     const unknownIds = unknownEvents.map(e => e.id);
@@ -235,7 +234,6 @@ export async function drainOutboxOnce(
     }
   }
 
-
   if (genericEvents.length > 0) {
     const mutations: SyncPushMutation[] = genericEvents.map(event => ({
       mutation_id: event.id,
@@ -246,25 +244,25 @@ export async function drainOutboxOnce(
       occurred_at: event.createdAt,
     }));
 
-    const result = await syncPush({ mutations }, deps);
+    const result = await syncPush({mutations}, deps);
     if (result.ok) {
       const successfulIds = result.data.results.map(r => r.mutation_id);
       if (successfulIds.length > 0) {
         markSyncEventsSynced(successfulIds);
         syncedIds.push(...successfulIds);
       }
-      
+
       // If a result was marked 'stale', it means our write lost, but we still consider it successfully processed by the outbox
       // (Actually, successfulIds includes 'applied', 'duplicate', 'stale')
-      
-      // For any failures not in results (though syncPush returns all), we could handle them. 
+
+      // For any failures not in results (though syncPush returns all), we could handle them.
       // But syncPush either succeeds the whole batch (and returns results for each) or fails the whole batch.
     } else {
       markSyncEventsFailed(
         genericEvents.map(event => event.id),
         result.message,
       );
-      const failure = { errorCode: result.errorCode, message: result.message };
+      const failure = {errorCode: result.errorCode, message: result.message};
       if (result.retryable) {
         firstRetryableFailure ??= failure;
       } else {

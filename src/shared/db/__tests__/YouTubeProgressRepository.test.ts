@@ -11,7 +11,7 @@ import {
 import {
   deleteYouTubeLesson,
   saveYouTubeLesson,
-} from '../YoutubeLessonRepository';
+} from '../YouTubeLessonRepository';
 import type {YouTubeTranscript} from '../../schemas/youtube-transcript-v1';
 
 const transcript: YouTubeTranscript = {
@@ -65,7 +65,7 @@ describe('YouTubeProgressRepository (SETE-290 DEV-3)', () => {
         lessonId: 'video-a',
         positionMs: 4500,
         segmentIndex: 1,
-      
+
         now: '2026-09-13T00:00:00.000Z',
       }),
     ).toBe(true);
@@ -80,14 +80,25 @@ describe('YouTubeProgressRepository (SETE-290 DEV-3)', () => {
   });
 
   it('keeps each video independent and replaces on re-save', () => {
-    saveYouTubeProgress({lessonId: 'video-a', positionMs: 1000, segmentIndex: 0});
-    saveYouTubeProgress({lessonId: 'video-b', positionMs: 9000, segmentIndex: 3});
-    saveYouTubeProgress({lessonId: 'video-a', positionMs: 2000, segmentIndex: 1});
+    saveYouTubeProgress({
+      lessonId: 'video-a',
+      positionMs: 1000,
+      segmentIndex: 0,
+    });
+    saveYouTubeProgress({
+      lessonId: 'video-b',
+      positionMs: 9000,
+      segmentIndex: 3,
+    });
+    saveYouTubeProgress({
+      lessonId: 'video-a',
+      positionMs: 2000,
+      segmentIndex: 1,
+    });
 
     expect(getYouTubeProgress('video-a')).toMatchObject({
       positionMs: 2000,
       segmentIndex: 1,
-      
     });
     expect(getYouTubeProgress('video-b')).toMatchObject({
       positionMs: 9000,
@@ -96,8 +107,16 @@ describe('YouTubeProgressRepository (SETE-290 DEV-3)', () => {
   });
 
   it('clears a single video without touching the others', () => {
-    saveYouTubeProgress({lessonId: 'video-a', positionMs: 1000, segmentIndex: 0});
-    saveYouTubeProgress({lessonId: 'video-b', positionMs: 9000, segmentIndex: 3});
+    saveYouTubeProgress({
+      lessonId: 'video-a',
+      positionMs: 1000,
+      segmentIndex: 0,
+    });
+    saveYouTubeProgress({
+      lessonId: 'video-b',
+      positionMs: 9000,
+      segmentIndex: 3,
+    });
 
     expect(clearYouTubeProgress('video-a')).toBe(true);
     expect(getYouTubeProgress('video-a')).toBeNull();
@@ -110,7 +129,6 @@ describe('YouTubeProgressRepository (SETE-290 DEV-3)', () => {
       lessonId: transcript.video.id,
       positionMs: 2000,
       segmentIndex: 1,
-      
     });
 
     expect(deleteYouTubeLesson(transcript.video.id)).toBe(true);

@@ -57,9 +57,7 @@ function createStyles(theme: AppTheme) {
   });
 }
 
-export function LessonsTabContent({
-  packagedLessons,
-}: LessonsTabContentProps) {
+export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const navigation =
@@ -143,7 +141,10 @@ export function LessonsTabContent({
         renderItem={renderLessonItem}
         renderSectionHeader={renderSectionHeader}
         stickySectionHeadersEnabled
-        contentContainerStyle={[styles.contentContainer, {paddingBottom: feedClearance}]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          {paddingBottom: feedClearance},
+        ]}
         testID="lessons-section-list"
       />
     </View>

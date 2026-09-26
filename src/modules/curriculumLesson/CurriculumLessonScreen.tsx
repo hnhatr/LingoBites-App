@@ -176,7 +176,10 @@ export function CurriculumLessonScreen({navigation, route}: Props) {
   const startedLessonIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (state.status === 'ready' && startedLessonIdRef.current !== state.lesson.id) {
+    if (
+      state.status === 'ready' &&
+      startedLessonIdRef.current !== state.lesson.id
+    ) {
       startedLessonIdRef.current = state.lesson.id;
       fireAndForget(startLessonProgress(state.lesson.id));
     }

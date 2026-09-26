@@ -33,10 +33,12 @@
 ### Task 1: Add `category` column via migration + extend DB types
 
 **Files:**
+
 - Modify: `src/shared/db/migrations.ts`
 - Modify: `src/shared/db/types.ts`
 
 **Interfaces:**
+
 - Produces: `SavedLessonRecord.category: LessonSubjectKey`, `LessonListItem.category: LessonSubjectKey` — consumed by Task 2 (repository) and Task 3 (store).
 
 - [ ] **Step 1: Add the migration entry**
@@ -120,7 +122,11 @@ export type SaveLessonInput = {
 
 export type SaveLessonResult =
   | {ok: true; lessonId: string; duplicate: boolean}
-  | {ok: false; errorCode: 'LOCAL_DB_ERROR' | 'AI_INVALID_OUTPUT'; message: string};
+  | {
+      ok: false;
+      errorCode: 'LOCAL_DB_ERROR' | 'AI_INVALID_OUTPUT';
+      message: string;
+    };
 ```
 
 - [ ] **Step 3: Typecheck**
@@ -140,11 +146,13 @@ git commit -m "feat: add category column to lessons table"
 ### Task 2: Derive and persist real lesson category in `LessonRepository`
 
 **Files:**
+
 - Modify: `src/shared/db/LessonRepository.ts`
 - Modify: `test-utils/sqliteMock.js`
 - Test: `src/shared/db/__tests__/LessonRepository.test.ts`
 
 **Interfaces:**
+
 - Consumes: `SavedLessonRecord.category`, `LessonListItem.category` (Task 1).
 - Produces: `saveLesson()` now persists a real category; `getLessonById()`/`listLessons()` return it. `LibraryLessonCardView.subjectKey` values in the store (Task 3) will come from this real field.
 
@@ -180,58 +188,58 @@ if (normalized.startsWith('insert into lessons')) {
 Add to `src/shared/db/__tests__/LessonRepository.test.ts`, inside the existing `describe('LessonRepository', ...)` block (after the "saves lesson and reloads from SQLite" test):
 
 ```ts
-  it('derives vocabulary category when vocabulary count >= grammar count', () => {
-    const result = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) {
-      return;
-    }
-
-    const loaded = getLessonById(result.lessonId);
-    expect(loaded?.category).toBe('vocabulary');
+it('derives vocabulary category when vocabulary count >= grammar count', () => {
+  const result = saveLesson({
+    confirmedText: validFullOutput.original_text,
+    sourceType: 'paste_text',
+    lesson: validFullOutput,
   });
 
-  it('derives grammar category when grammar_points outnumber vocabulary', () => {
-    const grammarHeavy = {
-      ...validFullOutput,
-      grammar_points: [
-        ...validFullOutput.grammar_points,
-        ...validFullOutput.grammar_points,
-        ...validFullOutput.grammar_points,
-      ],
-    };
+  expect(result.ok).toBe(true);
+  if (!result.ok) {
+    return;
+  }
 
-    const result = saveLesson({
-      confirmedText: grammarHeavy.original_text,
-      sourceType: 'paste_text',
-      lesson: grammarHeavy,
-    });
+  const loaded = getLessonById(result.lessonId);
+  expect(loaded?.category).toBe('vocabulary');
+});
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) {
-      return;
-    }
+it('derives grammar category when grammar_points outnumber vocabulary', () => {
+  const grammarHeavy = {
+    ...validFullOutput,
+    grammar_points: [
+      ...validFullOutput.grammar_points,
+      ...validFullOutput.grammar_points,
+      ...validFullOutput.grammar_points,
+    ],
+  };
 
-    const loaded = getLessonById(result.lessonId);
-    expect(loaded?.category).toBe('grammar');
+  const result = saveLesson({
+    confirmedText: grammarHeavy.original_text,
+    sourceType: 'paste_text',
+    lesson: grammarHeavy,
   });
 
-  it('exposes category on listLessons() items', () => {
-    saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
+  expect(result.ok).toBe(true);
+  if (!result.ok) {
+    return;
+  }
 
-    const items = listLessons();
-    expect(items).toHaveLength(1);
-    expect(items[0].category).toBe('vocabulary');
+  const loaded = getLessonById(result.lessonId);
+  expect(loaded?.category).toBe('grammar');
+});
+
+it('exposes category on listLessons() items', () => {
+  saveLesson({
+    confirmedText: validFullOutput.original_text,
+    sourceType: 'paste_text',
+    lesson: validFullOutput,
   });
+
+  const items = listLessons();
+  expect(items).toHaveLength(1);
+  expect(items[0].category).toBe('vocabulary');
+});
 ```
 
 - [ ] **Step 3: Run tests to verify they fail**
@@ -277,30 +285,32 @@ type LessonRow = {
 };
 
 function deriveLessonCategory(lesson: AIOutput): LessonSubjectKey {
-  return lesson.grammar_points.length > lesson.vocabulary.length ? 'grammar' : 'vocabulary';
+  return lesson.grammar_points.length > lesson.vocabulary.length
+    ? 'grammar'
+    : 'vocabulary';
 }
 ```
 
 Update `mapRowToRecord` to include `category`:
 
 ```ts
-  return {
-    id: row.id,
-    anonymousUserId: row.anonymous_user_id,
-    lessonInputHash: row.lesson_input_hash,
-    title: row.title,
-    sourceType: row.source_type as SavedLessonRecord['sourceType'],
-    ocrRawText: row.ocr_raw_text,
-    confirmedText: row.confirmed_text,
-    vietnameseTranslation: row.vietnamese_translation,
-    summary: row.summary,
-    level: row.level,
-    aiOutput: validation.data,
-    category: row.category as LessonSubjectKey,
-    isSaved: row.is_saved === 1,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+return {
+  id: row.id,
+  anonymousUserId: row.anonymous_user_id,
+  lessonInputHash: row.lesson_input_hash,
+  title: row.title,
+  sourceType: row.source_type as SavedLessonRecord['sourceType'],
+  ocrRawText: row.ocr_raw_text,
+  confirmedText: row.confirmed_text,
+  vietnameseTranslation: row.vietnamese_translation,
+  summary: row.summary,
+  level: row.level,
+  aiOutput: validation.data,
+  category: row.category as LessonSubjectKey,
+  isSaved: row.is_saved === 1,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+};
 ```
 
 Update `saveLesson` to compute and persist the category:
@@ -345,15 +355,15 @@ Update `saveLesson` to compute and persist the category:
 Update `listLessons` to include `category` in the pushed item:
 
 ```ts
-    items.push({
-      id: record.id,
-      title: record.title,
-      summary: record.summary,
-      previewText: previewText(record.confirmedText),
-      vocabularyCount: record.aiOutput.vocabulary?.length ?? 0,
-      category: record.category,
-      createdAt: record.createdAt,
-    });
+items.push({
+  id: record.id,
+  title: record.title,
+  summary: record.summary,
+  previewText: previewText(record.confirmedText),
+  vocabularyCount: record.aiOutput.vocabulary?.length ?? 0,
+  category: record.category,
+  createdAt: record.createdAt,
+});
 ```
 
 - [ ] **Step 5: Run tests to verify they pass**
@@ -378,10 +388,12 @@ git commit -m "feat: derive and persist real lesson category on save"
 ### Task 3: Filter/label lessons by real category in `useLibraryStore`
 
 **Files:**
+
 - Modify: `src/store/useLibraryStore.ts`
 - Test: `src/store/__tests__/useLibraryStore.test.ts` (new)
 
 **Interfaces:**
+
 - Consumes: `LessonListItem.category: LessonSubjectKey` (Task 1/2), `listLessons` from `LessonRepository`.
 - Produces: no change to `LibraryLessonCardView` shape or `useLibraryStore` public API (`getLibraryCards`, `getHomeCards`, `getSummary`, `setSubjectFilter`, `setQuery`) — only the internal derivation logic changes, so `LessonsHistoryScreen.tsx` needs no edits.
 
@@ -420,9 +432,7 @@ describe('useLibraryStore', () => {
   });
 
   it('filters by real category, not list position, with a single lesson', () => {
-    mockListLessons.mockReturnValue([
-      makeItem({id: '1', category: 'grammar'}),
-    ]);
+    mockListLessons.mockReturnValue([makeItem({id: '1', category: 'grammar'})]);
 
     useLibraryStore.getState().setSubjectFilter('vocabulary');
     expect(useLibraryStore.getState().getLibraryCards()).toHaveLength(0);
@@ -479,19 +489,27 @@ import {create} from 'zustand';
 import {listLessons} from '../shared/db/LessonRepository';
 import type {LessonListItem} from '../shared/db/types';
 import type {ChipTone} from '../components/Chip';
-import type {LessonCardView, LessonSubjectKey, LibraryLessonCardView} from '../types/lesson';
+import type {
+  LessonCardView,
+  LessonSubjectKey,
+  LibraryLessonCardView,
+} from '../types/lesson';
 
-const CATEGORY_META: Record<LessonSubjectKey, {label: string; tone: ChipTone}> = {
-  grammar: {label: 'Ngữ pháp', tone: 'accentSoft'},
-  vocabulary: {label: 'Từ vựng', tone: 'gold'},
-  idioms: {label: 'Thành ngữ', tone: 'coralSoft'},
-  conversation: {label: 'Hội thoại', tone: 'accentSoft'},
-};
+const CATEGORY_META: Record<LessonSubjectKey, {label: string; tone: ChipTone}> =
+  {
+    grammar: {label: 'Ngữ pháp', tone: 'accentSoft'},
+    vocabulary: {label: 'Từ vựng', tone: 'gold'},
+    idioms: {label: 'Thành ngữ', tone: 'coralSoft'},
+    conversation: {label: 'Hội thoại', tone: 'accentSoft'},
+  };
 
 export type LibrarySubjectFilter = 'all' | LessonSubjectKey;
 
 function formatLessonDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('vi-VN', {day: 'numeric', month: 'short'});
+  return new Date(iso).toLocaleDateString('vi-VN', {
+    day: 'numeric',
+    month: 'short',
+  });
 }
 
 function estimateDurationMin(vocabularyCount: number): number {
@@ -532,7 +550,10 @@ type LibraryStore = {
   getSummary: () => {lessonCount: number; wordCount: number};
 };
 
-function listFilteredItems(query: string, subjectFilter: LibrarySubjectFilter): LessonListItem[] {
+function listFilteredItems(
+  query: string,
+  subjectFilter: LibrarySubjectFilter,
+): LessonListItem[] {
   const q = query.trim().toLowerCase();
   const items = listLessons();
   return items.filter(item => {
@@ -619,6 +640,7 @@ Expected: No errors.
 - [ ] **Step 3: Manual smoke test on simulator**
 
 Run: `yarn ios:dev` (or the project's existing dev run command), then:
+
 1. Create/save a lesson whose content has more `grammar_points` than `vocabulary` items (or vice versa) via the paste-text flow.
 2. Open "Bài học" tab, tap "Ngữ pháp" — confirm the grammar-heavy lesson appears.
 3. Tap "Từ vựng" — confirm the vocabulary-heavy lesson appears there instead.

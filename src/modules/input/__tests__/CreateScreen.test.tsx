@@ -87,8 +87,7 @@ describe('CreateScreen (SETE-247)', () => {
   it('shows the OCR tip while image input is enabled', async () => {
     const tree = await renderCreate();
     expect(
-      tree.root.findAll(node => node.props.testID === 'create-tip-card')
-        .length,
+      tree.root.findAll(node => node.props.testID === 'create-tip-card').length,
     ).toBeGreaterThan(0);
   });
 

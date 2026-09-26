@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable, ScrollView, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useFocusEffect} from '@react-navigation/native';
 import type {LessonsStackParamList} from '@/app/navigation/types';
@@ -63,9 +63,9 @@ export function SpeakingRoomScreen({navigation}: Props) {
             key={mode.mode}
             accessibilityLabel={`${mode.titleVi}, ${mode.level}, ~${
               mode.durationMin
-            } phút${
-              mode.recommended ? ', Gợi ý hôm nay' : ''
-            }${mode.available ? '' : ', Chưa có sẵn'}`}
+            } phút${mode.recommended ? ', Gợi ý hôm nay' : ''}${
+              mode.available ? '' : ', Chưa có sẵn'
+            }`}
             accessibilityRole="button"
             disabled={!mode.available}
             onPress={() => handlePressMode(mode)}
@@ -101,7 +101,7 @@ export function SpeakingRoomScreen({navigation}: Props) {
                     size={22}
                   />
                 </View>
-                <View style={{flex: 1, gap: 2, minWidth: 0}}>
+                <View style={styles.cardContent}>
                   <AppText variant="h3">{mode.titleVi}</AppText>
                   <AppText color="secondary">{mode.descriptionVi}</AppText>
                   <View
@@ -114,13 +114,7 @@ export function SpeakingRoomScreen({navigation}: Props) {
                     }}
                   >
                     <Chip label={mode.level} tone="default" />
-                    <View
-                      style={{
-                        alignItems: 'center',
-                        flexDirection: 'row',
-                        gap: 4,
-                      }}
-                    >
+                    <View style={styles.durationRow}>
                       <MaterialIcon
                         color={theme.colors.text.secondary}
                         name="schedule"
@@ -153,3 +147,16 @@ export function SpeakingRoomScreen({navigation}: Props) {
     </AppScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  cardContent: {
+    flex: 1,
+    gap: 2,
+    minWidth: 0,
+  },
+  durationRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+});

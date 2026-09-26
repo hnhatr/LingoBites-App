@@ -26,10 +26,10 @@ describe('resolveQuickPractice', () => {
   });
 
   it('returns empty when no lesson has practice items', () => {
-    const result = resolveQuickPractice(
-      [{id: 'a', title: 'A'}],
-      () => ({title: 'A', aiOutput: {practice: []}}),
-    );
+    const result = resolveQuickPractice([{id: 'a', title: 'A'}], () => ({
+      title: 'A',
+      aiOutput: {practice: []},
+    }));
     expect(result).toEqual({questions: [], title: ''});
   });
 });

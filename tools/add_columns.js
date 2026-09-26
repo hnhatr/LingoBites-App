@@ -10,13 +10,13 @@ const tables = [
   'grammar_bookmarks',
   'youtube_lessons',
   'youtube_sentences',
-  'youtube_progress'
+  'youtube_progress',
 ];
 
 let content = fs.readFileSync('src/shared/db/migrations.ts', 'utf8');
 
 const mIndex = content.indexOf('];\n\n/**\n * Reverse-order DROP');
-if (mIndex === -1) throw new Error("Could not find end of MIGRATIONS array");
+if (mIndex === -1) throw new Error('Could not find end of MIGRATIONS array');
 
 let newMigrations = '';
 for (const t of tables) {

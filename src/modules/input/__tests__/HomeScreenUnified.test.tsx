@@ -14,9 +14,9 @@ const mockListYouTubeLessons = jest.fn();
 const mockCountYoutubeLessons = jest.fn();
 const mockUseYouTubeServerEnabled = jest.fn();
 
-jest.mock('@shared/db/YoutubeLessonRepository', () => ({
+jest.mock('@shared/db/YouTubeLessonRepository', () => ({
   listYouTubeLessons: (...args: unknown[]) => mockListYouTubeLessons(...args),
-  countYoutubeLessons: (...args: unknown[]) => mockCountYoutubeLessons(...args),
+  countYouTubeLessons: (...args: unknown[]) => mockCountYoutubeLessons(...args),
 }));
 
 jest.mock('@shared/api/youtubeCapabilities', () => ({
@@ -99,6 +99,17 @@ function navigation() {
   };
 }
 
+let activeRenderers: ReactTestRenderer.ReactTestRenderer[] = [];
+
+afterEach(async () => {
+  await act(async () => {
+    for (const tree of activeRenderers) {
+      tree.unmount();
+    }
+    activeRenderers = [];
+  });
+});
+
 async function renderHome(nav = navigation()) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
@@ -122,6 +133,7 @@ async function renderHome(nav = navigation()) {
     await Promise.resolve();
     await Promise.resolve();
   });
+  activeRenderers.push(tree);
   return {tree, nav};
 }
 

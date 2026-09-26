@@ -119,12 +119,7 @@ describe('LocalDataDeletionService', () => {
       },
       now,
     });
-    markChapterAudioAssetReady(
-      'asset-1',
-      '/tmp/chapter-audio.mp3',
-      1024,
-      now,
-    );
+    markChapterAudioAssetReady('asset-1', '/tmp/chapter-audio.mp3', 1024, now);
 
     const deletedPaths: string[] = [];
     const result = await clearAllLocalDataWithFiles({
@@ -156,12 +151,7 @@ describe('LocalDataDeletionService', () => {
       },
       now,
     });
-    markChapterAudioAssetReady(
-      'asset-1',
-      '/tmp/chapter-audio.mp3',
-      1024,
-      now,
-    );
+    markChapterAudioAssetReady('asset-1', '/tmp/chapter-audio.mp3', 1024, now);
 
     const result = await clearAllLocalDataWithFiles({
       fileDeleter: async () => false,

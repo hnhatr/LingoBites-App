@@ -71,7 +71,9 @@ describe('pushPracticeEvents', () => {
       response({
         accepted_ids: ['ev-1'],
         duplicate_ids: ['ev-0'],
-        rejected: [{event_id: 'ev-2', code: 'PAYLOAD_CONFLICT', retryable: false}],
+        rejected: [
+          {event_id: 'ev-2', code: 'PAYLOAD_CONFLICT', retryable: false},
+        ],
       }),
     );
 
@@ -79,7 +81,9 @@ describe('pushPracticeEvents', () => {
       ok: true,
       acceptedIds: ['ev-1'],
       duplicateIds: ['ev-0'],
-      rejected: [{event_id: 'ev-2', code: 'PAYLOAD_CONFLICT', retryable: false}],
+      rejected: [
+        {event_id: 'ev-2', code: 'PAYLOAD_CONFLICT', retryable: false},
+      ],
     });
   });
 

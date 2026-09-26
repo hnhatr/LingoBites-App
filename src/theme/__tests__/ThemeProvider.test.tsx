@@ -3,7 +3,11 @@ import React from 'react';
 import {Text, useColorScheme} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
-import {makeTestReleaseConfig, CORE_BETA_WITHOUT_REVIEW, THEME_UI_FLAGS} from '@/test-support';
+import {
+  makeTestReleaseConfig,
+  CORE_BETA_WITHOUT_REVIEW,
+  THEME_UI_FLAGS,
+} from '@/test-support';
 import {AppThemeProvider} from '../ThemeProvider';
 import {THEME_STORAGE_KEY} from '../themeStorage';
 import {useAppTheme} from '../useAppTheme';
@@ -24,7 +28,9 @@ async function renderWithProviders() {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(
-      <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}>
+      <FeatureFlagProvider
+        releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+      >
         <AppThemeProvider>
           <ThemeProbe />
         </AppThemeProvider>
@@ -111,7 +117,9 @@ describe('AppThemeProvider', () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
     await act(async () => {
       tree = ReactTestRenderer.create(
-        <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW)}>
+        <FeatureFlagProvider
+          releaseConfig={makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW)}
+        >
           <AppThemeProvider>
             <ThemeProbe />
           </AppThemeProvider>

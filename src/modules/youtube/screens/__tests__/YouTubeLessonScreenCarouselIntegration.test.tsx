@@ -8,7 +8,10 @@ import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {runMigrations} from '@shared/db/migrations';
 import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {YouTubeLessonScreen, YouTubeLessonRouteScreen} from '../YouTubeLessonScreen';
+import {
+  YouTubeLessonScreen,
+  YouTubeLessonRouteScreen,
+} from '../YouTubeLessonScreen';
 import {SentenceCarousel} from '../../sentence/SentenceCarousel';
 import {SentenceCard} from '../../sentence/SentenceCard';
 import {makeEnrichment} from '../../sentence/__tests__/fixtures/sentenceFixtures';
@@ -265,15 +268,13 @@ describe('YouTubeLessonScreen + SentenceCarousel Integration (SETE-334, TASK-7)'
 
     // Scroll card 0 to bottom to reveal next sentence prompt
     await act(async () => {
-      tree.root
-        .findByProps({testID: 'sentence-card-0-scroll'})
-        .props.onScroll({
-          nativeEvent: {
-            contentOffset: {y: 400, x: 0},
-            layoutMeasurement: {height: 400, width: 300},
-            contentSize: {height: 600, width: 300},
-          },
-        });
+      tree.root.findByProps({testID: 'sentence-card-0-scroll'}).props.onScroll({
+        nativeEvent: {
+          contentOffset: {y: 400, x: 0},
+          layoutMeasurement: {height: 400, width: 300},
+          contentSize: {height: 600, width: 300},
+        },
+      });
       await Promise.resolve();
     });
 
@@ -362,7 +363,9 @@ describe('YouTubeLessonScreen + SentenceCarousel Integration (SETE-334, TASK-7)'
 
     // Verify API was called for the lesson's video ID
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining(`/v1/youtube/transcripts/${lesson.video.id}/enrichment`),
+      expect.stringContaining(
+        `/v1/youtube/transcripts/${lesson.video.id}/enrichment`,
+      ),
       expect.objectContaining({method: 'GET'}),
     );
 
@@ -400,20 +403,22 @@ describe('YouTubeLessonScreen + SentenceCarousel Integration (SETE-334, TASK-7)'
     });
 
     // Initially mini-player and back-chip are not visible
-    expect(() => tree.root.findByProps({testID: 'youtube-mini-player'})).toThrow();
-    expect(() => tree.root.findByProps({testID: 'youtube-back-to-active-chip'})).toThrow();
+    expect(() =>
+      tree.root.findByProps({testID: 'youtube-mini-player'}),
+    ).toThrow();
+    expect(() =>
+      tree.root.findByProps({testID: 'youtube-back-to-active-chip'}),
+    ).toThrow();
 
     // Scroll card 0 down past 120pt (> playerHeight * 0.5 = 100)
     await act(async () => {
-      tree.root
-        .findByProps({testID: 'sentence-card-0-scroll'})
-        .props.onScroll({
-          nativeEvent: {
-            contentOffset: {y: 120, x: 0},
-            layoutMeasurement: {height: 400, width: 300},
-            contentSize: {height: 800, width: 300},
-          },
-        });
+      tree.root.findByProps({testID: 'sentence-card-0-scroll'}).props.onScroll({
+        nativeEvent: {
+          contentOffset: {y: 120, x: 0},
+          layoutMeasurement: {height: 400, width: 300},
+          contentSize: {height: 800, width: 300},
+        },
+      });
       await Promise.resolve();
     });
 
@@ -430,6 +435,8 @@ describe('YouTubeLessonScreen + SentenceCarousel Integration (SETE-334, TASK-7)'
       await Promise.resolve();
     });
 
-    expect(() => tree.root.findByProps({testID: 'youtube-back-to-active-chip'})).toThrow();
+    expect(() =>
+      tree.root.findByProps({testID: 'youtube-back-to-active-chip'}),
+    ).toThrow();
   });
 });

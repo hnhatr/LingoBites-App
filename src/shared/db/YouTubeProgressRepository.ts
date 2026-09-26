@@ -34,9 +34,10 @@ export function getYouTubeProgress(lessonId: string): YouTubeProgress | null {
   try {
     const db = getDatabase();
     const row = firstRow(
-      db.execute('SELECT * FROM youtube_progress WHERE lesson_id = ? LIMIT 1;', [
-        lessonId,
-      ]),
+      db.execute(
+        'SELECT * FROM youtube_progress WHERE lesson_id = ? LIMIT 1;',
+        [lessonId],
+      ),
     );
     if (!row) {
       return null;
@@ -50,7 +51,7 @@ export function getYouTubeProgress(lessonId: string): YouTubeProgress | null {
       updatedAt: row.updated_at,
       revision: row.revision || 0,
       tombstone: Boolean(row.tombstone),
-  };
+    };
   } catch {
     return null;
   }

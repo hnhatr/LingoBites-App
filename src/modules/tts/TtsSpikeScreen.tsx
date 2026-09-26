@@ -109,14 +109,18 @@ export function TtsSpikeScreen() {
           <View style={themedStyles.actions}>
             <AppButton
               title="Speak sentence"
-              onPress={() => void handleSpeak()}
+              onPress={() => {
+                handleSpeak();
+              }}
               disabled={isSpeaking}
               testID="tts-speak"
             />
             <AppButton
               title="Stop"
               variant="secondary"
-              onPress={() => void handleStop()}
+              onPress={() => {
+                handleStop();
+              }}
               disabled={!isSpeaking}
               testID="tts-stop"
             />

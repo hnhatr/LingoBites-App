@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 const fs = require('fs');
 const path = require('path');
 
@@ -5,24 +6,25 @@ const apply = (file, replacements) => {
   const p = path.join('src/shared/db', file);
   if (!fs.existsSync(p)) return;
   let content = fs.readFileSync(p, 'utf8');
-  
+
   if (!content.includes('enqueueSyncOutboxEvent')) {
     content = content.replace(
       /import \{.*getDatabase.*\} from '\.\/database';/g,
-      "import { getDatabase, withTransaction } from './database';\nimport { enqueueSyncOutboxEvent } from './SyncOutboxRepository';\nimport { createRequestId } from '../api/requestId';"
+      "import { getDatabase, withTransaction } from './database';\nimport { enqueueSyncOutboxEvent } from './SyncOutboxRepository';\nimport { createRequestId } from '../api/requestId';",
     );
   }
 
   for (const {search, replace} of replacements) {
     content = content.replace(search, replace);
   }
-  
+
   fs.writeFileSync(p, content);
 };
 
 apply('YoutubeLessonRepository.ts', [
   {
-    search: /return \{ok: true, lessonId: lesson\.video\.id, duplicate: existing !== null\};/g,
+    search:
+      /return \{ok: true, lessonId: lesson\.video\.id, duplicate: existing !== null\};/g,
     replace: `enqueueSyncOutboxEvent({
         id: createRequestId(),
         eventType: 'youtube_lessons',
@@ -30,13 +32,14 @@ apply('YoutubeLessonRepository.ts', [
         payload: lesson as any,
         createdAt: now
       });
-      return {ok: true, lessonId: lesson.video.id, duplicate: existing !== null};`
-  }
+      return {ok: true, lessonId: lesson.video.id, duplicate: existing !== null};`,
+  },
 ]);
 
 apply('GrammarBookmarkRepository.ts', [
   {
-    search: /db\.execute\(\n\s*\`UPDATE grammar_bookmarks[\s\S]*?WHERE lesson_id = \? AND grammar_id = \?;\`,\n\s*\[now, now, now, input\.lessonId, input\.grammarId\],\n\s*\);\n\s*return \{ok: true, duplicate: true\};/g,
+    search:
+      /db\.execute\(\n\s*\`UPDATE grammar_bookmarks[\s\S]*?WHERE lesson_id = \? AND grammar_id = \?;\`,\n\s*\[now, now, now, input\.lessonId, input\.grammarId\],\n\s*\);\n\s*return \{ok: true, duplicate: true\};/g,
     replace: `withTransaction(db, () => {
         db.execute(
           \`UPDATE grammar_bookmarks
@@ -52,10 +55,11 @@ apply('GrammarBookmarkRepository.ts', [
           createdAt: now
         });
       });
-      return {ok: true, duplicate: true};`
+      return {ok: true, duplicate: true};`,
   },
   {
-    search: /db\.execute\(\n\s*\`INSERT INTO grammar_bookmarks \([\s\S]*?\) VALUES \(\?, \?, \?, \?, \?, \?, \?\);\`,\n\s*\[\n\s*input\.lessonId,\n\s*input\.grammarId,\n\s*input\.packageId,\n\s*now,\n\s*now,\n\s*now,\n\s*now,\n\s*\],\n\s*\);\n\n\s*return \{ok: true, duplicate: false\};/g,
+    search:
+      /db\.execute\(\n\s*\`INSERT INTO grammar_bookmarks \([\s\S]*?\) VALUES \(\?, \?, \?, \?, \?, \?, \?\);\`,\n\s*\[\n\s*input\.lessonId,\n\s*input\.grammarId,\n\s*input\.packageId,\n\s*now,\n\s*now,\n\s*now,\n\s*now,\n\s*\],\n\s*\);\n\n\s*return \{ok: true, duplicate: false\};/g,
     replace: `withTransaction(db, () => {
       db.execute(
         \`INSERT INTO grammar_bookmarks (
@@ -80,10 +84,11 @@ apply('GrammarBookmarkRepository.ts', [
         createdAt: now
       });
     });
-    return {ok: true, duplicate: false};`
+    return {ok: true, duplicate: false};`,
   },
   {
-    search: /const result = db\.execute\(\n\s*\`UPDATE grammar_bookmarks[\s\S]*?WHERE lesson_id = \? AND grammar_id = \?;\`,\n\s*\[updatedAt, lessonId, grammarId\],\n\s*\);\n\s*return \(result\.rowsAffected \?\? 0\) > 0;/g,
+    search:
+      /const result = db\.execute\(\n\s*\`UPDATE grammar_bookmarks[\s\S]*?WHERE lesson_id = \? AND grammar_id = \?;\`,\n\s*\[updatedAt, lessonId, grammarId\],\n\s*\);\n\s*return \(result\.rowsAffected \?\? 0\) > 0;/g,
     replace: `const result = withTransaction(db, () => {
       const res = db.execute(
         \`UPDATE grammar_bookmarks
@@ -102,13 +107,14 @@ apply('GrammarBookmarkRepository.ts', [
       }
       return res;
     });
-    return (result.rowsAffected ?? 0) > 0;`
-  }
+    return (result.rowsAffected ?? 0) > 0;`,
+  },
 ]);
 
 apply('ContentLessonStateRepository.ts', [
   {
-    search: /db\.execute\(\n\s*'UPDATE content_lesson_state SET is_saved = 1, updated_at = \? WHERE lesson_id = \?;',\n\s*\[now, input\.lessonId\],\n\s*\);\n\s*return \{ok: true, duplicate: true\};/g,
+    search:
+      /db\.execute\(\n\s*'UPDATE content_lesson_state SET is_saved = 1, updated_at = \? WHERE lesson_id = \?;',\n\s*\[now, input\.lessonId\],\n\s*\);\n\s*return \{ok: true, duplicate: true\};/g,
     replace: `withTransaction(db, () => {
         db.execute(
           'UPDATE content_lesson_state SET is_saved = 1, updated_at = ? WHERE lesson_id = ?;',
@@ -122,10 +128,11 @@ apply('ContentLessonStateRepository.ts', [
           createdAt: now
         });
       });
-      return {ok: true, duplicate: true};`
+      return {ok: true, duplicate: true};`,
   },
   {
-    search: /db\.execute\(\n\s*\`INSERT INTO content_lesson_state \(\n\s*lesson_id, is_saved, is_started, created_at, updated_at\n\s*\) VALUES \(\?, \?, \?, \?, \?\);\`,\n\s*\[input\.lessonId, 1, 0, now, now\],\n\s*\);\n\n\s*return \{ok: true, duplicate: false\};/g,
+    search:
+      /db\.execute\(\n\s*\`INSERT INTO content_lesson_state \(\n\s*lesson_id, is_saved, is_started, created_at, updated_at\n\s*\) VALUES \(\?, \?, \?, \?, \?\);\`,\n\s*\[input\.lessonId, 1, 0, now, now\],\n\s*\);\n\n\s*return \{ok: true, duplicate: false\};/g,
     replace: `withTransaction(db, () => {
       db.execute(
         \`INSERT INTO content_lesson_state (
@@ -141,10 +148,11 @@ apply('ContentLessonStateRepository.ts', [
         createdAt: now
       });
     });
-    return {ok: true, duplicate: false};`
+    return {ok: true, duplicate: false};`,
   },
   {
-    search: /const result = db\.execute\(\n\s*'UPDATE content_lesson_state SET is_saved = 0, updated_at = \? WHERE lesson_id = \?;',\n\s*\[updatedAt, lessonId\],\n\s*\);\n\s*return \(result\.rowsAffected \?\? 0\) > 0;/g,
+    search:
+      /const result = db\.execute\(\n\s*'UPDATE content_lesson_state SET is_saved = 0, updated_at = \? WHERE lesson_id = \?;',\n\s*\[updatedAt, lessonId\],\n\s*\);\n\s*return \(result\.rowsAffected \?\? 0\) > 0;/g,
     replace: `const result = withTransaction(db, () => {
       const res = db.execute(
         'UPDATE content_lesson_state SET is_saved = 0, updated_at = ? WHERE lesson_id = ?;',
@@ -161,10 +169,11 @@ apply('ContentLessonStateRepository.ts', [
       }
       return res;
     });
-    return (result.rowsAffected ?? 0) > 0;`
+    return (result.rowsAffected ?? 0) > 0;`,
   },
   {
-    search: /db\.execute\(\n\s*'UPDATE content_lesson_state SET is_started = 1, updated_at = \? WHERE lesson_id = \?;',\n\s*\[now, input\.lessonId\],\n\s*\);\n\s*return \{ok: true, duplicate: true\};/g,
+    search:
+      /db\.execute\(\n\s*'UPDATE content_lesson_state SET is_started = 1, updated_at = \? WHERE lesson_id = \?;',\n\s*\[now, input\.lessonId\],\n\s*\);\n\s*return \{ok: true, duplicate: true\};/g,
     replace: `withTransaction(db, () => {
         db.execute(
           'UPDATE content_lesson_state SET is_started = 1, updated_at = ? WHERE lesson_id = ?;',
@@ -178,10 +187,11 @@ apply('ContentLessonStateRepository.ts', [
           createdAt: now
         });
       });
-      return {ok: true, duplicate: true};`
+      return {ok: true, duplicate: true};`,
   },
   {
-    search: /db\.execute\(\n\s*\`INSERT INTO content_lesson_state \(\n\s*lesson_id, is_saved, is_started, created_at, updated_at\n\s*\) VALUES \(\?, \?, \?, \?, \?\);\`,\n\s*\[input\.lessonId, 0, 1, now, now\],\n\s*\);\n\n\s*return \{ok: true, duplicate: false\};/g,
+    search:
+      /db\.execute\(\n\s*\`INSERT INTO content_lesson_state \(\n\s*lesson_id, is_saved, is_started, created_at, updated_at\n\s*\) VALUES \(\?, \?, \?, \?, \?\);\`,\n\s*\[input\.lessonId, 0, 1, now, now\],\n\s*\);\n\n\s*return \{ok: true, duplicate: false\};/g,
     replace: `withTransaction(db, () => {
       db.execute(
         \`INSERT INTO content_lesson_state (
@@ -197,10 +207,11 @@ apply('ContentLessonStateRepository.ts', [
         createdAt: now
       });
     });
-    return {ok: true, duplicate: false};`
+    return {ok: true, duplicate: false};`,
   },
   {
-    search: /const result = db\.execute\(\n\s*'UPDATE content_lesson_state SET is_started = 0, updated_at = \? WHERE lesson_id = \?;',\n\s*\[updatedAt, lessonId\],\n\s*\);\n\s*return \(result\.rowsAffected \?\? 0\) > 0;/g,
+    search:
+      /const result = db\.execute\(\n\s*'UPDATE content_lesson_state SET is_started = 0, updated_at = \? WHERE lesson_id = \?;',\n\s*\[updatedAt, lessonId\],\n\s*\);\n\s*return \(result\.rowsAffected \?\? 0\) > 0;/g,
     replace: `const result = withTransaction(db, () => {
       const res = db.execute(
         'UPDATE content_lesson_state SET is_started = 0, updated_at = ? WHERE lesson_id = ?;',
@@ -217,13 +228,14 @@ apply('ContentLessonStateRepository.ts', [
       }
       return res;
     });
-    return (result.rowsAffected ?? 0) > 0;`
-  }
+    return (result.rowsAffected ?? 0) > 0;`,
+  },
 ]);
 
 apply('ContentRuntimeRepository.ts', [
   {
-    search: /const result = db\.execute\(\n\s*'UPDATE content_review_items[\s\S]*?WHERE id = \?;',\n\s*\[input\.reviewItemId\],\n\s*\);/g,
+    search:
+      /const result = db\.execute\(\n\s*'UPDATE content_review_items[\s\S]*?WHERE id = \?;',\n\s*\[input\.reviewItemId\],\n\s*\);/g,
     replace: `const result = withTransaction(db, () => {
       const res = db.execute(
         'UPDATE content_review_items SET mastery_state = ?, ' +
@@ -255,7 +267,6 @@ apply('ContentRuntimeRepository.ts', [
       }
       return res;
     });
-    // Ignore the previous execute call string replacement in the original function`
-  }
+    // Ignore the previous execute call string replacement in the original function`,
+  },
 ]);
-

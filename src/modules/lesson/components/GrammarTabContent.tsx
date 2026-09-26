@@ -6,7 +6,10 @@ import type {LessonsStackParamList} from '@/app/navigation/types';
 import {useAppTheme} from '@theme';
 import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
 import type {AppTheme} from '@theme/types';
-import type {GrammarBookmark, SaveGrammarBookmarkInput} from '@/shared/db/types';
+import type {
+  GrammarBookmark,
+  SaveGrammarBookmarkInput,
+} from '@/shared/db/types';
 import {GrammarRowCard} from './GrammarRowCard';
 import {LibraryEmptyState} from './LibraryEmptyState';
 import {useBookmarkOptimistic} from '../useBookmarkOptimistic';
@@ -67,11 +70,7 @@ export function GrammarTabContent({grammar}: GrammarTabContentProps) {
   );
 
   const renderItem = useCallback(
-    ({
-      item,
-    }: {
-      item: GrammarBookmark & {title?: string; content?: string};
-    }) => {
+    ({item}: {item: GrammarBookmark & {title?: string; content?: string}}) => {
       const isSaved = grammarSaveState.getIsSaved(item.grammarId, true);
 
       return (
@@ -95,7 +94,10 @@ export function GrammarTabContent({grammar}: GrammarTabContentProps) {
   return (
     <View style={styles.container}>
       <FlatList
-        contentContainerStyle={[styles.contentContainer, {paddingBottom: feedClearance}]}
+        contentContainerStyle={[
+          styles.contentContainer,
+          {paddingBottom: feedClearance},
+        ]}
         data={grammar}
         keyExtractor={item => item.grammarId}
         renderItem={renderItem}

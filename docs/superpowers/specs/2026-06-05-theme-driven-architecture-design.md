@@ -19,19 +19,20 @@ Separate all presentation concerns (colors, fonts, spacing, radius, shadow, comp
 
 ## 2. Scope decisions (confirmed with user)
 
-| Item | Decision |
-|---|---|
-| Icon / asset (PNG mascot, logo, icon) | **Deferred.** No binary files yet. Do not scaffold `AppIcon`/`AppImage`/`icons.ts`/`assets.ts` in this iteration. |
-| Custom font (.ttf: Nunito, Baloo2…) | **Deferred.** Requires native linking. Keep `typography` token structure but `fontFamily` uses system font (`undefined`/`'System'`). |
-| Refactor existing screens | **Yes.** Migrate `PasteTextScreen` + `LessonResultView` to use theme; remove all hard-coded colors/fonts. |
-| Initial theme count | **3:** `default` (light, matches current app), `dark`, `pastel-kids`. |
-| Runtime theme switching | **Provider + persistence + UI picker.** |
-| Persistence | **Install `@react-native-async-storage/async-storage`.** Requires `pod install` + rebuild (user runs locally). |
-| Per-theme **release** gating (rollout control) | **In scope.** `themeRegistry.themeReleaseFlag` maps a theme id to a release `FeatureKey`; `ThemePicker` only offers themes whose flag is on, and a saved-but-now-disabled theme falls back to `default`. This is staged rollout, **not** monetization. |
+| Item                                               | Decision                                                                                                                                                                                                                                                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Icon / asset (PNG mascot, logo, icon)              | **Deferred.** No binary files yet. Do not scaffold `AppIcon`/`AppImage`/`icons.ts`/`assets.ts` in this iteration.                                                                                                                                                                                         |
+| Custom font (.ttf: Nunito, Baloo2…)                | **Deferred.** Requires native linking. Keep `typography` token structure but `fontFamily` uses system font (`undefined`/`'System'`).                                                                                                                                                                      |
+| Refactor existing screens                          | **Yes.** Migrate `PasteTextScreen` + `LessonResultView` to use theme; remove all hard-coded colors/fonts.                                                                                                                                                                                                 |
+| Initial theme count                                | **3:** `default` (light, matches current app), `dark`, `pastel-kids`.                                                                                                                                                                                                                                     |
+| Runtime theme switching                            | **Provider + persistence + UI picker.**                                                                                                                                                                                                                                                                   |
+| Persistence                                        | **Install `@react-native-async-storage/async-storage`.** Requires `pod install` + rebuild (user runs locally).                                                                                                                                                                                            |
+| Per-theme **release** gating (rollout control)     | **In scope.** `themeRegistry.themeReleaseFlag` maps a theme id to a release `FeatureKey`; `ThemePicker` only offers themes whose flag is on, and a saved-but-now-disabled theme falls back to `default`. This is staged rollout, **not** monetization.                                                    |
 | Sellable / premium themes (**entitlement** gating) | **Deferred to Post-P0.** Do not build premium locks, purchase stubs, entitlement storage, or payment/account seams in this iteration. Entitlement is distinct from the release flag above: release flags answer "is this theme shipped to this build?", entitlement answers "has this user paid for it?". |
-| `'system'` pseudo-id (follow OS) | **Deferred.** `App.tsx` already has `useColorScheme`; add later behind the same registry. |
+| `'system'` pseudo-id (follow OS)                   | **Deferred.** `App.tsx` already has `useColorScheme`; add later behind the same registry.                                                                                                                                                                                                                 |
 
 ### Deferred (later iteration, when real assets exist)
+
 `AppIcon`, `AppImage`, `theme/themes/*/icons.ts`, `theme/themes/*/assets.ts`, `theme/themes/*/fonts.ts`, native font linking, add `icons`/`assets` tokens to `AppTheme`.
 
 ## 3. Architecture
@@ -44,7 +45,7 @@ Design Tokens (base)  ->  Semantic Theme (AppTheme)  ->  Theme Registry
 
 Screens only read via: `theme.colors`, `theme.typography`, `theme.spacing`, `theme.radius`, `theme.shadow`, `theme.components`.
 
-**Cross-module dependency:** the theme system is self-contained for *rendering*, but theme *visibility* depends on the release subsystem. `themeRegistry.ts` imports `FeatureKey` from `release/feature-registry` and `ThemePicker` reads release flags to decide which themes to offer, so the dependency direction is **theme → release** (never the reverse). This is why `FeatureFlagProvider` must wrap `AppThemeProvider` (see §7).
+**Cross-module dependency:** the theme system is self-contained for _rendering_, but theme _visibility_ depends on the release subsystem. `themeRegistry.ts` imports `FeatureKey` from `release/feature-registry` and `ThemePicker` reads release flags to decide which themes to offer, so the dependency direction is **theme → release** (never the reverse). This is why `FeatureFlagProvider` must wrap `AppThemeProvider` (see §7).
 
 ## 4. Directory structure (`src/`)
 
@@ -92,29 +93,36 @@ type AppTheme = {
     secondary: string;
     secondaryContainer: string;
     danger: string;
-    text: { primary: string; secondary: string; inverse: string; muted: string };
+    text: {primary: string; secondary: string; inverse: string; muted: string};
   };
-  states: { disabledOpacity: number; pressedOpacity: number }; // no literal opacity in components
+  states: {disabledOpacity: number; pressedOpacity: number}; // no literal opacity in components
   typography: {
-    fontFamily: { primary?: string; display?: string }; // system font in this iteration
-    size: { xs; sm; md; lg; xl; xxl }; // number
-    weight: { regular: '400'; medium: '600'; bold: FontWeight };
+    fontFamily: {primary?: string; display?: string}; // system font in this iteration
+    size: {xs; sm; md; lg; xl; xxl}; // number
+    weight: {regular: '400'; medium: '600'; bold: FontWeight};
     // Named text styles consumed by AppText; each is { fontSize; lineHeight; fontWeight }.
     presets: {
-      display; h1; h2; h3; bodyLg; body; label; caption;
+      display;
+      h1;
+      h2;
+      h3;
+      bodyLg;
+      body;
+      label;
+      caption;
     };
   };
-  gutter: number;                                 // default screen horizontal inset
-  spacing: { xs; sm; md; lg; xl; xxl };          // number
-  radius: { sm; md; lg; xl; pill };               // number
-  shadow: { soft; medium; strong };               // ViewStyle (shadow* + elevation)
+  gutter: number; // default screen horizontal inset
+  spacing: {xs; sm; md; lg; xl; xxl}; // number
+  radius: {sm; md; lg; xl; pill}; // number
+  shadow: {soft; medium; strong}; // ViewStyle (shadow* + elevation)
   components: {
     button: {
-      primary:   { background; text; height; radius };
-      secondary: { background; text; border; height; radius };
+      primary: {background; text; height; radius};
+      secondary: {background; text; border; height; radius};
     };
-    card:  { background; radius; padding; shadow: keyof shadow };
-    input: { background; text; placeholder; border; radius };
+    card: {background; radius; padding; shadow: keyof shadow};
+    input: {background; text; placeholder; border; radius};
   };
 };
 ```
@@ -189,7 +197,7 @@ Rule: use **semantic** tokens (`colors.text.primary`) and **typography presets**
 
 Themes may become sellable later, but that is outside this iteration and outside Phase 0 unless explicitly approved through the Phase N workflow. A future monetization spec must define account identity, payment/receipt validation, entitlement storage, premium lock UI, QA cases, rollback, and traceability rows before implementation.
 
-**Reuse seam:** monetization should build entitlement gating *on top of* the existing release-flag mechanism, not replace it. Release flags answer "is this theme in this build?"; entitlement answers "has this user paid for it?". A premium theme would be release-enabled **and** entitlement-locked. Do not conflate the two — release flags are already shipped (§2) and are not a purchase signal.
+**Reuse seam:** monetization should build entitlement gating _on top of_ the existing release-flag mechanism, not replace it. Release flags answer "is this theme in this build?"; entitlement answers "has this user paid for it?". A premium theme would be release-enabled **and** entitlement-locked. Do not conflate the two — release flags are already shipped (§2) and are not a purchase signal.
 
 ## 12. Out of scope for this iteration
 

@@ -59,7 +59,9 @@ describe('CompactControlBar', () => {
   }
 
   it('renders seek bar ticks without duplicate key warning when segments share the same start_ms', () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     const duplicateSegments: ControlBarSegment[] = [
       {start_ms: 288000, end_ms: 290000},
@@ -80,7 +82,9 @@ describe('CompactControlBar', () => {
         arg =>
           typeof arg === 'string' &&
           (arg.includes('Encountered two children with the same key') ||
-            arg.includes('Each child in a list should have a unique "key" prop')),
+            arg.includes(
+              'Each child in a list should have a unique "key" prop',
+            )),
       ),
     );
 
@@ -103,7 +107,9 @@ describe('CompactControlBar', () => {
     const label = tree.root.findByProps({testID: 'youtube-compact-label'});
     expect(label.props.children).toBe('Câu 2/3');
 
-    const remaining = tree.root.findByProps({testID: 'youtube-compact-remaining'});
+    const remaining = tree.root.findByProps({
+      testID: 'youtube-compact-remaining',
+    });
     expect(remaining.props.children).toBeDefined();
   });
 
@@ -120,7 +126,9 @@ describe('CompactControlBar', () => {
       toolsArmed: true,
     });
 
-    const playBtn = tree.root.findByProps({testID: 'youtube-compact-play-toggle'});
+    const playBtn = tree.root.findByProps({
+      testID: 'youtube-compact-play-toggle',
+    });
     const replayBtn = tree.root.findByProps({testID: 'youtube-compact-replay'});
     const toolsBtn = tree.root.findByProps({testID: 'youtube-compact-tools'});
 
@@ -134,8 +142,6 @@ describe('CompactControlBar', () => {
     expect(onReplay).toHaveBeenCalled();
     expect(onOpenTools).toHaveBeenCalled();
   });
-
-
 
   it('handles accessibility actions for increment and decrement', () => {
     const onSeekToIndex = jest.fn();
@@ -153,12 +159,16 @@ describe('CompactControlBar', () => {
     const track = tree.root.findByProps({testID: 'youtube-compact-seek'});
 
     act(() => {
-      track.props.onAccessibilityAction({nativeEvent: {actionName: 'increment'}});
+      track.props.onAccessibilityAction({
+        nativeEvent: {actionName: 'increment'},
+      });
     });
     expect(onSeekToIndex).toHaveBeenCalledWith(2);
 
     act(() => {
-      track.props.onAccessibilityAction({nativeEvent: {actionName: 'decrement'}});
+      track.props.onAccessibilityAction({
+        nativeEvent: {actionName: 'decrement'},
+      });
     });
     expect(onSeekToIndex).toHaveBeenCalledWith(0);
   });

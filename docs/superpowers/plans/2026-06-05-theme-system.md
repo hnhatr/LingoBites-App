@@ -11,6 +11,7 @@
 **Roadmap:** [`docs/superpowers/README.md`](../README.md) — Phase 0 (this plan) → Phase 1 UI plan.
 
 **Source specs:**
+
 - `docs/superpowers/specs/2026-06-05-theme-driven-architecture-design.md` (authoritative scope — monetization deferred)
 - `docs/01-ba/06-design/03-theme-system.md` (BA doc; note: its monetization sections are superseded by the spec's Post-P0 deferral)
 - `docs/superpowers/specs/2026-06-05-lingobites-ui-design.md` §8 + `docs/01-ba/06-design/04-html-handoff-to-code-spec.md` §7.1 (visual values for `pastel-kids` only — not `default`)
@@ -20,6 +21,7 @@
 **Current status (2026-06-05):** Theme foundation is implemented in `src/theme/` and this plan has been reconciled to the shipped `AppTheme` contract. If code and this plan diverge later, treat `src/theme/types.ts` as authoritative and update this plan before executing further theme work.
 
 **Plan reconciliation (2026-06-05):** Aligns with theme spec + handoff after review:
+
 - `ThemePicker` lives on **`ProfileScreen`** (Settings), not `PasteTextScreen` (theme spec §7, BA `03-theme-system.md` §9).
 - `pastel-kids` palette uses handoff teal/coral/gold (`#fcfae6`, `#006b5f`, `#fe7488`, …), not the interim pink/purple draft.
 - `pastel-kids` uses `disabledOpacity: 0.38` per handoff §9; colored ambient shadows (teal), not black.
@@ -32,6 +34,7 @@
 ## File Structure
 
 **Create (theme core):**
+
 - `src/theme/types.ts` — `AppTheme` type + supporting types. One responsibility: the token contract.
 - `src/theme/tokens.ts` — shared base numeric scales (spacing, radius, font size/weight) reused by themes.
 - `src/theme/themes/default.ts` — `defaultTheme` (light, current blue identity).
@@ -44,6 +47,7 @@
 - `src/theme/index.ts` — public re-exports.
 
 **Create (components):**
+
 - `src/components/AppText.tsx`
 - `src/components/AppButton.tsx`
 - `src/components/AppCard.tsx`
@@ -51,6 +55,7 @@
 - `src/components/ThemePicker.tsx`
 
 **Create (tests):**
+
 - `src/theme/__tests__/themeRegistry.test.ts`
 - `src/theme/__tests__/themeStorage.test.ts`
 - `src/theme/__tests__/ThemeProvider.test.tsx`
@@ -59,6 +64,7 @@
 - `src/components/__tests__/ThemePicker.test.tsx`
 
 **Modify:**
+
 - `package.json` — add `@react-native-async-storage/async-storage` dependency.
 - `jest.config.js` — register AsyncStorage mock.
 - `.eslintrc.js` — ban color literals / inline styles under `src/components` + `src/modules`.
@@ -72,7 +78,7 @@
 
 ## Conventions for every task
 
-- All commands run from `` unless stated. Run `cd .` first in a fresh shell.
+- All commands run from ``unless stated. Run`cd .` first in a fresh shell.
 - Run a single test file with: `npx jest <path> -v`.
 - TypeScript check: `npx tsc --noEmit`.
 - Commit messages end with the project's trailer:
@@ -86,20 +92,24 @@
 ## Task 0: Install AsyncStorage + wire Jest mock
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `jest.config.js`
 
 - [ ] **Step 1: Add the dependency**
 
 Run (from `this repo`):
+
 ```bash
 npm install @react-native-async-storage/async-storage@^2.1.0
 ```
+
 Expected: `package.json` `dependencies` now lists `@react-native-async-storage/async-storage`.
 
 - [ ] **Step 2: Register the official Jest mock**
 
 Replace `jest.config.js` with:
+
 ```js
 module.exports = {
   preset: '@react-native/jest-preset',
@@ -128,12 +138,14 @@ git commit -m "chore(mobile): add async-storage dep + jest mock for theme persis
 ## Task 1: Token contract (`AppTheme` type) + base tokens
 
 **Files:**
+
 - Create: `src/theme/types.ts`
 - Create: `src/theme/tokens.ts`
 
 - [ ] **Step 1: Write the type contract**
 
 Create `src/theme/types.ts`:
+
 ```ts
 import type {ViewStyle} from 'react-native';
 
@@ -213,7 +225,12 @@ export type AppTheme = {
   shadow: ShadowScale;
   components: {
     button: {
-      primary: {background: string; text: string; height: number; radius: number};
+      primary: {
+        background: string;
+        text: string;
+        height: number;
+        radius: number;
+      };
       secondary: {
         background: string;
         text: string;
@@ -242,6 +259,7 @@ export type AppTheme = {
 - [ ] **Step 2: Write the shared base tokens**
 
 Create `src/theme/tokens.ts`:
+
 ```ts
 import type {RadiusScale, SixStep} from './types';
 
@@ -252,7 +270,14 @@ export const spacing: SixStep = {xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32};
 
 export const radius: RadiusScale = {sm: 6, md: 8, lg: 12, xl: 20, pill: 999};
 
-export const fontSize: SixStep = {xs: 12, sm: 14, md: 16, lg: 20, xl: 24, xxl: 30};
+export const fontSize: SixStep = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 20,
+  xl: 24,
+  xxl: 30,
+};
 
 export const fontWeight = {
   regular: '400',
@@ -291,6 +316,7 @@ git commit -m "feat(theme): add AppTheme token contract + base token scales"
 ## Task 2: Three theme objects (default, dark, pastel-kids)
 
 **Files:**
+
 - Create: `src/theme/themes/default.ts`
 - Create: `src/theme/themes/dark.ts`
 - Create: `src/theme/themes/pastelKids.ts`
@@ -300,6 +326,7 @@ git commit -m "feat(theme): add AppTheme token contract + base token scales"
 - [ ] **Step 1: Write `default.ts` (light, current blue identity)**
 
 Create `src/theme/themes/default.ts`:
+
 ```ts
 import {fontSize, gutter, radius, spacing, typographyPresets} from '../tokens';
 import type {AppTheme} from '../types';
@@ -383,6 +410,7 @@ export const defaultTheme: AppTheme = {
 - [ ] **Step 2: Write `dark.ts`**
 
 Create `src/theme/themes/dark.ts`:
+
 ```ts
 import {fontSize, gutter, radius, spacing, typographyPresets} from '../tokens';
 import type {AppTheme} from '../types';
@@ -469,6 +497,7 @@ export const darkTheme: AppTheme = {
 > closed `AppTheme` contract (`default` keeps blue identity per BR-THEME-007).
 
 Create `src/theme/themes/pastelKids.ts`:
+
 ```ts
 import {fontSize, typographyPresets} from '../tokens';
 import type {AppTheme} from '../types';
@@ -570,12 +599,14 @@ git commit -m "feat(theme): add default, dark, and pastel-kids themes"
 ## Task 3: Theme registry (single source of truth)
 
 **Files:**
+
 - Create: `src/theme/themeRegistry.ts`
 - Test: `src/theme/__tests__/themeRegistry.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
 Create `src/theme/__tests__/themeRegistry.test.ts`:
+
 ```ts
 import {
   defaultThemeId,
@@ -588,7 +619,11 @@ import {
 
 describe('themeRegistry', () => {
   it('exposes the three confirmed themes', () => {
-    expect(Object.keys(themes).sort()).toEqual(['dark', 'default', 'pastel-kids']);
+    expect(Object.keys(themes).sort()).toEqual([
+      'dark',
+      'default',
+      'pastel-kids',
+    ]);
   });
 
   it('themeIds and themeList are derived from the themes map', () => {
@@ -625,6 +660,7 @@ Expected: FAIL with "Cannot find module '../themeRegistry'".
 - [ ] **Step 3: Write the registry**
 
 Create `src/theme/themeRegistry.ts`:
+
 ```ts
 import type {FeatureKey} from '../release/feature-registry';
 import {darkTheme} from './themes/dark';
@@ -677,12 +713,14 @@ git commit -m "feat(theme): add theme registry as single source of truth"
 ## Task 4: Theme storage (AsyncStorage persistence)
 
 **Files:**
+
 - Create: `src/theme/themeStorage.ts`
 - Test: `src/theme/__tests__/themeStorage.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
 Create `src/theme/__tests__/themeStorage.test.ts`:
+
 ```ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getSavedThemeId, saveThemeId, THEME_STORAGE_KEY} from '../themeStorage';
@@ -720,6 +758,7 @@ Expected: FAIL with "Cannot find module '../themeStorage'".
 - [ ] **Step 3: Write the storage module**
 
 Create `src/theme/themeStorage.ts`:
+
 ```ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {ThemeId} from './themeRegistry';
@@ -762,6 +801,7 @@ git commit -m "feat(theme): add AsyncStorage-backed theme id persistence"
 ## Task 5: ThemeProvider + useAppTheme
 
 **Files:**
+
 - Create: `src/theme/useAppTheme.ts`
 - Create: `src/theme/ThemeProvider.tsx`
 - Create: `src/theme/index.ts`
@@ -772,6 +812,7 @@ git commit -m "feat(theme): add AsyncStorage-backed theme id persistence"
 - [ ] **Step 1: Write the hook (needed by the test and provider)**
 
 Create `src/theme/useAppTheme.ts`:
+
 ```ts
 import {createContext, useContext} from 'react';
 import type {ThemeId} from './themeRegistry';
@@ -797,6 +838,7 @@ export function useAppTheme(): ThemeContextValue {
 - [ ] **Step 2: Write the failing test**
 
 Create `src/theme/__tests__/ThemeProvider.test.tsx`:
+
 ```tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
@@ -849,19 +891,25 @@ describe('AppThemeProvider', () => {
 
   it('defaults to "default" when nothing is persisted', async () => {
     const tree = await renderWithProviders();
-    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe('default');
+    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe(
+      'default',
+    );
   });
 
   it('restores a valid persisted theme on mount', async () => {
     await AsyncStorage.setItem(THEME_STORAGE_KEY, 'dark');
     const tree = await renderWithProviders();
-    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe('dark');
+    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe(
+      'dark',
+    );
   });
 
   it('falls back to "default" for an unknown/removed persisted id', async () => {
     await AsyncStorage.setItem(THEME_STORAGE_KEY, 'ocean-removed');
     const tree = await renderWithProviders();
-    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe('default');
+    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe(
+      'default',
+    );
   });
 
   it('setThemeId updates context and persists', async () => {
@@ -869,7 +917,9 @@ describe('AppThemeProvider', () => {
     await act(async () => {
       tree.root.findByProps({testID: 'probe'}).props.onPress();
     });
-    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe('dark');
+    expect(tree.root.findByProps({testID: 'probe'}).props.children).toBe(
+      'dark',
+    );
     expect(await AsyncStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
   });
 });
@@ -883,6 +933,7 @@ Expected: FAIL with "Cannot find module '../ThemeProvider'".
 - [ ] **Step 4: Write the Provider**
 
 Create `src/theme/ThemeProvider.tsx`:
+
 ```tsx
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useFeatureFlags} from '../release';
@@ -945,13 +996,16 @@ export function AppThemeProvider({children}: Props) {
     [themeId, setThemeId],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 ```
 
 - [ ] **Step 5: Write the public barrel**
 
 Create `src/theme/index.ts`:
+
 ```ts
 export {AppThemeProvider} from './ThemeProvider';
 export {useAppTheme} from './useAppTheme';
@@ -990,11 +1044,13 @@ git commit -m "feat(theme): add ThemeProvider with persistence, validation, and 
 ## Task 6: AppText component
 
 **Files:**
+
 - Create: `src/components/AppText.tsx`
 
 - [ ] **Step 1: Write the component**
 
 Create `src/components/AppText.tsx`:
+
 ```tsx
 import React from 'react';
 import {StyleSheet, Text, type TextProps} from 'react-native';
@@ -1039,12 +1095,18 @@ export function AppText({
 
   const variantStyle = presetVariants.has(variant)
     ? {
-        fontSize: theme.typography.presets[variant as keyof typeof theme.typography.presets]
-          .fontSize,
+        fontSize:
+          theme.typography.presets[
+            variant as keyof typeof theme.typography.presets
+          ].fontSize,
         lineHeight:
-          theme.typography.presets[variant as keyof typeof theme.typography.presets].lineHeight,
+          theme.typography.presets[
+            variant as keyof typeof theme.typography.presets
+          ].lineHeight,
         fontWeight:
-          theme.typography.presets[variant as keyof typeof theme.typography.presets].fontWeight,
+          theme.typography.presets[
+            variant as keyof typeof theme.typography.presets
+          ].fontWeight,
       }
     : {
         title: {
@@ -1090,12 +1152,14 @@ git commit -m "feat(components): add themed AppText"
 ## Task 7: AppButton component
 
 **Files:**
+
 - Create: `src/components/AppButton.tsx`
 - Test: `src/components/__tests__/AppButton.test.tsx`
 
 - [ ] **Step 1: Write the failing test**
 
 Create `src/components/__tests__/AppButton.test.tsx`:
+
 ```tsx
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
@@ -1123,7 +1187,9 @@ describe('AppButton', () => {
       {},
       ...[].concat(pressable.props.style({pressed: false})),
     );
-    expect(flattened.backgroundColor).toBe(defaultTheme.components.button.primary.background);
+    expect(flattened.backgroundColor).toBe(
+      defaultTheme.components.button.primary.background,
+    );
   });
 
   it('secondary variant uses a border', async () => {
@@ -1135,7 +1201,9 @@ describe('AppButton', () => {
       {},
       ...[].concat(pressable.props.style({pressed: false})),
     );
-    expect(flattened.borderColor).toBe(defaultTheme.components.button.secondary.border);
+    expect(flattened.borderColor).toBe(
+      defaultTheme.components.button.secondary.border,
+    );
     expect(flattened.borderWidth).toBe(1);
   });
 
@@ -1158,6 +1226,7 @@ Expected: FAIL with "Cannot find module '../AppButton'".
 - [ ] **Step 3: Write the component**
 
 Create `src/components/AppButton.tsx`:
+
 ```tsx
 import React from 'react';
 import {
@@ -1206,7 +1275,8 @@ export function AppButton({
         pressed && {opacity: theme.states.pressedOpacity},
         (disabled || loading) && {opacity: theme.states.disabledOpacity},
       ]}
-      {...rest}>
+      {...rest}
+    >
       {loading ? (
         <ActivityIndicator color={spec.text} />
       ) : (
@@ -1216,7 +1286,8 @@ export function AppButton({
             fontSize: theme.typography.size.md,
             fontWeight: theme.typography.weight.bold,
             fontFamily: theme.typography.fontFamily.primary,
-          }}>
+          }}
+        >
           {title}
         </Text>
       )}
@@ -1250,11 +1321,13 @@ git commit -m "feat(components): add themed AppButton (primary/secondary)"
 ## Task 8: AppCard component
 
 **Files:**
+
 - Create: `src/components/AppCard.tsx`
 
 - [ ] **Step 1: Write the component**
 
 Create `src/components/AppCard.tsx`:
+
 ```tsx
 import React from 'react';
 import {StyleSheet, View, type ViewProps} from 'react-native';
@@ -1298,11 +1371,13 @@ git commit -m "feat(components): add themed AppCard"
 ## Task 9: AppScreen component
 
 **Files:**
+
 - Create: `src/components/AppScreen.tsx`
 
 - [ ] **Step 1: Write the component**
 
 Create `src/components/AppScreen.tsx`:
+
 ```tsx
 import React from 'react';
 import {StyleSheet, View, type ViewProps} from 'react-native';
@@ -1318,7 +1393,8 @@ export function AppScreen({style, children, ...rest}: ViewProps) {
         {backgroundColor: theme.colors.background},
         style,
       ])}
-      {...rest}>
+      {...rest}
+    >
       <View style={styles.fill}>{children}</View>
     </SafeAreaView>
   );
@@ -1346,6 +1422,7 @@ git commit -m "feat(components): add themed AppScreen"
 ## Task 10: ThemePicker component
 
 **Files:**
+
 - Create: `src/components/ThemePicker.tsx`
 - Test: `src/components/__tests__/ThemePicker.test.tsx`
 
@@ -1354,6 +1431,7 @@ git commit -m "feat(components): add themed AppScreen"
 - [ ] **Step 1: Write the failing test**
 
 Create `src/components/__tests__/ThemePicker.test.tsx`:
+
 ```tsx
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
@@ -1419,6 +1497,7 @@ Expected: FAIL with "Cannot find module '../ThemePicker'".
 - [ ] **Step 3: Write the component**
 
 Create `src/components/ThemePicker.tsx`:
+
 ```tsx
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
@@ -1459,13 +1538,17 @@ export function ThemePicker() {
                 backgroundColor: theme.colors.primary,
                 borderColor: theme.colors.primary,
               },
-            ]}>
+            ]}
+          >
             <Text
               style={{
-                color: selected ? theme.colors.text.inverse : theme.colors.text.secondary,
+                color: selected
+                  ? theme.colors.text.inverse
+                  : theme.colors.text.secondary,
                 fontSize: theme.typography.size.sm,
                 fontWeight: theme.typography.weight.medium,
-              }}>
+              }}
+            >
               {themes[id].name}
             </Text>
           </Pressable>
@@ -1501,14 +1584,16 @@ git commit -m "feat(components): add ThemePicker filtered by release flags"
 
 ---
 
-## Task 11: Refactor PasteTextScreen to tokens + App* components
+## Task 11: Refactor PasteTextScreen to tokens + App\* components
 
 **Files:**
+
 - Modify: `src/modules/input/PasteTextScreen.tsx` (full rewrite of the render + remove `StyleSheet`)
 
 - [ ] **Step 1: Rewrite the screen using theme tokens**
 
 Replace the entire contents of `src/modules/input/PasteTextScreen.tsx` with:
+
 ```tsx
 import React, {useState} from 'react';
 import {ScrollView, TextInput, View} from 'react-native';
@@ -1559,7 +1644,8 @@ export function PasteTextScreen() {
             borderBottomColor: theme.colors.border,
             borderBottomWidth: 1,
             padding: theme.spacing.lg,
-          }}>
+          }}
+        >
           <AppButton
             title="Nhập đoạn khác"
             variant="secondary"
@@ -1573,7 +1659,12 @@ export function PasteTextScreen() {
 
   return (
     <AppScreen>
-      <ScrollView contentContainerStyle={{gap: theme.spacing.lg, padding: theme.spacing.xl}}>
+      <ScrollView
+        contentContainerStyle={{
+          gap: theme.spacing.lg,
+          padding: theme.spacing.xl,
+        }}
+      >
         <View style={{gap: theme.spacing.sm}}>
           <AppText variant="title">LingoBites</AppText>
           <AppText variant="subtitle" color="secondary">
@@ -1639,14 +1730,16 @@ git commit -m "refactor(input): migrate PasteTextScreen to theme tokens + App* c
 
 ---
 
-## Task 12: Refactor LessonResultView to tokens + App* components
+## Task 12: Refactor LessonResultView to tokens + App\* components
 
 **Files:**
+
 - Modify: `src/modules/lesson/LessonResultView.tsx` (full rewrite)
 
 - [ ] **Step 1: Rewrite using AppText/AppCard + tokens**
 
 Replace the entire contents of `src/modules/lesson/LessonResultView.tsx` with:
+
 ```tsx
 import React from 'react';
 import {ScrollView, View} from 'react-native';
@@ -1662,7 +1755,9 @@ type Props = {
 export function LessonResultView({lesson}: Props) {
   const {theme} = useAppTheme();
   return (
-    <ScrollView contentContainerStyle={{padding: theme.spacing.xl, gap: theme.spacing.lg}}>
+    <ScrollView
+      contentContainerStyle={{padding: theme.spacing.xl, gap: theme.spacing.lg}}
+    >
       <AppText variant="title">{lesson.title}</AppText>
       <AppText color="muted">
         {lesson.detected_language} · {lesson.level}
@@ -1686,7 +1781,11 @@ export function LessonResultView({lesson}: Props) {
         ) : (
           lesson.sentences.map(sentence => (
             <AppCard key={sentence.id} style={{gap: theme.spacing.xs}}>
-              <AppText variant="body" color="primary" style={{fontWeight: theme.typography.weight.bold}}>
+              <AppText
+                variant="body"
+                color="primary"
+                style={{fontWeight: theme.typography.weight.bold}}
+              >
                 {sentence.original}
               </AppText>
               <AppText>{sentence.translation}</AppText>
@@ -1704,9 +1803,13 @@ export function LessonResultView({lesson}: Props) {
         ) : (
           lesson.vocabulary.map(item => (
             <AppCard key={item.id} style={{gap: theme.spacing.xs}}>
-              <AppText style={{fontWeight: theme.typography.weight.bold}}>{item.word}</AppText>
+              <AppText style={{fontWeight: theme.typography.weight.bold}}>
+                {item.word}
+              </AppText>
               <AppText>{item.meaning_vi}</AppText>
-              {item.example ? <AppText color="muted">{item.example}</AppText> : null}
+              {item.example ? (
+                <AppText color="muted">{item.example}</AppText>
+              ) : null}
             </AppCard>
           ))
         )}
@@ -1733,7 +1836,9 @@ export function LessonResultView({lesson}: Props) {
         ) : (
           lesson.practice.map(item => (
             <AppCard key={item.id} style={{gap: theme.spacing.xs}}>
-              <AppText style={{fontWeight: theme.typography.weight.bold}}>{item.question}</AppText>
+              <AppText style={{fontWeight: theme.typography.weight.bold}}>
+                {item.question}
+              </AppText>
               <AppText>Đáp án: {item.answer}</AppText>
             </AppCard>
           ))
@@ -1747,7 +1852,10 @@ function Section({title, children}: React.PropsWithChildren<{title: string}>) {
   const {theme} = useAppTheme();
   return (
     <View style={{gap: theme.spacing.sm}}>
-      <AppText variant="subtitle" style={{fontWeight: theme.typography.weight.bold}}>
+      <AppText
+        variant="subtitle"
+        style={{fontWeight: theme.typography.weight.bold}}
+      >
         {title}
       </AppText>
       {children}
@@ -1782,6 +1890,7 @@ git commit -m "refactor(lesson): migrate LessonResultView to theme tokens + App*
 ## Task 13: Migrate ProfileScreen and host ThemePicker
 
 **Files:**
+
 - Modify: `src/modules/settings/ProfileScreen.tsx` (migrate to `App*` + tokens; add `ThemePicker`)
 - Modify: `src/modules/settings/__tests__/ProfileScreen.test.tsx` (wrap in providers)
 
@@ -1791,6 +1900,7 @@ git commit -m "refactor(lesson): migrate LessonResultView to theme tokens + App*
 - [ ] **Step 1: Rewrite ProfileScreen using theme tokens**
 
 Replace the entire contents of `src/modules/settings/ProfileScreen.tsx` with:
+
 ```tsx
 import React, {useState} from 'react';
 import {Alert, Linking, Pressable, ScrollView, View} from 'react-native';
@@ -1837,7 +1947,12 @@ export function ProfileScreen({navigation}: Props) {
 
   return (
     <AppScreen>
-      <ScrollView contentContainerStyle={{gap: theme.spacing.lg, padding: theme.spacing.xl}}>
+      <ScrollView
+        contentContainerStyle={{
+          gap: theme.spacing.lg,
+          padding: theme.spacing.xl,
+        }}
+      >
         <AppText variant="title" accessibilityRole="header">
           Hồ sơ
         </AppText>
@@ -1846,41 +1961,61 @@ export function ProfileScreen({navigation}: Props) {
         </AppText>
 
         <AppCard style={{gap: theme.spacing.sm}}>
-          <AppText style={{fontWeight: theme.typography.weight.bold}}>Trình độ học</AppText>
+          <AppText style={{fontWeight: theme.typography.weight.bold}}>
+            Trình độ học
+          </AppText>
           <AppText color="secondary">Beginner (mặc định Phase 0)</AppText>
         </AppCard>
 
         <AppCard style={{gap: theme.spacing.sm}}>
-          <AppText style={{fontWeight: theme.typography.weight.bold}}>Giao diện</AppText>
-          <AppText color="secondary">Chọn giao diện ưa thích — áp dụng ngay cho toàn app.</AppText>
+          <AppText style={{fontWeight: theme.typography.weight.bold}}>
+            Giao diện
+          </AppText>
+          <AppText color="secondary">
+            Chọn giao diện ưa thích — áp dụng ngay cho toàn app.
+          </AppText>
           <ThemePicker />
         </AppCard>
 
         <AppCard style={{gap: theme.spacing.sm}}>
-          <AppText style={{fontWeight: theme.typography.weight.bold}}>Quyền riêng tư</AppText>
+          <AppText style={{fontWeight: theme.typography.weight.bold}}>
+            Quyền riêng tư
+          </AppText>
           <AppText color="secondary">{PRIVACY_NOTE_BODY}</AppText>
           <Pressable
             accessibilityLabel="Xem chi tiết quyền riêng tư"
             accessibilityRole="button"
             onPress={() => navigation.navigate('PrivacyNote')}
-            style={{minHeight: 44, justifyContent: 'center'}}>
+            style={{minHeight: 44, justifyContent: 'center'}}
+          >
             <AppText
-              style={{color: theme.colors.primary, fontWeight: theme.typography.weight.bold}}>
+              style={{
+                color: theme.colors.primary,
+                fontWeight: theme.typography.weight.bold,
+              }}
+            >
               Xem chi tiết
             </AppText>
           </Pressable>
         </AppCard>
 
         <AppCard style={{gap: theme.spacing.sm}}>
-          <AppText style={{fontWeight: theme.typography.weight.bold}}>Hỗ trợ & góp ý</AppText>
+          <AppText style={{fontWeight: theme.typography.weight.bold}}>
+            Hỗ trợ & góp ý
+          </AppText>
           <AppText color="secondary">{SUPPORT_PROMPT}</AppText>
           <Pressable
             accessibilityLabel="Gửi email hỗ trợ"
             accessibilityRole="button"
             onPress={handleSupport}
-            style={{minHeight: 44, justifyContent: 'center'}}>
+            style={{minHeight: 44, justifyContent: 'center'}}
+          >
             <AppText
-              style={{color: theme.colors.primary, fontWeight: theme.typography.weight.bold}}>
+              style={{
+                color: theme.colors.primary,
+                fontWeight: theme.typography.weight.bold,
+              }}
+            >
               {supportEmail}
             </AppText>
           </Pressable>
@@ -1900,8 +2035,12 @@ export function ProfileScreen({navigation}: Props) {
             marginTop: theme.spacing.sm,
             minHeight: 48,
             paddingHorizontal: theme.spacing.lg,
-          }}>
-          <AppText color="danger" style={{fontWeight: theme.typography.weight.bold}}>
+          }}
+        >
+          <AppText
+            color="danger"
+            style={{fontWeight: theme.typography.weight.bold}}
+          >
             Xóa dữ liệu học trên máy
           </AppText>
         </Pressable>
@@ -1918,6 +2057,7 @@ export function ProfileScreen({navigation}: Props) {
 - [ ] **Step 2: Update ProfileScreen tests to include providers**
 
 At the top of `src/modules/settings/__tests__/ProfileScreen.test.tsx`, add:
+
 ```tsx
 import {FeatureFlagProvider} from '../../../release';
 import {AppThemeProvider} from '../../../theme';
@@ -1957,6 +2097,7 @@ git commit -m "refactor(settings): migrate ProfileScreen to theme tokens and hos
 ## Task 14: Wire AppThemeProvider into App.tsx
 
 **Files:**
+
 - Modify: `App.tsx`
 
 - [ ] **Step 1: Update the provider tree**
@@ -1964,21 +2105,22 @@ git commit -m "refactor(settings): migrate ProfileScreen to theme tokens and hos
 Insert `AppThemeProvider` around the navigator. Keep analytics and global error handler. Provider order per theme spec §7: `FeatureFlagProvider` → `SafeAreaProvider` → `AppThemeProvider` → screens.
 
 Replace the return block in `App.tsx` with:
+
 ```tsx
 import {AppThemeProvider} from './src/theme';
 
 // ...existing imports and useEffect...
 
-  return (
-    <FeatureFlagProvider>
-      <SafeAreaProvider>
-        <AppThemeProvider>
-          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-          <AppNavigator />
-        </AppThemeProvider>
-      </SafeAreaProvider>
-    </FeatureFlagProvider>
-  );
+return (
+  <FeatureFlagProvider>
+    <SafeAreaProvider>
+      <AppThemeProvider>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <AppNavigator />
+      </AppThemeProvider>
+    </SafeAreaProvider>
+  </FeatureFlagProvider>
+);
 ```
 
 - [ ] **Step 2: Run the existing App smoke test**
@@ -2003,6 +2145,7 @@ git commit -m "feat(app): wrap AppNavigator in AppThemeProvider"
 ## Task 15: Parametrized "render all themes" test
 
 **Files:**
+
 - Test: `src/theme/__tests__/themes.render.test.tsx`
 
 > This test loops `themeList`, so any future theme is automatically covered without editing the test.
@@ -2010,6 +2153,7 @@ git commit -m "feat(app): wrap AppNavigator in AppThemeProvider"
 - [ ] **Step 1: Write the test**
 
 Create `src/theme/__tests__/themes.render.test.tsx`:
+
 ```tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
@@ -2036,7 +2180,11 @@ describe('every registered theme renders App* components', () => {
                   <AppText>body</AppText>
                 </AppCard>
                 <AppButton title="Primary" onPress={() => {}} />
-                <AppButton title="Secondary" variant="secondary" onPress={() => {}} />
+                <AppButton
+                  title="Secondary"
+                  variant="secondary"
+                  onPress={() => {}}
+                />
               </>
             </AppThemeProvider>
           </FeatureFlagProvider>,
@@ -2064,13 +2212,15 @@ git commit -m "test(theme): parametrized render of every registered theme"
 ## Task 16: ESLint guard against color literals + full green run
 
 **Files:**
+
 - Modify: `.eslintrc.js`
 
-> The `@react-native` config bundles `eslint-plugin-react-native`, which provides `no-color-literals` and `no-inline-styles`. We enable them only for `src/components` + `src/modules` (the App* components legitimately read token values into inline `style={{...}}` objects, which is allowed — these rules flag literal colors and untokenized values, not theme-derived ones). `no-inline-styles` would be too noisy given our token-driven inline styles, so we enable only `no-color-literals`, which is what actually enforces "no hard-coded colors."
+> The `@react-native` config bundles `eslint-plugin-react-native`, which provides `no-color-literals` and `no-inline-styles`. We enable them only for `src/components` + `src/modules` (the App\* components legitimately read token values into inline `style={{...}}` objects, which is allowed — these rules flag literal colors and untokenized values, not theme-derived ones). `no-inline-styles` would be too noisy given our token-driven inline styles, so we enable only `no-color-literals`, which is what actually enforces "no hard-coded colors."
 
 - [ ] **Step 1: Add the override**
 
 Replace `.eslintrc.js` with:
+
 ```js
 module.exports = {
   root: true,

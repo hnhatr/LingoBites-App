@@ -11,8 +11,11 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 jest.mock('react-native-permissions', () => ({
   check: jest.fn().mockResolvedValue('granted'),
   request: jest.fn().mockResolvedValue('granted'),
-  PERMISSIONS: { IOS: { MICROPHONE: 'ios.permission.MICROPHONE' }, ANDROID: { RECORD_AUDIO: 'android.permission.RECORD_AUDIO' } },
-  RESULTS: { UNAVAILABLE: 'unavailable', GRANTED: 'granted', DENIED: 'denied' },
+  PERMISSIONS: {
+    IOS: {MICROPHONE: 'ios.permission.MICROPHONE'},
+    ANDROID: {RECORD_AUDIO: 'android.permission.RECORD_AUDIO'},
+  },
+  RESULTS: {UNAVAILABLE: 'unavailable', GRANTED: 'granted', DENIED: 'denied'},
 }));
 
 import {

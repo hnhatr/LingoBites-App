@@ -27,12 +27,12 @@ Pain points:
 
 ## Slide 3 — Current Alternatives Are Incomplete
 
-| Alternative | Gap |
-|---|---|
-| Google Translate/Lens | Fast translation but no lesson creation |
-| Duolingo | Has curriculum but not personalized to real-world text |
-| ELSA | Focused on speaking/pronunciation |
-| ChatGPT | Powerful but lacks dedicated mobile flow: scan, confirm, structured lesson, save/review |
+| Alternative           | Gap                                                                                     |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| Google Translate/Lens | Fast translation but no lesson creation                                                 |
+| Duolingo              | Has curriculum but not personalized to real-world text                                  |
+| ELSA                  | Focused on speaking/pronunciation                                                       |
+| ChatGPT               | Powerful but lacks dedicated mobile flow: scan, confirm, structured lesson, save/review |
 
 Message:
 
@@ -108,11 +108,11 @@ Initial wedge:
 
 ## Slide 8 — Business Model
 
-| Tier | Value | Monetization |
-|---|---|---|
-| Free | Demo/trial or BYOK | Low system AI cost |
-| Paid | Managed AI, no setup required | Subscription or credit bundle |
-| Future premium | Review, flashcards, speaking, advanced import | Higher ARPU |
+| Tier           | Value                                         | Monetization                  |
+| -------------- | --------------------------------------------- | ----------------------------- |
+| Free           | Demo/trial or BYOK                            | Low system AI cost            |
+| Paid           | Managed AI, no setup required                 | Subscription or credit bundle |
+| Future premium | Review, flashcards, speaking, advanced import | Higher ARPU                   |
 
 Key point:
 
@@ -126,10 +126,10 @@ Free users can reduce system cost via BYOK; paid users pay for convenience.
 
 Use operating estimates:
 
-| Item | Estimate |
-|---|---:|
-| Paste text lesson | ~0.003-0.008 USD |
-| Image lesson | ~0.005-0.015 USD |
+| Item              |          Estimate |
+| ----------------- | ----------------: |
+| Paste text lesson |  ~0.003-0.008 USD |
+| Image lesson      |  ~0.005-0.015 USD |
 | Closed beta small | ~30-100 USD/month |
 
 Cost controls:
@@ -144,11 +144,11 @@ Cost controls:
 
 ## Slide 10 — Roadmap
 
-| Phase | Goal |
-|---|---|
-| Phase 0 | MVP scan/paste → lesson → save/review |
-| Phase 1 | Flashcard, spaced repetition, daily review |
-| Phase 2 | Speaking/shadowing, AI tutor Q&A |
+| Phase   | Goal                                                |
+| ------- | --------------------------------------------------- |
+| Phase 0 | MVP scan/paste → lesson → save/review               |
+| Phase 1 | Flashcard, spaced repetition, daily review          |
+| Phase 2 | Speaking/shadowing, AI tutor Q&A                    |
 | Phase 3 | PDF/web import, premium learning path, monetization |
 
 ---
@@ -157,10 +157,10 @@ Cost controls:
 
 30/60/90-day validation:
 
-| Period | Goal |
-|---|---|
-| 30 days | Internal beta, result quality, OCR sample set |
-| 60 days | Closed beta, usage/retention signals |
+| Period  | Goal                                                     |
+| ------- | -------------------------------------------------------- |
+| 30 days | Internal beta, result quality, OCR sample set            |
+| 60 days | Closed beta, usage/retention signals                     |
 | 90 days | Pricing/BYOK validation, paid intent, GTM channel signal |
 
 Metrics:

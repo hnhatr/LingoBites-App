@@ -8,7 +8,7 @@ import {
   getYouTubeLesson,
   listYouTubeLessons,
   saveYouTubeLesson,
-} from '../YoutubeLessonRepository';
+} from '../YouTubeLessonRepository';
 import type {YouTubeTranscript} from '../../schemas/youtube-transcript-v1';
 
 const transcript: YouTubeTranscript = {
@@ -51,7 +51,7 @@ beforeEach(() => {
   runMigrations(getDatabase());
 });
 
-describe('YoutubeLessonRepository', () => {
+describe('YouTubeLessonRepository', () => {
   it('round-trips the complete lesson and keeps sentence order', () => {
     expect(
       saveYouTubeLesson({lesson: transcript, now: '2026-09-10T00:00:00.000Z'}),

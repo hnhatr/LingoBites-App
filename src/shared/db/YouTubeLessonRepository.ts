@@ -3,9 +3,9 @@ import {
   type YouTubeSegment,
   type YouTubeTranscript,
 } from '../schemas/youtube-transcript-v1';
-import { getDatabase, withTransaction } from './database';
-import { enqueueSyncOutboxEvent } from './SyncOutboxRepository';
-import { createRequestId } from '../api/requestId';
+import {getDatabase, withTransaction} from './database';
+import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {createRequestId} from '../api/requestId';
 
 type YouTubeLessonRow = {
   id: string;
@@ -178,7 +178,7 @@ export function saveYouTubeLesson(
         eventType: 'youtube_lessons',
         entityId: lesson.video.id,
         payload: lesson as any,
-        createdAt: now
+        createdAt: now,
       });
     });
     return {ok: true, lessonId: lesson.video.id, duplicate: existing !== null};
@@ -209,7 +209,7 @@ export function countYouTubeLessons(): number {
   try {
     const db = getDatabase();
     const result = firstRow<{count: number}>(
-      db.execute('SELECT COUNT(*) as count FROM youtube_lessons;', [])
+      db.execute('SELECT COUNT(*) as count FROM youtube_lessons;', []),
     );
     return result?.count ?? 0;
   } catch {
@@ -238,7 +238,7 @@ export function deleteYouTubeLesson(lessonId: string): boolean {
   }
 }
 
-// Kept as a compatibility spelling for call sites that mirror the filename.
+// Kept as a compatibility spelling for call sites that mirror the legacy spelling.
 export const saveYoutubeLesson = saveYouTubeLesson;
 export const getYoutubeLesson = getYouTubeLesson;
 export const listYoutubeLessons = listYouTubeLessons;

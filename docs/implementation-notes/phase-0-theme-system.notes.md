@@ -31,30 +31,30 @@ Implement the centralized theme-driven UI layer for `this repo` per the superpow
 
 ## Files Changed
 
-| File | Change | Reason |
-|---|---|---|
-| `package.json` | Add `@react-native-async-storage/async-storage` | Theme persistence |
-| `jest.setup.js` | AsyncStorage `jest.mock()` | Jest tests for storage/provider |
-| `src/theme/types.ts` | Create | `AppTheme` token contract |
-| `src/theme/tokens.ts` | Create | Shared spacing/radius/font scales |
-| `src/theme/themes/*.ts` | Create (3) | default, dark, pastel-kids themes |
-| `src/theme/themeRegistry.ts` | Create | Single source of truth + release flags |
-| `src/theme/themeStorage.ts` | Create | AsyncStorage get/save |
-| `src/theme/useAppTheme.ts` | Create | Context hook |
-| `src/theme/ThemeProvider.tsx` | Create | Runtime theme + validation |
-| `src/theme/index.ts` | Create | Public barrel |
-| `src/theme/__tests__/*` | Create (3) | Registry, storage, provider tests |
-| `docs/tasks/current-task.md` | Create | Task spec |
-| `src/components/*` | Create (5) + tests (2) | AppText, AppButton, AppCard, AppScreen, ThemePicker |
-| `src/modules/input/PasteTextScreen.tsx` | Migrate | Tokens + App* |
-| `src/modules/lesson/LessonResultView.tsx` | Migrate | Tokens + App* (M4 behavior kept) |
-| `src/modules/settings/ProfileScreen.tsx` | Migrate | Tokens + ThemePicker |
-| `App.tsx` | Modify | AppThemeProvider wraps navigator |
-| `.eslintrc.js` | Modify | no-color-literals on components/modules |
-| `src/theme/__tests__/themes.render.test.tsx` | Create | Parametrized theme render |
-| Screen tests (4 files) | Modify | Wrap with AppThemeProvider |
-| `docs/01-ba/03-requirements/05-traceability-matrix.md` | Update | FR-THEME-001..015 ✅ |
-| `docs/implementation-notes/phase-0-theme-system.notes.md` | Create/update | @impl-notes |
+| File                                                      | Change                                          | Reason                                              |
+| --------------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------- |
+| `package.json`                                            | Add `@react-native-async-storage/async-storage` | Theme persistence                                   |
+| `jest.setup.js`                                           | AsyncStorage `jest.mock()`                      | Jest tests for storage/provider                     |
+| `src/theme/types.ts`                                      | Create                                          | `AppTheme` token contract                           |
+| `src/theme/tokens.ts`                                     | Create                                          | Shared spacing/radius/font scales                   |
+| `src/theme/themes/*.ts`                                   | Create (3)                                      | default, dark, pastel-kids themes                   |
+| `src/theme/themeRegistry.ts`                              | Create                                          | Single source of truth + release flags              |
+| `src/theme/themeStorage.ts`                               | Create                                          | AsyncStorage get/save                               |
+| `src/theme/useAppTheme.ts`                                | Create                                          | Context hook                                        |
+| `src/theme/ThemeProvider.tsx`                             | Create                                          | Runtime theme + validation                          |
+| `src/theme/index.ts`                                      | Create                                          | Public barrel                                       |
+| `src/theme/__tests__/*`                                   | Create (3)                                      | Registry, storage, provider tests                   |
+| `docs/tasks/current-task.md`                              | Create                                          | Task spec                                           |
+| `src/components/*`                                        | Create (5) + tests (2)                          | AppText, AppButton, AppCard, AppScreen, ThemePicker |
+| `src/modules/input/PasteTextScreen.tsx`                   | Migrate                                         | Tokens + App\*                                      |
+| `src/modules/lesson/LessonResultView.tsx`                 | Migrate                                         | Tokens + App\* (M4 behavior kept)                   |
+| `src/modules/settings/ProfileScreen.tsx`                  | Migrate                                         | Tokens + ThemePicker                                |
+| `App.tsx`                                                 | Modify                                          | AppThemeProvider wraps navigator                    |
+| `.eslintrc.js`                                            | Modify                                          | no-color-literals on components/modules             |
+| `src/theme/__tests__/themes.render.test.tsx`              | Create                                          | Parametrized theme render                           |
+| Screen tests (4 files)                                    | Modify                                          | Wrap with AppThemeProvider                          |
+| `docs/01-ba/03-requirements/05-traceability-matrix.md`    | Update                                          | FR-THEME-001..015 ✅                                |
+| `docs/implementation-notes/phase-0-theme-system.notes.md` | Create/update                                   | @impl-notes                                         |
 
 ## Tests / Verification
 

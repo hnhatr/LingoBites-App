@@ -1,6 +1,6 @@
-import { getDatabase, withTransaction } from './database';
-import { enqueueSyncOutboxEvent } from './SyncOutboxRepository';
-import { createRequestId } from '../api/requestId';
+import {getDatabase, withTransaction} from './database';
+import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {createRequestId} from '../api/requestId';
 import type {
   ContentLessonState,
   SaveContentLessonInput,
@@ -75,8 +75,8 @@ export function saveContentLesson(
           id: createRequestId(),
           eventType: 'content_lesson_state',
           entityId: input.lessonId,
-          payload: { lessonId: input.lessonId, isSaved: 1 },
-          createdAt: now
+          payload: {lessonId: input.lessonId, isSaved: 1},
+          createdAt: now,
         });
       });
       return {ok: true, duplicate: true};
@@ -93,8 +93,8 @@ export function saveContentLesson(
         id: createRequestId(),
         eventType: 'content_lesson_state',
         entityId: input.lessonId,
-        payload: { lessonId: input.lessonId, isSaved: 1 },
-        createdAt: now
+        payload: {lessonId: input.lessonId, isSaved: 1},
+        createdAt: now,
       });
     });
     return {ok: true, duplicate: false};
@@ -122,8 +122,8 @@ export function unsaveContentLesson(
           id: createRequestId(),
           eventType: 'content_lesson_state',
           entityId: lessonId,
-          payload: { lessonId, isSaved: 0 },
-          createdAt: updatedAt
+          payload: {lessonId, isSaved: 0},
+          createdAt: updatedAt,
         });
       }
       return res;
@@ -157,8 +157,8 @@ export function startContentLesson(
           id: createRequestId(),
           eventType: 'content_lesson_state',
           entityId: input.lessonId,
-          payload: { lessonId: input.lessonId, isStarted: 1 },
-          createdAt: now
+          payload: {lessonId: input.lessonId, isStarted: 1},
+          createdAt: now,
         });
       });
       return {ok: true, duplicate: true};
@@ -175,8 +175,8 @@ export function startContentLesson(
         id: createRequestId(),
         eventType: 'content_lesson_state',
         entityId: input.lessonId,
-        payload: { lessonId: input.lessonId, isStarted: 1 },
-        createdAt: now
+        payload: {lessonId: input.lessonId, isStarted: 1},
+        createdAt: now,
       });
     });
     return {ok: true, duplicate: false};
@@ -204,8 +204,8 @@ export function unstartContentLesson(
           id: createRequestId(),
           eventType: 'content_lesson_state',
           entityId: lessonId,
-          payload: { lessonId, isStarted: 0 },
-          createdAt: updatedAt
+          payload: {lessonId, isStarted: 0},
+          createdAt: updatedAt,
         });
       }
       return res;

@@ -1,6 +1,6 @@
 import {createRequestId} from '../api/requestId';
-import { getDatabase, withTransaction } from './database';
-import { enqueueSyncOutboxEvent } from './SyncOutboxRepository';
+import {getDatabase, withTransaction} from './database';
+import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
 import type {GamificationEventInput, GamificationEventRecord} from './types';
 
 type GamificationEventRow = {
@@ -52,7 +52,7 @@ export function insertGamificationEvent(
 ): GamificationEventRecord {
   const db = getDatabase();
   const id = createRequestId();
-  
+
   withTransaction(db, () => {
     db.execute(
       `INSERT INTO gamification_events (
@@ -66,16 +66,16 @@ export function insertGamificationEvent(
         input.createdAt,
       ],
     );
-    
+
     enqueueSyncOutboxEvent({
       id: createRequestId(),
       eventType: 'gamification_events',
       entityId: id,
-      payload: { ...input, id },
+      payload: {...input, id},
       createdAt: input.createdAt,
     });
   });
-  
+
   return {id, revision: 0, tombstone: false, ...input};
 }
 

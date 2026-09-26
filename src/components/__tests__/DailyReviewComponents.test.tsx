@@ -11,7 +11,9 @@ async function render(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(
-      <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}>
+      <FeatureFlagProvider
+        releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}
+      >
         <AppThemeProvider>{ui}</AppThemeProvider>
       </FeatureFlagProvider>,
     );

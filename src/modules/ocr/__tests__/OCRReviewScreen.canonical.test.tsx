@@ -82,9 +82,7 @@ const route = {
 
 function renderOCRReviewScreen() {
   return ReactTestRenderer.create(
-    <FeatureFlagProvider
-      releaseConfig={{releaseName: 'test', features: {}}}
-    >
+    <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {}}}>
       <AppThemeProvider>
         <OCRReviewScreen navigation={navigation} route={route} />
       </AppThemeProvider>

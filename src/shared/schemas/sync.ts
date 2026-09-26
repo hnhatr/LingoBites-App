@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import {z} from 'zod';
 
 /**
  * Learner-state sync contract (SETE-292 T4 / SETE-294).

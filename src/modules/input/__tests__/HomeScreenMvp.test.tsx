@@ -15,9 +15,9 @@ const mockListYouTubeLessons = jest.fn();
 const mockCountYoutubeLessons = jest.fn();
 const mockUseYouTubeServerEnabled = jest.fn();
 
-jest.mock('@shared/db/YoutubeLessonRepository', () => ({
+jest.mock('@shared/db/YouTubeLessonRepository', () => ({
   listYouTubeLessons: (...args: unknown[]) => mockListYouTubeLessons(...args),
-  countYoutubeLessons: (...args: unknown[]) => mockCountYoutubeLessons(...args),
+  countYouTubeLessons: (...args: unknown[]) => mockCountYoutubeLessons(...args),
 }));
 
 // SETE-290: the video cell needs the server capability too — control it
@@ -38,6 +38,17 @@ function navigation(tabNavigate = jest.fn(), rootNavigate = jest.fn()) {
   };
 }
 
+let activeRenderers: ReactTestRenderer.ReactTestRenderer[] = [];
+
+afterEach(async () => {
+  await act(async () => {
+    for (const tree of activeRenderers) {
+      tree.unmount();
+    }
+    activeRenderers = [];
+  });
+});
+
 async function renderHome(
   nav = navigation(),
   releaseConfig = makeTestReleaseConfig(CORE_WITH_REVIEW),
@@ -53,6 +64,7 @@ async function renderHome(
     );
     await Promise.resolve();
   });
+  activeRenderers.push(tree);
   return tree;
 }
 

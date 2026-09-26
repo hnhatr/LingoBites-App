@@ -6,15 +6,15 @@
 
 ## Summary
 
-| Theme | Status | Passing | Failing |
-|-------|--------|---------|---------|
-| neo | ✅ PASS | 17/17 | 0/17 |
-| comic | ✅ PASS | 17/17 | 0/17 |
-| default | ⚠️ ISSUES | 12/17 | 5/17 |
-| dark | ⚠️ ISSUES | 13/17 | 4/17 |
-| pastel-kids | ⚠️ ISSUES | 12/17 | 5/17 |
-| core | ⚠️ ISSUES | 12/17 | 5/17 |
-| cartoon | ⚠️ ISSUES | 12/17 | 5/17 |
+| Theme       | Status    | Passing | Failing |
+| ----------- | --------- | ------- | ------- |
+| neo         | ✅ PASS   | 17/17   | 0/17    |
+| comic       | ✅ PASS   | 17/17   | 0/17    |
+| default     | ⚠️ ISSUES | 12/17   | 5/17    |
+| dark        | ⚠️ ISSUES | 13/17   | 4/17    |
+| pastel-kids | ⚠️ ISSUES | 12/17   | 5/17    |
+| core        | ⚠️ ISSUES | 12/17   | 5/17    |
+| cartoon     | ⚠️ ISSUES | 12/17   | 5/17    |
 
 **Total:** 95/119 checks passed (79.8%)
 
@@ -32,15 +32,18 @@ These themes are production-ready for the flashcard feature with no accessibilit
 The following color combinations fail WCAG AA in 5 out of 7 themes:
 
 1. **RatingControl "Remembered" button**
+
    - Issue: `primary` color on `accentSoft` background
    - Components: Icon + text label
    - Impact: Users may have difficulty seeing the green "remembered" button
 
 2. **Banner Info variant**
+
    - Issue: `text.secondary` and `primary` on `accentSoft` background
    - Impact: Informational banners (soft cap message) may be hard to read
 
 3. **Border colors**
+
    - Issue: `border` color insufficient contrast on `surface` / `card.background`
    - Impact: Card outlines and button borders may be faint
 
@@ -52,6 +55,7 @@ The following color combinations fail WCAG AA in 5 out of 7 themes:
 ### Detailed Breakdown
 
 #### default theme
+
 - ❌ Remembered button (primary on accentSoft)
 - ❌ Remembered button border
 - ❌ Forgot/Skip button border
@@ -60,6 +64,7 @@ The following color combinations fail WCAG AA in 5 out of 7 themes:
 - ✅ All other checks pass
 
 #### dark theme
+
 - ❌ Remembered button (primary on accentSoft)
 - ❌ FlipCard secondary text (primary on card.background)
 - ❌ Borders
@@ -67,6 +72,7 @@ The following color combinations fail WCAG AA in 5 out of 7 themes:
 - ✅ Muted text passes (good for dark theme)
 
 #### pastel-kids theme
+
 - ❌ Remembered button (primary on accentSoft)
 - ❌ Borders
 - ❌ Banner info variant
@@ -74,6 +80,7 @@ The following color combinations fail WCAG AA in 5 out of 7 themes:
 - ✅ Main content text passes
 
 #### core theme
+
 - ❌ Remembered button (primary on accentSoft)
 - ❌ Borders
 - ❌ Banner info variant
@@ -81,6 +88,7 @@ The following color combinations fail WCAG AA in 5 out of 7 themes:
 - ✅ Main content text passes
 
 #### cartoon theme
+
 - ❌ Remembered button (primary on accentSoft)
 - ❌ Borders
 - ❌ Banner info variant
@@ -113,6 +121,7 @@ To fix the failing themes, consider:
 ## Test Coverage
 
 All components tested:
+
 - ✅ RatingControl (3 buttons × icon + text + borders)
 - ✅ Banner (2 variants × text + icon)
 - ✅ FlipCard (text hierarchy + borders)
@@ -130,6 +139,7 @@ All components tested:
 **2 out of 7 themes (neo, comic) are fully WCAG AA compliant for the flashcard feature.**
 
 The remaining themes have minor contrast issues primarily affecting:
+
 - Soft/translucent backgrounds (accentSoft)
 - Border visibility
 - Secondary text tones

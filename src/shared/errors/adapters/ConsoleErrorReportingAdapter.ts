@@ -37,7 +37,6 @@ export function createConsoleErrorReportingAdapter(): ErrorReportingAdapter {
       const message = error instanceof Error ? error.message : String(error);
       const payload = sanitizeContext(context);
       if (__DEV__) {
-        // eslint-disable-next-line no-console
         console.warn('[error-report]', message, payload);
       }
     },

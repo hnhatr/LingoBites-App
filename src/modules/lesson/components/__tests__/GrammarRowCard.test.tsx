@@ -31,7 +31,10 @@ const mockGrammar: GrammarBookmark & {title?: string; content?: string} = {
   content: 'Used for habitual actions and general truths',
 };
 
-const mockGrammarNoContent: GrammarBookmark & {title?: string; content?: string} = {
+const mockGrammarNoContent: GrammarBookmark & {
+  title?: string;
+  content?: string;
+} = {
   lessonId: 'lesson-1',
   grammarId: 'grammar-1',
   packageId: 'package-1',
@@ -61,7 +64,9 @@ describe('GrammarRowCard', () => {
     const contentText = tree.root.findByProps({testID: 'grammar-content-text'});
 
     expect(titleText.props.children).toBe('Present Simple Tense');
-    expect(contentText.props.children).toBe('Used for habitual actions and general truths');
+    expect(contentText.props.children).toBe(
+      'Used for habitual actions and general truths',
+    );
   });
 
   it('shows unsaved heart when not saved', () => {
@@ -216,7 +221,9 @@ describe('GrammarRowCard', () => {
     );
 
     const pressable = tree.root.findByProps({testID: 'grammar-card-pressable'});
-    expect(pressable.props.accessibilityLabel).toBe('Present Simple Tense - Used for habitual actions and general truths');
+    expect(pressable.props.accessibilityLabel).toBe(
+      'Present Simple Tense - Used for habitual actions and general truths',
+    );
     expect(pressable.props.accessibilityRole).toBe('button');
   });
 
@@ -232,7 +239,9 @@ describe('GrammarRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.accessibilityLabel).toBe('Bỏ lưu quy tắc ngữ pháp này');
+    expect(saveButton.props.accessibilityLabel).toBe(
+      'Bỏ lưu quy tắc ngữ pháp này',
+    );
   });
 
   it('heart button has correct accessibility label when not saved', () => {
@@ -247,7 +256,9 @@ describe('GrammarRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.accessibilityLabel).toBe('Lưu quy tắc ngữ pháp này');
+    expect(saveButton.props.accessibilityLabel).toBe(
+      'Lưu quy tắc ngữ pháp này',
+    );
   });
 
   it('handles missing content gracefully', () => {
@@ -303,19 +314,21 @@ describe('GrammarRowCard', () => {
   });
 
   it('handles different grammar data', () => {
-    const customGrammar: GrammarBookmark & {title?: string; content?: string} = {
-      lessonId: 'lesson-2',
-      grammarId: 'grammar-2',
-      packageId: 'package-2',
-      savedAt: '2024-01-02T00:00:00Z',
-      reactivatedAt: null,
-      createdAt: '2024-01-02T00:00:00Z',
-      updatedAt: '2024-01-02T00:00:00Z',
-  revision: 0,
-  tombstone: false,
-      title: 'Past Continuous',
-      content: 'Used for actions that were in progress at a specific time in the past',
-    };
+    const customGrammar: GrammarBookmark & {title?: string; content?: string} =
+      {
+        lessonId: 'lesson-2',
+        grammarId: 'grammar-2',
+        packageId: 'package-2',
+        savedAt: '2024-01-02T00:00:00Z',
+        reactivatedAt: null,
+        createdAt: '2024-01-02T00:00:00Z',
+        updatedAt: '2024-01-02T00:00:00Z',
+        revision: 0,
+        tombstone: false,
+        title: 'Past Continuous',
+        content:
+          'Used for actions that were in progress at a specific time in the past',
+      };
 
     const tree = render(
       <GrammarRowCard
@@ -331,7 +344,9 @@ describe('GrammarRowCard', () => {
     const contentText = tree.root.findByProps({testID: 'grammar-content-text'});
 
     expect(titleText.props.children).toBe('Past Continuous');
-    expect(contentText.props.children).toBe('Used for actions that were in progress at a specific time in the past');
+    expect(contentText.props.children).toBe(
+      'Used for actions that were in progress at a specific time in the past',
+    );
   });
 
   it('renders the card with title and content visible', () => {

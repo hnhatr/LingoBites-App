@@ -310,7 +310,7 @@ export function AppNavigator() {
   const phase = useAccountStore(state => state.phase);
   const boot = useAccountStore(state => state.boot);
   useEffect(() => {
-    void boot();
+    boot().catch(() => {});
   }, [boot]);
 
   if (accountGateRouteForPhase(phase) !== 'Tabs') {

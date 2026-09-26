@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {enqueueSyncOutboxEvent, listPendingSyncEvents} from '@shared/db/SyncOutboxRepository';
+import {
+  enqueueSyncOutboxEvent,
+  listPendingSyncEvents,
+} from '@shared/db/SyncOutboxRepository';
 import {getSyncOutboxStatus} from '../outboxSync';
 import {createSyncManager} from '../syncManager';
 
@@ -19,7 +22,7 @@ describe('Sync Integration', () => {
     mockFetch.mockReset();
     jest.useFakeTimers();
   });
-  
+
   afterEach(() => {
     jest.useRealTimers();
   });
@@ -36,14 +39,14 @@ describe('Sync Integration', () => {
         duplicates: 0,
         accepted_ids: ['push-1'],
         duplicate_ids: [],
-        server_updates: [{ id: 'pull-1', payload: {} }] 
-      })
+        server_updates: [{id: 'pull-1', payload: {}}],
+      }),
     });
-    
+
     const manager = createSyncManager({fetchImpl: mockFetch});
     manager.start();
     await flush();
-    
+
     const status = getSyncOutboxStatus();
     expect(status.pending).toBe(0);
     manager.stop();
@@ -51,7 +54,7 @@ describe('Sync Integration', () => {
 
   it('duplicate/out-of-order mutation convergence', async () => {
     enqueueSyncOutboxEvent({id: 'dup-1', entityId: 'e2', payload: {}});
-    
+
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -62,13 +65,13 @@ describe('Sync Integration', () => {
         duplicates: 1,
         accepted_ids: ['dup-1'],
         duplicate_ids: ['dup-1'],
-      })
+      }),
     });
-    
+
     const manager = createSyncManager({fetchImpl: mockFetch});
     manager.start();
     await flush();
-    
+
     const status = getSyncOutboxStatus();
     expect(status.pending).toBe(0);
     manager.stop();
@@ -76,16 +79,16 @@ describe('Sync Integration', () => {
 
   it('offline enqueue then boot/foreground retry convergence', async () => {
     enqueueSyncOutboxEvent({id: 'off-1', entityId: 'e3', payload: {}});
-    
+
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
-    
+
     const manager = createSyncManager({fetchImpl: mockFetch});
     manager.start();
     await flush();
-    
+
     let status = getSyncOutboxStatus();
     expect(status.pending).toBe(1);
-    
+
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -96,12 +99,12 @@ describe('Sync Integration', () => {
         duplicates: 0,
         accepted_ids: ['off-1'],
         duplicate_ids: [],
-      })
+      }),
     });
-    
+
     manager.requestSync();
     await flush();
-    
+
     status = getSyncOutboxStatus();
     expect(status.pending).toBe(0);
     manager.stop();

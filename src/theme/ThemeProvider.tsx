@@ -55,7 +55,7 @@ export function AppThemeProvider({children}: Props) {
           setPreferenceState(saved);
         } else {
           setPreferenceState(disabledPersistedThemeFallbackId);
-          void saveThemeId(disabledPersistedThemeFallbackId);
+          saveThemeId(disabledPersistedThemeFallbackId).catch(() => {});
         }
       } else {
         setPreferenceState(defaultThemeId);
@@ -72,7 +72,7 @@ export function AppThemeProvider({children}: Props) {
         return;
       }
       setPreferenceState(id);
-      void saveThemeId(id);
+      saveThemeId(id).catch(() => {});
     },
     [isThemeAllowed],
   );

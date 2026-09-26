@@ -18,7 +18,9 @@ async function renderWithTheme(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(
-      <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}>
+      <FeatureFlagProvider
+        releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+      >
         <AppThemeProvider>
           <ThemeProbe />
           {ui}
@@ -39,7 +41,10 @@ function containerStyleOf(tree: ReactTestRenderer.ReactTestRenderer) {
   return StyleSheet.flatten(hosts[0].props.style);
 }
 
-function labelStyleOf(tree: ReactTestRenderer.ReactTestRenderer, label: string) {
+function labelStyleOf(
+  tree: ReactTestRenderer.ReactTestRenderer,
+  label: string,
+) {
   const labelText = tree.root
     .findAllByType(Text)
     .find(node => node.props.children === label);

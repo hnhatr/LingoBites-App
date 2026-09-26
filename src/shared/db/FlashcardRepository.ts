@@ -109,15 +109,23 @@ export function saveFlashcard(input: SaveFlashcardInput): SaveFlashcardResult {
         input.lessonId,
         input.vocabulary.id,
         input.vocabulary.word,
-        input.vocabulary.phrase_from_text ?? input.vocabulary.phraseFromText ?? null,
+        input.vocabulary.phrase_from_text ??
+          input.vocabulary.phraseFromText ??
+          null,
         input.vocabulary.word_type ?? input.vocabulary.wordType ?? null,
         input.vocabulary.meaning_vi ?? input.vocabulary.meaningVi ?? '',
-        input.vocabulary.pronunciation_guide_vi ?? input.vocabulary.pronunciationGuideVi ?? null,
+        input.vocabulary.pronunciation_guide_vi ??
+          input.vocabulary.pronunciationGuideVi ??
+          null,
         input.vocabulary.ipa ?? null,
         input.vocabulary.cefr_level ?? input.vocabulary.cefrLevel ?? null,
-        input.vocabulary.source_sentence ?? input.vocabulary.sourceSentence ?? null,
+        input.vocabulary.source_sentence ??
+          input.vocabulary.sourceSentence ??
+          null,
         input.vocabulary.example ?? null,
-        input.vocabulary.example_translation ?? input.vocabulary.exampleTranslation ?? null,
+        input.vocabulary.example_translation ??
+          input.vocabulary.exampleTranslation ??
+          null,
         1,
         now,
         now,

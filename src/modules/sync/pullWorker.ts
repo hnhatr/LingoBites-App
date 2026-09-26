@@ -1,16 +1,18 @@
-import { AppState, type AppStateStatus } from 'react-native';
-import { syncPull } from '@shared/api/syncClient';
-import { getDatabase, withTransaction } from '@shared/db/database';
-import type { SyncRecord } from '@shared/schemas/sync';
+import {AppState, type AppStateStatus} from 'react-native';
+import {syncPull} from '@shared/api/syncClient';
+import {getDatabase, withTransaction} from '@shared/db/database';
+import type {SyncRecord} from '@shared/schemas/sync';
 
 let isRunning = false;
 let isEnabled = false;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
-let subscription: { remove: () => void } | null = null;
+let subscription: {remove: () => void} | null = null;
 
 function getCursor(): string {
   const db = getDatabase();
-  const res = db.execute("SELECT value FROM app_settings WHERE key = 'sync_cursor' LIMIT 1;");
+  const res = db.execute(
+    "SELECT value FROM app_settings WHERE key = 'sync_cursor' LIMIT 1;",
+  );
   if (res.rows && res.rows.length > 0) {
     return res.rows.item(0).value as string;
   }
@@ -19,14 +21,20 @@ function getCursor(): string {
 
 function saveCursor(cursor: string) {
   const db = getDatabase();
-  db.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('sync_cursor', ?, ?);", [cursor, new Date().toISOString()]);
+  db.execute(
+    "INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('sync_cursor', ?, ?);",
+    [cursor, new Date().toISOString()],
+  );
 }
 
 function mapToSnakeCase(obj: any): any {
   if (typeof obj !== 'object' || obj === null) return obj;
   const res: any = {};
   for (const key of Object.keys(obj)) {
-    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    const snakeKey = key.replace(
+      /[A-Z]/g,
+      letter => `_${letter.toLowerCase()}`,
+    );
     res[snakeKey] = obj[key];
   }
   return res;
@@ -34,7 +42,10 @@ function mapToSnakeCase(obj: any): any {
 
 function getTableForCollection(collection: string): string {
   if (collection === 'review_schedules') return 'review_schedule';
-  if (collection === 'content_review_state' || collection === 'content_lesson_state') {
+  if (
+    collection === 'content_review_state' ||
+    collection === 'content_lesson_state'
+  ) {
     return 'content_lesson_state';
   }
   return collection;
@@ -43,13 +54,15 @@ function getTableForCollection(collection: string): string {
 export function applySyncRecord(record: SyncRecord) {
   const db = getDatabase();
   const table = getTableForCollection(record.collection);
-  
+
   // Get table info
   const pragmaRes = db.execute(`PRAGMA table_info(${table});`);
   if (!pragmaRes.rows || pragmaRes.rows.length === 0) {
-    throw new Error(`Table ${table} does not exist for collection ${record.collection}`);
+    throw new Error(
+      `Table ${table} does not exist for collection ${record.collection}`,
+    );
   }
-  
+
   const columns: string[] = [];
   const pks: string[] = [];
   for (let i = 0; i < pragmaRes.rows.length; i++) {
@@ -57,13 +70,13 @@ export function applySyncRecord(record: SyncRecord) {
     columns.push(row.name);
     if (row.pk > 0) pks.push(row.name);
   }
-  
+
   if (pks.length === 0) {
     throw new Error(`Table ${table} has no primary key defined`);
   }
-  
+
   const payload = mapToSnakeCase(record.payload);
-  
+
   // Adapter defaults for specific collections
   if (record.collection === 'grammar_bookmarks') {
     const parts = record.entity_id.split(':');
@@ -71,13 +84,19 @@ export function applySyncRecord(record: SyncRecord) {
     payload.grammar_id = payload.grammar_id ?? parts[1];
     payload.package_id = payload.package_id ?? '';
     payload.saved_at = payload.saved_at ?? record.occurred_at;
-    payload.reactivated_at = payload.reactivated_at !== undefined
-      ? payload.reactivated_at
-      : (payload.active !== false ? record.occurred_at : null);
+    payload.reactivated_at =
+      payload.reactivated_at !== undefined
+        ? payload.reactivated_at
+        : payload.active !== false
+        ? record.occurred_at
+        : null;
     payload.created_at = payload.created_at ?? record.occurred_at;
   } else if (record.collection === 'review_schedules') {
     payload.card_id = payload.card_id ?? record.entity_id;
-  } else if (record.collection === 'content_lesson_state' || record.collection === 'content_review_state') {
+  } else if (
+    record.collection === 'content_lesson_state' ||
+    record.collection === 'content_review_state'
+  ) {
     payload.lesson_id = payload.lesson_id ?? record.entity_id;
     if (payload.is_saved === undefined && payload.isSaved !== undefined) {
       payload.is_saved = payload.isSaved ? 1 : 0;
@@ -91,7 +110,7 @@ export function applySyncRecord(record: SyncRecord) {
     payload.lesson_id = payload.lesson_id ?? parts[0];
     payload.sentence_id = payload.sentence_id ?? parts[1];
   }
-  
+
   // Extract PK values
   const pkValues = pks.map((pk, idx) => {
     if (payload[pk] !== undefined && payload[pk] !== null) {
@@ -103,11 +122,14 @@ export function applySyncRecord(record: SyncRecord) {
     const parts = record.entity_id.split(':');
     return parts[idx] ?? record.entity_id;
   });
-  
+
   // Check local revision
   const pkWhere = pks.map(pk => `${pk} = ?`).join(' AND ');
-  const existingRes = db.execute(`SELECT revision FROM ${table} WHERE ${pkWhere} LIMIT 1;`, pkValues);
-  
+  const existingRes = db.execute(
+    `SELECT revision FROM ${table} WHERE ${pkWhere} LIMIT 1;`,
+    pkValues,
+  );
+
   if (existingRes.rows && existingRes.rows.length > 0) {
     const localRev = existingRes.rows.item(0).revision;
     if (localRev === 0) {
@@ -119,21 +141,24 @@ export function applySyncRecord(record: SyncRecord) {
       return;
     }
   }
-  
+
   if (record.tombstone) {
     // apply tombstone
     if (columns.includes('tombstone')) {
-      db.execute(`UPDATE ${table} SET tombstone = 1, revision = ?, updated_at = ? WHERE ${pkWhere};`, [record.revision, new Date().toISOString(), ...pkValues]);
+      db.execute(
+        `UPDATE ${table} SET tombstone = 1, revision = ?, updated_at = ? WHERE ${pkWhere};`,
+        [record.revision, new Date().toISOString(), ...pkValues],
+      );
     } else {
       db.execute(`DELETE FROM ${table} WHERE ${pkWhere};`, pkValues);
     }
     return;
   }
-  
+
   // Insert or Replace
   const insertCols: string[] = [];
   const insertVals: any[] = [];
-  
+
   for (const col of columns) {
     if (col === 'revision') {
       insertCols.push(col);
@@ -152,26 +177,31 @@ export function applySyncRecord(record: SyncRecord) {
       insertVals.push(pkValues[pks.indexOf(col)]);
     }
   }
-  
+
   const placeholders = insertCols.map(() => '?').join(', ');
-  db.execute(`INSERT OR REPLACE INTO ${table} (${insertCols.join(', ')}) VALUES (${placeholders});`, insertVals);
+  db.execute(
+    `INSERT OR REPLACE INTO ${table} (${insertCols.join(
+      ', ',
+    )}) VALUES (${placeholders});`,
+    insertVals,
+  );
 }
 
 export async function runPullWorker() {
   if (isRunning || !isEnabled) return;
   isRunning = true;
-  
+
   try {
     let cursor = getCursor();
     let hasMore = true;
-    
+
     while (hasMore && isEnabled) {
       const res = await syncPull(cursor, 100);
       if (!res.ok) {
         retryTimer = setTimeout(runPullWorker, 5000);
         break;
       }
-      
+
       const db = getDatabase();
       let pageApplied = false;
       try {
@@ -188,7 +218,7 @@ export async function runPullWorker() {
         retryTimer = setTimeout(runPullWorker, 5000);
         break;
       }
-      
+
       if (!pageApplied) {
         break;
       }
@@ -204,11 +234,14 @@ export function startPullWorker() {
   isEnabled = true;
   runPullWorker();
   subscription?.remove();
-  subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
-    if (state === 'active' || state === 'background') {
-      runPullWorker();
-    }
-  });
+  subscription = AppState.addEventListener(
+    'change',
+    (state: AppStateStatus) => {
+      if (state === 'active' || state === 'background') {
+        runPullWorker();
+      }
+    },
+  );
 }
 
 export function stopPullWorker() {

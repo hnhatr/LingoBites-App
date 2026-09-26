@@ -53,5 +53,7 @@ export function hasMinimumValidatedSource(
 export function isLessonEligibleForPractice(
   lesson: PracticeEligibleLesson,
 ): boolean {
-  return isTerminalLessonForPractice(lesson) && hasMinimumValidatedSource(lesson);
+  return (
+    isTerminalLessonForPractice(lesson) && hasMinimumValidatedSource(lesson)
+  );
 }

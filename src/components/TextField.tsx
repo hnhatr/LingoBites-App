@@ -71,9 +71,9 @@ export function TextField({
   const borderColor = invalid
     ? theme.colors.danger
     : focused
-      ? theme.colors.primary
-      : theme.components.input.border;
-  
+    ? theme.colors.primary
+    : theme.components.input.border;
+
   const ringColor =
     focused && !invalid
       ? withAlpha(theme.colors.accent, 0.34)
@@ -112,9 +112,9 @@ export function TextField({
             (typeof placeholder === 'string' ? placeholder : undefined)
           }
           accessibilityLabelledBy={
-            label ? (accessibilityLabelledBy ?? labelNativeId) : (
-              accessibilityLabelledBy
-            )
+            label
+              ? accessibilityLabelledBy ?? labelNativeId
+              : accessibilityLabelledBy
           }
           accessibilityHint={accessibilityHint ?? errorMessage}
           accessibilityState={accessibilityState}
@@ -147,7 +147,9 @@ export function TextField({
       </View>
       {hasErrorText ? (
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-          <AppText color="danger" style={{fontSize: 14}}>⚠</AppText>
+          <AppText color="danger" style={{fontSize: 14}}>
+            ⚠
+          </AppText>
           <AppText
             accessibilityLiveRegion="polite"
             accessibilityRole="alert"

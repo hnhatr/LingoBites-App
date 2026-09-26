@@ -84,7 +84,7 @@ export const pastelKidsTheme: AppTheme = {
     buttonPrimary: {
       shadowColor: '#006b5f',
       shadowOffset: {width: 0, height: 10},
-      shadowOpacity: 0.40,
+      shadowOpacity: 0.4,
       shadowRadius: 22,
       elevation: 8,
     },
@@ -98,7 +98,7 @@ export const pastelKidsTheme: AppTheme = {
     buttonDeep: {
       shadowColor: '#006b5f',
       shadowOffset: {width: 0, height: 10},
-      shadowOpacity: 0.30,
+      shadowOpacity: 0.3,
       shadowRadius: 22,
       elevation: 8,
     },

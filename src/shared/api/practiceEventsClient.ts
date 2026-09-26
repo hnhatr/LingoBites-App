@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { authenticatedFetch } from './authenticatedFetch';
+import {authenticatedFetch} from './authenticatedFetch';
 import i18n from '@/i18n';
 import type {PracticeEventPayload} from '../db/types';
 import {PRACTICE_CONTRACT_VERSION} from '../schemas/practice';

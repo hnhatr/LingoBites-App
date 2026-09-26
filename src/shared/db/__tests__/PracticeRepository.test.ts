@@ -129,7 +129,10 @@ describe('PracticeRepository', () => {
     expect(session?.status).toBe('completed');
     expect(session?.current_index).toBe(1);
 
-    const events = db.execute('SELECT * FROM practice_events WHERE event_id = ?', ['event-1']);
+    const events = db.execute(
+      'SELECT * FROM practice_events WHERE event_id = ?',
+      ['event-1'],
+    );
     expect(events.rows?.length).toBe(1);
   });
 

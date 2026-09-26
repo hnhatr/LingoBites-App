@@ -95,7 +95,7 @@ export function RecentLessonRow({lesson, index, onPress}: Props) {
           containerStyle={theme.shadow.soft}
           faceStyle={[
             faceStyle,
-            !shelf && pressed && {opacity: theme.states.pressedOpacity}
+            !shelf && pressed && {opacity: theme.states.pressedOpacity},
           ]}
         >
           {rowContent}

@@ -1,4 +1,5 @@
 # Stage 4a — Wireframes, State Matrix, Responsive Rules
+
 ## P1 Flashcards / SRS / Daily Review
 
 > Issue: [VIB-128](mention://issue/4faef63a-6c8a-45ac-b241-e6fdf85453a8). Builds on Stage 1 ([VIB-125](mention://issue/fa472275-4099-4dfe-a898-9dc298129bbf)) and Stage 3 ([VIB-127](mention://issue/7e4baeed-e7cc-446d-aad1-59b865d6b981), attachment `vib127-stage3-ia-flows.md`).
@@ -20,7 +21,7 @@ No further action. Wireframed on this basis: new header `IconButton` on `Lessons
 
 `DECISION`: the CTA opens **SCR-02 filtered to the lesson** (`lessonId` param), not a deep-link into the lesson's vocabulary section.
 
-Rationale: SCR-02 already must disambiguate same-word-different-lesson (E2) with a per-row lesson-source indicator, so a `lessonId` filter is a trivial extension of a query SCR-02 already needs, not new UI. A deep-link into the lesson's vocabulary section would show *all* vocabulary (saved and unsaved) rather than flashcard-specific state (review history, saved date) — the exact information the user needs to decide what to unsave before the delete can proceed. Filtering the existing list is the better reuse story and keeps a single "manage saved flashcards" surface.
+Rationale: SCR-02 already must disambiguate same-word-different-lesson (E2) with a per-row lesson-source indicator, so a `lessonId` filter is a trivial extension of a query SCR-02 already needs, not new UI. A deep-link into the lesson's vocabulary section would show _all_ vocabulary (saved and unsaved) rather than flashcard-specific state (review history, saved date) — the exact information the user needs to decide what to unsave before the delete can proceed. Filtering the existing list is the better reuse story and keeps a single "manage saved flashcards" surface.
 
 Implementation note for engineering: SCR-02 gains an optional `lessonId` filter param. When present: header shows the lesson title as context (e.g. "Flashcard · {lesson title}") and a text affordance to clear the filter ("Xem tất cả"). See §4.2 wireframe, filtered variant.
 
@@ -48,18 +49,18 @@ Implementation note for engineering: SCR-02 gains an optional `lessonId` filter 
 
 ## 2. Component reuse & modification map
 
-| Screen | Component(s) | Status |
-|---|---|---|
-| SCR-01a | `WordCard` | **Modify** — add optional `saved?: boolean` + `onToggleSave?: () => void`. See §4.1. |
-| SCR-01b | `IconButton` (existing, unwired, `WordDetailScreen.tsx:34`) | **Reuse as-is** — wire `onPress`. |
-| SCR-02 | `IconButton` (header), `ListRow` or `LibraryLessonCard`-style row | **Reuse** — see §4.2 for which. |
-| SCR-03 | New flip component | **Gap** (Stage 6) — see §3. |
-| SCR-04 | `SectionHeader`, `Medallion`-style badge | **Reuse** — new widget card composed from existing primitives (`AppCard`, `AppText`, `MaterialIcon`), no new component. |
-| SCR-05 | New rating control, `ErrorCard`, `ActivityIndicator` | Rating control = **Gap** (Stage 6). `ErrorCard` = **Reuse as-is** (§1.5). |
-| SCR-06a/b | `Medallion`, `AppText`, `AppButton` | **Reuse as-is** — same pattern as `HomeScreen`'s empty-recent-lessons block and `LessonsHistoryScreen`'s `ListEmptyComponent`. |
-| SCR-07 | `AppCard`, `AppButton`, `AppText` | **Reuse as-is**. |
-| SCR-08 | `Alert.alert` | **Reuse as-is** (§1.7). |
-| SCR-09 | `Alert.alert` | **Reuse as-is** (§1.7). |
+| Screen    | Component(s)                                                      | Status                                                                                                                         |
+| --------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| SCR-01a   | `WordCard`                                                        | **Modify** — add optional `saved?: boolean` + `onToggleSave?: () => void`. See §4.1.                                           |
+| SCR-01b   | `IconButton` (existing, unwired, `WordDetailScreen.tsx:34`)       | **Reuse as-is** — wire `onPress`.                                                                                              |
+| SCR-02    | `IconButton` (header), `ListRow` or `LibraryLessonCard`-style row | **Reuse** — see §4.2 for which.                                                                                                |
+| SCR-03    | New flip component                                                | **Gap** (Stage 6) — see §3.                                                                                                    |
+| SCR-04    | `SectionHeader`, `Medallion`-style badge                          | **Reuse** — new widget card composed from existing primitives (`AppCard`, `AppText`, `MaterialIcon`), no new component.        |
+| SCR-05    | New rating control, `ErrorCard`, `ActivityIndicator`              | Rating control = **Gap** (Stage 6). `ErrorCard` = **Reuse as-is** (§1.5).                                                      |
+| SCR-06a/b | `Medallion`, `AppText`, `AppButton`                               | **Reuse as-is** — same pattern as `HomeScreen`'s empty-recent-lessons block and `LessonsHistoryScreen`'s `ListEmptyComponent`. |
+| SCR-07    | `AppCard`, `AppButton`, `AppText`                                 | **Reuse as-is**.                                                                                                               |
+| SCR-08    | `Alert.alert`                                                     | **Reuse as-is** (§1.7).                                                                                                        |
+| SCR-09    | `Alert.alert`                                                     | **Reuse as-is** (§1.7).                                                                                                        |
 
 ---
 
@@ -306,18 +307,18 @@ Native `Alert.alert` (§1.7), triggered from the existing `handleDelete()` at `S
 
 ## 5. State matrix (full — expands Stage 1/3 skeletons)
 
-| Screen | Normal | Loading | Empty | Error | Success | Disabled | Other |
-|---|---|---|---|---|---|---|---|
-| SCR-01a/b | Unsaved (outline icon) | — | — | — | Saved (filled icon) | — | — |
-| SCR-02 | List of rows (unfiltered or lesson-filtered, §4.2) | Brief local-DB read | No flashcards saved (own copy, distinct from SCR-06a) | — | — | — | Filtered-by-lesson variant |
-| SCR-03 | Front / back flip | — | — | — | Unsave → SCR-08 or immediate soft-delete | — | — |
-| SCR-04 | Due count > 0, badge | — | Due = 0 → routes to 06a/06b | — | — | — | — |
-| SCR-05 | Card N of total, front/back | Session start; resume-after-crash | → routes to 06a/06b before session starts | Rating-write failure, inline non-blocking (§1.5) | — | Rating buttons mid-transition or during retry | Capped-queue banner (§1.3) |
-| SCR-06a | shown (empty = the state) | — | is the state | — | — | — | — |
-| SCR-06b | shown (empty = the state) | — | is the state | — | — | — | — |
-| SCR-07 | shown | — | — | — | is the state (always) | — | Capped-queue summary line, conditional |
-| SCR-08 | shown (native Alert) | — | — | — | Confirm → closes, soft delete | Cancel → dismiss | Skipped entirely if card has no review history |
-| SCR-09 | shown (native Alert) | — | — | — | — | — | Only shown if lesson has ≥1 active flashcard |
+| Screen    | Normal                                             | Loading                           | Empty                                                 | Error                                            | Success                                  | Disabled                                      | Other                                          |
+| --------- | -------------------------------------------------- | --------------------------------- | ----------------------------------------------------- | ------------------------------------------------ | ---------------------------------------- | --------------------------------------------- | ---------------------------------------------- |
+| SCR-01a/b | Unsaved (outline icon)                             | —                                 | —                                                     | —                                                | Saved (filled icon)                      | —                                             | —                                              |
+| SCR-02    | List of rows (unfiltered or lesson-filtered, §4.2) | Brief local-DB read               | No flashcards saved (own copy, distinct from SCR-06a) | —                                                | —                                        | —                                             | Filtered-by-lesson variant                     |
+| SCR-03    | Front / back flip                                  | —                                 | —                                                     | —                                                | Unsave → SCR-08 or immediate soft-delete | —                                             | —                                              |
+| SCR-04    | Due count > 0, badge                               | —                                 | Due = 0 → routes to 06a/06b                           | —                                                | —                                        | —                                             | —                                              |
+| SCR-05    | Card N of total, front/back                        | Session start; resume-after-crash | → routes to 06a/06b before session starts             | Rating-write failure, inline non-blocking (§1.5) | —                                        | Rating buttons mid-transition or during retry | Capped-queue banner (§1.3)                     |
+| SCR-06a   | shown (empty = the state)                          | —                                 | is the state                                          | —                                                | —                                        | —                                             | —                                              |
+| SCR-06b   | shown (empty = the state)                          | —                                 | is the state                                          | —                                                | —                                        | —                                             | —                                              |
+| SCR-07    | shown                                              | —                                 | —                                                     | —                                                | is the state (always)                    | —                                             | Capped-queue summary line, conditional         |
+| SCR-08    | shown (native Alert)                               | —                                 | —                                                     | —                                                | Confirm → closes, soft delete            | Cancel → dismiss                              | Skipped entirely if card has no review history |
+| SCR-09    | shown (native Alert)                               | —                                 | —                                                     | —                                                | —                                        | —                                             | Only shown if lesson has ≥1 active flashcard   |
 
 Permission-denied: N/A across all P1 screens (`FACT`, inherited from Stage 3 §7 — P1 uses the P0 anonymous-user model, no new roles).
 
@@ -340,29 +341,29 @@ Rules that apply to all new P1 screens, consistent with existing screens:
 
 ## 7. Traceability (additions to Stage 3 §9)
 
-| Requirement | Screen(s) | Resolution in this stage |
-|---|---|---|
-| FR-FLASH-001/002/005/006 | SCR-01a, SCR-01b | `WordCard` saved-state prop (§2, §4.1) |
-| FR-FLASH-003/004 | SCR-02, SCR-03 | List row + flip gap flagged (§3, §4.2) |
-| FR-FLASH-007/008/009/010 | SCR-03, SCR-08 | Native `Alert.alert`, no new modal (§1.7, §4.7) |
-| FR-SRS-001/002/003 | SCR-05 | Rating control gap flagged; rating-write failure now has an Error state (§1.5, §3, §4.3) |
-| FR-REVIEW-001..003 | SCR-05, SCR-07 | Capped-queue state locked (§1.3), nav-stack confirmed (§1.4) |
-| FR-REVIEW-004 (E4) | SCR-06a, SCR-06b | Distinct empty states wireframed (§4.5) |
-| FR-REVIEW-005 | SCR-04 | Widget placement decided (§4.4) |
-| CRIT-002 / E1 | SCR-09 | Native `Alert.alert`, CTA destination resolved (§1.2, §1.7, §4.8) |
-| E2 | SCR-02 | Lesson-source indicator per row (§4.2) |
-| E6 | SCR-05, SCR-03 | Reactive counter, auto-transition to SCR-07 (§4.3) |
+| Requirement              | Screen(s)        | Resolution in this stage                                                                 |
+| ------------------------ | ---------------- | ---------------------------------------------------------------------------------------- |
+| FR-FLASH-001/002/005/006 | SCR-01a, SCR-01b | `WordCard` saved-state prop (§2, §4.1)                                                   |
+| FR-FLASH-003/004         | SCR-02, SCR-03   | List row + flip gap flagged (§3, §4.2)                                                   |
+| FR-FLASH-007/008/009/010 | SCR-03, SCR-08   | Native `Alert.alert`, no new modal (§1.7, §4.7)                                          |
+| FR-SRS-001/002/003       | SCR-05           | Rating control gap flagged; rating-write failure now has an Error state (§1.5, §3, §4.3) |
+| FR-REVIEW-001..003       | SCR-05, SCR-07   | Capped-queue state locked (§1.3), nav-stack confirmed (§1.4)                             |
+| FR-REVIEW-004 (E4)       | SCR-06a, SCR-06b | Distinct empty states wireframed (§4.5)                                                  |
+| FR-REVIEW-005            | SCR-04           | Widget placement decided (§4.4)                                                          |
+| CRIT-002 / E1            | SCR-09           | Native `Alert.alert`, CTA destination resolved (§1.2, §1.7, §4.8)                        |
+| E2                       | SCR-02           | Lesson-source indicator per row (§4.2)                                                   |
+| E6                       | SCR-05, SCR-03   | Reactive counter, auto-transition to SCR-07 (§4.3)                                       |
 
 ---
 
 ## 8. Open items for Stage 5 (Human Gate 2) / Stage 6
 
-| ID | Item | Owner |
-|---|---|---|
-| — | SCR-05 `×` (exit mid-session) behavior — assumed no-penalty, no confirm dialog (§4.3) | Design Lead / Gate 2 confirm |
-| — | Flip-card component, rating control, new icons (`check_circle`/`refresh`), capped-queue banner shape | Stage 6 gap list |
-| Q-FLOW-01 | Exact Vietnamese wording for capped-queue banner/summary | Stage 4b (Content Designer) |
-| — | Rating button copy ("Nhớ" / "Chưa nhớ" are drafts, not final) | Stage 4b (Content Designer) |
+| ID        | Item                                                                                                 | Owner                        |
+| --------- | ---------------------------------------------------------------------------------------------------- | ---------------------------- |
+| —         | SCR-05 `×` (exit mid-session) behavior — assumed no-penalty, no confirm dialog (§4.3)                | Design Lead / Gate 2 confirm |
+| —         | Flip-card component, rating control, new icons (`check_circle`/`refresh`), capped-queue banner shape | Stage 6 gap list             |
+| Q-FLOW-01 | Exact Vietnamese wording for capped-queue banner/summary                                             | Stage 4b (Content Designer)  |
+| —         | Rating button copy ("Nhớ" / "Chưa nhớ" are drafts, not final)                                        | Stage 4b (Content Designer)  |
 
 None of these block Gate 2 review of the wireframe structure/states themselves — they're copy and Stage-6-component-spec refinements.
 

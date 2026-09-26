@@ -230,11 +230,7 @@ export function isEquivalentToAnswer(
   return sameTokenMultiset(d, a);
 }
 
-function check(
-  code: CheckCode,
-  passed: boolean,
-  message: string,
-): CheckResult {
+function check(code: CheckCode, passed: boolean, message: string): CheckResult {
   return {code, passed, message};
 }
 
@@ -261,7 +257,9 @@ function runCommonChecks(
       SUPPORTED_CONTRACT_VERSIONS.includes(ctx.contractVersion),
       SUPPORTED_CONTRACT_VERSIONS.includes(ctx.contractVersion)
         ? `contract_version ${ctx.contractVersion} supported`
-        : `contract_version ${ctx.contractVersion} not in [${SUPPORTED_CONTRACT_VERSIONS.join(', ')}]`,
+        : `contract_version ${
+            ctx.contractVersion
+          } not in [${SUPPORTED_CONTRACT_VERSIONS.join(', ')}]`,
     ),
   );
 
@@ -269,7 +267,9 @@ function runCommonChecks(
     check(
       'QUESTION_ID_NON_EMPTY',
       question.id.trim().length > 0,
-      question.id.trim().length > 0 ? 'question id present' : 'question id empty',
+      question.id.trim().length > 0
+        ? 'question id present'
+        : 'question id empty',
     ),
   );
 
@@ -277,7 +277,9 @@ function runCommonChecks(
     check(
       'PROMPT_NON_EMPTY',
       question.prompt_vi.trim().length > 0,
-      question.prompt_vi.trim().length > 0 ? 'prompt present' : 'prompt_vi empty',
+      question.prompt_vi.trim().length > 0
+        ? 'prompt present'
+        : 'prompt_vi empty',
     ),
   );
 
@@ -343,18 +345,25 @@ function runCommonChecks(
   // elsewhere in the sentence are a phase-2 concern (see header).
   if (correct === undefined) {
     results.push(
-      check('ANSWER_LEAK_FREE', false, 'answer unresolvable; cannot prove leak-free'),
+      check(
+        'ANSWER_LEAK_FREE',
+        false,
+        'answer unresolvable; cannot prove leak-free',
+      ),
     );
   } else {
     const normalizedAnswer = normalizeOptionText(correct.text);
     const normalizedPrompt = normalizeOptionText(question.prompt_vi);
     const leaked =
-      normalizedAnswer.length > 0 && normalizedPrompt.includes(normalizedAnswer);
+      normalizedAnswer.length > 0 &&
+      normalizedPrompt.includes(normalizedAnswer);
     results.push(
       check(
         'ANSWER_LEAK_FREE',
         !leaked,
-        leaked ? 'answer text leaked in prompt_vi' : 'no answer leak in prompt_vi',
+        leaked
+          ? 'answer text leaked in prompt_vi'
+          : 'no answer leak in prompt_vi',
       ),
     );
   }
@@ -375,16 +384,16 @@ function runCommonChecks(
       question.source_refs.length === 0
         ? 'source_refs empty'
         : question.source_refs.every(ref => {
-              if (ref.kind === 'vocabulary') {
-                return ctx.lesson.vocabularyById[ref.id] !== undefined;
-              }
-              if (ref.kind === 'sentence') {
-                return ctx.lesson.sentenceById[ref.id] !== undefined;
-              }
-              return ctx.lesson.grammarById[ref.id] !== undefined;
-            })
-          ? `all source_refs resolve at lesson_revision ${ctx.lesson.lessonRevision}`
-          : 'source_ref missing from lesson source',
+            if (ref.kind === 'vocabulary') {
+              return ctx.lesson.vocabularyById[ref.id] !== undefined;
+            }
+            if (ref.kind === 'sentence') {
+              return ctx.lesson.sentenceById[ref.id] !== undefined;
+            }
+            return ctx.lesson.grammarById[ref.id] !== undefined;
+          })
+        ? `all source_refs resolve at lesson_revision ${ctx.lesson.lessonRevision}`
+        : 'source_ref missing from lesson source',
     ),
   );
 
@@ -464,7 +473,9 @@ export function validateMeaningChoice(
 
   const correct = findOption(question, question.correct_option_id);
   const canonicalMatch =
-    vocab !== undefined && correct !== undefined && correct.text === vocab.meaning_vi;
+    vocab !== undefined &&
+    correct !== undefined &&
+    correct.text === vocab.meaning_vi;
   checks.push(
     check(
       'MEANING_ANSWER_CANONICAL',
@@ -532,7 +543,9 @@ export function validateMeaningChoice(
     check(
       'MEANING_NO_PLACEHOLDER',
       noPlaceholder,
-      noPlaceholder ? 'no placeholder options' : 'placeholder option (Nghĩa khác N)',
+      noPlaceholder
+        ? 'no placeholder options'
+        : 'placeholder option (Nghĩa khác N)',
     ),
   );
 
@@ -599,7 +612,9 @@ export function validateClozeChoice(
     const spanOk = validSpan(sentenceText, start, end);
     const reconstructed =
       spanOk &&
-      sentenceText.slice(0, start) + CLOZE_PLACEHOLDER + sentenceText.slice(end) ===
+      sentenceText.slice(0, start) +
+        CLOZE_PLACEHOLDER +
+        sentenceText.slice(end) ===
         question.stem_with_placeholder;
     checks.push(
       check(
@@ -617,7 +632,9 @@ export function validateClozeChoice(
       check(
         'CLOZE_BLANK_MATCHES_SOURCE',
         blankOk === true,
-        blankOk === true ? 'blank matches source span' : 'blank mismatches source span',
+        blankOk === true
+          ? 'blank matches source span'
+          : 'blank mismatches source span',
       ),
     );
   }
@@ -682,7 +699,10 @@ export function validateClozeChoice(
           option.id !== correct.id &&
           (normalizeOptionText(option.text) === normalizedAnswer ||
             normalizeOptionText(
-              question.stem_with_placeholder.replace(CLOZE_PLACEHOLDER, option.text),
+              question.stem_with_placeholder.replace(
+                CLOZE_PLACEHOLDER,
+                option.text,
+              ),
             ) === normalizedCanonical),
       );
       checks.push(
@@ -732,7 +752,9 @@ export function validateQuestionSet(
   questions: readonly PracticeQuestionInput[],
   ctx: ValidationContext,
 ): SetValidation {
-  const perQuestion = questions.map(question => validateQuestion(question, ctx));
+  const perQuestion = questions.map(question =>
+    validateQuestion(question, ctx),
+  );
 
   const ids = questions.map(question => question.id);
   const unique = new Set(ids).size === ids.length;
@@ -756,7 +778,8 @@ export function validateQuestionSet(
     .filter(result => !validIdSet.has(result.questionId))
     .map(result => result.questionId);
 
-  const passed = setChecks.every(result => result.passed) && invalidQuestionIds.length === 0;
+  const passed =
+    setChecks.every(result => result.passed) && invalidQuestionIds.length === 0;
   return {
     passed,
     validatorVersion: VALIDATOR_VERSION,
@@ -790,7 +813,10 @@ export function partitionForPublish(
  * The minimum is caller-provided policy (lesson minimum validated source /
  * requested count); default 1 keeps product policy out of the validator.
  */
-export function isSetReady(validation: SetValidation, minValidCount = 1): boolean {
+export function isSetReady(
+  validation: SetValidation,
+  minValidCount = 1,
+): boolean {
   return validation.validQuestionIds.length >= minValidCount;
 }
 
@@ -799,7 +825,9 @@ export function isSetReady(validation: SetValidation, minValidCount = 1): boolea
  * PracticeValidationSchema so `validator_version` is recorded in the
  * result (completion criterion). Pure: returns check codes, no mutation.
  */
-export function buildValidationMetadata(result: QuestionValidation): ValidationMetadata {
+export function buildValidationMetadata(
+  result: QuestionValidation,
+): ValidationMetadata {
   return {
     validator_version: result.validatorVersion,
     checks: result.checks.map(checkResult => checkResult.code),

@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './authenticatedFetch';
+import {authenticatedFetch} from './authenticatedFetch';
 import {useEffect, useState} from 'react';
 import {z} from 'zod';
 import {getAppConfig} from '@shared/api/appConfig';

@@ -31,9 +31,7 @@ export const FLOATING_TAB_BAR_CONTENT_GAP = 16;
  */
 export function getTabBarVisualHeight(theme?: AppTheme): number {
   if (theme?.shelf) {
-    return (
-      STICKER_TAB_BAR_FACE_HEIGHT + (theme.shelf.tabBar?.height ?? 0)
-    );
+    return STICKER_TAB_BAR_FACE_HEIGHT + (theme.shelf.tabBar?.height ?? 0);
   }
   return FLOATING_TAB_BAR_HEIGHT;
 }

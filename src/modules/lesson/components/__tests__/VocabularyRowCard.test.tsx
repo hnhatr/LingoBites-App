@@ -149,7 +149,9 @@ describe('VocabularyRowCard', () => {
       />,
     );
 
-    const pressable = tree.root.findByProps({testID: 'vocabulary-card-pressable'});
+    const pressable = tree.root.findByProps({
+      testID: 'vocabulary-card-pressable',
+    });
     act(() => {
       pressable.props.onPress();
     });
@@ -183,7 +185,9 @@ describe('VocabularyRowCard', () => {
       />,
     );
 
-    const exampleTextResults = tree.root.findAllByProps({testID: 'example-text'});
+    const exampleTextResults = tree.root.findAllByProps({
+      testID: 'example-text',
+    });
     expect(exampleTextResults).toHaveLength(0);
   });
 
@@ -260,7 +264,9 @@ describe('VocabularyRowCard', () => {
       />,
     );
 
-    const pressable = tree.root.findByProps({testID: 'vocabulary-card-pressable'});
+    const pressable = tree.root.findByProps({
+      testID: 'vocabulary-card-pressable',
+    });
     expect(pressable.props.accessibilityLabel).toBe('apple - quả táo');
     expect(pressable.props.accessibilityRole).toBe('button');
   });

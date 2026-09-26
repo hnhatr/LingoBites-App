@@ -104,12 +104,14 @@ describe('extractTextFromImage', () => {
         new Promise((resolve, reject) => {
           resolveFetch = resolve;
           if (options.signal.aborted) {
-             const err = new Error('abort'); err.name = 'AbortError';
-             return reject(err);
+            const err = new Error('abort');
+            err.name = 'AbortError';
+            return reject(err);
           }
           options.signal.addEventListener('abort', () => {
-             const err = new Error('abort'); err.name = 'AbortError';
-             reject(err);
+            const err = new Error('abort');
+            err.name = 'AbortError';
+            reject(err);
           });
         }),
     );
@@ -124,9 +126,9 @@ describe('extractTextFromImage', () => {
     // Let ensureValidSession run
     await new Promise(r => setTimeout(r, 0));
     controller.abort();
-    
+
     // We don't resolveFetch here because it should reject via abort!
-    
+
     await expect(pending).resolves.toEqual({ok: false, cancelled: true});
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });

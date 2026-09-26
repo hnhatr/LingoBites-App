@@ -165,16 +165,18 @@ export async function runYouTubeJob(
     );
     try {
       response = await authenticatedFetch(
-        `${apiBaseUrl}/v1/youtube/transcripts`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'Idempotency-Key': createRequestId(),
+        `${apiBaseUrl}/v1/youtube/transcripts`,
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Idempotency-Key': createRequestId(),
+          },
+          body: JSON.stringify(cues ? {url, transcript: {cues}} : {url}),
+          signal: fetchSignal,
         },
-        body: JSON.stringify(cues ? {url, transcript: {cues}} : {url}),
-        signal: fetchSignal,
-      });
+      );
     } finally {
       cleanup();
     }

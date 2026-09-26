@@ -18,7 +18,9 @@ async function renderWithTheme(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(
-      <FeatureFlagProvider releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}>
+      <FeatureFlagProvider
+        releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+      >
         <AppThemeProvider>
           <ThemeProbe />
           {ui}
@@ -64,21 +66,33 @@ function keyCircleOf(tree: ReactTestRenderer.ReactTestRenderer) {
 describe('QuizOption', () => {
   it('renders the key circle when optionKey is provided', async () => {
     const tree = await renderWithTheme(
-      <QuizOption testID="quiz-option" label="Bonjour" onPress={() => {}} optionKey="B" />,
+      <QuizOption
+        testID="quiz-option"
+        label="Bonjour"
+        onPress={() => {}}
+        optionKey="B"
+      />,
     );
 
     expect(keyCircleOf(tree)).not.toBeNull();
   });
 
   it('hides the key circle when optionKey is omitted', async () => {
-    const tree = await renderWithTheme(<QuizOption testID="quiz-option" label="Bonjour" />);
+    const tree = await renderWithTheme(
+      <QuizOption testID="quiz-option" label="Bonjour" />,
+    );
 
     expect(keyCircleOf(tree)).toBeNull();
   });
 
   it('uses the base geometry and surface colors by default', async () => {
     const tree = await renderWithTheme(
-      <QuizOption testID="quiz-option" label="Bonjour" onPress={() => {}} optionKey="B" />,
+      <QuizOption
+        testID="quiz-option"
+        label="Bonjour"
+        onPress={() => {}}
+        optionKey="B"
+      />,
     );
 
     const style = containerStyleOf(tree);
@@ -90,7 +104,12 @@ describe('QuizOption', () => {
 
   it('maps the legacy selected flag to the selected state', async () => {
     const tree = await renderWithTheme(
-      <QuizOption testID="quiz-option" label="Bonjour" onPress={() => {}} selected />,
+      <QuizOption
+        testID="quiz-option"
+        label="Bonjour"
+        onPress={() => {}}
+        selected
+      />,
     );
 
     const style = containerStyleOf(tree);
@@ -101,7 +120,13 @@ describe('QuizOption', () => {
 
   it('lets the state prop take precedence over the selected flag', async () => {
     const tree = await renderWithTheme(
-      <QuizOption testID="quiz-option" label="Bonjour" onPress={() => {}} selected state="wrong" />,
+      <QuizOption
+        testID="quiz-option"
+        label="Bonjour"
+        onPress={() => {}}
+        selected
+        state="wrong"
+      />,
     );
 
     expect(containerStyleOf(tree).borderColor).toBe(
@@ -150,9 +175,7 @@ describe('QuizOption', () => {
       <QuizOption testID="quiz-option" label="Bonjour" />,
     );
     expect(
-      readOnly.root.findAll(
-        node => node.props.accessibilityRole === 'button',
-      ),
+      readOnly.root.findAll(node => node.props.accessibilityRole === 'button'),
     ).toHaveLength(2);
 
     const interactive = await renderWithTheme(

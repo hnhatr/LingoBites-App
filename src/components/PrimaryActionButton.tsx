@@ -38,8 +38,8 @@ export function PrimaryActionButton({
           opacity: disabled
             ? theme.states.disabledOpacity
             : pressed
-              ? theme.states.pressedOpacity
-              : 1,
+            ? theme.states.pressedOpacity
+            : 1,
         },
       ]}
     >

@@ -78,10 +78,7 @@ export function createStackHasFromHomeEntry(
   const tabParams = createRoute?.params as
     | {fromHome?: boolean; params?: {fromHome?: boolean} | undefined}
     | undefined;
-  if (
-    tabParams?.fromHome === true ||
-    tabParams?.params?.fromHome === true
-  ) {
+  if (tabParams?.fromHome === true || tabParams?.params?.fromHome === true) {
     return true;
   }
   const nestedRoutes = createRoute?.state?.routes;
@@ -89,8 +86,7 @@ export function createStackHasFromHomeEntry(
     return false;
   }
   return nestedRoutes.some(
-    r =>
-      (r.params as {fromHome?: boolean} | undefined)?.fromHome === true,
+    r => (r.params as {fromHome?: boolean} | undefined)?.fromHome === true,
   );
 }
 
@@ -183,8 +179,10 @@ function TabBarItem({
   // every theme. The Sticker special-case (#ffffff on the accent pill) was
   // 1.86:1 — the selected tab was the least readable text in the bar.
   const selectedTextColor = theme.colors.accentInk;
-  const selectedIconColor = isSticker ? theme.colors.accentInk : theme.colors.accentInk;
-  
+  const selectedIconColor = isSticker
+    ? theme.colors.accentInk
+    : theme.colors.accentInk;
+
   const captionPreset = theme.typography.presets.caption;
 
   const animatedIconColorStyle = useAnimatedStyle(
@@ -333,14 +331,22 @@ export function TabBar({
           styles.pill,
           {
             borderColor: glass.border,
-            backgroundColor: theme.shelf ? theme.colors.primary : (glassFallback ? glass.fallback : glass.tint),
+            backgroundColor: theme.shelf
+              ? theme.colors.primary
+              : glassFallback
+              ? glass.fallback
+              : glass.tint,
             borderWidth: theme.shelf ? 0 : 1, // Sticker Soft doesn't use border for the bar
             height: theme.shelf ? 66 : undefined,
           },
         ]}
       >
-        <View style={StyleSheet.absoluteFill} pointerEvents="none" testID={glassFallback ? 'tab-bar-fallback' : 'tab-bar-glass'}>
-          {(!glassFallback && !theme.shelf) ? (
+        <View
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+          testID={glassFallback ? 'tab-bar-fallback' : 'tab-bar-glass'}
+        >
+          {!glassFallback && !theme.shelf ? (
             <>
               {/* Top gloss: white 12% fading down (gradient stand-in;
                   install @react-native-community/blur + a gradient layer for
@@ -365,11 +371,22 @@ export function TabBar({
             accessible={false}
             importantForAccessibility="no-hide-descendants"
             pointerEvents="none"
-            style={[styles.indicator, indicatorAnimatedStyle, { backgroundColor: theme.shelf ? theme.colors.accent : theme.colors.accent }]}
+            style={[
+              styles.indicator,
+              indicatorAnimatedStyle,
+              {
+                backgroundColor: theme.shelf
+                  ? theme.colors.accent
+                  : theme.colors.accent,
+              },
+            ]}
             testID="tab-bar-indicator"
           />
         ) : null}
-        <View accessibilityRole="tablist" style={{ flexDirection: 'row', flex: 1, height: '100%' }}>
+        <View
+          accessibilityRole="tablist"
+          style={{flexDirection: 'row', flex: 1, height: '100%'}}
+        >
           {state.routes.map((route, index) => {
             const focused = state.index === index;
             const item = TAB_ITEMS[route.name] ?? {

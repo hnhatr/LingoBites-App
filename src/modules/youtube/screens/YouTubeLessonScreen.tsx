@@ -17,7 +17,7 @@ import type {
   YouTubeSegment,
   YouTubeTranscript,
 } from '@shared/schemas/youtube-transcript-v1';
-import {getYouTubeLesson} from '@shared/db/YoutubeLessonRepository';
+import {getYouTubeLesson} from '@shared/db/YouTubeLessonRepository';
 import {
   clearYouTubeProgress,
   getYouTubeProgress,
@@ -96,10 +96,7 @@ import type {
 } from '@/app/navigation/types';
 import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {
-  useBookmarkOptimistic,
-  useFlashcardLibrary,
-} from '@modules/review';
+import {useBookmarkOptimistic, useFlashcardLibrary} from '@modules/review';
 import {mapTranscriptToPractice} from '../utils/practiceMapper';
 import type {YouTubePlaybackRate} from '../utils/playbackRate';
 
@@ -716,7 +713,7 @@ export function YouTubeLessonScreen({
 
     let cancelled = false;
     const intervalId = setInterval(() => {
-      void (async () => {
+      (async () => {
         const timeMs = await getCurrentTimeMs();
         const wrapTo = abWrap(timeMs, startMs, endMs, 80);
         if (cancelled || wrapTo == null) {
@@ -751,7 +748,7 @@ export function YouTubeLessonScreen({
       return;
     }
     progressRef.current.segmentIndex = activeIndex;
-    void (async () => {
+    (async () => {
       const timeMs = await getCurrentTimeMs();
       progressRef.current.positionMs = Math.max(0, Math.floor(timeMs));
       persistProgress();
@@ -835,8 +832,6 @@ export function YouTubeLessonScreen({
   const closeTranscriptPopup = useCallback(() => {
     setIsTranscriptPopupOpen(false);
   }, []);
-
-
 
   const handleSelectLoopCount = useCallback(
     (count: SentenceLoopCount) => {

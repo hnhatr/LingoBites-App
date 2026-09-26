@@ -58,14 +58,14 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
     const startedLessons = listStartedLessons();
     const combined = [...savedLessons, ...startedLessons];
     const deduped = Array.from(
-      new Map(combined.map(l => [l.lessonId, l])).values()
+      new Map(combined.map(l => [l.lessonId, l])).values(),
     );
 
     // Enrich with content library metadata
     const activePackageLessons = listActivePackageLessons();
     const enriched = deduped.map(state => {
       const contentItem = activePackageLessons.find(
-        item => item.id === state.lessonId
+        item => item.id === state.lessonId,
       );
       return {...contentItem, ...state};
     });
@@ -110,13 +110,15 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
 // Helper: filter lessons by search + source
 function filterLessonsByQueryAndSource(
   lessons: any[],
-  filter: SegmentFilterState
+  filter: SegmentFilterState,
 ): any[] {
   return lessons.filter(lesson => {
     const matchesSearch =
       !filter.searchQuery ||
       lesson.title?.toLowerCase().includes(filter.searchQuery.toLowerCase()) ||
-      lesson.summary?.toLowerCase().includes(filter.searchQuery.toLowerCase()) ||
+      lesson.summary
+        ?.toLowerCase()
+        .includes(filter.searchQuery.toLowerCase()) ||
       lesson.blurb?.toLowerCase().includes(filter.searchQuery.toLowerCase());
 
     const matchesSource =
@@ -131,13 +133,13 @@ function filterLessonsByQueryAndSource(
 function filterBySearchAndSource(
   items: any[],
   filter: SegmentFilterState,
-  options: {searchFields: string[]}
+  options: {searchFields: string[]},
 ): any[] {
   return items.filter(item => {
     const matchesSearch =
       !filter.searchQuery ||
       options.searchFields.some(field =>
-        item[field]?.toLowerCase?.().includes(filter.searchQuery.toLowerCase())
+        item[field]?.toLowerCase?.().includes(filter.searchQuery.toLowerCase()),
       );
 
     const matchesSource =

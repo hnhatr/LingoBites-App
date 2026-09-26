@@ -1,5 +1,11 @@
 import React, {useCallback, useState} from 'react';
-import {ActivityIndicator, FlatList, Pressable, View} from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {LessonsStackParamList} from '@/app/navigation/types';
@@ -99,14 +105,10 @@ export function ContentLessonListScreen({navigation}: Props) {
               }}
             >
               <Medallion label="⚠️" />
-              <AppText
-                color="danger"
-                style={{textAlign: 'center'}}
-                variant="h3"
-              >
+              <AppText color="danger" style={styles.textCenter} variant="h3">
                 Không thể chuẩn bị nội dung bài học
               </AppText>
-              <AppText color="secondary" style={{textAlign: 'center'}}>
+              <AppText color="secondary" style={styles.textCenter}>
                 {error}
               </AppText>
               <AppButton
@@ -124,7 +126,7 @@ export function ContentLessonListScreen({navigation}: Props) {
               }}
             >
               <Medallion label="📦" />
-              <AppText color="secondary" style={{textAlign: 'center'}}>
+              <AppText color="secondary" style={styles.textCenter}>
                 Chưa có bài học nào được nhập vào máy.
               </AppText>
             </View>
@@ -151,3 +153,9 @@ export function ContentLessonListScreen({navigation}: Props) {
     </AppScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  textCenter: {
+    textAlign: 'center',
+  },
+});

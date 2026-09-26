@@ -71,7 +71,10 @@ function renderBar(
   return {tree, props};
 }
 
-function measureFirstTab(tree: ReactTestRenderer.ReactTestRenderer, width = 100) {
+function measureFirstTab(
+  tree: ReactTestRenderer.ReactTestRenderer,
+  width = 100,
+) {
   act(() => {
     tree.root.findByProps({testID: 'tab-bar-item-Home'}).props.onLayout({
       nativeEvent: {layout: {x: 0, y: 0, width, height: 48}},
@@ -90,9 +93,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     expect(wrap.left).toBe(0);
     expect(wrap.right).toBe(0);
     // 12px gap + bottom safe-area, like `.tabwrap` in the v3 preview.
-    expect(wrap.paddingBottom).toBe(
-      FLOATING_TAB_BAR_BOTTOM_GAP + 20,
-    );
+    expect(wrap.paddingBottom).toBe(FLOATING_TAB_BAR_BOTTOM_GAP + 20);
     // The overlay (including the bottom safe-area strip) paints nothing
     // itself — the screen's theme background flows edge-to-edge behind it.
     expect(wrap.backgroundColor).toBe('transparent');
@@ -164,7 +165,8 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
       );
     }
     expect(
-      tree.root.findByProps({accessibilityRole: 'tablist'}).props.accessibilityRole,
+      tree.root.findByProps({accessibilityRole: 'tablist'}).props
+        .accessibilityRole,
     ).toBe('tablist');
     expect(
       tree.root.findByProps({testID: 'tab-bar-item-Home'}).props
@@ -201,9 +203,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
       navigate: jest.Mock;
     };
     act(() => {
-      tree.root
-        .findByProps({testID: 'tab-bar-item-Lessons'})
-        .props.onPress();
+      tree.root.findByProps({testID: 'tab-bar-item-Lessons'}).props.onPress();
     });
     expect(nav.emit).toHaveBeenCalledWith({
       type: 'tabPress',
@@ -232,7 +232,11 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
               state: {
                 index: 0,
                 routes: [
-                  {key: 'yt-input', name: 'YouTubeInput', params: {fromHome: true}},
+                  {
+                    key: 'yt-input',
+                    name: 'YouTubeInput',
+                    params: {fromHome: true},
+                  },
                 ],
               },
             }
@@ -268,7 +272,11 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
                 index: 1,
                 routes: [
                   {key: 'create-main', name: 'CreateMain', params: undefined},
-                  {key: 'yt-input', name: 'YouTubeInput', params: {fromHome: true}},
+                  {
+                    key: 'yt-input',
+                    name: 'YouTubeInput',
+                    params: {fromHome: true},
+                  },
                 ],
               },
             }
@@ -301,7 +309,11 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
               state: {
                 index: 0,
                 routes: [
-                  {key: 'yt-input', name: 'YouTubeInput', params: {fromHome: true}},
+                  {
+                    key: 'yt-input',
+                    name: 'YouTubeInput',
+                    params: {fromHome: true},
+                  },
                 ],
               },
             }
@@ -753,14 +765,18 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     const missing: string[] = [];
     for (const screen of screens) {
       const code = fs.readFileSync(screen, 'utf8');
-      const hasScroll = code.includes('<ScrollView') || code.includes('<FlatList');
+      const hasScroll =
+        code.includes('<ScrollView') || code.includes('<FlatList');
       if (!hasScroll) continue;
-      
-      if (!code.includes('useFloatingTabBarClearance') && !code.includes('IGNORE_TAB_BAR_CLEARANCE')) {
+
+      if (
+        !code.includes('useFloatingTabBarClearance') &&
+        !code.includes('IGNORE_TAB_BAR_CLEARANCE')
+      ) {
         missing.push(path.basename(screen));
       }
     }
-    
+
     // Whitelist legacy screens that haven't been updated yet (SETE-251 etc).
     // New screens with ScrollView/FlatList will fail if they don't import useFloatingTabBarClearance.
     const legacyExemptions = [

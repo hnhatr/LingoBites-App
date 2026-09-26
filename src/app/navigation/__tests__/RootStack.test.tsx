@@ -9,10 +9,7 @@ describe('RootStack route registration (SETE-289)', () => {
     // The lesson/detail screens History opens stay above the tabs too, so
     // opening a saved lesson never switches the active tab (AC-8).
     expect(names).toEqual(
-      expect.arrayContaining([
-        'YouTubeLesson',
-        'Practice',
-      ]),
+      expect.arrayContaining(['YouTubeLesson', 'Practice']),
     );
     // Only History moves up: the create flow stays in the Create tab.
     expect(names).not.toContain('YouTubeInput');
