@@ -46,6 +46,7 @@ export const SyncCollectionSchema = z.enum([
   'gamification_events',
   'content_review_items',
   'content_review_state',
+  'content_lesson_state',
   'grammar_bookmarks',
   'youtube_lessons',
   'youtube_sentences',

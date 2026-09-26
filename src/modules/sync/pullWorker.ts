@@ -32,13 +32,23 @@ function mapToSnakeCase(obj: any): any {
   return res;
 }
 
-function applySyncRecord(record: SyncRecord) {
+function getTableForCollection(collection: string): string {
+  if (collection === 'review_schedules') return 'review_schedule';
+  if (collection === 'content_review_state' || collection === 'content_lesson_state') {
+    return 'content_lesson_state';
+  }
+  return collection;
+}
+
+export function applySyncRecord(record: SyncRecord) {
   const db = getDatabase();
-  const table = record.collection === 'content_review_state' ? 'content_lesson_state' : record.collection;
+  const table = getTableForCollection(record.collection);
   
   // Get table info
   const pragmaRes = db.execute(`PRAGMA table_info(${table});`);
-  if (!pragmaRes.rows || pragmaRes.rows.length === 0) return;
+  if (!pragmaRes.rows || pragmaRes.rows.length === 0) {
+    throw new Error(`Table ${table} does not exist for collection ${record.collection}`);
+  }
   
   const columns: string[] = [];
   const pks: string[] = [];
@@ -48,14 +58,51 @@ function applySyncRecord(record: SyncRecord) {
     if (row.pk > 0) pks.push(row.name);
   }
   
-  if (pks.length === 0) return;
+  if (pks.length === 0) {
+    throw new Error(`Table ${table} has no primary key defined`);
+  }
   
   const payload = mapToSnakeCase(record.payload);
   
-  // Extract PK values from payload or entity_id
-  // If entity_id is composite (e.g. lessonId:grammarId), we split it.
-  // Actually, let's just use entity_id if there's only 1 PK.
-  const pkValues = pks.length === 1 ? [record.entity_id] : pks.map(pk => payload[pk]);
+  // Adapter defaults for specific collections
+  if (record.collection === 'grammar_bookmarks') {
+    const parts = record.entity_id.split(':');
+    payload.lesson_id = payload.lesson_id ?? parts[0];
+    payload.grammar_id = payload.grammar_id ?? parts[1];
+    payload.package_id = payload.package_id ?? '';
+    payload.saved_at = payload.saved_at ?? record.occurred_at;
+    payload.reactivated_at = payload.reactivated_at !== undefined
+      ? payload.reactivated_at
+      : (payload.active !== false ? record.occurred_at : null);
+    payload.created_at = payload.created_at ?? record.occurred_at;
+  } else if (record.collection === 'review_schedules') {
+    payload.card_id = payload.card_id ?? record.entity_id;
+  } else if (record.collection === 'content_lesson_state' || record.collection === 'content_review_state') {
+    payload.lesson_id = payload.lesson_id ?? record.entity_id;
+    if (payload.is_saved === undefined && payload.isSaved !== undefined) {
+      payload.is_saved = payload.isSaved ? 1 : 0;
+    }
+    if (payload.is_started === undefined && payload.isStarted !== undefined) {
+      payload.is_started = payload.isStarted ? 1 : 0;
+    }
+    payload.created_at = payload.created_at ?? record.occurred_at;
+  } else if (record.collection === 'youtube_sentences') {
+    const parts = record.entity_id.split(':');
+    payload.lesson_id = payload.lesson_id ?? parts[0];
+    payload.sentence_id = payload.sentence_id ?? parts[1];
+  }
+  
+  // Extract PK values
+  const pkValues = pks.map((pk, idx) => {
+    if (payload[pk] !== undefined && payload[pk] !== null) {
+      return payload[pk];
+    }
+    if (pks.length === 1) {
+      return record.entity_id;
+    }
+    const parts = record.entity_id.split(':');
+    return parts[idx] ?? record.entity_id;
+  });
   
   // Check local revision
   const pkWhere = pks.map(pk => `${pk} = ?`).join(' AND ');
@@ -126,14 +173,25 @@ export async function runPullWorker() {
       }
       
       const db = getDatabase();
-      withTransaction(db, () => {
-        for (const record of res.data.records) {
-          try { applySyncRecord(record); } catch (_e) {}
-        }
-        cursor = res.data.next_cursor;
-        saveCursor(cursor);
-      });
+      let pageApplied = false;
+      try {
+        withTransaction(db, () => {
+          for (const record of res.data.records) {
+            applySyncRecord(record);
+          }
+          cursor = res.data.next_cursor;
+          saveCursor(cursor);
+        });
+        pageApplied = true;
+      } catch (_err) {
+        // Rollback occurred. Do not advance cursor, schedule retry.
+        retryTimer = setTimeout(runPullWorker, 5000);
+        break;
+      }
       
+      if (!pageApplied) {
+        break;
+      }
       hasMore = res.data.has_more;
     }
   } finally {

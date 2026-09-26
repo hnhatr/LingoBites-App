@@ -22,6 +22,7 @@ export type EnqueueSyncOutboxEventInput = {
 
 type PendingOptions = {
   limit?: number;
+  maxAttempts?: number;
 };
 
 function mapRow(row: SyncOutboxRow): SyncOutboxRecord {
@@ -73,9 +74,17 @@ export function enqueueSyncOutboxEvent(
 /** Returns pending (unsynced) rows, oldest first, capped at `limit`. */
 export function listPendingSyncEvents({
   limit,
+  maxAttempts,
 }: PendingOptions = {}): SyncOutboxRecord[] {
   const db = getDatabase();
+  const whereClauses = ['synced_at IS NULL'];
   const params: Array<string | number> = [];
+
+  if (typeof maxAttempts === 'number') {
+    whereClauses.push('attempt_count < ?');
+    params.push(maxAttempts);
+  }
+
   const limitClause = limit && limit > 0 ? ' LIMIT ?' : '';
   if (limit && limit > 0) {
     params.push(limit);
@@ -85,7 +94,7 @@ export function listPendingSyncEvents({
     `SELECT id, event_type, entity_id, payload_json, created_at,
             attempt_count, last_error, synced_at
      FROM sync_outbox
-     WHERE synced_at IS NULL
+     WHERE ${whereClauses.join(' AND ')}
      ORDER BY datetime(created_at) ASC${limitClause};`,
     params,
   );
