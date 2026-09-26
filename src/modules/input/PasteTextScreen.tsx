@@ -1,7 +1,11 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {CreateStackParamList} from '@/app/navigation/types';
+import type {NavigationProp} from '@react-navigation/native';
+import type {
+  CreateStackParamList,
+  RootTabParamList,
+} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {BottomActionBar} from '@components/BottomActionBar';
@@ -15,18 +19,8 @@ import {useTranslation} from 'react-i18next';
 import {useAppTheme} from '@theme';
 import {getTextLengthBucket, trackEvent} from '../analytics';
 import {validateConfirmedText} from '@shared/utils/textValidation';
-import {useFeatureFlags} from '@/release';
-import type {NavigationProp} from '@react-navigation/native';
-import type {RootTabParamList} from '@/app/navigation/types';
-import {
-  resolveLessonDestination,
-  startLessonFromConfirmedText,
-} from '@shared/lesson/startLessonFromConfirmedText';
-import {
-  createLessonGenerationJob,
-  isUnifiedLessonReady,
-  useLessonServerCapabilities,
-} from '@modules/curriculumLesson';
+import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
+import {createLessonGenerationJob} from '@modules/curriculumLesson';
 import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;
@@ -44,10 +38,6 @@ function countWords(text: string): number {
 export function PasteTextScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
-  const {config} = useFeatureFlags();
-  const lessonCapabilities = useLessonServerCapabilities(
-    config.features.unifiedLesson === true,
-  );
   const [text, setText] = useState('');
   const [screenState, setScreenState] = useState<ScreenState>({type: 'input'});
   const [creating, setCreating] = useState(false);
@@ -81,27 +71,14 @@ export function PasteTextScreen({navigation, route}: Props) {
       edited_after_ocr: false,
     });
 
-    const destination = resolveLessonDestination(config.features, {
-      unifiedReady: isUnifiedLessonReady(config.features, lessonCapabilities),
-    });
-    if (destination === 'v1_analyze') {
-      setScreenState({type: 'input'});
-    } else {
-      setCreating(true);
-      setScreenState({type: 'input'});
-    }
+    setCreating(true);
+    setScreenState({type: 'input'});
 
     const result = await startLessonFromConfirmedText({
       confirmedText: validation.value,
       sourceType: 'paste_text',
-      destination,
-      origin: 'PasteText',
       navigate: (screen, params) => {
-        if (screen === 'Analyzing' && 'sourceType' in params) {
-          navigation.navigate('Analyzing', params);
-        } else if (screen === 'ProgressiveLesson' && 'lessonId' in params) {
-          navigation.navigate('ProgressiveLesson', params);
-        } else if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
+        if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
           const {jobId, confirmedText, level} = params;
           navigation
             .getParent<NavigationProp<RootTabParamList>>()

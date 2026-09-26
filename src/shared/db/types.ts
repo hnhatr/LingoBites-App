@@ -1,54 +1,27 @@
-import type {AIOutput} from '../schemas/ai-output-v1';
-import type {VocabularyItem} from '../schemas/ai-output-v1';
-import type {LessonSubjectKey} from '@/types/lesson';
 import type {ContentMasteryState} from '@modules/content';
 
 export type {ContentMasteryState};
 
-export type LessonSourceType = 'camera' | 'gallery' | 'paste_text';
-
-export type SavedLessonRecord = {
+export type VocabularyItem = {
   id: string;
-  anonymousUserId: string;
-  lessonInputHash: string;
-  title: string;
-  sourceType: LessonSourceType;
-  ocrRawText: string | null;
-  confirmedText: string;
-  vietnameseTranslation: string;
-  summary: string | null;
-  level: string;
-  aiOutput: AIOutput;
-  category: LessonSubjectKey;
-  isSaved: boolean;
-  createdAt: string;
-  updatedAt: string;
+  word: string;
+  phraseFromText?: string | null;
+  phrase_from_text?: string | null;
+  wordType?: string | null;
+  word_type?: string | null;
+  meaningVi?: string | null;
+  meaning_vi?: string | null;
+  pronunciationGuideVi?: string | null;
+  pronunciation_guide_vi?: string | null;
+  ipa?: string | null;
+  cefrLevel?: string | null;
+  cefr_level?: string | null;
+  sourceSentence?: string | null;
+  source_sentence?: string | null;
+  example?: string | null;
+  exampleTranslation?: string | null;
+  example_translation?: string | null;
 };
-
-export type LessonListItem = {
-  id: string;
-  title: string;
-  summary: string | null;
-  previewText: string;
-  vocabularyCount: number;
-  category: LessonSubjectKey;
-  createdAt: string;
-};
-
-export type SaveLessonInput = {
-  confirmedText: string;
-  sourceType: LessonSourceType;
-  ocrRawText?: string;
-  lesson: AIOutput;
-  promptVersion?: string;
-};
-
-export type SaveLessonResult =
-  | {ok: true; lessonId: string; duplicate: boolean}
-  | {
-      ok: false;
-      errorCode: 'LOCAL_DB_ERROR' | 'AI_INVALID_OUTPUT';
-    };
 
 export type ReviewRating = 'remembered' | 'forgot';
 

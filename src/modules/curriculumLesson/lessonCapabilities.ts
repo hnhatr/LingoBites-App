@@ -121,7 +121,7 @@ export function isUnifiedLessonReady(
   capabilities: LessonServerCapabilities,
 ): boolean {
   return (
-    flags.unifiedLesson === true &&
+    flags.unifiedLesson !== false &&
     capabilities.catalog &&
     capabilities.canonicalDelivery &&
     capabilities.aiMaterialization &&

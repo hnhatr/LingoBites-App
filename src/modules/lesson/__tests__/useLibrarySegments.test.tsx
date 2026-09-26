@@ -1,8 +1,6 @@
 import {useLibrarySegments} from '../useLibrarySegments';
-import {useLibraryStore} from '@/store/useLibraryStore';
 
 // Mock the repositories and stores
-jest.mock('@/store/useLibraryStore');
 jest.mock('@shared/db/ContentLessonStateRepository', () => ({
   listSavedLessons: jest.fn(),
   listStartedLessons: jest.fn(),
@@ -23,27 +21,6 @@ import {useContentLibrary} from '@modules/content';
 describe('useLibrarySegments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Setup default mock implementations
-    (useLibraryStore as any).mockImplementation((selector: any) => {
-      const mockStore = {
-        getLibraryCards: () => [
-          {
-            id: 'lesson-1',
-            title: 'Hello World',
-            blurb: 'Learn basic greetings',
-            dateLabel: '1 Jan',
-            vocabularyCount: 5,
-            durationMin: 5,
-            subjectLabel: 'Vocabulary',
-            subjectTone: 'gold' as const,
-            subjectKey: 'vocabulary' as const,
-            sourceType: 'paste_text' as const,
-          },
-        ],
-      };
-      return selector(mockStore);
-    });
 
     (listSavedLessons as jest.Mock).mockReturnValue([]);
     (listStartedLessons as jest.Mock).mockReturnValue([]);

@@ -19,18 +19,10 @@ import {
   validateConfirmedText,
 } from '@shared/utils/textValidation';
 import {extractText} from './OCRService';
-import {useFeatureFlags} from '@/release';
 import type {NavigationProp} from '@react-navigation/native';
 import type {RootTabParamList} from '@/app/navigation/types';
-import {
-  resolveLessonDestination,
-  startLessonFromConfirmedText,
-} from '@shared/lesson/startLessonFromConfirmedText';
-import {
-  createLessonGenerationJob,
-  isUnifiedLessonReady,
-  useLessonServerCapabilities,
-} from '@modules/curriculumLesson';
+import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
+import {createLessonGenerationJob} from '@modules/curriculumLesson';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'OCRReview'>;
 
@@ -47,10 +39,6 @@ function countWords(text: string): number {
 export function OCRReviewScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
-  const {config} = useFeatureFlags();
-  const lessonCapabilities = useLessonServerCapabilities(
-    config.features.unifiedLesson === true,
-  );
   const {
     imageUri,
     fileName,
@@ -111,23 +99,14 @@ export function OCRReviewScreen({navigation, route}: Props) {
       edited_after_ocr: validation.value.trim() !== initialExtractedText.trim(),
     });
 
-    const destination = resolveLessonDestination(config.features, {
-      unifiedReady: isUnifiedLessonReady(config.features, lessonCapabilities),
-    });
     setScreenState({type: 'input'});
-    setCreating(destination !== 'v1_analyze');
+    setCreating(true);
 
     const result = await startLessonFromConfirmedText({
       confirmedText: validation.value,
       sourceType,
-      destination,
-      origin: 'OCRReview',
       navigate: (screen, params) => {
-        if (screen === 'Analyzing' && 'sourceType' in params) {
-          navigation.navigate('Analyzing', params);
-        } else if (screen === 'ProgressiveLesson' && 'lessonId' in params) {
-          navigation.navigate('ProgressiveLesson', params);
-        } else if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
+        if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
           const {jobId, confirmedText, level} = params;
           navigation
             .getParent<NavigationProp<RootTabParamList>>()

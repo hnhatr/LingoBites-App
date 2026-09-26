@@ -6,10 +6,29 @@ import {AppThemeProvider} from '@theme';
 import {OCRReviewScreen} from '../OCRReviewScreen';
 
 const mockNavigate = jest.fn();
+const mockCreateGenerationJob = jest.fn();
+const mockTabNavigate = jest.fn();
 
 jest.mock('../OCRService', () => ({
   extractText: jest.fn(),
 }));
+
+jest.mock('@modules/curriculumLesson', () => {
+  const actual = jest.requireActual('@modules/curriculumLesson');
+  return {
+    ...actual,
+    useLessonServerCapabilities: () => ({
+      catalog: true,
+      canonicalDelivery: true,
+      aiMaterialization: true,
+      packagedImport: true,
+      partialRetry: true,
+      privateLibrary: true,
+    }),
+    createLessonGenerationJob: (...args: unknown[]) =>
+      mockCreateGenerationJob(...args),
+  };
+});
 
 function findPressableByLabel(
   root: ReactTestRenderer.ReactTestInstance,
@@ -36,6 +55,7 @@ async function flushPromises() {
 const navigation = {
   navigate: mockNavigate,
   setParams: jest.fn(),
+  getParent: () => ({navigate: mockTabNavigate}),
 } as unknown as React.ComponentProps<typeof OCRReviewScreen>['navigation'];
 
 const route = {
@@ -52,14 +72,20 @@ const route = {
 describe('OCRReviewScreen', () => {
   beforeEach(() => {
     mockNavigate.mockReset();
+    mockTabNavigate.mockReset();
+    mockCreateGenerationJob.mockReset();
+    mockCreateGenerationJob.mockResolvedValue({
+      ok: true,
+      job: {id: 'job-ocr-1'},
+    });
   });
 
-  it('navigates to Analyzing with edited confirmed text and gallery source (TC-006)', async () => {
+  it('navigates to UnifiedLessonGeneration with edited confirmed text and gallery source (TC-006)', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
 
     await ReactTestRenderer.act(async () => {
       tree = ReactTestRenderer.create(
-        <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {lessonV2: false}}}>
+        <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {}}}>
           <AppThemeProvider>
             <OCRReviewScreen navigation={navigation} route={route} />
           </AppThemeProvider>
@@ -82,10 +108,13 @@ describe('OCRReviewScreen', () => {
       await flushPromises();
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('Analyzing', {
-      confirmedText: 'Edited OCR text.',
-      sourceType: 'gallery',
-      origin: 'OCRReview',
+    expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
+      screen: 'UnifiedLessonGeneration',
+      params: {
+        jobId: 'job-ocr-1',
+        confirmedText: 'Edited OCR text.',
+        level: undefined,
+      },
     });
   });
 
@@ -102,7 +131,7 @@ describe('OCRReviewScreen', () => {
 
     await ReactTestRenderer.act(async () => {
       tree = ReactTestRenderer.create(
-        <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {lessonV2: false}}}>
+        <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {}}}>
           <AppThemeProvider>
             <OCRReviewScreen
               navigation={navigation}
@@ -122,7 +151,7 @@ describe('OCRReviewScreen', () => {
 
     await ReactTestRenderer.act(async () => {
       tree = ReactTestRenderer.create(
-        <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {lessonV2: false}}}>
+        <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {}}}>
           <AppThemeProvider>
             <OCRReviewScreen navigation={navigation} route={route} />
           </AppThemeProvider>

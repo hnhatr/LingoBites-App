@@ -18,7 +18,7 @@ import {
   getCapabilityProgressReport,
   exportPrivacySafeMetrics,
 } from '@shared/db/PilotMetricsRepository';
-import {clearAllLocalData} from '@shared/db/LessonRepository';
+import {clearAllLocalDatabaseRows} from '@shared/db/localDataWipe';
 import {listActivePackageLessons} from '@shared/db/ContentRuntimeRepository';
 
 beforeEach(() => {
@@ -185,7 +185,7 @@ describe('M8 Self-Dogfood Run (Scenario Verification)', () => {
     );
 
     // Step 11: Delete-my-data execution
-    clearAllLocalData();
+    await clearAllLocalDatabaseRows();
     expect(listSpeakingRecordings()).toHaveLength(0);
     expect(listErrorEvents()).toHaveLength(0);
     evidenceLog.push(

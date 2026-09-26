@@ -19,12 +19,10 @@ import type {FeatureKey} from '../release/feature-registry';
 import {DB_NAME} from '../shared/db/constants';
 import {resetDatabaseForTests} from '../shared/db/database';
 import {saveFlashcard} from '../shared/db/FlashcardRepository';
-import {saveLesson} from '../shared/db/LessonRepository';
 import {validFullOutput} from '../shared/fixtures';
 import {AppThemeProvider} from '../theme';
 import {__resetMockDatabases} from '../../test-utils/sqliteMock';
 import {DailyReviewScreen} from '../modules/review';
-import {FlashcardListScreen} from '../modules/lesson';
 import {isIngestionRouteEnabled} from '../app/navigation/ingestionRouteGate';
 
 const renderedTrees: ReactTestRenderer.ReactTestRenderer[] = [];
@@ -100,19 +98,11 @@ describe('Feature Flag: reviewSystem', () => {
 
     it('shows review UI when reviewSystem flag is ON', async () => {
       // Create a flashcard to review
-      const lessonResult = saveLesson({
-        confirmedText: validFullOutput.original_text,
-        sourceType: 'paste_text',
-        lesson: validFullOutput,
+      saveFlashcard({
+        lessonId: 'lesson-1',
+        vocabulary: validFullOutput.vocabulary[0],
+        now: '2026-08-17T00:00:00.000Z',
       });
-
-      if (lessonResult.ok) {
-        saveFlashcard({
-          lessonId: lessonResult.lessonId,
-          vocabulary: validFullOutput.vocabulary[0],
-          now: '2026-08-17T00:00:00.000Z',
-        });
-      }
 
       // Render with reviewSystem enabled
       const nav = createMockNavigation();
@@ -137,58 +127,6 @@ describe('Feature Flag: reviewSystem', () => {
         node => node.props.children === 'Tính năng ôn tập hiện chưa được bật.',
       );
       expect(errorMessages.length).toBe(0);
-    });
-  });
-
-  describe('FlashcardListScreen', () => {
-    it('shows disabled message when reviewSystem flag is OFF', async () => {
-      const nav = createMockNavigation();
-      const tree = await renderWithFlag(
-        <FlashcardListScreen navigation={nav as never} />,
-        CORE_BETA_WITHOUT_REVIEW,
-      );
-
-      // Should show error card about feature being disabled
-      const errorMessages = tree.root.findAll(
-        node => node.props.children === 'Tính năng ôn tập hiện chưa được bật.',
-      );
-
-      expect(errorMessages.length).toBeGreaterThan(0);
-    });
-
-    it('shows flashcard list when reviewSystem flag is ON', async () => {
-      // Create a flashcard
-      const lessonResult = saveLesson({
-        confirmedText: validFullOutput.original_text,
-        sourceType: 'paste_text',
-        lesson: validFullOutput,
-      });
-
-      if (lessonResult.ok) {
-        saveFlashcard({
-          lessonId: lessonResult.lessonId,
-          vocabulary: validFullOutput.vocabulary[0],
-        });
-      }
-
-      const nav = createMockNavigation();
-      const tree = await renderWithFlag(
-        <FlashcardListScreen navigation={nav as never} />,
-        CORE_WITH_REVIEW,
-      );
-
-      // Should NOT show disabled message
-      const errorMessages = tree.root.findAll(
-        node => node.props.children === 'Tính năng ôn tập hiện chưa được bật.',
-      );
-      expect(errorMessages.length).toBe(0);
-
-      // Should show flashcard list or empty state
-      // (either the card or an empty state message)
-      const allText = tree.root.findAll(
-        node => typeof node.props.children === 'string',
-      );
-      expect(allText.length).toBeGreaterThan(0);
     });
   });
 

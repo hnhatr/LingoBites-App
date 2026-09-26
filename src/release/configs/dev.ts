@@ -9,10 +9,6 @@ const dev: ReleaseConfig = {
     imageInput: true,
     ocrScanner: true,
     ocrReviewEdit: true,
-    aiLessonAnalysis: true,
-    lessonResultView: true,
-    lessonSave: true,
-    lessonHistory: true,
     shortPractice: true,
     themeSystem: true,
     themeSwitcher: true,
@@ -24,9 +20,7 @@ const dev: ReleaseConfig = {
     cartoonTheme: true,
     stickerSoftTheme: true,
     reviewSystem: true,
-    lessonV2: true,
     youtubeLearning: true,
-    unifiedLesson: true,
   },
 };
 

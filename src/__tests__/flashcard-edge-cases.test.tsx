@@ -22,7 +22,6 @@ import {
   getDueFlashcards,
   listFlashcards,
 } from '../shared/db/FlashcardRepository';
-import {saveLesson, deleteLesson} from '../shared/db/LessonRepository';
 import {validFullOutput} from '../shared/fixtures';
 import {AppThemeProvider} from '../theme';
 import {__resetMockDatabases} from '../../test-utils/sqliteMock';
@@ -81,25 +80,8 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
 
   describe('E2: Same word from different lessons', () => {
     it('handles duplicate words from different lessons correctly', async () => {
-      // Create two separate lessons
-      const lesson1Result = saveLesson({
-        confirmedText: 'Lesson 1 text',
-        sourceType: 'paste_text',
-        lesson: {...validFullOutput, title: 'Lesson 1'},
-      });
-
-      const lesson2Result = saveLesson({
-        confirmedText: 'Lesson 2 text',
-        sourceType: 'paste_text',
-        lesson: {...validFullOutput, title: 'Lesson 2'},
-      });
-
-      expect(lesson1Result.ok).toBe(true);
-      expect(lesson2Result.ok).toBe(true);
-
-      if (!lesson1Result.ok || !lesson2Result.ok) {
-        throw new Error('Failed to save lessons');
-      }
+      const lesson1Id = 'lesson-1';
+      const lesson2Id = 'lesson-2';
 
       // Save the same word from both lessons
       const sameWord = {
@@ -109,13 +91,13 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
       };
 
       const flashcard1 = saveFlashcard({
-        lessonId: lesson1Result.lessonId,
+        lessonId: lesson1Id,
         vocabulary: sameWord,
         now: '2026-08-17T00:00:00.000Z',
       });
 
       const flashcard2 = saveFlashcard({
-        lessonId: lesson2Result.lessonId,
+        lessonId: lesson2Id,
         vocabulary: sameWord,
         now: '2026-08-17T00:00:00.000Z',
       });
@@ -129,10 +111,6 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
         card => card.word === 'duplicate',
       );
 
-      // The system should either:
-      // A) Create separate cards (one per lesson) - current behavior
-      // B) Deduplicate and create only one card - future enhancement
-      // Test documents the actual behavior
       expect(duplicateCards.length).toBeGreaterThanOrEqual(1);
 
       // Verify both can appear in review session
@@ -142,76 +120,9 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
     });
   });
 
-  describe('Delete guard: Lesson with active flashcards', () => {
-    it.skip('prevents deletion of lesson with saved flashcards [NOT IMPLEMENTED]', async () => {
-      // NOTE: Delete guard is not currently implemented
-      // This test documents the expected behavior for future implementation
-      // See QA report for details
-
-      // Create lesson and flashcard
-      const lessonResult = saveLesson({
-        confirmedText: validFullOutput.original_text,
-        sourceType: 'paste_text',
-        lesson: validFullOutput,
-      });
-
-      expect(lessonResult.ok).toBe(true);
-      if (!lessonResult.ok) {
-        throw new Error('Failed to save lesson');
-      }
-
-      const flashcardResult = saveFlashcard({
-        lessonId: lessonResult.lessonId,
-        vocabulary: validFullOutput.vocabulary[0],
-        now: '2026-08-17T00:00:00.000Z',
-      });
-
-      expect(flashcardResult.ok).toBe(true);
-
-      // Attempt to delete the lesson
-      const deleteResult = deleteLesson(lessonResult.lessonId);
-
-      // EXPECTED: Should fail (return false) because flashcard exists
-      // ACTUAL: Currently allows deletion (returns true)
-      expect(deleteResult).toBe(false);
-
-      // Verify flashcard still exists
-      const flashcards = listFlashcards();
-      expect(flashcards.length).toBe(1);
-    });
-
-    it('allows deletion of lesson without flashcards', async () => {
-      // Create lesson WITHOUT flashcard
-      const lessonResult = saveLesson({
-        confirmedText: validFullOutput.original_text,
-        sourceType: 'paste_text',
-        lesson: validFullOutput,
-      });
-
-      expect(lessonResult.ok).toBe(true);
-      if (!lessonResult.ok) {
-        throw new Error('Failed to save lesson');
-      }
-
-      // Delete should succeed
-      const deleteResult = deleteLesson(lessonResult.lessonId);
-      expect(deleteResult).toBe(true);
-    });
-  });
-
   describe('Soft cap carry-over', () => {
     it('displays banner when due cards exceed soft cap', async () => {
       // Create 7 due flashcards
-      const lessonResult = saveLesson({
-        confirmedText: validFullOutput.original_text,
-        sourceType: 'paste_text',
-        lesson: validFullOutput,
-      });
-
-      if (!lessonResult.ok) {
-        throw new Error('Failed to save lesson');
-      }
-
       for (let i = 0; i < 7; i++) {
         const vocab = {
           ...validFullOutput.vocabulary[0],
@@ -220,7 +131,7 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
           meaning_vi: `meaning ${i}`,
         };
         saveFlashcard({
-          lessonId: lessonResult.lessonId,
+          lessonId: 'lesson-1',
           vocabulary: vocab,
           now: '2026-08-17T00:00:00.000Z',
         });
@@ -253,16 +164,6 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
 
     it('does not display banner when all due cards fit in soft cap', async () => {
       // Create 3 due flashcards (less than soft cap of 5)
-      const lessonResult = saveLesson({
-        confirmedText: validFullOutput.original_text,
-        sourceType: 'paste_text',
-        lesson: validFullOutput,
-      });
-
-      if (!lessonResult.ok) {
-        throw new Error('Failed to save lesson');
-      }
-
       for (let i = 0; i < 3; i++) {
         const vocab = {
           ...validFullOutput.vocabulary[0],
@@ -271,7 +172,7 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
           meaning_vi: `meaning ${i}`,
         };
         saveFlashcard({
-          lessonId: lessonResult.lessonId,
+          lessonId: 'lesson-1',
           vocabulary: vocab,
           now: '2026-08-17T00:00:00.000Z',
         });
@@ -317,18 +218,8 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
   describe('Empty State 06b: All done for today', () => {
     it('shows correct empty state when all cards reviewed', async () => {
       // Create and immediately review a flashcard
-      const lessonResult = saveLesson({
-        confirmedText: validFullOutput.original_text,
-        sourceType: 'paste_text',
-        lesson: validFullOutput,
-      });
-
-      if (!lessonResult.ok) {
-        throw new Error('Failed to save lesson');
-      }
-
       saveFlashcard({
-        lessonId: lessonResult.lessonId,
+        lessonId: 'lesson-1',
         vocabulary: validFullOutput.vocabulary[0],
         now: '2026-08-17T00:00:00.000Z',
       });

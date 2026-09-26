@@ -52,16 +52,6 @@ jest.mock('../useProgressReport', () => ({
   }),
 }));
 
-const mockGetSummary = jest.fn(() => ({lessonCount: 0, wordCount: 0}));
-
-jest.mock('@/store/useLibraryStore', () => ({
-  useLibraryStore: (
-    selector: (state: {getSummary: typeof mockGetSummary}) => unknown,
-  ) =>
-    selector({
-      getSummary: mockGetSummary,
-    }),
-}));
 
 const navigation = {
   navigate: mockNavigate,

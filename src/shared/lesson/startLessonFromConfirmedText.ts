@@ -1,27 +1,15 @@
-import {createLessonV2Skeleton} from '@shared/api/lessonV2Client';
 import type {AnalyzeSourceType} from '@shared/api/types';
-import type {LessonV2} from '@shared/schemas/lesson-v2';
 import {validateLessonV2InputText} from '@shared/utils/textValidation';
 
-export type LessonDestination =
-  | 'v1_analyze'
-  | 'v2_progressive'
-  | 'unified_lesson';
+export type LessonDestination = 'unified_lesson';
 
-export type LessonFeatureFlags = {lessonV2?: boolean; unifiedLesson?: boolean};
+export type LessonFeatureFlags = Record<string, boolean>;
 
 export type UnifiedLessonReadiness = {unifiedReady?: boolean};
 
 export type NavigateFn = (
-  screen: 'Analyzing' | 'ProgressiveLesson' | 'UnifiedLessonGeneration',
-  params:
-    | {
-        confirmedText: string;
-        sourceType: AnalyzeSourceType;
-        origin: 'PasteText' | 'OCRReview';
-      }
-    | {lessonId: string; initialLesson: LessonV2}
-    | {jobId: string; confirmedText: string; level?: string},
+  screen: 'UnifiedLessonGeneration',
+  params: {jobId: string; confirmedText: string; level?: string},
 ) => void;
 
 /**
@@ -44,59 +32,21 @@ export type UnifiedGenerationJobCreator = (input: {
 >;
 
 export function resolveLessonDestination(
-  flags: LessonFeatureFlags,
-  readiness: UnifiedLessonReadiness = {},
+  _flags?: LessonFeatureFlags,
+  _readiness?: UnifiedLessonReadiness,
 ): LessonDestination {
-  if (flags.unifiedLesson && readiness.unifiedReady) {
-    return 'unified_lesson';
-  }
-  return flags.lessonV2 ? 'v2_progressive' : 'v1_analyze';
+  return 'unified_lesson';
 }
 
 export async function startLessonFromConfirmedText(args: {
   confirmedText: string;
   sourceType: AnalyzeSourceType;
-  destination: LessonDestination;
-  origin: 'PasteText' | 'OCRReview';
+  destination?: LessonDestination;
+  origin?: 'PasteText' | 'OCRReview';
   navigate: NavigateFn;
   createGenerationJob?: UnifiedGenerationJobCreator;
 }): Promise<{ok: true} | {ok: false; message: string; retryable: boolean}> {
-  if (args.destination === 'v1_analyze') {
-    args.navigate('Analyzing', {
-      confirmedText: args.confirmedText,
-      sourceType: args.sourceType,
-      origin: args.origin,
-    });
-    return {ok: true};
-  }
-
-  if (args.destination === 'unified_lesson') {
-    return startUnifiedLessonFromConfirmedText(args);
-  }
-
-  const validation = validateLessonV2InputText(args.confirmedText);
-  if (!validation.valid) {
-    return {ok: false, message: validation.message, retryable: false};
-  }
-
-  const result = await createLessonV2Skeleton({
-    confirmedText: validation.value,
-    sourceType: args.sourceType,
-  });
-
-  if (!result.ok) {
-    return {
-      ok: false,
-      message: result.message,
-      retryable: result.retryable ?? false,
-    };
-  }
-
-  args.navigate('ProgressiveLesson', {
-    lessonId: result.lesson.lesson_id,
-    initialLesson: result.lesson,
-  });
-  return {ok: true};
+  return startUnifiedLessonFromConfirmedText(args);
 }
 
 /**

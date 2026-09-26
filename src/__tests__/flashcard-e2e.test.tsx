@@ -22,12 +22,10 @@ import {
   listFlashcards,
   getDueFlashcards,
 } from '../shared/db/FlashcardRepository';
-import {saveLesson} from '../shared/db/LessonRepository';
 import {validFullOutput} from '../shared/fixtures';
 import {AppThemeProvider} from '../theme';
 import {__resetMockDatabases} from '../../test-utils/sqliteMock';
 import {DailyReviewScreen} from '../modules/review';
-import {FlashcardListScreen} from '../modules/lesson';
 
 const renderedTrees: ReactTestRenderer.ReactTestRenderer[] = [];
 
@@ -83,20 +81,9 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
 
   it('completes full flow: save → list → review → rate → summary', async () => {
     // === STEP 1: Save flashcard from vocabulary ===
-    const lessonResult = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-
-    expect(lessonResult.ok).toBe(true);
-    if (!lessonResult.ok) {
-      throw new Error('Failed to save lesson');
-    }
-
     const vocabulary = validFullOutput.vocabulary[0];
     const saveResult = saveFlashcard({
-      lessonId: lessonResult.lessonId,
+      lessonId: 'lesson-1',
       vocabulary,
       now: '2026-08-17T00:00:00.000Z', // Ensure it's due for review
     });
@@ -114,18 +101,6 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
     expect(allFlashcards[0].id).toBe(flashcardId);
     expect(allFlashcards[0].word).toBe(vocabulary.word);
     expect(allFlashcards[0].meaningVi).toBe(vocabulary.meaning_vi);
-
-    // Render FlashcardListScreen to verify UI
-    const listNav = createMockNavigation();
-    const listTree = await renderScreen(
-      <FlashcardListScreen navigation={listNav as never} />,
-    );
-
-    // Verify the word appears in the list
-    const wordElements = listTree.root.findAll(
-      node => node.props.children === vocabulary.word,
-    );
-    expect(wordElements.length).toBeGreaterThan(0);
 
     // === STEP 3: Verify flashcard is due for review ===
     const dueCards = getDueFlashcards();
@@ -202,16 +177,6 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
 
   it('handles multiple cards in review session', async () => {
     // Save 3 flashcards
-    const lessonResult = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-
-    if (!lessonResult.ok) {
-      throw new Error('Failed to save lesson');
-    }
-
     const flashcardIds: string[] = [];
     for (let i = 0; i < 3; i++) {
       const vocab = {
@@ -221,7 +186,7 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
         meaning_vi: `meaning ${i}`,
       };
       const result = saveFlashcard({
-        lessonId: lessonResult.lessonId,
+        lessonId: 'lesson-1',
         vocabulary: vocab,
         now: '2026-08-17T00:00:00.000Z',
       });

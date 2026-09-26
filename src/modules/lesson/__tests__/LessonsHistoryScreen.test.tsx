@@ -25,8 +25,6 @@ jest.mock('../useLibrarySegments', () => ({
 jest.mock('@react-navigation/native', () => {
   const React = require('react');
   return {
-    // Run focus callbacks as a mount effect: invoking them synchronously
-    // during render would turn screen setState calls into a render loop.
     useFocusEffect: (callback: () => void) =>
       React.useEffect(callback, [callback]),
     useNavigation: () => ({
@@ -35,39 +33,11 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
-jest.mock('@modules/content', () => ({
-  bootstrapContentPackage: jest.fn().mockResolvedValue({ok: true}),
-}));
-
-// TASK-008: the distinct curriculum entry self-loads remote metadata.
-// Shell tests isolate it so no live fetch can resolve after teardown.
-// LING-21 TASK-007: the unified catalog path stays off here — the
-// capability hook resolves to all-false and the readiness predicate to
-// false, pinning the legacy composition under test.
 jest.mock('@modules/curriculumLesson', () => ({
-  CurriculumLessonsEntry: () => null,
   UnifiedLessonsScreen: () => null,
-  isUnifiedLessonReady: () => false,
-  useLessonServerCapabilities: () => ({
-    catalog: false,
-    canonicalDelivery: false,
-    aiMaterialization: false,
-    packagedImport: false,
-    partialRetry: false,
-    privateLibrary: false,
-  }),
 }));
 
-const mockListLessons = jest.fn(() => []);
-const mockGetLessonById = jest.fn(() => null);
 const mockGetDueFlashcards = jest.fn(() => []);
-
-jest.mock('../useLessonRepository', () => ({
-  useLessonRepository: () => ({
-    listLessons: mockListLessons,
-    getLessonById: mockGetLessonById,
-  }),
-}));
 
 jest.mock('../useFlashcardLibrary', () => ({
   useFlashcardLibrary: () => ({
@@ -101,6 +71,7 @@ describe('LessonsHistoryScreen', () => {
 
   beforeEach(() => {
     mockRefresh.mockClear();
+    navigation.navigate.mockClear();
   });
 
   it('renders three tabs', () => {
@@ -167,7 +138,7 @@ describe('LessonsHistoryScreen', () => {
     expect(mockRefresh).toHaveBeenCalled();
   });
 
-  it('shows the practice entry row above the segments (SETE-247)', () => {
+  it('shows the practice entry row above the segments', () => {
     const tree = render(
       <LessonsHistoryScreen navigation={navigation} route={route} />,
     );
@@ -181,12 +152,9 @@ describe('LessonsHistoryScreen', () => {
     expect(
       tree.root.findByProps({testID: 'library-practice-speaking'}),
     ).toBeDefined();
-    expect(() =>
-      tree.root.findByProps({testID: 'library-practice-quick'}),
-    ).toThrow();
   });
 
-  it('routes practice chips to their destinations', () => {
+  it('routes practice chips to DailyReview and SpeakingRoom', () => {
     const tree = render(
       <LessonsHistoryScreen navigation={navigation} route={route} />,
     );
@@ -200,7 +168,7 @@ describe('LessonsHistoryScreen', () => {
     };
 
     press('library-practice-review');
-    expect(navigation.navigate).toHaveBeenCalledWith('FlashcardList');
+    expect(navigation.navigate).toHaveBeenCalledWith('DailyReview');
     press('library-practice-speaking');
     expect(navigation.navigate).toHaveBeenCalledWith('SpeakingRoom');
   });

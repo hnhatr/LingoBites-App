@@ -34,8 +34,7 @@ import {useTranslation} from 'react-i18next';
 import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
-} from '@shared/localData';
-import {useLibraryStore} from '@/store/useLibraryStore';
+} from '@shared/localData/LocalDataDeletionService';
 import {useFeatureFlags} from '@/release';
 import {useAppTheme, type AppTheme} from '@theme';
 import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
@@ -85,7 +84,6 @@ export function ProfileScreen({navigation}: Props) {
   const supportEmail = getSupportEmail();
   const {getAudioCacheStats, listReadyAudioAssets} = useAudioLibrary();
   const {getCapabilityProgressReport} = useProgressReport();
-  const getSummary = useLibraryStore(state => state.getSummary);
   const audioCacheStats = getAudioCacheStats();
   const audioCacheTrailingLabel = `${formatCacheBytes(
     audioCacheStats.readyBytes,
@@ -98,25 +96,23 @@ export function ProfileScreen({navigation}: Props) {
     getGamificationSnapshot(),
   );
   const [learningMetrics, setLearningMetrics] = useState(() => {
-    const summary = getSummary();
     const report = getCapabilityProgressReport();
     return {
-      wordsKnownLabel: formatProfileWordCount(summary.wordCount),
+      wordsKnownLabel: formatProfileWordCount(0),
       accuracyLabel: formatProfileAccuracy(report.firstListenComprehensionRate),
     };
   });
   useFocusEffect(
     useCallback(() => {
       setGamification(getGamificationSnapshot());
-      const summary = getSummary();
       const report = getCapabilityProgressReport();
       setLearningMetrics({
-        wordsKnownLabel: formatProfileWordCount(summary.wordCount),
+        wordsKnownLabel: formatProfileWordCount(0),
         accuracyLabel: formatProfileAccuracy(
           report.firstListenComprehensionRate,
         ),
       });
-    }, [getSummary, getCapabilityProgressReport]),
+    }, [getCapabilityProgressReport]),
   );
   const streak = gamification.currentStreak;
   const streakTitle =

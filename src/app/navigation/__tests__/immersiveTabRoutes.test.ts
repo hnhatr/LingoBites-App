@@ -19,7 +19,6 @@ describe('immersiveTabRoutes', () => {
   it('hides the tab bar on focused sessions (SETE-255)', () => {
     for (const name of [
       'DailyReview',
-      'ProgressiveLesson',
       'ContentLessonRuntime',
       'SpeakingRoom',
       'SpeakingShadowing',

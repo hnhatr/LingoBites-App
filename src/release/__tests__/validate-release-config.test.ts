@@ -1,6 +1,6 @@
 import {featureDependencies} from '../feature-dependencies';
 import {featureRegistry} from '../feature-registry';
-import {getReleaseConfig, listReleaseConfigNames} from '../release-manifest';
+import {getReleaseConfig, listReleaseConfigNames, DEFAULT_RELEASE_NAME} from '../release-manifest';
 import {
   CORE_BETA_WITHOUT_REVIEW,
   makeTestReleaseConfig,
@@ -22,8 +22,6 @@ describe('validateReleaseConfig', () => {
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
 
-    // Every ready/beta feature is on; not_implemented stays off so the
-    // validator never reports "Cannot enable ... not_implemented".
     for (const entry of featureRegistry) {
       if (entry.status === 'not_implemented') {
         expect(Boolean(config.features[entry.key])).toBe(false);
@@ -32,7 +30,6 @@ describe('validateReleaseConfig', () => {
       }
     }
     expect(config.features.stickerSoftTheme).toBe(true);
-    expect(config.features.lessonV2).toBe(true);
     expect(config.features.youtubeLearning).toBe(true);
   });
 
@@ -54,7 +51,6 @@ describe('validateReleaseConfig', () => {
       }
     }
     expect(config.features.stickerSoftTheme).toBe(true);
-    expect(config.features.lessonV2).toBe(true);
     expect(config.features.youtubeLearning).toBe(true);
   });
 
@@ -64,7 +60,7 @@ describe('validateReleaseConfig', () => {
     expect(production.features).toEqual(dev.features);
   });
 
-  it('rejects miniGame when lessonSave is disabled', () => {
+  it('rejects miniGame when reviewSystem is disabled', () => {
     const config = makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW);
     const result = validateReleaseConfig(
       {
@@ -72,8 +68,7 @@ describe('validateReleaseConfig', () => {
         features: {
           ...config.features,
           miniGame: true,
-          reviewSystem: true,
-          lessonSave: false,
+          reviewSystem: false,
         },
       },
       featureRegistry,
@@ -81,26 +76,6 @@ describe('validateReleaseConfig', () => {
     );
     expect(result.valid).toBe(false);
     expect(result.errors.some(error => error.includes('miniGame'))).toBe(true);
-  });
-
-  it('rejects reviewSystem when lessonSave is disabled', () => {
-    const config = makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW);
-    const result = validateReleaseConfig(
-      {
-        ...config,
-        features: {
-          ...config.features,
-          reviewSystem: true,
-          lessonSave: false,
-        },
-      },
-      featureRegistry,
-      featureDependencies,
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors.some(error => error.includes('reviewSystem'))).toBe(
-      true,
-    );
   });
 
   it('rejects unknown feature keys', () => {
@@ -122,8 +97,6 @@ describe('validateReleaseConfig', () => {
     );
   });
 });
-
-import {DEFAULT_RELEASE_NAME} from '../release-manifest';
 
 describe('DEFAULT_RELEASE_NAME', () => {
   it('remains production', () => {

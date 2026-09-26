@@ -8,7 +8,6 @@ import {DB_NAME} from '@shared/db/constants';
 import {resetDatabaseForTests} from '@shared/db/database';
 import {saveFlashcard} from '@shared/db/FlashcardRepository';
 import * as FlashcardRepository from '@shared/db/FlashcardRepository';
-import {saveLesson} from '@shared/db/LessonRepository';
 import {validFullOutput} from '@shared/fixtures';
 import {AppThemeProvider} from '@theme';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
@@ -50,14 +49,7 @@ function revealCard(tree: ReactTestRenderer.ReactTestRenderer) {
 }
 
 function seedCards(count: number) {
-  const lessonRes = saveLesson({
-    confirmedText: `${validFullOutput.original_text} ${count}`,
-    sourceType: 'paste_text',
-    lesson: {...validFullOutput, title: `Review lesson ${count}`},
-  });
-  if (!lessonRes.ok) {
-    throw new Error('Could not seed lesson');
-  }
+  const lessonId = `review-lesson-${count}`;
 
   return Array.from({length: count}, (_, index) => {
     const vocab = {
@@ -67,7 +59,7 @@ function seedCards(count: number) {
       meaning_vi: `meaning-${index + 1}`,
     };
     const result = saveFlashcard({
-      lessonId: lessonRes.lessonId,
+      lessonId,
       vocabulary: vocab,
       now: '2026-08-17T00:00:00.000Z',
     });

@@ -6,8 +6,6 @@ import {FeatureFlagProvider} from '@/release';
 import {trackEvent} from '@modules/analytics';
 import {DB_NAME} from '@shared/db/constants';
 import {resetDatabaseForTests} from '@shared/db/database';
-import {saveLesson} from '@shared/db/LessonRepository';
-import {validFullOutput} from '@shared/fixtures';
 import {AppThemeProvider} from '@theme';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
@@ -108,7 +106,7 @@ async function renderHome(nav = navigation()) {
       <FeatureFlagProvider
         releaseConfig={{
           releaseName: 'test-unified',
-          features: {unifiedLesson: true},
+          features: {},
         }}
       >
         <AppThemeProvider>
@@ -125,15 +123,6 @@ async function renderHome(nav = navigation()) {
     await Promise.resolve();
   });
   return {tree, nav};
-}
-
-function seedPersonalLesson() {
-  const lesson = saveLesson({
-    confirmedText: validFullOutput.original_text,
-    sourceType: 'paste_text',
-    lesson: validFullOutput,
-  });
-  if (!lesson.ok) throw new Error('Could not seed lesson');
 }
 
 describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
@@ -203,8 +192,7 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
     });
   });
 
-  it('keeps the legacy rail when a capability is missing (fail-closed fallback)', async () => {
-    seedPersonalLesson();
+  it('disables canonical catalog when a capability is missing (fail-closed fallback)', async () => {
     mockLessonCapabilities = {
       catalog: true,
       canonicalDelivery: true,
@@ -214,28 +202,14 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
       privateLibrary: true,
     };
     const {tree, nav} = await renderHome();
-    // Legacy personal rail item opens the v1 saved-lesson detail —
-    // never the canonical player.
-    const legacyItems = tree.root.findAll(
+    const canonicalItems = tree.root.findAll(
       node =>
         typeof node.props.testID === 'string' &&
-        node.props.testID.startsWith('home-recent-item-') &&
-        typeof node.props.onPress === 'function',
+        node.props.testID.startsWith('home-recent-item-00000000-'),
     );
-    expect(legacyItems.length).toBeGreaterThan(0);
-    await act(async () => {
-      legacyItems[0].props.onPress();
-    });
-    expect(nav.navigate).toHaveBeenCalledWith(
-      'SavedLessonDetail',
-      expect.objectContaining({lessonId: expect.any(String)}),
-    );
+    expect(canonicalItems.length).toBe(0);
     expect(nav.navigate).not.toHaveBeenCalledWith(
       'CurriculumLesson',
-      expect.anything(),
-    );
-    expect(mockTrackEvent).not.toHaveBeenCalledWith(
-      'unified_lesson_opened',
       expect.anything(),
     );
   });

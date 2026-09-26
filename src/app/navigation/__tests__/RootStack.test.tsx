@@ -11,9 +11,6 @@ describe('RootStack route registration (SETE-289)', () => {
     expect(names).toEqual(
       expect.arrayContaining([
         'YouTubeLesson',
-        'SentenceDetail',
-        'WordDetail',
-        'GrammarDetail',
         'Practice',
       ]),
     );

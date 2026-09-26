@@ -3,7 +3,6 @@ import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '../database';
 import {open} from 'react-native-quick-sqlite';
 import {DB_NAME} from '../constants';
-import {saveLesson} from '../LessonRepository';
 import {
   getDueFlashcards,
   listFlashcards,
@@ -18,17 +17,7 @@ import {
 import type {ReviewEventPayload} from '../types';
 
 function saveFixtureLesson(): string {
-  const result = saveLesson({
-    confirmedText: validFullOutput.original_text,
-    sourceType: 'paste_text',
-    lesson: validFullOutput,
-  });
-
-  if (!result.ok) {
-    throw new Error(`saveLesson failed: ${result.errorCode}`);
-  }
-
-  return result.lessonId;
+  return 'lesson-1';
 }
 
 function readScheduleRow(cardId: string) {

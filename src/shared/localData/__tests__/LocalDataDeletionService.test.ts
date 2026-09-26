@@ -11,8 +11,6 @@ import {
   listReadyAudioAssets,
   markChapterAudioAssetReady,
 } from '@shared/db/AudioAssetRepository';
-import {listLessons, saveLesson} from '@shared/db/LessonRepository';
-import {validFullOutput} from '@shared/fixtures';
 import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
@@ -103,11 +101,6 @@ describe('LocalDataDeletionService', () => {
   });
 
   it('clears all local data and deletes managed recording and audio files', async () => {
-    saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
     insertSpeakingRecording({
       id: 'rec-1',
       mode: 'shadowing',
@@ -147,7 +140,6 @@ describe('LocalDataDeletionService', () => {
       failedFilePaths: [],
     });
     expect(deletedPaths).toEqual(['/tmp/rec-1.m4a', '/tmp/chapter-audio.mp3']);
-    expect(listLessons()).toHaveLength(0);
     expect(listSpeakingRecordings()).toHaveLength(0);
     expect(listReadyAudioAssets()).toHaveLength(0);
   });

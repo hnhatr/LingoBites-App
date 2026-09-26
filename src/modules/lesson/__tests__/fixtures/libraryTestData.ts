@@ -1,6 +1,6 @@
-import type {LessonListItem, ContentLessonState, FlashcardRecord, GrammarBookmark} from '@shared/db/types';
+import type {ContentLessonState, FlashcardRecord, GrammarBookmark} from '@shared/db/types';
 
-export function makeLesson(overrides: Partial<LessonListItem>): LessonListItem {
+export function makeLesson(overrides: Record<string, unknown> = {}) {
   return {
     id: 'lesson-1',
     title: 'Basic Greetings',

@@ -5,8 +5,6 @@ export const INGESTION_ROUTE_REQUIREMENTS = {
   PasteText: 'pasteTextInput',
   ImageCapture: 'imageInput',
   OCRReview: 'ocrReviewEdit',
-  Analyzing: 'aiLessonAnalysis',
-  ProgressiveLesson: 'lessonV2',
 } as const satisfies Record<string, FeatureKey>;
 
 export type IngestionRouteName = keyof typeof INGESTION_ROUTE_REQUIREMENTS;
@@ -43,5 +41,3 @@ export function isIngestionRouteEnabled(
   const feature = INGESTION_ROUTE_REQUIREMENTS[routeName as IngestionRouteName];
   return feature ? isCapabilityChainEnabled(feature, flags) : false;
 }
-
-

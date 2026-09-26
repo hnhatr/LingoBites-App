@@ -1,30 +1,11 @@
 import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
 
 const MIGRATIONS = [
-  `CREATE TABLE IF NOT EXISTS lessons (
-    id TEXT PRIMARY KEY NOT NULL,
-    anonymous_user_id TEXT NOT NULL,
-    lesson_input_hash TEXT NOT NULL,
-    title TEXT NOT NULL,
-    source_type TEXT NOT NULL,
-    ocr_raw_text TEXT,
-    confirmed_text TEXT NOT NULL,
-    vietnamese_translation TEXT NOT NULL,
-    summary TEXT,
-    level TEXT NOT NULL,
-    ai_output_json TEXT NOT NULL,
-    is_saved INTEGER NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-  );`,
-  `CREATE INDEX IF NOT EXISTS idx_lessons_input_hash ON lessons (lesson_input_hash);`,
-  `CREATE INDEX IF NOT EXISTS idx_lessons_created_at ON lessons (created_at DESC);`,
   `CREATE TABLE IF NOT EXISTS app_settings (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL,
     updated_at TEXT NOT NULL
   );`,
-  `ALTER TABLE lessons ADD COLUMN category TEXT NOT NULL DEFAULT 'vocabulary';`,
   `CREATE TABLE IF NOT EXISTS flashcards (
     id TEXT PRIMARY KEY NOT NULL,
     lesson_id TEXT NOT NULL,
@@ -319,100 +300,6 @@ const MIGRATIONS = [
     ON grammar_bookmarks (lesson_id);`,
   `CREATE INDEX IF NOT EXISTS idx_grammar_bookmarks_package_id
     ON grammar_bookmarks (package_id);`,
-  // ---- SETE-159 / M7: progressive lesson-v2 persistence ----
-  `CREATE TABLE IF NOT EXISTS lesson_v2 (
-    lesson_id TEXT PRIMARY KEY NOT NULL,
-    anonymous_user_id TEXT NOT NULL,
-    input_hash TEXT NOT NULL,
-    schema_version TEXT NOT NULL,
-    request_id TEXT NOT NULL,
-    status TEXT NOT NULL,
-    revision INTEGER NOT NULL,
-    source_text TEXT NOT NULL,
-    word_count INTEGER NOT NULL,
-    char_count INTEGER NOT NULL,
-    detected_language TEXT NOT NULL,
-    title TEXT,
-    level TEXT NOT NULL,
-    prompt_version TEXT NOT NULL,
-    is_saved INTEGER NOT NULL DEFAULT 0,
-    warnings_json TEXT NOT NULL DEFAULT '[]',
-    error_json TEXT,
-    practice_json TEXT NOT NULL DEFAULT '[]',
-    expires_at TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-  );`,
-  `CREATE INDEX IF NOT EXISTS idx_lesson_v2_updated_at
-    ON lesson_v2 (updated_at DESC);`,
-  `CREATE TABLE IF NOT EXISTS lesson_v2_sentences (
-    lesson_id TEXT NOT NULL,
-    sentence_id TEXT NOT NULL,
-    idx INTEGER NOT NULL,
-    text TEXT NOT NULL,
-    char_start INTEGER NOT NULL,
-    char_end INTEGER NOT NULL,
-    chunk_id TEXT NOT NULL,
-    status TEXT NOT NULL,
-    translation TEXT,
-    simple_meaning TEXT,
-    phrases_json TEXT NOT NULL,
-    tts_json TEXT NOT NULL,
-    related_vocabulary_ids_json TEXT NOT NULL,
-    related_grammar_ids_json TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    PRIMARY KEY (lesson_id, sentence_id)
-  );`,
-  `CREATE INDEX IF NOT EXISTS idx_lesson_v2_sentences_lesson_id
-    ON lesson_v2_sentences (lesson_id, idx);`,
-  `CREATE TABLE IF NOT EXISTS lesson_v2_chunks (
-    lesson_id TEXT NOT NULL,
-    chunk_id TEXT NOT NULL,
-    idx INTEGER NOT NULL,
-    sentence_ids_json TEXT NOT NULL,
-    status TEXT NOT NULL,
-    attempts INTEGER NOT NULL,
-    error_code TEXT,
-    retryable INTEGER NOT NULL,
-    PRIMARY KEY (lesson_id, chunk_id)
-  );`,
-  `CREATE TABLE IF NOT EXISTS lesson_v2_vocabulary (
-    lesson_id TEXT NOT NULL,
-    vocab_id TEXT NOT NULL,
-    word TEXT NOT NULL,
-    phrase_from_text TEXT,
-    word_type TEXT,
-    meaning_vi TEXT NOT NULL,
-    ipa TEXT,
-    ipa_source TEXT NOT NULL,
-    source_sentence_id TEXT NOT NULL,
-    example TEXT NOT NULL,
-    example_translation TEXT NOT NULL,
-    tts_json TEXT NOT NULL,
-    PRIMARY KEY (lesson_id, vocab_id)
-  );`,
-  `CREATE TABLE IF NOT EXISTS lesson_v2_grammar (
-    lesson_id TEXT NOT NULL,
-    grammar_id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    name_vi TEXT NOT NULL,
-    pattern TEXT NOT NULL,
-    found_in_sentence_id TEXT NOT NULL,
-    found_in_text TEXT NOT NULL,
-    explanation_vi TEXT NOT NULL,
-    beginner_tip TEXT NOT NULL,
-    examples_json TEXT NOT NULL,
-    PRIMARY KEY (lesson_id, grammar_id)
-  );`,
-  `CREATE TABLE IF NOT EXISTS lesson_v2_units (
-    lesson_id TEXT NOT NULL,
-    unit_key TEXT NOT NULL,
-    status TEXT NOT NULL,
-    attempts INTEGER NOT NULL,
-    error_code TEXT,
-    retryable INTEGER NOT NULL,
-    PRIMARY KEY (lesson_id, unit_key)
-  );`,
   // ---- SETE-126 / P8: Practice set, session, and events ----
   `CREATE TABLE IF NOT EXISTS practice_sets (
     id TEXT PRIMARY KEY NOT NULL,
@@ -590,16 +477,7 @@ const DOWN_MIGRATIONS_M6: string[] = [
   `DROP TABLE IF EXISTS content_lesson_state;`,
 ];
 
-const DOWN_MIGRATIONS_M7: string[] = [
-  `DROP INDEX IF EXISTS idx_lesson_v2_sentences_lesson_id;`,
-  `DROP TABLE IF EXISTS lesson_v2_units;`,
-  `DROP TABLE IF EXISTS lesson_v2_grammar;`,
-  `DROP TABLE IF EXISTS lesson_v2_vocabulary;`,
-  `DROP TABLE IF EXISTS lesson_v2_chunks;`,
-  `DROP TABLE IF EXISTS lesson_v2_sentences;`,
-  `DROP INDEX IF EXISTS idx_lesson_v2_updated_at;`,
-  `DROP TABLE IF EXISTS lesson_v2;`,
-];
+
 
 const DOWN_MIGRATIONS_M8: string[] = [
   `DROP INDEX IF EXISTS idx_practice_events_sync_status;`,
@@ -717,12 +595,7 @@ export function downgradeLibraryPersistenceMigrations(
   }
 }
 
-/** Reverse the M7 progressive lesson-v2 schema migration. */
-export function downgradeLessonV2Migrations(db: QuickSQLiteConnection): void {
-  for (const sql of DOWN_MIGRATIONS_M7) {
-    db.execute(sql);
-  }
-}
+
 
 /** Reverse the M8 practice schema migration. */
 export function downgradePracticeMigrations(db: QuickSQLiteConnection): void {

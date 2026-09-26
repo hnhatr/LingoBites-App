@@ -1,5 +1,3 @@
-import type {AIOutput} from '../schemas/ai-output-v1';
-
 export type ApiErrorCode =
   | 'VALIDATION_EMPTY_TEXT'
   | 'VALIDATION_TEXT_TOO_LONG'
@@ -42,7 +40,7 @@ export type AIAnalyzeSuccessBody = {
     input_tokens?: number;
     output_tokens?: number;
   };
-  data: AIOutput;
+  data: unknown;
 };
 
 export type OCRSourceType = 'camera' | 'gallery';

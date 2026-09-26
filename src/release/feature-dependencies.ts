@@ -10,12 +10,8 @@ export const featureDependencies: Record<FeatureKey, DependencyGroup[]> = {
   imageInput: [],
   ocrScanner: [['imageInput']],
   ocrReviewEdit: [['ocrScanner']],
-  aiLessonAnalysis: [['pasteTextInput'], ['ocrReviewEdit']],
-  lessonResultView: [],
-  lessonSave: [['lessonResultView']],
-  lessonHistory: [['lessonSave']],
-  shortPractice: [['lessonResultView']],
-  pronunciationSupport: [['lessonResultView']],
+  shortPractice: [],
+  pronunciationSupport: [],
 
   themeSystem: [],
   themeSwitcher: [['themeSystem']],
@@ -27,23 +23,18 @@ export const featureDependencies: Record<FeatureKey, DependencyGroup[]> = {
   cartoonTheme: [['themeSystem']],
   stickerSoftTheme: [['themeSystem']],
 
-  reviewSystem: [['lessonSave']],
-  miniGame: [['lessonSave', 'reviewSystem']],
-  wordMatchGame: [['miniGame', 'lessonSave']],
-  fillBlankGame: [['miniGame', 'lessonSave']],
-  tenseQuizGame: [['miniGame', 'lessonSave']],
-  sentenceOrderGame: [['miniGame', 'lessonSave']],
+  reviewSystem: [],
+  miniGame: [['reviewSystem']],
+  wordMatchGame: [['miniGame']],
+  fillBlankGame: [['miniGame']],
+  tenseQuizGame: [['miniGame']],
+  sentenceOrderGame: [['miniGame']],
   flashcardChallenge: [['miniGame', 'reviewSystem']],
 
-  situationLearning: [['aiLessonAnalysis', 'lessonSave']],
+  situationLearning: [],
   dialogueGenerator: [['situationLearning']],
   phraseExtractor: [['situationLearning']],
   situationPractice: [['situationLearning', 'reviewSystem']],
 
-  // Standalone v2 flow; when OFF the app keeps using the v1 lesson path (AC24).
-  lessonV2: [],
   youtubeLearning: [],
-  // Unified lesson experience (LING-21); no dependencies yet — TASK-007/008
-  // define composition and activation requirements when enabling it.
-  unifiedLesson: [],
 };

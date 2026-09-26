@@ -12,7 +12,7 @@ import {LibraryEmptyState} from './LibraryEmptyState';
 import {SectionHeader} from '@components/SectionHeader';
 
 export interface LessonsTabContentProps {
-  personalLessons: any[];
+  personalLessons?: any[];
   packagedLessons: any[];
 }
 
@@ -20,13 +20,13 @@ interface LessonItem {
   id: string;
   title: string;
   summary: string | null;
-  type: 'personal' | 'personal_v2' | 'packaged';
+  type: 'packaged';
 }
 
 interface LessonSection {
   title: string;
   data: LessonItem[];
-  type: 'personal' | 'packaged';
+  type: 'packaged';
 }
 
 function createStyles(theme: AppTheme) {
@@ -51,8 +51,6 @@ function createStyles(theme: AppTheme) {
       paddingHorizontal: 0,
       marginTop: theme.spacing.md,
       marginBottom: theme.spacing.sm,
-      // Sticky headers render above scrolled cards: keep the header opaque
-      // (same as the screen background) so card text never shows through.
       backgroundColor: theme.colors.background,
       zIndex: 1,
     },
@@ -60,7 +58,6 @@ function createStyles(theme: AppTheme) {
 }
 
 export function LessonsTabContent({
-  personalLessons,
   packagedLessons,
 }: LessonsTabContentProps) {
   const {theme} = useAppTheme();
@@ -69,27 +66,9 @@ export function LessonsTabContent({
     useNavigation<NativeStackNavigationProp<LessonsStackParamList>>();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  // Prepare sections
   const sections = useMemo((): LessonSection[] => {
     const result: LessonSection[] = [];
 
-    // Personal lessons section
-    if (personalLessons && personalLessons.length > 0) {
-      const personalItems: LessonItem[] = personalLessons.map(lesson => ({
-        id: lesson.id,
-        title: lesson.title,
-        summary: lesson.summary,
-        type: lesson.type === 'personal_v2' ? 'personal_v2' : 'personal',
-      }));
-
-      result.push({
-        title: 'Bài học cá nhân',
-        data: personalItems,
-        type: 'personal',
-      });
-    }
-
-    // Packaged lessons section
     if (packagedLessons && packagedLessons.length > 0) {
       const packagedItems: LessonItem[] = packagedLessons.map(lesson => ({
         id: lesson.id,
@@ -106,23 +85,17 @@ export function LessonsTabContent({
     }
 
     return result;
-  }, [personalLessons, packagedLessons]);
+  }, [packagedLessons]);
 
   const handleLessonPress = (item: LessonItem) => {
-    if (item.type === 'personal') {
-      navigation.navigate('SavedLessonDetail', {lessonId: item.id});
-    } else if (item.type === 'personal_v2') {
-      navigation.navigate('ProgressiveLesson', {lessonId: item.id});
-    } else {
-      navigation.navigate('ContentLessonRuntime', {lessonId: item.id});
-    }
+    navigation.navigate('ContentLessonRuntime', {lessonId: item.id});
   };
 
   const renderLessonItem = ({item}: {item: LessonItem}) => (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={item.title}
-      accessibilityHint={`${item.type === 'personal' || item.type === 'personal_v2' ? 'Bài học cá nhân' : 'Bài học theo lộ trình'}. Chạm để xem chi tiết.`}
+      accessibilityHint="Bài học theo lộ trình. Chạm để xem chi tiết."
       onPress={() => handleLessonPress(item)}
       testID={`lesson-item-${item.id}`}
       style={styles.pressable}
@@ -158,7 +131,6 @@ export function LessonsTabContent({
     </View>
   );
 
-  // Show empty state if no lessons at all
   if (sections.length === 0) {
     return <LibraryEmptyState type="lessons" />;
   }

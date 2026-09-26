@@ -4,7 +4,7 @@ import ReactTestRenderer from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
 import {AppThemeProvider} from '@theme';
 import {ProgressReportScreen} from '../ProgressReportScreen';
-import {clearAllLocalData} from '@shared/db/LessonRepository';
+import {clearAllLocalDatabaseRows} from '@shared/db/localDataWipe';
 
 const mockGoBack = jest.fn();
 
@@ -51,7 +51,7 @@ function findPressableByText(
 
 describe('ProgressReportScreen (REQ-39)', () => {
   beforeEach(() => {
-    clearAllLocalData();
+    void clearAllLocalDatabaseRows();
     mockGoBack.mockReset();
     jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   });

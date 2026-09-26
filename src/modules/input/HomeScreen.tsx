@@ -33,7 +33,6 @@ import {
   type UnifiedLessonSummary,
 } from '@modules/curriculumLesson';
 import {trackEvent} from '../analytics';
-import {useLessonRepository} from '../lesson';
 import {useAppTheme, type AppTheme} from '@theme';
 import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
 import {useTranslation} from 'react-i18next';
@@ -140,13 +139,8 @@ export function HomeScreen({navigation}: Props) {
   const rootNavigation =
     tabNavigation?.getParent<NavigationProp<RootStackParamList>>('RootStack');
   const {getContentLessonById, listActivePackageLessons} = useContentLibrary();
-  const {getLessonById, listLessons} = useLessonRepository();
-  // LING-41 TASK-006: canonical mode reads backend summaries instead of
-  // local lesson rows. Fail-closed: any missing capability keeps the
-  // pre-cleanup legacy composition below (rollback path until
-  // Checkpoint B).
   const lessonCapabilities = useLessonServerCapabilities(
-    config.features.unifiedLesson === true,
+    config.features.unifiedLesson !== false,
   );
   const unifiedMode = isUnifiedLessonReady(config.features, lessonCapabilities);
   const canonicalCatalog = useLessonCatalog({enabled: unifiedMode});
@@ -196,22 +190,7 @@ export function HomeScreen({navigation}: Props) {
         : null;
       setStartedLesson(startedRow);
 
-      // Rail candidates: only lessons the user actually created. Never
-      // backfill with unopened catalog lessons, and never repeat the lesson
-      // already shown in the hero.
-      const personal = listLessons();
-      setOwnItems(
-        personal
-          .filter(item => item.id !== startedRow?.id)
-          .slice(0, RECENT_LIMIT)
-          .map(item => ({
-            kind: 'personal' as const,
-            id: item.id,
-            title: item.title,
-            meta: t('home.vocab_count', {count: item.vocabularyCount}),
-            level: getLessonById(item.id)?.level,
-          })),
-      );
+      setOwnItems([]);
 
       let packaged: ReturnType<typeof listActivePackageLessons> = [];
       let count: number | null = null;
@@ -238,22 +217,6 @@ export function HomeScreen({navigation}: Props) {
       // "Học lại bài cũ": newest saved-or-personal lesson by timestamp.
       // No is_completed flag exists yet, so recency is the proxy.
       const candidates: (RelearnTarget & {at: string})[] = [];
-      const newestPersonal = personal[0];
-      if (newestPersonal) {
-        const record = getLessonById(newestPersonal.id);
-        if (record) {
-          candidates.push({
-            kind: 'personal',
-            id: record.id,
-            title: record.title,
-            level: record.level,
-            at: [record.updatedAt, record.createdAt]
-              .filter(Boolean)
-              .sort()
-              .pop() as string,
-          });
-        }
-      }
       const newestSaved = listSavedLessons()[0];
       if (newestSaved) {
         const row = getContentLessonById(newestSaved.lessonId);
@@ -288,10 +251,7 @@ export function HomeScreen({navigation}: Props) {
     }, [
       canonicalRefresh,
       getContentLessonById,
-      getLessonById,
       listActivePackageLessons,
-      listLessons,
-      t,
       unifiedMode,
     ]),
   );
@@ -433,11 +393,7 @@ export function HomeScreen({navigation}: Props) {
       navigation.navigate('CurriculumLesson', {lessonId: item.id});
       return;
     }
-    if (item.kind === 'personal') {
-      navigation.navigate('SavedLessonDetail', {lessonId: item.id});
-    } else {
-      navigation.navigate('ContentLessonRuntime', {lessonId: item.id});
-    }
+    navigation.navigate('ContentLessonRuntime', {lessonId: item.id});
   };
 
   return (

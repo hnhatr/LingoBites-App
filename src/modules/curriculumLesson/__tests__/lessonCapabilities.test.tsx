@@ -128,17 +128,16 @@ describe('isUnifiedLessonReady', () => {
     privateLibrary: false,
   };
 
-  it('requires the flag and all five canonical capabilities', () => {
-    expect(isUnifiedLessonReady({unifiedLesson: true}, on)).toBe(true);
+  it('requires all canonical capabilities when flag is not false', () => {
+    expect(isUnifiedLessonReady({}, on)).toBe(true);
     expect(isUnifiedLessonReady({unifiedLesson: false}, on)).toBe(false);
-    expect(isUnifiedLessonReady({}, on)).toBe(false);
-    expect(isUnifiedLessonReady({unifiedLesson: true}, off)).toBe(false);
+    expect(isUnifiedLessonReady({}, off)).toBe(false);
     expect(
-      isUnifiedLessonReady({unifiedLesson: true}, {...on, catalog: false}),
+      isUnifiedLessonReady({}, {...on, catalog: false}),
     ).toBe(false);
     expect(
       isUnifiedLessonReady(
-        {unifiedLesson: true},
+        {},
         {...on, aiMaterialization: false},
       ),
     ).toBe(false);
@@ -146,11 +145,11 @@ describe('isUnifiedLessonReady', () => {
 
   it('stays off when targeted retry or the private library is unavailable', () => {
     expect(
-      isUnifiedLessonReady({unifiedLesson: true}, {...on, partialRetry: false}),
+      isUnifiedLessonReady({}, {...on, partialRetry: false}),
     ).toBe(false);
     expect(
       isUnifiedLessonReady(
-        {unifiedLesson: true},
+        {},
         {...on, privateLibrary: false},
       ),
     ).toBe(false);

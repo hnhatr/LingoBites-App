@@ -8,23 +8,12 @@ import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {MaterialIcon} from '@components/MaterialIcon';
 import {useAppTheme, type AppTheme} from '@theme';
-import {useFeatureFlags} from '@/release';
-import {bootstrapContentPackage} from '@modules/content';
-import {
-  CurriculumLessonsEntry,
-  UnifiedLessonsScreen,
-  isUnifiedLessonReady,
-  useLessonServerCapabilities,
-} from '@modules/curriculumLesson';
+import {UnifiedLessonsScreen} from '@modules/curriculumLesson';
 import {GrammarTabContent} from './components/GrammarTabContent';
-import {LessonsTabContent} from './components/LessonsTabContent';
 import {SearchAndFilterBar} from './components/SearchAndFilterBar';
 import {SegmentedTabBar} from './components/SegmentedTabBar';
 import {VocabularyTabContent} from './components/VocabularyTabContent';
-import type {PracticeQuestion} from '@shared/schemas/ai-output-v1';
-import {resolveQuickPractice} from '@modules/practice';
 import {useFlashcardLibrary} from './useFlashcardLibrary';
-import {useLessonRepository} from './useLessonRepository';
 import {useLibrarySegments} from './useLibrarySegments';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
@@ -34,8 +23,6 @@ type PracticeChip = {
   value: string;
   labelKey: string;
   backgroundKey: 'accentSoft' | 'tertiarySoft' | 'secondarySoft';
-  // Same pairing as HomeScreen chips: onPrimaryContainer/onSecondaryContainer
-  // fall below 4.5:1 on the light soft tints in neo/comic/core.
   inkKey: 'primary' | 'onTertiaryContainer' | 'secondary';
   onPress: () => void;
   testID: string;
@@ -46,29 +33,17 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
   const {getDueFlashcards} = useFlashcardLibrary();
-  const {getLessonById, listLessons} = useLessonRepository();
   const [dueCount, setDueCount] = useState(0);
-  const [quickQuestions, setQuickQuestions] = useState<PracticeQuestion[]>([]);
-  const [quickTitle, setQuickTitle] = useState('');
 
   const [activeTab, setActiveTab] = useState<
     'lessons' | 'vocabulary' | 'grammar'
   >('lessons');
-  const {config} = useFeatureFlags();
-  const lessonCapabilities = useLessonServerCapabilities(
-    config.features.unifiedLesson === true,
-  );
-  const unifiedMode = isUnifiedLessonReady(config.features, lessonCapabilities);
 
   const {
-    personalLessons,
-    packagedLessons,
     vocabulary,
     grammar,
-    lessonsFilter,
     vocabularyFilter,
     grammarFilter,
-    setLessonsFilter,
     setVocabularyFilter,
     setGrammarFilter,
     refresh,
@@ -76,27 +51,20 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      if (!unifiedMode) {
-        bootstrapContentPackage().catch(() => {});
-      }
       refresh();
       setDueCount(getDueFlashcards().length);
-      const personal = listLessons();
-      const {questions, title} = resolveQuickPractice(personal, getLessonById);
-      setQuickQuestions(questions);
-      setQuickTitle(title);
-    }, [refresh, getDueFlashcards, getLessonById, listLessons, unifiedMode]),
+    }, [refresh, getDueFlashcards]),
   );
 
   const practiceChips: PracticeChip[] = useMemo(() => {
-    const chips: PracticeChip[] = [
+    return [
       {
         icon: 'refresh',
         value: t('home.shortcut_review_meta', {count: dueCount}),
         labelKey: 'home.shortcut_review',
         backgroundKey: 'accentSoft',
         inkKey: 'primary',
-        onPress: () => navigation.navigate('FlashcardList'),
+        onPress: () => navigation.navigate('DailyReview'),
         testID: 'library-practice-review',
       },
       {
@@ -109,39 +77,13 @@ export function LessonsHistoryScreen({navigation}: Props) {
         testID: 'library-practice-speaking',
       },
     ];
-    if (quickQuestions.length > 0) {
-      const questions = quickQuestions;
-      const title = quickTitle || t('home.shortcut_quick');
-      chips.push({
-        icon: 'bolt',
-        value: t('home.shortcut_quick_meta'),
-        labelKey: 'home.shortcut_quick',
-        backgroundKey: 'secondarySoft',
-        inkKey: 'secondary',
-        onPress: () =>
-          navigation.navigate('Practice', {
-            questions,
-            title,
-          }),
-        testID: 'library-practice-quick',
-      });
-    }
-    return chips;
-  }, [dueCount, navigation, quickQuestions, quickTitle, t]);
+  }, [dueCount, navigation, t]);
 
   const currentFilter =
-    activeTab === 'lessons'
-      ? lessonsFilter
-      : activeTab === 'vocabulary'
-      ? vocabularyFilter
-      : grammarFilter;
+    activeTab === 'vocabulary' ? vocabularyFilter : grammarFilter;
 
   const setCurrentFilter =
-    activeTab === 'lessons'
-      ? setLessonsFilter
-      : activeTab === 'vocabulary'
-      ? setVocabularyFilter
-      : setGrammarFilter;
+    activeTab === 'vocabulary' ? setVocabularyFilter : setGrammarFilter;
 
   return (
     <AppScreen>
@@ -190,7 +132,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
       <SegmentedTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {!(unifiedMode && activeTab === 'lessons') && (
+      {activeTab !== 'lessons' && (
         <SearchAndFilterBar
           searchQuery={currentFilter.searchQuery}
           sourceFilter={currentFilter.sourceFilter}
@@ -205,21 +147,11 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
       {activeTab === 'lessons' && (
         <View style={themedStyles.tabContent} testID="lessons-tab-content">
-          {unifiedMode ? (
-            <UnifiedLessonsScreen
-              onOpenLesson={lessonId =>
-                navigation.navigate('CurriculumLesson', {lessonId})
-              }
-            />
-          ) : (
-            <>
-              <LessonsTabContent
-                personalLessons={personalLessons}
-                packagedLessons={packagedLessons}
-              />
-              <CurriculumLessonsEntry />
-            </>
-          )}
+          <UnifiedLessonsScreen
+            onOpenLesson={lessonId =>
+              navigation.navigate('CurriculumLesson', {lessonId})
+            }
+          />
         </View>
       )}
       {activeTab === 'vocabulary' && (

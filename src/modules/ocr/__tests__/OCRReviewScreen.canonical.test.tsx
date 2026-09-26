@@ -3,15 +3,10 @@ import {Text, TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
 import {AppThemeProvider} from '@theme';
-import {createLessonV2Skeleton} from '@shared/api/lessonV2Client';
 import {OCRReviewScreen} from '../OCRReviewScreen';
 
 jest.mock('../OCRService', () => ({
   extractText: jest.fn(),
-}));
-
-jest.mock('@shared/api/lessonV2Client', () => ({
-  createLessonV2Skeleton: jest.fn(),
 }));
 
 jest.mock('@modules/analytics', () => ({
@@ -41,9 +36,7 @@ jest.mock('@modules/curriculumLesson', () => {
   };
 });
 
-const createSkeleton = createLessonV2Skeleton as jest.MockedFunction<
-  typeof createLessonV2Skeleton
->;
+const createSkeleton = jest.fn();
 
 const mockNavigate = jest.fn();
 const mockTabNavigate = jest.fn();
@@ -90,7 +83,7 @@ const route = {
 function renderOCRReviewScreen() {
   return ReactTestRenderer.create(
     <FeatureFlagProvider
-      releaseConfig={{releaseName: 'test', features: {unifiedLesson: true}}}
+      releaseConfig={{releaseName: 'test', features: {}}}
     >
       <AppThemeProvider>
         <OCRReviewScreen navigation={navigation} route={route} />

@@ -12,11 +12,11 @@ describe('makeTestReleaseConfig', () => {
   it('applies explicit overrides only', () => {
     const config = makeTestReleaseConfig({
       reviewSystem: true,
-      lessonSave: true,
+      ocrScanner: true,
       pasteTextInput: true,
     });
     expect(config.features.reviewSystem).toBe(true);
-    expect(config.features.lessonSave).toBe(true);
+    expect(config.features.ocrScanner).toBe(true);
     expect(config.features.pasteTextInput).toBe(true);
     expect(config.features.imageInput).toBe(false);
   });

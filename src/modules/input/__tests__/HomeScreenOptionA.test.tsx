@@ -1,15 +1,12 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {StyleSheet} from 'react-native';
 import {open} from 'react-native-quick-sqlite';
 import {FeatureFlagProvider} from '@/release';
 import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@/test-support';
 import {DB_NAME} from '@shared/db/constants';
 import {resetDatabaseForTests} from '@shared/db/database';
-import {saveLesson} from '@shared/db/LessonRepository';
 import {startContentLesson} from '@shared/db/ContentLessonStateRepository';
 import {listActivePackageLessons} from '@shared/db/ContentRuntimeRepository';
-import {validFullOutput} from '@shared/fixtures';
 import {AppThemeProvider} from '@theme';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {bootstrapContentPackage} from '../../content/bootstrap/contentBootstrap';
@@ -37,6 +34,8 @@ async function renderHome(nav = navigation()) {
         </AppThemeProvider>
       </FeatureFlagProvider>,
     );
+    await Promise.resolve();
+    await Promise.resolve();
     await Promise.resolve();
   });
   return tree;
@@ -116,112 +115,6 @@ describe('HomeScreen learning-only layout (SETE-250 Option B)', () => {
         tree.root.findAll(node => node.props.testID === testID).length,
       ).toBe(0);
     }
-  });
-
-  it('shows starter hero + explore grid + rail once a personal lesson exists', async () => {
-    const lesson = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-    if (!lesson.ok) throw new Error('Could not seed lesson');
-    const tree = await renderHome();
-    // Single hero CTA: create (the packaged library is empty, so no pick);
-    // the past lesson stays reachable through the rail.
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-starter-section')
-        .length,
-    ).toBeGreaterThan(0);
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-starter-create')
-        .length,
-    ).toBeGreaterThan(0);
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-starter-pick')
-        .length,
-    ).toBe(0);
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-explore-section')
-        .length,
-    ).toBeGreaterThan(0);
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-lessons-section')
-        .length,
-    ).toBeGreaterThan(0);
-    // No started lesson → continue block hidden, starter leads.
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-continue-section')
-        .length,
-    ).toBe(0);
-  });
-
-  it('opens Lessons from the rail view-all entry point', async () => {
-    const lesson = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-    if (!lesson.ok) throw new Error('Could not seed lesson');
-    const tabNavigate = jest.fn();
-    const tree = await renderHome(navigation(tabNavigate));
-    await act(async () => pressByTestID(tree, 'home-recent-view-all'));
-    expect(tabNavigate).toHaveBeenCalledWith('Lessons');
-  });
-
-  it('shows saved lessons in the lessons section and routes taps', async () => {
-    const tabNavigate = jest.fn();
-    const nav = navigation(tabNavigate);
-    const lesson = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-    if (!lesson.ok) throw new Error('Could not seed lesson');
-    const tree = await renderHome(nav);
-    expect(
-      tree.root.findAll(
-        node => node.props.testID === `home-recent-item-${lesson.lessonId}`,
-      ).length,
-    ).toBeGreaterThan(0);
-    const rowButtons = tree.root.findAll(
-      item =>
-        typeof item.props.onPress === 'function' &&
-        typeof item.props.accessibilityLabel === 'string' &&
-        item.props.accessibilityLabel.startsWith(`${validFullOutput.title},`),
-    );
-    if (rowButtons.length === 0)
-      throw new Error('No recent lesson row button found');
-    await act(async () => rowButtons[0].props.onPress());
-    expect(nav.navigate).toHaveBeenCalledWith('SavedLessonDetail', {
-      lessonId: lesson.lessonId,
-    });
-    await act(async () => pressByTestID(tree, 'home-recent-view-all'));
-    expect(tabNavigate).toHaveBeenCalledWith('Lessons');
-  });
-
-  it('gives "view all" a 44pt touch target', async () => {
-    const lesson = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-    if (!lesson.ok) throw new Error('Could not seed lesson');
-    const tree = await renderHome();
-    const viewAll = tree.root
-      .findAll(item => item.props.testID === 'home-recent-view-all')
-      .find(item => typeof item.props.onPress === 'function');
-    if (!viewAll) throw new Error('No view-all pressable found');
-    const style = StyleSheet.flatten(viewAll.props.style);
-    const minHeight = (style.minHeight as number) ?? 0;
-    const verticalPadding =
-      ((style.paddingVertical as number) ?? 0) +
-      ((style.hitSlop as {top?: number; bottom?: number} | undefined)?.top ??
-        0) +
-      ((style.hitSlop as {top?: number; bottom?: number} | undefined)?.bottom ??
-        0);
-    expect(Math.max(minHeight, 18 + verticalPadding)).toBeGreaterThanOrEqual(
-      44,
-    );
   });
 
   it('shows the continue block for a started lesson with no fake progress', async () => {

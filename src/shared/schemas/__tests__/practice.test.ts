@@ -8,16 +8,14 @@ import {
   PRACTICE_CALCULATOR_VERSION,
   PRACTICE_SNAPSHOT_SCHEMA_VERSION,
 } from '../practice';
-import { SCHEMA_VERSION_V2 } from '../lesson-v2';
-
 describe('practice schemas', () => {
-  it('Version constants are detached from lesson-v2', () => {
-    expect(PRACTICE_CONTRACT_VERSION.toString()).not.toBe(SCHEMA_VERSION_V2);
-    expect(PRACTICE_GENERATOR_VERSION).not.toBe(SCHEMA_VERSION_V2);
-    expect(PRACTICE_VALIDATOR_VERSION).not.toBe(SCHEMA_VERSION_V2);
-    expect(PRACTICE_GRADER_VERSION).not.toBe(SCHEMA_VERSION_V2);
-    expect(PRACTICE_CALCULATOR_VERSION).not.toBe(SCHEMA_VERSION_V2);
-    expect(PRACTICE_SNAPSHOT_SCHEMA_VERSION).not.toBe(SCHEMA_VERSION_V2);
+  it('Version constants are defined', () => {
+    expect(PRACTICE_CONTRACT_VERSION).toBeDefined();
+    expect(PRACTICE_GENERATOR_VERSION).toBeDefined();
+    expect(PRACTICE_VALIDATOR_VERSION).toBeDefined();
+    expect(PRACTICE_GRADER_VERSION).toBeDefined();
+    expect(PRACTICE_CALCULATOR_VERSION).toBeDefined();
+    expect(PRACTICE_SNAPSHOT_SCHEMA_VERSION).toBeDefined();
   });
 
   it('MeaningChoiceSchema validates correct data', () => {

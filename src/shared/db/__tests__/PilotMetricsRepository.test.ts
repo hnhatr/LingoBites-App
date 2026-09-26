@@ -9,11 +9,11 @@ import {
   insertSpeakingRecording,
   captureErrorEvent,
 } from '../SpeakingRepository';
-import {clearAllLocalData} from '../LessonRepository';
+import {clearAllLocalDatabaseRows} from '../localDataWipe';
 
 describe('PilotMetricsRepository (REQ-39 & CON-6)', () => {
   beforeEach(() => {
-    clearAllLocalData();
+    void clearAllLocalDatabaseRows();
   });
 
   test('returns "Chưa đủ dữ liệu" / null for empty windows and missing metrics', () => {
@@ -137,7 +137,7 @@ describe('PilotMetricsRepository (REQ-39 & CON-6)', () => {
       createdAt: '2026-09-05T10:00:00.000Z',
     });
 
-    clearAllLocalData();
+    void clearAllLocalDatabaseRows();
 
     const report = getCapabilityProgressReport();
     expect(report.sentencesSpokenWithoutLookingCount).toBe(0);

@@ -1,15 +1,11 @@
 import type {FeatureKey} from '@/release/feature-registry';
 
-/** Paste / OCR / AI lesson pipeline plus saved-lesson history and short practice. */
+/** Paste / OCR pipeline plus short practice. */
 export const MT_CORE_INGESTION: Partial<Record<FeatureKey, boolean>> = {
   pasteTextInput: true,
   imageInput: true,
   ocrScanner: true,
   ocrReviewEdit: true,
-  aiLessonAnalysis: true,
-  lessonResultView: true,
-  lessonSave: true,
-  lessonHistory: true,
   shortPractice: true,
 };
 
@@ -32,7 +28,6 @@ export const CORE_BETA_WITHOUT_REVIEW: Partial<Record<FeatureKey, boolean>> = {
   ...FULL_THEME_STACK,
   darkTheme: false,
   reviewSystem: false,
-  lessonV2: false,
   youtubeLearning: false,
 };
 
@@ -41,20 +36,15 @@ export const CORE_WITH_REVIEW: Partial<Record<FeatureKey, boolean>> = {
   ...MT_CORE_INGESTION,
   ...FULL_THEME_STACK,
   reviewSystem: true,
-  lessonV2: false,
   youtubeLearning: false,
 };
 
-/** Offline review MVP: saved lessons + review only, no ingestion inputs. */
+/** Offline review MVP: review only, no ingestion inputs. */
 export const OFFLINE_REVIEW_MVP: Partial<Record<FeatureKey, boolean>> = {
   pasteTextInput: false,
   imageInput: false,
   ocrScanner: false,
   ocrReviewEdit: false,
-  aiLessonAnalysis: false,
-  lessonResultView: true,
-  lessonSave: true,
-  lessonHistory: true,
   shortPractice: false,
   themeSystem: true,
   themeSwitcher: false,
@@ -66,7 +56,6 @@ export const OFFLINE_REVIEW_MVP: Partial<Record<FeatureKey, boolean>> = {
   cartoonTheme: false,
   stickerSoftTheme: true,
   reviewSystem: true,
-  lessonV2: false,
   youtubeLearning: false,
 };
 
@@ -81,7 +70,6 @@ export const FULL_FEATURE_SHOWCASE_FLAGS: Partial<Record<FeatureKey, boolean>> =
   ...MT_CORE_INGESTION,
   ...FULL_THEME_STACK,
   reviewSystem: true,
-  lessonV2: false,
   youtubeLearning: false,
 };
 
@@ -90,6 +78,5 @@ export const ALL_IMPLEMENTED_FEATURES: Partial<Record<FeatureKey, boolean>> = {
   ...MT_CORE_INGESTION,
   ...FULL_THEME_STACK,
   reviewSystem: true,
-  lessonV2: true,
   youtubeLearning: true,
 };

@@ -22,17 +22,7 @@ import {
   ImageCaptureScreen,
 } from '@modules/input';
 import {OCRReviewScreen} from '@modules/ocr';
-import {AnalyzingScreen} from '@modules/ai-analysis';
-import {
-  LessonResultScreen,
-  LessonsHistoryScreen,
-  ProgressiveLessonScreen,
-  SavedLessonDetailScreen,
-  SentenceDetailScreen,
-  WordDetailScreen,
-  GrammarDetailScreen,
-  FlashcardListScreen,
-} from '@modules/lesson';
+import {LessonsHistoryScreen} from '@modules/lesson';
 import {PracticeScreen} from '@modules/practice';
 import {
   CurriculumLessonScreen,
@@ -87,23 +77,10 @@ function HomeStackNavigator() {
         name="ContentLessonRuntime"
         options={{headerShown: false, gestureEnabled: false}}
       />
-      {/* LING-41 TASK-006: canonical player reachable from Home in
-          unified mode without leaving the tab. Always mounted — the
-          screen itself owns loading/error states for unknown IDs. */}
       <HomeStack.Screen
         component={CurriculumLessonScreen}
         name="CurriculumLesson"
         options={{headerShown: false, gestureEnabled: false}}
-      />
-      <HomeStack.Screen
-        component={SavedLessonDetailScreen}
-        name="SavedLessonDetail"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={FlashcardListScreen}
-        name="FlashcardList"
-        options={{headerShown: false}}
       />
       <HomeStack.Screen
         component={DailyReviewScreen}
@@ -113,21 +90,6 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         component={TodayScreen}
         name="Today"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={SentenceDetailScreen}
-        name="SentenceDetail"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={WordDetailScreen}
-        name="WordDetail"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={GrammarDetailScreen}
-        name="GrammarDetail"
         options={{headerShown: false}}
       />
       <HomeStack.Screen
@@ -156,15 +118,8 @@ function CreateStackNavigator() {
           <CreateStack.Screen
             component={YouTubeInputScreen}
             name="YouTubeInput"
-            // SETE-289: the fromHome exit contract lives in the header
-            // Back handler — the iOS swipe gesture would bypass it and
-            // pop to CreateMain, so it stays disabled (same as
-            // YouTubeProcessing below). Android system Back is
-            // intercepted via beforeRemove in the screen itself.
             options={{headerShown: false, gestureEnabled: false}}
           />
-          {/* SETE-289: YouTubeHistory lives on the RootStack (above the
-              tabs), so it is no longer a CreateStack route. */}
           <CreateStack.Screen
             component={YouTubeProcessingScreen}
             name="YouTubeProcessing"
@@ -198,40 +153,6 @@ function CreateStackNavigator() {
           options={{headerShown: false}}
         />
       )}
-      {canMount('Analyzing') && (
-        <CreateStack.Screen
-          component={AnalyzingScreen}
-          name="Analyzing"
-          options={{headerShown: false, gestureEnabled: false}}
-        />
-      )}
-      <CreateStack.Screen
-        component={LessonResultScreen}
-        name="LessonResult"
-        options={{headerShown: false}}
-      />
-      {canMount('ProgressiveLesson') && (
-        <CreateStack.Screen
-          component={ProgressiveLessonScreen}
-          name="ProgressiveLesson"
-          options={{headerShown: false}}
-        />
-      )}
-      <CreateStack.Screen
-        component={SentenceDetailScreen}
-        name="SentenceDetail"
-        options={{headerShown: false}}
-      />
-      <CreateStack.Screen
-        component={WordDetailScreen}
-        name="WordDetail"
-        options={{headerShown: false}}
-      />
-      <CreateStack.Screen
-        component={GrammarDetailScreen}
-        name="GrammarDetail"
-        options={{headerShown: false}}
-      />
       <CreateStack.Screen
         component={PracticeScreen}
         name="Practice"
@@ -242,10 +163,6 @@ function CreateStackNavigator() {
 }
 
 function LessonsStackNavigator() {
-  const {config} = useFeatureFlags();
-  const canMount = (route: string) =>
-    isIngestionRouteEnabled(route, config.features);
-
   return (
     <LessonsStack.Navigator>
       <LessonsStack.Screen
@@ -253,18 +170,6 @@ function LessonsStackNavigator() {
         name="LessonsList"
         options={{headerShown: false}}
       />
-      <LessonsStack.Screen
-        component={SavedLessonDetailScreen}
-        name="SavedLessonDetail"
-        options={{headerShown: false}}
-      />
-      {canMount('ProgressiveLesson') && (
-        <LessonsStack.Screen
-          component={ProgressiveLessonScreen}
-          name="ProgressiveLesson"
-          options={{headerShown: false}}
-        />
-      )}
       <LessonsStack.Screen
         component={CurriculumLessonScreen}
         name="CurriculumLesson"
@@ -274,11 +179,6 @@ function LessonsStackNavigator() {
         component={UnifiedLessonGenerationScreen}
         name="UnifiedLessonGeneration"
         options={{headerShown: false, gestureEnabled: false}}
-      />
-      <LessonsStack.Screen
-        component={FlashcardListScreen}
-        name="FlashcardList"
-        options={{headerShown: false}}
       />
       <LessonsStack.Screen
         component={ContentLessonListScreen}
@@ -311,21 +211,6 @@ function LessonsStackNavigator() {
         options={{headerShown: false}}
       />
       <LessonsStack.Screen
-        component={SentenceDetailScreen}
-        name="SentenceDetail"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={WordDetailScreen}
-        name="WordDetail"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={GrammarDetailScreen}
-        name="GrammarDetail"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
         component={PracticeScreen}
         name="Practice"
         options={{headerShown: false}}
@@ -335,10 +220,6 @@ function LessonsStackNavigator() {
 }
 
 function ProfileStackNavigator() {
-  const {config} = useFeatureFlags();
-  const canMount = (route: string) =>
-    isIngestionRouteEnabled(route, config.features);
-
   return (
     <ProfileStack.Navigator>
       <ProfileStack.Screen
@@ -356,7 +237,6 @@ function ProfileStackNavigator() {
         name="ProgressReport"
         options={{headerShown: false}}
       />
-      {/* Developer-only screens — not registered on production builds. */}
       {__DEV__ ? (
         <ProfileStack.Screen
           component={FeatureStatusScreen}
@@ -371,8 +251,6 @@ function ProfileStackNavigator() {
           options={{headerShown: false}}
         />
       ) : null}
-      {/* LING-21 manual verification entry — dev builds only, not part
-          of the default unified rollout. */}
       {__DEV__ ? (
         <ProfileStack.Screen
           component={UnifiedLessonsPreviewScreen}
@@ -380,13 +258,6 @@ function ProfileStackNavigator() {
           options={{headerShown: false}}
         />
       ) : null}
-      {canMount('ProgressiveLesson') && (
-        <ProfileStack.Screen
-          component={ProgressiveLessonScreen}
-          name="ProgressiveLesson"
-          options={{headerShown: false}}
-        />
-      )}
     </ProfileStack.Navigator>
   );
 }
@@ -433,12 +304,6 @@ function TabNavigator() {
   );
 }
 
-/**
- * SETE-289: a root stack above the Tab.Navigator. `YouTubeHistory` (and
- * the lesson/detail screens it opens) render here, so no bottom bar is
- * shown and no tab state is touched — the "independent of the bottom tab"
- * behavior comes from the navigation structure, not a tab-bar workaround.
- */
 export function AppNavigator() {
   const {config} = useFeatureFlags();
   const rootRouteNames = getRootStackRouteNames(config.features);
@@ -482,21 +347,6 @@ export function AppNavigator() {
             component={YouTubeLessonRouteScreen}
             name="YouTubeLesson"
             options={{headerShown: false, orientation: 'portrait'}}
-          />
-        )}
-        {rootRouteNames.includes('SentenceDetail') && (
-          <RootStack.Screen
-            component={SentenceDetailScreen}
-            name="SentenceDetail"
-          />
-        )}
-        {rootRouteNames.includes('WordDetail') && (
-          <RootStack.Screen component={WordDetailScreen} name="WordDetail" />
-        )}
-        {rootRouteNames.includes('GrammarDetail') && (
-          <RootStack.Screen
-            component={GrammarDetailScreen}
-            name="GrammarDetail"
           />
         )}
         {rootRouteNames.includes('Practice') && (

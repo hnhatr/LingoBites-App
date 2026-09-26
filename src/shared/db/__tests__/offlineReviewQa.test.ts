@@ -3,7 +3,6 @@ import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '../database';
 import {open} from 'react-native-quick-sqlite';
 import {DB_NAME} from '../constants';
-import {saveLesson} from '../LessonRepository';
 import {
   getCardDueAt,
   getDueFlashcards,
@@ -19,19 +18,11 @@ describe('Offline review QA (SETE-101)', () => {
   });
 
   it('save flashcard -> offline session -> restart keeps schedule and review_sessions', () => {
-    // 1. Save a lesson + flashcard locally (offline entry point, no network).
-    const lessonResult = saveLesson({
-      confirmedText: validFullOutput.original_text,
-      sourceType: 'paste_text',
-      lesson: validFullOutput,
-    });
-    expect(lessonResult.ok).toBe(true);
-    if (!lessonResult.ok) {
-      return;
-    }
+    // 1. Save a flashcard locally (offline entry point, no network).
+    const lessonId = 'lesson-1';
 
     const saved = saveFlashcard({
-      lessonId: lessonResult.lessonId,
+      lessonId,
       vocabulary: validFullOutput.vocabulary[0],
       now: '2026-08-17T00:00:00.000Z',
     });

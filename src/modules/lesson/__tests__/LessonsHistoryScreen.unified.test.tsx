@@ -1,26 +1,16 @@
 import * as AuthSession from '@shared/auth/authSession';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+import {FeatureFlagProvider} from '@/release';
 import {AppThemeProvider} from '@theme';
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
-// The shipped presets keep unifiedLesson disabled (status
-// not_implemented), so the provider would reject a test config that
-// enables it. Stub the hook to simulate the TASK-008-activated shape.
-jest.mock('@/release', () => ({
-  ...jest.requireActual('@/release'),
-  useFeatureFlags: () => ({
-    config: {releaseName: 'test-unified', features: {unifiedLesson: true}},
-  }),
-}));
-
 const mockRefresh = jest.fn();
-const mockBootstrap = jest.fn().mockResolvedValue({ok: true});
 
 jest.mock('../useLibrarySegments', () => ({
   useLibrarySegments: () => ({
-    personalLessons: [{id: 'p1', title: 'Personal', summary: null}],
-    packagedLessons: [{id: 'c1', titleVi: 'Packaged', blurbVi: null}],
+    personalLessons: [],
+    packagedLessons: [],
     vocabulary: [],
     grammar: [],
     lessonsFilter: {searchQuery: '', sourceFilter: 'all'},
@@ -44,10 +34,6 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
-jest.mock('@modules/content', () => ({
-  bootstrapContentPackage: (...args: unknown[]) => mockBootstrap(...args),
-}));
-
 // Keep the real unified catalog screen, but pin capabilities on so the
 // composition under test is deterministic without a live probe.
 jest.mock('@modules/curriculumLesson', () => {
@@ -69,16 +55,7 @@ jest.mock('@modules/analytics', () => ({
   trackEvent: jest.fn(),
 }));
 
-const mockListLessons = jest.fn(() => []);
-const mockGetLessonById = jest.fn(() => null);
 const mockGetDueFlashcards = jest.fn(() => []);
-
-jest.mock('../useLessonRepository', () => ({
-  useLessonRepository: () => ({
-    listLessons: mockListLessons,
-    getLessonById: mockGetLessonById,
-  }),
-}));
 
 jest.mock('../useFlashcardLibrary', () => ({
   useFlashcardLibrary: () => ({
@@ -133,12 +110,14 @@ function renderUnified() {
     params: undefined,
   };
   const tree = ReactTestRenderer.create(
-    <AppThemeProvider>
-      <LessonsHistoryScreen
-        navigation={navigation as never}
-        route={route as never}
-      />
-    </AppThemeProvider>,
+    <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {}}}>
+      <AppThemeProvider>
+        <LessonsHistoryScreen
+          navigation={navigation as never}
+          route={route as never}
+        />
+      </AppThemeProvider>
+    </FeatureFlagProvider>,
   );
   return {tree, navigation};
 }
@@ -190,13 +169,5 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
     expect(navigation.navigate).toHaveBeenCalledWith('CurriculumLesson', {
       lessonId: '00000000-0000-4000-8000-000000000011',
     });
-  });
-
-  it('skips the local package bootstrap in unified mode', async () => {
-    await act(async () => {
-      renderUnified();
-    });
-    expect(mockBootstrap).not.toHaveBeenCalled();
-    expect(mockRefresh).toHaveBeenCalled();
   });
 });

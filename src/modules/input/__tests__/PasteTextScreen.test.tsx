@@ -35,9 +35,30 @@ async function flushPromises() {
   await Promise.resolve();
 }
 
+const mockTabNavigate = jest.fn();
+const mockCreateGenerationJob = jest.fn();
+
+jest.mock('@modules/curriculumLesson', () => {
+  const actual = jest.requireActual('@modules/curriculumLesson');
+  return {
+    ...actual,
+    useLessonServerCapabilities: () => ({
+      catalog: true,
+      canonicalDelivery: true,
+      aiMaterialization: true,
+      packagedImport: true,
+      partialRetry: true,
+      privateLibrary: true,
+    }),
+    createLessonGenerationJob: (...args: unknown[]) =>
+      mockCreateGenerationJob(...args),
+  };
+});
+
 const navigation = {
   navigate: mockNavigate,
   setParams: jest.fn(),
+  getParent: () => ({navigate: mockTabNavigate}),
 } as unknown as React.ComponentProps<typeof PasteTextScreen>['navigation'];
 
 const route = {
@@ -48,7 +69,7 @@ const route = {
 
 function renderPasteTextScreen() {
   return ReactTestRenderer.create(
-    <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {lessonV2: false}}}>
+    <FeatureFlagProvider releaseConfig={{releaseName: 'test', features: {}}}>
       <AppThemeProvider>
         <PasteTextScreen navigation={navigation} route={route} />
       </AppThemeProvider>
@@ -59,6 +80,11 @@ function renderPasteTextScreen() {
 describe('PasteTextScreen', () => {
   beforeEach(() => {
     mockNavigate.mockReset();
+    mockTabNavigate.mockReset();
+    mockCreateGenerationJob.mockResolvedValue({
+      ok: true,
+      job: {id: 'job-1'},
+    });
   });
 
   it('navigates to Analyzing with the confirmed text and paste source', async () => {
@@ -85,10 +111,13 @@ describe('PasteTextScreen', () => {
       await flushPromises();
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('Analyzing', {
-      confirmedText: 'We are offering a special discount for new customers.',
-      sourceType: 'paste_text',
-      origin: 'PasteText',
+    expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
+      screen: 'UnifiedLessonGeneration',
+      params: {
+        jobId: 'job-1',
+        confirmedText: 'We are offering a special discount for new customers.',
+        level: undefined,
+      },
     });
   });
 
