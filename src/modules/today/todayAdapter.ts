@@ -5,7 +5,12 @@ import {
   listContentReviewItems,
 } from '@shared/db/ContentRuntimeRepository';
 import {getDueFlashcards} from '@modules/review';
-import {listErrorEvents, listSpeakingRecordings} from '@modules/speaking';
+// Legacy shim (TASK-012): avoid `@modules/speaking` barrel here — it eagerly loads
+// Speaking UI/recording native facades that break Jest/CI when Today only needs DB reads.
+import {
+  listErrorEvents,
+  listSpeakingRecordings,
+} from '@shared/db/SpeakingRepository';
 import type {LearnerProfileData, LearnerStateSnapshot} from './types';
 
 export function getLearnerProfileData(): LearnerProfileData | null {

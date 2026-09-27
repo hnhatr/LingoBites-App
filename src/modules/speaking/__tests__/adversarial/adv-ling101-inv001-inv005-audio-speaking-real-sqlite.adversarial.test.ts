@@ -32,8 +32,8 @@ import {
  * and explicit-deletion scope (speaking-only vs all local data).
  */
 
-// Native permission facade is not under attack here; `@modules/speaking` (and
-// therefore `todayAdapter` at the reviewed head) loads it eagerly.
+// Native permission facade is not under attack here; `@modules/speaking` barrel
+// still loads it eagerly when imported directly (mocked below).
 jest.mock('react-native-permissions', () => ({
   check: jest.fn().mockResolvedValue('granted'),
   request: jest.fn().mockResolvedValue('granted'),
