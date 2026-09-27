@@ -14,6 +14,7 @@ import {
 } from '@modules/practice/sessionEngine';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {drainOutboxOnce} from '@modules/sync/outboxSync';
+import Config from 'react-native-config';
 import {getAppConfig} from '@shared/api/appConfig';
 import {simulateDatabaseProcessRestart} from '@/test-support/characterization';
 import {PRACTICE_EVENT_TYPE, REVIEW_EVENT_TYPE} from '@shared/db/types';
@@ -30,6 +31,7 @@ export type Inv002ServerStats = {
 export type Inv002ProductionPathResult = {
   status: 'pass' | 'fail';
   runtime: 'react-native-quick-sqlite-jsi';
+  runId: string;
   assertions: Record<string, boolean | number | string>;
   serverStats: Inv002ServerStats;
   error?: string;
@@ -208,16 +210,20 @@ export async function runInv002ProductionPath(): Promise<Inv002ProductionPathRes
       return true;
     });
 
+    const runId = Config.CHARACTERIZATION_RUN_ID?.trim() ?? '';
     return {
       status: allPass ? 'pass' : 'fail',
       runtime: 'react-native-quick-sqlite-jsi',
+      runId,
       assertions,
       serverStats,
     };
   } catch (error) {
+    const runId = Config.CHARACTERIZATION_RUN_ID?.trim() ?? '';
     return {
       status: 'fail',
       runtime: 'react-native-quick-sqlite-jsi',
+      runId,
       assertions,
       serverStats,
       error: error instanceof Error ? error.message : String(error),

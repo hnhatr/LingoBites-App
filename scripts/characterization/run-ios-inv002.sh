@@ -39,6 +39,11 @@ restore_env_snapshot() {
   elif [[ -f "$ENV_BACKUP_DIR/.ios.tmp.xcconfig.absent" ]]; then
     rm -f ios/tmp.xcconfig
   fi
+  if [[ -f "$ENV_BACKUP_DIR/.env.characterization" ]]; then
+    mv -f "$ENV_BACKUP_DIR/.env.characterization" "$ENV_FILE"
+  elif [[ -f "$ENV_BACKUP_DIR/.env.characterization.absent" ]]; then
+    rm -f "$ENV_FILE"
+  fi
   rm -rf "$ENV_BACKUP_DIR"
   RESTORE_SNAPSHOT=0
 }
@@ -62,7 +67,7 @@ cleanup() {
 
 validate_inv002_marker_line() {
   local result_line="$1"
-  node "${SCRIPT_DIR}/validate-inv002-marker.mjs" "$result_line"
+  node "${SCRIPT_DIR}/validate-inv002-marker.mjs" "$result_line" "$RUN_ID"
 }
 
 take_env_snapshot() {
@@ -77,6 +82,11 @@ take_env_snapshot() {
     cp ios/tmp.xcconfig "$ENV_BACKUP_DIR/ios.tmp.xcconfig"
   else
     touch "$ENV_BACKUP_DIR/.ios.tmp.xcconfig.absent"
+  fi
+  if [[ -f "$ENV_FILE" ]]; then
+    cp "$ENV_FILE" "$ENV_BACKUP_DIR/.env.characterization"
+  else
+    touch "$ENV_BACKUP_DIR/.env.characterization.absent"
   fi
   RESTORE_SNAPSHOT=1
   trap cleanup EXIT
@@ -109,6 +119,7 @@ sleep 0.5
 cat >"$ENV_FILE" <<EOF
 APP_ENV=local
 APP_CHARACTERIZATION=true
+CHARACTERIZATION_RUN_ID=${RUN_ID}
 API_BASE_URL=http://127.0.0.1:${PORT}
 USE_MOCK_AI=true
 USE_MOCK_OCR=true
@@ -140,6 +151,16 @@ fi
 if [[ "${CHAR_SELFTEST:-}" == "missing-marker" ]]; then
   echo "selftest: missing marker (${RUN_ID})" >>"$LOG_FILE"
   echo "Timed out waiting for [LING93_INV002] in $LOG_FILE" >&2
+  exit 1
+fi
+
+if [[ "${CHAR_SELFTEST:-}" == "stale-marker" ]]; then
+  echo "[LING93_INV002] {\"status\":\"pass\",\"runId\":\"stale-other-run\",\"assertions\":{\"practicePendingAfterEvents\":true,\"reviewPendingAfterEvents\":true,\"firstDrainFailed\":true,\"pendingAfterAmbiguousDrain\":true,\"pendingSurvivesRestart\":true,\"retryDrainSynced\":true,\"pendingAfterRetry\":true,\"duplicateDrainSynced\":true,\"pendingAfterDuplicateDrain\":true,\"onePracticeServerEffect\":true,\"oneReviewServerEffect\":true,\"practicePostsIncludeRetry\":true,\"reviewPostsIncludeRetry\":true}}" >>"$LOG_FILE"
+  result_line=$(grep '\[LING93_INV002\]' "$LOG_FILE" | tail -1)
+  if validate_inv002_marker_line "$result_line"; then
+    echo "stale-marker selftest: expected validation failure" >&2
+    exit 2
+  fi
   exit 1
 fi
 

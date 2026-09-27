@@ -16,6 +16,31 @@ const VALIDATOR = path.join(
   'scripts/characterization/validate-inv002-marker.mjs',
 );
 
+const REQUIRED_ASSERTIONS: Record<string, true> = {
+  practicePendingAfterEvents: true,
+  reviewPendingAfterEvents: true,
+  firstDrainFailed: true,
+  pendingAfterAmbiguousDrain: true,
+  pendingSurvivesRestart: true,
+  retryDrainSynced: true,
+  pendingAfterRetry: true,
+  duplicateDrainSynced: true,
+  pendingAfterDuplicateDrain: true,
+  onePracticeServerEffect: true,
+  oneReviewServerEffect: true,
+  practicePostsIncludeRetry: true,
+  reviewPostsIncludeRetry: true,
+};
+
+function fullPassMarker(runId: string): string {
+  return `[LING93_INV002] ${JSON.stringify({
+    status: 'pass',
+    runId,
+    runtime: 'react-native-quick-sqlite-jsi',
+    assertions: REQUIRED_ASSERTIONS,
+  })}`;
+}
+
 function pickFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const server = http.createServer();
@@ -45,6 +70,17 @@ async function freePortPair(): Promise<{charPort: string; metroPort: string}> {
   return {charPort, metroPort};
 }
 
+function runValidator(
+  line: string,
+  runId: string,
+): {status: number | null; stderr: string} {
+  const result = spawnSync('node', [VALIDATOR, line, runId], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  return {status: result.status, stderr: result.stderr ?? ''};
+}
+
 function runRunner(
   env: Record<string, string>,
   expectStatus: number,
@@ -62,84 +98,123 @@ function runRunner(
   };
 }
 
-describe('run-ios-inv002 harness (CR-001 / CR-004)', () => {
-  const envBackup = path.join(ROOT, '.env');
+describe('run-ios-inv002 harness (CR-001 / CR-004 cycle 3)', () => {
+  const envPath = path.join(ROOT, '.env');
+  const envCharPath = path.join(ROOT, '.env.characterization');
+  const pathsCreatedByTest: string[] = [];
   let hadEnv = false;
   let priorEnv: string | null = null;
+  let hadEnvChar = false;
+  let priorEnvChar: string | null = null;
 
   beforeEach(() => {
-    if (existsSync(envBackup)) {
+    if (existsSync(envPath)) {
       hadEnv = true;
-      priorEnv = readFileSync(envBackup, 'utf8');
+      priorEnv = readFileSync(envPath, 'utf8');
+    }
+    if (existsSync(envCharPath)) {
+      hadEnvChar = true;
+      priorEnvChar = readFileSync(envCharPath, 'utf8');
     }
   });
 
   afterEach(() => {
     if (hadEnv && priorEnv !== null) {
-      writeFileSync(envBackup, priorEnv);
-    } else if (existsSync(envBackup)) {
-      rmSync(envBackup);
+      writeFileSync(envPath, priorEnv);
+    } else if (existsSync(envPath)) {
+      rmSync(envPath);
     }
-    const legacyBackup = path.join(ROOT, '.ling93-env-backup');
-    if (existsSync(legacyBackup)) {
-      rmSync(legacyBackup, {recursive: true, force: true});
+    if (hadEnvChar && priorEnvChar !== null) {
+      writeFileSync(envCharPath, priorEnvChar);
+    } else if (existsSync(envCharPath)) {
+      rmSync(envCharPath);
     }
+    for (const created of pathsCreatedByTest) {
+      rmSync(created, {recursive: true, force: true});
+    }
+    pathsCreatedByTest.length = 0;
+    hadEnv = false;
+    priorEnv = null;
+    hadEnvChar = false;
+    priorEnvChar = null;
   });
 
-  it('rejects status:fail marker lines', () => {
-    const failLine =
-      '[LING93_INV002] {"status":"fail","runtime":"react-native-quick-sqlite-jsi"}';
-    const result = spawnSync('node', [VALIDATOR, failLine], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    });
-    expect(result.status).toBe(1);
-  });
-
-  it('accepts status:pass marker with assertions', () => {
-    const passLine =
-      '[LING93_INV002] {"status":"pass","assertions":{"onePracticeServerEffect":true}}';
-    const result = spawnSync('node', [VALIDATOR, passLine], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    });
+  it('accepts a complete pass marker with matching RUN_ID', () => {
+    const runId = 'ling93-test-run-1';
+    const result = runValidator(fullPassMarker(runId), runId);
     expect(result.status).toBe(0);
   });
 
+  const negativeValidatorCases: Array<{
+    name: string;
+    line: string;
+    runId: string;
+  }> = [
+    {
+      name: 'status fail',
+      line:
+        '[LING93_INV002] {"status":"fail","runId":"ling93-test-run-1","assertions":{}}',
+      runId: 'ling93-test-run-1',
+    },
+    {
+      name: 'empty assertions',
+      line:
+        '[LING93_INV002] {"status":"pass","runId":"ling93-test-run-1","assertions":{}}',
+      runId: 'ling93-test-run-1',
+    },
+    {
+      name: 'missing assertions',
+      line: '[LING93_INV002] {"status":"pass","runId":"ling93-test-run-1"}',
+      runId: 'ling93-test-run-1',
+    },
+    {
+      name: 'false onePracticeServerEffect',
+      line: `[LING93_INV002] ${JSON.stringify({
+        status: 'pass',
+        runId: 'ling93-test-run-1',
+        assertions: {
+          ...REQUIRED_ASSERTIONS,
+          onePracticeServerEffect: false,
+        },
+      })}`,
+      runId: 'ling93-test-run-1',
+    },
+    {
+      name: 'wrong RUN_ID',
+      line: fullPassMarker('ling93-other'),
+      runId: 'ling93-test-run-1',
+    },
+    {
+      name: 'missing RUN_ID in marker',
+      line: `[LING93_INV002] ${JSON.stringify({
+        status: 'pass',
+        assertions: REQUIRED_ASSERTIONS,
+      })}`,
+      runId: 'ling93-test-run-1',
+    },
+    {
+      name: 'malformed JSON',
+      line: '[LING93_INV002] {not-json',
+      runId: 'ling93-test-run-1',
+    },
+    {
+      name: 'missing expected RUN_ID argument',
+      line: fullPassMarker('ling93-test-run-1'),
+      runId: '',
+    },
+  ];
+
+  it.each(negativeValidatorCases)(
+    'rejects marker: $name',
+    ({line, runId}) => {
+      const result = runValidator(line, runId);
+      expect(result.status).not.toBe(0);
+    },
+  );
+
   it('exits before snapshot when CHAR_PORT is occupied and leaves .env untouched', async () => {
     const marker = `LING93_PORT_TEST_${Date.now()}`;
-    writeFileSync(envBackup, `${marker}=1\n`);
-    const server = http.createServer((_req, res) => {
-      res.end('ok');
-    });
-    await new Promise<void>(resolve => {
-      server.listen(0, '127.0.0.1', () => resolve());
-    });
-    const addr = server.address();
-    if (!addr || typeof addr === 'string') {
-      throw new Error('no port');
-    }
-    const occupiedPort = String(addr.port);
-    const freeMetro = String(addr.port + 1);
-    try {
-      runRunner(
-        {
-          CHAR_PORT: occupiedPort,
-          CHAR_METRO_PORT: freeMetro,
-        },
-        1,
-      );
-      expect(readFileSync(envBackup, 'utf8')).toContain(marker);
-    } finally {
-      server.close();
-    }
-  });
-
-  it('ignores stale .ling93-env-backup in repo on port failure', async () => {
-    const staleDir = path.join(ROOT, '.ling93-env-backup');
-    mkdirSync(staleDir, {recursive: true});
-    writeFileSync(path.join(staleDir, '.env'), 'STALE=1\n');
-    writeFileSync(envBackup, 'CURRENT=1\n');
+    writeFileSync(envPath, `${marker}=1\n`);
     const server = http.createServer((_req, res) => {
       res.end('ok');
     });
@@ -158,15 +233,51 @@ describe('run-ios-inv002 harness (CR-001 / CR-004)', () => {
         },
         1,
       );
-      expect(readFileSync(envBackup, 'utf8')).toContain('CURRENT=1');
+      expect(readFileSync(envPath, 'utf8')).toContain(marker);
     } finally {
       server.close();
     }
   });
 
-  it('restore-check selftest restores .env via EXIT cleanup', async () => {
+  it('preserves preexisting .ling93-env-backup on port failure', async () => {
+    const staleDir = path.join(ROOT, '.ling93-env-backup');
+    mkdirSync(staleDir, {recursive: true});
+    pathsCreatedByTest.push(staleDir);
+    writeFileSync(path.join(staleDir, '.env'), 'STALE=1\n');
+    writeFileSync(envPath, 'CURRENT=1\n');
+    const server = http.createServer((_req, res) => {
+      res.end('ok');
+    });
+    await new Promise<void>(resolve => {
+      server.listen(0, '127.0.0.1', () => resolve());
+    });
+    const addr = server.address();
+    if (!addr || typeof addr === 'string') {
+      throw new Error('no port');
+    }
+    try {
+      runRunner(
+        {
+          CHAR_PORT: String(addr.port),
+          CHAR_METRO_PORT: String(addr.port + 1),
+        },
+        1,
+      );
+      expect(readFileSync(envPath, 'utf8')).toContain('CURRENT=1');
+      expect(readFileSync(path.join(staleDir, '.env'), 'utf8')).toContain(
+        'STALE=1',
+      );
+    } finally {
+      server.close();
+    }
+  });
+
+  it('restore-check selftest restores .env and preexisting .env.characterization', async () => {
     const ports = await freePortPair();
-    writeFileSync(envBackup, 'restore-marker=before\n');
+    writeFileSync(envPath, 'restore-marker=before\n');
+    writeFileSync(envCharPath, 'CHAR_MARKER=keep\n');
+    hadEnvChar = true;
+    priorEnvChar = 'CHAR_MARKER=keep\n';
     runRunner(
       {
         CHAR_SELFTEST: 'restore-check',
@@ -175,13 +286,13 @@ describe('run-ios-inv002 harness (CR-001 / CR-004)', () => {
       },
       0,
     );
-    expect(readFileSync(envBackup, 'utf8')).toContain('restore-marker=before');
-    expect(existsSync(path.join(ROOT, '.ling93-env-backup'))).toBe(false);
+    expect(readFileSync(envPath, 'utf8')).toContain('restore-marker=before');
+    expect(readFileSync(envCharPath, 'utf8')).toContain('CHAR_MARKER=keep');
   });
 
   it('fail-marker selftest exits non-zero on status:fail', async () => {
     const ports = await freePortPair();
-    writeFileSync(envBackup, 'selftest=1\n');
+    writeFileSync(envPath, 'selftest=1\n');
     runRunner(
       {
         CHAR_SELFTEST: 'fail-marker',
@@ -190,12 +301,12 @@ describe('run-ios-inv002 harness (CR-001 / CR-004)', () => {
       },
       1,
     );
-    expect(readFileSync(envBackup, 'utf8')).toContain('selftest=1');
+    expect(readFileSync(envPath, 'utf8')).toContain('selftest=1');
   });
 
   it('missing-marker selftest exits 1 without a pass marker', async () => {
     const ports = await freePortPair();
-    writeFileSync(envBackup, 'selftest=2\n');
+    writeFileSync(envPath, 'selftest=2\n');
     runRunner(
       {
         CHAR_SELFTEST: 'missing-marker',
@@ -204,6 +315,18 @@ describe('run-ios-inv002 harness (CR-001 / CR-004)', () => {
       },
       1,
     );
-    expect(readFileSync(envBackup, 'utf8')).toContain('selftest=2');
+    expect(readFileSync(envPath, 'utf8')).toContain('selftest=2');
+  });
+
+  it('stale-marker selftest rejects wrong RUN_ID', async () => {
+    const ports = await freePortPair();
+    runRunner(
+      {
+        CHAR_SELFTEST: 'stale-marker',
+        CHAR_PORT: ports.charPort,
+        CHAR_METRO_PORT: ports.metroPort,
+      },
+      1,
+    );
   });
 });

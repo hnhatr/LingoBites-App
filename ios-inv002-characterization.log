@@ -1,0 +1,2 @@
+{"status":"listening","port":64710}
+[LING93_INV002] {"status":"pass","runId":"stale-other-run","assertions":{"practicePendingAfterEvents":true,"reviewPendingAfterEvents":true,"firstDrainFailed":true,"pendingAfterAmbiguousDrain":true,"pendingSurvivesRestart":true,"retryDrainSynced":true,"pendingAfterRetry":true,"duplicateDrainSynced":true,"pendingAfterDuplicateDrain":true,"onePracticeServerEffect":true,"oneReviewServerEffect":true,"practicePostsIncludeRetry":true,"reviewPostsIncludeRetry":true}}
