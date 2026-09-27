@@ -16,9 +16,7 @@ const appRoot = path.resolve(__dirname, '..');
 const sourceRoot = path.join(appRoot, 'src');
 const sourceExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 
-const sharedModuleExceptions = new Map([
-  ['src/shared/db/FlashcardRepository.ts', ['@modules/review']],
-]);
+const sharedModuleExceptions = new Map();
 
 function walk(directory) {
   return fs.readdirSync(directory, {withFileTypes: true}).flatMap(entry => {
