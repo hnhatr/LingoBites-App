@@ -1,16 +1,19 @@
-import {saveFlashcard, unsaveFlashcard} from '@shared/db/FlashcardRepository';
+import {
+  saveFlashcard,
+  unsaveFlashcard,
+} from '@modules/review/FlashcardRepository';
 import {
   saveGrammarBookmark,
   unsaveGrammarBookmark,
-} from '@shared/db/GrammarBookmarkRepository';
+} from '@modules/review/GrammarBookmarkRepository';
 import {useBookmarkOptimistic} from '../useBookmarkOptimistic';
 
 // Mock the repositories
-jest.mock('@shared/db/FlashcardRepository', () => ({
+jest.mock('@modules/review/FlashcardRepository', () => ({
   saveFlashcard: jest.fn(),
   unsaveFlashcard: jest.fn(),
 }));
-jest.mock('@shared/db/GrammarBookmarkRepository', () => ({
+jest.mock('@modules/review/GrammarBookmarkRepository', () => ({
   saveGrammarBookmark: jest.fn(),
   unsaveGrammarBookmark: jest.fn(),
 }));

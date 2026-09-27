@@ -1,8 +1,8 @@
 import {validFullOutput} from '@shared/fixtures';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
-import {getDatabase, resetDatabaseForTests} from '../database';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '../constants';
+import {DB_NAME} from '@shared/db/constants';
 import {
   getCardDueAt,
   getDueFlashcards,

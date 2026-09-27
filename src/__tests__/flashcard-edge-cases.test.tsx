@@ -17,11 +17,7 @@ import {FeatureFlagProvider} from '../release';
 import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '../test-support';
 import {DB_NAME} from '../shared/db/constants';
 import {resetDatabaseForTests} from '../shared/db/database';
-import {
-  saveFlashcard,
-  getDueFlashcards,
-  listFlashcards,
-} from '../shared/db/FlashcardRepository';
+import {saveFlashcard, getDueFlashcards, listFlashcards} from '@modules/review';
 import {validFullOutput} from '../shared/fixtures';
 import {AppThemeProvider} from '../theme';
 import {__resetMockDatabases} from '../../test-utils/sqliteMock';

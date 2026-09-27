@@ -18,7 +18,7 @@ import {
 import type {FeatureKey} from '../release/feature-registry';
 import {DB_NAME} from '../shared/db/constants';
 import {resetDatabaseForTests} from '../shared/db/database';
-import {saveFlashcard} from '../shared/db/FlashcardRepository';
+import {saveFlashcard} from '@modules/review';
 import {validFullOutput} from '../shared/fixtures';
 import {AppThemeProvider} from '../theme';
 import {__resetMockDatabases} from '../../test-utils/sqliteMock';

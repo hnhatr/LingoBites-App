@@ -1,8 +1,8 @@
-import {saveFlashcard, unsaveFlashcard} from '@shared/db/FlashcardRepository';
+import {saveFlashcard, unsaveFlashcard} from './FlashcardRepository';
 import {
   saveGrammarBookmark,
   unsaveGrammarBookmark,
-} from '@shared/db/GrammarBookmarkRepository';
+} from './GrammarBookmarkRepository';
 import {showToast} from '@/utils/toast';
 import type {SaveFlashcardInput} from '@shared/db/types';
 import type {SaveGrammarBookmarkInput} from '@shared/db/types';

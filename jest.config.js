@@ -9,6 +9,12 @@ module.exports = {
     '^@contracts/(.*)$': '<rootDir>/src/contracts/$1',
     '^@modules$': '<rootDir>/src/modules',
     '^@modules/(.*)$': '<rootDir>/src/modules/$1',
+    '^@shared/db/FlashcardRepository$':
+      '<rootDir>/src/modules/review/FlashcardRepository.ts',
+    '^@shared/db/GrammarBookmarkRepository$':
+      '<rootDir>/src/modules/review/GrammarBookmarkRepository.ts',
+    '^@shared/api/reviewEventsClient$':
+      '<rootDir>/src/modules/review/api/reviewEventsClient.ts',
     '^@shared$': '<rootDir>/src/shared',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@components$': '<rootDir>/src/components',

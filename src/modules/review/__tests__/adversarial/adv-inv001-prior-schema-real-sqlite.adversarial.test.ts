@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '../../database';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {listFlashcards, recordFlashcardRating} from '../../FlashcardRepository';
-import {getYouTubeProgress} from '../../YouTubeProgressRepository';
-import {getContentLessonState} from '../../ContentLessonStateRepository';
+import {getYouTubeProgress} from '@shared/db/YouTubeProgressRepository';
+import {getContentLessonState} from '@shared/db/ContentLessonStateRepository';
 import {listBookmarkedGrammar} from '../../GrammarBookmarkRepository';
 import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
 import {

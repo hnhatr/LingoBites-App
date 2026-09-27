@@ -8,7 +8,7 @@ import {
   listFlashcards,
   recordFlashcardRating,
   saveFlashcard,
-} from '@shared/db/FlashcardRepository';
+} from '@modules/review';
 import {saveContentLesson} from '@shared/db/ContentLessonStateRepository';
 import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
 import * as DeviceIdentityNative from '@shared/identity/deviceIdentityNative';

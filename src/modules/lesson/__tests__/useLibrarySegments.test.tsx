@@ -8,8 +8,7 @@ import {
   listSavedLessons,
   listStartedLessons,
 } from '@shared/db/ContentLessonStateRepository';
-import {listAllBookmarkedGrammar} from '@shared/db/GrammarBookmarkRepository';
-import {listFlashcards} from '@shared/db/FlashcardRepository';
+import {listAllBookmarkedGrammar, listFlashcards} from '@modules/review';
 import {useContentLibrary} from '@modules/content';
 
 jest.mock('@shared/db/ContentLessonStateRepository', () => ({
@@ -17,11 +16,8 @@ jest.mock('@shared/db/ContentLessonStateRepository', () => ({
   listStartedLessons: jest.fn(),
 }));
 
-jest.mock('@shared/db/GrammarBookmarkRepository', () => ({
+jest.mock('@modules/review', () => ({
   listAllBookmarkedGrammar: jest.fn(),
-}));
-
-jest.mock('@shared/db/FlashcardRepository', () => ({
   listFlashcards: jest.fn(),
 }));
 
