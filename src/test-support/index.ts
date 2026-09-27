@@ -1,3 +1,12 @@
+export {
+  CHARACTERIZATION_INVARIANTS,
+  buildNavigationMountSnapshot,
+  simulateDatabaseProcessRestart,
+} from './characterization';
+export type {
+  CharacterizationInvariantId,
+  NavigationMountSnapshot,
+} from './characterization';
 export {makeTestReleaseConfig} from './makeTestReleaseConfig';
 export type {TestReleaseConfigOptions} from './makeTestReleaseConfig';
 export {
