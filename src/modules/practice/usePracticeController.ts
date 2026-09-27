@@ -4,7 +4,7 @@ import {createRequestId} from '@shared/api/requestId';
 import {
   findLatestPracticeSetForLesson,
   findLatestSessionForLesson,
-} from '@shared/db/PracticeRepository';
+} from './data/PracticeRepository';
 import {buildDefaultPracticeConfig} from './practiceDefaults';
 import {preparePracticeSet} from './practiceFlow';
 import {

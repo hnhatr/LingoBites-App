@@ -11,7 +11,7 @@ import {
   getPracticeSet,
   purgeExpiredPracticeData,
   savePracticeSet,
-} from '@shared/db/PracticeRepository';
+} from '../data/PracticeRepository';
 import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import * as TokenStore from '@shared/security/lessonTokenStore';

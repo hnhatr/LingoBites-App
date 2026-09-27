@@ -9,7 +9,7 @@ import {
   findReusablePracticeSetLocally,
   getPracticeSet,
   savePracticeSet,
-} from '../../shared/db/PracticeRepository';
+} from './data/PracticeRepository';
 import type {PracticeSet, PracticeSession} from '../../shared/schemas/practice';
 
 export function hashPracticeConfig(config: PracticeConfigInput): string {
