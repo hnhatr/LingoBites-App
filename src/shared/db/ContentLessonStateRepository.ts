@@ -1,5 +1,5 @@
 import {getDatabase, withTransaction} from './database';
-import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {enqueueSyncOutboxEvent} from './syncOutboxCore';
 import {createRequestId} from '../api/requestId';
 import type {
   ContentLessonState,

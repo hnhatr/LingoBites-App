@@ -1,5 +1,16 @@
-import {authenticatedFetch} from './authenticatedFetch';
-import {getAppConfig} from './appConfig';
+import {authenticatedFetch} from '@shared/api/authenticatedFetch';
+import {getAppConfig} from '@shared/api/appConfig';
+import type {
+  SyncPushRequest,
+  SyncPushSuccessResponse,
+  SyncPullSuccessResponse,
+} from '@shared/schemas/sync';
+import {
+  SYNC_CONTRACT_VERSION,
+  SyncPushSuccessResponseSchema,
+  SyncPullSuccessResponseSchema,
+} from '@shared/schemas/sync';
+
 function withTimeout(timeoutMs: number, externalSignal?: AbortSignal) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -20,16 +31,6 @@ function withTimeout(timeoutMs: number, externalSignal?: AbortSignal) {
 
   return {signal: controller.signal, cleanup};
 }
-import type {
-  SyncPushRequest,
-  SyncPushSuccessResponse,
-  SyncPullSuccessResponse,
-} from '../schemas/sync';
-import {
-  SYNC_CONTRACT_VERSION,
-  SyncPushSuccessResponseSchema,
-  SyncPullSuccessResponseSchema,
-} from '../schemas/sync';
 
 export type SyncPushClientResult =
   | {ok: true; data: SyncPushSuccessResponse}

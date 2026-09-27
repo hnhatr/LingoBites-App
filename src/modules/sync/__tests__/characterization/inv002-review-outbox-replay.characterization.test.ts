@@ -3,7 +3,7 @@ import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {DB_NAME} from '@shared/db/constants';
-import {listPendingSyncEvents} from '@shared/db/SyncOutboxRepository';
+import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
 import {
   recordFlashcardRating,
   saveFlashcard,

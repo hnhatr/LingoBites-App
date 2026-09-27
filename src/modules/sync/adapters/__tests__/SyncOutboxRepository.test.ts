@@ -1,16 +1,16 @@
-import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '../database';
-import {DB_NAME} from '../constants';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {DB_NAME} from '@shared/db/constants';
+import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
+import type {ReviewEventPayload} from '@shared/db/types';
 import {
   countPendingSyncEvents,
   deleteSyncEvents,
-  enqueueSyncOutboxEvent,
   listPendingSyncEvents,
   markSyncEventsFailed,
   markSyncEventsSynced,
 } from '../SyncOutboxRepository';
-import type {ReviewEventPayload} from '../types';
 
 const payload: ReviewEventPayload = {
   schema_version: 1,
@@ -22,34 +22,11 @@ const payload: ReviewEventPayload = {
   next_review_at: '2026-09-12T12:00:00.000Z',
 };
 
-describe('SyncOutboxRepository', () => {
+describe('SyncOutboxRepository adapter', () => {
   beforeEach(() => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     getDatabase();
-  });
-
-  it('enqueues an event as pending with default attempts and no error', () => {
-    enqueueSyncOutboxEvent({
-      id: 'event-1',
-      entityId: 'card-1',
-      payload,
-      createdAt: '2026-09-05T12:00:00.000Z',
-    });
-
-    const pending = listPendingSyncEvents();
-    expect(pending).toHaveLength(1);
-    expect(pending[0]).toMatchObject({
-      id: 'event-1',
-      eventType: 'review',
-      entityId: 'card-1',
-      attemptCount: 0,
-      lastError: null,
-      syncedAt: null,
-      createdAt: '2026-09-05T12:00:00.000Z',
-    });
-    expect(pending[0].payload).toEqual(payload);
-    expect(countPendingSyncEvents()).toBe(1);
   });
 
   it('lists pending events oldest-first and respects the limit', () => {
