@@ -20,9 +20,9 @@ import {
 } from '@/test-support/adversarial/realSqlite';
 
 /**
- * LING-100 HC-01: curriculumLesson catalog + learner progress on a real SQLite
- * file (`node:sqlite`), including close/reopen (process restart) and idempotent
- * `runMigrations` — not the Jest quick-sqlite mock harness.
+ * Supplemental same-schema reopen checks on real `node:sqlite` (not the upgrade
+ * oracle). Prior-schema upgrade-read evidence lives in
+ * `inv001-inv005-prior-schema-upgrade-real-sqlite.characterization.test.ts`.
  */
 
 const NOW = '2026-09-27T12:00:00.000Z';
