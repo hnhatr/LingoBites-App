@@ -1,73 +1,36 @@
-# OSX
-#
+# macOS
 .DS_Store
 
-# Xcode
-#
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-**/.xcode.env.local
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Android/IntelliJ
-#
-build/
-.idea
-.gradle
-local.properties
+# IDE
+.idea/
 *.iml
-*.hprof
-.cxx/
-*.keystore
-!debug.keystore
-.kotlin/
+.vscode/
 
-# node.js
-#
+# Node / JavaScript (packageManager: yarn — do not commit npm lockfile)
 node_modules/
-npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 package-lock.json
-yarn-error.log
+.eslintcache
+*.tsbuildinfo
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
-
-**/fastlane/report.xml
-**/fastlane/Preview.html
-**/fastlane/screenshots
-**/fastlane/test_output
-
-# Bundle artifact
+# Metro / React Native
+.metro-health-check*
 *.jsbundle
 
-# Ruby / CocoaPods
-**/Pods/
-/vendor/bundle/
-
-# Temporary files created by Metro to check the health of the file watcher
-.metro-health-check*
-
-# testing
+# Testing
 /coverage
 
-# Environment files (generated per-target locally; keep .env.example tracked)
+# Environment (generated per target locally; keep .env.example tracked)
 /.env
+/.env.local
+/.env.*.local
 /.env.development
 /.env.staging
 /.env.production
@@ -80,33 +43,70 @@ ios/tmp.xcconfig
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-# Added by code-review-graph
+
+# Ruby / CocoaPods
+**/Pods/
+/vendor/bundle/
+
+# Xcode / iOS
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.xcuserstate
+**/.xcode.env.local
+
+# Android
+build/
+.gradle/
+local.properties
+*.hprof
+.cxx/
+.kotlin/
+*.keystore
+!debug.keystore
+*.jks
+*.apk
+*.aab
+
+# fastlane
+# https://docs.fastlane.tools/best-practices/source-control/
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots/
+**/fastlane/test_output/
+
+# Code review graph
 .code-review-graph/
 
-# Multica agent workspace files
+# Agent / local workspace (not shared repo content)
 .agents/
 .agent_context/
 .multica/
 .ai-logs/
-AGENTS.md
-description.md
-reply.md
-artifacts/
-workdir/
-
-.vscode/
-.vibeguard/
-.worktrees/
-.tmp-sim/
 .claude/
 .opencode/
 .superpowers/
-.tmp-sim/
+.vibeguard/
+.worktrees/
+workdir/
+artifacts/
+description.md
+reply.md
 .attachments/
 .logs/
 .cache/
 .history/
 .temp/
 .tmp/
-.tmp-sim/
 .tmp-sim/
