@@ -20,7 +20,12 @@ import type {
   ContentVocabItem as VocabItem,
 } from '../schema';
 
-export type ContentPackageId = string;
+import type {
+  ContentPackageId,
+  ContentPackageSummary,
+} from '@shared/content/contracts';
+
+export type {ContentPackageId, ContentPackageSummary};
 export type ContentLessonId = string;
 export type ContentItemId = string;
 
@@ -123,18 +128,6 @@ export type ContentPackageRollbackFailure = {
 export type ContentPackageRollbackResult =
   | ContentPackageRollbackSuccess
   | ContentPackageRollbackFailure;
-
-export type ContentPackageSummary = {
-  id: ContentPackageId;
-  slug: string;
-  schemaVersion: string;
-  sourceUrl: string;
-  sha256: string;
-  importedAt: string;
-  deactivatedAt: string | null;
-  isActive: boolean;
-  lessonCount: number;
-};
 
 /**
  * Observable state of an in-flight (or most recent) import operation. The
