@@ -35,6 +35,7 @@ package-lock.json
 /.env.staging
 /.env.production
 ios/tmp.xcconfig
+.ling93-env-backup/
 
 # Yarn
 .yarn/*
