@@ -36,7 +36,10 @@ import {
   ContentLessonDetailScreen,
   ContentLessonRuntimeScreen,
 } from '@modules/content';
-import {SpeakingRoomScreen, SpeakingShadowingActivity} from '@modules/speaking';
+import {
+  SpeakingRoomScreen,
+  SpeakingShadowingActivity,
+} from '@modules/speaking/speakingUiPort';
 import {
   PrivacyNoteScreen,
   ProgressReportScreen,

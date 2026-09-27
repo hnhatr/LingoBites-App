@@ -1,6 +1,6 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import Sound from 'react-native-sound';
-import {getReadyAudioAsset} from '@shared/db/AudioAssetRepository';
+import {getReadyAudioAsset} from './data/AudioAssetRepository';
 import {sha256HexBytes} from '@shared/utils/sha256';
 import {bytesToBase64} from './bytesToBase64';
 import {ensureChapterAudio} from './chapterAudioCache';

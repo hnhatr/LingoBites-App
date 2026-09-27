@@ -13,8 +13,8 @@ const {
 const appRoot = path.resolve(__dirname, '../..');
 const srcRoot = path.join(appRoot, 'src');
 
-/** Staged TASK-009 practice legacy shims (Integration Owner manifest delta; TASK-008 expiry). */
-const TASK_009_PRACTICE_SHIM_ALLOWANCES = [
+/** Staged legacy shims (Integration Owner manifest; TASK-008 / TASK-012 expiry). */
+const LEGACY_SHIM_ALLOWANCES = [
   {
     file: 'src/shared/db/PracticeRepository.ts',
     specifier: '../../modules/practice/data/PracticeRepository',
@@ -29,18 +29,35 @@ const TASK_009_PRACTICE_SHIM_ALLOWANCES = [
     owner: 'React Native Developer',
     expiry: 'TASK-008',
   },
+  {
+    file: 'src/shared/db/AudioAssetRepository.ts',
+    specifier: '../../modules/audio/data/AudioAssetRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-012',
+  },
+  {
+    file: 'src/shared/db/SpeakingRepository.ts',
+    specifier: '../../modules/speaking/data/SpeakingRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-012',
+  },
+  {
+    file: 'src/shared/api/recordingClient.ts',
+    specifier: '../../modules/speaking/api/recordingClient',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-012',
+  },
 ];
 
-function expectManifestMatchesTask009PracticeShimDelta(manifest) {
-  expect(manifest.exceptions).toHaveLength(
-    TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
-  );
-  for (const expected of TASK_009_PRACTICE_SHIM_ALLOWANCES) {
+function expectManifestMatchesLegacyShimDelta(manifest) {
+  expect(manifest.exceptions).toHaveLength(LEGACY_SHIM_ALLOWANCES.length);
+  for (const expected of LEGACY_SHIM_ALLOWANCES) {
     expect(manifest.exceptions).toContainEqual(expected);
   }
-  expect(manifest.allowanceByKey.size).toBe(
-    TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
-  );
+  expect(manifest.allowanceByKey.size).toBe(LEGACY_SHIM_ALLOWANCES.length);
 }
 
 describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
@@ -51,14 +68,12 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(result.newViolations).toHaveLength(0);
       expect(result.expiredExceptions).toHaveLength(0);
       expect(result.matchedExceptions).toHaveLength(
-        TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
+        LEGACY_SHIM_ALLOWANCES.length,
       );
-      expect(result.manifestTotal).toBe(
-        TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
-      );
+      expect(result.manifestTotal).toBe(LEGACY_SHIM_ALLOWANCES.length);
     });
 
-    it('manifest has valid schema, sole writer, and exact TASK-009 practice shim allowances', () => {
+    it('manifest has valid schema, sole writer, and exact legacy shim allowances', () => {
       const manifestPath = path.join(
         appRoot,
         'scripts/module-boundary-exceptions.json',
@@ -67,7 +82,7 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
       expect(manifest.rawParsed.soleWriter).toBe('Integration Owner');
       expect(manifest.rawParsed.version).toBeDefined();
-      expectManifestMatchesTask009PracticeShimDelta(manifest);
+      expectManifestMatchesLegacyShimDelta(manifest);
     });
 
     it('rejects a new shared-to-module violation beyond the staged practice shim allowances', () => {
@@ -411,6 +426,28 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
           '@modules/review',
         ),
       ).toBe(false);
+
+      // TASK-012 speaking split public surfaces
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'speaking',
+            rel: 'modules/speaking/speakingQueryPort.ts',
+          },
+          '@modules/speaking/speakingQueryPort',
+        ),
+      ).toBe(true);
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'speaking',
+            rel: 'modules/speaking/speakingUiPort.ts',
+          },
+          '@modules/speaking/speakingUiPort',
+        ),
+      ).toBe(true);
     });
 
     it('rejects cross-feature import of index.private.ts in checkModuleBoundaries production runner', () => {

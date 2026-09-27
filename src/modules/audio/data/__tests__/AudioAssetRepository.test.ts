@@ -1,7 +1,7 @@
-import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
-import {resetDatabaseForTests} from '../database';
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {resetDatabaseForTests} from '@shared/db/database';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '../constants';
+import {DB_NAME} from '@shared/db/constants';
 import {AUDIO_STATUS} from '../AudioAssetRepository';
 import {
   deleteChapterAudioAsset,
@@ -17,7 +17,7 @@ import {
   touchChapterAudioOpened,
   updateChapterAudioAssetMetadata,
 } from '../AudioAssetRepository';
-import type {ChapterAudioAsset} from '../types';
+import type {ChapterAudioAsset} from '@shared/db/types';
 
 const NOW = '2026-09-01T00:00:00.000Z';
 
