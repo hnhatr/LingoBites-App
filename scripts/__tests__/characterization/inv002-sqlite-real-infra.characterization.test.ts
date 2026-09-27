@@ -8,11 +8,16 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_002} real SQLite commit (HC-001)`, (
       __dirname,
       '../../characterization/inv002-sqlite-outbox-commit.mjs',
     );
-    const result = spawnSync(process.execPath, [script], {
+    const result = spawnSync(process.execPath, ['--no-warnings', script], {
       encoding: 'utf8',
     });
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('"status":"pass"');
-    expect(result.stderr).toBe('');
+    const cleanStderr = result.stderr
+      .split('\n')
+      .filter(line => !line.includes('ExperimentalWarning'))
+      .join('\n')
+      .trim();
+    expect(cleanStderr).toBe('');
   });
 });

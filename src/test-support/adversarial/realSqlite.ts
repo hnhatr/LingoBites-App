@@ -45,7 +45,17 @@ export function openRealSqlite(path = ':memory:'): RealSqliteConnection {
     }
     const statement = db.prepare(trimmed);
     const values = params.map(normalizeParam);
-    if (statement.columns().length > 0) {
+    const cleanSql = trimmed
+      .replace(/^(\s*--[^\n]*\n)+/g, '')
+      .replace(/^(\s*\/\*[\s\S]*?\*\/\s*)+/g, '')
+      .trim();
+    const hasColumns =
+      typeof statement.columns === 'function'
+        ? statement.columns().length > 0
+        : /^(SELECT|WITH|EXPLAIN|VALUES)\b/i.test(cleanSql) ||
+          (/^PRAGMA\b/i.test(cleanSql) &&
+            !/^PRAGMA\s+[\w_]+\s*=/i.test(cleanSql));
+    if (hasColumns) {
       const all = statement.all(...values) as Array<Record<string, unknown>>;
       return {rowsAffected: 0, rows: toRows(all)};
     }
