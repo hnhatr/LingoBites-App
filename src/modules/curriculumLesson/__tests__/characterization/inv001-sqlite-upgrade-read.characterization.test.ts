@@ -15,7 +15,8 @@ import {
 
 const NOW = '2026-09-27T12:00:00.000Z';
 
-describe(`${CHARACTERIZATION_INVARIANTS.INV_001} SQLite upgrade-read (curriculumLesson)`, () => {
+/** quick-sqlite + sqliteMock harness only; real-INFRA evidence is in inv001-inv005-catalog-progress-real-sqlite.characterization.test.ts */
+describe(`${CHARACTERIZATION_INVARIANTS.INV_001} SQLite upgrade-read (curriculumLesson, mock harness)`, () => {
   beforeEach(() => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
