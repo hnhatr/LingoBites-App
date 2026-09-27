@@ -94,8 +94,19 @@ reply.md
 artifacts/
 workdir/
 
-.vscode/*
-.vibeguard/*
+.vscode/
+.vibeguard/
 .worktrees/
-.tmp-sim/*
-.claude/*
+.tmp-sim/
+.claude/
+.opencode/
+.superpowers/
+.tmp-sim/
+.attachments/
+.logs/
+.cache/
+.history/
+.temp/
+.tmp/
+.tmp-sim/
+.tmp-sim/
