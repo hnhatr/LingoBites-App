@@ -1,8 +1,11 @@
+const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const {
   checkModuleBoundaries,
+  checkImportRules,
+  isPublicFeatureBarrel,
   findImportsInSource,
-  sourceLayer,
   loadExceptionManifest,
   normalizePath,
 } = require('../check-module-boundaries');
@@ -17,11 +20,11 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(result.passed).toBe(true);
       expect(result.newViolations).toHaveLength(0);
       expect(result.expiredExceptions).toHaveLength(0);
-      expect(result.matchedExceptions.length).toBeGreaterThan(0);
+      expect(result.matchedExceptions).toHaveLength(42);
       expect(result.manifestTotal).toBe(42);
     });
 
-    it('manifest has valid schema and records Integration Owner as sole writer', () => {
+    it('manifest has valid schema and records Integration Owner as sole writer with 42 allowances', () => {
       const manifestPath = path.join(
         appRoot,
         'scripts/module-boundary-exceptions.json',
@@ -31,6 +34,12 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(manifest.rawParsed.soleWriter).toBe('Integration Owner');
       expect(manifest.rawParsed.version).toBeDefined();
       expect(manifest.exceptions.length).toBe(42);
+
+      // Verify allowanceByKey tracks exact occurrences (41 unique keys, 1 key with 2 allowances)
+      expect(manifest.allowanceByKey.size).toBe(41);
+      const ocrKey =
+        'src/modules/ocr/OCRReviewScreen.tsx::@/app/navigation/types::feature-to-app';
+      expect(manifest.allowanceByKey.get(ocrKey)).toHaveLength(2);
 
       manifest.exceptions.forEach(entry => {
         expect(entry.file).toMatch(/^src\//);
@@ -63,6 +72,16 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
         specifier: '@modules/engagement',
         resolved: {
           resolvedFileName: path.join(srcRoot, 'modules/engagement/index.ts'),
+          isExternal: false,
+          isAsset: false,
+        },
+      },
+      {
+        name: 'cross-feature import via relative sibling barrel (../analytics)',
+        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
+        specifier: '../analytics',
+        resolved: {
+          resolvedFileName: path.join(srcRoot, 'modules/analytics/index.ts'),
           isExternal: false,
           isAsset: false,
         },
@@ -173,53 +192,20 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
     ];
 
     validCases.forEach(tc => {
-      it(`allows ${tc.name}`, () => {
+      it(`allows ${tc.name} via production checkImportRules`, () => {
         const dummyContent = `import dummy from '${tc.specifier}';\n`;
         const tempFile = tc.from;
 
         const {literalImports} = findImportsInSource(tempFile, dummyContent);
         expect(literalImports).toHaveLength(1);
 
-        const violations = [];
-        // Test checkImportRules logic
-        const target = tc.resolved;
-        const src = sourceLayer(tempFile, srcRoot);
-        const tgt = sourceLayer(target.resolvedFileName, srcRoot);
-
-        if (!target.isAsset && !target.isExternal && tgt.layer !== 'external') {
-          // Rule checking
-          if (
-            tgt.layer === 'test-support' ||
-            /(__tests__|\.test\.|\.spec\.)/.test(target.resolvedFileName)
-          ) {
-            violations.push('production-to-test');
-          }
-          if (src.layer === 'shared' && tgt.layer === 'modules') {
-            violations.push('shared-to-module');
-          }
-          if (src.layer === 'components' && tgt.layer === 'modules') {
-            violations.push('components-to-module');
-          }
-          if (src.layer === 'components' && tgt.layer === 'app') {
-            violations.push('components-to-app');
-          }
-          if (
-            src.layer === 'modules' &&
-            tgt.layer === 'modules' &&
-            src.feature !== tgt.feature
-          ) {
-            const parts = tgt.rel.split('/');
-            const isPublic =
-              (parts.length === 3 && parts[2].startsWith('index.')) ||
-              tc.specifier === `@modules/${tgt.feature}`;
-            if (!isPublic) {
-              violations.push('cross-feature-private');
-            }
-          }
-          if (src.layer === 'modules' && tgt.layer === 'app') {
-            violations.push('feature-to-app');
-          }
-        }
+        // Execute production checkImportRules directly
+        const violations = checkImportRules(
+          tempFile,
+          literalImports[0],
+          tc.resolved,
+          srcRoot,
+        );
 
         expect(violations).toEqual([]);
       });
@@ -233,6 +219,12 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
         from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
         specifier: '@modules/review/DailyReviewScreen',
         targetFile: path.join(srcRoot, 'modules/review/DailyReviewScreen.tsx'),
+      },
+      {
+        rule: 'cross-feature-private',
+        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
+        specifier: '@modules/review/index.private',
+        targetFile: path.join(srcRoot, 'modules/review/index.private.ts'),
       },
       {
         rule: 'shared-to-module',
@@ -271,6 +263,12 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
         targetFile: path.join(srcRoot, 'modules/practice/practiceQuestion.ts'),
       },
       {
+        rule: 'app-to-module-private',
+        from: path.join(srcRoot, 'app/navigation/AppNavigator.tsx'),
+        specifier: '@modules/practice/index.private',
+        targetFile: path.join(srcRoot, 'modules/practice/index.private.ts'),
+      },
+      {
         rule: 'contracts-boundary',
         from: path.join(srcRoot, 'contracts/navigation/index.ts'),
         specifier: '@modules/practice',
@@ -279,108 +277,192 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
     ];
 
     invalidCases.forEach(tc => {
-      it(`fails ${tc.rule} with exact file, specifier, and rule`, () => {
+      it(`fails ${tc.rule} for ${tc.specifier} via production checkImportRules`, () => {
         const dummyContent = `import dummy from '${tc.specifier}';\n`;
         const {literalImports} = findImportsInSource(tc.from, dummyContent);
         expect(literalImports).toHaveLength(1);
 
-        // Check using the checker rule logic
-        const src = sourceLayer(tc.from, srcRoot);
-        const tgt = sourceLayer(tc.targetFile, srcRoot);
+        const resolved = {
+          resolvedFileName: tc.targetFile,
+          isExternal: false,
+          isAsset: false,
+        };
 
-        const violations = [];
-        if (
-          tgt.layer === 'test-support' ||
-          /(__tests__|\.test\.|\.spec\.)/.test(tc.targetFile)
-        ) {
-          violations.push({
-            file: normalizePath(tc.from),
-            specifier: tc.specifier,
-            rule: 'production-to-test',
-          });
-        }
-        if (src.layer === 'shared' && tgt.layer === 'modules') {
-          violations.push({
-            file: normalizePath(tc.from),
-            specifier: tc.specifier,
-            rule: 'shared-to-module',
-          });
-        }
-        if (src.layer === 'components' && tgt.layer === 'modules') {
-          violations.push({
-            file: normalizePath(tc.from),
-            specifier: tc.specifier,
-            rule: 'components-to-module',
-          });
-        }
-        if (src.layer === 'components' && tgt.layer === 'app') {
-          violations.push({
-            file: normalizePath(tc.from),
-            specifier: tc.specifier,
-            rule: 'components-to-app',
-          });
-        }
-        if (
-          src.layer === 'modules' &&
-          tgt.layer === 'modules' &&
-          src.feature !== tgt.feature
-        ) {
-          const parts = tgt.rel.split('/');
-          const isPublic =
-            (parts.length === 3 && parts[2].startsWith('index.')) ||
-            tc.specifier === `@modules/${tgt.feature}`;
-          if (!isPublic) {
-            violations.push({
-              file: normalizePath(tc.from),
-              specifier: tc.specifier,
-              rule: 'cross-feature-private',
-            });
-          }
-        }
-        if (src.layer === 'modules' && tgt.layer === 'app') {
-          violations.push({
-            file: normalizePath(tc.from),
-            specifier: tc.specifier,
-            rule: 'feature-to-app',
-          });
-        }
-        if (src.layer === 'app' && tgt.layer === 'modules') {
-          const parts = tgt.rel.split('/');
-          const isPublic =
-            (parts.length === 3 && parts[2].startsWith('index.')) ||
-            tc.specifier === `@modules/${tgt.feature}`;
-          if (!isPublic) {
-            violations.push({
-              file: normalizePath(tc.from),
-              specifier: tc.specifier,
-              rule: 'app-to-module-private',
-            });
-          }
-        }
-        if (
-          src.layer === 'contracts' &&
-          [
-            'modules',
-            'app',
-            'components',
-            'shared',
-            'theme',
-            'release',
-            'i18n',
-          ].includes(tgt.layer)
-        ) {
-          violations.push({
-            file: normalizePath(tc.from),
-            specifier: tc.specifier,
-            rule: 'contracts-boundary',
-          });
-        }
+        // Execute production checkImportRules directly
+        const violations = checkImportRules(
+          tc.from,
+          literalImports[0],
+          resolved,
+          srcRoot,
+        );
 
         expect(violations).toHaveLength(1);
         expect(violations[0].rule).toBe(tc.rule);
         expect(violations[0].specifier).toBe(tc.specifier);
         expect(violations[0].file).toBe(normalizePath(tc.from));
       });
+    });
+  });
+
+  describe('CR-001 regression: cross-feature Private index.private.ts enforcement', () => {
+    it('isPublicFeatureBarrel distinguishes index.ts from index.private.ts', () => {
+      // Valid public barrel
+      expect(
+        isPublicFeatureBarrel(
+          {layer: 'modules', feature: 'review', rel: 'modules/review/index.ts'},
+          '@modules/review',
+        ),
+      ).toBe(true);
+
+      // Sibling relative import to barrel
+      expect(
+        isPublicFeatureBarrel(
+          {layer: 'modules', feature: 'review', rel: 'modules/review/index.ts'},
+          '../review',
+        ),
+      ).toBe(true);
+
+      // index.private.ts is strictly Private regardless of specifier
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'review',
+            rel: 'modules/review/index.private.ts',
+          },
+          '@modules/review/index.private',
+        ),
+      ).toBe(false);
+
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'review',
+            rel: 'modules/review/index.private.ts',
+          },
+          '@modules/review',
+        ),
+      ).toBe(false);
+
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'review',
+            rel: 'modules/review/index.private.ts',
+          },
+          '../review/index.private',
+        ),
+      ).toBe(false);
+
+      // Nested index files are also Private
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'review',
+            rel: 'modules/review/sub/index.ts',
+          },
+          '@modules/review',
+        ),
+      ).toBe(false);
+    });
+
+    it('rejects cross-feature import of index.private.ts in checkModuleBoundaries production runner', () => {
+      const privateTargetFile = path.join(
+        srcRoot,
+        'modules/review/index.private.ts',
+      );
+      fs.writeFileSync(privateTargetFile, 'export const secret = 1;\n');
+
+      const testFile = path.join(srcRoot, 'modules/input/HomeScreen.tsx');
+      const original = fs.readFileSync(testFile, 'utf8');
+      const modified = `import { secret } from '@modules/review/index.private';\n${original}`;
+
+      try {
+        const result = checkModuleBoundaries({
+          files: [testFile],
+          fileContents: {[testFile]: modified},
+        });
+
+        expect(result.passed).toBe(false);
+        const privateViolation = result.newViolations.find(
+          v => v.specifier === '@modules/review/index.private',
+        );
+        expect(privateViolation).toBeDefined();
+        expect(privateViolation.rule).toBe('cross-feature-private');
+      } finally {
+        if (fs.existsSync(privateTargetFile)) {
+          fs.unlinkSync(privateTargetFile);
+        }
+      }
+    });
+  });
+
+  describe('CR-002 regression: manifest exact occurrence allowance and surplus rejection', () => {
+    it('manifest tracks occurrence allowances per file/specifier/rule', () => {
+      const manifestPath = path.join(
+        appRoot,
+        'scripts/module-boundary-exceptions.json',
+      );
+      const manifest = loadExceptionManifest(manifestPath);
+
+      // 42 total items, exactly 41 unique keys
+      expect(manifest.exceptions).toHaveLength(42);
+      expect(manifest.allowanceByKey.size).toBe(41);
+
+      // OCRReviewScreen has exactly 2 allowances for '@/app/navigation/types'
+      const key =
+        'src/modules/ocr/OCRReviewScreen.tsx::@/app/navigation/types::feature-to-app';
+      expect(manifest.allowanceByKey.get(key)).toHaveLength(2);
+    });
+
+    it('consumes exactly 2 allowances for OCRReviewScreen and rejects 3rd occurrence in production checker', () => {
+      const ocrFile = path.join(srcRoot, 'modules/ocr/OCRReviewScreen.tsx');
+      const original = fs.readFileSync(ocrFile, 'utf8');
+
+      // Baseline OCRReviewScreen has 2 imports of '@/app/navigation/types'
+      const baselineResult = checkModuleBoundaries({
+        files: [ocrFile],
+      });
+      expect(baselineResult.passed).toBe(true);
+      expect(baselineResult.newViolations).toHaveLength(0);
+      const matched = baselineResult.matchedExceptions.filter(
+        v =>
+          v.file === 'src/modules/ocr/OCRReviewScreen.tsx' &&
+          v.specifier === '@/app/navigation/types',
+      );
+      expect(matched).toHaveLength(2);
+
+      // Now add a 3rd import of the same specifier
+      const threeImports = `import type { ExtraType } from '@/app/navigation/types';\n${original}`;
+      const surplusResult = checkModuleBoundaries({
+        files: [ocrFile],
+        fileContents: {[ocrFile]: threeImports},
+      });
+
+      expect(surplusResult.passed).toBe(false);
+
+      // First 2 occurrences are matched as exceptions
+      const matchedWithSurplus = surplusResult.matchedExceptions.filter(
+        v =>
+          v.file === 'src/modules/ocr/OCRReviewScreen.tsx' &&
+          v.specifier === '@/app/navigation/types',
+      );
+      expect(matchedWithSurplus).toHaveLength(2);
+
+      // 3rd occurrence is rejected as surplus violation
+      const surplusViolations = surplusResult.newViolations.filter(
+        v =>
+          v.file === 'src/modules/ocr/OCRReviewScreen.tsx' &&
+          v.specifier === '@/app/navigation/types',
+      );
+      expect(surplusViolations).toHaveLength(1);
+      expect(surplusViolations[0].rule).toBe('feature-to-app');
+      expect(surplusViolations[0].reason).toContain(
+        'Surplus occurrence exceeding manifest allowance (2 allowed)',
+      );
     });
   });
 
@@ -422,40 +504,61 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
   });
 
   describe('manifest exception handling and expiry', () => {
-    it('tolerates matching non-expired manifest entry', () => {
-      const mockManifest = {
-        byKey: new Map([
-          [
-            'src/modules/input/HomeScreen.tsx::@/app/navigation/types::feature-to-app',
-            {
-              file: 'src/modules/input/HomeScreen.tsx',
-              specifier: '@/app/navigation/types',
-              rule: 'feature-to-app',
-              owner: 'React Native Developer',
-              expiry: 'TASK-003',
-            },
-          ],
-        ]),
-        exceptions: [{}],
-      };
-
-      // Mock check with single violation that is in manifest
+    it('tolerates matching non-expired manifest entry with TASK-003 milestone', () => {
+      const manifestPath = path.join(
+        appRoot,
+        'scripts/module-boundary-exceptions.json',
+      );
+      const manifest = loadExceptionManifest(manifestPath);
       const key =
         'src/modules/input/HomeScreen.tsx::@/app/navigation/types::feature-to-app';
-      const manifestEntry = mockManifest.byKey.get(key);
-      expect(manifestEntry).toBeDefined();
-    });
+      const entries = manifest.allowanceByKey.get(key);
+      expect(entries).toBeDefined();
+      expect(entries[0].expiry).toBe('TASK-003');
 
-    it('rejects expired manifest entry with ISO date in the past', () => {
-      const pastDate = '2020-01-01';
-      const expiryDate = Date.parse(pastDate);
-      expect(!Number.isNaN(expiryDate) && Date.now() > expiryDate).toBe(true);
-    });
-
-    it('does not falsely treat milestone strings like TASK-003 as expired dates', () => {
-      const milestone = 'TASK-003';
-      const isIsoDate = /^\d{4}-\d{2}-\d{2}/.test(milestone);
+      const isIsoDate = /^\d{4}-\d{2}-\d{2}/.test(entries[0].expiry);
       expect(isIsoDate).toBe(false);
+    });
+
+    it('rejects expired manifest entry with ISO date in the past via production checker', () => {
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'boundary-test-expiry-'),
+      );
+      const tempManifestPath = path.join(tempDir, 'exceptions.json');
+      const testFile = path.join(srcRoot, 'modules/input/HomeScreen.tsx');
+
+      // Create manifest with expired entry
+      fs.writeFileSync(
+        tempManifestPath,
+        JSON.stringify({
+          version: '1.0.0',
+          soleWriter: 'Integration Owner',
+          exceptions: [
+            {
+              file: 'src/modules/input/HomeScreen.tsx',
+              specifier: '@/app/navigation/tabBarMetrics',
+              rule: 'feature-to-app',
+              owner: 'React Native Developer',
+              expiry: '2020-01-01',
+            },
+          ],
+        }),
+      );
+
+      const result = checkModuleBoundaries({
+        files: [testFile],
+        manifestPath: tempManifestPath,
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.expiredExceptions.length).toBeGreaterThanOrEqual(1);
+      const expired = result.expiredExceptions.find(
+        e => e.specifier === '@/app/navigation/tabBarMetrics',
+      );
+      expect(expired).toBeDefined();
+      expect(expired.expiry).toBe('2020-01-01');
+
+      fs.rmSync(tempDir, {recursive: true, force: true});
     });
   });
 });

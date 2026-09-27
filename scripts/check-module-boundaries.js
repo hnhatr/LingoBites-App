@@ -206,6 +206,29 @@ function resolveSpecifier(
   return null;
 }
 
+function isPublicFeatureBarrel(target, specifier) {
+  if (!target || target.layer !== 'modules' || !target.feature) {
+    return false;
+  }
+  const parts = target.rel.split('/');
+  if (parts.length !== 3) {
+    return false;
+  }
+  const fileName = parts[2];
+  const parsed = path.parse(fileName);
+  const isIndex =
+    parsed.name === 'index' &&
+    ['.ts', '.tsx', '.js', '.jsx'].includes(parsed.ext);
+  if (!isIndex) {
+    return false;
+  }
+
+  return (
+    specifier === `@modules/${target.feature}` ||
+    specifier === `../${target.feature}`
+  );
+}
+
 function checkImportRules(
   fromFile,
   importItem,
@@ -293,11 +316,7 @@ function checkImportRules(
     target.layer === 'modules' &&
     source.feature !== target.feature
   ) {
-    const parts = target.rel.split('/');
-    const isPublicBarrel =
-      (parts.length === 3 && parts[2].startsWith('index.')) ||
-      specifier === `@modules/${target.feature}`;
-    if (!isPublicBarrel) {
+    if (!isPublicFeatureBarrel(target, specifier)) {
       violations.push({
         file: normalizePath(fromFile),
         specifier,
@@ -322,11 +341,7 @@ function checkImportRules(
 
   // Rule: app-to-module-private
   if (source.layer === 'app' && target.layer === 'modules') {
-    const parts = target.rel.split('/');
-    const isPublicBarrel =
-      (parts.length === 3 && parts[2].startsWith('index.')) ||
-      specifier === `@modules/${target.feature}`;
-    if (!isPublicBarrel) {
+    if (!isPublicFeatureBarrel(target, specifier)) {
       violations.push({
         file: normalizePath(fromFile),
         specifier,
@@ -407,7 +422,7 @@ function checkImportRules(
 
 function loadExceptionManifest(manifestPath = defaultManifestPath) {
   if (!fs.existsSync(manifestPath)) {
-    return {exceptions: [], byKey: new Map()};
+    return {exceptions: [], byKey: new Map(), allowanceByKey: new Map()};
   }
   const raw = fs.readFileSync(manifestPath, 'utf8');
   const parsed = JSON.parse(raw);
@@ -418,6 +433,7 @@ function loadExceptionManifest(manifestPath = defaultManifestPath) {
     : [];
 
   const byKey = new Map();
+  const allowanceByKey = new Map();
   exceptions.forEach((entry, index) => {
     if (!entry.file || !entry.specifier || !entry.rule) {
       throw new Error(
@@ -425,10 +441,16 @@ function loadExceptionManifest(manifestPath = defaultManifestPath) {
       );
     }
     const key = `${entry.file}::${entry.specifier}::${entry.rule}`;
-    byKey.set(key, entry);
+    if (!byKey.has(key)) {
+      byKey.set(key, entry);
+    }
+    if (!allowanceByKey.has(key)) {
+      allowanceByKey.set(key, []);
+    }
+    allowanceByKey.get(key).push(entry);
   });
 
-  return {exceptions, byKey, rawParsed: parsed};
+  return {exceptions, byKey, allowanceByKey, rawParsed: parsed};
 }
 
 function checkModuleBoundaries(options = {}) {
@@ -441,6 +463,13 @@ function checkModuleBoundaries(options = {}) {
   const manifest = loadExceptionManifest(manifestPath);
   const files = options.files || walkSourceFiles(srcDir);
 
+  const remainingAllowances = new Map();
+  if (manifest.allowanceByKey) {
+    for (const [key, entries] of manifest.allowanceByKey.entries()) {
+      remainingAllowances.set(key, [...entries]);
+    }
+  }
+
   const detectedViolations = [];
   const manualReviewItems = [];
   const matchedExceptions = [];
@@ -448,7 +477,10 @@ function checkModuleBoundaries(options = {}) {
   const expiredExceptions = [];
 
   for (const filePath of files) {
-    const content = fs.readFileSync(filePath, 'utf8');
+    const content =
+      options.fileContents && options.fileContents[filePath] !== undefined
+        ? options.fileContents[filePath]
+        : fs.readFileSync(filePath, 'utf8');
     const {literalImports, nonLiteralImports} = findImportsInSource(
       filePath,
       content,
@@ -475,9 +507,10 @@ function checkModuleBoundaries(options = {}) {
         detectedViolations.push(violation);
 
         const key = `${violation.file}::${violation.specifier}::${violation.rule}`;
-        const manifestEntry = manifest.byKey.get(key);
+        const queue = remainingAllowances.get(key);
 
-        if (manifestEntry) {
+        if (queue && queue.length > 0) {
+          const manifestEntry = queue.shift();
           // Check if expired (ISO date format YYYY-MM-DD)
           if (
             manifestEntry.expiry &&
@@ -503,7 +536,17 @@ function checkModuleBoundaries(options = {}) {
             expiry: manifestEntry.expiry,
           });
         } else {
-          newViolations.push(violation);
+          const hadAllowance =
+            manifest.allowanceByKey && manifest.allowanceByKey.has(key);
+          const maxAllowed = hadAllowance
+            ? manifest.allowanceByKey.get(key).length
+            : 0;
+          newViolations.push({
+            ...violation,
+            reason: hadAllowance
+              ? `Surplus occurrence exceeding manifest allowance (${maxAllowed} allowed)`
+              : 'Not present in baseline manifest',
+          });
         }
       }
     }
@@ -565,6 +608,8 @@ module.exports = {
   checkModuleBoundaries,
   findImportsInSource,
   resolveSpecifier,
+  checkImportRules,
+  isPublicFeatureBarrel,
   sourceLayer,
   loadCompilerOptions,
   loadExceptionManifest,
