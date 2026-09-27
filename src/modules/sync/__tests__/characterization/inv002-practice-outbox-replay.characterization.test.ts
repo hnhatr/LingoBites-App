@@ -65,7 +65,7 @@ beforeEach(() => {
   mockFetch.mockReset();
 });
 
-describe(`${CHARACTERIZATION_INVARIANTS.INV_002} practice outbox replay`, () => {
+describe(`${CHARACTERIZATION_INVARIANTS.INV_002} practice outbox replay (Jest mock DB/fetch smoke)`, () => {
   it('commits one practice outbox event per answer and treats server duplicates as synced without resend', async () => {
     savePracticeSet(makeSet());
     createSession({set: makeSet(), sessionId: 'sess-char'});

@@ -21,7 +21,7 @@ beforeEach(() => {
   mockFetch.mockReset();
 });
 
-describe(`${CHARACTERIZATION_INVARIANTS.INV_002} review outbox replay`, () => {
+describe(`${CHARACTERIZATION_INVARIANTS.INV_002} review outbox replay (Jest mock DB/fetch smoke)`, () => {
   it('commits one review outbox event per rating and clears pending on duplicate ack without double POST', async () => {
     const lessonId = 'lesson-char-1';
     const saved = saveFlashcard({
