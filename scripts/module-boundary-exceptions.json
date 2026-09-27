@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "description": "Baseline module boundary exceptions for AD-004 staged enforcement",
+  "soleWriter": "Integration Owner",
+  "totalExceptions": 0,
+  "exceptions": []
+}

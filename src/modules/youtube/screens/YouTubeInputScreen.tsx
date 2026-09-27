@@ -13,6 +13,11 @@ import {
 } from 'react-native';
 import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {
+  CreateStackParamList,
+  RootStackParamList,
+  RootTabParamList,
+} from '@modules/input';
 import {AppButton} from '@components/AppButton';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -20,11 +25,6 @@ import {Banner} from '@components/Banner';
 import {BottomActionBar} from '@components/BottomActionBar';
 import {ScreenHeader} from '@components/ScreenHeader';
 import {TextField} from '@components/TextField';
-import type {
-  CreateStackParamList,
-  RootStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
 import {
   YOUTUBE_MAX_DURATION_SECONDS,
   YOUTUBE_MAX_SEGMENTS,
@@ -49,6 +49,8 @@ if (
 }
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'YouTubeInput'>;
+
+export type YouTubeInputScreenProps = Props;
 
 export function YouTubeInputScreen({navigation, route}: Props) {
   const {t} = useTranslation();

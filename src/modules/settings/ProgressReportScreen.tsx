@@ -2,7 +2,7 @@ import React, {useState, useCallback} from 'react';
 import {Alert, ScrollView, View, StyleSheet} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {ProfileStackParamList} from '@/app/navigation/types';
+import type {ProfileStackParamList} from './navigationTypes';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -17,6 +17,8 @@ import {
 } from './useProgressReport';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProgressReport'>;
+
+export type ProgressReportScreenProps = Props;
 
 export function ProgressReportScreen({navigation}: Props) {
   const {theme} = useAppTheme();

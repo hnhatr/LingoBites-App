@@ -1,8 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {Pressable, StyleSheet, View} from 'react-native';
-import type {LessonsStackParamList} from '@/app/navigation/types';
+import type {CurriculumLessonRouteParams} from './navigationTypes';
 import {AppCard} from '@components/AppCard';
 import {AppText} from '@components/AppText';
 import {SectionHeader} from '@components/SectionHeader';
@@ -48,8 +47,12 @@ function createStyles(theme: AppTheme) {
 export function CurriculumLessonsEntry() {
   const {theme} = useAppTheme();
   const styles = createStyles(theme);
-  const navigation =
-    useNavigation<NativeStackNavigationProp<LessonsStackParamList>>();
+  const navigation = useNavigation<{
+    navigate: (
+      screen: 'CurriculumLesson',
+      params: CurriculumLessonRouteParams,
+    ) => void;
+  }>();
   const [lessons, setLessons] = useState<
     CurriculumLessonSelectionItem[] | null
   >(null);

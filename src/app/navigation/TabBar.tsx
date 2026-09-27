@@ -24,7 +24,7 @@ import {
   FLOATING_TAB_BAR_BOTTOM_GAP,
   FLOATING_TAB_BAR_HORIZONTAL_MARGIN,
   withAlpha,
-} from './tabBarMetrics';
+} from '@components/layout';
 import {isTabBarHiddenForDescriptors} from './immersiveTabRoutes';
 import {ShelfSurface} from '@components/ShelfSurface';
 

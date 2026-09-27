@@ -6,14 +6,24 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@shared": ["src/shared"],
-      "@shared/*": ["src/shared/*"],
+      "@app": ["src/app"],
+      "@app/*": ["src/app/*"],
+      "@contracts": ["src/contracts"],
+      "@contracts/*": ["src/contracts/*"],
       "@modules": ["src/modules"],
       "@modules/*": ["src/modules/*"],
+      "@shared": ["src/shared"],
+      "@shared/*": ["src/shared/*"],
       "@components": ["src/components"],
       "@components/*": ["src/components/*"],
       "@theme": ["src/theme"],
-      "@theme/*": ["src/theme/*"]
+      "@theme/*": ["src/theme/*"],
+      "@release": ["src/release"],
+      "@release/*": ["src/release/*"],
+      "@i18n": ["src/i18n"],
+      "@i18n/*": ["src/i18n/*"],
+      "@test-support": ["src/test-support"],
+      "@test-support/*": ["src/test-support/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.json"],

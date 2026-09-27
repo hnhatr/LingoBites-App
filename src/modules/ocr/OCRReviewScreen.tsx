@@ -1,7 +1,8 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {CreateStackParamList} from '@/app/navigation/types';
+import type {CreateStackParamList, RootTabParamList} from '@modules/input';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {BottomActionBar} from '@components/BottomActionBar';
@@ -19,12 +20,11 @@ import {
   validateConfirmedText,
 } from '@shared/utils/textValidation';
 import {extractText} from './OCRService';
-import type {NavigationProp} from '@react-navigation/native';
-import type {RootTabParamList} from '@/app/navigation/types';
 import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
 import {createLessonGenerationJob} from '@modules/curriculumLesson';
-
 type Props = NativeStackScreenProps<CreateStackParamList, 'OCRReview'>;
+
+export type OCRReviewScreenProps = Props;
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
 

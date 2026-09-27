@@ -1,9 +1,9 @@
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo, useState} from 'react';
+import type {LessonsStackParamList} from './navigationTypes';
 import {Pressable, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import type {LessonsStackParamList} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {MaterialIcon} from '@components/MaterialIcon';
@@ -17,6 +17,8 @@ import {useFlashcardLibrary} from './useFlashcardLibrary';
 import {useLibrarySegments} from './useLibrarySegments';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
+
+export type LessonsHistoryScreenProps = Props;
 
 type PracticeChip = {
   icon: 'refresh' | 'mic' | 'bolt';
