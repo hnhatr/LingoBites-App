@@ -1,9 +1,9 @@
 import {open} from 'react-native-quick-sqlite';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '../../constants';
-import {getDatabase, resetDatabaseForTests} from '../../database';
-import {runMigrations} from '../../migrations';
-import {getPracticeSet, savePracticeSet} from '../../PracticeRepository';
+import {DB_NAME} from '@shared/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {runMigrations} from '@shared/db/migrations';
+import {getPracticeSet, savePracticeSet} from '../../data/PracticeRepository';
 import {
   CHARACTERIZATION_INVARIANTS,
   simulateDatabaseProcessRestart,

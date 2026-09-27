@@ -8,10 +8,10 @@ import {
   findReusablePracticeSetLocally,
   getPracticeSet,
   savePracticeSet,
-} from '../../../shared/db/PracticeRepository';
+} from '../data/PracticeRepository';
 
 jest.mock('../../../shared/api/practiceClient');
-jest.mock('../../../shared/db/PracticeRepository');
+jest.mock('../data/PracticeRepository');
 
 const mockCreateApi = createPracticeSetApi as jest.Mock;
 const mockGetApi = getPracticeSetApi as jest.Mock;

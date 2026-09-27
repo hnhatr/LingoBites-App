@@ -8,7 +8,7 @@ import {
   getPracticeSession,
   getAnswerEvents,
   listPracticeSessionsForSet,
-} from '@shared/db/PracticeRepository';
+} from '../data/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {
   createSession,

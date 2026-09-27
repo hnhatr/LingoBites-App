@@ -5,7 +5,7 @@ import {
   listPracticeSessionsForSet,
   recordAnswerEvent,
   savePracticeSession,
-} from '@shared/db/PracticeRepository';
+} from './data/PracticeRepository';
 import {createRequestId} from '@shared/api/requestId';
 import {PRACTICE_CONTRACT_VERSION} from '@shared/schemas/practice';
 import type {

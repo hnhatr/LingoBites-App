@@ -2,6 +2,21 @@
   "version": "1.0.0",
   "description": "Baseline module boundary exceptions for AD-004 staged enforcement",
   "soleWriter": "Integration Owner",
-  "totalExceptions": 0,
-  "exceptions": []
+  "totalExceptions": 2,
+  "exceptions": [
+    {
+      "file": "src/shared/db/PracticeRepository.ts",
+      "specifier": "../../modules/practice/data/PracticeRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-008"
+    },
+    {
+      "file": "src/shared/api/practiceEventsClient.ts",
+      "specifier": "../../modules/practice/api/practiceEventsClient",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-008"
+    }
+  ]
 }
