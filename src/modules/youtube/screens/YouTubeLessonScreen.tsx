@@ -69,10 +69,7 @@ import type {
   SentenceEnrichment,
   VocabEntry,
 } from '@shared/schemas/sentence-contract';
-import {
-  fetchLessonEnrichment,
-  fetchSegmentEnrichment,
-} from '../api/sentenceEnrichmentApi';
+import {useLessonEnrichment} from '../sentence/useLessonEnrichment';
 import type {RetryBlockFn} from '../sentence/useSentenceEnrichment';
 import {YouTubeTranscriptPopup} from './YouTubeTranscriptPopup';
 import {YouTubeToolsPopup} from './YouTubeToolsPopup';
@@ -321,72 +318,11 @@ export function YouTubeLessonScreen({
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCardScrolledDown, setIsCardScrolledDown] = useState(false);
 
-  const [internalEnrichmentMap, setInternalEnrichmentMap] = useState<
-    Record<number, SentenceEnrichment | null>
-  >(enrichmentMap ?? {});
-
-  useEffect(() => {
-    if (enrichmentMap) {
-      setInternalEnrichmentMap(enrichmentMap);
-    }
-  }, [enrichmentMap]);
-
-  useEffect(() => {
-    if (enrichmentMap && Object.keys(enrichmentMap).length > 0) {
-      return undefined;
-    }
-    if (!lesson?.video?.id || !lesson?.segments) {
-      return undefined;
-    }
-    let cancelled = false;
-    const controller = new AbortController();
-
-    async function loadEnrichments() {
-      // 1. Try batch lesson enrichment endpoint first
-      const batchResult = await fetchLessonEnrichment({
-        videoId: lesson.video.id,
-        signal: controller.signal,
-      });
-      if (cancelled) {
-        return;
-      }
-      if (batchResult.ok && batchResult.enrichments) {
-        setInternalEnrichmentMap(prev => ({
-          ...prev,
-          ...batchResult.enrichments,
-        }));
-        return;
-      }
-
-      // 2. Fallback to per-segment enrichment fetch
-      for (const segment of lesson.segments) {
-        if (cancelled) {
-          return;
-        }
-        const segResult = await fetchSegmentEnrichment({
-          videoId: lesson.video.id,
-          segmentIndex: segment.index,
-          signal: controller.signal,
-        });
-        if (cancelled) {
-          return;
-        }
-        if (segResult.ok && segResult.enrichment) {
-          setInternalEnrichmentMap(prev => ({
-            ...prev,
-            [segment.index]: segResult.enrichment,
-          }));
-        }
-      }
-    }
-
-    fireAndForget(loadEnrichments());
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [enrichmentMap, lesson?.segments, lesson?.video?.id]);
+  const internalEnrichmentMap = useLessonEnrichment({
+    videoId: lesson?.video?.id,
+    segments: lesson?.segments,
+    enrichmentMap,
+  });
 
   // SETE-346 (Option A): playback controls live only in the Tools sheet,
   // so the header holds exactly 3 controls (VI, IPA, Practice).
