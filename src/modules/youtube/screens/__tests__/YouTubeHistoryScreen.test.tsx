@@ -67,6 +67,8 @@ const route = {
   name: 'YouTubeHistory',
 } as unknown as React.ComponentProps<typeof YouTubeHistoryScreen>['route'];
 
+let activeTree: ReactTestRenderer.ReactTestRenderer | null = null;
+
 function renderScreen(nav = navigation, screenRoute = route) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   act(() => {
@@ -78,6 +80,7 @@ function renderScreen(nav = navigation, screenRoute = route) {
       </FeatureFlagProvider>,
     );
   });
+  activeTree = tree;
   return tree;
 }
 
@@ -92,6 +95,15 @@ function pressHeaderBack(tree: ReactTestRenderer.ReactTestRenderer) {
 describe('YouTubeHistoryScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    if (activeTree) {
+      act(() => {
+        activeTree?.unmount();
+      });
+      activeTree = null;
+    }
   });
 
   it('shows the empty state when nothing is saved', () => {
