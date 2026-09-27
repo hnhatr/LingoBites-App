@@ -4,7 +4,7 @@ import {
   type YouTubeTranscript,
 } from '../schemas/youtube-transcript-v1';
 import {getDatabase, withTransaction} from './database';
-import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {enqueueSyncOutboxEvent} from './syncOutboxCore';
 import {createRequestId} from '../api/requestId';
 
 type YouTubeLessonRow = {

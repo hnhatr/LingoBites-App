@@ -2,7 +2,7 @@ import {createRequestId} from '../api/requestId';
 import type {UpcomingReviewReminder} from '@shared/review/contracts';
 import {getOrCreateAnonymousUserId} from './anonymousUserId';
 import {getDatabase, withTransaction} from './database';
-import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {enqueueSyncOutboxEvent} from './syncOutboxCore';
 import {REVIEW_EVENT_SCHEMA_VERSION} from './types';
 import {
   DEFAULT_REVIEW_INTERVAL_DAYS,

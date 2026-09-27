@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {
-  enqueueSyncOutboxEvent,
-  listPendingSyncEvents,
-} from '@shared/db/SyncOutboxRepository';
+import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
+import {listPendingSyncEvents} from '../adapters/SyncOutboxRepository';
 import {getSyncOutboxStatus} from '../outboxSync';
 import {createSyncManager} from '../syncManager';
 

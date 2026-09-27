@@ -1,6 +1,6 @@
 import {createRequestId} from '../api/requestId';
 import {getDatabase, withTransaction} from './database';
-import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
+import {enqueueSyncOutboxEvent} from './syncOutboxCore';
 import type {GamificationEventInput, GamificationEventRecord} from './types';
 
 type GamificationEventRow = {

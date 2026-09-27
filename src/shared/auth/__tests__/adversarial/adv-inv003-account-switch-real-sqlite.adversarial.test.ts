@@ -10,7 +10,7 @@ import {
   saveFlashcard,
 } from '@shared/db/FlashcardRepository';
 import {saveContentLesson} from '@shared/db/ContentLessonStateRepository';
-import {listPendingSyncEvents} from '@shared/db/SyncOutboxRepository';
+import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
 import * as DeviceIdentityNative from '@shared/identity/deviceIdentityNative';
 import {
   resetAccountStoreForTests,

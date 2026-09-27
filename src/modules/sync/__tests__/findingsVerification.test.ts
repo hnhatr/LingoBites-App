@@ -1,10 +1,10 @@
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
 import {
-  enqueueSyncOutboxEvent,
   listPendingSyncEvents,
   markSyncEventsFailed,
-} from '@shared/db/SyncOutboxRepository';
+} from '../adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '../outboxSync';
 import {applySyncRecord} from '../pullWorker';
 import {SyncCollectionSchema} from '@shared/schemas/sync';

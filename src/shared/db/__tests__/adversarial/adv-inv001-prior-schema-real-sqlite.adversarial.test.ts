@@ -6,7 +6,7 @@ import {listFlashcards, recordFlashcardRating} from '../../FlashcardRepository';
 import {getYouTubeProgress} from '../../YouTubeProgressRepository';
 import {getContentLessonState} from '../../ContentLessonStateRepository';
 import {listBookmarkedGrammar} from '../../GrammarBookmarkRepository';
-import {listPendingSyncEvents} from '../../SyncOutboxRepository';
+import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
 import {
   openRealSqlite,
   type RealSqliteConnection,

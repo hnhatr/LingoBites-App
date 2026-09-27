@@ -3,7 +3,7 @@ import {
   listPendingSyncEvents,
   markSyncEventsFailed,
   markSyncEventsSynced,
-} from '@shared/db/SyncOutboxRepository';
+} from './adapters/SyncOutboxRepository';
 import {markPracticeEventsSynced} from '@shared/db/PracticeRepository';
 import type {
   PracticeEventPayload,
@@ -20,7 +20,7 @@ import {
   type SyncPracticeEvent,
 } from '@shared/api/practiceEventsClient';
 import {MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';
-import {syncPush} from '@shared/api/syncClient';
+import {syncPush} from './syncClient';
 import {
   SyncCollectionSchema,
   type SyncPushMutation,

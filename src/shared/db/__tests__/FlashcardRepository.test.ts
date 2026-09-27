@@ -13,7 +13,7 @@ import {
 import {
   listPendingSyncEvents,
   markSyncEventsSynced,
-} from '../SyncOutboxRepository';
+} from '@modules/sync/adapters/SyncOutboxRepository';
 import type {ReviewEventPayload} from '../types';
 
 function saveFixtureLesson(): string {
