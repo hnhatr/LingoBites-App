@@ -17,7 +17,6 @@ const sourceRoot = path.join(appRoot, 'src');
 const sourceExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 
 const sharedModuleExceptions = new Map([
-  ['src/shared/db/ContentRuntimeRepository.ts', ['@modules/content']],
   [
     'src/shared/db/FlashcardRepository.ts',
     ['@modules/engagement', '@modules/review'],
