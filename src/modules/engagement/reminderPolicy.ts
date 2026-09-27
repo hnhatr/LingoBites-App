@@ -16,11 +16,9 @@
  * stays deterministic and unit-testable.
  */
 
-export type UpcomingReviewReminder = {
-  cardId: string;
-  word: string;
-  dueAt: string;
-};
+import type {UpcomingReviewReminder} from '@shared/review/contracts';
+
+export type {UpcomingReviewReminder};
 
 /** What the OS currently has pending, keyed per card. */
 export type PendingReminder = {

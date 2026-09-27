@@ -34,7 +34,9 @@ function TestComponent({
   return null;
 }
 
-function renderLessonEnrichmentHook(initialOptions: UseLessonEnrichmentOptions) {
+function renderLessonEnrichmentHook(
+  initialOptions: UseLessonEnrichmentOptions,
+) {
   const resultRef: {current: Record<number, SentenceEnrichment | null>} = {
     current: {},
   };
@@ -236,7 +238,10 @@ describe('useLessonEnrichment', () => {
     expect(hook.result).toEqual(newInjectedMap);
 
     await act(async () => {
-      resolveBatch({ok: true, enrichments: {0: makeEnrichment({keyWord: 'stale'})}});
+      resolveBatch({
+        ok: true,
+        enrichments: {0: makeEnrichment({keyWord: 'stale'})},
+      });
     });
 
     expect(hook.result).toEqual(newInjectedMap);
@@ -261,7 +266,10 @@ describe('useLessonEnrichment', () => {
     expect(capturedSignal2.aborted).toBe(true);
 
     await act(async () => {
-      resolveBatch2({ok: true, enrichments: {0: makeEnrichment({keyWord: 'stale2'})}});
+      resolveBatch2({
+        ok: true,
+        enrichments: {0: makeEnrichment({keyWord: 'stale2'})},
+      });
     });
   });
 });

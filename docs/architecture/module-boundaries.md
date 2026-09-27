@@ -35,16 +35,8 @@ shared infrastructure (`src/shared`) and reusable UI (`src/components`)
 
 ## Existing scoped exceptions
 
-Five existing shared repository/type edges are retained as explicit exceptions
-until their contracts can be moved without introducing a speculative layer:
+No shared repository or type edges are currently retained as exceptions.
 
-- `src/shared/api/analysisJobClient.ts` → `@modules/ai-analysis`
-- `src/shared/db/ContentPackageRepository.ts` → `@modules/content`
-- `src/shared/db/ContentRuntimeRepository.ts` → `@modules/content`
-- `src/shared/db/FlashcardRepository.ts` → `@modules/engagement`,
-  `@modules/review`
-- `src/shared/db/types.ts` → `@modules/content`
-
-The checker allowlists these exact source/import pairs. Any new `shared` →
+The checker allowlists exact source/import pairs if any are configured. Any new `shared` →
 `modules` edge fails lint and must either be removed or be approved as a
 similarly narrow, documented exception.

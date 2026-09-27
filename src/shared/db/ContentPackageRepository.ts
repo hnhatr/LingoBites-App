@@ -12,7 +12,10 @@
  */
 
 import {getDatabase} from './database';
-import type {ContentPackageId, ContentPackageSummary} from '@modules/content';
+import type {
+  ContentPackageId,
+  ContentPackageSummary,
+} from '@shared/content/contracts';
 
 type PackageRow = {
   id: string;

@@ -16,16 +16,7 @@ const appRoot = path.resolve(__dirname, '..');
 const sourceRoot = path.join(appRoot, 'src');
 const sourceExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 
-const sharedModuleExceptions = new Map([
-  ['src/shared/api/analysisJobClient.ts', ['@modules/ai-analysis']],
-  ['src/shared/db/ContentPackageRepository.ts', ['@modules/content']],
-  ['src/shared/db/ContentRuntimeRepository.ts', ['@modules/content']],
-  [
-    'src/shared/db/FlashcardRepository.ts',
-    ['@modules/engagement', '@modules/review'],
-  ],
-  ['src/shared/db/types.ts', ['@modules/content']],
-]);
+const sharedModuleExceptions = new Map();
 
 function walk(directory) {
   return fs.readdirSync(directory, {withFileTypes: true}).flatMap(entry => {
