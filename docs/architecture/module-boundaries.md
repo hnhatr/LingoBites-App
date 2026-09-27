@@ -42,7 +42,6 @@ until their contracts can be moved without introducing a speculative layer:
 - `src/shared/db/ContentRuntimeRepository.ts` → `@modules/content`
 - `src/shared/db/FlashcardRepository.ts` → `@modules/engagement`,
   `@modules/review`
-- `src/shared/db/types.ts` → `@modules/content`
 
 The checker allowlists these exact source/import pairs. Any new `shared` →
 `modules` edge fails lint and must either be removed or be approved as a

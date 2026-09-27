@@ -1,4 +1,4 @@
-import type {ContentMasteryState} from '@modules/content';
+import type {ContentMasteryState} from '@shared/content/contracts';
 
 export type {ContentMasteryState};
 

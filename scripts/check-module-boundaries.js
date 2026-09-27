@@ -23,7 +23,6 @@ const sharedModuleExceptions = new Map([
     'src/shared/db/FlashcardRepository.ts',
     ['@modules/engagement', '@modules/review'],
   ],
-  ['src/shared/db/types.ts', ['@modules/content']],
 ]);
 
 function walk(directory) {

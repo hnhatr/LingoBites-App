@@ -14,12 +14,9 @@
  * REQ-24/VC-5 the scheduling math below never branches on it.
  */
 
-export type ContentMasteryState =
-  | 'new'
-  | 'learning'
-  | 'reviewing'
-  | 'mastered'
-  | 'relearning';
+import type {ContentMasteryState} from '@shared/content/contracts';
+
+export type {ContentMasteryState};
 
 const VALID_STATES: ReadonlySet<ContentMasteryState> = new Set([
   'new',
