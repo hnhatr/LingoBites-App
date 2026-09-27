@@ -13,6 +13,36 @@ const {
 const appRoot = path.resolve(__dirname, '../..');
 const srcRoot = path.join(appRoot, 'src');
 
+/** Staged TASK-009 practice legacy shims (Integration Owner manifest delta; TASK-008 expiry). */
+const TASK_009_PRACTICE_SHIM_ALLOWANCES = [
+  {
+    file: 'src/shared/db/PracticeRepository.ts',
+    specifier: '../../modules/practice/data/PracticeRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-008',
+  },
+  {
+    file: 'src/shared/api/practiceEventsClient.ts',
+    specifier: '../../modules/practice/api/practiceEventsClient',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-008',
+  },
+];
+
+function expectManifestMatchesTask009PracticeShimDelta(manifest) {
+  expect(manifest.exceptions).toHaveLength(
+    TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
+  );
+  for (const expected of TASK_009_PRACTICE_SHIM_ALLOWANCES) {
+    expect(manifest.exceptions).toContainEqual(expected);
+  }
+  expect(manifest.allowanceByKey.size).toBe(
+    TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
+  );
+}
+
 describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
   describe('baseline repository checks', () => {
     it('passes on current production source with zero new violations', () => {
@@ -20,11 +50,15 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(result.passed).toBe(true);
       expect(result.newViolations).toHaveLength(0);
       expect(result.expiredExceptions).toHaveLength(0);
-      expect(result.matchedExceptions).toHaveLength(0);
-      expect(result.manifestTotal).toBe(0);
+      expect(result.matchedExceptions).toHaveLength(
+        TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
+      );
+      expect(result.manifestTotal).toBe(
+        TASK_009_PRACTICE_SHIM_ALLOWANCES.length,
+      );
     });
 
-    it('manifest has valid schema and records Integration Owner as sole writer with 0 allowances', () => {
+    it('manifest has valid schema, sole writer, and exact TASK-009 practice shim allowances', () => {
       const manifestPath = path.join(
         appRoot,
         'scripts/module-boundary-exceptions.json',
@@ -33,8 +67,31 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
       expect(manifest.rawParsed.soleWriter).toBe('Integration Owner');
       expect(manifest.rawParsed.version).toBeDefined();
-      expect(manifest.exceptions.length).toBe(0);
-      expect(manifest.allowanceByKey.size).toBe(0);
+      expectManifestMatchesTask009PracticeShimDelta(manifest);
+    });
+
+    it('rejects a new shared-to-module violation beyond the staged practice shim allowances', () => {
+      const practiceRepoShim = path.join(
+        srcRoot,
+        'shared/db/PracticeRepository.ts',
+      );
+      const original = fs.readFileSync(practiceRepoShim, 'utf8');
+      const extraImport = `import {x} from '../../modules/practice/sessionEngine';\n${original}`;
+
+      const result = checkModuleBoundaries({
+        files: [practiceRepoShim],
+        fileContents: {[practiceRepoShim]: extraImport},
+      });
+
+      expect(result.passed).toBe(false);
+      expect(
+        result.newViolations.some(
+          v =>
+            v.file === 'src/shared/db/PracticeRepository.ts' &&
+            v.specifier === '../../modules/practice/sessionEngine' &&
+            v.rule === 'shared-to-module',
+        ),
+      ).toBe(true);
     });
   });
 
