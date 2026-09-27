@@ -47,7 +47,7 @@ export type DialogueTurn = {
   text_en: string;
   text_vi: string;
   audio_ref_id?: string;
-  grammar_ref_ids?: string[];
+  grammar_ref_ids: string[];
 };
 
 export type QAItem = {

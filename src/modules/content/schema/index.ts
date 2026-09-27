@@ -445,3 +445,19 @@ export function validateLesson(raw: unknown): ContentValidationResult<Lesson> {
   }
   return {valid: false, errors: formatZodErrors(parsed.error)};
 }
+
+// ---------------------------------------------------------------------------
+// Compile-time schema-output ↔ DTO bidirectional assignability checks (AD-001 / RISK-001)
+// ---------------------------------------------------------------------------
+
+type AssertEqual<T, U> = [T] extends [U]
+  ? [U] extends [T]
+    ? true
+    : never
+  : never;
+
+const _checkAudioAsset: AssertEqual<z.output<typeof AudioAssetSchema>, AudioAsset> = true;
+const _checkSrsItemType: AssertEqual<z.output<typeof SrsItemTypeSchema>, SrsItemType> = true;
+const _checkSrsItem: AssertEqual<z.output<typeof SrsItemSchema>, SrsItem> = true;
+const _checkDialogueTurn: AssertEqual<z.output<typeof DialogueTurnSchema>, DialogueTurn> = true;
+const _checkQAItem: AssertEqual<z.output<typeof QAItemSchema>, QAItem> = true;
