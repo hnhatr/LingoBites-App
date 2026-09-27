@@ -16,7 +16,7 @@ import {useTranslation} from 'react-i18next';
 import {useAppTheme} from '@theme';
 import {getTextLengthBucket, trackEvent} from '../analytics';
 import {validateConfirmedText} from '@shared/utils/textValidation';
-import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
+import {startLessonFromConfirmedText} from '@modules/curriculumLesson';
 import {createLessonGenerationJob} from '@modules/curriculumLesson';
 import {useFloatingTabBarClearance} from '@components/layout';
 type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;

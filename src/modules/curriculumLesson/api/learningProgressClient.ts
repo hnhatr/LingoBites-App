@@ -1,7 +1,7 @@
 /**
- * Typed learning-state API client (LING-17 TASK-005).
+ * Curriculum-lesson learning progress API client (LING-100 TASK-011 split).
  *
- * Typed, runtime-validated calls for all eight LING-17 `/v1` learning
+ * Typed, runtime-validated calls for LING-17 lesson and vocabulary progress
  * operations through `authenticatedFetch`, independent of any screen wiring.
  * Mirrors the approved server envelope exactly (snake_case,
  * `request_id`/`status`) per Technical Design comment
@@ -25,11 +25,11 @@
  */
 
 import {z} from 'zod';
-import {authenticatedFetch} from './authenticatedFetch';
-import {getAppConfig} from './appConfig';
+import {authenticatedFetch} from '@shared/api/authenticatedFetch';
+import {getAppConfig} from '@shared/api/appConfig';
 
-export const LEARNING_CLIENT_FIXTURE_REVISION = 'ling-17-task-005-r1';
-export const LEARNING_CLIENT_DESIGN_REF =
+export const LEARNING_PROGRESS_CLIENT_FIXTURE_REVISION = 'ling-17-task-005-r1';
+export const LEARNING_PROGRESS_CLIENT_DESIGN_REF =
   '01a0d79a-2447-7763-9ab8-335e0cd04f5c';
 
 /* ------------------------------------------------------------------ */
@@ -84,61 +84,6 @@ export const AttemptResultSchema = z
 export type AttemptResult = z.infer<typeof AttemptResultSchema>;
 
 /**
- * Learner-safe exercise projection inside Review. Strict on purpose: the
- * server must never return `answer_key` (or `explanation`) here, so any
- * such leak fails closed as a protocol error instead of reaching callers.
- */
-export const ReviewExerciseContentSchema = z
-  .object({
-    id: z.string().uuid(),
-    title: z.string(),
-    type: z.string(),
-    instruction: z.string().nullable(),
-    prompt: z.string(),
-    config: z.unknown(),
-  })
-  .strict();
-
-export type ReviewExerciseContent = z.infer<typeof ReviewExerciseContentSchema>;
-
-export const ReviewExerciseEntrySchema = z
-  .object({
-    exercise: ReviewExerciseContentSchema,
-    latest_attempt: AttemptResultSchema,
-  })
-  .strict();
-
-export type ReviewExerciseEntry = z.infer<typeof ReviewExerciseEntrySchema>;
-
-/** Learner-safe vocabulary projection inside Review. */
-export const ReviewVocabularyContentSchema = z
-  .object({
-    id: z.string().uuid(),
-    key: z.string(),
-    language: z.string(),
-    lemma: z.string(),
-    part_of_speech: z.string().nullable(),
-    meaning: z.string(),
-    ipa: z.string().nullable(),
-    audio_media_id: z.string().uuid().nullable(),
-    image_media_id: z.string().uuid().nullable(),
-  })
-  .strict();
-
-export type ReviewVocabularyContent = z.infer<
-  typeof ReviewVocabularyContentSchema
->;
-
-export const ReviewVocabularyEntrySchema = z
-  .object({
-    vocabulary: ReviewVocabularyContentSchema,
-    progress: VocabularyProgressSchema,
-  })
-  .strict();
-
-export type ReviewVocabularyEntry = z.infer<typeof ReviewVocabularyEntrySchema>;
-
-/**
  * Opaque submitted answer. The server validates it against the exercise
  * type and evaluates it; the client never inspects it for correctness.
  */
@@ -177,15 +122,6 @@ const VocabularyProgressEnvelopeSchema = z
     request_id: z.string(),
     status: z.literal('success'),
     progress: VocabularyProgressSchema,
-  })
-  .strict();
-
-const ReviewEnvelopeSchema = z
-  .object({
-    request_id: z.string(),
-    status: z.literal('success'),
-    exercises: z.array(ReviewExerciseEntrySchema),
-    vocabularies: z.array(ReviewVocabularyEntrySchema),
   })
   .strict();
 
@@ -252,15 +188,6 @@ export type VocabularySeenResult =
   | LearningClientError;
 
 export type SetVocabularyProgressResult = VocabularySeenResult;
-
-export type ReviewResult =
-  | {
-      ok: true;
-      requestId: string;
-      exercises: ReviewExerciseEntry[];
-      vocabularies: ReviewVocabularyEntry[];
-    }
-  | LearningClientError;
 
 export type ContinueLearningResult =
   | {ok: true; requestId: string; progress: LessonProgress | null}
@@ -588,33 +515,6 @@ export async function setVocabularyProgress(
     ok: true,
     requestId: parsed.data.request_id,
     progress: parsed.data.progress,
-  };
-}
-
-/**
- * Derived Review: latest-incorrect exercises plus `learning` vocabulary.
- * Derived only; nothing here is persisted.
- * `GET /v1/me/review`.
- */
-export async function fetchReview(
-  options: LearningClientOptions = {},
-): Promise<ReviewResult> {
-  const answered = await send(
-    '/v1/me/review',
-    {method: 'GET', headers: {Accept: 'application/json'}},
-    'EXERCISE_NOT_FOUND',
-    options,
-  );
-  if (!('body' in answered)) return answered;
-  const parsed = ReviewEnvelopeSchema.safeParse(answered.body);
-  if (!parsed.success) {
-    return protocolError('Server returned an invalid review.');
-  }
-  return {
-    ok: true,
-    requestId: parsed.data.request_id,
-    exercises: parsed.data.exercises,
-    vocabularies: parsed.data.vocabularies,
   };
 }
 

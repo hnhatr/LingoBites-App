@@ -36,7 +36,7 @@ import {trackEvent} from '../analytics';
 import {useAppTheme, type AppTheme} from '@theme';
 import {useFloatingTabBarClearance} from '@components/layout';
 import {useTranslation} from 'react-i18next';
-import {fetchContinueLearning} from '@shared/api/learningClient';
+import {fetchContinueLearning} from '@modules/curriculumLesson';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeMain'>;
 

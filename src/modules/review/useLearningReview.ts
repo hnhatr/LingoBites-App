@@ -6,14 +6,16 @@
  */
 import {useCallback, useEffect, useState} from 'react';
 import {
-  fetchReview,
   setVocabularyProgress,
   submitExerciseAttempt,
   type LearningAttemptAnswer,
+  type VocabularyProgressStatus,
+} from '@modules/curriculumLesson';
+import {
+  fetchReview,
   type ReviewExerciseEntry,
   type ReviewVocabularyEntry,
-  type VocabularyProgressStatus,
-} from '@shared/api/learningClient';
+} from './api/learningReviewClient';
 
 export function useLearningReview() {
   const [loading, setLoading] = useState(false);
