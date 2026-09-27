@@ -29,6 +29,11 @@ cleanup() {
     else
       rm -f .env.development
     fi
+    if [[ -f "$ENV_BACKUP_DIR/ios.tmp.xcconfig" ]]; then
+      mv -f "$ENV_BACKUP_DIR/ios.tmp.xcconfig" ios/tmp.xcconfig
+    elif [[ -f "$ENV_BACKUP_DIR/.ios.tmp.xcconfig.absent" ]]; then
+      rm -f ios/tmp.xcconfig
+    fi
     rmdir "$ENV_BACKUP_DIR" 2>/dev/null || true
   fi
 }
@@ -57,6 +62,13 @@ if [[ -f .env.development ]]; then
   cp .env.development "$ENV_BACKUP_DIR/.env.development"
 else
   rm -f "$ENV_BACKUP_DIR/.env.development"
+fi
+if [[ -f ios/tmp.xcconfig ]]; then
+  cp ios/tmp.xcconfig "$ENV_BACKUP_DIR/ios.tmp.xcconfig"
+  rm -f "$ENV_BACKUP_DIR/.ios.tmp.xcconfig.absent"
+else
+  rm -f "$ENV_BACKUP_DIR/ios.tmp.xcconfig"
+  touch "$ENV_BACKUP_DIR/.ios.tmp.xcconfig.absent"
 fi
 
 : >"$LOG_FILE"
