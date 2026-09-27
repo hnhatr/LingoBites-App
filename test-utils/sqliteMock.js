@@ -56,10 +56,17 @@ function createMockDatabase() {
   const execute = (sql, params = []) => {
     const normalized = sql.replace(/\s+/g, ' ').trim().toLowerCase();
 
-    if (
-      normalized.startsWith('create table') ||
-      normalized.startsWith('create index')
-    ) {
+    if (normalized.startsWith('create table')) {
+      const match = normalized.match(
+        /^create table (if not exists )?([a-z0-9_]+)/,
+      );
+      if (match?.[2]) {
+        droppedTables.delete(match[2]);
+      }
+      return {rowsAffected: 0};
+    }
+
+    if (normalized.startsWith('create index')) {
       return {rowsAffected: 0};
     }
 

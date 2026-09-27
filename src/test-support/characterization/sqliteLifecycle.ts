@@ -6,8 +6,10 @@ import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
  * Drops in-memory DB handles and reopens the same on-disk (mock-keyed) database,
  * matching a process kill + cold start without clearing persisted rows.
  */
-export function simulateDatabaseProcessRestart(): void {
+export function simulateDatabaseProcessRestart(
+  databaseName: string = DB_NAME,
+): void {
   resetDatabaseForTests(null);
-  resetDatabaseForTests(open({name: DB_NAME}));
+  resetDatabaseForTests(open({name: databaseName}));
   getDatabase();
 }
