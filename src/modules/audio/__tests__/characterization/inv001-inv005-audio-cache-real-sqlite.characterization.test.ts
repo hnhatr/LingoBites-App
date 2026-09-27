@@ -30,7 +30,11 @@ function applyPriorSchema(raw: RealSqliteConnection) {
   }
 }
 
-function seedPriorAudioCache(raw: RealSqliteConnection) {
+function seedPriorAudioCache(
+  raw: RealSqliteConnection,
+  audioPath: string,
+  byteLength: number,
+) {
   applyPriorSchema(raw);
   raw.execute(
     `INSERT INTO audio_assets (
@@ -40,8 +44,8 @@ function seedPriorAudioCache(raw: RealSqliteConnection) {
       'asset-prior',
       'ch-prior',
       'https://cdn.example.com/prior.mp3',
-      '/files/prior.mp3',
-      2048,
+      audioPath,
+      byteLength,
       'sha-prior',
       T0,
     ],
@@ -50,6 +54,14 @@ function seedPriorAudioCache(raw: RealSqliteConnection) {
 
 let dir: string;
 let dbFile: string;
+let filesDir: string;
+
+function writeAudioFile(relativePath: string, payload: string): string {
+  const filePath = path.join(filesDir, relativePath);
+  fs.mkdirSync(path.dirname(filePath), {recursive: true});
+  fs.writeFileSync(filePath, payload);
+  return filePath;
+}
 
 function coldStart(): RealSqliteConnection {
   const connection = openRealSqlite(dbFile);
@@ -61,6 +73,7 @@ function coldStart(): RealSqliteConnection {
 beforeEach(() => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ling101-audio-real-sqlite-'));
   dbFile = path.join(dir, 'lingobites.sqlite');
+  filesDir = path.join(dir, 'Documents');
 });
 
 afterEach(() => {
@@ -69,7 +82,9 @@ afterEach(() => {
 });
 
 describe('audio chapter cache (real SQLite / node:sqlite)', () => {
-  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: ready audio rows survive file reopen and idempotent migrations`, () => {
+  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: ready audio rows and on-disk bytes survive reopen and idempotent migrations`, () => {
+    const payload = 'AUDIO-CACHE-BYTES-LIVE';
+    const audioPath = writeAudioFile('chapter-audio/asset-live.mp3', payload);
     let db = coldStart();
 
     insertPendingChapterAudioAsset({
@@ -82,39 +97,59 @@ describe('audio chapter cache (real SQLite / node:sqlite)', () => {
       },
       now: NOW,
     });
-    markChapterAudioAssetReady('asset-live', '/files/live.mp3', 8192, NOW);
+    markChapterAudioAssetReady(
+      'asset-live',
+      audioPath,
+      Buffer.byteLength(payload),
+      NOW,
+    );
 
     db.close();
     db = coldStart();
     expect(getReadyAudioAsset('asset-live')).toMatchObject({
       id: 'asset-live',
-      localPath: '/files/live.mp3',
-      bytes: 8192,
+      localPath: audioPath,
+      bytes: Buffer.byteLength(payload),
       downloadStatus: 'ready',
     });
+    expect(fs.readFileSync(audioPath, 'utf8')).toBe(payload);
 
     runMigrations(getDatabase());
-    expect(getReadyAudioAsset('asset-live')?.localPath).toBe('/files/live.mp3');
+    expect(getReadyAudioAsset('asset-live')?.id).toBe('asset-live');
+    expect(fs.readFileSync(audioPath, 'utf8')).toBe(payload);
+    expect(
+      (
+        getDatabase()
+          .execute('SELECT COUNT(*) AS count FROM audio_assets WHERE id = ?;', [
+            'asset-live',
+          ])
+          .rows?.item(0) as {count: number}
+      ).count,
+    ).toBe(1);
     db.close();
   });
 
-  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: 403bc52 audio_assets upgrade to head and stay readable`, () => {
+  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: 403bc52 audio_assets upgrade to head with readable on-disk bytes`, () => {
+    const payload = 'AUDIO-CACHE-BYTES-PRIOR';
+    const audioPath = writeAudioFile('chapter-audio/asset-prior.mp3', payload);
     const prior = openRealSqlite(dbFile);
-    seedPriorAudioCache(prior);
+    seedPriorAudioCache(prior, audioPath, Buffer.byteLength(payload));
     prior.close();
 
     let db = coldStart();
     expect(getReadyAudioAsset('asset-prior')).toMatchObject({
       id: 'asset-prior',
       chapterId: 'ch-prior',
-      localPath: '/files/prior.mp3',
-      bytes: 2048,
+      localPath: audioPath,
+      bytes: Buffer.byteLength(payload),
     });
+    expect(fs.readFileSync(audioPath, 'utf8')).toBe(payload);
     db.close();
 
     db = coldStart();
     runMigrations(getDatabase());
     expect(getReadyAudioAsset('asset-prior')?.checksum).toBe('sha-prior');
+    expect(fs.readFileSync(audioPath, 'utf8')).toBe(payload);
     db.close();
   });
 
@@ -131,7 +166,14 @@ describe('audio chapter cache (real SQLite / node:sqlite)', () => {
       },
       now: NOW,
     });
-    markChapterAudioAssetReady('asset-dup', '/files/dup.mp3', 1024, NOW);
+    const dupPayload = 'AUDIO-DUP';
+    const dupPath = writeAudioFile('chapter-audio/asset-dup.mp3', dupPayload);
+    markChapterAudioAssetReady(
+      'asset-dup',
+      dupPath,
+      Buffer.byteLength(dupPayload),
+      NOW,
+    );
 
     try {
       insertPendingChapterAudioAsset({
@@ -154,7 +196,8 @@ describe('audio chapter cache (real SQLite / node:sqlite)', () => {
       ])
       .rows?.item(0) as {count: number};
     expect(rows.count).toBe(1);
-    expect(getReadyAudioAsset('asset-dup')?.localPath).toBe('/files/dup.mp3');
+    expect(getReadyAudioAsset('asset-dup')?.localPath).toBe(dupPath);
+    expect(fs.readFileSync(dupPath, 'utf8')).toBe(dupPayload);
 
     db.close();
   });
