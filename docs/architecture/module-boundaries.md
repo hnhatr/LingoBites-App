@@ -35,10 +35,9 @@ shared infrastructure (`src/shared`) and reusable UI (`src/components`)
 
 ## Existing scoped exceptions
 
-Three existing shared repository/type edges are retained as explicit exceptions
+Two existing shared repository/type edges are retained as explicit exceptions
 until their contracts can be moved without introducing a speculative layer:
 
-- `src/shared/db/ContentRuntimeRepository.ts` → `@modules/content`
 - `src/shared/db/FlashcardRepository.ts` → `@modules/engagement`,
   `@modules/review`
 

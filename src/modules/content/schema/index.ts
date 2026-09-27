@@ -10,6 +10,15 @@
 
 import {z} from 'zod';
 import {createHash} from 'crypto';
+import type {
+  AudioAsset,
+  DialogueTurn,
+  QAItem,
+  SrsItem,
+  SrsItemType,
+} from '@shared/content/contracts';
+
+export type {AudioAsset, DialogueTurn, QAItem, SrsItem, SrsItemType};
 
 // ---------------------------------------------------------------------------
 // Schema version
@@ -65,8 +74,6 @@ export const AudioAssetSchema = z.object({
   transcript: z.string().optional(),
 });
 
-export type AudioAsset = z.infer<typeof AudioAssetSchema>;
-
 // ---------------------------------------------------------------------------
 // SRS (Spaced Repetition System) declarations
 // ---------------------------------------------------------------------------
@@ -77,8 +84,6 @@ export const SrsItemTypeSchema = z.enum([
   'dialogue_turn',
   'qa',
 ]);
-
-export type SrsItemType = z.infer<typeof SrsItemTypeSchema>;
 
 export const SrsItemSchema = z.object({
   /** Deterministic ID: sha256("srs:" + lessonSlug + ":" + srsSlug) */
@@ -94,8 +99,6 @@ export const SrsItemSchema = z.object({
   /** Optional hint shown after a wrong answer. */
   hint_vi: z.string().optional(),
 });
-
-export type SrsItem = z.infer<typeof SrsItemSchema>;
 
 // ---------------------------------------------------------------------------
 // Remediation declarations
@@ -193,8 +196,6 @@ export const QAItemSchema = z
     },
   );
 
-export type QAItem = z.infer<typeof QAItemSchema>;
-
 // ---------------------------------------------------------------------------
 // Dialogue turn
 // ---------------------------------------------------------------------------
@@ -209,8 +210,6 @@ export const DialogueTurnSchema = z.object({
   /** Grammar pattern IDs this turn illustrates. */
   grammar_ref_ids: z.array(z.string()).default([]),
 });
-
-export type DialogueTurn = z.infer<typeof DialogueTurnSchema>;
 
 // ---------------------------------------------------------------------------
 // Content chunk (the core unit)

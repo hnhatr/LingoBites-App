@@ -22,11 +22,11 @@ import type {
   QAItem,
   SrsItem,
   ContentMasteryState,
-} from '@modules/content';
+} from '../content/contracts';
 import {
   calculateNextContentReviewState,
   selectDueContentReviewItems,
-} from '@modules/content';
+} from '../content/contentReviewPolicy';
 
 export type ContentChunkRow = {
   id: string;
