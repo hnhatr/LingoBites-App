@@ -17,7 +17,6 @@ const sourceRoot = path.join(appRoot, 'src');
 const sourceExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 
 const sharedModuleExceptions = new Map([
-  ['src/shared/api/analysisJobClient.ts', ['@modules/ai-analysis']],
   ['src/shared/db/ContentPackageRepository.ts', ['@modules/content']],
   ['src/shared/db/ContentRuntimeRepository.ts', ['@modules/content']],
   [

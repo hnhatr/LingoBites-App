@@ -38,7 +38,6 @@ shared infrastructure (`src/shared`) and reusable UI (`src/components`)
 Five existing shared repository/type edges are retained as explicit exceptions
 until their contracts can be moved without introducing a speculative layer:
 
-- `src/shared/api/analysisJobClient.ts` → `@modules/ai-analysis`
 - `src/shared/db/ContentPackageRepository.ts` → `@modules/content`
 - `src/shared/db/ContentRuntimeRepository.ts` → `@modules/content`
 - `src/shared/db/FlashcardRepository.ts` → `@modules/engagement`,
