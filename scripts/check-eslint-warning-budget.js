@@ -4,7 +4,7 @@ const {spawnSync} = require('child_process');
 const path = require('path');
 
 const WARNING_BUDGET = {
-  totalWarnings: 406,
+  totalWarnings: 340,
   rules: {
     'react-native-a11y/has-accessibility-hint': 87,
     'react-native-a11y/has-valid-accessibility-descriptors': 0,

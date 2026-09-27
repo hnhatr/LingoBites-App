@@ -58,4 +58,57 @@ describe('evaluateWarningBudget', () => {
       'react-native-a11y/has-accessibility-hint warnings 1 exceed budget 0',
     ]);
   });
+
+  it('fails when total warnings exceed aggregate budget even if each rule is individually within budget', () => {
+    const createWarnings = (ruleId, count) =>
+      Array.from({length: count}, () => ({severity: 1, ruleId}));
+    const syntheticResults = [
+      {
+        filePath: '/repo/src/synthetic.tsx',
+        messages: [
+          ...createWarnings('no-bitwise', 133),
+          ...createWarnings('react-native-a11y/has-accessibility-hint', 87),
+          ...createWarnings('react-native/no-inline-styles', 91),
+          ...createWarnings('no-void', 17),
+          ...createWarnings('no-regex-spaces', 13),
+        ],
+      },
+    ];
+
+    const result = evaluateWarningBudget(syntheticResults, {
+      totalWarnings: 340,
+      rules: {
+        'no-bitwise': 133,
+        'react-native-a11y/has-accessibility-hint': 87,
+        'react-native/no-inline-styles': 91,
+        'no-void': 17,
+        'no-regex-spaces': 43,
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.failures).toContain('total warnings 341 exceed budget 340');
+  });
+
+  it('evaluates correctly using the default WARNING_BUDGET', () => {
+    const createWarnings = (ruleId, count) =>
+      Array.from({length: count}, () => ({severity: 1, ruleId}));
+    const validResults = [
+      {
+        filePath: '/repo/src/synthetic.tsx',
+        messages: [
+          ...createWarnings('no-bitwise', 131),
+          ...createWarnings('react-native-a11y/has-accessibility-hint', 87),
+          ...createWarnings('react-native/no-inline-styles', 89),
+          ...createWarnings('no-void', 16),
+          ...createWarnings('no-undef-init', 1),
+          ...createWarnings('react/no-unstable-nested-components', 1),
+        ],
+      },
+    ];
+
+    const result = evaluateWarningBudget(validResults);
+    expect(result.ok).toBe(true);
+    expect(result.summary.totalWarnings).toBe(325);
+  });
 });
