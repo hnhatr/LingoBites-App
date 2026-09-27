@@ -1,12 +1,9 @@
-export {SpeakingRoomScreen} from './SpeakingRoomScreen';
-export {SpeakingShadowingActivity} from './activities/SpeakingShadowingActivity';
-export {deleteRecordingFile} from './recordingService';
 export {
   captureErrorEvent,
   insertSpeakingRecording,
   listErrorEvents,
   listSpeakingRecordings,
-} from './data/SpeakingRepository';
+} from './speakingQueryPort';
 export {
   createRecordingMetadata,
   uploadRecordingBinary,

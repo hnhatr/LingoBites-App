@@ -426,6 +426,28 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
           '@modules/review',
         ),
       ).toBe(false);
+
+      // TASK-012 speaking split public surfaces
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'speaking',
+            rel: 'modules/speaking/speakingQueryPort.ts',
+          },
+          '@modules/speaking/speakingQueryPort',
+        ),
+      ).toBe(true);
+      expect(
+        isPublicFeatureBarrel(
+          {
+            layer: 'modules',
+            feature: 'speaking',
+            rel: 'modules/speaking/speakingUiPort.ts',
+          },
+          '@modules/speaking/speakingUiPort',
+        ),
+      ).toBe(true);
     });
 
     it('rejects cross-feature import of index.private.ts in checkModuleBoundaries production runner', () => {

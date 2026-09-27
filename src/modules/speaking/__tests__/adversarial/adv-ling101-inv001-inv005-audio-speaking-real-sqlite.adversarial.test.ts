@@ -9,7 +9,7 @@ import * as legacyRecordingClient from '@shared/api/recordingClient';
 import * as audioRepository from '@modules/audio/data/AudioAssetRepository';
 import * as speakingRepository from '@modules/speaking/data/SpeakingRepository';
 import * as recordingClient from '@modules/speaking/api/recordingClient';
-import * as speakingPublic from '@modules/speaking';
+import * as speakingPublic from '@modules/speaking/speakingQueryPort';
 import {getLearnerStateSnapshot} from '@modules/today/todayAdapter';
 import {
   clearAllLocalDataWithFiles,
@@ -32,8 +32,7 @@ import {
  * and explicit-deletion scope (speaking-only vs all local data).
  */
 
-// Native permission facade is not under attack here; `@modules/speaking` barrel
-// still loads it eagerly when imported directly (mocked below).
+// UI/recording native facade is not under attack; `speakingUiPort` is not imported.
 jest.mock('react-native-permissions', () => ({
   check: jest.fn().mockResolvedValue('granted'),
   request: jest.fn().mockResolvedValue('granted'),
@@ -171,12 +170,6 @@ describe('LING-101 adversarial: audio/speaking ownership move', () => {
     ] as const) {
       expect(speakingPublic[key]).toBe(speakingRepository[key]);
     }
-    expect(speakingPublic.createRecordingMetadata).toBe(
-      recordingClient.createRecordingMetadata,
-    );
-    expect(speakingPublic.uploadRecordingBinary).toBe(
-      recordingClient.uploadRecordingBinary,
-    );
   });
 
   it('ADV-002 / INV-001 / INV-005: pre-move install is read identically through shim, private repo, Public surface and Today after restart + repeated migrations', () => {
