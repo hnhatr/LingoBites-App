@@ -17,10 +17,7 @@ const sourceRoot = path.join(appRoot, 'src');
 const sourceExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 
 const sharedModuleExceptions = new Map([
-  [
-    'src/shared/db/FlashcardRepository.ts',
-    ['@modules/review'],
-  ],
+  ['src/shared/db/FlashcardRepository.ts', ['@modules/review']],
 ]);
 
 function walk(directory) {
