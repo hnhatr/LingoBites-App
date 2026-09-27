@@ -48,10 +48,9 @@ src/
 | `release`, `i18n` | self only plus external packages | app/modules/components/test-support |
 | `test-support`, tests | any public surface; same-feature Private/fixtures | production may never import test-support/fixture |
 
-- Each feature's `index.ts` is its only public API. Files below a feature are
-  private implementation unless exported by that barrel. Relative imports
-  within the same feature are allowed.
-- Cross-feature deep imports (e.g. `@modules/content/runtime/...`) are strictly forbidden.
+- Each feature's root `index.ts` (accessed via canonical `@modules/<feature>` or relative sibling barrel) is its only public API. All other files below a feature—including `index.private.ts` or deep paths—are strictly Private implementation. Relative imports within the same feature are allowed.
+- Cross-feature deep or private imports (e.g. `@modules/content/runtime/...`, `@modules/review/index.private`) are strictly forbidden.
+- App composition must only import feature public surfaces via `@modules/<feature>`.
 - Production code must never import `src/test-support`, test fixtures, or test files.
 
 ## Automated Checker and Baseline Exception Manifest
@@ -66,6 +65,7 @@ Baseline exceptions are stored in `scripts/module-boundary-exceptions.json`:
 - The Integration Owner is the sole future writer of this manifest.
 - Existing exceptions in this foundation cohort cover pre-existing `feature-to-app`
   and `app-to-module-private` navigation imports expiring in TASK-003.
+- Manifest entries enforce exact occurrence limits per `file::specifier::rule`: each entry permits exactly one violation occurrence. Surplus occurrences beyond the baseline allowance immediately fail the checker.
 - Any violation not matching an active entry in the manifest immediately fails the
   checker ("zero new violations").
 - Subsequent cohorts (TASK-003, Wave 4 domain ownership, etc.) ratchet the manifest
