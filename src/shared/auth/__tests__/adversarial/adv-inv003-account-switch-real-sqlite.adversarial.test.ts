@@ -168,10 +168,11 @@ describe('ADV / INV-003 production account switch on real SQLite', () => {
   });
 
   /**
-   * Pre-decision characterization of current wipe semantics (pending Q-001).
-   * Not an approved product oracle for A→B pending-outbox retention.
+   * Q-001 resolved (requester P2): pre-P2 automatic-wipe characterization — documents
+   * current A→B full local wipe including pending outbox. Superseded by explicit
+   * confirmation in P2; not P2 acceptance and not a pending product decision.
    */
-  it('ADV-H07 / INV-003: logout A → login B leaves no A-owned learner row in ANY table and no A outbox event to replay under B', async () => {
+  it('ADV-H07 / INV-003 (pre-P2 auto-wipe baseline): logout A → login B leaves no A-owned learner row in ANY table and no A outbox event to replay under B', async () => {
     await useAccountStore.getState().boot();
     writeLearnerDataAsCurrentUser();
     expect(listPendingSyncEvents()).toHaveLength(2); // review + content_lesson_state
