@@ -1,6 +1,8 @@
 import React, {useMemo} from 'react';
 import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import type {LessonsStackParamList} from '../navigationTypes';
 import {AppCard} from '@components/AppCard';
 import {AppText} from '@components/AppText';
 import {useAppTheme} from '@theme';
@@ -58,9 +60,8 @@ function createStyles(theme: AppTheme) {
 export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
-  const navigation = useNavigation<{
-    navigate: (screen: string, params?: unknown) => void;
-  }>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<LessonsStackParamList>>();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const sections = useMemo((): LessonSection[] => {

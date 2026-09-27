@@ -3,6 +3,10 @@
  * Established in TASK-002 (AD-004 foundation), populated in TASK-003.
  */
 
+import type {NavigateFn, ParamListBase, ReplaceFn} from './paramList';
+
+export type {NavigateFn, ParamListBase, ReplaceFn};
+
 export type ShellRouteNames =
   | 'Tabs'
   | 'YouTubeHistory'
@@ -36,29 +40,38 @@ export interface NavigationBackHandle {
   canGoBack?: () => boolean;
 }
 
-export interface ScreenNavigationProp<TRouteNames extends string = string> {
+export interface ScreenNavigationProp<
+  ParamList extends ParamListBase,
+  RouteName extends keyof ParamList = keyof ParamList,
+> {
   goBack: () => void;
   canGoBack?: () => boolean;
-  navigate: (screen: TRouteNames, params?: unknown) => void;
+  navigate: NavigateFn<ParamList>;
   reset: (state: unknown) => void;
-  replace?: (screen: TRouteNames, params?: unknown) => void;
-  setParams?: (params: unknown) => void;
+  replace?: ReplaceFn<ParamList>;
+  setParams?: (params: Partial<ParamList[RouteName]>) => void;
   getParent: <TParent = unknown>(id?: string) => TParent;
-  addListener: (event: string, callback: (event: any) => void) => () => void;
+  addListener: (
+    event: string,
+    callback: (event: unknown) => void,
+  ) => () => void;
   dispatch?: (action: unknown) => void;
   setOptions?: (options: Record<string, unknown>) => void;
 }
 
-export interface ScreenRouteProp<TParams> {
+export interface ScreenRouteProp<
+  ParamList extends ParamListBase,
+  RouteName extends keyof ParamList,
+> {
   key?: string;
-  name?: string;
-  params: TParams;
+  name?: RouteName;
+  params: ParamList[RouteName];
 }
 
 export interface ScreenProps<
-  TParams = undefined,
-  TRouteNames extends string = string,
+  ParamList extends ParamListBase,
+  RouteName extends keyof ParamList,
 > {
-  navigation: ScreenNavigationProp<TRouteNames>;
-  route: ScreenRouteProp<TParams>;
+  navigation: ScreenNavigationProp<ParamList, RouteName>;
+  route: ScreenRouteProp<ParamList, RouteName>;
 }

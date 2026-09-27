@@ -9,21 +9,23 @@
  * Opening any item navigates cross-stack to the canonical
  * `CurriculumLesson({lessonId})` route in the Lessons tab.
  */
+import type {NavigationProp} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
+import type {RootTabParamList} from '@modules/input';
+import type {ProfileStackParamList} from '@modules/settings';
 import {AppScreen} from '@components/AppScreen';
 import {ScreenHeader} from '@components/ScreenHeader';
 import {useAppTheme, type AppTheme} from '@theme';
 import {UnifiedLessonsScreen} from './UnifiedLessonsScreen';
 
-export interface UnifiedLessonsPreviewScreenProps {
-  navigation: {
-    goBack: () => void;
-    getParent: <
-      T = {navigate: (screen: string, params?: unknown) => void},
-    >() => T | undefined;
-  };
-}
+type Props = NativeStackScreenProps<
+  ProfileStackParamList,
+  'UnifiedLessonsPreview'
+>;
+
+export type UnifiedLessonsPreviewScreenProps = Props;
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -37,21 +39,14 @@ function createStyles(theme: AppTheme) {
   });
 }
 
-export function UnifiedLessonsPreviewScreen({
-  navigation,
-}: UnifiedLessonsPreviewScreenProps) {
+export function UnifiedLessonsPreviewScreen({navigation}: Props) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handleOpenLesson = useCallback(
     (lessonId: string) => {
       navigation
-        .getParent<{
-          navigate: (
-            tab: string,
-            params: {screen: string; params: {lessonId: string}},
-          ) => void;
-        }>()
+        .getParent<NavigationProp<RootTabParamList>>()
         ?.navigate('Lessons', {
           screen: 'CurriculumLesson',
           params: {lessonId},

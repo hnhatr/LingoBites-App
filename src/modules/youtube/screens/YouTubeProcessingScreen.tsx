@@ -1,28 +1,20 @@
 import React, {useEffect, useState} from 'react';
 import {View} from 'react-native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {CreateStackParamList} from '@modules/input';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {AppButton} from '@components/AppButton';
 import {HandoffProgressTrack} from '@components/HandoffProgressTrack';
 import {ScreenHeader} from '@components/ScreenHeader';
-import type {YouTubeProcessingRouteParams} from '../navigationTypes';
 import {runYouTubeJob, type YouTubeJobProgress} from '../api/youtubeApi';
 import {useTranslation} from 'react-i18next';
 import {saveYouTubeLesson} from '@shared/db/YouTubeLessonRepository';
 import {useAppTheme} from '@theme';
 
-export type YouTubeProcessingScreenProps = {
-  navigation: {
-    goBack: () => void;
-    replace: (screen: string, params?: any) => void;
-    navigate: (options: any) => void;
-  };
-  route: {
-    params: YouTubeProcessingRouteParams;
-  };
-};
+type Props = NativeStackScreenProps<CreateStackParamList, 'YouTubeProcessing'>;
 
-type Props = YouTubeProcessingScreenProps;
+export type YouTubeProcessingScreenProps = Props;
 
 export function YouTubeProcessingScreen({navigation, route}: Props) {
   const {t} = useTranslation();

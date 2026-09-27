@@ -1,6 +1,9 @@
 import React, {useCallback, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import type {HomeStackParamList, RootTabParamList} from '@modules/input';
+import type {LessonsStackParamList} from '@modules/lesson';
 import {AppButton} from '@components/AppButton';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
@@ -14,9 +17,10 @@ import {getLearnerStateSnapshot} from './todayAdapter';
 import {resolveTodayNavigation} from './todayNavigation';
 import type {StudyActivityItem, StudyBlockPlan, TodayMode} from './types';
 
-type NavigationProp = {
-  navigate: (screen: string, params?: unknown) => void;
-};
+type TodayNavigationParamList = HomeStackParamList &
+  LessonsStackParamList &
+  RootTabParamList;
+type NavigationProp = NativeStackNavigationProp<TodayNavigationParamList>;
 
 const TARGET_MINUTES: Record<TodayMode, number> = {
   '5-minute': 5,

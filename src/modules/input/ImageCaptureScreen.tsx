@@ -7,6 +7,8 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {CreateStackParamList} from './navigationTypes';
 import {AppButton} from '@components/AppButton';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
@@ -26,18 +28,9 @@ import {
   pickImageFromGallery,
   type PickedImage,
 } from './imagePicker';
-import type {ImageCaptureRouteParams} from './navigationTypes';
+type Props = NativeStackScreenProps<CreateStackParamList, 'ImageCapture'>;
 
-export interface ImageCaptureScreenProps {
-  navigation: {
-    goBack: () => void;
-    replace: (screen: string, params: unknown) => void;
-    navigate: (screen: string, params?: unknown) => void;
-  };
-  route: {
-    params: ImageCaptureRouteParams;
-  };
-}
+export type ImageCaptureScreenProps = Props;
 
 type ScreenState =
   | {type: 'upload_idle'}
@@ -49,10 +42,7 @@ type ScreenState =
 
 const RECENT_PLACEHOLDERS = ['flyer.jpg', 'menu.png', 'sign.jpg'] as const;
 
-export function ImageCaptureScreen({
-  navigation,
-  route,
-}: ImageCaptureScreenProps) {
+export function ImageCaptureScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const {sourceType} = route.params;

@@ -7,4 +7,5 @@ export type {
   PrivacyNoteRouteParams,
   ProgressReportRouteParams,
   FeatureStatusRouteParams,
+  ProfileStackParamList,
 } from './navigationTypes';

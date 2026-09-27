@@ -1,5 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import type {NavigationProp} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {CreateStackParamList, RootTabParamList} from './navigationTypes';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {BottomActionBar} from '@components/BottomActionBar';
@@ -16,20 +19,9 @@ import {validateConfirmedText} from '@shared/utils/textValidation';
 import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
 import {createLessonGenerationJob} from '@modules/curriculumLesson';
 import {useFloatingTabBarClearance} from '@components/layout';
-import type {PasteTextRouteParams} from './navigationTypes';
+type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;
 
-export interface PasteTextScreenProps {
-  navigation: {
-    goBack: () => void;
-    setParams: (params: Partial<{analyzeError?: string}>) => void;
-    getParent: <
-      T = {navigate: (screen: string, params?: unknown) => void},
-    >() => T | undefined;
-  };
-  route?: {
-    params?: PasteTextRouteParams;
-  };
-}
+export type PasteTextScreenProps = Props;
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
 
@@ -41,7 +33,7 @@ function countWords(text: string): number {
   return trimmed.split(/\s+/).length;
 }
 
-export function PasteTextScreen({navigation, route}: PasteTextScreenProps) {
+export function PasteTextScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const [text, setText] = useState('');
@@ -87,19 +79,7 @@ export function PasteTextScreen({navigation, route}: PasteTextScreenProps) {
         if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
           const {jobId, confirmedText, level} = params;
           navigation
-            .getParent<{
-              navigate: (
-                tab: string,
-                params: {
-                  screen: string;
-                  params: {
-                    jobId: string;
-                    confirmedText?: string;
-                    level?: string;
-                  };
-                },
-              ) => void;
-            }>()
+            .getParent<NavigationProp<RootTabParamList>>()
             ?.navigate('Lessons', {
               screen: 'UnifiedLessonGeneration',
               params: {jobId, confirmedText, level},

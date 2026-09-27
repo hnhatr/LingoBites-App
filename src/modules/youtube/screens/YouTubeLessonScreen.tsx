@@ -85,7 +85,13 @@ import {
   TOAST_DURATION_MS,
   type SentenceLoopCount,
 } from '../utils/toolsLogic';
-import type {YouTubeLessonRouteParams} from '../navigationTypes';
+import type {NavigationProp} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {
+  CreateStackParamList,
+  RootStackParamList,
+  RootTabParamList,
+} from '@modules/input';
 import {useFloatingTabBarClearance} from '@components/layout';
 import {useBookmarkOptimistic, useFlashcardLibrary} from '@modules/review';
 import {mapTranscriptToPractice} from '../utils/practiceMapper';
@@ -1327,25 +1333,18 @@ export function YouTubeLessonScreen({
  * `YouTubeProcessing.replace('YouTubeLesson')`) and the RootStack
  * (opening a saved lesson from `YouTubeHistory` above the tabs).
  */
-export type YouTubeLessonRouteProps = {
-  navigation: {
-    goBack: () => void;
-    navigate: (screen: string, params?: any) => void;
-    reset?: (state: any) => void;
-    getParent: <T = any>(id?: string) => T;
-    setOptions?: (options: Record<string, any>) => void;
-    addListener: (event: string, callback: (e: any) => void) => () => void;
-  };
-  route: {
-    params: YouTubeLessonRouteParams;
-  };
-};
+type YouTubeLessonRouteProps =
+  | NativeStackScreenProps<CreateStackParamList, 'YouTubeLesson'>
+  | NativeStackScreenProps<RootStackParamList, 'YouTubeLesson'>;
 
 export function YouTubeLessonRouteScreen({
   navigation,
   route,
 }: YouTubeLessonRouteProps) {
-  const nav = navigation;
+  const nav = navigation as NativeStackScreenProps<
+    CreateStackParamList,
+    'YouTubeLesson'
+  >['navigation'];
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const fallbackStyles = useMemo(() => createStyles(theme), [theme]);
@@ -1366,11 +1365,15 @@ export function YouTubeLessonRouteScreen({
   // the plain goBack contract owned by SETE-289.
   const isFreshLesson = 'lesson' in params && params.lesson != null;
   const exitToHome = useCallback(() => {
-    navigation.reset?.({
+    const createNav = navigation as NativeStackScreenProps<
+      CreateStackParamList,
+      'YouTubeLesson'
+    >['navigation'];
+    createNav.reset({
       index: 0,
       routes: [{name: 'CreateMain'}],
     });
-    navigation.getParent<{navigate: (tab: string) => void}>()?.navigate('Home');
+    createNav.getParent<NavigationProp<RootTabParamList>>()?.navigate('Home');
   }, [navigation]);
 
   useEffect(() => {
@@ -1419,10 +1422,7 @@ export function YouTubeLessonRouteScreen({
   const handlePracticeSentence = useCallback(
     (segment: YouTubeSegment) => {
       const sentenceText = segment.en;
-      const tabParent = nav.getParent<{
-        getState?: () => {routeNames?: string[]};
-        navigate: (name: string, params?: any) => void;
-      }>();
+      const tabParent = nav.getParent<NavigationProp<RootTabParamList>>();
       const tabRoutes = tabParent?.getState?.()?.routeNames;
       if (tabParent && (tabRoutes == null || tabRoutes.includes('Lessons'))) {
         tabParent.navigate('Lessons', {
@@ -1431,7 +1431,10 @@ export function YouTubeLessonRouteScreen({
         });
         return;
       }
-      tabParent?.navigate('Tabs', {
+      const rootNav = tabParent as unknown as
+        | NavigationProp<RootStackParamList>
+        | undefined;
+      rootNav?.navigate('Tabs', {
         screen: 'Lessons',
         params: {screen: 'SpeakingRoom', params: {sentenceText}},
       });

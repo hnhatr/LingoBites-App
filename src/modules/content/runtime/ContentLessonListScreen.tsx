@@ -7,6 +7,8 @@ import {
   View,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {LessonsStackParamList} from '@modules/lesson';
 import {AppButton} from '@components/AppButton';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
@@ -20,14 +22,9 @@ import {useContentLibrary} from './useContentLibrary';
 import type {ContentLessonListItem} from './useContentLibrary';
 import {useFloatingTabBarClearance} from '@components/layout';
 
-export type ContentLessonListScreenProps = {
-  navigation: {
-    goBack: () => void;
-    navigate: (screen: string, params?: any) => void;
-  };
-};
+type Props = NativeStackScreenProps<LessonsStackParamList, 'ContentLessonList'>;
 
-type Props = ContentLessonListScreenProps;
+export type ContentLessonListScreenProps = Props;
 
 export function ContentLessonListScreen({navigation}: Props) {
   const {theme} = useAppTheme();

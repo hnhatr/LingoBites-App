@@ -1,6 +1,8 @@
 import React, {useCallback, useState} from 'react';
 import {View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {LessonsStackParamList} from '@modules/lesson';
 import {AppButton} from '@components/AppButton';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
@@ -9,19 +11,12 @@ import {ScreenHeader} from '@components/ScreenHeader';
 import {useAppTheme} from '@theme';
 import {useContentLibrary} from './useContentLibrary';
 import type {ContentLessonRow} from './useContentLibrary';
-import type {ContentLessonDetailRouteParams} from './types';
+type Props = NativeStackScreenProps<
+  LessonsStackParamList,
+  'ContentLessonDetail'
+>;
 
-export type ContentLessonDetailScreenProps = {
-  navigation: {
-    goBack: () => void;
-    navigate: (screen: string, params?: any) => void;
-  };
-  route: {
-    params: ContentLessonDetailRouteParams;
-  };
-};
-
-type Props = ContentLessonDetailScreenProps;
+export type ContentLessonDetailScreenProps = Props;
 
 export function ContentLessonDetailScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
