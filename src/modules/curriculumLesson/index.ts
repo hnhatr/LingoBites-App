@@ -109,6 +109,11 @@ export {CurriculumLessonPlayer} from './CurriculumLessonPlayer';
 export type {CurriculumLessonPlayerProps} from './CurriculumLessonPlayer';
 export {CurriculumLessonScreen} from './CurriculumLessonScreen';
 export {CurriculumLessonsEntry} from './CurriculumLessonsEntry';
+export type {
+  CurriculumLessonRouteParams,
+  UnifiedLessonGenerationRouteParams,
+  UnifiedLessonsPreviewRouteParams,
+} from './navigationTypes';
 export {fetchPublishedCurriculumLessons} from './curriculumLessonSelection';
 export type {
   CurriculumLessonSelectionItem,

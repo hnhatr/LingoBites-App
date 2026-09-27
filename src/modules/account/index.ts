@@ -11,3 +11,7 @@ export {
   DISPLAY_NAME_MIN_CODE_POINTS,
 } from './profileValidation';
 export type {DisplayNameValidation, PhoneValidation} from './profileValidation';
+export type {
+  BootGateRouteParams,
+  OnboardingRouteParams,
+} from './navigationTypes';

@@ -1,9 +1,7 @@
 import {useFocusEffect} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import type {LessonsStackParamList} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {MaterialIcon} from '@components/MaterialIcon';
@@ -16,7 +14,12 @@ import {VocabularyTabContent} from './components/VocabularyTabContent';
 import {useFlashcardLibrary} from './useFlashcardLibrary';
 import {useLibrarySegments} from './useLibrarySegments';
 
-type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
+export interface LessonsHistoryScreenProps {
+  navigation: {
+    navigate: (screen: string, params?: unknown) => void;
+  };
+  route?: unknown;
+}
 
 type PracticeChip = {
   icon: 'refresh' | 'mic' | 'bolt';
@@ -28,7 +31,7 @@ type PracticeChip = {
   testID: string;
 };
 
-export function LessonsHistoryScreen({navigation}: Props) {
+export function LessonsHistoryScreen({navigation}: LessonsHistoryScreenProps) {
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();

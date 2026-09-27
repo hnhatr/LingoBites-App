@@ -7,8 +7,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {LessonsStackParamList} from '@/app/navigation/types';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -25,9 +23,13 @@ import {
 } from '../recordingService';
 import {getShadowingContent} from '../speakingModes';
 import {useSpeakingRepository} from '../useSpeakingRepository';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 
-type Props = NativeStackScreenProps<LessonsStackParamList, 'SpeakingShadowing'>;
+export interface SpeakingShadowingActivityProps {
+  navigation: {
+    goBack: () => void;
+  };
+}
 
 type RecordingPhase = 'idle' | 'recording' | 'recorded';
 
@@ -37,7 +39,9 @@ type RecordingPhase = 'idle' | 'recording' | 'recorded';
  * score anywhere in this screen's copy — feedback is limited to the
  * checklist below, matching the acceptance criteria.
  */
-export function SpeakingShadowingActivity({navigation}: Props) {
+export function SpeakingShadowingActivity({
+  navigation,
+}: SpeakingShadowingActivityProps) {
   const {theme} = useAppTheme();
   const floatingClearance = useFloatingTabBarClearance();
   const {getLessonAudioAssets} = useContentLibrary();

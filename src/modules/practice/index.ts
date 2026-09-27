@@ -1,4 +1,5 @@
 export {PracticeScreen} from './PracticeScreen';
+export type {PracticeRouteParams, PracticeScreenProps} from './PracticeScreen';
 export {PracticeEntryCard} from './PracticeEntryCard';
 export {gradeAnswer, isGradable, GRADER_VERSION} from './grader';
 export type {GradeOutcome} from './grader';

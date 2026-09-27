@@ -1,0 +1,1 @@
+export type LessonsListRouteParams = undefined;

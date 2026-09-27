@@ -2,14 +2,13 @@ import React, {useCallback, useContext, useState} from 'react';
 import {Alert, FlatList, Pressable, StyleSheet, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {AppButton} from '@components/AppButton';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {IconButton} from '@components/IconButton';
 import {MaterialIcon} from '@components/MaterialIcon';
 import {ScreenHeader} from '@components/ScreenHeader';
-import type {RootStackParamList} from '@/app/navigation/types';
+import type {YouTubeHistoryRouteParams} from '../navigationTypes';
 import {useAppTheme, type AppTheme} from '@theme';
 import {useTranslation} from 'react-i18next';
 import {
@@ -18,7 +17,17 @@ import {
 } from '@shared/db/YouTubeLessonRepository';
 import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'YouTubeHistory'>;
+export type YouTubeHistoryScreenProps = {
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: any) => void;
+  };
+  route?: {
+    params?: YouTubeHistoryRouteParams;
+  };
+};
+
+type Props = YouTubeHistoryScreenProps;
 
 function HistorySeparator() {
   const {theme} = useAppTheme();

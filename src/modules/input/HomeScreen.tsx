@@ -1,12 +1,6 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import {useFocusEffect, type NavigationProp} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {
-  HomeStackParamList,
-  RootStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
+import {useFocusEffect} from '@react-navigation/native';
 import {AppButton} from '@components/AppButton';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -34,11 +28,26 @@ import {
 } from '@modules/curriculumLesson';
 import {trackEvent} from '../analytics';
 import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {useTranslation} from 'react-i18next';
 import {fetchContinueLearning} from '@shared/api/learningClient';
 
-type Props = NativeStackScreenProps<HomeStackParamList, 'HomeMain'>;
+type TabNavigation = {
+  navigate: (screen: string, params?: unknown) => void;
+  getParent: <T = unknown>(id?: string) => T | undefined;
+};
+
+type RootNavigation = {
+  navigate: (screen: string, params?: unknown) => void;
+};
+
+export interface HomeScreenProps {
+  navigation: {
+    navigate: (screen: string, params?: unknown) => void;
+    getParent: <T = TabNavigation>(id?: string) => T | undefined;
+  };
+  route?: unknown;
+}
 
 // 2×2 explore grid from the paper-cut mock (SETE-279). Background/ink pairs
 // reuse the contrast-locked chip convention (accentSoft+primary,
@@ -126,18 +135,16 @@ function toCanonicalRecentItem(item: UnifiedLessonSummary): RecentItem {
  * The video explore cell has its real data-driven destination (SETE-283);
  * the other three still point at the Lessons tab until mapped.
  */
-export function HomeScreen({navigation}: Props) {
+export function HomeScreen({navigation}: HomeScreenProps) {
   const {theme} = useAppTheme();
   const {config} = useFeatureFlags();
   const feedClearance = useFloatingTabBarClearance();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
-  const tabNavigation =
-    navigation.getParent<NavigationProp<RootTabParamList>>();
+  const tabNavigation = navigation.getParent<TabNavigation>();
   // SETE-289: the RootStack sits above the tabs; History is a root route
   // reached via the stack id so the call stays type-safe.
-  const rootNavigation =
-    tabNavigation?.getParent<NavigationProp<RootStackParamList>>('RootStack');
+  const rootNavigation = tabNavigation?.getParent<RootNavigation>('RootStack');
   const {getContentLessonById, listActivePackageLessons} = useContentLibrary();
   const lessonCapabilities = useLessonServerCapabilities(
     config.features.unifiedLesson !== false,

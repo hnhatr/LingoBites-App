@@ -1,81 +1,89 @@
-import type {OCRSourceType} from '@shared/api/types';
 import type {NavigatorScreenParams} from '@react-navigation/native';
-import type {PracticeQuestion as LegacyPracticeQuestion} from '@/modules/practice/practiceQuestion';
+import type {
+  BootGateRouteParams,
+  OnboardingRouteParams,
+} from '@modules/account';
+import type {
+  ContentLessonDetailRouteParams,
+  ContentLessonListRouteParams,
+  ContentLessonRuntimeRouteParams,
+} from '@modules/content';
+import type {
+  CurriculumLessonRouteParams,
+  UnifiedLessonGenerationRouteParams,
+  UnifiedLessonsPreviewRouteParams,
+} from '@modules/curriculumLesson';
+import type {
+  CreateMainRouteParams,
+  HomeMainRouteParams,
+  ImageCaptureRouteParams,
+  PasteTextRouteParams,
+} from '@modules/input';
+import type {LessonsListRouteParams} from '@modules/lesson';
+import type {OCRReviewRouteParams} from '@modules/ocr';
+import type {PracticeRouteParams} from '@modules/practice';
+import type {DailyReviewRouteParams} from '@modules/review';
+import type {
+  FeatureStatusRouteParams,
+  PrivacyNoteRouteParams,
+  ProfileMainRouteParams,
+  ProgressReportRouteParams,
+} from '@modules/settings';
+import type {
+  SpeakingRoomRouteParams,
+  SpeakingShadowingRouteParams,
+} from '@modules/speaking';
+import type {TodayRouteParams} from '@modules/today';
+import type {TtsSpikeRouteParams} from '@modules/tts';
+import type {
+  YouTubeHistoryRouteParams,
+  YouTubeInputRouteParams,
+  YouTubeLessonRouteParams,
+  YouTubeProcessingRouteParams,
+} from '@modules/youtube';
 
 export type LearningDetailParamList = {
-  Practice:
-    | {questions: LegacyPracticeQuestion[]; title?: string}
-    | {lessonId: string; sessionId: string; title?: string};
+  Practice: PracticeRouteParams;
 };
 
 export type HomeStackParamList = {
-  HomeMain: undefined;
-  ContentLessonRuntime: {lessonId: string};
-  CurriculumLesson: {lessonId: string};
-  DailyReview: undefined;
-  Today: undefined;
+  HomeMain: HomeMainRouteParams;
+  ContentLessonRuntime: ContentLessonRuntimeRouteParams;
+  CurriculumLesson: CurriculumLessonRouteParams;
+  DailyReview: DailyReviewRouteParams;
+  Today: TodayRouteParams;
 } & LearningDetailParamList;
 
 export type CreateStackParamList = {
-  CreateMain: undefined;
-  YouTubeInput:
-    | {
-        fromHome?: boolean;
-        url?: string;
-        transcriptRequired?: string;
-      }
-    | undefined;
-  YouTubeProcessing: {
-    url: string;
-    manualCues?: import('@shared/schemas/youtube-transcript-v1').RawCue[];
-  };
-  YouTubeLesson:
-    | {
-        lesson: import('@shared/schemas/youtube-transcript-v1').YouTubeTranscript;
-        saveFailed?: boolean;
-      }
-    | {
-        lessonId: string;
-      };
-  PasteText: {analyzeError?: string} | undefined;
-  ImageCapture: {sourceType: OCRSourceType};
-  OCRReview: {
-    imageUri: string;
-    fileName?: string;
-    mimeType?: string;
-    width?: number;
-    height?: number;
-    sourceType: OCRSourceType;
-    extractedText: string;
-    warnings?: string[];
-    analyzeError?: string;
-  };
+  CreateMain: CreateMainRouteParams;
+  YouTubeInput: YouTubeInputRouteParams;
+  YouTubeProcessing: YouTubeProcessingRouteParams;
+  YouTubeLesson: YouTubeLessonRouteParams;
+  PasteText: PasteTextRouteParams;
+  ImageCapture: ImageCaptureRouteParams;
+  OCRReview: OCRReviewRouteParams;
 } & LearningDetailParamList;
 
 export type LessonsStackParamList = {
-  LessonsList: undefined;
-  CurriculumLesson: {lessonId: string};
-  UnifiedLessonGeneration: {
-    jobId: string;
-    confirmedText?: string;
-    level?: string;
-  };
-  ContentLessonList: undefined;
-  ContentLessonDetail: {lessonId: string};
-  ContentLessonRuntime: {lessonId: string};
-  SpeakingRoom: {sentenceText?: string} | undefined;
-  SpeakingShadowing: undefined;
-  Today: undefined;
-  DailyReview: undefined;
+  LessonsList: LessonsListRouteParams;
+  CurriculumLesson: CurriculumLessonRouteParams;
+  UnifiedLessonGeneration: UnifiedLessonGenerationRouteParams;
+  ContentLessonList: ContentLessonListRouteParams;
+  ContentLessonDetail: ContentLessonDetailRouteParams;
+  ContentLessonRuntime: ContentLessonRuntimeRouteParams;
+  SpeakingRoom: SpeakingRoomRouteParams;
+  SpeakingShadowing: SpeakingShadowingRouteParams;
+  Today: TodayRouteParams;
+  DailyReview: DailyReviewRouteParams;
 } & LearningDetailParamList;
 
 export type ProfileStackParamList = {
-  ProfileMain: undefined;
-  PrivacyNote: undefined;
-  ProgressReport: undefined;
-  FeatureStatus: undefined;
-  TtsSpike: undefined;
-  UnifiedLessonsPreview: undefined;
+  ProfileMain: ProfileMainRouteParams;
+  PrivacyNote: PrivacyNoteRouteParams;
+  ProgressReport: ProgressReportRouteParams;
+  FeatureStatus: FeatureStatusRouteParams;
+  TtsSpike: TtsSpikeRouteParams;
+  UnifiedLessonsPreview: UnifiedLessonsPreviewRouteParams;
 };
 
 export type RootTabParamList = {
@@ -87,8 +95,8 @@ export type RootTabParamList = {
 
 export type RootStackParamList = {
   Tabs: NavigatorScreenParams<RootTabParamList> | undefined;
-  YouTubeHistory: undefined;
-  YouTubeLesson: CreateStackParamList['YouTubeLesson'];
-  BootGate: undefined;
-  Onboarding: undefined;
+  YouTubeHistory: YouTubeHistoryRouteParams;
+  YouTubeLesson: YouTubeLessonRouteParams;
+  BootGate: BootGateRouteParams;
+  Onboarding: OnboardingRouteParams;
 } & LearningDetailParamList;

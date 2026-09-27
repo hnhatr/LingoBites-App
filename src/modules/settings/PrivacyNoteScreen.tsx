@@ -1,8 +1,6 @@
 import React from 'react';
 import {ScrollView, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {ProfileStackParamList} from '@/app/navigation/types';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -15,10 +13,7 @@ import {useAppTheme} from '@theme';
 export function PrivacyNoteScreen() {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
-  const navigation =
-    useNavigation<
-      NativeStackNavigationProp<ProfileStackParamList, 'PrivacyNote'>
-    >();
+  const navigation = useNavigation<{goBack: () => void}>();
 
   return (
     <AppScreen>

@@ -27,4 +27,7 @@ export type {
   RuntimeStepKind,
   ShadowingLine,
   ShadowingStepData,
+  ContentLessonListRouteParams,
+  ContentLessonDetailRouteParams,
+  ContentLessonRuntimeRouteParams,
 } from './types';

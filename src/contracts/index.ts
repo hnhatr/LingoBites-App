@@ -6,7 +6,13 @@
 export type {
   ShellRouteNames,
   TabRouteNames,
+  RootTabRouteNames,
+  RootStackRouteNames,
   NavigationContract,
+  NavigationBackHandle,
+  ScreenNavigationProp,
+  ScreenRouteProp,
+  ScreenProps,
 } from './navigation';
 
 export type {

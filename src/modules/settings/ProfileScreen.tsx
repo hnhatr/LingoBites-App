@@ -9,8 +9,6 @@ import {
   View,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {ProfileStackParamList} from '@/app/navigation/types';
 import {AppButton} from '@components/AppButton';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
@@ -37,12 +35,17 @@ import {
 } from '@shared/localData/LocalDataDeletionService';
 import {useFeatureFlags} from '@/release';
 import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {formatProfileAccuracy, formatProfileWordCount} from './profileMetrics';
 import {useProgressReport} from './useProgressReport';
 import {AccountProfileSection, useAccountStore} from '@modules/account';
 
-type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileMain'>;
+export interface ProfileScreenProps {
+  navigation: {
+    navigate: (screen: string) => void;
+  };
+  route?: unknown;
+}
 
 /**
  * Header copy: the account store (SETE-303 / T6) drives the display name
@@ -57,7 +60,7 @@ const PROFILE_PLACEHOLDER = {
 /** Settings without a backing store yet — show an honest "not set" value. */
 const UNSET_TRAILING = {chip: 'Chưa đặt', chipTone: 'neutral' as const};
 
-export function ProfileScreen({navigation}: Props) {
+export function ProfileScreen({navigation}: ProfileScreenProps) {
   const accountUser = useAccountStore(state => state.user);
   const accountPhase = useAccountStore(state => state.phase);
   const accountLogout = useAccountStore(state => state.logout);

@@ -85,14 +85,8 @@ import {
   TOAST_DURATION_MS,
   type SentenceLoopCount,
 } from '../utils/toolsLogic';
-import type {NavigationProp} from '@react-navigation/native';
-import type {
-  CreateStackParamList,
-  RootStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {YouTubeLessonRouteParams} from '../navigationTypes';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {useBookmarkOptimistic, useFlashcardLibrary} from '@modules/review';
 import {mapTranscriptToPractice} from '../utils/practiceMapper';
 import type {YouTubePlaybackRate} from '../utils/playbackRate';
@@ -1333,22 +1327,25 @@ export function YouTubeLessonScreen({
  * `YouTubeProcessing.replace('YouTubeLesson')`) and the RootStack
  * (opening a saved lesson from `YouTubeHistory` above the tabs).
  */
-type YouTubeLessonRouteProps =
-  | NativeStackScreenProps<CreateStackParamList, 'YouTubeLesson'>
-  | NativeStackScreenProps<RootStackParamList, 'YouTubeLesson'>;
+export type YouTubeLessonRouteProps = {
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: any) => void;
+    reset?: (state: any) => void;
+    getParent: <T = any>(id?: string) => T;
+    setOptions?: (options: Record<string, any>) => void;
+    addListener: (event: string, callback: (e: any) => void) => () => void;
+  };
+  route: {
+    params: YouTubeLessonRouteParams;
+  };
+};
 
 export function YouTubeLessonRouteScreen({
   navigation,
   route,
 }: YouTubeLessonRouteProps) {
-  // Same convention as GrammarDetailScreen: the union navigation prop is
-  // only directly callable for shared signatures (goBack); narrow to one
-  // stack for navigate — both stacks register Practice with identical
-  // params, so the call behaves the same at either level.
-  const nav = navigation as NativeStackScreenProps<
-    CreateStackParamList,
-    'YouTubeLesson'
-  >['navigation'];
+  const nav = navigation;
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const fallbackStyles = useMemo(() => createStyles(theme), [theme]);
@@ -1369,19 +1366,11 @@ export function YouTubeLessonRouteScreen({
   // the plain goBack contract owned by SETE-289.
   const isFreshLesson = 'lesson' in params && params.lesson != null;
   const exitToHome = useCallback(() => {
-    // Same reset-then-tab pattern as YouTubeInputScreen.exitToHome
-    // (SETE-287): no stale nested state, land on the Home tab. Only
-    // reachable for fresh lessons, which live on the Create stack — hence
-    // the Create-stack narrowing (same convention as `nav` above).
-    const createNav = navigation as NativeStackScreenProps<
-      CreateStackParamList,
-      'YouTubeLesson'
-    >['navigation'];
-    createNav.reset({
+    navigation.reset?.({
       index: 0,
       routes: [{name: 'CreateMain'}],
     });
-    createNav.getParent<NavigationProp<RootTabParamList>>()?.navigate('Home');
+    navigation.getParent<{navigate: (tab: string) => void}>()?.navigate('Home');
   }, [navigation]);
 
   useEffect(() => {
@@ -1430,7 +1419,10 @@ export function YouTubeLessonRouteScreen({
   const handlePracticeSentence = useCallback(
     (segment: YouTubeSegment) => {
       const sentenceText = segment.en;
-      const tabParent = nav.getParent<NavigationProp<RootTabParamList>>();
+      const tabParent = nav.getParent<{
+        getState?: () => {routeNames?: string[]};
+        navigate: (name: string, params?: any) => void;
+      }>();
       const tabRoutes = tabParent?.getState?.()?.routeNames;
       if (tabParent && (tabRoutes == null || tabRoutes.includes('Lessons'))) {
         tabParent.navigate('Lessons', {
@@ -1439,10 +1431,7 @@ export function YouTubeLessonRouteScreen({
         });
         return;
       }
-      const rootNav = tabParent as unknown as
-        | NavigationProp<RootStackParamList>
-        | undefined;
-      rootNav?.navigate('Tabs', {
+      tabParent?.navigate('Tabs', {
         screen: 'Lessons',
         params: {screen: 'SpeakingRoom', params: {sentenceText}},
       });

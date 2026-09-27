@@ -1,11 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {NavigationProp} from '@react-navigation/native';
-import type {
-  CreateStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {BottomActionBar} from '@components/BottomActionBar';
@@ -21,9 +15,21 @@ import {getTextLengthBucket, trackEvent} from '../analytics';
 import {validateConfirmedText} from '@shared/utils/textValidation';
 import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
 import {createLessonGenerationJob} from '@modules/curriculumLesson';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
+import type {PasteTextRouteParams} from './navigationTypes';
 
-type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;
+export interface PasteTextScreenProps {
+  navigation: {
+    goBack: () => void;
+    setParams: (params: Partial<{analyzeError?: string}>) => void;
+    getParent: <
+      T = {navigate: (screen: string, params?: unknown) => void},
+    >() => T | undefined;
+  };
+  route?: {
+    params?: PasteTextRouteParams;
+  };
+}
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
 
@@ -35,7 +41,7 @@ function countWords(text: string): number {
   return trimmed.split(/\s+/).length;
 }
 
-export function PasteTextScreen({navigation, route}: Props) {
+export function PasteTextScreen({navigation, route}: PasteTextScreenProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const [text, setText] = useState('');
@@ -46,7 +52,7 @@ export function PasteTextScreen({navigation, route}: Props) {
   const floatingClearance = useFloatingTabBarClearance();
 
   // Lỗi phân tích được màn "Đang phân tích" trả về qua param khi quay lại đây.
-  const analyzeError = route.params?.analyzeError;
+  const analyzeError = route?.params?.analyzeError;
   useEffect(() => {
     if (analyzeError) {
       setScreenState({type: 'error', message: analyzeError});
@@ -81,7 +87,19 @@ export function PasteTextScreen({navigation, route}: Props) {
         if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
           const {jobId, confirmedText, level} = params;
           navigation
-            .getParent<NavigationProp<RootTabParamList>>()
+            .getParent<{
+              navigate: (
+                tab: string,
+                params: {
+                  screen: string;
+                  params: {
+                    jobId: string;
+                    confirmedText?: string;
+                    level?: string;
+                  };
+                },
+              ) => void;
+            }>()
             ?.navigate('Lessons', {
               screen: 'UnifiedLessonGeneration',
               params: {jobId, confirmedText, level},

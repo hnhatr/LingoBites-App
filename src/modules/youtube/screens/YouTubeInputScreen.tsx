@@ -11,8 +11,6 @@ import {
   View,
   type KeyboardEvent,
 } from 'react-native';
-import type {NavigationProp} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {AppButton} from '@components/AppButton';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -20,11 +18,7 @@ import {Banner} from '@components/Banner';
 import {BottomActionBar} from '@components/BottomActionBar';
 import {ScreenHeader} from '@components/ScreenHeader';
 import {TextField} from '@components/TextField';
-import type {
-  CreateStackParamList,
-  RootStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
+import type {YouTubeInputRouteParams} from '../navigationTypes';
 import {
   YOUTUBE_MAX_DURATION_SECONDS,
   YOUTUBE_MAX_SEGMENTS,
@@ -48,7 +42,22 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-type Props = NativeStackScreenProps<CreateStackParamList, 'YouTubeInput'>;
+export type YouTubeInputScreenProps = {
+  navigation: {
+    reset: (state: any) => void;
+    getParent: <T = any>(id?: string) => T;
+    canGoBack?: () => boolean;
+    goBack: () => void;
+    navigate: (screen: string, params?: any) => void;
+    addListener: (event: string, callback: (e: any) => void) => () => void;
+    setParams: (params: Partial<YouTubeInputRouteParams>) => void;
+  };
+  route: {
+    params?: YouTubeInputRouteParams;
+  };
+};
+
+type Props = YouTubeInputScreenProps;
 
 export function YouTubeInputScreen({navigation, route}: Props) {
   const {t} = useTranslation();
@@ -124,7 +133,7 @@ export function YouTubeInputScreen({navigation, route}: Props) {
       index: 0,
       routes: [{name: 'CreateMain'}],
     });
-    navigation.getParent<NavigationProp<RootTabParamList>>()?.navigate('Home');
+    navigation.getParent<{navigate: (tab: string) => void}>()?.navigate('Home');
   }, [navigation]);
 
   const goBack = useCallback(() => {
@@ -436,8 +445,10 @@ export function YouTubeInputScreen({navigation, route}: Props) {
     // reach it through the tab parent so the stack-id lookup
     // stays type-safe (screen nav props carry no navigator id).
     navigation
-      .getParent<NavigationProp<RootTabParamList>>()
-      ?.getParent<NavigationProp<RootStackParamList>>('RootStack')
+      .getParent<{
+        getParent?: (id?: string) => {navigate: (name: string) => void};
+      }>()
+      ?.getParent?.('RootStack')
       ?.navigate('YouTubeHistory');
   }, [navigation]);
 

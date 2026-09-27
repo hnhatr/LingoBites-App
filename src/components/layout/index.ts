@@ -1,7 +1,8 @@
 /**
- * Shared metrics for the floating bottom tab bar.
- * @deprecated Moved to `@components/layout` in TASK-003 (AD-002 / AD-004).
+ * Layout components and layout metric utilities.
+ * Layout clearance moved from app/navigation in TASK-003.
  */
+
 export {
   FLOATING_TAB_BAR_HEIGHT,
   STICKER_TAB_BAR_FACE_HEIGHT,
@@ -12,4 +13,4 @@ export {
   getFloatingTabBarClearance,
   useFloatingTabBarClearance,
   withAlpha,
-} from '@components/layout';
+} from './tabBarMetrics';

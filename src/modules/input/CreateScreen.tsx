@@ -1,22 +1,30 @@
 import React, {useCallback} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import type {NavigationProp} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {
-  CreateStackParamList,
-  RootStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {MaterialIcon} from '@components/MaterialIcon';
 import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {useTranslation} from 'react-i18next';
 import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
 import {useFeatureFlags} from '@/release';
 
-type Props = NativeStackScreenProps<CreateStackParamList, 'CreateMain'>;
+type TabNavigation = {
+  navigate: (screen: string, params?: unknown) => void;
+  getParent: <T = unknown>(id?: string) => T | undefined;
+};
+
+type RootNavigation = {
+  navigate: (screen: string, params?: unknown) => void;
+};
+
+export interface CreateScreenProps {
+  navigation: {
+    navigate: (screen: string, params?: unknown) => void;
+    getParent: <T = TabNavigation>(id?: string) => T | undefined;
+  };
+  route?: unknown;
+}
 
 type Tile = {
   icon: 'add_photo_alternate' | 'play_circle' | 'content_paste';
@@ -31,7 +39,7 @@ type Tile = {
  * Home. All tiles share one visual style so equal-weight actions read as
  * equal — the only solid block on this screen is the camera hero.
  */
-export function CreateScreen({navigation}: Props) {
+export function CreateScreen({navigation}: CreateScreenProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
@@ -185,8 +193,8 @@ export function CreateScreen({navigation}: Props) {
                 // stays type-safe (screen nav props carry no navigator id).
                 onPress={() =>
                   navigation
-                    .getParent<NavigationProp<RootTabParamList>>()
-                    ?.getParent<NavigationProp<RootStackParamList>>('RootStack')
+                    .getParent<TabNavigation>()
+                    ?.getParent<RootNavigation>('RootStack')
                     ?.navigate('YouTubeHistory')
                 }
                 style={({pressed}) => [

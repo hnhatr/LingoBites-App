@@ -6,3 +6,4 @@ export type {
   SegmentFilterState,
   UseLibrarySegmentsResult,
 } from './useLibrarySegments';
+export type {LessonsListRouteParams} from './navigationTypes';

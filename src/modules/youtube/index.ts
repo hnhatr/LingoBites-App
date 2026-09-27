@@ -5,6 +5,12 @@ export {
   YouTubeLessonScreen,
   YouTubeLessonRouteScreen,
 } from './screens/YouTubeLessonScreen';
+export type {
+  YouTubeInputRouteParams,
+  YouTubeProcessingRouteParams,
+  YouTubeLessonRouteParams,
+  YouTubeHistoryRouteParams,
+} from './navigationTypes';
 export {parseYouTubeVideoId, runYouTubeJob} from './api/youtubeApi';
 export {
   buildLessonEnrichmentUrl,

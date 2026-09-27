@@ -1,8 +1,6 @@
 import React, {useState, useCallback} from 'react';
 import {Alert, ScrollView, View, StyleSheet} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {ProfileStackParamList} from '@/app/navigation/types';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -16,9 +14,14 @@ import {
   type CapabilityProgressReport,
 } from './useProgressReport';
 
-type Props = NativeStackScreenProps<ProfileStackParamList, 'ProgressReport'>;
+export interface ProgressReportScreenProps {
+  navigation: {
+    goBack: () => void;
+  };
+  route?: unknown;
+}
 
-export function ProgressReportScreen({navigation}: Props) {
+export function ProgressReportScreen({navigation}: ProgressReportScreenProps) {
   const {theme} = useAppTheme();
   const {
     getCapabilityProgressReport,

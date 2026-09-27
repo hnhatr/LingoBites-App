@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {FeatureFlagProvider} from '@/release';
 import {validFullOutput} from '@shared/fixtures';
-import type {HomeStackParamList} from '@/app/navigation/types';
 import {AppThemeProvider} from '@theme';
-import {PracticeScreen} from '../PracticeScreen';
+import {
+  PracticeScreen,
+  type PracticeRouteParams,
+  type PracticeScreenProps,
+} from '../PracticeScreen';
 
 const tabNavigate = jest.fn();
 
@@ -13,9 +15,9 @@ const navigation = {
   goBack: jest.fn(),
   navigate: jest.fn(),
   getParent: () => ({navigate: tabNavigate}),
-} as unknown as NativeStackNavigationProp<HomeStackParamList, 'Practice'>;
+} as unknown as PracticeScreenProps['navigation'];
 
-function renderWith(params: HomeStackParamList['Practice']) {
+function renderWith(params: PracticeRouteParams) {
   const route = {
     key: 'Practice',
     name: 'Practice',

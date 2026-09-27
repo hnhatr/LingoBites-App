@@ -1,7 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {CreateStackParamList} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {BottomActionBar} from '@components/BottomActionBar';
@@ -19,12 +17,22 @@ import {
   validateConfirmedText,
 } from '@shared/utils/textValidation';
 import {extractText} from './OCRService';
-import type {NavigationProp} from '@react-navigation/native';
-import type {RootTabParamList} from '@/app/navigation/types';
 import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
 import {createLessonGenerationJob} from '@modules/curriculumLesson';
+import type {OCRReviewRouteParams} from './navigationTypes';
 
-type Props = NativeStackScreenProps<CreateStackParamList, 'OCRReview'>;
+export interface OCRReviewScreenProps {
+  navigation: {
+    goBack: () => void;
+    setParams: (params: Partial<{analyzeError?: string}>) => void;
+    getParent: <
+      T = {navigate: (screen: string, params?: unknown) => void},
+    >() => T | undefined;
+  };
+  route: {
+    params: OCRReviewRouteParams;
+  };
+}
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
 
@@ -36,7 +44,7 @@ function countWords(text: string): number {
   return trimmed.split(/\s+/).length;
 }
 
-export function OCRReviewScreen({navigation, route}: Props) {
+export function OCRReviewScreen({navigation, route}: OCRReviewScreenProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const {
@@ -109,7 +117,19 @@ export function OCRReviewScreen({navigation, route}: Props) {
         if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
           const {jobId, confirmedText, level} = params;
           navigation
-            .getParent<NavigationProp<RootTabParamList>>()
+            .getParent<{
+              navigate: (
+                tab: string,
+                params: {
+                  screen: string;
+                  params: {
+                    jobId: string;
+                    confirmedText?: string;
+                    level?: string;
+                  };
+                },
+              ) => void;
+            }>()
             ?.navigate('Lessons', {
               screen: 'UnifiedLessonGeneration',
               params: {jobId, confirmedText, level},

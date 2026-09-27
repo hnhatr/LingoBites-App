@@ -20,11 +20,11 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(result.passed).toBe(true);
       expect(result.newViolations).toHaveLength(0);
       expect(result.expiredExceptions).toHaveLength(0);
-      expect(result.matchedExceptions).toHaveLength(42);
-      expect(result.manifestTotal).toBe(42);
+      expect(result.matchedExceptions).toHaveLength(0);
+      expect(result.manifestTotal).toBe(0);
     });
 
-    it('manifest has valid schema and records Integration Owner as sole writer with 42 allowances', () => {
+    it('manifest has valid schema and records Integration Owner as sole writer with 0 allowances', () => {
       const manifestPath = path.join(
         appRoot,
         'scripts/module-boundary-exceptions.json',
@@ -33,21 +33,8 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
       expect(manifest.rawParsed.soleWriter).toBe('Integration Owner');
       expect(manifest.rawParsed.version).toBeDefined();
-      expect(manifest.exceptions.length).toBe(42);
-
-      // Verify allowanceByKey tracks exact occurrences (41 unique keys, 1 key with 2 allowances)
-      expect(manifest.allowanceByKey.size).toBe(41);
-      const ocrKey =
-        'src/modules/ocr/OCRReviewScreen.tsx::@/app/navigation/types::feature-to-app';
-      expect(manifest.allowanceByKey.get(ocrKey)).toHaveLength(2);
-
-      manifest.exceptions.forEach(entry => {
-        expect(entry.file).toMatch(/^src\//);
-        expect(entry.specifier).toBeDefined();
-        expect(entry.rule).toMatch(/^(feature-to-app|app-to-module-private)$/);
-        expect(entry.owner).toBe('React Native Developer');
-        expect(entry.expiry).toBe('TASK-003');
-      });
+      expect(manifest.exceptions.length).toBe(0);
+      expect(manifest.allowanceByKey.size).toBe(0);
     });
   });
 
@@ -402,29 +389,81 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
   describe('CR-002 regression: manifest exact occurrence allowance and surplus rejection', () => {
     it('manifest tracks occurrence allowances per file/specifier/rule', () => {
-      const manifestPath = path.join(
-        appRoot,
-        'scripts/module-boundary-exceptions.json',
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'boundary-test-allowance-'),
       );
-      const manifest = loadExceptionManifest(manifestPath);
+      const tempManifestPath = path.join(tempDir, 'exceptions.json');
+      fs.writeFileSync(
+        tempManifestPath,
+        JSON.stringify({
+          version: '1.0.0',
+          soleWriter: 'Integration Owner',
+          exceptions: [
+            {
+              file: 'src/modules/ocr/OCRReviewScreen.tsx',
+              specifier: '@/app/navigation/types',
+              rule: 'feature-to-app',
+              owner: 'React Native Developer',
+              expiry: 'TASK-003',
+            },
+            {
+              file: 'src/modules/ocr/OCRReviewScreen.tsx',
+              specifier: '@/app/navigation/types',
+              rule: 'feature-to-app',
+              owner: 'React Native Developer',
+              expiry: 'TASK-003',
+            },
+          ],
+        }),
+      );
 
-      // 42 total items, exactly 41 unique keys
-      expect(manifest.exceptions).toHaveLength(42);
-      expect(manifest.allowanceByKey.size).toBe(41);
+      const manifest = loadExceptionManifest(tempManifestPath);
+      expect(manifest.exceptions).toHaveLength(2);
+      expect(manifest.allowanceByKey.size).toBe(1);
 
-      // OCRReviewScreen has exactly 2 allowances for '@/app/navigation/types'
       const key =
         'src/modules/ocr/OCRReviewScreen.tsx::@/app/navigation/types::feature-to-app';
       expect(manifest.allowanceByKey.get(key)).toHaveLength(2);
+
+      fs.rmSync(tempDir, {recursive: true, force: true});
     });
 
     it('consumes exactly 2 allowances for OCRReviewScreen and rejects 3rd occurrence in production checker', () => {
-      const ocrFile = path.join(srcRoot, 'modules/ocr/OCRReviewScreen.tsx');
-      const original = fs.readFileSync(ocrFile, 'utf8');
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'boundary-test-ocr-'),
+      );
+      const tempManifestPath = path.join(tempDir, 'exceptions.json');
+      fs.writeFileSync(
+        tempManifestPath,
+        JSON.stringify({
+          version: '1.0.0',
+          soleWriter: 'Integration Owner',
+          exceptions: [
+            {
+              file: 'src/modules/ocr/OCRReviewScreen.tsx',
+              specifier: '@/app/navigation/types',
+              rule: 'feature-to-app',
+              owner: 'React Native Developer',
+              expiry: 'TASK-003',
+            },
+            {
+              file: 'src/modules/ocr/OCRReviewScreen.tsx',
+              specifier: '@/app/navigation/types',
+              rule: 'feature-to-app',
+              owner: 'React Native Developer',
+              expiry: 'TASK-003',
+            },
+          ],
+        }),
+      );
 
-      // Baseline OCRReviewScreen has 2 imports of '@/app/navigation/types'
+      const ocrFile = path.join(srcRoot, 'modules/ocr/OCRReviewScreen.tsx');
+      const twoImports = `import type {A} from '@/app/navigation/types';\nimport type {B} from '@/app/navigation/types';\nexport const x = 1;\n`;
+
       const baselineResult = checkModuleBoundaries({
         files: [ocrFile],
+        fileContents: {[ocrFile]: twoImports},
+        manifestPath: tempManifestPath,
       });
       expect(baselineResult.passed).toBe(true);
       expect(baselineResult.newViolations).toHaveLength(0);
@@ -436,10 +475,11 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(matched).toHaveLength(2);
 
       // Now add a 3rd import of the same specifier
-      const threeImports = `import type { ExtraType } from '@/app/navigation/types';\n${original}`;
+      const threeImports = `import type { ExtraType } from '@/app/navigation/types';\n${twoImports}`;
       const surplusResult = checkModuleBoundaries({
         files: [ocrFile],
         fileContents: {[ocrFile]: threeImports},
+        manifestPath: tempManifestPath,
       });
 
       expect(surplusResult.passed).toBe(false);
@@ -463,6 +503,8 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(surplusViolations[0].reason).toContain(
         'Surplus occurrence exceeding manifest allowance (2 allowed)',
       );
+
+      fs.rmSync(tempDir, {recursive: true, force: true});
     });
   });
 
@@ -505,11 +547,28 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
   describe('manifest exception handling and expiry', () => {
     it('tolerates matching non-expired manifest entry with TASK-003 milestone', () => {
-      const manifestPath = path.join(
-        appRoot,
-        'scripts/module-boundary-exceptions.json',
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'boundary-test-milestone-'),
       );
-      const manifest = loadExceptionManifest(manifestPath);
+      const tempManifestPath = path.join(tempDir, 'exceptions.json');
+      fs.writeFileSync(
+        tempManifestPath,
+        JSON.stringify({
+          version: '1.0.0',
+          soleWriter: 'Integration Owner',
+          exceptions: [
+            {
+              file: 'src/modules/input/HomeScreen.tsx',
+              specifier: '@/app/navigation/types',
+              rule: 'feature-to-app',
+              owner: 'React Native Developer',
+              expiry: 'TASK-003',
+            },
+          ],
+        }),
+      );
+
+      const manifest = loadExceptionManifest(tempManifestPath);
       const key =
         'src/modules/input/HomeScreen.tsx::@/app/navigation/types::feature-to-app';
       const entries = manifest.allowanceByKey.get(key);
@@ -518,6 +577,8 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
       const isIsoDate = /^\d{4}-\d{2}-\d{2}/.test(entries[0].expiry);
       expect(isIsoDate).toBe(false);
+
+      fs.rmSync(tempDir, {recursive: true, force: true});
     });
 
     it('rejects expired manifest entry with ISO date in the past via production checker', () => {
@@ -547,6 +608,10 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
       const result = checkModuleBoundaries({
         files: [testFile],
+        fileContents: {
+          [testFile]:
+            "import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';\n",
+        },
         manifestPath: tempManifestPath,
       });
 
