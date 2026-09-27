@@ -10,10 +10,7 @@ import http from 'node:http';
 import path from 'node:path';
 
 const ROOT = path.join(__dirname, '../../..');
-const RUNNER = path.join(
-  ROOT,
-  'scripts/characterization/run-ios-inv002.sh',
-);
+const RUNNER = path.join(ROOT, 'scripts/characterization/run-ios-inv002.sh');
 const VALIDATOR = path.join(
   ROOT,
   'scripts/characterization/validate-inv002-marker.mjs',
@@ -92,22 +89,20 @@ describe('run-ios-inv002 harness (CR-001 / CR-004)', () => {
   it('rejects status:fail marker lines', () => {
     const failLine =
       '[LING93_INV002] {"status":"fail","runtime":"react-native-quick-sqlite-jsi"}';
-    const result = spawnSync(
-      'node',
-      [VALIDATOR, failLine],
-      {cwd: ROOT, encoding: 'utf8'},
-    );
+    const result = spawnSync('node', [VALIDATOR, failLine], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
     expect(result.status).toBe(1);
   });
 
   it('accepts status:pass marker with assertions', () => {
     const passLine =
       '[LING93_INV002] {"status":"pass","assertions":{"onePracticeServerEffect":true}}';
-    const result = spawnSync(
-      'node',
-      [VALIDATOR, passLine],
-      {cwd: ROOT, encoding: 'utf8'},
-    );
+    const result = spawnSync('node', [VALIDATOR, passLine], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
     expect(result.status).toBe(0);
   });
 

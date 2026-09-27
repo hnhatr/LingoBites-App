@@ -176,13 +176,9 @@ while (( SECONDS < deadline )); do
   if [[ -n "$IOS_PID" ]] && ! kill -0 "$IOS_PID" 2>/dev/null; then
     IOS_EXIT_CODE=0
     wait "$IOS_PID" || IOS_EXIT_CODE=$?
+    IOS_PID=""
     if [[ "$IOS_EXIT_CODE" != "0" ]]; then
       echo "react-native run-ios exited with code ${IOS_EXIT_CODE}" >&2
-      tail -60 "$LOG_FILE" >&2
-      exit 1
-    fi
-    if ! grep -q '\[LING93_INV002\]' "$LOG_FILE"; then
-      echo "react-native run-ios finished without [LING93_INV002] marker" >&2
       tail -60 "$LOG_FILE" >&2
       exit 1
     fi
@@ -192,16 +188,18 @@ while (( SECONDS < deadline )); do
     result_line=$(grep '\[LING93_INV002\]' "$LOG_FILE" | tail -1)
     echo "$result_line"
     validate_inv002_marker_line "$result_line"
-    if [[ -n "$IOS_PID" ]] && kill -0 "$IOS_PID" 2>/dev/null; then
-      wait "$IOS_PID" || {
-        echo "react-native run-ios failed after INV-002 marker" >&2
-        exit 1
-      }
-    elif [[ -n "$IOS_PID" ]]; then
-      wait "$IOS_PID" || {
-        echo "react-native run-ios failed after INV-002 marker" >&2
-        exit 1
-      }
+    if [[ -n "$IOS_PID" ]]; then
+      if kill -0 "$IOS_PID" 2>/dev/null; then
+        wait "$IOS_PID" || {
+          echo "react-native run-ios failed after INV-002 marker" >&2
+          exit 1
+        }
+      else
+        wait "$IOS_PID" || {
+          echo "react-native run-ios failed after INV-002 marker" >&2
+          exit 1
+        }
+      fi
     fi
     exit 0
   fi
