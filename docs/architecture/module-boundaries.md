@@ -35,11 +35,10 @@ shared infrastructure (`src/shared`) and reusable UI (`src/components`)
 
 ## Existing scoped exceptions
 
-Two existing shared repository/type edges are retained as explicit exceptions
-until their contracts can be moved without introducing a speculative layer:
+An existing shared repository/type edge is retained as an explicit exception
+until its contract can be moved without introducing a speculative layer:
 
-- `src/shared/db/FlashcardRepository.ts` → `@modules/engagement`,
-  `@modules/review`
+- `src/shared/db/FlashcardRepository.ts` → `@modules/review`
 
 The checker allowlists these exact source/import pairs. Any new `shared` →
 `modules` edge fails lint and must either be removed or be approved as a

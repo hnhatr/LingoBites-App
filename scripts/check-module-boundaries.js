@@ -19,7 +19,7 @@ const sourceExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 const sharedModuleExceptions = new Map([
   [
     'src/shared/db/FlashcardRepository.ts',
-    ['@modules/engagement', '@modules/review'],
+    ['@modules/review'],
   ],
 ]);
 

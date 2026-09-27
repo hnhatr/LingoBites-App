@@ -1,5 +1,5 @@
 import {createRequestId} from '../api/requestId';
-import type {UpcomingReviewReminder} from '@modules/engagement';
+import type {UpcomingReviewReminder} from '@shared/review/contracts';
 import {getOrCreateAnonymousUserId} from './anonymousUserId';
 import {getDatabase, withTransaction} from './database';
 import {enqueueSyncOutboxEvent} from './SyncOutboxRepository';
