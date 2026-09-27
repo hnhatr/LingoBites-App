@@ -31,4 +31,4 @@ function refactorEvents(file) {
 }
 
 refactorEvents('src/shared/api/practiceEventsClient.ts');
-refactorEvents('src/shared/api/reviewEventsClient.ts');
+refactorEvents('src/modules/review/api/reviewEventsClient.ts');

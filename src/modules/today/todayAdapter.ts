@@ -4,7 +4,7 @@ import {
   listActivePackageLessons,
   listContentReviewItems,
 } from '@shared/db/ContentRuntimeRepository';
-import {getDueFlashcards} from '@shared/db/FlashcardRepository';
+import {getDueFlashcards} from '@modules/review';
 import {
   listErrorEvents,
   listSpeakingRecordings,

@@ -1,11 +1,11 @@
-import {getDatabase, withTransaction} from './database';
-import {enqueueSyncOutboxEvent} from './syncOutboxCore';
-import {createRequestId} from '../api/requestId';
+import {getDatabase, withTransaction} from '@shared/db/database';
+import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
+import {createRequestId} from '@shared/api/requestId';
 import type {
   GrammarBookmark,
   SaveGrammarBookmarkInput,
   SaveGrammarBookmarkResult,
-} from './types';
+} from '@shared/db/types';
 
 type GrammarBookmarkRow = {
   lesson_id: string;

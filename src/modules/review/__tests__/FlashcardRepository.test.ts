@@ -1,8 +1,8 @@
 import {validFullOutput} from '@shared/fixtures';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
-import {getDatabase, resetDatabaseForTests} from '../database';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '../constants';
+import {DB_NAME} from '@shared/db/constants';
 import {
   getDueFlashcards,
   listFlashcards,
@@ -14,7 +14,7 @@ import {
   listPendingSyncEvents,
   markSyncEventsSynced,
 } from '@modules/sync/adapters/SyncOutboxRepository';
-import type {ReviewEventPayload} from '../types';
+import type {ReviewEventPayload} from '@shared/db/types';
 
 function saveFixtureLesson(): string {
   return 'lesson-1';

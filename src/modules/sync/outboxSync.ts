@@ -11,10 +11,7 @@ import type {
   SyncOutboxRecord,
 } from '@shared/db/types';
 import {PRACTICE_EVENT_TYPE, REVIEW_EVENT_TYPE} from '@shared/db/types';
-import {
-  pushReviewEvents,
-  type SyncReviewEvent,
-} from '@shared/api/reviewEventsClient';
+import {pushReviewEvents, type SyncReviewEvent} from '@modules/review';
 import {
   pushPracticeEvents,
   type SyncPracticeEvent,

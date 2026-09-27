@@ -1,7 +1,7 @@
-import {authenticatedFetch} from './authenticatedFetch';
+import {authenticatedFetch} from '@shared/api/authenticatedFetch';
 import i18n from '@/i18n';
-import type {ReviewEventPayload} from '../db/types';
-import {getAppConfig} from './appConfig';
+import type {ReviewEventPayload} from '@shared/db/types';
+import {getAppConfig} from '@shared/api/appConfig';
 
 /**
  * Wire envelope of one drained outbox row, as POSTed to the server. Mirrors the

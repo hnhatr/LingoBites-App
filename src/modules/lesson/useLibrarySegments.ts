@@ -4,8 +4,7 @@ import {
   listSavedLessons,
   listStartedLessons,
 } from '@shared/db/ContentLessonStateRepository';
-import {listAllBookmarkedGrammar} from '@shared/db/GrammarBookmarkRepository';
-import {listFlashcards} from '@shared/db/FlashcardRepository';
+import {listAllBookmarkedGrammar, listFlashcards} from '@modules/review';
 import type {FlashcardRecord, GrammarBookmark} from '@shared/db/types';
 import type {LibraryLessonCardView} from '@/types/lesson';
 

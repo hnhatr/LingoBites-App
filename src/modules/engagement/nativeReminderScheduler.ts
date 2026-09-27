@@ -11,7 +11,7 @@ import type {
   TimestampTrigger,
   TriggerNotification,
 } from '@notifee/react-native';
-import {listUpcomingReviewReminders} from '@shared/db/FlashcardRepository';
+import {listUpcomingReviewReminders} from '@modules/review';
 import type {PendingReminder} from './reminderPolicy';
 import {
   buildReminderNotification,

@@ -1,9 +1,9 @@
-import {createRequestId} from '../api/requestId';
+import {createRequestId} from '@shared/api/requestId';
 import type {UpcomingReviewReminder} from '@shared/review/contracts';
-import {getOrCreateAnonymousUserId} from './anonymousUserId';
-import {getDatabase, withTransaction} from './database';
-import {enqueueSyncOutboxEvent} from './syncOutboxCore';
-import {REVIEW_EVENT_SCHEMA_VERSION} from './types';
+import {getOrCreateAnonymousUserId} from '@shared/db/anonymousUserId';
+import {getDatabase, withTransaction} from '@shared/db/database';
+import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
+import {REVIEW_EVENT_SCHEMA_VERSION} from '@shared/db/types';
 import {
   DEFAULT_REVIEW_INTERVAL_DAYS,
   calculateNextReviewState,
@@ -16,7 +16,7 @@ import type {
   RecordFlashcardRatingResult,
   SaveFlashcardInput,
   SaveFlashcardResult,
-} from './types';
+} from '@shared/db/types';
 
 type FlashcardRow = {
   id: string;

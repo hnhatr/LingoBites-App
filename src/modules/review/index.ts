@@ -8,3 +8,25 @@ export {
   calculateNextReviewState,
 } from './reviewScheduler';
 export type {DailyReviewRouteParams} from './navigationTypes';
+
+export {
+  getCardDueAt,
+  getDueFlashcards,
+  listFlashcards,
+  listUpcomingReviewReminders,
+  recordFlashcardRating,
+  saveFlashcard,
+  unsaveFlashcard,
+} from './FlashcardRepository';
+export {
+  getGrammarBookmark,
+  listAllBookmarkedGrammar,
+  listBookmarkedGrammar,
+  saveGrammarBookmark,
+  unsaveGrammarBookmark,
+} from './GrammarBookmarkRepository';
+export {
+  pushReviewEvents,
+  type PushReviewEventsResult,
+  type SyncReviewEvent,
+} from './api/reviewEventsClient';

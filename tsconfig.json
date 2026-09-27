@@ -23,7 +23,16 @@
       "@i18n": ["src/i18n"],
       "@i18n/*": ["src/i18n/*"],
       "@test-support": ["src/test-support"],
-      "@test-support/*": ["src/test-support/*"]
+      "@test-support/*": ["src/test-support/*"],
+      "@shared/db/FlashcardRepository": [
+        "src/modules/review/FlashcardRepository.ts"
+      ],
+      "@shared/db/GrammarBookmarkRepository": [
+        "src/modules/review/GrammarBookmarkRepository.ts"
+      ],
+      "@shared/api/reviewEventsClient": [
+        "src/modules/review/api/reviewEventsClient.ts"
+      ]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.json"],
