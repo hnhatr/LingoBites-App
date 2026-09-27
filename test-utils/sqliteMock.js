@@ -384,6 +384,12 @@ function createMockDatabase() {
       return {rowsAffected: before - remaining.length};
     }
 
+    if (normalized === 'delete from youtube_progress;') {
+      const count = youtubeProgress.length;
+      youtubeProgress.length = 0;
+      return {rowsAffected: count};
+    }
+
     if (
       normalized === 'begin' ||
       normalized === 'commit' ||
@@ -2094,6 +2100,96 @@ function createMockDatabase() {
 
     if (normalized === 'select count(*) as count from grammar_bookmarks;') {
       return toRows([{count: grammarBookmarks.length}]);
+    }
+
+    if (
+      normalized.includes("from sqlite_master where type='table'") &&
+      normalized.includes("name not like 'sqlite_%'")
+    ) {
+      const tableArrays = {
+        lessons,
+        app_settings: appSettings,
+        flashcards,
+        review_schedule: reviewSchedule,
+        review_sessions: reviewSessions,
+        audio_assets: audioAssets,
+        gamification_events: gamificationEvents,
+        sync_outbox: syncOutbox,
+        content_packages: contentPackages,
+        content_lessons: contentLessons,
+        content_items: contentItems,
+        content_units: contentUnits,
+        content_activities: contentActivities,
+        content_audio_assets: contentAudioAssets,
+        content_review_items: contentReviewItems,
+        speaking_recordings: speakingRecordings,
+        error_events: errorEvents,
+        content_lesson_state: contentLessonState,
+        grammar_bookmarks: grammarBookmarks,
+        lesson_v2: lessonV2,
+        lesson_v2_sentences: lessonV2Sentences,
+        lesson_v2_chunks: lessonV2Chunks,
+        lesson_v2_vocabulary: lessonV2Vocabulary,
+        lesson_v2_grammar: lessonV2Grammar,
+        lesson_v2_units: lessonV2Units,
+        practice_sets: practiceSets,
+        practice_questions: practiceQuestions,
+        practice_sessions: practiceSessions,
+        practice_events: practiceEvents,
+        youtube_lessons: youtubeLessons,
+        youtube_sentences: youtubeSentences,
+        youtube_progress: youtubeProgress,
+      };
+      return toRows(
+        Object.keys(tableArrays)
+          .filter(name => !droppedTables.has(name))
+          .map(name => ({name})),
+      );
+    }
+
+    const wipeTable = normalized.match(/^delete from ([a-z0-9_]+);$/);
+    if (wipeTable) {
+      const table = wipeTable[1];
+      const tableArrays = {
+        lessons,
+        app_settings: appSettings,
+        flashcards,
+        review_schedule: reviewSchedule,
+        review_sessions: reviewSessions,
+        audio_assets: audioAssets,
+        gamification_events: gamificationEvents,
+        sync_outbox: syncOutbox,
+        content_packages: contentPackages,
+        content_lessons: contentLessons,
+        content_items: contentItems,
+        content_units: contentUnits,
+        content_activities: contentActivities,
+        content_audio_assets: contentAudioAssets,
+        content_review_items: contentReviewItems,
+        speaking_recordings: speakingRecordings,
+        error_events: errorEvents,
+        content_lesson_state: contentLessonState,
+        grammar_bookmarks: grammarBookmarks,
+        lesson_v2: lessonV2,
+        lesson_v2_sentences: lessonV2Sentences,
+        lesson_v2_chunks: lessonV2Chunks,
+        lesson_v2_vocabulary: lessonV2Vocabulary,
+        lesson_v2_grammar: lessonV2Grammar,
+        lesson_v2_units: lessonV2Units,
+        practice_sets: practiceSets,
+        practice_questions: practiceQuestions,
+        practice_sessions: practiceSessions,
+        practice_events: practiceEvents,
+        youtube_lessons: youtubeLessons,
+        youtube_sentences: youtubeSentences,
+        youtube_progress: youtubeProgress,
+      };
+      const arr = tableArrays[table];
+      if (arr) {
+        const count = arr.length;
+        arr.length = 0;
+        return {rowsAffected: count};
+      }
     }
 
     return {rowsAffected: 0};
