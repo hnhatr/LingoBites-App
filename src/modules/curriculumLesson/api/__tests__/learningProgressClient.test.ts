@@ -2,20 +2,18 @@ import * as AuthSession from '@shared/auth/authSession';
 import {
   completeLessonProgress,
   fetchContinueLearning,
-  fetchReview,
   listLessonProgress,
   markVocabularySeen,
   setVocabularyProgress,
   startLessonProgress,
   submitExerciseAttempt,
-} from '../learningClient';
+} from '../learningProgressClient';
 import startFixture from './fixtures/start-lesson-response.json';
 import completeFixture from './fixtures/complete-lesson-response.json';
 import listFixture from './fixtures/list-lesson-progress-response.json';
 import attemptFixture from './fixtures/submit-attempt-response.json';
 import seenFixture from './fixtures/vocabulary-seen-response.json';
 import setProgressFixture from './fixtures/set-vocabulary-progress-response.json';
-import reviewFixture from './fixtures/review-response.json';
 import continueFixture from './fixtures/continue-learning-response.json';
 import continueNullFixture from './fixtures/continue-learning-null-response.json';
 
@@ -70,7 +68,6 @@ const ALL_FIXTURES = [
   attemptFixture,
   seenFixture,
   setProgressFixture,
-  reviewFixture,
   continueFixture,
   continueNullFixture,
 ];
@@ -83,7 +80,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('learningClient request contracts', () => {
+describe('learningProgressClient request contracts', () => {
   it('POSTs start to the exact lesson path with the auth token and no body', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(jsonResponse(startFixture));
     const result = await startLessonProgress(LESSON_ID, {fetchImpl});
@@ -192,21 +189,6 @@ describe('learningClient request contracts', () => {
     expect(init.body).toBe(JSON.stringify({status: 'known'}));
   });
 
-  it('GETs review returning the composite exercises/vocabularies shape', async () => {
-    const fetchImpl = jest.fn().mockResolvedValue(jsonResponse(reviewFixture));
-    const result = await fetchReview({fetchImpl});
-
-    expect(result).toEqual({
-      ok: true,
-      requestId: 'req-review-001',
-      exercises: reviewFixture.exercises,
-      vocabularies: reviewFixture.vocabularies,
-    });
-    const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe(`${BASE_URL}/v1/me/review`);
-    expect(init.method).toBe('GET');
-  });
-
   it('GETs continue-learning returning the active progress', async () => {
     const fetchImpl = jest
       .fn()
@@ -296,7 +278,10 @@ describe('learningClient auth, cancellation, and transport', () => {
     const fetchImpl = jest.fn();
     const controller = new AbortController();
     controller.abort();
-    const result = await fetchReview({fetchImpl, signal: controller.signal});
+    const result = await startLessonProgress(LESSON_ID, {
+      fetchImpl,
+      signal: controller.signal,
+    });
 
     expect(result).toMatchObject({
       ok: false,
@@ -514,20 +499,6 @@ describe('learningClient error categories', () => {
     });
   });
 
-  it('maps 503 database-unavailable to retryable server-error', async () => {
-    const fetchImpl = jest
-      .fn()
-      .mockResolvedValue(
-        jsonResponse(failedBody('DATABASE_UNAVAILABLE', 'Down.'), 503),
-      );
-    await expect(fetchReview({fetchImpl})).resolves.toMatchObject({
-      ok: false,
-      kind: 'server-error',
-      retryable: true,
-      status: 503,
-    });
-  });
-
   it('maps an unreadable error body by status', async () => {
     const fetchImpl = jest.fn().mockResolvedValue({
       ok: false,
@@ -601,22 +572,6 @@ describe('learningClient strict response parsing', () => {
         {fetchImpl},
       ),
     ).resolves.toMatchObject({
-      ok: false,
-      kind: 'protocol-error',
-      errorCode: 'INVALID_RESPONSE',
-    });
-  });
-
-  it('fails closed when a review exercise leaks answer_key', async () => {
-    const body = {
-      ...reviewFixture,
-      exercises: reviewFixture.exercises.map(entry => ({
-        ...entry,
-        exercise: {...entry.exercise, answer_key: {options: ['opt-b']}},
-      })),
-    };
-    const fetchImpl = jest.fn().mockResolvedValue(jsonResponse(body));
-    await expect(fetchReview({fetchImpl})).resolves.toMatchObject({
       ok: false,
       kind: 'protocol-error',
       errorCode: 'INVALID_RESPONSE',

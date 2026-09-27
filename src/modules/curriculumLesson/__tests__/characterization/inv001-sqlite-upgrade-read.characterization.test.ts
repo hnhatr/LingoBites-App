@@ -1,0 +1,39 @@
+import {open} from 'react-native-quick-sqlite';
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {DB_NAME} from '@shared/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {runMigrations} from '@shared/db/migrations';
+import {
+  getContentLessonState,
+  saveContentLesson,
+  startContentLesson,
+} from '@shared/db/ContentLessonStateRepository';
+import {
+  CHARACTERIZATION_INVARIANTS,
+  simulateDatabaseProcessRestart,
+} from '@/test-support/characterization';
+
+const NOW = '2026-09-27T12:00:00.000Z';
+
+describe(`${CHARACTERIZATION_INVARIANTS.INV_001} SQLite upgrade-read (curriculumLesson)`, () => {
+  beforeEach(() => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    runMigrations(getDatabase());
+  });
+
+  it('keeps persisted lesson catalog state readable after restart and idempotent migrations', () => {
+    saveContentLesson({lessonId: 'lesson-char', now: NOW});
+    startContentLesson({lessonId: 'lesson-char', now: NOW});
+
+    simulateDatabaseProcessRestart();
+    expect(getContentLessonState('lesson-char')?.isStarted).toBe(true);
+
+    runMigrations(getDatabase());
+    expect(getContentLessonState('lesson-char')).toMatchObject({
+      lessonId: 'lesson-char',
+      isStarted: true,
+      tombstone: false,
+    });
+  });
+});

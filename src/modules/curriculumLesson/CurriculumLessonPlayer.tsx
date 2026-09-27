@@ -9,7 +9,7 @@ import type {CurriculumLesson} from './curriculumLessonSchema';
 import {
   completeLessonProgress,
   markVocabularySeen,
-} from '@shared/api/learningClient';
+} from './api/learningProgressClient';
 
 function fireAndForget(task: Promise<unknown>): void {
   task.catch(() => undefined);

@@ -1,0 +1,18 @@
+{
+  "serverRepository": "git@github.com:thnha/LingoBites-Server.git",
+  "designRef": "01a0d79a-2447-7763-9ab8-335e0cd04f5c",
+  "planRef": "01a0d7a6-2fc7-7509-8d61-f52335121f59",
+  "fixtureRevision": "ling-17-task-005-r1",
+  "note": "Frozen LING-17 learning shapes transcribed from the approved Technical Design API contracts (section 6). TASK-002/TASK-003 were not available at authoring time; re-validate byte parity against the server implementation in TASK-007 and re-copy on Server contract change. No fixture may contain user_id inputs or answer_key outputs.",
+  "files": [
+    "start-lesson-response.json",
+    "complete-lesson-response.json",
+    "list-lesson-progress-response.json",
+    "submit-attempt-response.json",
+    "vocabulary-seen-response.json",
+    "set-vocabulary-progress-response.json",
+    "review-response.json",
+    "continue-learning-response.json",
+    "continue-learning-null-response.json"
+  ]
+}

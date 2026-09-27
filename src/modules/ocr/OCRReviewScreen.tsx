@@ -20,7 +20,7 @@ import {
   validateConfirmedText,
 } from '@shared/utils/textValidation';
 import {extractText} from './OCRService';
-import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
+import {startLessonFromConfirmedText} from '@modules/curriculumLesson';
 import {createLessonGenerationJob} from '@modules/curriculumLesson';
 type Props = NativeStackScreenProps<CreateStackParamList, 'OCRReview'>;
 

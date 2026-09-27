@@ -30,3 +30,15 @@ export {
   type PushReviewEventsResult,
   type SyncReviewEvent,
 } from './api/reviewEventsClient';
+export {
+  LEARNING_REVIEW_CLIENT_FIXTURE_REVISION,
+  LEARNING_REVIEW_CLIENT_DESIGN_REF,
+  fetchReview,
+} from './api/learningReviewClient';
+export type {
+  ReviewExerciseContent,
+  ReviewExerciseEntry,
+  ReviewVocabularyContent,
+  ReviewVocabularyEntry,
+  ReviewResult,
+} from './api/learningReviewClient';
