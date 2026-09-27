@@ -1,11 +1,5 @@
 import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {
-  HomeStackParamList,
-  LessonsStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
 import {AppButton} from '@components/AppButton';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
@@ -22,18 +16,32 @@ import {useQuiz} from './useQuiz';
 import {hasInvalidMetaOptions} from './quizEngine';
 import {usePracticeSessionScreen} from './usePracticeSessionScreen';
 
-type Props =
-  | NativeStackScreenProps<HomeStackParamList, 'Practice'>
-  | NativeStackScreenProps<LessonsStackParamList, 'Practice'>;
+export type PracticeRouteParams =
+  | {questions: LegacyPracticeQuestion[]; title?: string}
+  | {lessonId: string; sessionId: string; title?: string};
+
+export type PracticeScreenProps = {
+  navigation: {
+    goBack: () => void;
+    setParams: (params: Partial<PracticeRouteParams>) => void;
+    getParent?: <T = any>() => T;
+    dispatch?: (action: any) => void;
+  };
+  route: {
+    params: PracticeRouteParams;
+  };
+};
+
+type Props = PracticeScreenProps;
 
 function isSessionParams(
-  params: HomeStackParamList['Practice'],
+  params: PracticeRouteParams,
 ): params is {lessonId: string; sessionId: string; title?: string} {
   return 'sessionId' in params && typeof params.sessionId === 'string';
 }
 
 function isLegacyParams(
-  params: HomeStackParamList['Practice'],
+  params: PracticeRouteParams,
 ): params is {questions: LegacyPracticeQuestion[]; title?: string} {
   return (
     'questions' in params &&
@@ -341,10 +349,9 @@ function LegacyPracticeScreen({
   const quiz = useQuiz(questions);
   const headerTitle = title ?? 'Luyện tập nhanh';
 
-  const tabNavigation =
-    navigation.getParent<
-      import('@react-navigation/native').NavigationProp<RootTabParamList>
-    >();
+  const tabNavigation = navigation.getParent?.<{
+    navigate: (tab: 'Create' | 'Home' | string) => void;
+  }>();
 
   if (questions.length === 0) {
     return (

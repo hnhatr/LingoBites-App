@@ -2,11 +2,8 @@ import React, {useCallback, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {
-  HomeStackParamList,
-  LessonsStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
+import type {HomeStackParamList, RootTabParamList} from '@modules/input';
+import type {LessonsStackParamList} from '@modules/lesson';
 import {AppButton} from '@components/AppButton';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';

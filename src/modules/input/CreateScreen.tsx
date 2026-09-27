@@ -6,17 +6,19 @@ import type {
   CreateStackParamList,
   RootStackParamList,
   RootTabParamList,
-} from '@/app/navigation/types';
+} from './navigationTypes';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {MaterialIcon} from '@components/MaterialIcon';
 import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {useTranslation} from 'react-i18next';
 import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
 import {useFeatureFlags} from '@/release';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'CreateMain'>;
+
+export type CreateScreenProps = Props;
 
 type Tile = {
   icon: 'add_photo_alternate' | 'play_circle' | 'content_paste';

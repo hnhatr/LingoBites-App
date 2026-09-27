@@ -4,6 +4,11 @@ export {
   ContentLessonRuntimeScreen,
   useContentLibrary,
 } from './runtime';
+export type {
+  ContentLessonListRouteParams,
+  ContentLessonDetailRouteParams,
+  ContentLessonRuntimeRouteParams,
+} from './runtime';
 export {playContentAudio} from './runtime/contentAudioPlayer';
 export {bootstrapContentPackage} from './bootstrap';
 export type {ContentLessonListItem, ContentLessonRow} from './runtime';

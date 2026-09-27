@@ -148,3 +148,13 @@ export type LessonRuntimeFinishResult = {
   completedStepCount: number;
   skippedStepCount: number;
 };
+
+export type ContentLessonListRouteParams = undefined;
+
+export type ContentLessonDetailRouteParams = {
+  lessonId: string;
+};
+
+export type ContentLessonRuntimeRouteParams = {
+  lessonId: string;
+};

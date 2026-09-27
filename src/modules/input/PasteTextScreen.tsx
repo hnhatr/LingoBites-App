@@ -1,11 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {NavigationProp} from '@react-navigation/native';
-import type {
-  CreateStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {CreateStackParamList, RootTabParamList} from './navigationTypes';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {BottomActionBar} from '@components/BottomActionBar';
@@ -21,9 +18,10 @@ import {getTextLengthBucket, trackEvent} from '../analytics';
 import {validateConfirmedText} from '@shared/utils/textValidation';
 import {startLessonFromConfirmedText} from '@shared/lesson/startLessonFromConfirmedText';
 import {createLessonGenerationJob} from '@modules/curriculumLesson';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
-
+import {useFloatingTabBarClearance} from '@components/layout';
 type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;
+
+export type PasteTextScreenProps = Props;
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
 
@@ -46,7 +44,7 @@ export function PasteTextScreen({navigation, route}: Props) {
   const floatingClearance = useFloatingTabBarClearance();
 
   // Lỗi phân tích được màn "Đang phân tích" trả về qua param khi quay lại đây.
-  const analyzeError = route.params?.analyzeError;
+  const analyzeError = route?.params?.analyzeError;
   useEffect(() => {
     if (analyzeError) {
       setScreenState({type: 'error', message: analyzeError});

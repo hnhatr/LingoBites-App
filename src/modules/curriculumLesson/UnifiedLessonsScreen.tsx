@@ -8,7 +8,6 @@
  * bootstrap is never triggered from this path.
  */
 import {useFocusEffect} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {
   ActivityIndicator,
@@ -18,13 +17,12 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import type {LessonsStackParamList} from '@/app/navigation/types';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {Medallion} from '@components/Medallion';
 import {trackEvent} from '@modules/analytics';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {useAppTheme, type AppTheme} from '@theme';
 import {
   useLessonCatalog,
@@ -32,7 +30,11 @@ import {
 } from './useLessonCatalog';
 import type {UnifiedLessonSummary} from './lessonCatalogClient';
 
-type ScreenProps = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
+export interface UnifiedLessonsRouteScreenProps {
+  navigation: {
+    navigate: (screen: 'CurriculumLesson', params: {lessonId: string}) => void;
+  };
+}
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -279,7 +281,9 @@ export function UnifiedLessonsScreen({
   );
 }
 
-export function UnifiedLessonsRouteScreen(props: ScreenProps) {
+export function UnifiedLessonsRouteScreen(
+  props: UnifiedLessonsRouteScreenProps,
+) {
   const {navigation} = props;
   return (
     <AppScreen>

@@ -9,14 +9,12 @@
  * Opening any item navigates cross-stack to the canonical
  * `CurriculumLesson({lessonId})` route in the Lessons tab.
  */
+import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {type NavigationProp} from '@react-navigation/native';
 import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
-import type {
-  ProfileStackParamList,
-  RootTabParamList,
-} from '@/app/navigation/types';
+import type {RootTabParamList} from '@modules/input';
+import type {ProfileStackParamList} from '@modules/settings';
 import {AppScreen} from '@components/AppScreen';
 import {ScreenHeader} from '@components/ScreenHeader';
 import {useAppTheme, type AppTheme} from '@theme';
@@ -26,6 +24,8 @@ type Props = NativeStackScreenProps<
   ProfileStackParamList,
   'UnifiedLessonsPreview'
 >;
+
+export type UnifiedLessonsPreviewScreenProps = Props;
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({

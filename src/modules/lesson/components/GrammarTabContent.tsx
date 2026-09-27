@@ -2,9 +2,9 @@ import React, {useCallback, useMemo} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {LessonsStackParamList} from '@/app/navigation/types';
+import type {LessonsStackParamList} from '../navigationTypes';
 import {useAppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 import type {AppTheme} from '@theme/types';
 import type {
   GrammarBookmark,

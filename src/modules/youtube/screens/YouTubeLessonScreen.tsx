@@ -86,13 +86,13 @@ import {
   type SentenceLoopCount,
 } from '../utils/toolsLogic';
 import type {NavigationProp} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {
   CreateStackParamList,
   RootStackParamList,
   RootTabParamList,
-} from '@/app/navigation/types';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+} from '@modules/input';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {useBookmarkOptimistic, useFlashcardLibrary} from '@modules/review';
 import {mapTranscriptToPractice} from '../utils/practiceMapper';
 import type {YouTubePlaybackRate} from '../utils/playbackRate';
@@ -1341,10 +1341,6 @@ export function YouTubeLessonRouteScreen({
   navigation,
   route,
 }: YouTubeLessonRouteProps) {
-  // Same convention as GrammarDetailScreen: the union navigation prop is
-  // only directly callable for shared signatures (goBack); narrow to one
-  // stack for navigate — both stacks register Practice with identical
-  // params, so the call behaves the same at either level.
   const nav = navigation as NativeStackScreenProps<
     CreateStackParamList,
     'YouTubeLesson'
@@ -1369,10 +1365,6 @@ export function YouTubeLessonRouteScreen({
   // the plain goBack contract owned by SETE-289.
   const isFreshLesson = 'lesson' in params && params.lesson != null;
   const exitToHome = useCallback(() => {
-    // Same reset-then-tab pattern as YouTubeInputScreen.exitToHome
-    // (SETE-287): no stale nested state, land on the Home tab. Only
-    // reachable for fresh lessons, which live on the Create stack — hence
-    // the Create-stack narrowing (same convention as `nav` above).
     const createNav = navigation as NativeStackScreenProps<
       CreateStackParamList,
       'YouTubeLesson'

@@ -1,8 +1,6 @@
 import React from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useFocusEffect} from '@react-navigation/native';
-import type {LessonsStackParamList} from '@/app/navigation/types';
 import {AppCard} from '@components/AppCard';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -12,16 +10,25 @@ import {ScreenHeader} from '@components/ScreenHeader';
 import {useAppTheme} from '@theme';
 import {listSpeakingRoomModes} from './speakingModes';
 import type {SpeakingModeInfo} from './speakingModes';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
+import type {SpeakingRoomRouteParams} from './navigationTypes';
 
-type Props = NativeStackScreenProps<LessonsStackParamList, 'SpeakingRoom'>;
+export interface SpeakingRoomScreenProps {
+  navigation: {
+    navigate: (screen: 'SpeakingShadowing') => void;
+    goBack: () => void;
+  };
+  route?: {
+    params?: SpeakingRoomRouteParams;
+  };
+}
 
 /**
  * Speaking Room mode list (REQ-23, VC-17). All six required modes are always
  * shown; a mode without installed content shows the "not available yet"
  * state instead of a broken/empty screen.
  */
-export function SpeakingRoomScreen({navigation}: Props) {
+export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
   const {theme} = useAppTheme();
   const floatingClearance = useFloatingTabBarClearance();
   const [modes, setModes] = React.useState<SpeakingModeInfo[]>(() =>

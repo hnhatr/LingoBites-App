@@ -18,7 +18,7 @@ import {GuidedPracticeCard} from './activities/GuidedPracticeCard';
 import {RolePlayCard} from './activities/RolePlayCard';
 import {ShadowingCard} from './activities/ShadowingCard';
 import type {FeedbackStepData} from './types';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 
 type Props = {
   navigation: {goBack: () => void};

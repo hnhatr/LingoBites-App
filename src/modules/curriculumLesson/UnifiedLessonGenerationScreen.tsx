@@ -9,14 +9,13 @@
  * to the new job ID; the failed job row stays untouched for the server
  * to expire per BR-003.
  */
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
-import type {LessonsStackParamList} from '@/app/navigation/types';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
 import {trackEvent} from '@modules/analytics';
 import {useAppTheme, type AppTheme} from '@theme';
+import type {UnifiedLessonGenerationRouteParams} from './navigationTypes';
 import {
   createLessonGenerationJob,
   listRetryableJobParts,
@@ -29,10 +28,22 @@ import {
   type LessonGenerationState,
 } from './useLessonGenerationJob';
 
-type Props = NativeStackScreenProps<
-  LessonsStackParamList,
-  'UnifiedLessonGeneration'
->;
+export interface UnifiedLessonGenerationScreenProps {
+  navigation: {
+    replace: ((
+      screen: 'CurriculumLesson',
+      params: {lessonId: string},
+    ) => void) &
+      ((
+        screen: 'UnifiedLessonGeneration',
+        params: UnifiedLessonGenerationRouteParams,
+      ) => void);
+    goBack: () => void;
+  };
+  route: {
+    params: UnifiedLessonGenerationRouteParams;
+  };
+}
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -324,7 +335,10 @@ export function UnifiedLessonGenerationView({
   );
 }
 
-export function UnifiedLessonGenerationScreen({navigation, route}: Props) {
+export function UnifiedLessonGenerationScreen({
+  navigation,
+  route,
+}: UnifiedLessonGenerationScreenProps) {
   const {jobId, confirmedText, level} = route.params;
   const {
     generation,

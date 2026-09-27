@@ -6,7 +6,7 @@ import type {
   HomeStackParamList,
   RootStackParamList,
   RootTabParamList,
-} from '@/app/navigation/types';
+} from './navigationTypes';
 import {AppButton} from '@components/AppButton';
 import {AppScreen} from '@components/AppScreen';
 import {AppText} from '@components/AppText';
@@ -34,11 +34,13 @@ import {
 } from '@modules/curriculumLesson';
 import {trackEvent} from '../analytics';
 import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';
+import {useFloatingTabBarClearance} from '@components/layout';
 import {useTranslation} from 'react-i18next';
 import {fetchContinueLearning} from '@shared/api/learningClient';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeMain'>;
+
+export type HomeScreenProps = Props;
 
 // 2×2 explore grid from the paper-cut mock (SETE-279). Background/ink pairs
 // reuse the contrast-locked chip convention (accentSoft+primary,
