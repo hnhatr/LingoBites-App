@@ -7,7 +7,7 @@ import {REVIEW_EVENT_SCHEMA_VERSION} from './types';
 import {
   DEFAULT_REVIEW_INTERVAL_DAYS,
   calculateNextReviewState,
-} from '@modules/review';
+} from '@shared/review/reviewPolicy';
 import type {
   FlashcardRecord,
   GetDueFlashcardsOptions,
