@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "description": "Baseline module boundary exceptions for AD-004 staged enforcement",
   "soleWriter": "Integration Owner",
-  "totalExceptions": 2,
+  "totalExceptions": 5,
   "exceptions": [
     {
       "file": "src/shared/db/PracticeRepository.ts",
@@ -17,6 +17,27 @@
       "rule": "shared-to-module",
       "owner": "React Native Developer",
       "expiry": "TASK-008"
+    },
+    {
+      "file": "src/shared/db/AudioAssetRepository.ts",
+      "specifier": "../../modules/audio/data/AudioAssetRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-012"
+    },
+    {
+      "file": "src/shared/db/SpeakingRepository.ts",
+      "specifier": "../../modules/speaking/data/SpeakingRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-012"
+    },
+    {
+      "file": "src/shared/api/recordingClient.ts",
+      "specifier": "../../modules/speaking/api/recordingClient",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-012"
     }
   ]
 }

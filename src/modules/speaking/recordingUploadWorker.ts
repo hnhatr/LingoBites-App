@@ -2,7 +2,7 @@
 import {
   createRecordingMetadata,
   uploadRecordingBinary,
-} from '@shared/api/recordingClient';
+} from './api/recordingClient';
 import {createRequestId} from '@shared/api/requestId';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 

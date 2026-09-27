@@ -5,10 +5,7 @@ import {
   listContentReviewItems,
 } from '@shared/db/ContentRuntimeRepository';
 import {getDueFlashcards} from '@modules/review';
-import {
-  listErrorEvents,
-  listSpeakingRecordings,
-} from '@shared/db/SpeakingRepository';
+import {listErrorEvents, listSpeakingRecordings} from '@modules/speaking';
 import type {LearnerProfileData, LearnerStateSnapshot} from './types';
 
 export function getLearnerProfileData(): LearnerProfileData | null {

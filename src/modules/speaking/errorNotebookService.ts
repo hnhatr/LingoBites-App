@@ -9,7 +9,7 @@
  * qualifying attempt outcome the caller already computed.
  */
 
-import {captureErrorEvent} from '@shared/db/SpeakingRepository';
+import {captureErrorEvent} from './data/SpeakingRepository';
 import type {
   ErrorEventCategory,
   ErrorEventRecord,

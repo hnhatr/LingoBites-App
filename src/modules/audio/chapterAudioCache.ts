@@ -1,4 +1,4 @@
-import * as audioRepository from '@shared/db/AudioAssetRepository';
+import * as audioRepository from './data/AudioAssetRepository';
 import {
   STALE_CHAPTER_DAYS,
   DEFAULT_MAX_BYTES_PER_CHAPTER,

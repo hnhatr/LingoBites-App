@@ -1,4 +1,4 @@
-import {insertSpeakingRecording} from '@shared/db/SpeakingRepository';
+import {insertSpeakingRecording} from './data/SpeakingRepository';
 
 /**
  * Public entry point for speaking-recording persistence. Screens call this
