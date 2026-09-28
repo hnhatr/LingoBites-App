@@ -1,4 +1,4 @@
-import type {PracticeSession, PracticeSet} from '@shared/schemas/practice';
+import type {PracticeSession, PracticeSet} from '@core/schemas/practice';
 
 export type PracticeUiState =
   | 'not_created'

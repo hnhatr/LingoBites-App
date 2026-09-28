@@ -9,8 +9,8 @@ import {
   type ContentLessonRow,
 } from '@features/lesson/packages';
 import {countYouTubeLessons, listYouTubeLessons} from '@features/youtube';
-import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
-import {useFeatureFlags} from '@/release';
+import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
+import {useFeatureFlags} from '@core/release/index';
 import {
   fetchContinueLearning,
   isUnifiedLessonReady,

@@ -6,15 +6,15 @@ import {
   recordAnswerEvent,
   savePracticeSession,
 } from './data/PracticeRepository';
-import {createRequestId} from '@shared/api/requestId';
-import {PRACTICE_CONTRACT_VERSION} from '@shared/schemas/practice';
+import {createRequestId} from '@core/api/requestId';
+import {PRACTICE_CONTRACT_VERSION} from '@core/schemas/practice';
 import type {
   AnswerEvent,
   PracticeQuestion,
   PracticeSession,
   PracticeSet,
   ResultSummary,
-} from '@shared/schemas/practice';
+} from '@core/schemas/practice';
 import {gradeAnswer} from './grader';
 import {calculateResultSummary} from './resultSummary';
 

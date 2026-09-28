@@ -4,8 +4,8 @@ import {
   unsaveGrammarBookmark,
 } from './GrammarBookmarkRepository';
 import {showToast} from '@ui/components/toast';
-import type {SaveFlashcardInput} from '@shared/db/types';
-import type {SaveGrammarBookmarkInput} from '@shared/db/types';
+import type {SaveFlashcardInput} from '@core/db/types';
+import type {SaveGrammarBookmarkInput} from '@core/db/types';
 
 export interface OptimisticStateMap {
   isSaved: Map<string, boolean>;

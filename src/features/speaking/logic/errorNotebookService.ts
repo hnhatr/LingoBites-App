@@ -14,7 +14,7 @@ import type {
   ErrorEventCategory,
   ErrorEventRecord,
   ErrorEventSource,
-} from '@shared/db/types';
+} from '@core/db/types';
 
 const SLOW_RESPONSE_MS = 8000;
 

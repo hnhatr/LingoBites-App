@@ -2,7 +2,7 @@ import type {
   LessonPayloadV1,
   SentenceEnrichment,
   YouTubeSegmentV1,
-} from '@shared/schemas/sentence-contract';
+} from '@core/schemas/sentence-contract';
 
 export const VIDEO_ID = 'dQw4w9WgXcQ';
 

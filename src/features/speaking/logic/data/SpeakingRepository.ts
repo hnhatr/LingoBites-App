@@ -14,14 +14,14 @@
  * SRS items, without a separate remediation system (REQ-28).
  */
 
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 import type {
   CaptureErrorEventInput,
   ErrorEventRecord,
   InsertSpeakingRecordingInput,
   SpeakingRecordingRecord,
-} from '@shared/db/types';
-import {SPEAKING_ERROR_REVIEW_ITEM_TYPE} from '@shared/db/types';
+} from '@core/db/types';
+import {SPEAKING_ERROR_REVIEW_ITEM_TYPE} from '@core/db/types';
 
 type SpeakingRecordingDbRow = {
   id: string;

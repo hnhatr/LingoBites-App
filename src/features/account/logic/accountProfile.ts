@@ -5,7 +5,7 @@ import {
   type AuthClientError,
   type AuthHttpClient,
   type AuthUser,
-} from '@shared/auth';
+} from '@core/auth/index';
 
 export type UpdateProfileResult =
   | {ok: true; user: AuthUser}

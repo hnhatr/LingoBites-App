@@ -1,5 +1,5 @@
 import {mapTranscriptToPractice} from '../practiceMapper';
-import type {YouTubeSegment} from '../../../../../shared/schemas/youtube-transcript-v1';
+import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
 
 describe('practiceMapper', () => {
   const mockSegments: YouTubeSegment[] = [

@@ -1,4 +1,4 @@
-import {PRACTICE_GRADER_VERSION} from '@shared/schemas/practice';
+import {PRACTICE_GRADER_VERSION} from '@core/schemas/practice';
 import {gradeAnswer, isGradable, GRADER_VERSION} from '../grader';
 
 function choice(

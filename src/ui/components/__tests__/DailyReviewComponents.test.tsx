@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@/test-support';
 import {AppThemeProvider} from '@ui/theme/index';
 import {Banner} from '../Banner';

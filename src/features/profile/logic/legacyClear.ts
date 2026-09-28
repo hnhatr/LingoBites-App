@@ -1,7 +1,7 @@
-import {getDatabase} from '../../../shared/db/database';
+import {getDatabase} from '@core/db/database';
 import {listSpeakingRecordingFilePaths} from '@features/speaking';
-import {deleteLocalFiles} from '../../../shared/localData/localFileCleanup';
-import {clearLessonTokens} from '../../../shared/security/lessonTokenStore';
+import {deleteLocalFiles} from '@core/localData/localFileCleanup';
+import {clearLessonTokens} from '@core/security/lessonTokenStore';
 
 export const LEGACY_CLEAR_MARKER = 'account.legacy_clear_completed_v1';
 

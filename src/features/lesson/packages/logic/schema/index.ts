@@ -16,7 +16,7 @@ import type {
   QAItem,
   SrsItem,
   SrsItemType,
-} from '@shared/content/contracts';
+} from '@core/contracts/contentContracts';
 
 export type {AudioAsset, DialogueTurn, QAItem, SrsItem, SrsItemType};
 

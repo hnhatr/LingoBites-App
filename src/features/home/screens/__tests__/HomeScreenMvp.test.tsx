@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@/test-support';
-import {DB_NAME} from '@shared/db/constants';
-import {resetDatabaseForTests} from '@shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests} from '@core/db/database';
 const saveLesson = (_args: unknown) => ({ok: true, lessonId: 'l1'});
-import {validFullOutput, validMinimalOutput} from '@shared/fixtures';
+import {validFullOutput, validMinimalOutput} from '@core/fixtures/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
@@ -24,7 +24,7 @@ jest.mock('@features/youtube', () => ({
 
 // SETE-290: the video cell needs the server capability too — control it
 // here so navigation tests stay deterministic without network.
-jest.mock('@shared/api/youtubeCapabilities', () => ({
+jest.mock('@core/api/youtubeCapabilities', () => ({
   useYouTubeServerEnabled: (...args: unknown[]) =>
     mockUseYouTubeServerEnabled(...args),
 }));

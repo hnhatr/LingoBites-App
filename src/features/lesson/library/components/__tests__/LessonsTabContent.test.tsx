@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {AppThemeProvider} from '@ui/theme/index';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {LessonsTabContent} from '../LessonsTabContent';
 
 // Mock navigation

@@ -1,6 +1,6 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
-import {useFeatureFlags} from '../../release';
+import {useFeatureFlags} from '@core/release/index';
 import {useAppTheme} from '../theme';
 import {
   SYSTEM_THEME_ID,

@@ -10,7 +10,7 @@ import {
 } from '../a11yTestUtils';
 import {MaterialIcon} from '../../src/ui/components/MaterialIcon';
 import {AppThemeProvider} from '../../src/ui/theme';
-import {FeatureFlagProvider} from '../../src/release';
+import {FeatureFlagProvider} from '../../src/core/release';
 
 async function render(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;

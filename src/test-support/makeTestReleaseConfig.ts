@@ -1,5 +1,5 @@
-import {featureKeys, type FeatureKey} from '@/release/feature-registry';
-import type {ReleaseConfig} from '@/release/types';
+import {featureKeys, type FeatureKey} from '@core/release/feature-registry';
+import type {ReleaseConfig} from '@core/release/types';
 
 export type TestReleaseConfigOptions = {
   releaseName?: string;

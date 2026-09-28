@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import * as legacyLesson from '@features/youtube/logic/data/YouTubeLessonRepository';
 import * as legacyProgress from '@features/youtube/logic/data/YouTubeProgressRepository';
 import * as queryPort from '../../youtubeQueryPort';
@@ -12,7 +12,7 @@ import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@/test-support/adversarial/realSqlite';
-import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
+import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
 
 /**
  * LING-104 adversarial review (INV-001 / INV-005, TASK-015 youtube/OCR

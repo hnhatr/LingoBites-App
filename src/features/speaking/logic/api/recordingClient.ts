@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
-import {getAppConfig} from '@shared/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {getAppConfig} from '@core/api/appConfig';
 import type {
   CreateRecordingRequest,
   CreateRecordingSuccessResponse,
   RecordingSuccessResponse,
-} from '@shared/schemas/recordings';
-import {createRequestId} from '@shared/api/requestId';
+} from '@core/schemas/recordings';
+import {createRequestId} from '@core/api/requestId';
 
 export type CreateRecordingResult =
   | {ok: true; data: CreateRecordingSuccessResponse}

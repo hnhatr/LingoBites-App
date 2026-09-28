@@ -1,7 +1,7 @@
 import React from 'react';
 import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {ScreenHeader} from '../ScreenHeader';
 

@@ -1,7 +1,7 @@
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '@shared/db/constants';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {
   deleteYouTubeLesson,
@@ -9,7 +9,7 @@ import {
   listYouTubeLessons,
   saveYouTubeLesson,
 } from '../YouTubeLessonRepository';
-import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
+import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
 
 const transcript: YouTubeTranscript = {
   schema_version: 'youtube-transcript-v1',

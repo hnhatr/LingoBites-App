@@ -12,7 +12,7 @@ import {
   getLessonChunks,
   listActivePackageLessons,
 } from '@features/lesson/packages';
-import type {SpeakingMode} from '@shared/db/types';
+import type {SpeakingMode} from '@core/db/types';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
 export type SpeakingModeInfo = {

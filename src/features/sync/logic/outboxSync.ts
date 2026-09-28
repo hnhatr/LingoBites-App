@@ -13,20 +13,17 @@ import type {
   PracticeEventPayload,
   ReviewEventPayload,
   SyncOutboxRecord,
-} from '@shared/db/types';
-import {PRACTICE_EVENT_TYPE, REVIEW_EVENT_TYPE} from '@shared/db/types';
+} from '@core/db/types';
+import {PRACTICE_EVENT_TYPE, REVIEW_EVENT_TYPE} from '@core/db/types';
 import {pushReviewEvents, type SyncReviewEvent} from '@features/review';
 import {MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';
 import {syncPush} from './syncClient';
-import {
-  SyncCollectionSchema,
-  type SyncPushMutation,
-} from '@shared/schemas/sync';
+import {SyncCollectionSchema, type SyncPushMutation} from '@core/schemas/sync';
 import {
   beginSyncDrainOwnership,
   endSyncDrainOwnership,
   SYNC_OWNERSHIP_CHANGED,
-} from '@shared/sync/syncDrainOwnership';
+} from '@core/sync/syncDrainOwnership';
 
 export type SyncDrainOutcome =
   | {status: 'idle'}

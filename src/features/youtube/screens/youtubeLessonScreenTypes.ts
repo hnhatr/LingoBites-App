@@ -2,7 +2,7 @@ import type {
   YouTubeSegment,
   YouTubeTranscript,
 } from '../logic/youtubeTranscriptPort';
-import type {SentenceEnrichment} from '@shared/schemas/sentence-contract';
+import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
 import type {RetryBlockFn} from '../logic/sentence/useSentenceEnrichment';
 
 export type YouTubeLessonScreenProps = {

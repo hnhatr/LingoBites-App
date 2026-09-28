@@ -1,4 +1,4 @@
-import type {GamificationEventRecord, ReviewRating} from '@shared/db/types';
+import type {GamificationEventRecord, ReviewRating} from '@core/db/types';
 
 /**
  * Event-driven engagement derivation (REQ-11 / ADR-4, SETE-89).

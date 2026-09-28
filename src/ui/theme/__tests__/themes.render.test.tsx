@@ -4,7 +4,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
 import {AppThemeProvider} from '../ThemeProvider';
 import {themeList} from '../themeRegistry';

@@ -1,4 +1,4 @@
-import {getDatabase, withTransaction} from '@shared/db/database';
+import {getDatabase, withTransaction} from '@core/db/database';
 import type {
   PracticeSet,
   PracticeQuestion,
@@ -6,10 +6,10 @@ import type {
   AnswerEvent,
   MeaningChoice,
   ClozeChoice,
-} from '@shared/schemas/practice';
-import {PRACTICE_RETENTION} from '@shared/db/constants';
-import {PRACTICE_EVENT_TYPE} from '@shared/db/types';
-import type {PracticeEventPayload} from '@shared/db/types';
+} from '@core/schemas/practice';
+import {PRACTICE_RETENTION} from '@core/db/constants';
+import {PRACTICE_EVENT_TYPE} from '@core/db/types';
+import type {PracticeEventPayload} from '@core/db/types';
 
 function parseJson<T>(value: string | null | undefined): T | undefined {
   if (!value) return undefined;

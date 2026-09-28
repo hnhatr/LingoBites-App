@@ -7,8 +7,8 @@ import * as analyticsRepository from '@features/analytics/logic/data/PilotMetric
 import * as engagementRepository from '@features/engagement/logic/data/GamificationRepository';
 import * as legacyGamificationRepository from '@features/engagement/logic/data/GamificationRepository';
 import * as legacyPilotMetricsRepository from '@features/analytics/logic/data/PilotMetricsRepository';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,

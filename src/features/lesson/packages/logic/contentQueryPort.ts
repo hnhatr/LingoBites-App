@@ -24,7 +24,7 @@ export type {
   ContentLessonState,
   SaveContentLessonInput,
   SaveContentLessonResult,
-} from '@shared/db/types';
+} from '@core/db/types';
 export {
   getContentLessonById,
   getDueContentReviewItems,

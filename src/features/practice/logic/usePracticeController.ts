@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {createRequestId} from '@shared/api/requestId';
+import {createRequestId} from '@core/api/requestId';
 import {
   findLatestPracticeSetForLesson,
   findLatestSessionForLesson,

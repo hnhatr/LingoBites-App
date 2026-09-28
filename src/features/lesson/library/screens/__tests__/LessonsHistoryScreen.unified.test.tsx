@@ -1,7 +1,7 @@
-import * as AuthSession from '@shared/auth/authSession';
+import * as AuthSession from '@core/auth/authSession';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 

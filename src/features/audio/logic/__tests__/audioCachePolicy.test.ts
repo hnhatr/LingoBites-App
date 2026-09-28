@@ -8,7 +8,7 @@ import {
   selectStaleChapters,
   summarizeReadyAssets,
 } from '../audioCachePolicy';
-import type {AudioAssetRecord, ChapterAudioSummary} from '@shared/db/types';
+import type {AudioAssetRecord, ChapterAudioSummary} from '@core/db/types';
 
 const NOW = '2026-09-01T00:00:00.000Z';
 

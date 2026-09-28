@@ -1,7 +1,7 @@
 import React from 'react';
 import {Image, Text, TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {OCRReviewScreen} from '../OCRReviewScreen';
 

@@ -11,7 +11,7 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useTranslation} from 'react-i18next';
 import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import type {PracticeQuestion as LegacyPracticeQuestion} from '../logic/practiceQuestion';
-import type {PracticeQuestion, ResultSummary} from '@shared/schemas/practice';
+import type {PracticeQuestion, ResultSummary} from '@core/schemas/practice';
 import {useQuiz} from '../logic/useQuiz';
 import {hasInvalidMetaOptions} from '../logic/quizEngine';
 import {usePracticeSessionScreen} from '../logic/usePracticeSessionScreen';

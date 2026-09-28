@@ -7,7 +7,7 @@ import {
   selectStaleChapters,
   selectChaptersToEvict,
 } from './audioCachePolicy';
-import type {ChapterAudioAsset} from '@shared/db/types';
+import type {ChapterAudioAsset} from '@core/db/types';
 import type {ChapterAudioManifestResult} from './audioManifestClient';
 
 /**

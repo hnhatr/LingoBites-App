@@ -12,7 +12,7 @@ import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {useAppTheme, type AppTheme} from '@ui/theme/index';
-import type {YouTubeSegment} from '@shared/schemas/youtube-transcript-v1';
+import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
 import {
   formatYouTubePlaybackRate,
   YOUTUBE_PLAYBACK_RATES,

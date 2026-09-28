@@ -5,8 +5,8 @@
  */
 
 import {z} from 'zod';
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
-import {getAppConfig} from '@shared/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {getAppConfig} from '@core/api/appConfig';
 import type {
   LearningClientError,
   LearningClientOptions,

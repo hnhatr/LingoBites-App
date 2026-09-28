@@ -4,7 +4,7 @@ import type {
   YouTubeLessonRouteParams,
 } from '@features/youtube';
 import type {OCRReviewRouteParams} from '@features/ocr';
-import type {OCRSourceType} from '@shared/api/types';
+import type {OCRSourceType} from '@core/api/types';
 import type {LearningDetailParamList} from '@features/home';
 
 export type CreateMainRouteParams = undefined;

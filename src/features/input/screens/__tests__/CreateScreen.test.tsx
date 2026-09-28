@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
-import type {ReleaseConfig} from '@/release/types';
+import {FeatureFlagProvider} from '@core/release/index';
+import type {ReleaseConfig} from '@core/release/types';
 import {
   ALL_IMPLEMENTED_FEATURES,
   CORE_WITH_REVIEW,
@@ -15,7 +15,7 @@ const mockUseYouTubeServerEnabled = jest.fn();
 
 // SETE-290: the creation tile needs the server capability too — control it
 // here so tile tests stay deterministic without network.
-jest.mock('@shared/api/youtubeCapabilities', () => ({
+jest.mock('@core/api/youtubeCapabilities', () => ({
   useYouTubeServerEnabled: (...args: unknown[]) =>
     mockUseYouTubeServerEnabled(...args),
 }));

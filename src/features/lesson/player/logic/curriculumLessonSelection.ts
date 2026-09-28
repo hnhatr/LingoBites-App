@@ -10,8 +10,8 @@
  * selectable `lessonId` for the `CurriculumLesson` route. Nothing here is
  * persisted and no Lesson V2 symbol is touched (AD-005).
  */
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
-import {getAppConfig} from '@shared/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {getAppConfig} from '@core/api/appConfig';
 import {z} from 'zod';
 
 const COURSES_PATH = '/v1/courses';

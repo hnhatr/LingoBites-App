@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import {
   insertSpeakingRecording,
   listSpeakingRecordings,

@@ -2,9 +2,9 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {validFullOutput} from '@shared/fixtures';
-import {resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import {validFullOutput} from '@core/fixtures/index';
+import {resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
 import {
   recordFlashcardRating,
@@ -14,7 +14,7 @@ import {
   getAnswerEvents,
   savePracticeSet,
 } from '@features/practice/logic/data/PracticeRepository';
-import type {PracticeSet} from '@shared/schemas/practice';
+import type {PracticeSet} from '@core/schemas/practice';
 import {
   answerCurrentQuestion,
   createSession,

@@ -1,4 +1,4 @@
-import * as AuthSession from '@shared/auth/authSession';
+import * as AuthSession from '@core/auth/authSession';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {

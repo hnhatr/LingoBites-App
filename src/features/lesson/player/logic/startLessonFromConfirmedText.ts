@@ -1,5 +1,5 @@
-import type {AnalyzeSourceType} from '@shared/api/types';
-import {validateLessonV2InputText} from '@shared/utils/textValidation';
+import type {AnalyzeSourceType} from '@core/api/types';
+import {validateLessonV2InputText} from '@core/utils/textValidation';
 
 export type LessonDestination = 'unified_lesson';
 

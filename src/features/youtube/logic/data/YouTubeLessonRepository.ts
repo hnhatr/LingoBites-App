@@ -2,10 +2,10 @@ import {
   YouTubeTranscriptSchema,
   type YouTubeSegment,
   type YouTubeTranscript,
-} from '@shared/schemas/youtube-transcript-v1';
-import {getDatabase, withTransaction} from '@shared/db/database';
-import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
-import {createRequestId} from '@shared/api/requestId';
+} from '@core/schemas/youtube-transcript-v1';
+import {getDatabase, withTransaction} from '@core/db/database';
+import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
+import {createRequestId} from '@core/api/requestId';
 
 type YouTubeLessonRow = {
   id: string;

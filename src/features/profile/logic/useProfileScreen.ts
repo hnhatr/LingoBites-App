@@ -2,7 +2,7 @@ import {useCallback, useRef, useState} from 'react';
 import {Alert, Linking} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {getSupportEmail} from '@shared/api/appConfig';
+import {getSupportEmail} from '@core/api/appConfig';
 import {
   formatCacheBytes,
   playReadyChapterAudio,
@@ -17,7 +17,7 @@ import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
 } from '@features/profile/logic/LocalDataDeletionService';
-import {useFeatureFlags} from '@/release';
+import {useFeatureFlags} from '@core/release/index';
 import {formatProfileAccuracy, formatProfileWordCount} from './profileMetrics';
 import {useProgressReport} from './useProgressReport';
 import {useAccountStore} from '@features/account';

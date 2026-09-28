@@ -1,4 +1,4 @@
-import type {FeatureKey} from '../../release/feature-registry';
+import type {FeatureKey} from '@core/release/feature-registry';
 import {cartoonTheme} from './themes/cartoon';
 import {comicTheme} from './themes/comic';
 import {coreTheme} from './themes/core';

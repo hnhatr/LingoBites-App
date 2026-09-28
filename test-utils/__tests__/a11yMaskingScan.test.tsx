@@ -26,7 +26,7 @@ import {FlipCard} from '../../src/ui/components/FlipCard';
 import {ProfileSettingsRow} from '../../src/ui/components/ProfileSettingsRow';
 import {RatingControl} from '../../src/ui/components/RatingControl';
 import {AppThemeProvider} from '../../src/ui/theme';
-import {FeatureFlagProvider} from '../../src/release';
+import {FeatureFlagProvider} from '../../src/core/release';
 import {Text} from 'react-native';
 import {findMaskedContent, warnOnMaskedContent} from '../a11yTestUtils';
 

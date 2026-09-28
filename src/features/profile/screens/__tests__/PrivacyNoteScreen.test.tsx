@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
-import i18n from '@/i18n';
+import i18n from '@core/i18n/index';
 import {PrivacyNoteScreen} from '../PrivacyNoteScreen';
 
 describe('PrivacyNoteScreen', () => {

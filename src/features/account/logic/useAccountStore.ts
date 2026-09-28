@@ -13,8 +13,8 @@ import {
   type AccountSwitchConfirmation,
   type AuthUser,
   type BootResult,
-} from '@shared/auth';
-import {clearAllSessions, getActiveSession} from '@shared/auth/sessionStore';
+} from '@core/auth/index';
+import {clearAllSessions, getActiveSession} from '@core/auth/sessionStore';
 
 /**
  * Account bootstrap state for navigation gating (SETE-303 / T6).

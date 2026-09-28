@@ -1,10 +1,10 @@
-import {createRequestId} from '@shared/api/requestId';
-import {getDatabase, withTransaction} from '@shared/db/database';
-import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
+import {createRequestId} from '@core/api/requestId';
+import {getDatabase, withTransaction} from '@core/db/database';
+import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import type {
   GamificationEventInput,
   GamificationEventRecord,
-} from '@shared/db/types';
+} from '@core/db/types';
 
 type GamificationEventRow = {
   id: string;

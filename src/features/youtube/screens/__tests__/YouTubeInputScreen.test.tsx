@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {Keyboard, LayoutAnimation, View} from 'react-native';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';

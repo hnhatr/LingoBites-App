@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
 import {AppThemeProvider, useAppTheme, type AppTheme} from '@ui/theme/index';
 import {QuizOption} from '../QuizOption';

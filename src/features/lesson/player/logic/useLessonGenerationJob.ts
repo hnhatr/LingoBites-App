@@ -18,7 +18,7 @@
  * server-enforced.
  */
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {createRequestId} from '@shared/api/requestId';
+import {createRequestId} from '@core/api/requestId';
 import {
   fetchLessonGenerationJob,
   isLessonGenerationTerminal,

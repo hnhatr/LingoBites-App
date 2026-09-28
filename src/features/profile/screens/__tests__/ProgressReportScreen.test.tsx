@@ -1,10 +1,10 @@
 import React from 'react';
 import {Alert, Text} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {ProgressReportScreen} from '../ProgressReportScreen';
-import {clearAllLocalDatabaseRows} from '@shared/db/localDataWipe';
+import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 
 const mockGoBack = jest.fn();
 

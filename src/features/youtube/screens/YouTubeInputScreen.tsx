@@ -25,7 +25,7 @@ import {TextField} from '@ui/components/TextField';
 import {
   YOUTUBE_MAX_DURATION_SECONDS,
   YOUTUBE_MAX_SEGMENTS,
-} from '@shared/schemas/youtube-transcript-v1';
+} from '@core/schemas/youtube-transcript-v1';
 import {parseYouTubeVideoId} from '../logic/api/youtubeApi';
 import {parseManualTranscript} from '../logic/transcript/parser';
 import {ensureYouTubeDisclosureAcknowledged} from '../logic/utils/youtubeDisclosure';
@@ -352,7 +352,7 @@ export function YouTubeInputScreen({navigation, route}: Props) {
     }
     const trimmedTranscript = transcript.trim();
     let manualCues:
-      | import('@shared/schemas/youtube-transcript-v1').RawCue[]
+      | import('@core/schemas/youtube-transcript-v1').RawCue[]
       | undefined;
     if (trimmedTranscript) {
       try {

@@ -1,8 +1,8 @@
 import {open} from 'react-native-quick-sqlite';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '@shared/db/constants';
-import {runMigrations} from '@shared/db/migrations';
-import {resetDatabaseForTests, getDatabase} from '@shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {runMigrations} from '@core/db/migrations';
+import {resetDatabaseForTests, getDatabase} from '@core/db/database';
 import {
   findActiveSessionLocally,
   findReusablePracticeSetLocally,
@@ -13,9 +13,9 @@ import {
   savePracticeSet,
 } from '../data/PracticeRepository';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import type {PracticeSet} from '@shared/schemas/practice';
-import * as TokenStore from '@shared/security/lessonTokenStore';
-import {getPracticeSetApi} from '@shared/api/practiceClient';
+import type {PracticeSet} from '@core/schemas/practice';
+import * as TokenStore from '@core/security/lessonTokenStore';
+import {getPracticeSetApi} from '@core/api/practiceClient';
 import {
   answerCurrentQuestion,
   createSession,

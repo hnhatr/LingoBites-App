@@ -2,15 +2,15 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '@shared/db/constants';
-import {runMigrations} from '@shared/db/migrations';
-import {resetDatabaseForTests} from '@shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {runMigrations} from '@core/db/migrations';
+import {resetDatabaseForTests} from '@core/db/database';
 import {
   savePracticeSet,
   savePracticeSession,
 } from '../../logic/data/PracticeRepository';
-import type {PracticeSet} from '@shared/schemas/practice';
-import {FeatureFlagProvider} from '@/release';
+import type {PracticeSet} from '@core/schemas/practice';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {PracticeScreen} from '../PracticeScreen';
 

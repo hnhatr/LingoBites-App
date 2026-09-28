@@ -1,11 +1,8 @@
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
 import {insertPendingChapterAudioAsset} from '@features/audio/logic/data/AudioAssetRepository';
-import type {AuthSession} from '@shared/auth/authTypes';
-import {
-  getActiveSessionId,
-  setActiveSessionId,
-} from '@shared/auth/sessionStore';
+import type {AuthSession} from '@core/auth/authTypes';
+import {getActiveSessionId, setActiveSessionId} from '@core/auth/sessionStore';
 import {
   P2_SESSION_A,
   P2_USER_A,

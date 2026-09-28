@@ -17,7 +17,7 @@ import {View} from 'react-native';
 import {shouldShowMiniPlayer} from './utils/sentenceSeek';
 import type {SentenceCarouselRef} from '../components/SentenceCarousel';
 import type {SentenceCardSegment} from '../components/SentenceCard';
-import type {GrammarPoint, VocabEntry} from '@shared/schemas/sentence-contract';
+import type {GrammarPoint, VocabEntry} from '@core/schemas/sentence-contract';
 import {useLessonEnrichment} from './sentence/useLessonEnrichment';
 import {speak} from '@features/audio';
 import {

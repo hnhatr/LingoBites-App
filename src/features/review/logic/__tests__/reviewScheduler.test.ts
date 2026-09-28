@@ -4,7 +4,7 @@ import {
   calculateNextReviewState,
   selectDueReviewCards,
 } from '../reviewScheduler';
-import type {ReviewScheduleRecord} from '@shared/db/types';
+import type {ReviewScheduleRecord} from '@core/db/types';
 
 function schedule(
   overrides: Partial<ReviewScheduleRecord>,

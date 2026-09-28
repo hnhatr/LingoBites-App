@@ -18,7 +18,7 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import {Platform} from 'react-native';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
-import type {SpeakingMode} from '@shared/db/types';
+import type {SpeakingMode} from '@core/db/types';
 
 function nativeFsAvailable(): boolean {
   return (

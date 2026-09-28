@@ -16,7 +16,7 @@ import {TextField} from '@ui/components/TextField';
 import {useTranslation} from 'react-i18next';
 import {useAppTheme} from '@ui/theme/index';
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
-import {validateConfirmedText} from '@shared/utils/textValidation';
+import {validateConfirmedText} from '@core/utils/textValidation';
 import {startLessonFromConfirmedText} from '@features/lesson/player';
 import {createLessonGenerationJob} from '@features/lesson/player';
 import {useFloatingTabBarClearance} from '@ui/components/layout/index';

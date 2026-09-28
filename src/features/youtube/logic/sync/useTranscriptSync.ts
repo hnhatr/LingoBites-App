@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import type {YouTubeSegment} from '../../../../shared/schemas/youtube-transcript-v1';
+import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
 
 export const TRANSCRIPT_SYNC_POLL_INTERVAL_MS = 250;
 // SETE-318: upper bound for one getCurrentTime round trip. The iframe

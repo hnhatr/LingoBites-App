@@ -5,8 +5,8 @@ import {
   getDatabase,
   resetDatabaseForTests,
   withTransaction,
-} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import * as legacyLessonState from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import * as legacyPackage from '@features/lesson/packages/logic/data/ContentPackageRepository';
 import * as legacyRuntime from '@features/lesson/packages/logic/data/ContentRuntimeRepository';

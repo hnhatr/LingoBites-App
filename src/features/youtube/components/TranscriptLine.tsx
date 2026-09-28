@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {useAppTheme, type AppTheme} from '@ui/theme/index';
-import type {YouTubeSegment} from '@shared/schemas/youtube-transcript-v1';
+import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
 
 export type TranscriptLineProps = {
   segment: YouTubeSegment;

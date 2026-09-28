@@ -10,8 +10,8 @@
  * No local persistence of any kind: this module imports no repository,
  * storage, or database code, and never writes responses anywhere.
  */
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
-import {getAppConfig} from '@shared/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {getAppConfig} from '@core/api/appConfig';
 import {
   CurriculumLessonErrorResponseSchema,
   parseCurriculumLessonAggregateResponse,

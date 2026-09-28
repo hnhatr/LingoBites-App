@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import * as legacyAudioRepository from '@features/audio/logic/data/AudioAssetRepository';
 import * as legacySpeakingRepository from '@features/speaking/logic/data/SpeakingRepository';
 import * as legacyRecordingClient from '@features/speaking/logic/api/recordingClient';
@@ -15,7 +15,7 @@ import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
 } from '@features/profile/logic/LocalDataDeletionService';
-import type {FileDeleter} from '@shared/localData/types';
+import type {FileDeleter} from '@core/localData/types';
 import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,

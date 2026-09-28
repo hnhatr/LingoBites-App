@@ -1,13 +1,13 @@
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import {
   listPendingSyncEvents,
   markSyncEventsFailed,
 } from '../adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '../outboxSync';
 import {applySyncRecord} from '../pullWorker';
-import {SyncCollectionSchema} from '@shared/schemas/sync';
+import {SyncCollectionSchema} from '@core/schemas/sync';
 import {getGrammarBookmark} from '@features/review/logic/GrammarBookmarkRepository';
 import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 

@@ -5,7 +5,7 @@ import {
   resolveKeyword,
   resolveVocab,
 } from '../sentencePipeline';
-import type {SentenceEnrichment} from '@shared/schemas/sentence-contract';
+import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
 
 function makeEnrichment(
   overrides: Partial<SentenceEnrichment> = {},

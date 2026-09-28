@@ -1,6 +1,6 @@
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '@shared/db/constants';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 
 /**
  * Drops in-memory DB handles and reopens the same on-disk (mock-keyed) database,

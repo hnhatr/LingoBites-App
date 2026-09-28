@@ -1,5 +1,5 @@
 import {listAudioAssetLocalPaths} from '@features/audio';
-import {clearAllLocalDatabaseRows} from '@shared/db/localDataWipe';
+import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 import {
   clearSpeakingData,
   listSpeakingRecordingFilePaths,
@@ -7,11 +7,8 @@ import {
 import {
   defaultFileDeleter,
   deleteLocalFiles,
-} from '../../../shared/localData/localFileCleanup';
-import type {
-  FileDeleter,
-  LocalDataDeletionResult,
-} from '../../../shared/localData/types';
+} from '@core/localData/localFileCleanup';
+import type {FileDeleter, LocalDataDeletionResult} from '@core/localData/types';
 
 type LocalDataDeletionOptions = {
   fileDeleter?: FileDeleter;

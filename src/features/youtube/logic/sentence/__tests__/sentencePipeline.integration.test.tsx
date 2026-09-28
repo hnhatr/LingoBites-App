@@ -1,12 +1,12 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {AppText} from '@ui/components/AppText';
 import {
   isPublishable,
   type LessonPayloadV1,
-} from '@shared/schemas/sentence-contract';
+} from '@core/schemas/sentence-contract';
 import {SentenceCard} from '../../../components/SentenceCard';
 import type {RetryBlockFn} from '../useSentenceEnrichment';
 import {

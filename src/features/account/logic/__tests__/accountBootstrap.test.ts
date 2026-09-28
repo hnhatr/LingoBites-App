@@ -8,23 +8,20 @@ jest.mock('../../../profile/logic/legacyClear', () => ({
 }));
 import {open} from 'react-native-quick-sqlite';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '../../../../shared/db/constants';
-import {
-  getDatabase,
-  resetDatabaseForTests,
-} from '../../../../shared/db/database';
-import {hasInstallMarker} from '../../../../shared/db/installMarker';
-import * as DeviceIdentityNative from '../../../../shared/identity/deviceIdentityNative';
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {hasInstallMarker} from '@core/db/installMarker';
+import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {
   bootAccount,
   resetBootStateForTests,
   SIGNUP_IDEMPOTENCY_KEY,
   submitOnboardingName,
 } from '../accountBootstrap';
-import * as authSession from '../../../../shared/auth/authSession';
-import {resetRefreshStateForTests} from '../../../../shared/auth/authSession';
-import {getActiveSession} from '../../../../shared/auth/sessionStore';
-import type {AuthSession, AuthUser} from '../../../../shared/auth/authTypes';
+import * as authSession from '@core/auth/authSession';
+import {resetRefreshStateForTests} from '@core/auth/authSession';
+import {getActiveSession} from '@core/auth/sessionStore';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {
   installKeychainVault,
   vault,

@@ -1,7 +1,7 @@
 import React from 'react';
 import {TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {AccountProfileSection} from '../AccountProfileSection';
 import {
@@ -9,7 +9,7 @@ import {
   useAccountStore,
 } from '../../logic/useAccountStore';
 import * as accountProfile from '../../logic/accountProfile';
-import type {AuthUser} from '@shared/auth';
+import type {AuthUser} from '@core/auth/index';
 
 const user: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

@@ -7,7 +7,7 @@
  */
 
 import {listErrorEvents, listSpeakingRecordings} from '@features/speaking';
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 
 export type CapabilityProgressReport = {
   sentencesSpokenWithoutLookingCount: number;

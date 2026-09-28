@@ -1,4 +1,4 @@
-import * as AuthSession from '@shared/auth/authSession';
+import * as AuthSession from '@core/auth/authSession';
 import {fetchReview} from '../learningReviewClient';
 import reviewFixture from './fixtures/review-response.json';
 

@@ -8,7 +8,7 @@ import {
   tokenizeSentenceWords,
   wordSaveKey,
 } from '../sentenceWordSelection';
-import type {VocabEntry} from '@shared/schemas/sentence-contract';
+import type {VocabEntry} from '@core/schemas/sentence-contract';
 
 const VOCAB: VocabEntry[] = [
   {

@@ -5,7 +5,7 @@ import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {useAppTheme} from '@ui/theme/index';
 import type {AppTheme} from '@ui/theme/types';
-import type {GrammarBookmark} from '@/shared/db/types';
+import type {GrammarBookmark} from '@core/db/types';
 
 export interface GrammarRowCardProps {
   grammar: GrammarBookmark & {title?: string; content?: string};

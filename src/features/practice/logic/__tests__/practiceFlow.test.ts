@@ -2,7 +2,7 @@ import {preparePracticeSet, hashPracticeConfig} from '../practiceFlow';
 import {
   createPracticeSetApi,
   getPracticeSetApi,
-} from '../../../../shared/api/practiceClient';
+} from '@core/api/practiceClient';
 import {
   findActiveSessionLocally,
   findReusablePracticeSetLocally,
@@ -10,7 +10,7 @@ import {
   savePracticeSet,
 } from '../data/PracticeRepository';
 
-jest.mock('../../../../shared/api/practiceClient');
+jest.mock('@core/api/practiceClient');
 jest.mock('../data/PracticeRepository');
 
 const mockCreateApi = createPracticeSetApi as jest.Mock;

@@ -1,4 +1,4 @@
-import type {ReviewScheduleRecord} from '@shared/db/types';
+import type {ReviewScheduleRecord} from '@core/db/types';
 import {
   DEFAULT_REVIEW_INTERVAL_DAYS,
   FIXED_INTERVAL_DAYS,

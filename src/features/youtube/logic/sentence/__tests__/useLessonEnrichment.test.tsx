@@ -13,7 +13,7 @@ import {
   makeSegment,
   VIDEO_ID,
 } from './fixtures/sentenceFixtures';
-import type {SentenceEnrichment} from '@shared/schemas/sentence-contract';
+import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
 
 jest.mock('../../api/sentenceEnrichmentApi', () => ({
   fetchLessonEnrichment: jest.fn(),

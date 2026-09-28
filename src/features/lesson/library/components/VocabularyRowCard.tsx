@@ -5,7 +5,7 @@ import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {useAppTheme} from '@ui/theme/index';
 import type {AppTheme} from '@ui/theme/types';
-import type {FlashcardRecord} from '@/shared/db/types';
+import type {FlashcardRecord} from '@core/db/types';
 
 export interface VocabularyRowCardProps {
   flashcard: FlashcardRecord;

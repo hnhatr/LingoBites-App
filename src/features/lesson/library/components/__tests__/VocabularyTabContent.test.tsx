@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {AppThemeProvider} from '@ui/theme/index';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {VocabularyTabContent} from '../VocabularyTabContent';
-import type {FlashcardRecord} from '@/shared/db/types';
+import type {FlashcardRecord} from '@core/db/types';
 
 // Mock navigation
 const mockNavigate = jest.fn();

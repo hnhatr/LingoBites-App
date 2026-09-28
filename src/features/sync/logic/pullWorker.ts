@@ -1,7 +1,7 @@
 import {AppState, type AppStateStatus} from 'react-native';
 import {syncPull} from './syncClient';
-import {getDatabase, withTransaction} from '@shared/db/database';
-import type {SyncRecord} from '@shared/schemas/sync';
+import {getDatabase, withTransaction} from '@core/db/database';
+import type {SyncRecord} from '@core/schemas/sync';
 
 let isRunning = false;
 let isEnabled = false;

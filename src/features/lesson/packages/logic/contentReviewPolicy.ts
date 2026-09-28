@@ -14,7 +14,7 @@
  * REQ-24/VC-5 the scheduling math below never branches on it.
  */
 
-import type {ContentMasteryState} from '../../../../shared/content/contracts';
+import type {ContentMasteryState} from '@core/contracts/contentContracts';
 
 export type {ContentMasteryState};
 

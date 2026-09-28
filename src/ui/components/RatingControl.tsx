@@ -5,7 +5,7 @@ import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
 import {useAppTheme} from '../theme';
 import type {AppTheme} from '../theme';
-import type {ReviewRating} from '../../shared/db/types';
+import type {ReviewRating} from '@core/db/types';
 
 type Props = {
   onRate: (rating: ReviewRating) => void;

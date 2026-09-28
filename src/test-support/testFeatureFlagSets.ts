@@ -1,4 +1,4 @@
-import type {FeatureKey} from '@/release/feature-registry';
+import type {FeatureKey} from '@core/release/feature-registry';
 
 /** Paste / OCR pipeline plus short practice. */
 export const MT_CORE_INGESTION: Partial<Record<FeatureKey, boolean>> = {

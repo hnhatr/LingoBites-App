@@ -1,7 +1,7 @@
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {resetDatabaseForTests} from '@shared/db/database';
+import {resetDatabaseForTests} from '@core/db/database';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '@shared/db/constants';
+import {DB_NAME} from '@core/db/constants';
 import {
   insertSpeakingRecording,
   listSpeakingRecordings,
@@ -15,7 +15,7 @@ import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
 } from '../LocalDataDeletionService';
-import * as LocalDataWipe from '@shared/db/localDataWipe';
+import * as LocalDataWipe from '@core/db/localDataWipe';
 import * as SpeakingRepository from '../../../speaking/logic/data/SpeakingRepository';
 
 describe('LocalDataDeletionService', () => {

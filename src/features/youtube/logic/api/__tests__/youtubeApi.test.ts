@@ -1,9 +1,9 @@
-import i18n from '@/i18n';
+import i18n from '@core/i18n/index';
 import {
   persistNewSession,
   resetRefreshStateForTests,
-} from '../../../../../shared/auth/authSession';
-import type {AuthSession, AuthUser} from '../../../../../shared/auth/authTypes';
+} from '@core/auth/authSession';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {installKeychainVault} from '../../../../../test-support/keychainVault';
 import {parseYouTubeVideoId, runYouTubeJob} from '../youtubeApi';
 

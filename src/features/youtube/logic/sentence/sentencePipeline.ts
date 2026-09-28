@@ -2,7 +2,7 @@ import {
   pickKeyword,
   type SentenceEnrichment,
   type VocabEntry,
-} from '@shared/schemas/sentence-contract';
+} from '@core/schemas/sentence-contract';
 
 /**
  * SETE-329 (TASK-2, Stage 1): client pipeline for one sentence card.

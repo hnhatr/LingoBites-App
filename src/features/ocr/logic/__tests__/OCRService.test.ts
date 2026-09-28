@@ -1,6 +1,6 @@
 import {extractText} from '../OCRService';
 
-jest.mock('@shared/api/appConfig', () => ({
+jest.mock('@core/api/appConfig', () => ({
   getAppConfig: () => ({
     apiBaseUrl: 'http://localhost:3001',
     useMockAi: true,

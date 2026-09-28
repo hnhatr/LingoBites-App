@@ -1,7 +1,7 @@
 import React from 'react';
 import {Pressable, StyleSheet, TextInput} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
 import {AppThemeProvider} from '@ui/theme/index';
 import {AppButton} from '../AppButton';

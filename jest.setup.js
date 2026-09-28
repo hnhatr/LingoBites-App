@@ -1,8 +1,8 @@
 import {jest} from '@jest/globals';
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
-import vi from './src/i18n/vi.json';
-import en from './src/i18n/en.json';
+import vi from './src/core/i18n/vi.json';
+import en from './src/core/i18n/en.json';
 
 // Initialise a real i18next instance so that useTranslation() in components
 // resolves to the actual Vietnamese strings that existing tests assert on.

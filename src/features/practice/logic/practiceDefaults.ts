@@ -1,4 +1,4 @@
-import type {PracticeConfigInput} from '@shared/api/practiceClient';
+import type {PracticeConfigInput} from '@core/api/practiceClient';
 
 export const DEFAULT_PRACTICE_QUESTION_COUNT = 10;
 

@@ -5,7 +5,7 @@ import {
   useContentLibrary,
 } from '@features/lesson/packages';
 import {listAllBookmarkedGrammar, listFlashcards} from '@features/review';
-import type {FlashcardRecord, GrammarBookmark} from '@shared/db/types';
+import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
 import type {LibraryLessonCardView} from '@features/lesson/library/logic/lesson';
 
 export interface SegmentFilterState {

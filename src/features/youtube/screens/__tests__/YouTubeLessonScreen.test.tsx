@@ -2,18 +2,18 @@ import React from 'react';
 import renderer, {act} from 'react-test-renderer';
 import {Alert} from 'react-native';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {DB_NAME} from '@shared/db/constants';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import {
   getYouTubeProgress,
   saveYouTubeProgress,
 } from '../../logic/youtubeQueryPort';
 import {saveYouTubeLesson} from '../../logic/youtubeQueryPort';
-import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
+import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   YouTubeLessonRouteScreen,

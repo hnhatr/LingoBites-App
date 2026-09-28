@@ -1,8 +1,8 @@
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
-import i18n from '@/i18n';
-import type {PracticeEventPayload} from '@shared/db/types';
-import {PRACTICE_CONTRACT_VERSION} from '@shared/schemas/practice';
-import {getAppConfig} from '@shared/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import i18n from '@core/i18n/index';
+import type {PracticeEventPayload} from '@core/db/types';
+import {PRACTICE_CONTRACT_VERSION} from '@core/schemas/practice';
+import {getAppConfig} from '@core/api/appConfig';
 
 /**
  * Wire envelope of one practice outbox row, as POSTed to

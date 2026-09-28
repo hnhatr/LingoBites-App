@@ -3,7 +3,7 @@ import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {FlipCard} from '../FlipCard';
 import {AppThemeProvider} from '@ui/theme/index';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {
   findMaskedContent,
   getAnnouncedText,

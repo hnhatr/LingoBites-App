@@ -1,5 +1,5 @@
-import {validFullOutput} from '@shared/fixtures';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {validFullOutput} from '@core/fixtures/index';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {
   getYouTubeProgress,
   saveYouTubeProgress,
@@ -7,28 +7,28 @@ import {
 import {recordFlashcardRating, saveFlashcard} from '@features/review';
 import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import * as DeviceIdentityNative from '@shared/identity/deviceIdentityNative';
+import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '@features/account/logic/useAccountStore';
 import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
-import {resetRefreshStateForTests} from '@shared/auth/authSession';
+import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {
   resetAccountSwitchCoordinatorForTests,
   stageAccountSwitchAttempt,
-} from '@shared/auth/accountSwitchCoordinator';
+} from '@core/auth/accountSwitchCoordinator';
 import {
   getActiveSessionId,
   saveSession,
   setActiveSessionId,
-} from '@shared/auth/sessionStore';
+} from '@core/auth/sessionStore';
 import {installKeychainVault} from '@/test-support/keychainVault';
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@/test-support/adversarial/realSqlite';
-import type {AuthSession, AuthUser} from '@shared/auth/authTypes';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 
 export const P2_USER_A: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

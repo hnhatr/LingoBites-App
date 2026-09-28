@@ -5,7 +5,7 @@ import {
   isIngestionRouteEnabled,
 } from '@/app/navigation/ingestionRouteGate';
 import {getRootStackRouteNames} from '@/app/navigation/rootStackRoutes';
-import type {FeatureKey} from '@/release/feature-registry';
+import type {FeatureKey} from '@core/release/feature-registry';
 
 export type NavigationMountSnapshot = {
   accountPhase: AccountPhase;

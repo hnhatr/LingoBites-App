@@ -1,9 +1,9 @@
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 import type {
   SyncOutboxPayload,
   SyncOutboxRecord,
   SyncOutboxRow,
-} from '@shared/db/types';
+} from '@core/db/types';
 
 type PendingOptions = {
   limit?: number;

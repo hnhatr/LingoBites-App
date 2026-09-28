@@ -1,10 +1,7 @@
 import {open} from 'react-native-quick-sqlite';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '../../../../shared/db/constants';
-import {
-  getDatabase,
-  resetDatabaseForTests,
-} from '../../../../shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {
   CANONICAL_LEGACY_CLEAR_MARKER,
   CANONICAL_LEGACY_TABLES_TO_DROP,
@@ -12,12 +9,12 @@ import {
   executeLegacyClear,
   executeCanonicalLegacyClear,
 } from '../legacyClear';
-import {clearLessonTokens} from '../../../../shared/security/lessonTokenStore';
-import {deleteLocalFiles} from '../../../../shared/localData/localFileCleanup';
+import {clearLessonTokens} from '@core/security/lessonTokenStore';
+import {deleteLocalFiles} from '@core/localData/localFileCleanup';
 import {listSpeakingRecordingFilePaths} from '../../../speaking/logic/data/SpeakingRepository';
 
-jest.mock('../../../../shared/security/lessonTokenStore');
-jest.mock('../../../../shared/localData/localFileCleanup');
+jest.mock('@core/security/lessonTokenStore');
+jest.mock('@core/localData/localFileCleanup');
 jest.mock('../../../speaking/logic/data/SpeakingRepository', () => ({
   listSpeakingRecordingFilePaths: jest.fn(),
 }));

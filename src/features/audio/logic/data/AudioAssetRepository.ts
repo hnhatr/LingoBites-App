@@ -1,9 +1,9 @@
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 import type {
   AudioAssetRecord,
   AudioCacheStats,
   ChapterAudioAsset,
-} from '@shared/db/types';
+} from '@core/db/types';
 
 export const AUDIO_STATUS = {
   PENDING: 'pending',

@@ -10,8 +10,8 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 import {useTranslation} from 'react-i18next';
-import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
-import {useFeatureFlags} from '@/release';
+import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
+import {useFeatureFlags} from '@core/release/index';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'CreateMain'>;
 

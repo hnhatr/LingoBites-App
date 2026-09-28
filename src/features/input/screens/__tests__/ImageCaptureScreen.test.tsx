@@ -1,7 +1,7 @@
 import React from 'react';
 import {Image, Text} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {extractText} from '../../../ocr';
 import {pickImageFromGallery} from '../../logic/imagePicker';

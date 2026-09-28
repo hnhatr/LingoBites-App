@@ -21,7 +21,7 @@ import type {
   GrammarPoint,
   SentenceEnrichment,
   VocabEntry,
-} from '@shared/schemas/sentence-contract';
+} from '@core/schemas/sentence-contract';
 import {
   useSentenceEnrichment,
   type RetryBlockFn,

@@ -1,8 +1,8 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
-import type {YouTubeSegment} from '@shared/schemas/youtube-transcript-v1';
+import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
 import {TranscriptLine} from '../TranscriptLine';
 import {YouTubeTranscriptPopup} from '../YouTubeTranscriptPopup';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, TextInput} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {themes} from '@ui/theme/themeRegistry';
 import {THEME_STORAGE_KEY} from '@ui/theme/themeStorage';

@@ -1,4 +1,4 @@
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 
 export type YouTubeProgress = {
   lessonId: string;

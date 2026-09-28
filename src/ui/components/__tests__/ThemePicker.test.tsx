@@ -1,8 +1,8 @@
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@/release';
-import type {ReleaseConfig} from '@/release/types';
+import {FeatureFlagProvider} from '@core/release/index';
+import type {ReleaseConfig} from '@core/release/types';
 import {
   CORE_BETA_WITHOUT_REVIEW,
   FULL_FEATURE_SHOWCASE_FLAGS,

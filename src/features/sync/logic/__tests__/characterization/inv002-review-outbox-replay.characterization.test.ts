@@ -1,8 +1,8 @@
-import {validFullOutput} from '@shared/fixtures';
+import {validFullOutput} from '@core/fixtures/index';
 import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {DB_NAME} from '@shared/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {DB_NAME} from '@core/db/constants';
 import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
 import {
   recordFlashcardRating,

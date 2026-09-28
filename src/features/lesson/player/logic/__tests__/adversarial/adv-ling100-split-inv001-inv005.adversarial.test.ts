@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import * as AuthSession from '@shared/auth/authSession';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
+import * as AuthSession from '@core/auth/authSession';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import {
   insertPackageRecord,
   swapActivePackage,
@@ -131,7 +131,7 @@ describe('ADV-H01 / INV-001: split Public surfaces do not touch persisted learne
     jest.isolateModules(() => {
       // Bind the fresh registry's database singleton to the same real file so
       // any module-load side effect of the split surfaces lands on it.
-      require('@shared/db/database').resetDatabaseForTests(db);
+      require('@core/db/database').resetDatabaseForTests(db);
       const curriculumLesson = require('@features/lesson/player');
       const review = require('@features/review');
       require('@features/review/logic/useLearningReview');

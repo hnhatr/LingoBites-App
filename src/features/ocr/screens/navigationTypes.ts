@@ -1,4 +1,4 @@
-import type {OCRSourceType} from '@shared/api/types';
+import type {OCRSourceType} from '@core/api/types';
 
 export interface OCRReviewRouteParams {
   imageUri: string;

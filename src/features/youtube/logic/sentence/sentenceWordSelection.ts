@@ -1,4 +1,4 @@
-import type {GrammarPoint, VocabEntry} from '@shared/schemas/sentence-contract';
+import type {GrammarPoint, VocabEntry} from '@core/schemas/sentence-contract';
 
 /**
  * SETE-331 (TASK-4, Stage 2): pure helpers for the interactive word +

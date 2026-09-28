@@ -1,14 +1,14 @@
-import i18n from '@/i18n';
-import {getAppConfig} from '@shared/api/appConfig';
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
-import {createRequestId} from '@shared/api/requestId';
+import i18n from '@core/i18n/index';
+import {getAppConfig} from '@core/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {createRequestId} from '@core/api/requestId';
 import {
   CreateYouTubeTranscriptResponseSchema,
   validateGetYouTubeTranscriptResponse,
   type RawCue,
   type YouTubeErrorCode,
   type YouTubeTranscript,
-} from '@shared/schemas/youtube-transcript-v1';
+} from '@core/schemas/youtube-transcript-v1';
 
 const POLL_INTERVAL_MS = 1_000;
 // SETE-325: transcript + analysis for content-heavy videos regularly needs

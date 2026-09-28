@@ -1,32 +1,29 @@
 import {Platform} from 'react-native';
-import {createRequestId} from '../../../shared/api/requestId';
+import {createRequestId} from '@core/api/requestId';
 import {
   executeAccountReplacementTransaction,
   getDatabase,
-} from '../../../shared/db/database';
+} from '@core/db/database';
 import {
   canonicalizeIdentifier,
   resolveDeviceIdentifier,
   type DeviceIdentifier,
-} from '../../../shared/identity/deviceIdentifier';
-import {readPlatformIdentifiers} from '../../../shared/identity/deviceIdentityNative';
-import {
-  hasInstallMarker,
-  setInstallMarker,
-} from '../../../shared/db/installMarker';
+} from '@core/identity/deviceIdentifier';
+import {readPlatformIdentifiers} from '@core/identity/deviceIdentityNative';
+import {hasInstallMarker, setInstallMarker} from '@core/db/installMarker';
 import {
   createAuthClient,
   isAuthApiError,
   type AuthClientError,
   type AuthHttpClient,
-} from '../../../shared/auth/authClient';
+} from '@core/auth/authClient';
 import {
   activateStoredSession,
   ensureValidSession,
   persistNewSession,
   saveCandidateSession,
   terminalReset,
-} from '../../../shared/auth/authSession';
+} from '@core/auth/authSession';
 import {
   cancelAccountSwitchAttempt,
   confirmAccountSwitchAttempt,
@@ -34,15 +31,15 @@ import {
   recoverAccountSwitchAttempt,
   stageAccountSwitchAttempt,
   type CoordinatorErrorCode,
-} from '../../../shared/auth/accountSwitchCoordinator';
-import type {AccountSwitchAttemptV1} from '../../../shared/auth/accountSwitchJournal';
-import {clearAccountSwitchJournal} from '../../../shared/auth/accountSwitchJournal';
+} from '@core/auth/accountSwitchCoordinator';
+import type {AccountSwitchAttemptV1} from '@core/auth/accountSwitchJournal';
+import {clearAccountSwitchJournal} from '@core/auth/accountSwitchJournal';
 import {
   clearAllSessions,
   deleteSession,
   getActiveSession,
-} from '../../../shared/auth/sessionStore';
-import type {AuthSession, AuthUser} from '../../../shared/auth/authTypes';
+} from '@core/auth/sessionStore';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 
 /**
  * Bootstrap/onboarding state machine (SETE-303 / T6).

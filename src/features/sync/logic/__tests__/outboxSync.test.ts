@@ -1,13 +1,13 @@
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
-import {DB_NAME} from '@shared/db/constants';
-import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import {
   listPendingSyncEvents,
   markSyncEventsFailed,
 } from '../adapters/SyncOutboxRepository';
-import type {ReviewEventPayload} from '@shared/db/types';
+import type {ReviewEventPayload} from '@core/db/types';
 import {drainOutboxOnce, getSyncOutboxStatus} from '../outboxSync';
 import {MAX_SYNC_ATTEMPTS} from '../syncPolicy';
 

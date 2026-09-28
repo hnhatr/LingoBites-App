@@ -1,11 +1,11 @@
-import * as AuthSession from '@shared/auth/authSession';
+import * as AuthSession from '@core/auth/authSession';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {trackEvent} from '@features/analytics';
-import {DB_NAME} from '@shared/db/constants';
-import {resetDatabaseForTests} from '@shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests} from '@core/db/database';
 import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
@@ -21,7 +21,7 @@ jest.mock('@features/youtube', () => ({
     mockCountYoutubeLessons.apply(undefined, args),
 }));
 
-jest.mock('@shared/api/youtubeCapabilities', () => ({
+jest.mock('@core/api/youtubeCapabilities', () => ({
   useYouTubeServerEnabled: (...args: unknown[]) =>
     mockUseYouTubeServerEnabled(...args),
 }));

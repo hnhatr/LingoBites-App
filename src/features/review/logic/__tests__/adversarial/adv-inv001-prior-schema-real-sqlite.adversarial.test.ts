@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {listFlashcards, recordFlashcardRating} from '../../FlashcardRepository';
 import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
 import {getContentLessonState} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';

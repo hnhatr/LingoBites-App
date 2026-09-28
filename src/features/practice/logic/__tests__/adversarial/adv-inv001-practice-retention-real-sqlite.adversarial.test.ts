@@ -1,6 +1,6 @@
-import {resetDatabaseForTests} from '@shared/db/database';
-import {runMigrations} from '@shared/db/migrations';
-import type {PracticeSet} from '@shared/schemas/practice';
+import {resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+import type {PracticeSet} from '@core/schemas/practice';
 import {
   getAnswerEvents,
   markPracticeEventsSynced,

@@ -1,5 +1,5 @@
-import {getAppConfig} from '@shared/api/appConfig';
-import type {ChapterAudioAsset} from '@shared/db/types';
+import {getAppConfig} from '@core/api/appConfig';
+import type {ChapterAudioAsset} from '@core/db/types';
 
 export type ChapterAudioManifest = {
   chapterId: string;

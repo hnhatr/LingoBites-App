@@ -11,11 +11,11 @@
  * the importer never has to think about column names.
  */
 
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 import type {
   ContentPackageId,
   ContentPackageSummary,
-} from '@shared/content/contracts';
+} from '@core/contracts/contentContracts';
 
 type PackageRow = {
   id: string;

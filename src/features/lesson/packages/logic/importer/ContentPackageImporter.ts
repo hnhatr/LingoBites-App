@@ -13,7 +13,7 @@
  * `message`. The caller (the future UI, or a test) decides what to show.
  */
 
-import {getDatabase, withTransaction} from '@shared/db/database';
+import {getDatabase, withTransaction} from '@core/db/database';
 import {
   insertPackageRecord,
   swapActivePackage,

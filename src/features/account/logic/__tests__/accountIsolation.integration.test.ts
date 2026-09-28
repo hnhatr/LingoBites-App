@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {useAccountStore} from '../useAccountStore';
 import {
   saveYouTubeProgress,

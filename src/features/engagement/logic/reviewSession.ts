@@ -1,11 +1,11 @@
-import {createRequestId} from '@shared/api/requestId';
+import {createRequestId} from '@core/api/requestId';
 import {insertGamificationEvent} from './data/GamificationRepository';
 import {
   ON_TIME_WATER_POINTS,
   isOnTimeReview,
   sessionXp,
 } from './gamificationPolicy';
-import type {ReviewRating} from '@shared/db/types';
+import type {ReviewRating} from '@core/db/types';
 
 /**
  * One completed review session as seen by the engagement layer (REQ-11, ADR-4).

@@ -1,16 +1,13 @@
 import {open} from 'react-native-quick-sqlite';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '../../../../shared/db/constants';
-import * as database from '../../../../shared/db/database';
-import {
-  getDatabase,
-  resetDatabaseForTests,
-} from '../../../../shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import * as database from '@core/db/database';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {
   saveYouTubeProgress,
   getYouTubeProgress,
 } from '../../../youtube/logic/data/YouTubeProgressRepository';
-import * as DeviceIdentityNative from '../../../../shared/identity/deviceIdentityNative';
+import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {
   bootAccount,
   cancelAccountSwitch,
@@ -19,15 +16,12 @@ import {
   SIGNUP_IDEMPOTENCY_KEY,
   submitOnboardingName,
 } from '../accountBootstrap';
-import * as accountSwitchCoordinator from '../../../../shared/auth/accountSwitchCoordinator';
-import {resetAccountSwitchCoordinatorForTests} from '../../../../shared/auth/accountSwitchCoordinator';
-import {hasInstallMarker} from '../../../../shared/db/installMarker';
-import {resetRefreshStateForTests} from '../../../../shared/auth/authSession';
-import {
-  getActiveSession,
-  getActiveSessionId,
-} from '../../../../shared/auth/sessionStore';
-import type {AuthSession, AuthUser} from '../../../../shared/auth/authTypes';
+import * as accountSwitchCoordinator from '@core/auth/accountSwitchCoordinator';
+import {resetAccountSwitchCoordinatorForTests} from '@core/auth/accountSwitchCoordinator';
+import {hasInstallMarker} from '@core/db/installMarker';
+import {resetRefreshStateForTests} from '@core/auth/authSession';
+import {getActiveSession, getActiveSessionId} from '@core/auth/sessionStore';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {installKeychainVault} from '@/test-support/keychainVault';
 
 jest.mock('../../../profile/logic/legacyClear', () => ({

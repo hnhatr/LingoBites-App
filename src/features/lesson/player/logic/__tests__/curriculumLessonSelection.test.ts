@@ -1,4 +1,4 @@
-import * as AuthSession from '@shared/auth/authSession';
+import * as AuthSession from '@core/auth/authSession';
 import {fetchPublishedCurriculumLessons} from '../curriculumLessonSelection';
 
 const BASE = 'http://localhost:3000';

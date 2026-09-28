@@ -14,10 +14,10 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
 import {RatingControl} from '@ui/components/RatingControl';
 import {speak} from '@features/audio';
-import {useFeatureEnabled} from '@/release';
+import {useFeatureEnabled} from '@core/release/index';
 import {requestSync} from '@features/sync';
 import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
-import type {FlashcardRecord, ReviewRating} from '@shared/db/types';
+import type {FlashcardRecord, ReviewRating} from '@core/db/types';
 import {
   reconcileReminders,
   startReviewSession,

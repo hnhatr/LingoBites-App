@@ -1,5 +1,5 @@
 import type {LegacyPracticeQuestion as PracticeQuestion} from '@features/practice';
-import type {YouTubeSegment} from '../../../../shared/schemas/youtube-transcript-v1';
+import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
 
 export function mapTranscriptToPractice(
   segments: YouTubeSegment[],

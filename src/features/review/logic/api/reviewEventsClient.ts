@@ -1,11 +1,11 @@
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {
   SYNC_OWNERSHIP_CHANGED,
   SyncOwnershipChangedError,
-} from '@shared/sync/syncDrainOwnership';
-import i18n from '@/i18n';
-import type {ReviewEventPayload} from '@shared/db/types';
-import {getAppConfig} from '@shared/api/appConfig';
+} from '@core/sync/syncDrainOwnership';
+import i18n from '@core/i18n/index';
+import type {ReviewEventPayload} from '@core/db/types';
+import {getAppConfig} from '@core/api/appConfig';
 
 /**
  * Wire envelope of one drained outbox row, as POSTed to the server. Mirrors the

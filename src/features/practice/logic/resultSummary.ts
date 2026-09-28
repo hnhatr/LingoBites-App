@@ -1,9 +1,9 @@
-import {PRACTICE_CALCULATOR_VERSION} from '@shared/schemas/practice';
+import {PRACTICE_CALCULATOR_VERSION} from '@core/schemas/practice';
 import type {
   AnswerEvent,
   PracticeQuestion,
   ResultSummary,
-} from '@shared/schemas/practice';
+} from '@core/schemas/practice';
 
 export const CALCULATOR_VERSION = PRACTICE_CALCULATOR_VERSION;
 

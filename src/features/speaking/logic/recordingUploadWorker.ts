@@ -3,7 +3,7 @@ import {
   createRecordingMetadata,
   uploadRecordingBinary,
 } from './api/recordingClient';
-import {createRequestId} from '@shared/api/requestId';
+import {createRequestId} from '@core/api/requestId';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
 export async function uploadRecordingBackground(

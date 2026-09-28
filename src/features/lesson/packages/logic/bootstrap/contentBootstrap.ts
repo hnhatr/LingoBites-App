@@ -8,7 +8,7 @@ import {
   BUNDLED_PACKAGE_ZIP_BASE64,
 } from './bundledPackageData';
 import type {ContentPackageImportError} from '../importer/types';
-import type {getDatabase} from '@shared/db/database';
+import type {getDatabase} from '@core/db/database';
 
 export type ContentBootstrapResult =
   | {

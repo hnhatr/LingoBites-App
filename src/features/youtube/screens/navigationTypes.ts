@@ -1,7 +1,7 @@
 import type {
   RawCue,
   YouTubeTranscript,
-} from '@shared/schemas/youtube-transcript-v1';
+} from '@core/schemas/youtube-transcript-v1';
 
 export type YouTubeInputRouteParams =
   | {

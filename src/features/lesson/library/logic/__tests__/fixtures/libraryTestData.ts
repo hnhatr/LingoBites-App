@@ -2,7 +2,7 @@ import type {
   ContentLessonState,
   FlashcardRecord,
   GrammarBookmark,
-} from '@shared/db/types';
+} from '@core/db/types';
 
 export function makeLesson(overrides: Record<string, unknown> = {}) {
   return {

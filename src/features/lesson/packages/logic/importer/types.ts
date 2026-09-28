@@ -23,7 +23,7 @@ import type {
 import type {
   ContentPackageId,
   ContentPackageSummary,
-} from '@shared/content/contracts';
+} from '@core/contracts/contentContracts';
 
 export type {ContentPackageId, ContentPackageSummary};
 export type ContentLessonId = string;

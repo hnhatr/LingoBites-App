@@ -6,10 +6,7 @@ import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {useAppTheme} from '@ui/theme/index';
 import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 import type {AppTheme} from '@ui/theme/types';
-import type {
-  GrammarBookmark,
-  SaveGrammarBookmarkInput,
-} from '@/shared/db/types';
+import type {GrammarBookmark, SaveGrammarBookmarkInput} from '@core/db/types';
 import {GrammarRowCard} from './GrammarRowCard';
 import {LibraryEmptyState} from './LibraryEmptyState';
 import {useBookmarkOptimistic} from '@features/review';

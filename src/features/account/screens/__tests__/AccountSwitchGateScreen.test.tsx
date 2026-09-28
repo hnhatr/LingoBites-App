@@ -1,18 +1,15 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '../../../../shared/db/constants';
-import {
-  getDatabase,
-  resetDatabaseForTests,
-} from '../../../../shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {resetBootStateForTests} from '../../logic/accountBootstrap';
-import {resetRefreshStateForTests} from '../../../../shared/auth/authSession';
+import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {installKeychainVault} from '../../../../test-support/keychainVault';
-import type {AuthUser} from '../../../../shared/auth/authTypes';
+import type {AuthUser} from '@core/auth/authTypes';
 import {AccountSwitchGateScreen} from '../AccountSwitchGateScreen';
 import {
   resetAccountStoreForTests,

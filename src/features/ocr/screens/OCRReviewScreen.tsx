@@ -19,7 +19,7 @@ import {getTextLengthBucket, trackEvent} from '@features/analytics';
 import {
   MAX_INPUT_TEXT_LENGTH,
   validateConfirmedText,
-} from '@shared/utils/textValidation';
+} from '@core/utils/textValidation';
 import {extractText} from '../logic/OCRService';
 import {startLessonFromConfirmedText} from '@features/lesson/player';
 import {createLessonGenerationJob} from '@features/lesson/player';

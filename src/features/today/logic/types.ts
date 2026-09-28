@@ -2,7 +2,7 @@ import type {
   ContentReviewItemRecord,
   ErrorEventRecord,
   SpeakingRecordingRecord,
-} from '@shared/db/types';
+} from '@core/db/types';
 
 export type TodayMode = '5-minute' | 'normal' | 'deep-practice';
 

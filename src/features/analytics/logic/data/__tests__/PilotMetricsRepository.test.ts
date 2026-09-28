@@ -1,4 +1,4 @@
-import {getDatabase} from '@shared/db/database';
+import {getDatabase} from '@core/db/database';
 import {
   getCapabilityProgressReport,
   exportPrivacySafeMetrics,
@@ -6,7 +6,7 @@ import {
   formatPercentage,
 } from '../PilotMetricsRepository';
 import {insertSpeakingRecording, captureErrorEvent} from '@features/speaking';
-import {clearAllLocalDatabaseRows} from '@shared/db/localDataWipe';
+import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 
 describe('PilotMetricsRepository (REQ-39 & CON-6)', () => {
   beforeEach(() => {

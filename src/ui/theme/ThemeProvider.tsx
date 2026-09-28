@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useColorScheme} from 'react-native';
-import {useFeatureFlags} from '../../release';
+import {useFeatureFlags} from '@core/release/index';
 import {
   SYSTEM_THEME_ID,
   defaultThemeId,

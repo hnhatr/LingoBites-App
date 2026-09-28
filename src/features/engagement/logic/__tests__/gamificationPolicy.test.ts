@@ -12,7 +12,7 @@ import {
   sessionXp,
   toLocalDayKey,
 } from '../gamificationPolicy';
-import type {GamificationEventRecord} from '@shared/db/types';
+import type {GamificationEventRecord} from '@core/db/types';
 
 function localIsoForDayKey(key: string, hour = 12): string {
   const [year, month, day] = key.split('-').map(Number);

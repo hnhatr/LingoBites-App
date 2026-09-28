@@ -11,8 +11,8 @@
  * Fail-closed like `fetchYouTubeCapability`: any network, parse, or
  * config problem resolves to all-`false`.
  */
-import {authenticatedFetch} from '@shared/api/authenticatedFetch';
-import {getAppConfig} from '@shared/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {getAppConfig} from '@core/api/appConfig';
 import {useEffect, useState} from 'react';
 import {z} from 'zod';
 

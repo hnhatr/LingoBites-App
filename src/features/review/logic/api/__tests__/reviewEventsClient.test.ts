@@ -1,6 +1,6 @@
-import i18n from '@/i18n';
+import i18n from '@core/i18n/index';
 import {pushReviewEvents} from '../reviewEventsClient';
-import type {ReviewEventPayload} from '@shared/db/types';
+import type {ReviewEventPayload} from '@core/db/types';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

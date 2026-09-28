@@ -1,13 +1,13 @@
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {resetDatabaseForTests} from '@shared/db/database';
+import {resetDatabaseForTests} from '@core/db/database';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '@shared/db/constants';
+import {DB_NAME} from '@core/db/constants';
 import {
   insertPendingChapterAudioAsset,
   markChapterAudioAssetReady,
 } from '@features/audio/logic/data/AudioAssetRepository';
-import type {ChapterAudioAsset} from '@shared/db/types';
-import {sha256Hex} from '@shared/utils/sha256';
+import type {ChapterAudioAsset} from '@core/db/types';
+import {sha256Hex} from '@core/utils/sha256';
 import {bytesToBase64} from '../bytesToBase64';
 
 jest.mock('@dr.pogodin/react-native-fs', () => ({

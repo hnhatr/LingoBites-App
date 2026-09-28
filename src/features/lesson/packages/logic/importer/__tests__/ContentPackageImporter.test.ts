@@ -9,12 +9,12 @@
 
 import {__resetMockDatabases} from '../../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '@shared/db/constants';
-import {resetDatabaseForTests, withTransaction} from '@shared/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests, withTransaction} from '@core/db/database';
 import {
   downgradeContentPackageMigrations,
   runMigrations,
-} from '@shared/db/migrations';
+} from '@core/db/migrations';
 import {
   importContentPackage,
   rollbackToPreviousPackage,
