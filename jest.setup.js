@@ -147,6 +147,10 @@ jest.mock('react-native-audio-recorder-player', () => {
 
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
 
+// `react-native-tts` ships untranspiled ESM. The audio feature barrel
+// (`@features/audio`) re-exports `TtsSpikeScreen`, which imports it eagerly,
+// so any module that touches the barrel needs the native adapter stubbed out
+// under Jest. Adapters that exercise TTS behaviour inject their own fake.
 jest.mock('react-native-tts', () => ({
   __esModule: true,
   default: {

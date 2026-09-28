@@ -10,7 +10,7 @@
  *
  * Scope: components exported and reusable across screens. Bespoke inline
  * `Pressable`/`Tappable` JSX embedded directly in a single screen (e.g.
- * LessonResultView's local `Tappable` wrapping `WordCard`/`ChunkRow`,
+ * LessonResultView's local `Tappable` wrapping card rows,
  * SpeakingRoomScreen's mode cards) is covered by each screen's own test
  * suite, not duplicated here — scanning every screen's every inline
  * Pressable would mean touching dozens of unrelated test files for this

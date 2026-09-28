@@ -7,6 +7,12 @@
  * Uses TypeScript AST and module resolution to check imports/exports.
  * Checks production source only; test code and test-support are excluded
  * from production build and tested separately.
+ *
+ * Layers (AD-004): app -> features -> ui -> core, plus `test` for test-only
+ * code. Production code must never import `test`. A feature may import another
+ * feature only through that feature's public barrel (`index.ts`); for the
+ * `lesson` feature the three sub-parts (`library`, `player`, `packages`) are
+ * themselves public barrels.
  */
 
 const fs = require('fs');
@@ -35,6 +41,17 @@ const assetExtensions = [
   '.wav',
 ];
 
+// app may import features, features/ui/core, ui may import core, core may
+// import core. Lower rank may never import a higher rank.
+const LAYER_RANK = {
+  app: 0,
+  features: 1,
+  ui: 2,
+  core: 3,
+};
+
+const LESSON_SUB_PARTS = ['library', 'player', 'packages'];
+
 function loadCompilerOptions(rootDir = appRoot) {
   const tsconfigPath = path.join(rootDir, 'tsconfig.json');
   if (!fs.existsSync(tsconfigPath)) {
@@ -59,7 +76,7 @@ function walkSourceFiles(directory) {
   return fs.readdirSync(directory, {withFileTypes: true}).flatMap(entry => {
     const entryPath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      // Exclude test folders and test-support from production scanning
+      // Exclude test folders and test-support from production scanning.
       if (
         entry.name === '__tests__' ||
         entry.name === 'test-support' ||
@@ -87,8 +104,54 @@ function sourceLayer(filePath, srcRoot = sourceRoot) {
   }
   const parts = relative.split('/');
   const layer = parts[0];
-  const feature = layer === 'modules' ? parts[1] || null : null;
+  const feature = layer === 'features' ? parts[1] || null : null;
   return {layer, feature, rel: relative};
+}
+
+function isTestTarget(targetFile) {
+  return (
+    /(^|\/)(__tests__|test-support|test-utils)(\/|$)/.test(targetFile) ||
+    /(^|\/)test\//.test(targetFile) ||
+    /(\.test\.|\.spec\.)/.test(targetFile)
+  );
+}
+
+/**
+ * True when the resolved target is a public barrel of a feature:
+ * `features/<f>/index.ts(x)` for every feature, plus the three public
+ * sub-part barrels `features/lesson/<part>/index.ts(x)`.
+ */
+function isPublicFeatureBarrel(target) {
+  if (!target || target.layer !== 'features' || !target.feature) {
+    return false;
+  }
+  const parts = target.rel.split('/');
+  const isIndex = fileName => /^index\.(ts|tsx|js|jsx)$/.test(fileName);
+  if (parts.length === 3) {
+    return isIndex(parts[2]);
+  }
+  if (
+    target.feature === 'lesson' &&
+    parts.length === 4 &&
+    LESSON_SUB_PARTS.includes(parts[2]) &&
+    isIndex(parts[3])
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * DEC-3: `app` may import `features/<f>/screens/*UiPort.ts(x)` in addition to
+ * the feature barrel.
+ */
+function isUiPort(target) {
+  if (!target || target.layer !== 'features' || !target.feature) {
+    return false;
+  }
+  const parts = target.rel.split('/');
+  if (parts.length !== 4 || parts[2] !== 'screens') return false;
+  return /UiPort\.(ts|tsx|js|jsx)$/.test(parts[3]);
 }
 
 function findImportsInSource(filePath, content) {
@@ -194,7 +257,6 @@ function resolveSpecifier(
     };
   }
 
-  // Handle fallback relative resolution if file exists
   if (specifier.startsWith('.')) {
     const resolvedPath = path.resolve(path.dirname(containingFile), specifier);
     const resolvedExt = path.extname(resolvedPath).toLowerCase();
@@ -204,37 +266,6 @@ function resolveSpecifier(
   }
 
   return null;
-}
-
-function isPublicFeatureBarrel(target, specifier) {
-  if (!target || target.layer !== 'modules' || !target.feature) {
-    return false;
-  }
-  const parts = target.rel.split('/');
-  if (parts.length !== 3) {
-    return false;
-  }
-  const fileName = parts[2];
-  const parsed = path.parse(fileName);
-  if (
-    target.feature === 'speaking' &&
-    (parsed.name === 'speakingQueryPort' || parsed.name === 'speakingUiPort') &&
-    ['.ts', '.tsx', '.js', '.jsx'].includes(parsed.ext)
-  ) {
-    return specifier === `@modules/speaking/${parsed.name}`;
-  }
-
-  const isIndex =
-    parsed.name === 'index' &&
-    ['.ts', '.tsx', '.js', '.jsx'].includes(parsed.ext);
-  if (!isIndex) {
-    return false;
-  }
-
-  return (
-    specifier === `@modules/${target.feature}` ||
-    specifier === `../${target.feature}`
-  );
 }
 
 function checkImportRules(
@@ -260,10 +291,7 @@ function checkImportRules(
   const line = importItem.line;
 
   // Rule: production-to-test
-  if (
-    target.layer === 'test-support' ||
-    /(__tests__|\.test\.|\.spec\.)/.test(targetFile)
-  ) {
+  if (isTestTarget(normalizePath(targetFile))) {
     violations.push({
       file: normalizePath(fromFile),
       specifier,
@@ -274,154 +302,56 @@ function checkImportRules(
     return violations;
   }
 
-  // Rule: shared-to-module
-  if (source.layer === 'shared' && target.layer === 'modules') {
-    violations.push({
-      file: normalizePath(fromFile),
-      specifier,
-      line,
-      rule: 'shared-to-module',
-      description: 'shared must not depend on feature modules',
-    });
-  }
+  const sourceRank = LAYER_RANK[source.layer];
+  const targetRank = LAYER_RANK[target.layer];
 
-  // Rule: shared-to-app
-  if (source.layer === 'shared' && target.layer === 'app') {
-    violations.push({
-      file: normalizePath(fromFile),
-      specifier,
-      line,
-      rule: 'shared-to-app',
-      description: 'shared must not depend on app composition',
-    });
-  }
-
-  // Rule: components-to-module
-  if (source.layer === 'components' && target.layer === 'modules') {
-    violations.push({
-      file: normalizePath(fromFile),
-      specifier,
-      line,
-      rule: 'components-to-module',
-      description: 'components must not depend on feature modules',
-    });
-  }
-
-  // Rule: components-to-app
-  if (source.layer === 'components' && target.layer === 'app') {
-    violations.push({
-      file: normalizePath(fromFile),
-      specifier,
-      line,
-      rule: 'components-to-app',
-      description: 'components must not depend on app composition',
-    });
-  }
-
-  // Rule: cross-feature-private
+  // Rule: upward import between ordered layers (core-to-features, core-to-app,
+  // core-to-ui, ui-to-features, ui-to-app, features-to-app, ...).
   if (
-    source.layer === 'modules' &&
-    target.layer === 'modules' &&
-    source.feature !== target.feature
-  ) {
-    if (!isPublicFeatureBarrel(target, specifier)) {
-      violations.push({
-        file: normalizePath(fromFile),
-        specifier,
-        line,
-        rule: 'cross-feature-private',
-        description:
-          'cross-feature imports must use the target feature barrel (@modules/<feature>)',
-      });
-    }
-  }
-
-  // Rule: feature-to-app
-  if (source.layer === 'modules' && target.layer === 'app') {
-    violations.push({
-      file: normalizePath(fromFile),
-      specifier,
-      line,
-      rule: 'feature-to-app',
-      description: 'feature modules must not depend on app composition',
-    });
-  }
-
-  // Rule: app-to-module-private
-  if (source.layer === 'app' && target.layer === 'modules') {
-    if (!isPublicFeatureBarrel(target, specifier)) {
-      violations.push({
-        file: normalizePath(fromFile),
-        specifier,
-        line,
-        rule: 'app-to-module-private',
-        description:
-          'app composition must import feature public surface (@modules/<feature>)',
-      });
-    }
-  }
-
-  // Rule: theme-boundary
-  if (
-    source.layer === 'theme' &&
-    ['modules', 'app', 'components'].includes(target.layer)
+    sourceRank !== undefined &&
+    targetRank !== undefined &&
+    targetRank < sourceRank
   ) {
     violations.push({
       file: normalizePath(fromFile),
       specifier,
       line,
-      rule: 'theme-boundary',
-      description: `theme must not depend on ${target.layer}`,
+      rule: `${source.layer}-to-${target.layer}`,
+      description: `${source.layer} must not depend on ${target.layer}`,
     });
   }
 
-  // Rule: release-boundary
+  // Rule: app-to-feature-private
   if (
-    source.layer === 'release' &&
-    ['modules', 'app', 'components', 'shared', 'theme'].includes(target.layer)
+    source.layer === 'app' &&
+    target.layer === 'features' &&
+    !isPublicFeatureBarrel(target) &&
+    !isUiPort(target)
   ) {
     violations.push({
       file: normalizePath(fromFile),
       specifier,
       line,
-      rule: 'release-boundary',
-      description: `release must not depend on ${target.layer}`,
+      rule: 'app-to-feature-private',
+      description:
+        'app composition must import a feature public barrel (@features/<feature>) or a screens/*UiPort',
     });
   }
 
-  // Rule: i18n-boundary
+  // Rule: cross-feature-private (feature -> different feature)
   if (
-    source.layer === 'i18n' &&
-    ['modules', 'app', 'components', 'shared', 'theme'].includes(target.layer)
+    source.layer === 'features' &&
+    target.layer === 'features' &&
+    source.feature !== target.feature &&
+    !isPublicFeatureBarrel(target)
   ) {
     violations.push({
       file: normalizePath(fromFile),
       specifier,
       line,
-      rule: 'i18n-boundary',
-      description: `i18n must not depend on ${target.layer}`,
-    });
-  }
-
-  // Rule: contracts-boundary
-  if (
-    source.layer === 'contracts' &&
-    [
-      'modules',
-      'app',
-      'components',
-      'shared',
-      'theme',
-      'release',
-      'i18n',
-    ].includes(target.layer)
-  ) {
-    violations.push({
-      file: normalizePath(fromFile),
-      specifier,
-      line,
-      rule: 'contracts-boundary',
-      description: `contracts must not depend on ${target.layer}`,
+      rule: 'cross-feature-private',
+      description:
+        'cross-feature imports must use the target feature barrel (@features/<feature>)',
     });
   }
 
@@ -519,7 +449,6 @@ function checkModuleBoundaries(options = {}) {
 
         if (queue && queue.length > 0) {
           const manifestEntry = queue.shift();
-          // Check if expired (ISO date format YYYY-MM-DD)
           if (
             manifestEntry.expiry &&
             /^\d{4}-\d{2}-\d{2}/.test(manifestEntry.expiry)
@@ -618,6 +547,8 @@ module.exports = {
   resolveSpecifier,
   checkImportRules,
   isPublicFeatureBarrel,
+  isUiPort,
+  isTestTarget,
   sourceLayer,
   loadCompilerOptions,
   loadExceptionManifest,

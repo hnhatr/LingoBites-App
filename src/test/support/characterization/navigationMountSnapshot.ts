@@ -1,10 +1,10 @@
 import type {AccountPhase} from '@features/account';
-import {accountGateRouteForPhase} from '@/app/navigation/accountGate';
+import {accountGateRouteForPhase} from '@app/navigation/accountGate';
 import {
   INGESTION_ROUTE_REQUIREMENTS,
   isIngestionRouteEnabled,
-} from '@/app/navigation/ingestionRouteGate';
-import {getRootStackRouteNames} from '@/app/navigation/rootStackRoutes';
+} from '@app/navigation/ingestionRouteGate';
+import {getRootStackRouteNames} from '@app/navigation/rootStackRoutes';
 import type {FeatureKey} from '@core/release/feature-registry';
 
 export type NavigationMountSnapshot = {

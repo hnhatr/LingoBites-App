@@ -41,20 +41,3 @@ export {
   setActiveSessionId,
 } from './sessionStore';
 export type {StoredSession, SessionStoreResult} from './sessionStore';
-export {
-  FALLBACK_DEVICE_ID_KEY,
-  SIGNUP_IDEMPOTENCY_KEY,
-  bootAccount,
-  cancelAccountSwitch,
-  confirmAccountSwitch,
-  resetBootStateForTests,
-  retryAccountSwitch,
-  submitOnboardingName,
-} from '@features/account/logic/accountBootstrap';
-export type {
-  AccountSwitchActionResult,
-  AccountSwitchConfirmation,
-  BootDeps,
-  BootResult,
-  SubmitNameResult,
-} from '@features/account/logic/accountBootstrap';

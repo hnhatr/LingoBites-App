@@ -1,19 +1,19 @@
 import {create} from 'zustand';
 import {
+  createAuthClient,
+  signOut,
+  terminalReset,
+  type AuthUser,
+} from '@core/auth/index';
+import {
   bootAccount,
   cancelAccountSwitch,
   confirmAccountSwitch,
   retryAccountSwitch,
   submitOnboardingName,
-} from './accountBootstrap';
-import {
-  createAuthClient,
-  signOut,
-  terminalReset,
   type AccountSwitchConfirmation,
-  type AuthUser,
   type BootResult,
-} from '@core/auth/index';
+} from './accountBootstrap';
 import {clearAllSessions, getActiveSession} from '@core/auth/sessionStore';
 
 /**

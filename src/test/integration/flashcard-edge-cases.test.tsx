@@ -13,19 +13,19 @@ import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
 import {Alert} from 'react-native';
-import {FeatureFlagProvider} from '../../core/release';
+import {FeatureFlagProvider} from '@core/release/index';
 import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '../support';
-import {DB_NAME} from '../../core/db/constants';
-import {resetDatabaseForTests} from '../../core/db/database';
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests} from '@core/db/database';
 import {
   saveFlashcard,
   getDueFlashcards,
   listFlashcards,
 } from '@features/review';
-import {validFullOutput} from '../../core/fixtures';
-import {AppThemeProvider} from '../../ui/theme';
+import {validFullOutput} from '@core/fixtures/index';
+import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../test-utils/sqliteMock';
-import {DailyReviewScreen} from '../../features/review';
+import {DailyReviewScreen} from '@features/review';
 
 const renderedTrees: ReactTestRenderer.ReactTestRenderer[] = [];
 

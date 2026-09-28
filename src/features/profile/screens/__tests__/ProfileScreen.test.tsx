@@ -14,7 +14,7 @@ import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {resetBootStateForTests} from '../../../account/logic/accountBootstrap';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {getActiveSession} from '@core/auth/sessionStore';
-import {installKeychainVault} from '../../../../test/support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 import {
   resetAccountStoreForTests,
   useAccountStore,

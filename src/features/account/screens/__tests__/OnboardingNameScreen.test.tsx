@@ -7,7 +7,7 @@ import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {installKeychainVault} from '../../../../test/support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 import {resetBootStateForTests} from '../../logic/accountBootstrap';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {OnboardingNameScreen} from '../OnboardingNameScreen';

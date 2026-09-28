@@ -4,7 +4,7 @@ import {
   resetRefreshStateForTests,
 } from '@core/auth/authSession';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
-import {installKeychainVault} from '../../../../../test/support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 import {parseYouTubeVideoId, runYouTubeJob} from '../youtubeApi';
 
 const mockFetch = jest.fn();

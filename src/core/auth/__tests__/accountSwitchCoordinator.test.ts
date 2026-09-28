@@ -12,7 +12,7 @@ import {
   type AccountSwitchAttemptV1,
 } from '../accountSwitchJournal';
 import type {AuthUser} from '../authTypes';
-import {installKeychainVault} from '../../../test/support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 
 const userA: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

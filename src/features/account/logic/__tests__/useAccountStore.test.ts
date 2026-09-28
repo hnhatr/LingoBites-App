@@ -7,10 +7,7 @@ import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {resetBootStateForTests} from '../accountBootstrap';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {getActiveSession} from '@core/auth/sessionStore';
-import {
-  installKeychainVault,
-  vault,
-} from '../../../../test/support/keychainVault';
+import {installKeychainVault, vault} from '@test/support/keychainVault';
 import {resetAccountStoreForTests, useAccountStore} from '../useAccountStore';
 import type {AuthSession, AuthUser} from '@core/auth/index';
 
