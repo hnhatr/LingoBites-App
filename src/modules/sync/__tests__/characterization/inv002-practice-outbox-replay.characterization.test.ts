@@ -3,7 +3,10 @@ import {open} from 'react-native-quick-sqlite';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {DB_NAME} from '@shared/db/constants';
 import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
-import {getAnswerEvents, savePracticeSet} from '@shared/db/PracticeRepository';
+import {
+  getAnswerEvents,
+  savePracticeSet,
+} from '@modules/practice/data/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {
   answerCurrentQuestion,

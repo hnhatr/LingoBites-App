@@ -35,3 +35,9 @@ export type {PracticeQuestion as LegacyPracticeQuestion} from './practiceQuestio
 export {usePracticeController} from './usePracticeController';
 export {usePracticeSessionScreen} from './usePracticeSessionScreen';
 export {resolveQuickPractice} from './resolveQuickPractice';
+export {markPracticeEventsSynced} from './data/PracticeRepository';
+export {
+  pushPracticeEvents,
+  type PushPracticeEventsResult,
+  type SyncPracticeEvent,
+} from './api/practiceEventsClient';

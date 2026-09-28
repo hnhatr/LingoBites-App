@@ -10,7 +10,7 @@ import type {FlashcardRecord} from '@/shared/db/types';
 import type {SaveFlashcardInput} from '@/shared/db/types';
 import {VocabularyRowCard} from './VocabularyRowCard';
 import {LibraryEmptyState} from './LibraryEmptyState';
-import {useBookmarkOptimistic} from '../useBookmarkOptimistic';
+import {useBookmarkOptimistic} from '@modules/review';
 
 export interface VocabularyTabContentProps {
   vocabulary: FlashcardRecord[];

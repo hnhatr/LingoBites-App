@@ -19,7 +19,7 @@ const mockOnVocabularyUnsave = jest.fn();
 const mockOnGrammarSave = jest.fn();
 const mockOnGrammarUnsave = jest.fn();
 
-jest.mock('../../useBookmarkOptimistic', () => ({
+jest.mock('@modules/review', () => ({
   useBookmarkOptimistic: jest.fn(() => ({
     vocabularySaveState: {
       isSaved: new Map(),

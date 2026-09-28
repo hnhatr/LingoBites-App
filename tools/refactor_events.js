@@ -30,5 +30,5 @@ function refactorEvents(file) {
   fs.writeFileSync(file, content);
 }
 
-refactorEvents('src/shared/api/practiceEventsClient.ts');
+refactorEvents('src/modules/practice/api/practiceEventsClient.ts');
 refactorEvents('src/modules/review/api/reviewEventsClient.ts');

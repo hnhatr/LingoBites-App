@@ -4,7 +4,11 @@ import {
   markSyncEventsFailed,
   markSyncEventsSynced,
 } from './adapters/SyncOutboxRepository';
-import {markPracticeEventsSynced} from '@shared/db/PracticeRepository';
+import {
+  markPracticeEventsSynced,
+  pushPracticeEvents,
+  type SyncPracticeEvent,
+} from '@modules/practice';
 import type {
   PracticeEventPayload,
   ReviewEventPayload,
@@ -12,10 +16,6 @@ import type {
 } from '@shared/db/types';
 import {PRACTICE_EVENT_TYPE, REVIEW_EVENT_TYPE} from '@shared/db/types';
 import {pushReviewEvents, type SyncReviewEvent} from '@modules/review';
-import {
-  pushPracticeEvents,
-  type SyncPracticeEvent,
-} from '@shared/api/practiceEventsClient';
 import {MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';
 import {syncPush} from './syncClient';
 import {

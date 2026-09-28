@@ -10,7 +10,10 @@ import {
   recordFlashcardRating,
   saveFlashcard,
 } from '@shared/db/FlashcardRepository';
-import {getAnswerEvents, savePracticeSet} from '@shared/db/PracticeRepository';
+import {
+  getAnswerEvents,
+  savePracticeSet,
+} from '@modules/practice/data/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {
   answerCurrentQuestion,
