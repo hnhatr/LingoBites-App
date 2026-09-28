@@ -1,4 +1,5 @@
 export {AccountProfileSection} from './AccountProfileSection';
+export {AccountSwitchGateScreen} from './AccountSwitchGateScreen';
 export {BootGateScreen} from './BootGateScreen';
 export {OnboardingNameScreen} from './OnboardingNameScreen';
 export {updateAccountProfile} from './accountProfile';
@@ -12,6 +13,7 @@ export {
 } from './profileValidation';
 export type {DisplayNameValidation, PhoneValidation} from './profileValidation';
 export type {
+  AccountSwitchRouteParams,
   BootGateRouteParams,
   OnboardingRouteParams,
 } from './navigationTypes';

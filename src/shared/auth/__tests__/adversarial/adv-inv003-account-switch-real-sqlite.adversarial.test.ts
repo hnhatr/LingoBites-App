@@ -167,12 +167,7 @@ describe('ADV / INV-003 production account switch on real SQLite', () => {
     expect(listPendingSyncEvents()).toHaveLength(2); // review + content_lesson_state
   });
 
-  /**
-   * Q-001 resolved (requester P2): pre-P2 automatic-wipe characterization — documents
-   * current A→B full local wipe including pending outbox. Superseded by explicit
-   * confirmation in P2; not P2 acceptance and not a pending product decision.
-   */
-  it('ADV-H07 / INV-003 (pre-P2 auto-wipe baseline): logout A → login B leaves no A-owned learner row in ANY table and no A outbox event to replay under B', async () => {
+  it('ADV-H07 / INV-003 (P2): logout A → login B prompts before wipe; confirm removes A data', async () => {
     await useAccountStore.getState().boot();
     writeLearnerDataAsCurrentUser();
     expect(listPendingSyncEvents()).toHaveLength(2); // review + content_lesson_state
@@ -180,6 +175,11 @@ describe('ADV / INV-003 production account switch on real SQLite', () => {
     await useAccountStore.getState().logout();
     serverUser = userB;
     await useAccountStore.getState().boot();
+    expect(useAccountStore.getState().phase).toBe('switch-confirmation');
+    expect(getYouTubeProgress('yt-a')).not.toBeNull();
+    expect(listPendingSyncEvents()).toHaveLength(2);
+
+    await useAccountStore.getState().confirmSwitch();
     expect(useAccountStore.getState()).toMatchObject({
       phase: 'authenticated',
       user: {id: userB.id},

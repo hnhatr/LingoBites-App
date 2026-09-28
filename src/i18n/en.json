@@ -411,6 +411,17 @@
     "signed_out_title": "You are signed out",
     "signed_out_message": "You signed out on this device. Continue to sign back in.",
     "signed_out_continue": "Continue",
-    "signed_out_continue_hint": "Sign back in on this device"
+    "signed_out_continue_hint": "Sign back in on this device",
+    "switch_title": "Switch account?",
+    "switch_warning": "Signing in as {{name}} will remove local learning data and unsynced changes on this device. This cannot be undone.",
+    "switch_confirm": "Switch account",
+    "switch_confirm_hint": "Confirm switching to the new account and remove local data",
+    "switch_cancel": "Stay on this account",
+    "switch_cancel_hint": "Cancel the account switch and keep your current data",
+    "switch_retry": "Retry switch",
+    "switch_retry_hint": "Retry completing the account switch",
+    "switching": "Switching account…",
+    "switch_failed_title": "Account switch failed",
+    "switch_failed_message": "We could not complete the account switch. You can try again."
   }
 }

@@ -1,5 +1,6 @@
 import type {NavigatorScreenParams} from '@react-navigation/native';
 import type {
+  AccountSwitchRouteParams,
   BootGateRouteParams,
   OnboardingRouteParams,
 } from '@modules/account';
@@ -61,4 +62,5 @@ export type RootStackParamList = {
   YouTubeLesson: YouTubeLessonRouteParams;
   BootGate: BootGateRouteParams;
   Onboarding: OnboardingRouteParams;
+  AccountSwitch: AccountSwitchRouteParams;
 } & LearningDetailParamList;

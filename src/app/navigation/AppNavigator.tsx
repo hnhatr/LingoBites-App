@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {
+  AccountSwitchGateScreen,
   BootGateScreen,
   OnboardingNameScreen,
   useAccountStore,
@@ -316,17 +317,23 @@ export function AppNavigator() {
     boot().catch(() => {});
   }, [boot]);
 
-  if (accountGateRouteForPhase(phase) !== 'Tabs') {
+  const gateRoute = accountGateRouteForPhase(phase);
+  if (gateRoute !== 'Tabs') {
     return (
       <NavigationContainer>
         <RootStack.Navigator
           id="RootStack"
           screenOptions={{headerShown: false}}
         >
-          {accountGateRouteForPhase(phase) === 'Onboarding' ? (
+          {gateRoute === 'Onboarding' ? (
             <RootStack.Screen
               component={OnboardingNameScreen}
               name="Onboarding"
+            />
+          ) : gateRoute === 'AccountSwitch' ? (
+            <RootStack.Screen
+              component={AccountSwitchGateScreen}
+              name="AccountSwitch"
             />
           ) : (
             <RootStack.Screen component={BootGateScreen} name="BootGate" />

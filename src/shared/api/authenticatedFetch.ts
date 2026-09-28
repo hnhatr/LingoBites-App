@@ -1,3 +1,7 @@
+import {
+  assertSyncDrainOwnershipUnchanged,
+  SyncOwnershipChangedError,
+} from '@shared/sync/syncDrainOwnership';
 import {createAuthClient} from '../auth/authClient';
 import {ensureValidSession} from '../auth/authSession';
 
@@ -34,6 +38,10 @@ export async function authenticatedFetch(
 
   let sessionResult = await ensureValidSession({client: authClient});
 
+  if (!(await assertSyncDrainOwnershipUnchanged())) {
+    throw new SyncOwnershipChangedError();
+  }
+
   let accessToken =
     sessionResult.status === 'valid'
       ? sessionResult.session.access_token
@@ -51,6 +59,9 @@ export async function authenticatedFetch(
       client: authClient,
       forceRefresh: true,
     });
+    if (!(await assertSyncDrainOwnershipUnchanged())) {
+      throw new SyncOwnershipChangedError();
+    }
     if (sessionResult.status === 'valid') {
       const retryHeaders = mergeHeaders(init?.headers, {
         Authorization: `Bearer ${sessionResult.session.access_token}`,

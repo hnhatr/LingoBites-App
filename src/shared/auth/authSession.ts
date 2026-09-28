@@ -5,6 +5,7 @@ import type {
 } from './authClient';
 import {isAuthApiError} from './authClient';
 import type {AuthSession, AuthUser} from './authTypes';
+import {isAccountStillOwner} from '@shared/sync/syncDrainOwnership';
 import {
   clearAllSessions,
   deleteSession,
@@ -51,9 +52,26 @@ export function isAccessTokenExpired(
 
 let inFlightRefresh: Promise<EnsureSessionResult> | null = null;
 
+/** FIFO mutex for account-specific active-session pointer (Keychain) writes. */
+let activePointerLock: Promise<void> = Promise.resolve();
+
+function withActivePointerLock<T>(body: () => Promise<T>): Promise<T> {
+  const previous = activePointerLock;
+  let release!: () => void;
+  activePointerLock = new Promise<void>(resolve => {
+    release = resolve;
+  });
+  return previous
+    .then(() => body())
+    .finally(() => {
+      release();
+    });
+}
+
 /** Test seam: drops the shared in-flight refresh promise. */
 export function resetRefreshStateForTests(): void {
   inFlightRefresh = null;
+  activePointerLock = Promise.resolve();
 }
 
 function isTerminalRefreshError(error: AuthClientError): boolean {
@@ -121,9 +139,27 @@ async function runRefresh(input: {
   if (!saved.ok) {
     return {status: 'keychain-error', error: saved.error};
   }
-  const pointed = await setActiveSessionId(next.session_id);
-  if (!pointed.ok) {
-    return {status: 'keychain-error', error: pointed.error};
+  const pointerResult = await withActivePointerLock(async () => {
+    if (!(await isAccountStillOwner(userId))) {
+      return {
+        kind: 'ownership' as const,
+      };
+    }
+    const pointed = await setActiveSessionId(next.session_id);
+    if (!pointed.ok) {
+      return {kind: 'keychain' as const, error: pointed.error};
+    }
+    return {kind: 'ok' as const};
+  });
+  if (pointerResult.kind === 'ownership') {
+    return {
+      status: 'refresh-failed',
+      code: 'ACCOUNT_OWNERSHIP_CHANGED',
+      message: 'Session refresh was superseded by an account change.',
+    };
+  }
+  if (pointerResult.kind === 'keychain') {
+    return {status: 'keychain-error', error: pointerResult.error};
   }
   // Rotation succeeded: the old session id is dead server-side, so drop
   // its record. Best-effort — a leftover record is ignored by readers and
@@ -171,10 +207,10 @@ export function ensureValidSession(input: {
 }
 
 /**
- * Persists a freshly issued session (bootstrap / account creation) and
- * marks it active. Returns the user so callers can hydrate account state.
+ * Persists a candidate session without moving the active pointer (P2 A→B
+ * staging). Tokens stay in Keychain but are not active until confirmation.
  */
-export async function persistNewSession(input: {
+export async function saveCandidateSession(input: {
   session: AuthSession;
   user: AuthUser;
 }): Promise<{ok: true} | {ok: false; error: unknown}> {
@@ -186,11 +222,35 @@ export async function persistNewSession(input: {
   if (!saved.ok) {
     return {ok: false, error: saved.error};
   }
-  const pointed = await setActiveSessionId(input.session.session_id);
-  if (!pointed.ok) {
-    return {ok: false, error: pointed.error};
-  }
   return {ok: true};
+}
+
+/** Moves the active-session pointer to an already persisted session id. */
+export async function activateStoredSession(
+  sessionId: string,
+): Promise<{ok: true} | {ok: false; error: unknown}> {
+  return withActivePointerLock(async () => {
+    const pointed = await setActiveSessionId(sessionId);
+    if (!pointed.ok) {
+      return {ok: false as const, error: pointed.error};
+    }
+    return {ok: true as const};
+  });
+}
+
+/**
+ * Persists a freshly issued session (bootstrap / account creation) and
+ * marks it active. Returns the user so callers can hydrate account state.
+ */
+export async function persistNewSession(input: {
+  session: AuthSession;
+  user: AuthUser;
+}): Promise<{ok: true} | {ok: false; error: unknown}> {
+  const saved = await saveCandidateSession(input);
+  if (!saved.ok) {
+    return saved;
+  }
+  return activateStoredSession(input.session.session_id);
 }
 
 /** Signs out: best-effort server logout, then clears every stored session. */
