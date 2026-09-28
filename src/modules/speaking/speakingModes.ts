@@ -11,7 +11,7 @@ import {
   getLessonActivities,
   getLessonChunks,
   listActivePackageLessons,
-} from '@shared/db/ContentRuntimeRepository';
+} from '@modules/content';
 import type {SpeakingMode} from '@shared/db/types';
 import type {HandoffIconName} from '@components/icons/iconRegistry';
 

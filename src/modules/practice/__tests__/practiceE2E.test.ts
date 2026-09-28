@@ -11,8 +11,8 @@ import {
   getPracticeSet,
   purgeExpiredPracticeData,
   savePracticeSet,
-} from '@shared/db/PracticeRepository';
-import {listPendingSyncEvents} from '@shared/db/SyncOutboxRepository';
+} from '../data/PracticeRepository';
+import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import * as TokenStore from '@shared/security/lessonTokenStore';
 import {getPracticeSetApi} from '@shared/api/practiceClient';
@@ -22,7 +22,7 @@ import {
   resumeSession,
   summarizeSession,
 } from '../sessionEngine';
-import {drainOutboxOnce} from '../../sync/outboxSync';
+import {drainOutboxOnce} from '@modules/sync';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

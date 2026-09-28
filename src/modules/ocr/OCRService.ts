@@ -1,4 +1,4 @@
-import {extractTextFromImage} from '@shared/api/ocrClient';
+import {extractTextFromImage} from './api/ocrClient';
 import {getAppConfig} from '@shared/api/appConfig';
 import {getTextLengthBucket, trackEvent} from '../analytics';
 import type {OCRImageInput, OCRTextResult} from '@shared/api/types';

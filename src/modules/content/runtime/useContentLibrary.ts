@@ -2,17 +2,17 @@ import {
   getContentLessonById,
   getLessonAudioAssets,
   listActivePackageLessons,
-} from '@shared/db/ContentRuntimeRepository';
+} from '../data/ContentRuntimeRepository';
 import type {
   ContentLessonListItem,
   ContentLessonRow,
-} from '@shared/db/ContentRuntimeRepository';
+} from '../data/ContentRuntimeRepository';
 
 export type {ContentLessonListItem, ContentLessonRow};
 
 /**
  * Public entry point for imported content-package reads. Screens call this
- * instead of importing `shared/db/ContentRuntimeRepository` directly
+ * instead of importing content `data/ContentRuntimeRepository` directly
  * (SETE-118 Việc 3) — the repository stays synchronous under the hood, this
  * only relocates which layer is allowed to know about it.
  *

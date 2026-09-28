@@ -216,6 +216,14 @@ function isPublicFeatureBarrel(target, specifier) {
   }
   const fileName = parts[2];
   const parsed = path.parse(fileName);
+  if (
+    target.feature === 'speaking' &&
+    (parsed.name === 'speakingQueryPort' || parsed.name === 'speakingUiPort') &&
+    ['.ts', '.tsx', '.js', '.jsx'].includes(parsed.ext)
+  ) {
+    return specifier === `@modules/speaking/${parsed.name}`;
+  }
+
   const isIndex =
     parsed.name === 'index' &&
     ['.ts', '.tsx', '.js', '.jsx'].includes(parsed.ext);

@@ -1,5 +1,5 @@
 import {AppState, type AppStateStatus} from 'react-native';
-import {syncPull} from '@shared/api/syncClient';
+import {syncPull} from './syncClient';
 import {getDatabase, withTransaction} from '@shared/db/database';
 import type {SyncRecord} from '@shared/schemas/sync';
 

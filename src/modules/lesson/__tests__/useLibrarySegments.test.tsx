@@ -7,26 +7,19 @@ import {
 import {
   listSavedLessons,
   listStartedLessons,
-} from '@shared/db/ContentLessonStateRepository';
-import {listAllBookmarkedGrammar} from '@shared/db/GrammarBookmarkRepository';
-import {listFlashcards} from '@shared/db/FlashcardRepository';
-import {useContentLibrary} from '@modules/content';
+  useContentLibrary,
+} from '@modules/content';
+import {listAllBookmarkedGrammar, listFlashcards} from '@modules/review';
 
-jest.mock('@shared/db/ContentLessonStateRepository', () => ({
-  listSavedLessons: jest.fn(),
-  listStartedLessons: jest.fn(),
-}));
-
-jest.mock('@shared/db/GrammarBookmarkRepository', () => ({
+jest.mock('@modules/review', () => ({
   listAllBookmarkedGrammar: jest.fn(),
-}));
-
-jest.mock('@shared/db/FlashcardRepository', () => ({
   listFlashcards: jest.fn(),
 }));
 
 jest.mock('@modules/content', () => ({
   useContentLibrary: jest.fn(),
+  listSavedLessons: jest.fn(),
+  listStartedLessons: jest.fn(),
 }));
 
 function TestWrapper({

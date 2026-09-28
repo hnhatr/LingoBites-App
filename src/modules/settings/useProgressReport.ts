@@ -2,20 +2,19 @@ import {
   exportPrivacySafeMetrics,
   formatPercentage,
   getCapabilityProgressReport,
-} from '@shared/db/PilotMetricsRepository';
-import type {CapabilityProgressReport} from '@shared/db/PilotMetricsRepository';
+} from '@modules/analytics';
+import type {CapabilityProgressReport} from '@modules/analytics';
 
 export type {CapabilityProgressReport};
 
 /**
- * Public entry point for pilot-metrics reads. Screens call this instead of
- * importing `shared/db/PilotMetricsRepository` directly (SETE-118 Việc 3) —
- * the repository stays synchronous under the hood, this only relocates
- * which layer is allowed to know about it.
+ * Settings-facing facade for pilot-metrics reads. Screens call this instead of
+ * importing `@modules/analytics` directly so settings stays the documented
+ * entry for profile/progress UI (SETE-118 Việc 3).
  *
- * Each member forwards to the repository by name at call time (not captured
- * once into an object) so `jest.spyOn(PilotMetricsRepository, ...)` in
- * existing tests keeps working through this indirection.
+ * Each member forwards to the analytics public port at call time (not captured
+ * once into an object) so `jest.spyOn` on the analytics module in existing
+ * tests keeps working through this indirection.
  */
 export function useProgressReport() {
   return progressReport;

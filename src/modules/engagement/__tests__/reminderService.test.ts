@@ -2,10 +2,7 @@ import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {resetDatabaseForTests} from '@shared/db/database';
 import {open} from 'react-native-quick-sqlite';
 import {DB_NAME} from '@shared/db/constants';
-import {
-  saveFlashcard,
-  recordFlashcardRating,
-} from '@shared/db/FlashcardRepository';
+import {saveFlashcard, recordFlashcardRating} from '@modules/review';
 import {validFullOutput} from '@shared/fixtures';
 import {
   configureReminderScheduler,

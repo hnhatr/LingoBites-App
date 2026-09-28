@@ -16,7 +16,7 @@ import {
   clearSpeakingLocalData,
 } from '../LocalDataDeletionService';
 import * as LocalDataWipe from '@shared/db/localDataWipe';
-import * as SpeakingRepository from '@shared/db/SpeakingRepository';
+import * as SpeakingRepository from '../../../modules/speaking/data/SpeakingRepository';
 
 describe('LocalDataDeletionService', () => {
   beforeEach(() => {

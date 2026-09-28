@@ -1,0 +1,51 @@
+{
+  "request_id": "req-review-001",
+  "status": "success",
+  "exercises": [
+    {
+      "exercise": {
+        "id": "33333333-3333-4333-8333-333333333333",
+        "title": "Choose the correct word",
+        "type": "multiple_choice",
+        "instruction": "Pick the best answer.",
+        "prompt": "She ___ to school every day.",
+        "config": {
+          "options": [
+            {"id": "opt-a", "text": "go"},
+            {"id": "opt-b", "text": "goes"}
+          ]
+        }
+      },
+      "latest_attempt": {
+        "attempt_id": "44444444-4444-4444-8444-444444444444",
+        "exercise_id": "33333333-3333-4333-8333-333333333333",
+        "is_correct": false,
+        "attempted_at": "2026-09-25T08:10:00.000Z"
+      }
+    }
+  ],
+  "vocabularies": [
+    {
+      "vocabulary": {
+        "id": "55555555-5555-4555-8555-555555555555",
+        "key": "goes",
+        "language": "en",
+        "lemma": "go",
+        "part_of_speech": "verb",
+        "meaning": "di chuyển đến nơi nào đó",
+        "ipa": "/ɡəʊz/",
+        "audio_media_id": null,
+        "image_media_id": null
+      },
+      "progress": {
+        "id": "66666666-6666-4666-8666-666666666666",
+        "vocabulary_id": "55555555-5555-4555-8555-555555555555",
+        "status": "learning",
+        "first_seen_at": "2026-09-25T08:05:00.000Z",
+        "last_seen_at": "2026-09-25T08:12:00.000Z",
+        "created_at": "2026-09-25T08:05:00.000Z",
+        "updated_at": "2026-09-25T08:12:00.000Z"
+      }
+    }
+  ]
+}

@@ -15,15 +15,13 @@ import {MaterialIcon} from '@components/MaterialIcon';
 import {ShelfSurface} from '@components/ShelfSurface';
 import {getGamificationSnapshot} from '@modules/engagement';
 import type {HandoffIconName} from '@components/icons/iconRegistry';
-import {useContentLibrary, type ContentLessonRow} from '../content';
 import {
   listSavedLessons,
   listStartedLessons,
-} from '@shared/db/ContentLessonStateRepository';
-import {
-  listYouTubeLessons,
-  countYouTubeLessons,
-} from '@shared/db/YouTubeLessonRepository';
+  useContentLibrary,
+  type ContentLessonRow,
+} from '@modules/content';
+import {countYouTubeLessons, listYouTubeLessons} from '@modules/youtube';
 import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
 import {useFeatureFlags} from '@/release';
 import {
@@ -36,7 +34,7 @@ import {trackEvent} from '../analytics';
 import {useAppTheme, type AppTheme} from '@theme';
 import {useFloatingTabBarClearance} from '@components/layout';
 import {useTranslation} from 'react-i18next';
-import {fetchContinueLearning} from '@shared/api/learningClient';
+import {fetchContinueLearning} from '@modules/curriculumLesson';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeMain'>;
 

@@ -10,6 +10,12 @@ module.exports = {
           '@app': './src/app',
           '@contracts': './src/contracts',
           '@modules': './src/modules',
+          '@shared/db/FlashcardRepository':
+            './src/modules/review/FlashcardRepository',
+          '@shared/db/GrammarBookmarkRepository':
+            './src/modules/review/GrammarBookmarkRepository',
+          '@shared/api/reviewEventsClient':
+            './src/modules/review/api/reviewEventsClient',
           '@shared': './src/shared',
           '@components': './src/components',
           '@theme': './src/theme',

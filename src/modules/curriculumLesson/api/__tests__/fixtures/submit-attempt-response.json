@@ -1,0 +1,10 @@
+{
+  "request_id": "req-attempt-001",
+  "status": "success",
+  "result": {
+    "attempt_id": "44444444-4444-4444-8444-444444444444",
+    "exercise_id": "33333333-3333-4333-8333-333333333333",
+    "is_correct": true,
+    "attempted_at": "2026-09-25T08:10:00.000Z"
+  }
+}

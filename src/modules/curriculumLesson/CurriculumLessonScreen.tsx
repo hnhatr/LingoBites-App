@@ -17,7 +17,7 @@ import {CurriculumLessonPlayer} from './CurriculumLessonPlayer';
 import {
   startLessonProgress,
   submitExerciseAttempt,
-} from '@shared/api/learningClient';
+} from './api/learningProgressClient';
 
 /**
  * Mounted in both the Lessons and Home stacks (LING-41 TASK-006: Home

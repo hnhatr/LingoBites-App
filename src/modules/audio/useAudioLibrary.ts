@@ -1,7 +1,7 @@
 import {
   getAudioCacheStats,
   listReadyAudioAssets,
-} from '@shared/db/AudioAssetRepository';
+} from './data/AudioAssetRepository';
 
 /**
  * Public entry point for downloaded-audio reads. Screens call this instead

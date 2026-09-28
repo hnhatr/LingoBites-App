@@ -1,0 +1,13 @@
+{
+  "request_id": "req-continue-001",
+  "status": "success",
+  "progress": {
+    "id": "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa",
+    "lesson_id": "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb",
+    "status": "in_progress",
+    "started_at": "2026-09-25T07:00:00.000Z",
+    "completed_at": null,
+    "created_at": "2026-09-25T07:00:00.000Z",
+    "updated_at": "2026-09-25T07:15:00.000Z"
+  }
+}

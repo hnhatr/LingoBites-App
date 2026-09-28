@@ -3,12 +3,12 @@ import {
   getDueContentReviewItems,
   listActivePackageLessons,
   listContentReviewItems,
-} from '@shared/db/ContentRuntimeRepository';
-import {getDueFlashcards} from '@shared/db/FlashcardRepository';
+} from '@modules/content';
+import {getDueFlashcards} from '@modules/review';
 import {
   listErrorEvents,
   listSpeakingRecordings,
-} from '@shared/db/SpeakingRepository';
+} from '@modules/speaking/speakingQueryPort';
 import type {LearnerProfileData, LearnerStateSnapshot} from './types';
 
 export function getLearnerProfileData(): LearnerProfileData | null {

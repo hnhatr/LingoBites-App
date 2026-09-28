@@ -5,10 +5,7 @@ import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {DB_NAME} from '@shared/db/constants';
 import {runMigrations} from '@shared/db/migrations';
 import {resetDatabaseForTests} from '@shared/db/database';
-import {
-  savePracticeSet,
-  savePracticeSession,
-} from '@shared/db/PracticeRepository';
+import {savePracticeSet, savePracticeSession} from '../data/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {FeatureFlagProvider} from '@/release';
 import {AppThemeProvider} from '@theme';

@@ -2,6 +2,98 @@
   "version": "1.0.0",
   "description": "Baseline module boundary exceptions for AD-004 staged enforcement",
   "soleWriter": "Integration Owner",
-  "totalExceptions": 0,
-  "exceptions": []
+  "totalExceptions": 13,
+  "exceptions": [
+    {
+      "file": "src/shared/db/PracticeRepository.ts",
+      "specifier": "../../modules/practice/data/PracticeRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-008"
+    },
+    {
+      "file": "src/shared/api/practiceEventsClient.ts",
+      "specifier": "../../modules/practice/api/practiceEventsClient",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-008"
+    },
+    {
+      "file": "src/shared/db/AudioAssetRepository.ts",
+      "specifier": "../../modules/audio/data/AudioAssetRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-012"
+    },
+    {
+      "file": "src/shared/db/SpeakingRepository.ts",
+      "specifier": "../../modules/speaking/data/SpeakingRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-012"
+    },
+    {
+      "file": "src/shared/api/recordingClient.ts",
+      "specifier": "../../modules/speaking/api/recordingClient",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-012"
+    },
+    {
+      "file": "src/shared/db/GamificationRepository.ts",
+      "specifier": "../../modules/engagement/data/GamificationRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-014"
+    },
+    {
+      "file": "src/shared/db/PilotMetricsRepository.ts",
+      "specifier": "../../modules/analytics/data/PilotMetricsRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-014"
+    },
+    {
+      "file": "src/shared/db/ContentPackageRepository.ts",
+      "specifier": "../../modules/content/data/ContentPackageRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-013"
+    },
+    {
+      "file": "src/shared/db/ContentLessonStateRepository.ts",
+      "specifier": "../../modules/content/data/ContentLessonStateRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-013"
+    },
+    {
+      "file": "src/shared/db/ContentRuntimeRepository.ts",
+      "specifier": "../../modules/content/data/ContentRuntimeRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-013"
+    },
+    {
+      "file": "src/shared/db/YouTubeLessonRepository.ts",
+      "specifier": "../../modules/youtube/data/YouTubeLessonRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-015"
+    },
+    {
+      "file": "src/shared/db/YouTubeProgressRepository.ts",
+      "specifier": "../../modules/youtube/data/YouTubeProgressRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-015"
+    },
+    {
+      "file": "src/shared/api/ocrClient.ts",
+      "specifier": "../../modules/ocr/api/ocrClient",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-015"
+    }
+  ]
 }

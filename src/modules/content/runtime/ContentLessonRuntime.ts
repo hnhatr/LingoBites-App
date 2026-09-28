@@ -18,7 +18,7 @@ import {
   getLessonChunks,
   getLessonSrsItems,
   insertContentReviewItems,
-} from '@shared/db/ContentRuntimeRepository';
+} from '../data/ContentRuntimeRepository';
 import {buildLessonSteps} from './buildLessonSteps';
 import type {
   LessonRuntimeData,

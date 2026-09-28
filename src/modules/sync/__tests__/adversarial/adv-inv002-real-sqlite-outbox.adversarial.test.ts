@@ -5,7 +5,7 @@ import path from 'node:path';
 import {validFullOutput} from '@shared/fixtures';
 import {resetDatabaseForTests} from '@shared/db/database';
 import {runMigrations} from '@shared/db/migrations';
-import {listPendingSyncEvents} from '@shared/db/SyncOutboxRepository';
+import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
 import {
   recordFlashcardRating,
   saveFlashcard,

@@ -198,3 +198,48 @@ export type {
   CurriculumLessonClientOptions,
   CurriculumLessonAnswerInput,
 } from './curriculumLessonClient';
+export {
+  LEARNING_PROGRESS_CLIENT_FIXTURE_REVISION,
+  LEARNING_PROGRESS_CLIENT_DESIGN_REF,
+  LessonProgressStatusSchema,
+  LessonProgressSchema,
+  VocabularyProgressStatusSchema,
+  VocabularyProgressSchema,
+  AttemptResultSchema,
+  startLessonProgress,
+  completeLessonProgress,
+  listLessonProgress,
+  submitExerciseAttempt,
+  markVocabularySeen,
+  setVocabularyProgress,
+  fetchContinueLearning,
+} from './api/learningProgressClient';
+export type {
+  LessonProgressStatus,
+  LessonProgress,
+  VocabularyProgressStatus,
+  VocabularyProgress,
+  AttemptResult,
+  LearningAttemptAnswer,
+  LearningClientErrorKind,
+  LearningClientError,
+  StartLessonResult,
+  CompleteLessonResult,
+  LessonProgressListResult,
+  SubmitAttemptResult,
+  VocabularySeenResult,
+  SetVocabularyProgressResult,
+  ContinueLearningResult,
+  LearningClientOptions,
+} from './api/learningProgressClient';
+export {
+  resolveLessonDestination,
+  startLessonFromConfirmedText,
+} from './startLessonFromConfirmedText';
+export type {
+  LessonDestination,
+  LessonFeatureFlags,
+  UnifiedLessonReadiness,
+  NavigateFn,
+  UnifiedGenerationJobCreator,
+} from './startLessonFromConfirmedText';

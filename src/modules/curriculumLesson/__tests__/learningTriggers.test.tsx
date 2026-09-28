@@ -26,24 +26,27 @@ import {
   markVocabularySeen,
   submitExerciseAttempt,
   completeLessonProgress,
-  fetchReview,
   setVocabularyProgress,
   fetchContinueLearning,
-} from '@shared/api/learningClient';
+} from '../api/learningProgressClient';
+import {fetchReview} from '../../review/api/learningReviewClient';
 
 jest.mock('../curriculumLessonClient', () => ({
   fetchCurriculumLesson: jest.fn(),
   checkCurriculumLessonExercise: jest.fn(),
 }));
 
-jest.mock('@shared/api/learningClient', () => ({
+jest.mock('../api/learningProgressClient', () => ({
   startLessonProgress: jest.fn(),
   markVocabularySeen: jest.fn(),
   submitExerciseAttempt: jest.fn(),
   completeLessonProgress: jest.fn(),
-  fetchReview: jest.fn(),
   setVocabularyProgress: jest.fn(),
   fetchContinueLearning: jest.fn(),
+}));
+
+jest.mock('../../review/api/learningReviewClient', () => ({
+  fetchReview: jest.fn(),
 }));
 
 const {fetchCurriculumLesson, checkCurriculumLessonExercise} = jest.requireMock(

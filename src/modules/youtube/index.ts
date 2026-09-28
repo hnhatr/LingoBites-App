@@ -1,3 +1,23 @@
+export {
+  countYouTubeLessons,
+  deleteYouTubeLesson,
+  getYouTubeLesson,
+  getYouTubeProgress,
+  listYouTubeLessons,
+  saveYouTubeLesson,
+  saveYouTubeProgress,
+  clearYouTubeProgress,
+} from './youtubeQueryPort';
+export type {
+  SaveYouTubeLessonInput,
+  SaveYouTubeLessonResult,
+  YouTubeProgress,
+} from './youtubeQueryPort';
+export type {
+  RawCue,
+  YouTubeSegment,
+  YouTubeTranscript,
+} from './youtubeTranscriptPort';
 export {YouTubeInputScreen} from './screens/YouTubeInputScreen';
 export {YouTubeHistoryScreen} from './screens/YouTubeHistoryScreen';
 export {YouTubeProcessingScreen} from './screens/YouTubeProcessingScreen';
