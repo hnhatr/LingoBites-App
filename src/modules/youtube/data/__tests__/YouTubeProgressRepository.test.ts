@@ -1,8 +1,8 @@
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '../constants';
-import {getDatabase, resetDatabaseForTests} from '../database';
-import {runMigrations} from '../migrations';
-import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
+import {DB_NAME} from '@shared/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
+import {runMigrations} from '@shared/db/migrations';
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   clearYouTubeProgress,
   getYouTubeProgress,
@@ -12,7 +12,7 @@ import {
   deleteYouTubeLesson,
   saveYouTubeLesson,
 } from '../YouTubeLessonRepository';
-import type {YouTubeTranscript} from '../../schemas/youtube-transcript-v1';
+import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
 
 const transcript: YouTubeTranscript = {
   schema_version: 'youtube-transcript-v1',

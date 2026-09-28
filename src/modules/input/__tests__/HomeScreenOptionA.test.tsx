@@ -10,6 +10,17 @@ import {listActivePackageLessons} from '@shared/db/ContentRuntimeRepository';
 import {AppThemeProvider} from '@theme';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {bootstrapContentPackage} from '../../content/bootstrap/contentBootstrap';
+
+const mockListYouTubeLessons = jest.fn(() => []);
+const mockCountYoutubeLessons = jest.fn(() => 0);
+
+jest.mock('@modules/youtube', () => ({
+  listYouTubeLessons: (...args: unknown[]) =>
+    mockListYouTubeLessons.apply(undefined, args),
+  countYouTubeLessons: (...args: unknown[]) =>
+    mockCountYoutubeLessons.apply(undefined, args),
+}));
+
 import {HomeScreen} from '../HomeScreen';
 
 function navigation(tabNavigate = jest.fn()) {

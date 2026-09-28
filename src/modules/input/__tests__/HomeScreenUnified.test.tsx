@@ -14,9 +14,11 @@ const mockListYouTubeLessons = jest.fn();
 const mockCountYoutubeLessons = jest.fn();
 const mockUseYouTubeServerEnabled = jest.fn();
 
-jest.mock('@shared/db/YouTubeLessonRepository', () => ({
-  listYouTubeLessons: (...args: unknown[]) => mockListYouTubeLessons(...args),
-  countYouTubeLessons: (...args: unknown[]) => mockCountYoutubeLessons(...args),
+jest.mock('@modules/youtube', () => ({
+  listYouTubeLessons: (...args: unknown[]) =>
+    mockListYouTubeLessons.apply(undefined, args),
+  countYouTubeLessons: (...args: unknown[]) =>
+    mockCountYoutubeLessons.apply(undefined, args),
 }));
 
 jest.mock('@shared/api/youtubeCapabilities', () => ({

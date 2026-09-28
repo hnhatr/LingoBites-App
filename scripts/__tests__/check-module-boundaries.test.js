@@ -85,6 +85,27 @@ const LEGACY_SHIM_ALLOWANCES = [
     owner: 'React Native Developer',
     expiry: 'TASK-013',
   },
+  {
+    file: 'src/shared/db/YouTubeLessonRepository.ts',
+    specifier: '../../modules/youtube/data/YouTubeLessonRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-015',
+  },
+  {
+    file: 'src/shared/db/YouTubeProgressRepository.ts',
+    specifier: '../../modules/youtube/data/YouTubeProgressRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-015',
+  },
+  {
+    file: 'src/shared/api/ocrClient.ts',
+    specifier: '../../modules/ocr/api/ocrClient',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-015',
+  },
 ];
 
 function expectManifestMatchesLegacyShimDelta(manifest) {

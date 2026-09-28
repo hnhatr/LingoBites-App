@@ -9,7 +9,7 @@ import {HandoffProgressTrack} from '@components/HandoffProgressTrack';
 import {ScreenHeader} from '@components/ScreenHeader';
 import {runYouTubeJob, type YouTubeJobProgress} from '../api/youtubeApi';
 import {useTranslation} from 'react-i18next';
-import {saveYouTubeLesson} from '@shared/db/YouTubeLessonRepository';
+import {saveYouTubeLesson} from '../youtubeQueryPort';
 import {useAppTheme} from '@theme';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'YouTubeProcessing'>;

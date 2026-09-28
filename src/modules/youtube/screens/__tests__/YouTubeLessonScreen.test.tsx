@@ -8,11 +8,8 @@ import {ScreenHeader} from '@components/ScreenHeader';
 import {DB_NAME} from '@shared/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {runMigrations} from '@shared/db/migrations';
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@shared/db/YouTubeProgressRepository';
-import {saveYouTubeLesson} from '@shared/db/YouTubeLessonRepository';
+import {getYouTubeProgress, saveYouTubeProgress} from '../../youtubeQueryPort';
+import {saveYouTubeLesson} from '../../youtubeQueryPort';
 import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {

@@ -13,16 +13,13 @@ import {AppText} from '@components/AppText';
 import {IconButton} from '@components/IconButton';
 import {ScreenHeader} from '@components/ScreenHeader';
 import {useAppTheme, type AppTheme} from '@theme';
-import type {
-  YouTubeSegment,
-  YouTubeTranscript,
-} from '@shared/schemas/youtube-transcript-v1';
-import {getYouTubeLesson} from '@shared/db/YouTubeLessonRepository';
+import type {YouTubeSegment, YouTubeTranscript} from '../youtubeTranscriptPort';
 import {
   clearYouTubeProgress,
+  getYouTubeLesson,
   getYouTubeProgress,
   saveYouTubeProgress,
-} from '@shared/db/YouTubeProgressRepository';
+} from '../youtubeQueryPort';
 import {
   YouTubePlayer,
   type YouTubePlayerErrorCode,
