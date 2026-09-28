@@ -1,7 +1,9 @@
+import {createRequestId} from '../api/requestId';
 import type {AuthUser} from './authTypes';
 import {
   ACCOUNT_SWITCH_ATTEMPT_VERSION,
   attemptMatchesOwnership,
+  canonicalizeTargetUserSnapshot,
   clearAccountSwitchJournal,
   readAccountSwitchJournal,
   writeAccountSwitchJournal,
@@ -23,6 +25,7 @@ export type CoordinatorErrorCode =
   | 'STALE_ATTEMPT_ID'
   | 'OWNERSHIP_MISMATCH'
   | 'CONFIRMED_ATTEMPT_LOCKED'
+  | 'DUPLICATE_ATTEMPT_ID'
   | 'INVALID_PHASE'
   | 'KEYCHAIN_ERROR'
   | 'INVALID_JOURNAL'
@@ -68,10 +71,7 @@ function defaultNow(): string {
 }
 
 function defaultAttemptId(): string {
-  if (typeof globalThis.crypto?.randomUUID === 'function') {
-    return globalThis.crypto.randomUUID();
-  }
-  return `attempt-${Date.now()}`;
+  return createRequestId();
 }
 
 function mapJournalError<T>(result: JournalResult<T>): CoordinatorResult<T> {
@@ -101,7 +101,9 @@ function buildAttempt(
     source_account_id: input.sourceAccountId,
     target_account_id: input.targetAccountId,
     target_session_id: input.targetSessionId,
-    target_user_snapshot: input.targetUserSnapshot,
+    target_user_snapshot: canonicalizeTargetUserSnapshot(
+      input.targetUserSnapshot,
+    ),
     phase,
     created_at: timestamps.createdAt,
     updated_at: timestamps.updatedAt,
@@ -122,6 +124,10 @@ export async function stageAccountSwitchAttempt(
   input: StageAccountSwitchInput,
 ): Promise<CoordinatorResult<AccountSwitchAttemptV1>> {
   return runSingleFlight(async () => {
+    if (input.targetAccountId !== input.targetUserSnapshot.id) {
+      return {ok: false, errorCode: 'OWNERSHIP_MISMATCH'};
+    }
+
     const now = input.now ?? defaultNow;
     const newAttemptId = input.newAttemptId ?? defaultAttemptId;
 
@@ -135,6 +141,9 @@ export async function stageAccountSwitchAttempt(
     }
 
     const attemptId = newAttemptId();
+    if (existing.value?.attempt_id === attemptId) {
+      return {ok: false, errorCode: 'DUPLICATE_ATTEMPT_ID'};
+    }
     const iso = now();
     const attempt = buildAttempt(input, 'awaiting', attemptId, {
       createdAt: iso,
@@ -246,6 +255,20 @@ export async function recoverAccountSwitchAttempt(
     }
 
     const attempt = existing.value;
+
+    const active = context.activeSessionUserId;
+    if (active !== null) {
+      const allowedActive = context.dbCommittedToTarget
+        ? [attempt.source_account_id, attempt.target_account_id]
+        : [attempt.source_account_id];
+      if (!allowedActive.includes(active)) {
+        return {
+          ok: true,
+          value: {kind: 'invalid_journal', errorCode: 'INVALID_JOURNAL'},
+        };
+      }
+    }
+
     const localIsSource =
       context.localAccountId !== null &&
       context.localAccountId === attempt.source_account_id;

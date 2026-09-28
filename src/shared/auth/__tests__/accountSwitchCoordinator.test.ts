@@ -171,6 +171,31 @@ describe('accountSwitchCoordinator stage/confirm/cancel', () => {
     }
   });
 
+  it('CR-001: rejects staging when the new attempt id equals the replaced awaiting id', async () => {
+    const first = await stageAccountSwitchAttempt({
+      ...stageInput(),
+      newAttemptId: () => 'fixed-attempt-id',
+    });
+    expect(first.ok).toBe(true);
+    const second = await stageAccountSwitchAttempt({
+      ...stageInput(userC),
+      newAttemptId: () => 'fixed-attempt-id',
+    });
+    expect(second).toEqual({ok: false, errorCode: 'DUPLICATE_ATTEMPT_ID'});
+  });
+
+  it('CR-002: rejects staging when target account id disagrees with snapshot id', async () => {
+    const result = await stageAccountSwitchAttempt({
+      ...stageInput(userB),
+      targetAccountId: userC.id,
+    });
+    expect(result).toEqual({ok: false, errorCode: 'OWNERSHIP_MISMATCH'});
+    await expect(readCurrentAccountSwitchAttempt()).resolves.toEqual({
+      ok: true,
+      value: null,
+    });
+  });
+
   it('rejects cancel on a confirmed attempt', async () => {
     const staged = await stageAccountSwitchAttempt(stageInput());
     expect(staged.ok).toBe(true);
@@ -273,6 +298,20 @@ describe('accountSwitchCoordinator recover (restart reconstruction)', () => {
     await expect(readAccountSwitchJournal()).resolves.toEqual({
       ok: true,
       value: null,
+    });
+  });
+
+  it('CR-004: rejects recovery when an unrelated account is active before DB commit', async () => {
+    const staged = await stageAccountSwitchAttempt(stageInput());
+    expect(staged.ok).toBe(true);
+    const recovery = await recoverAccountSwitchAttempt({
+      localAccountId: userA.id,
+      activeSessionUserId: userC.id,
+      dbCommittedToTarget: false,
+    });
+    expect(recovery).toEqual({
+      ok: true,
+      value: {kind: 'invalid_journal', errorCode: 'INVALID_JOURNAL'},
     });
   });
 

@@ -138,4 +138,33 @@ describe('accountSwitchJournal Keychain adapter (mock vault)', () => {
       errorCode: 'CONTAINS_TOKEN',
     });
   });
+
+  it('CR-003: rejects camelCase token fields inside the target snapshot on parse', () => {
+    const raw = JSON.stringify({
+      ...validAttempt(),
+      target_user_snapshot: {
+        ...userB,
+        accessToken: 'lb_at',
+      },
+    });
+    expect(parseAccountSwitchAttemptV1(raw)).toEqual({
+      ok: false,
+      errorCode: 'CONTAINS_TOKEN',
+    });
+  });
+
+  it('CR-003: strips non-token extras from snapshot on read round-trip', async () => {
+    const attempt = validAttempt();
+    await writeAccountSwitchJournal({
+      ...attempt,
+      target_user_snapshot: {
+        ...userB,
+        extra_metadata: 'harmless',
+      } as typeof userB & {extra_metadata: string},
+    });
+    await expect(readAccountSwitchJournal()).resolves.toEqual({
+      ok: true,
+      value: attempt,
+    });
+  });
 });

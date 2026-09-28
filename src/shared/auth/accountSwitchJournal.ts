@@ -48,6 +48,16 @@ export type JournalResult<T> =
       error?: unknown;
     };
 
+const AUTH_USER_SNAPSHOT_KEYS: ReadonlyArray<keyof AuthUser> = [
+  'id',
+  'public_code',
+  'display_name',
+  'phone_e164',
+  'status',
+  'created_at',
+  'updated_at',
+];
+
 const TOKEN_FIELD_NAMES = new Set([
   'access_token',
   'refresh_token',
@@ -55,6 +65,29 @@ const TOKEN_FIELD_NAMES = new Set([
   'refresh_expires_at',
   'session_id',
 ]);
+
+function isTokenLikeFieldName(key: string): boolean {
+  const lower = key.toLowerCase();
+  return (
+    lower.includes('token') ||
+    lower.includes('secret') ||
+    lower === 'password' ||
+    lower.includes('credential')
+  );
+}
+
+/** Persists only the frozen AuthUser fields (no token-like extras). */
+export function canonicalizeTargetUserSnapshot(user: AuthUser): AuthUser {
+  return {
+    id: user.id,
+    public_code: user.public_code,
+    display_name: user.display_name,
+    phone_e164: user.phone_e164,
+    status: user.status,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  };
+}
 
 function containsForbiddenTokenFields(value: unknown): boolean {
   if (value === null || typeof value !== 'object') {
@@ -66,7 +99,7 @@ function containsForbiddenTokenFields(value: unknown): boolean {
   for (const [key, nested] of Object.entries(
     value as Record<string, unknown>,
   )) {
-    if (TOKEN_FIELD_NAMES.has(key)) {
+    if (TOKEN_FIELD_NAMES.has(key) || isTokenLikeFieldName(key)) {
       return true;
     }
     if (containsForbiddenTokenFields(nested)) {
@@ -74,6 +107,24 @@ function containsForbiddenTokenFields(value: unknown): boolean {
     }
   }
   return false;
+}
+
+function parseTargetUserSnapshot(raw: unknown): JournalResult<AuthUser> {
+  if (raw === null || typeof raw !== 'object') {
+    return {ok: false, errorCode: 'INVALID_PAYLOAD'};
+  }
+  const record = raw as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!AUTH_USER_SNAPSHOT_KEYS.includes(key as keyof AuthUser)) {
+      if (isTokenLikeFieldName(key)) {
+        return {ok: false, errorCode: 'CONTAINS_TOKEN'};
+      }
+    }
+  }
+  if (!isAuthUserSnapshot(record)) {
+    return {ok: false, errorCode: 'INVALID_PAYLOAD'};
+  }
+  return {ok: true, value: canonicalizeTargetUserSnapshot(record as AuthUser)};
 }
 
 function isAuthUserSnapshot(value: unknown): value is AuthUser {
@@ -128,15 +179,17 @@ export function parseAccountSwitchAttemptV1(
     typeof record.target_session_id !== 'string' ||
     typeof record.created_at !== 'string' ||
     typeof record.updated_at !== 'string' ||
-    !(
-      record.confirmed_at === null || typeof record.confirmed_at === 'string'
-    ) ||
-    !isAuthUserSnapshot(record.target_user_snapshot)
+    !(record.confirmed_at === null || typeof record.confirmed_at === 'string')
   ) {
     return {ok: false, errorCode: 'INVALID_PAYLOAD'};
   }
 
-  if (record.target_user_snapshot.id !== record.target_account_id) {
+  const snapshot = parseTargetUserSnapshot(record.target_user_snapshot);
+  if (!snapshot.ok) {
+    return snapshot;
+  }
+
+  if (snapshot.value.id !== record.target_account_id) {
     return {ok: false, errorCode: 'INVALID_PAYLOAD'};
   }
 
@@ -148,7 +201,7 @@ export function parseAccountSwitchAttemptV1(
       source_account_id: record.source_account_id,
       target_account_id: record.target_account_id,
       target_session_id: record.target_session_id,
-      target_user_snapshot: record.target_user_snapshot,
+      target_user_snapshot: snapshot.value,
       phase,
       created_at: record.created_at,
       updated_at: record.updated_at,
@@ -200,10 +253,16 @@ export async function writeAccountSwitchJournal(
   if (containsForbiddenTokenFields(attempt)) {
     return {ok: false, errorCode: 'CONTAINS_TOKEN'};
   }
+  const persisted: AccountSwitchAttemptV1 = {
+    ...attempt,
+    target_user_snapshot: canonicalizeTargetUserSnapshot(
+      attempt.target_user_snapshot,
+    ),
+  };
   try {
     await Keychain.setGenericPassword(
       JOURNAL_USERNAME,
-      serializeAccountSwitchAttemptV1(attempt),
+      serializeAccountSwitchAttemptV1(persisted),
       {service: ACCOUNT_SWITCH_JOURNAL_SERVICE},
     );
     return {ok: true, value: undefined};
