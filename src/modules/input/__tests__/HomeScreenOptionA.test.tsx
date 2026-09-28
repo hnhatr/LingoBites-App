@@ -7,7 +7,7 @@ import {DB_NAME} from '@shared/db/constants';
 import {resetDatabaseForTests} from '@shared/db/database';
 import {startContentLesson} from '@shared/db/ContentLessonStateRepository';
 import {listActivePackageLessons} from '@shared/db/ContentRuntimeRepository';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {bootstrapContentPackage} from '../../content/bootstrap/contentBootstrap';
 

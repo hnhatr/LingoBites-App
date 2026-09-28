@@ -3,9 +3,9 @@ import {FlatList, StyleSheet, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {LessonsStackParamList} from '../navigationTypes';
-import {useAppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@components/layout';
-import type {AppTheme} from '@theme/types';
+import {useAppTheme} from '@ui/theme/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import type {AppTheme} from '@ui/theme/types';
 import type {
   GrammarBookmark,
   SaveGrammarBookmarkInput,

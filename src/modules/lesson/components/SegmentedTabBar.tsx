@@ -12,9 +12,9 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {AppText} from '@components/AppText';
-import {useAppTheme} from '@theme';
-import type {AppTheme} from '@theme/types';
+import {AppText} from '@ui/components/AppText';
+import {useAppTheme} from '@ui/theme/index';
+import type {AppTheme} from '@ui/theme/types';
 
 export type LibraryTabId = 'lessons' | 'vocabulary' | 'grammar';
 

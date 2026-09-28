@@ -13,7 +13,7 @@ import {
   listActivePackageLessons,
 } from '@modules/content';
 import type {SpeakingMode} from '@shared/db/types';
-import type {HandoffIconName} from '@components/icons/iconRegistry';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
 export type SpeakingModeInfo = {
   mode: SpeakingMode;

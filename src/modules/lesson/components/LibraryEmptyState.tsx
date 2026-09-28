@@ -1,9 +1,9 @@
 import React, {useMemo} from 'react';
 import {View, StyleSheet} from 'react-native';
-import {Medallion} from '@components/Medallion';
-import {AppText} from '@components/AppText';
-import {useAppTheme} from '@theme';
-import type {AppTheme} from '@theme/types';
+import {Medallion} from '@ui/components/Medallion';
+import {AppText} from '@ui/components/AppText';
+import {useAppTheme} from '@ui/theme/index';
+import type {AppTheme} from '@ui/theme/types';
 
 export interface LibraryEmptyStateProps {
   type: 'lessons' | 'vocabulary' | 'grammar' | 'no-results';

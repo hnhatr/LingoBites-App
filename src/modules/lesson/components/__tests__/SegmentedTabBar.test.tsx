@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import * as Reanimated from 'react-native-reanimated';
-import {AppThemeProvider, useAppTheme} from '@theme';
+import {AppThemeProvider, useAppTheme} from '@ui/theme/index';
 import {FeatureFlagProvider} from '@/release';
 import {SegmentedTabBar} from '../SegmentedTabBar';
 

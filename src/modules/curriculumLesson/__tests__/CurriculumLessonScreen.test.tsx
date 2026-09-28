@@ -3,7 +3,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FeatureFlagProvider} from '@/release';
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {CurriculumLessonScreen} from '../CurriculumLessonScreen';
 import {
   parseCurriculumLessonAggregateResponse,

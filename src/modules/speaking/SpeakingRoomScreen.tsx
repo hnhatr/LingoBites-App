@@ -1,16 +1,16 @@
 import React from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {Chip} from '@components/Chip';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {useAppTheme} from '@theme';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme} from '@ui/theme/index';
 import {listSpeakingRoomModes} from './speakingModes';
 import type {SpeakingModeInfo} from './speakingModes';
-import {useFloatingTabBarClearance} from '@components/layout';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 import type {SpeakingRoomRouteParams} from './navigationTypes';
 
 export interface SpeakingRoomScreenProps {

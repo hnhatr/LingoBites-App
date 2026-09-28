@@ -1,10 +1,10 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {View} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {useAppTheme} from '@theme';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme} from '@ui/theme/index';
 import type {YouTubeSegment} from '../youtubeTranscriptPort';
 import {getYouTubeLesson} from '../youtubeQueryPort';
 import type {NavigationProp} from '@react-navigation/native';

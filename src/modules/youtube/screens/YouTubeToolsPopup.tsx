@@ -8,10 +8,10 @@ import {
   View,
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import type {YouTubeSegment} from '@shared/schemas/youtube-transcript-v1';
 import {
   formatYouTubePlaybackRate,

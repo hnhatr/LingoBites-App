@@ -2,12 +2,12 @@ import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {Keyboard, LayoutAnimation, View} from 'react-native';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
-import {AppButton} from '@components/AppButton';
-import {AppText} from '@components/AppText';
-import {Banner} from '@components/Banner';
-import {BottomActionBar} from '@components/BottomActionBar';
-import {ScreenHeader} from '@components/ScreenHeader';
+import {AppThemeProvider} from '@ui/theme/index';
+import {AppButton} from '@ui/components/AppButton';
+import {AppText} from '@ui/components/AppText';
+import {Banner} from '@ui/components/Banner';
+import {BottomActionBar} from '@ui/components/BottomActionBar';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {YouTubeInputScreen} from '../YouTubeInputScreen';
 
 const mockGetString = jest.fn();

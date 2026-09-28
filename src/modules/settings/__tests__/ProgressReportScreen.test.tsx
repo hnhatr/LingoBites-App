@@ -2,7 +2,7 @@ import React from 'react';
 import {Alert, Text} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {ProgressReportScreen} from '../ProgressReportScreen';
 import {clearAllLocalDatabaseRows} from '@shared/db/localDataWipe';
 

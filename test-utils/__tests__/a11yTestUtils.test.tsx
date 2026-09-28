@@ -8,8 +8,8 @@ import {
   hasIconAndTextLabel,
   warnOnMaskedContent,
 } from '../a11yTestUtils';
-import {MaterialIcon} from '../../src/components/MaterialIcon';
-import {AppThemeProvider} from '../../src/theme';
+import {MaterialIcon} from '../../src/ui/components/MaterialIcon';
+import {AppThemeProvider} from '../../src/ui/theme';
 import {FeatureFlagProvider} from '../../src/release';
 
 async function render(ui: React.ReactElement) {

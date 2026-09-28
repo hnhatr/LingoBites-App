@@ -7,7 +7,7 @@ import {EngagementBootstrap} from './src/modules/engagement';
 import {startAppSync, stopAppSync} from './src/modules/sync';
 import {installGlobalErrorHandler} from './src/shared/errors';
 import {FeatureFlagProvider} from './src/release';
-import {AppThemeProvider, ThemedStatusBar} from './src/theme';
+import {AppThemeProvider, ThemedStatusBar} from './src/ui/theme';
 
 function App() {
   useEffect(() => {

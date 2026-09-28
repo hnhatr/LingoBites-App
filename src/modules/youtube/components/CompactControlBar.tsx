@@ -7,9 +7,9 @@ import {
   type NativeSyntheticEvent,
   type NativeTouchEvent,
 } from 'react-native';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {
   formatRemaining,
   formatSentenceLabel,

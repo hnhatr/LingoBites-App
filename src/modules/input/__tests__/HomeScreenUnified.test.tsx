@@ -6,7 +6,7 @@ import {FeatureFlagProvider} from '@/release';
 import {trackEvent} from '@modules/analytics';
 import {DB_NAME} from '@shared/db/constants';
 import {resetDatabaseForTests} from '@shared/db/database';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 

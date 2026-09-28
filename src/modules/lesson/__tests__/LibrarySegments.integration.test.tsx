@@ -20,11 +20,11 @@ jest.mock('@modules/review/GrammarBookmarkRepository', () => ({
   listAllBookmarkedGrammar: jest.fn(() => []),
 }));
 
-jest.mock('@/utils/toast', () => ({
+jest.mock('@ui/components/toast', () => ({
   showToast: jest.fn(),
 }));
 
-import {showToast} from '@/utils/toast';
+import {showToast} from '@ui/components/toast';
 
 function testHook(fn: () => ReturnType<typeof useBookmarkOptimistic>) {
   return fn();

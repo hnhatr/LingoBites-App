@@ -6,7 +6,7 @@ import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@/test-support';
 import {DB_NAME} from '@shared/db/constants';
 import {resetDatabaseForTests} from '@shared/db/database';
 import {runMigrations} from '@shared/db/migrations';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {TodayScreen} from '../TodayScreen';
 import {captureErrorEvent} from '@shared/db/SpeakingRepository';

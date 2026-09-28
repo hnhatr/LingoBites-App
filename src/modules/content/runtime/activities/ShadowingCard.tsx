@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {AppButton} from '@components/AppButton';
-import {AppCard} from '@components/AppCard';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {useAppTheme} from '@theme';
+import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {useAppTheme} from '@ui/theme/index';
 import type {ShadowingStepData} from '../types';
 import {StepActions} from './StepActions';
 

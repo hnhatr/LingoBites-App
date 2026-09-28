@@ -22,11 +22,10 @@
  */
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FlipCard} from '../../src/components/FlipCard';
-import {HandoffDualActionBar} from '../../src/components/HandoffDualActionBar';
-import {ProfileSettingsRow} from '../../src/components/ProfileSettingsRow';
-import {RatingControl} from '../../src/components/RatingControl';
-import {AppThemeProvider} from '../../src/theme';
+import {FlipCard} from '../../src/ui/components/FlipCard';
+import {ProfileSettingsRow} from '../../src/ui/components/ProfileSettingsRow';
+import {RatingControl} from '../../src/ui/components/RatingControl';
+import {AppThemeProvider} from '../../src/ui/theme';
 import {FeatureFlagProvider} from '../../src/release';
 import {Text} from 'react-native';
 import {findMaskedContent, warnOnMaskedContent} from '../a11yTestUtils';
@@ -65,13 +64,6 @@ describe('Global a11y masking scan (warning mode — SETE-122 Việc 6.2)', () =
       <RatingControl onRate={() => {}} onSkip={() => {}} />,
     );
     warnOnMaskedContent(tree.root, 'RatingControl');
-  });
-
-  it('HandoffDualActionBar: label always equals the rendered button text', async () => {
-    const tree = await render(
-      <HandoffDualActionBar onBack={() => {}} onContinue={() => {}} />,
-    );
-    warnOnMaskedContent(tree.root, 'HandoffDualActionBar');
   });
 
   it('FlipCard: no masked content (graduated hard gate - SETE-124)', async () => {

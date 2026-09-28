@@ -7,12 +7,12 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {useAppTheme} from '@theme';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme} from '@ui/theme/index';
 import {playContentAudio, useContentLibrary} from '@modules/content';
 import {captureSpeakingErrorIfNeeded} from '../errorNotebookService';
 import {
@@ -23,7 +23,7 @@ import {
 } from '../recordingService';
 import {getShadowingContent} from '../speakingModes';
 import {useSpeakingRepository} from '../useSpeakingRepository';
-import {useFloatingTabBarClearance} from '@components/layout';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 
 export interface SpeakingShadowingActivityProps {
   navigation: {

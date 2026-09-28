@@ -8,7 +8,7 @@ import {
   makeTestReleaseConfig,
   OFFLINE_REVIEW_MVP,
 } from '@/test-support';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {CreateScreen} from '../CreateScreen';
 
 const mockUseYouTubeServerEnabled = jest.fn();

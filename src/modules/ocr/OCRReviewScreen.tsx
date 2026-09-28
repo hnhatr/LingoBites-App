@@ -3,17 +3,17 @@ import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {CreateStackParamList, RootTabParamList} from '@modules/input';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {BottomActionBar} from '@components/BottomActionBar';
-import {Chip} from '@components/Chip';
-import {ErrorCard} from '@components/ErrorCard';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {PrimaryActionButton} from '@components/PrimaryActionButton';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {TextField} from '@components/TextField';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {BottomActionBar} from '@ui/components/BottomActionBar';
+import {Chip} from '@ui/components/Chip';
+import {ErrorCard} from '@ui/components/ErrorCard';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {TextField} from '@ui/components/TextField';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@theme';
+import {useAppTheme} from '@ui/theme/index';
 import {getTextLengthBucket, trackEvent} from '../analytics';
 import {
   MAX_INPUT_TEXT_LENGTH,

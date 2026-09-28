@@ -1,8 +1,8 @@
 import React from 'react';
 import {Pressable, View} from 'react-native';
-import {AppButton} from '@components/AppButton';
-import {AppText} from '@components/AppText';
-import {useAppTheme} from '@theme';
+import {AppButton} from '@ui/components/AppButton';
+import {AppText} from '@ui/components/AppText';
+import {useAppTheme} from '@ui/theme/index';
 
 type Props = {
   onComplete: () => void;

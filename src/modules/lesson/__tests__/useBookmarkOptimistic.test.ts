@@ -19,11 +19,11 @@ jest.mock('@modules/review/GrammarBookmarkRepository', () => ({
 }));
 
 // Mock the toast utility
-jest.mock('@/utils/toast', () => ({
+jest.mock('@ui/components/toast', () => ({
   showToast: jest.fn(),
 }));
 
-import {showToast} from '@/utils/toast';
+import {showToast} from '@ui/components/toast';
 
 // Helper to test hooks without React runtime
 function testHook(fn: () => any): any {

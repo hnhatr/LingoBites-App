@@ -16,17 +16,17 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import type {HandoffIconName} from '@components/icons/iconRegistry';
-import {AnimatedMaterialIcon} from '@components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@theme';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
+import {AnimatedMaterialIcon} from '@ui/components/MaterialIcon';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {useTranslation} from 'react-i18next';
 import {
   FLOATING_TAB_BAR_BOTTOM_GAP,
   FLOATING_TAB_BAR_HORIZONTAL_MARGIN,
   withAlpha,
-} from '@components/layout';
+} from '@ui/components/layout/index';
 import {isTabBarHiddenForDescriptors} from './immersiveTabRoutes';
-import {ShelfSurface} from '@components/ShelfSurface';
+import {ShelfSurface} from '@ui/components/ShelfSurface';
 
 const TAB_ITEMS: Record<string, {labelKey: string; icon: HandoffIconName}> = {
   Home: {labelKey: 'nav.tab.home', icon: 'home'},

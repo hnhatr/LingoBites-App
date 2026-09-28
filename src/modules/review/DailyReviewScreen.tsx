@@ -1,18 +1,18 @@
 import React, {useMemo, useState} from 'react';
 import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {AppButton} from '@components/AppButton';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {Banner} from '@components/Banner';
-import {ErrorCard} from '@components/ErrorCard';
-import {FlipCard} from '@components/FlipCard';
-import {HandoffProgressTrack} from '@components/HandoffProgressTrack';
-import {IconButton} from '@components/IconButton';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {Medallion} from '@components/Medallion';
-import {RatingControl} from '@components/RatingControl';
+import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {Banner} from '@ui/components/Banner';
+import {ErrorCard} from '@ui/components/ErrorCard';
+import {FlipCard} from '@ui/components/FlipCard';
+import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
+import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {Medallion} from '@ui/components/Medallion';
+import {RatingControl} from '@ui/components/RatingControl';
 import {speak} from '@modules/audio';
 import {useFeatureEnabled} from '@/release';
 import {requestSync} from '@modules/sync';
@@ -23,7 +23,7 @@ import {
   startReviewSession,
   type ReviewSession,
 } from '@modules/engagement';
-import {useAppTheme} from '@theme';
+import {useAppTheme} from '@ui/theme/index';
 
 const DEFAULT_SOFT_CAP = 10;
 

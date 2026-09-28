@@ -17,13 +17,13 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {Medallion} from '@components/Medallion';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {Medallion} from '@ui/components/Medallion';
 import {trackEvent} from '@modules/analytics';
-import {useFloatingTabBarClearance} from '@components/layout';
-import {useAppTheme, type AppTheme} from '@theme';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {
   useLessonCatalog,
   type UseLessonCatalogResult,

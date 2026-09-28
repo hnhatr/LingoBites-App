@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {Alert} from 'react-native';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {FeatureFlagProvider} from '@/release';
-import {ScreenHeader} from '@components/ScreenHeader';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
 import {YouTubeHistoryScreen} from '../YouTubeHistoryScreen';
 

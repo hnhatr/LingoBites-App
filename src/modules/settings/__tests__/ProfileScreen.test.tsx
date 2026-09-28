@@ -1,12 +1,12 @@
 import React from 'react';
 import {Alert, Linking, Modal, Text} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {TextField} from '@components/TextField';
+import {TextField} from '@ui/components/TextField';
 import {open} from 'react-native-quick-sqlite';
 import * as Keychain from 'react-native-keychain';
 import {FeatureFlagProvider} from '@/release';
 import {makeTestReleaseConfig, OFFLINE_REVIEW_MVP} from '@/test-support';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {DB_NAME} from '../../../shared/db/constants';
 import {getDatabase, resetDatabaseForTests} from '../../../shared/db/database';

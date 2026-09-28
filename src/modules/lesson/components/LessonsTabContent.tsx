@@ -3,13 +3,13 @@ import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {LessonsStackParamList} from '../navigationTypes';
-import {AppCard} from '@components/AppCard';
-import {AppText} from '@components/AppText';
-import {useAppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@components/layout';
-import type {AppTheme} from '@theme/types';
+import {AppCard} from '@ui/components/AppCard';
+import {AppText} from '@ui/components/AppText';
+import {useAppTheme} from '@ui/theme/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import type {AppTheme} from '@ui/theme/types';
 import {LibraryEmptyState} from './LibraryEmptyState';
-import {SectionHeader} from '@components/SectionHeader';
+import {SectionHeader} from '@ui/components/SectionHeader';
 
 export interface LessonsTabContentProps {
   personalLessons?: any[];

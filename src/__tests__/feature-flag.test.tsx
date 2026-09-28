@@ -20,7 +20,7 @@ import {DB_NAME} from '../shared/db/constants';
 import {resetDatabaseForTests} from '../shared/db/database';
 import {saveFlashcard} from '@modules/review';
 import {validFullOutput} from '../shared/fixtures';
-import {AppThemeProvider} from '../theme';
+import {AppThemeProvider} from '../ui/theme';
 import {__resetMockDatabases} from '../../test-utils/sqliteMock';
 import {DailyReviewScreen} from '../modules/review';
 import {isIngestionRouteEnabled} from '../app/navigation/ingestionRouteGate';

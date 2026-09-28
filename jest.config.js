@@ -27,5 +27,13 @@ module.exports = {
     '^@i18n/(.*)$': '<rootDir>/src/i18n/$1',
     '^@test-support$': '<rootDir>/src/test-support',
     '^@test-support/(.*)$': '<rootDir>/src/test-support/$1',
+    '^@features$': '<rootDir>/src/features',
+    '^@features/(.*)$': '<rootDir>/src/features/$1',
+    '^@ui$': '<rootDir>/src/ui',
+    '^@ui/(.*)$': '<rootDir>/src/ui/$1',
+    '^@core$': '<rootDir>/src/core',
+    '^@core/(.*)$': '<rootDir>/src/core/$1',
+    '^@test$': '<rootDir>/src/test',
+    '^@test/(.*)$': '<rootDir>/src/test/$1',
   },
 };

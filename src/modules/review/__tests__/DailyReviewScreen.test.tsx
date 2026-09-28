@@ -9,7 +9,7 @@ import {resetDatabaseForTests} from '@shared/db/database';
 import {saveFlashcard} from '../FlashcardRepository';
 import * as FlashcardRepository from '../FlashcardRepository';
 import {validFullOutput} from '@shared/fixtures';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {DailyReviewScreen} from '../DailyReviewScreen';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import {Image, Text} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {extractText} from '../../ocr';
 import {pickImageFromGallery} from '../imagePicker';
 import {ImageCaptureScreen} from '../ImageCaptureScreen';

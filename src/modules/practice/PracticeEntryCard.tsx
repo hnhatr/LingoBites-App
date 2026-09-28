@@ -1,10 +1,10 @@
 import React from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import {AppButton} from '@components/AppButton';
-import {AppCard} from '@components/AppCard';
-import {AppText} from '@components/AppText';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {useAppTheme} from '@theme';
+import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
+import {AppText} from '@ui/components/AppText';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {useAppTheme} from '@ui/theme/index';
 import {summarizeSession} from './sessionEngine';
 import type {UsePracticeController} from './usePracticeController';
 

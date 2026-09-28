@@ -22,9 +22,13 @@ module.exports = {
           '@release': './src/release',
           '@i18n': './src/i18n',
           '@test-support': './src/test-support',
+          '@features': './src/features',
+          '@ui': './src/ui',
+          '@core': './src/core',
+          '@test': './src/test',
         },
       },
     ],
-    'react-native-worklets/plugin', // must be last
+    'react-native-worklets/plugin',
   ],
 };

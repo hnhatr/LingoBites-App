@@ -3,7 +3,7 @@ import {Text, TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
 import i18n from '@/i18n';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {PasteTextScreen} from '../PasteTextScreen';
 
 const mockNavigate = jest.fn();

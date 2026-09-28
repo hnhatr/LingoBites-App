@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {useAppTheme, type AppTheme} from '@theme';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {blockBaseStyles} from './blockStyles';
 import type {CurriculumLessonVocabularyItem} from './curriculumLessonSchema';
 

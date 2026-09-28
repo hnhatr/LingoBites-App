@@ -1,4 +1,4 @@
-import {themeIds, themes} from '@theme/themeRegistry';
+import {themeIds, themes} from '@ui/theme/themeRegistry';
 
 /**
  * SETE-249 D2: the practice chips on Home ("Luyện tập hôm nay") and Library

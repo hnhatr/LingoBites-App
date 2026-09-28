@@ -1,4 +1,4 @@
-import type {HandoffIconName} from '@components/icons/iconRegistry';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import type {ContentLessonRow} from '@modules/content';
 import type {UnifiedLessonSummary} from '@modules/curriculumLesson';
 

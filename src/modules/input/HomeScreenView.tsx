@@ -1,13 +1,13 @@
 import React, {useMemo} from 'react';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import {AppButton} from '@components/AppButton';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {ShelfSurface} from '@components/ShelfSurface';
-import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@components/layout';
+import {AppButton} from '@ui/components/AppButton';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {ShelfSurface} from '@ui/components/ShelfSurface';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 import {useTranslation} from 'react-i18next';
 import {
   HERO_BADGE_BG,
@@ -519,7 +519,7 @@ function HeroMascot() {
       importantForAccessibility="no-hide-descendants"
     >
       <Image
-        source={require('../../assets/home-hero-cat.png')}
+        source={require('../../ui/assets/home-hero-cat.png')}
         style={styles.heroMascotImage}
         resizeMode="contain"
         accessibilityIgnoresInvertColors

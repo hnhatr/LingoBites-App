@@ -9,18 +9,18 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {LessonsStackParamList} from '@modules/lesson';
-import {AppButton} from '@components/AppButton';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {Medallion} from '@components/Medallion';
-import {useAppTheme} from '@theme';
+import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {Medallion} from '@ui/components/Medallion';
+import {useAppTheme} from '@ui/theme/index';
 import {bootstrapContentPackage} from '../bootstrap';
 import {useContentLibrary} from './useContentLibrary';
 import type {ContentLessonListItem} from './useContentLibrary';
-import {useFloatingTabBarClearance} from '@components/layout';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'ContentLessonList'>;
 

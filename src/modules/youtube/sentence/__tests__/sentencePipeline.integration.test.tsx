@@ -1,8 +1,8 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
-import {AppText} from '@components/AppText';
+import {AppThemeProvider} from '@ui/theme/index';
+import {AppText} from '@ui/components/AppText';
 import {
   isPublishable,
   type LessonPayloadV1,

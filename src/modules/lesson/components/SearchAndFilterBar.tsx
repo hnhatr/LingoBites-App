@@ -1,10 +1,10 @@
 import React, {useMemo} from 'react';
 import {View, ScrollView, StyleSheet} from 'react-native';
-import {TextField} from '@components/TextField';
-import {Chip} from '@components/Chip';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {useAppTheme} from '@theme';
-import type {AppTheme} from '@theme/types';
+import {TextField} from '@ui/components/TextField';
+import {Chip} from '@ui/components/Chip';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {useAppTheme} from '@ui/theme/index';
+import type {AppTheme} from '@ui/theme/types';
 
 export interface SearchAndFilterBarProps {
   searchQuery: string;

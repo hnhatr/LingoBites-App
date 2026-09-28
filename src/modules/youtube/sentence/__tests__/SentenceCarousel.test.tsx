@@ -2,7 +2,7 @@ import React from 'react';
 import renderer, {act} from 'react-test-renderer';
 import {FlatList} from 'react-native';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {SentenceCarousel} from '../SentenceCarousel';
 import {makeEnrichment, VIDEO_ID} from './fixtures/sentenceFixtures';
 

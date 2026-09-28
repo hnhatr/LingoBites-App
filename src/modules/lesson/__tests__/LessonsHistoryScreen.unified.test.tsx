@@ -2,7 +2,7 @@ import * as AuthSession from '@shared/auth/authSession';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();

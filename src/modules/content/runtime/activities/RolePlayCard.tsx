@@ -1,10 +1,10 @@
 import React, {useState} from 'react';
 import {View} from 'react-native';
-import {AppCard} from '@components/AppCard';
-import {AppButton} from '@components/AppButton';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {useAppTheme} from '@theme';
+import {AppCard} from '@ui/components/AppCard';
+import {AppButton} from '@ui/components/AppButton';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {useAppTheme} from '@ui/theme/index';
 import type {RolePlayStepData} from '../types';
 import {StepActions} from './StepActions';
 

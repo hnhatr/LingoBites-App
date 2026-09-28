@@ -24,6 +24,14 @@
       "@i18n/*": ["src/i18n/*"],
       "@test-support": ["src/test-support"],
       "@test-support/*": ["src/test-support/*"],
+      "@features": ["src/features"],
+      "@features/*": ["src/features/*"],
+      "@ui": ["src/ui"],
+      "@ui/*": ["src/ui/*"],
+      "@core": ["src/core"],
+      "@core/*": ["src/core/*"],
+      "@test": ["src/test"],
+      "@test/*": ["src/test/*"],
       "@shared/db/FlashcardRepository": [
         "src/modules/review/FlashcardRepository.ts"
       ],

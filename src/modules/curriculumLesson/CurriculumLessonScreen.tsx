@@ -1,11 +1,11 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import type {CurriculumLessonRouteParams} from './navigationTypes';
-import {AppButton} from '@components/AppButton';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppButton} from '@ui/components/AppButton';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {
   checkCurriculumLessonExercise,
   fetchCurriculumLesson,

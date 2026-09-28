@@ -8,7 +8,7 @@ import {resetDatabaseForTests} from '@shared/db/database';
 import {savePracticeSet, savePracticeSession} from '../data/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {PracticeScreen} from '../PracticeScreen';
 
 const navigation = {

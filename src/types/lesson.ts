@@ -1,4 +1,4 @@
-import type {ChipTone} from '../components/Chip';
+import type {ChipTone} from '../ui/components/Chip';
 
 export type LessonCardView = {
   id: string;

@@ -15,9 +15,9 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import {AppText} from '@components/AppText';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppText} from '@ui/components/AppText';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import type {SentenceEnrichment} from '@shared/schemas/sentence-contract';
 import type {GrammarPoint, VocabEntry} from '@shared/schemas/sentence-contract';
 import {SentenceCard, type SentenceCardSegment} from './SentenceCard';

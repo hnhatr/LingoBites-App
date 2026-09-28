@@ -1,9 +1,9 @@
 import React from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {AppButton} from '@components/AppButton';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
+import {AppButton} from '@ui/components/AppButton';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
 import {useAccountStore} from './useAccountStore';
 
 /**

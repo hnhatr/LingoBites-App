@@ -2,7 +2,7 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {DB_NAME} from '../../../shared/db/constants';
 import {getDatabase, resetDatabaseForTests} from '../../../shared/db/database';

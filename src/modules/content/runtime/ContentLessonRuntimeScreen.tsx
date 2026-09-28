@@ -1,12 +1,12 @@
 import React, {useCallback, useState} from 'react';
 import {Alert, Pressable, ScrollView, View} from 'react-native';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {ErrorCard} from '@components/ErrorCard';
-import {HandoffProgressTrack} from '@components/HandoffProgressTrack';
-import {IconButton} from '@components/IconButton';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {useAppTheme} from '@theme';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {ErrorCard} from '@ui/components/ErrorCard';
+import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
+import {IconButton} from '@ui/components/IconButton';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme} from '@ui/theme/index';
 import {createLessonRuntimeSession} from './ContentLessonRuntime';
 import {evaluateCheck} from '../checks/checkEvaluator';
 import {playContentAudio} from './contentAudioPlayer';
@@ -18,7 +18,7 @@ import {GuidedPracticeCard} from './activities/GuidedPracticeCard';
 import {RolePlayCard} from './activities/RolePlayCard';
 import {ShadowingCard} from './activities/ShadowingCard';
 import type {FeedbackStepData} from './types';
-import {useFloatingTabBarClearance} from '@components/layout';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 
 type Props = {
   navigation: {goBack: () => void};

@@ -18,13 +18,13 @@ import type {
   RootStackParamList,
   RootTabParamList,
 } from '@modules/input';
-import {AppButton} from '@components/AppButton';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {Banner} from '@components/Banner';
-import {BottomActionBar} from '@components/BottomActionBar';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {TextField} from '@components/TextField';
+import {AppButton} from '@ui/components/AppButton';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {Banner} from '@ui/components/Banner';
+import {BottomActionBar} from '@ui/components/BottomActionBar';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {TextField} from '@ui/components/TextField';
 import {
   YOUTUBE_MAX_DURATION_SECONDS,
   YOUTUBE_MAX_SEGMENTS,
@@ -33,7 +33,7 @@ import {parseYouTubeVideoId} from '../api/youtubeApi';
 import {parseManualTranscript} from '../transcript/parser';
 import {ensureYouTubeDisclosureAcknowledged} from '../utils/youtubeDisclosure';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@theme';
+import {useAppTheme} from '@ui/theme/index';
 
 // SETE-316 (Option A2): typed URLs flicker valid→invalid→valid while the
 // 11-char video ID is being entered, so the Step 2 reveal waits for a

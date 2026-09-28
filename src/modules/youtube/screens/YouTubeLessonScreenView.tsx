@@ -1,11 +1,11 @@
 import React from 'react';
 import {View} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {AppButton} from '@components/AppButton';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {ScreenHeader} from '@components/ScreenHeader';
+import {AppButton} from '@ui/components/AppButton';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import type {YouTubePlayerErrorCode} from '../components/YouTubePlayer';
 import {YouTubeMiniPlayer} from '../components/YouTubeMiniPlayer';
 import {SentenceCarousel} from '../sentence/SentenceCarousel';

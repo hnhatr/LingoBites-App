@@ -1,9 +1,9 @@
 import React from 'react';
 import {View} from 'react-native';
-import {AppCard} from '@components/AppCard';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {useAppTheme} from '@theme';
+import {AppCard} from '@ui/components/AppCard';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {useAppTheme} from '@ui/theme/index';
 import {isRedundantContextSentence} from '../contextSentenceDisplay';
 import type {ContextStepData} from '../types';
 import {StepActions} from './StepActions';

@@ -7,11 +7,11 @@ import type {
   RootStackParamList,
   RootTabParamList,
 } from './navigationTypes';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@components/layout';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 import {useTranslation} from 'react-i18next';
 import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
 import {useFeatureFlags} from '@/release';

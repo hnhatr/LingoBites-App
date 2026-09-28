@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {FeatureFlagProvider} from '@/release';
 import {LessonsTabContent} from '../LessonsTabContent';
 

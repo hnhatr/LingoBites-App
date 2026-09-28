@@ -2,7 +2,7 @@ import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {trackEvent} from '@modules/analytics';
 import {
   UnifiedLessonCatalogView,

@@ -1,8 +1,8 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
-import {AppText} from '@components/AppText';
+import {AppText} from '@ui/components/AppText';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {SentenceCard} from '../SentenceCard';
 import type {RetryBlockFn} from '../useSentenceEnrichment';
 import {

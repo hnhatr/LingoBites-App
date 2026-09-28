@@ -1,10 +1,10 @@
 import React from 'react';
 import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {FeatureFlagProvider} from '@/release';
 import {LibraryEmptyState} from '../LibraryEmptyState';
-import {Medallion} from '@components/Medallion';
+import {Medallion} from '@ui/components/Medallion';
 
 function render(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;

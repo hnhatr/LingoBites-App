@@ -12,11 +12,11 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {AppButton} from '@components/AppButton';
-import {AppText} from '@components/AppText';
-import {Chip} from '@components/Chip';
-import {IconButton} from '@components/IconButton';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppButton} from '@ui/components/AppButton';
+import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
+import {IconButton} from '@ui/components/IconButton';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import type {
   GrammarPoint,
   SentenceEnrichment,

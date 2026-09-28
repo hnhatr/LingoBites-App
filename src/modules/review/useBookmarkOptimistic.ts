@@ -3,7 +3,7 @@ import {
   saveGrammarBookmark,
   unsaveGrammarBookmark,
 } from './GrammarBookmarkRepository';
-import {showToast} from '@/utils/toast';
+import {showToast} from '@ui/components/toast';
 import type {SaveFlashcardInput} from '@shared/db/types';
 import type {SaveGrammarBookmarkInput} from '@shared/db/types';
 

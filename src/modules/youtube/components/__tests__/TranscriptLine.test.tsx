@@ -1,7 +1,7 @@
 import React from 'react';
 import renderer, {act, type ReactTestInstance} from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import type {YouTubeSegment} from '@shared/schemas/youtube-transcript-v1';
 import {TranscriptLine} from '../TranscriptLine';
 

@@ -2,15 +2,15 @@ import React, {useEffect, useState} from 'react';
 import {View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {CreateStackParamList} from '@modules/input';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {AppButton} from '@components/AppButton';
-import {HandoffProgressTrack} from '@components/HandoffProgressTrack';
-import {ScreenHeader} from '@components/ScreenHeader';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {AppButton} from '@ui/components/AppButton';
+import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {runYouTubeJob, type YouTubeJobProgress} from '../api/youtubeApi';
 import {useTranslation} from 'react-i18next';
 import {saveYouTubeLesson} from '../youtubeQueryPort';
-import {useAppTheme} from '@theme';
+import {useAppTheme} from '@ui/theme/index';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'YouTubeProcessing'>;
 

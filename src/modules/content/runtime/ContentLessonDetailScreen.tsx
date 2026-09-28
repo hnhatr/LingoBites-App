@@ -3,12 +3,12 @@ import {View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {LessonsStackParamList} from '@modules/lesson';
-import {AppButton} from '@components/AppButton';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {useAppTheme} from '@theme';
+import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme} from '@ui/theme/index';
 import {useContentLibrary} from './useContentLibrary';
 import type {ContentLessonRow} from './useContentLibrary';
 type Props = NativeStackScreenProps<

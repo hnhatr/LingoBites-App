@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {FeatureFlagProvider} from '@/release';
 import {VocabularyRowCard} from '../VocabularyRowCard';
 import type {FlashcardRecord} from '@/shared/db/types';

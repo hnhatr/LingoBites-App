@@ -15,9 +15,9 @@ import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import type {RootTabParamList} from '@modules/input';
 import type {ProfileStackParamList} from '@modules/settings';
-import {AppScreen} from '@components/AppScreen';
-import {ScreenHeader} from '@components/ScreenHeader';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppScreen} from '@ui/components/AppScreen';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {UnifiedLessonsScreen} from './UnifiedLessonsScreen';
 
 type Props = NativeStackScreenProps<

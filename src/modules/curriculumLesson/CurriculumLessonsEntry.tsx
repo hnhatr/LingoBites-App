@@ -2,10 +2,10 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {Pressable, StyleSheet, View} from 'react-native';
 import type {CurriculumLessonRouteParams} from './navigationTypes';
-import {AppCard} from '@components/AppCard';
-import {AppText} from '@components/AppText';
-import {SectionHeader} from '@components/SectionHeader';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppCard} from '@ui/components/AppCard';
+import {AppText} from '@ui/components/AppText';
+import {SectionHeader} from '@ui/components/SectionHeader';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {
   fetchPublishedCurriculumLessons,
   type CurriculumLessonSelectionItem,

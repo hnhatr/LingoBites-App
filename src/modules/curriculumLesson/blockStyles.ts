@@ -1,5 +1,5 @@
 import {StyleSheet} from 'react-native';
-import type {AppTheme} from '@theme';
+import type {AppTheme} from '@ui/theme/index';
 
 /**
  * Shared base styles for curriculum lesson block renderers.

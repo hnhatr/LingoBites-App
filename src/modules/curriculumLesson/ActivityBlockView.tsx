@@ -1,6 +1,6 @@
 import React from 'react';
 import {Text, View} from 'react-native';
-import {useAppTheme} from '@theme';
+import {useAppTheme} from '@ui/theme/index';
 import {blockBaseStyles} from './blockStyles';
 import type {CurriculumLessonActivityBlockData} from './curriculumLessonSchema';
 

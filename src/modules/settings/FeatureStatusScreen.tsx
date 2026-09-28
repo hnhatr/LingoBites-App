@@ -1,9 +1,9 @@
 import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {AppCard} from '@components/AppCard';
-import {useAppTheme, type AppTheme} from '@theme';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {AppCard} from '@ui/components/AppCard';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {featureRegistry, useFeatureFlags} from '@/release';
 import type {FeatureRegistryEntry} from '@/release/types';
 

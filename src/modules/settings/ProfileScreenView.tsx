@@ -1,17 +1,17 @@
 import React from 'react';
 import {Modal, Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import {AppButton} from '@components/AppButton';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {ProfileSettingsRow} from '@components/ProfileSettingsRow';
-import {SectionHeader} from '@components/SectionHeader';
-import {TextField} from '@components/TextField';
-import {ThemePicker} from '@components/ThemePicker';
+import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
+import {SectionHeader} from '@ui/components/SectionHeader';
+import {TextField} from '@ui/components/TextField';
+import {ThemePicker} from '@ui/components/ThemePicker';
 import {AccountProfileSection} from '@modules/account';
-import {useAppTheme, type AppTheme} from '@theme';
-import {useFloatingTabBarClearance} from '@components/layout';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout/index';
 import type {ProfileScreenViewModel} from './useProfileScreen';
 
 /** Settings without a backing store yet — show an honest "not set" value. */

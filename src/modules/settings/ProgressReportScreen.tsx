@@ -3,14 +3,14 @@ import {Alert, ScrollView, View, StyleSheet} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {ProfileStackParamList} from './navigationTypes';
-import {AppCard} from '@components/AppCard';
-import {AppScreen} from '@components/AppScreen';
-import {AppText} from '@components/AppText';
-import {IconButton} from '@components/IconButton';
-import {MaterialIcon} from '@components/MaterialIcon';
-import {SectionHeader} from '@components/SectionHeader';
-import {AppButton} from '@components/AppButton';
-import {useAppTheme} from '@theme';
+import {AppCard} from '@ui/components/AppCard';
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SectionHeader} from '@ui/components/SectionHeader';
+import {AppButton} from '@ui/components/AppButton';
+import {useAppTheme} from '@ui/theme/index';
 import {
   useProgressReport,
   type CapabilityProgressReport,

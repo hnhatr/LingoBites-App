@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
-import {useAppTheme, type AppTheme} from '@theme';
+import {useAppTheme, type AppTheme} from '@ui/theme/index';
 import {blockBaseStyles} from './blockStyles';
 import {CurriculumLessonBlockSlot} from './CurriculumLessonBlockView';
 import type {CurriculumLessonSoundFactory} from './curriculumLessonAudio';

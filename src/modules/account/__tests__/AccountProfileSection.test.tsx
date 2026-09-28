@@ -2,7 +2,7 @@ import React from 'react';
 import {TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {AccountProfileSection} from '../AccountProfileSection';
 import {resetAccountStoreForTests, useAccountStore} from '../useAccountStore';
 import * as accountProfile from '../accountProfile';

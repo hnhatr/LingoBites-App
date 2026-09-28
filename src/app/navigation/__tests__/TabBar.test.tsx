@@ -2,20 +2,20 @@ import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import * as Reanimated from 'react-native-reanimated';
-import {ThemeContext} from '@theme/useAppTheme';
-import {coreTheme} from '@theme/themes/core';
-import {darkTheme} from '@theme/themes/dark';
-import {defaultTheme} from '@theme/themes/default';
-import {neoTheme} from '@theme/themes/neo';
-import type {AppTheme} from '@theme/types';
+import {ThemeContext} from '@ui/theme/useAppTheme';
+import {coreTheme} from '@ui/theme/themes/core';
+import {darkTheme} from '@ui/theme/themes/dark';
+import {defaultTheme} from '@ui/theme/themes/default';
+import {neoTheme} from '@ui/theme/themes/neo';
+import type {AppTheme} from '@ui/theme/types';
 import {TabBar, resolveTabGlass} from '../TabBar';
 import {
   FLOATING_TAB_BAR_BOTTOM_GAP,
   FLOATING_TAB_BAR_CONTENT_GAP,
   FLOATING_TAB_BAR_HEIGHT,
   getFloatingTabBarClearance,
-} from '@components/layout';
-import {stickerSoftTheme} from '@theme/themes/stickerSoft';
+} from '@ui/components/layout/index';
+import {stickerSoftTheme} from '@ui/theme/themes/stickerSoft';
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({top: 0, bottom: 20, left: 0, right: 0}),

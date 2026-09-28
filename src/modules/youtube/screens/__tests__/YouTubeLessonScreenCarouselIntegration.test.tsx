@@ -2,7 +2,7 @@ import React from 'react';
 import renderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
 import {FeatureFlagProvider} from '@/release';
-import {AppThemeProvider} from '@theme';
+import {AppThemeProvider} from '@ui/theme/index';
 import {DB_NAME} from '@shared/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {runMigrations} from '@shared/db/migrations';
