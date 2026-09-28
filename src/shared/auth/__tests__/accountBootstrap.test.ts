@@ -15,6 +15,7 @@ import * as DeviceIdentityNative from '../../identity/deviceIdentityNative';
 import {
   bootAccount,
   resetBootStateForTests,
+  SIGNUP_IDEMPOTENCY_KEY,
   submitOnboardingName,
 } from '../accountBootstrap';
 import * as authSession from '../authSession';
@@ -264,6 +265,16 @@ describe('submitOnboardingName idempotency (SETE-303 / T6)', () => {
     return result.bootstrapTicket;
   }
 
+  function readSignupKeySetting(): string | null {
+    const db = getDatabase();
+    const result = db.execute(
+      'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
+      [SIGNUP_IDEMPOTENCY_KEY],
+    );
+    const row = result.rows?.item(0) as {value?: string} | undefined;
+    return row?.value ?? null;
+  }
+
   function idempotencyKeys(): Array<string | undefined> {
     return mockFetch.mock.calls
       .filter(([url]) => (url as string).endsWith('/v1/users'))
@@ -314,6 +325,10 @@ describe('submitOnboardingName idempotency (SETE-303 / T6)', () => {
     const persistSpy = jest
       .spyOn(authSession, 'persistNewSession')
       .mockResolvedValueOnce({ok: false, error: new Error('keychain')});
+    getDatabase().execute('DELETE FROM app_settings WHERE key = ?;', [
+      'account.install_completed_v1',
+    ]);
+    expect(hasInstallMarker()).toBe(false);
     await expect(
       submitOnboardingName({bootstrapTicket: ticket, displayName: 'An'}),
     ).resolves.toMatchObject({
@@ -321,6 +336,8 @@ describe('submitOnboardingName idempotency (SETE-303 / T6)', () => {
       code: 'KEYCHAIN_ERROR',
       retryable: true,
     });
+    expect(hasInstallMarker()).toBe(false);
+    expect(readSignupKeySetting()).toBeTruthy();
     persistSpy.mockRestore();
     mockFetch.mockResolvedValueOnce(createdResponse());
     await expect(
@@ -329,6 +346,21 @@ describe('submitOnboardingName idempotency (SETE-303 / T6)', () => {
     const keys = idempotencyKeys();
     expect(keys).toHaveLength(2);
     expect(keys[1]).toBe(keys[0]);
+    expect(hasInstallMarker()).toBe(true);
+    expect(readSignupKeySetting()).toBeNull();
+  });
+
+  it('clears the signup key and sets the install marker only after a successful apply', async () => {
+    const ticket = await bootToTicket();
+    getDatabase().execute('DELETE FROM app_settings WHERE key = ?;', [
+      'account.install_completed_v1',
+    ]);
+    mockFetch.mockResolvedValueOnce(createdResponse());
+    await expect(
+      submitOnboardingName({bootstrapTicket: ticket, displayName: 'An'}),
+    ).resolves.toEqual({status: 'authenticated', user});
+    expect(hasInstallMarker()).toBe(true);
+    expect(readSignupKeySetting()).toBeNull();
   });
 });
 

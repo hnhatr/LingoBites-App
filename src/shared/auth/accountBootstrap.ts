@@ -763,21 +763,19 @@ export async function submitOnboardingName(
       retryable: clientError.retryable,
     };
   }
-  setInstallMarker();
   const applied = await applyAuthenticatedSession({
     session: created.session,
     user: created.user,
   });
-  if (applied.status === 'authenticated') {
+  if (
+    applied.status === 'authenticated' ||
+    applied.status === 'switch-confirmation'
+  ) {
     clearSignupKey();
-    return applied;
-  }
-  if (applied.status === 'switch-confirmation') {
-    clearSignupKey();
+    setInstallMarker();
     return applied;
   }
   if (applied.status === 'switch-failed') {
-    clearSignupKey();
     return applied;
   }
   return {

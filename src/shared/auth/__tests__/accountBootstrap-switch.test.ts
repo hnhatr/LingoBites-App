@@ -13,9 +13,12 @@ import {
   cancelAccountSwitch,
   confirmAccountSwitch,
   resetBootStateForTests,
+  SIGNUP_IDEMPOTENCY_KEY,
   submitOnboardingName,
 } from '../accountBootstrap';
+import * as accountSwitchCoordinator from '../accountSwitchCoordinator';
 import {resetAccountSwitchCoordinatorForTests} from '../accountSwitchCoordinator';
+import {hasInstallMarker} from '../../db/installMarker';
 import {resetRefreshStateForTests} from '../authSession';
 import {getActiveSession, getActiveSessionId} from '../sessionStore';
 import type {AuthSession, AuthUser} from '../authTypes';
@@ -233,6 +236,38 @@ describe('accountBootstrap P2 account switch (LING-109 / TASK-021)', () => {
     }
     expect(active.value?.session_id).toBe(sessionB.session_id);
     expect(getYouTubeProgress('gone')).toBeNull();
+  });
+
+  it('HC-004: switch-failed from onboarding preserves signup key and install marker', async () => {
+    mockFetch.mockResolvedValueOnce(ticketResponse());
+    await bootAccount({platform: 'android'});
+    mockFetch.mockResolvedValueOnce(createdResponse(userA, sessionA));
+    await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_1',
+      displayName: 'User A',
+    });
+    const markerBefore = hasInstallMarker();
+    mockFetch.mockResolvedValueOnce(createdResponse(userB, sessionB));
+    jest
+      .spyOn(accountSwitchCoordinator, 'stageAccountSwitchAttempt')
+      .mockResolvedValueOnce({
+        ok: false,
+        errorCode: 'DUPLICATE_ATTEMPT_ID',
+      });
+    const result = await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_2',
+      displayName: 'User B',
+    });
+    expect(result.status).toBe('switch-failed');
+    expect(hasInstallMarker()).toBe(markerBefore);
+    const db = getDatabase();
+    const keyRow = db.execute(
+      'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
+      [SIGNUP_IDEMPOTENCY_KEY],
+    );
+    expect(
+      (keyRow.rows?.item(0) as {value?: string} | undefined)?.value,
+    ).toBeTruthy();
   });
 
   it('CR-002: replacement transaction failure leaves A active and returns a stable code', async () => {
