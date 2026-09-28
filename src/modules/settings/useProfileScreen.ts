@@ -218,6 +218,10 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     navigation.navigate('UnifiedLessonsPreview');
   }, [navigation]);
 
+  const hideClearDataModal = useCallback(() => {
+    setIsClearDataModalVisible(false);
+  }, []);
+
   const dismissClearDataModal = useCallback(() => {
     setIsClearDataModalVisible(false);
     setClearDataConfirmText('');
@@ -250,6 +254,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     streakTitle,
     confirmClearData,
     dismissClearDataModal,
+    hideClearDataModal,
     handleClearSpeakingData,
     handlePlayCachedAudio,
     handleSignOut,

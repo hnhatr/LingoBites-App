@@ -1,6 +1,7 @@
 import React from 'react';
-import {Alert, Linking, Text} from 'react-native';
+import {Alert, Linking, Modal, Text} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
+import {TextField} from '@components/TextField';
 import {open} from 'react-native-quick-sqlite';
 import * as Keychain from 'react-native-keychain';
 import {FeatureFlagProvider} from '@/release';
@@ -86,6 +87,24 @@ function findPressableByLabel(
   }
 
   return current;
+}
+
+function openClearLearningDataModal(root: ReactTestRenderer.ReactTestInstance) {
+  const opener = findPressableByLabel(root, 'Xóa dữ liệu học trên máy');
+  expect(opener?.props.onPress).toBeInstanceOf(Function);
+  return opener as ReactTestRenderer.ReactTestInstance;
+}
+
+function clearDataModal(root: ReactTestRenderer.ReactTestInstance) {
+  return root.findByType(Modal);
+}
+
+function clearDataConfirmField(root: ReactTestRenderer.ReactTestInstance) {
+  return root.findByType(TextField);
+}
+
+function clearDataDeleteButton(root: ReactTestRenderer.ReactTestInstance) {
+  return findPressableByLabel(root, 'Xóa');
 }
 
 describe('ProfileScreen', () => {
@@ -279,6 +298,60 @@ describe('ProfileScreen', () => {
       expect.stringContaining('bản ghi âm'),
       expect.any(Array),
     );
+  });
+
+  it('keeps confirm text when Android back dismisses the clear-data modal (CR-001)', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+
+    await ReactTestRenderer.act(async () => {
+      tree = renderProfileScreen();
+    });
+
+    await ReactTestRenderer.act(async () => {
+      openClearLearningDataModal(tree!.root)?.props.onPress();
+    });
+    expect(clearDataModal(tree!.root).props.visible).toBe(true);
+
+    await ReactTestRenderer.act(async () => {
+      clearDataConfirmField(tree!.root).props.onChangeText('XOA');
+    });
+
+    await ReactTestRenderer.act(async () => {
+      clearDataModal(tree!.root).props.onRequestClose();
+    });
+    expect(clearDataModal(tree!.root).props.visible).toBe(false);
+
+    await ReactTestRenderer.act(async () => {
+      openClearLearningDataModal(tree!.root)?.props.onPress();
+    });
+    expect(clearDataConfirmField(tree!.root).props.value).toBe('XOA');
+    expect(clearDataDeleteButton(tree!.root)?.props.disabled).not.toBe(true);
+  });
+
+  it('clears confirm text when canceling the clear-data modal (CR-001 / Hủy)', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+
+    await ReactTestRenderer.act(async () => {
+      tree = renderProfileScreen();
+    });
+
+    await ReactTestRenderer.act(async () => {
+      openClearLearningDataModal(tree!.root)?.props.onPress();
+    });
+    await ReactTestRenderer.act(async () => {
+      clearDataConfirmField(tree!.root).props.onChangeText('XOA');
+    });
+
+    await ReactTestRenderer.act(async () => {
+      findPressableByLabel(tree!.root, 'Hủy')?.props.onPress();
+    });
+    expect(clearDataModal(tree!.root).props.visible).toBe(false);
+
+    await ReactTestRenderer.act(async () => {
+      openClearLearningDataModal(tree!.root)?.props.onPress();
+    });
+    expect(clearDataConfirmField(tree!.root).props.value).toBe('');
+    expect(clearDataDeleteButton(tree!.root)?.props.disabled).toBe(true);
   });
 });
 

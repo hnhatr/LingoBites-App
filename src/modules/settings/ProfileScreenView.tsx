@@ -36,6 +36,7 @@ export function ProfileScreenView({
   streakTitle,
   confirmClearData,
   dismissClearDataModal,
+  hideClearDataModal,
   handleClearSpeakingData,
   handlePlayCachedAudio,
   handleSignOut,
@@ -327,7 +328,7 @@ export function ProfileScreenView({
         animationType="fade"
         transparent
         visible={isClearDataModalVisible}
-        onRequestClose={dismissClearDataModal}
+        onRequestClose={hideClearDataModal}
       >
         <View style={themedStyles.modalOverlay}>
           <AppCard style={themedStyles.modalContent}>
