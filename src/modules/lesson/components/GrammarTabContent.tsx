@@ -12,7 +12,7 @@ import type {
 } from '@/shared/db/types';
 import {GrammarRowCard} from './GrammarRowCard';
 import {LibraryEmptyState} from './LibraryEmptyState';
-import {useBookmarkOptimistic} from '../useBookmarkOptimistic';
+import {useBookmarkOptimistic} from '@modules/review';
 
 export interface GrammarTabContentProps {
   grammar: (GrammarBookmark & {title?: string; content?: string})[];

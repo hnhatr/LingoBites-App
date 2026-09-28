@@ -12,7 +12,7 @@ import {
   getPracticeSession,
   savePracticeSession,
   savePracticeSet,
-} from '@shared/db/PracticeRepository';
+} from '@modules/practice/data/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {
   answerCurrentQuestion,

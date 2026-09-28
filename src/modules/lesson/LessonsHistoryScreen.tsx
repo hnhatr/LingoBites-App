@@ -13,7 +13,7 @@ import {GrammarTabContent} from './components/GrammarTabContent';
 import {SearchAndFilterBar} from './components/SearchAndFilterBar';
 import {SegmentedTabBar} from './components/SegmentedTabBar';
 import {VocabularyTabContent} from './components/VocabularyTabContent';
-import {useFlashcardLibrary} from './useFlashcardLibrary';
+import {useFlashcardLibrary} from '@modules/review';
 import {useLibrarySegments} from './useLibrarySegments';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
