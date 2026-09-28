@@ -1,4 +1,8 @@
 import {authenticatedFetch} from '@shared/api/authenticatedFetch';
+import {
+  SYNC_OWNERSHIP_CHANGED,
+  SyncOwnershipChangedError,
+} from '@shared/sync/syncDrainOwnership';
 import i18n from '@/i18n';
 import type {ReviewEventPayload} from '@shared/db/types';
 import {getAppConfig} from '@shared/api/appConfig';
@@ -71,7 +75,15 @@ export async function pushReviewEvents(
       },
       body: JSON.stringify({events}),
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof SyncOwnershipChangedError) {
+      return {
+        ok: false,
+        errorCode: SYNC_OWNERSHIP_CHANGED,
+        message: 'Sync paused because the active account changed.',
+        retryable: true,
+      };
+    }
     return {
       ok: false,
       errorCode: 'NETWORK_ERROR',

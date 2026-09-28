@@ -22,6 +22,11 @@ import {
   SyncCollectionSchema,
   type SyncPushMutation,
 } from '@shared/schemas/sync';
+import {
+  beginSyncDrainOwnership,
+  endSyncDrainOwnership,
+  SYNC_OWNERSHIP_CHANGED,
+} from '@shared/sync/syncDrainOwnership';
 
 export type SyncDrainOutcome =
   | {status: 'idle'}
@@ -105,6 +110,17 @@ function toPracticeWireEvent(
 export async function drainOutboxOnce(
   deps: DrainDeps = {},
 ): Promise<SyncDrainOutcome> {
+  beginSyncDrainOwnership();
+  try {
+    return await drainOutboxOnceInner(deps);
+  } finally {
+    endSyncDrainOwnership();
+  }
+}
+
+async function drainOutboxOnceInner(
+  deps: DrainDeps = {},
+): Promise<SyncDrainOutcome> {
   const maxAttempts = deps.includeStuck ? undefined : MAX_SYNC_ATTEMPTS;
   const events = listPendingSyncEvents({
     limit: SYNC_BATCH_LIMIT,
@@ -160,10 +176,12 @@ export async function drainOutboxOnce(
       markSyncEventsSynced(ids);
       syncedIds.push(...ids);
     } else {
-      markSyncEventsFailed(
-        reviewBatch.map(event => event.id),
-        result.message,
-      );
+      if (result.errorCode !== SYNC_OWNERSHIP_CHANGED) {
+        markSyncEventsFailed(
+          reviewBatch.map(event => event.id),
+          result.message,
+        );
+      }
       const failure = {errorCode: result.errorCode, message: result.message};
       if (result.retryable) {
         firstRetryableFailure ??= failure;

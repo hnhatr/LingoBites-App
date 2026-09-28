@@ -190,7 +190,17 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
       return;
     }
     set({phase: 'switching'});
-    const result = await confirmAccountSwitch(ctx.attemptId);
+    let result;
+    try {
+      result = await confirmAccountSwitch(ctx.attemptId);
+    } catch {
+      set({
+        phase: 'switch-failed',
+        failureCode: 'ACCOUNT_REPLACEMENT_FAILED',
+        failureMessage: 'Account switch could not be completed.',
+      });
+      return;
+    }
     if (result.status === 'authenticated') {
       set({
         phase: 'authenticated',
@@ -238,7 +248,17 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
       return;
     }
     set({phase: 'switching'});
-    const result = await retryAccountSwitch(ctx.attemptId);
+    let result;
+    try {
+      result = await retryAccountSwitch(ctx.attemptId);
+    } catch {
+      set({
+        phase: 'switch-failed',
+        failureCode: 'ACCOUNT_REPLACEMENT_FAILED',
+        failureMessage: 'Account switch could not be completed.',
+      });
+      return;
+    }
     if (result.status === 'authenticated') {
       set({
         phase: 'authenticated',

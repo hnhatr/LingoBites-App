@@ -551,7 +551,15 @@ export async function confirmAccountSwitch(
   }
 
   const db = getDatabase();
-  executeAccountReplacementTransaction(db, attempt.target_account_id);
+  try {
+    executeAccountReplacementTransaction(db, attempt.target_account_id);
+  } catch {
+    return {
+      status: 'failed',
+      code: 'ACCOUNT_REPLACEMENT_FAILED',
+      message: 'Local data could not be replaced for the new account.',
+    };
+  }
 
   const activated = await activateStoredSession(attempt.target_session_id);
   if (!activated.ok) {
@@ -592,7 +600,15 @@ export async function retryAccountSwitch(
   }
   const attempt = current.value;
   const db = getDatabase();
-  executeAccountReplacementTransaction(db, attempt.target_account_id);
+  try {
+    executeAccountReplacementTransaction(db, attempt.target_account_id);
+  } catch {
+    return {
+      status: 'failed',
+      code: 'ACCOUNT_REPLACEMENT_FAILED',
+      message: 'Local data could not be replaced for the new account.',
+    };
+  }
   const activated = await activateStoredSession(attempt.target_session_id);
   if (!activated.ok) {
     return {
@@ -747,19 +763,21 @@ export async function submitOnboardingName(
       retryable: clientError.retryable,
     };
   }
-  clearSignupKey();
   setInstallMarker();
   const applied = await applyAuthenticatedSession({
     session: created.session,
     user: created.user,
   });
   if (applied.status === 'authenticated') {
+    clearSignupKey();
     return applied;
   }
   if (applied.status === 'switch-confirmation') {
+    clearSignupKey();
     return applied;
   }
   if (applied.status === 'switch-failed') {
+    clearSignupKey();
     return applied;
   }
   return {

@@ -235,6 +235,39 @@ describe('accountBootstrap P2 account switch (LING-109 / TASK-021)', () => {
     expect(getYouTubeProgress('gone')).toBeNull();
   });
 
+  it('CR-002: replacement transaction failure leaves A active and returns a stable code', async () => {
+    mockFetch.mockResolvedValueOnce(ticketResponse());
+    await bootAccount({platform: 'android'});
+    mockFetch.mockResolvedValueOnce(createdResponse(userA, sessionA));
+    await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_1',
+      displayName: 'User A',
+    });
+    saveYouTubeProgress({lessonId: 'keep-a', positionMs: 1, segmentIndex: 0});
+    mockFetch.mockResolvedValueOnce(createdResponse(userB, sessionB));
+    const staged = await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_2',
+      displayName: 'User B',
+    });
+    if (staged.status !== 'switch-confirmation') {
+      throw new Error('expected switch-confirmation');
+    }
+    jest
+      .spyOn(database, 'executeAccountReplacementTransaction')
+      .mockImplementation(() => {
+        throw new Error('injected replacement failure');
+      });
+    const result = await confirmAccountSwitch(staged.switch.attemptId);
+    expect(result).toEqual({
+      status: 'failed',
+      code: 'ACCOUNT_REPLACEMENT_FAILED',
+      message: 'Local data could not be replaced for the new account.',
+    });
+    const active = await getActiveSession();
+    expect(active.ok && active.value?.user_id).toBe(userA.id);
+    expect(getYouTubeProgress('keep-a')).not.toBeNull();
+  });
+
   it('rejects stale attempt id on confirm (exact-attempt gate)', async () => {
     mockFetch.mockResolvedValueOnce(ticketResponse());
     await bootAccount({platform: 'android'});

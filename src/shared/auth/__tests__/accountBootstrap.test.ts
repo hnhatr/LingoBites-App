@@ -17,6 +17,7 @@ import {
   resetBootStateForTests,
   submitOnboardingName,
 } from '../accountBootstrap';
+import * as authSession from '../authSession';
 import {resetRefreshStateForTests} from '../authSession';
 import {getActiveSession} from '../sessionStore';
 import type {AuthSession, AuthUser} from '../authTypes';
@@ -305,6 +306,29 @@ describe('submitOnboardingName idempotency (SETE-303 / T6)', () => {
       submitOnboardingName({bootstrapTicket: ticket, displayName: 'An'}),
     ).resolves.toEqual({status: 'authenticated', user});
     expect(bootstrapBodies()).toHaveLength(2);
+  });
+
+  it('retains the idempotency key when session persistence fails after createUser', async () => {
+    const ticket = await bootToTicket();
+    mockFetch.mockResolvedValueOnce(createdResponse());
+    const persistSpy = jest
+      .spyOn(authSession, 'persistNewSession')
+      .mockResolvedValueOnce({ok: false, error: new Error('keychain')});
+    await expect(
+      submitOnboardingName({bootstrapTicket: ticket, displayName: 'An'}),
+    ).resolves.toMatchObject({
+      status: 'failed',
+      code: 'KEYCHAIN_ERROR',
+      retryable: true,
+    });
+    persistSpy.mockRestore();
+    mockFetch.mockResolvedValueOnce(createdResponse());
+    await expect(
+      submitOnboardingName({bootstrapTicket: ticket, displayName: 'An'}),
+    ).resolves.toEqual({status: 'authenticated', user});
+    const keys = idempotencyKeys();
+    expect(keys).toHaveLength(2);
+    expect(keys[1]).toBe(keys[0]);
   });
 });
 
