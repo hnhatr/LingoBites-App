@@ -7,7 +7,7 @@ import {getPracticeSet, savePracticeSet} from '../../data/PracticeRepository';
 import {
   CHARACTERIZATION_INVARIANTS,
   simulateDatabaseProcessRestart,
-} from '@/test-support/characterization';
+} from '@test/support/characterization/index';
 import type {PracticeSet} from '@core/schemas/practice';
 
 const mockSet: PracticeSet = {

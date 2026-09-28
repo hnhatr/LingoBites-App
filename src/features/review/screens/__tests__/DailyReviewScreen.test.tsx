@@ -3,7 +3,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 import {Alert} from 'react-native';
 import {open} from 'react-native-quick-sqlite';
 import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@/test-support';
+import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support/index';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {saveFlashcard} from '../../logic/FlashcardRepository';

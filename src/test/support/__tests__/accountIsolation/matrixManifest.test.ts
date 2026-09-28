@@ -1,6 +1,6 @@
-import {M4_ACCOUNT_ISOLATION_MATRIX} from '@/test-support/m4AccountIsolation/matrixManifest';
-import {M4_MATRIX_AUTHORITATIVE_TEST_PREFIXES} from '@/test-support/m4AccountIsolation/matrixTestPrefixes';
-import {ACCOUNT_ISOLATION_STATE_PATHS} from '@/test-support/m4AccountIsolation/statePathInventory';
+import {M4_ACCOUNT_ISOLATION_MATRIX} from '@test/support/accountIsolation/matrixManifest';
+import {M4_MATRIX_AUTHORITATIVE_TEST_PREFIXES} from '@test/support/accountIsolation/matrixTestPrefixes';
+import {ACCOUNT_ISOLATION_STATE_PATHS} from '@test/support/accountIsolation/statePathInventory';
 
 describe('M4 account-isolation matrix manifest (LING-112)', () => {
   it('lists every authoritative row with a unique id and test prefix', () => {

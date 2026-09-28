@@ -9,7 +9,7 @@ import type {ReviewEventPayload} from '@core/db/types';
 import {PRACTICE_EVENT_TYPE} from '@core/db/types';
 import type {PracticeEventPayload} from '@core/db/types';
 import {drainOutboxOnce} from '../../outboxSync';
-import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
 
 const reviewPayload: ReviewEventPayload = {
   schema_version: 1,

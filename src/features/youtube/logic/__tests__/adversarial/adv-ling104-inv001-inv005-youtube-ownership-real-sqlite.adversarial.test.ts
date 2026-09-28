@@ -11,7 +11,7 @@ import * as dataProgress from '../../data/YouTubeProgressRepository';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
 
 /**

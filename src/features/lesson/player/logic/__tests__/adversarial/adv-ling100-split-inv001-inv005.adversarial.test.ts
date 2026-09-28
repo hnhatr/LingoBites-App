@@ -15,7 +15,7 @@ import {
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-100 adversarial review (TASK-011 learningClient split).

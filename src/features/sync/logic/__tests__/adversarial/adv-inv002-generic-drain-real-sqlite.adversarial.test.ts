@@ -10,7 +10,7 @@ import {drainOutboxOnce} from '../../outboxSync';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-97 adversarial review (INV-002, TASK-004 generic drain path). A generic

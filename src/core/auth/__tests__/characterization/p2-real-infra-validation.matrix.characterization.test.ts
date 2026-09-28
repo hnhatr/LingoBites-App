@@ -42,7 +42,7 @@ import {
   stageAwaitingAB,
   teardownP2RealInfraHarness,
   writeP2LearnerData,
-} from '@/test-support/p2RealInfra/harness';
+} from '@test/support/realInfra/harness';
 
 jest.mock('@features/profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

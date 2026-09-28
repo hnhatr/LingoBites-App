@@ -11,7 +11,7 @@ import {answerCurrentQuestion, createSession} from '../../sessionEngine';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-98 adversarial review (INV-001/005 with INV-002 practice events).

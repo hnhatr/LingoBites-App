@@ -16,11 +16,11 @@ import {
   clearSpeakingLocalData,
 } from '@features/profile/logic/LocalDataDeletionService';
 import type {FileDeleter} from '@core/localData/types';
-import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-101 adversarial review (TASK-012, INV-001 / INV-005). The PR moves

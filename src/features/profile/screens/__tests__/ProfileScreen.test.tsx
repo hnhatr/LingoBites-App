@@ -5,7 +5,7 @@ import {TextField} from '@ui/components/TextField';
 import {open} from 'react-native-quick-sqlite';
 import * as Keychain from 'react-native-keychain';
 import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, OFFLINE_REVIEW_MVP} from '@/test-support';
+import {makeTestReleaseConfig, OFFLINE_REVIEW_MVP} from '@test/support/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {DB_NAME} from '@core/db/constants';
@@ -14,7 +14,7 @@ import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {resetBootStateForTests} from '../../../account/logic/accountBootstrap';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {getActiveSession} from '@core/auth/sessionStore';
-import {installKeychainVault} from '../../../../test-support/keychainVault';
+import {installKeychainVault} from '../../../../test/support/keychainVault';
 import {
   resetAccountStoreForTests,
   useAccountStore,

@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 import path from 'node:path';
-import {CHARACTERIZATION_INVARIANTS} from '../../../src/test-support/characterization/invariants';
+import {CHARACTERIZATION_INVARIANTS} from '../../../src/test/support/characterization/invariants';
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_001} toolchain baseline scripts`, () => {
   it('exposes the validation commands recorded at TASK-001 dispatch', () => {

@@ -14,12 +14,12 @@ import {
   swapActivePackage,
 } from '@features/lesson/packages';
 import {getPackageById} from '../../contentQueryPort';
-import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
-import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
+} from '@test/support/adversarial/realSqlite';
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 
 const NOW = '2026-09-27T12:00:00.000Z';
 const T0 = '2026-09-10T08:00:00.000Z';

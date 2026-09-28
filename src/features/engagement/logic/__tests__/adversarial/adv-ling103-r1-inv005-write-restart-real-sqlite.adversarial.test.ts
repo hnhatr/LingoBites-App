@@ -14,11 +14,11 @@ import * as legacyGamificationRepository from '@features/engagement/logic/data/G
 import * as legacyPilotMetricsRepository from '@features/analytics/logic/data/PilotMetricsRepository';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-103 independent adversarial review r1 (TASK-014, INV-005), real SQLite

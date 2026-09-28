@@ -2,7 +2,7 @@ import React from 'react';
 import {Pressable, StyleSheet, TextInput} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {AppButton} from '../AppButton';
 import {Chip} from '../Chip';

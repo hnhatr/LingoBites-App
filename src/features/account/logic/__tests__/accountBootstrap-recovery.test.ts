@@ -13,7 +13,7 @@ import {ACCOUNT_SWITCH_JOURNAL_SERVICE} from '@core/auth/accountSwitchJournal';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {saveSession, setActiveSessionId} from '@core/auth/sessionStore';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
-import {installKeychainVault} from '@/test-support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 
 jest.mock('../../../profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

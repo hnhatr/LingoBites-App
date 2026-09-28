@@ -20,13 +20,13 @@ import {
   P2_USER_A,
   seedActiveSessionA,
   seedInstall,
-} from '@/test-support/p2RealInfra/harness';
+} from '@test/support/realInfra/harness';
 import {
   expectSignedOutWithClearedActivePointer,
   setupM4AccountIsolationHarness,
   teardownM4AccountIsolationHarness,
   writeM4RelocatedDomainLearnerData,
-} from '@/test-support/m4AccountIsolation/harness';
+} from '@test/support/accountIsolation/harness';
 import {
   AUTH_ACTIVE_SESSION_SERVICE,
   getActiveSession,

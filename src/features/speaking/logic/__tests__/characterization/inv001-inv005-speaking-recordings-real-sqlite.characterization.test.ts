@@ -7,12 +7,12 @@ import {
   insertSpeakingRecording,
   listSpeakingRecordings,
 } from '../../data/SpeakingRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
-import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 const T0 = '2026-09-10T08:00:00.000Z';
 const NOW = '2026-09-27T12:00:00.000Z';

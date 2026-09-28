@@ -10,7 +10,7 @@ import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {resetBootStateForTests} from '../../logic/accountBootstrap';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
-import {installKeychainVault} from '../../../../test-support/keychainVault';
+import {installKeychainVault} from '../../../../test/support/keychainVault';
 import {
   resetAccountStoreForTests,
   useAccountStore,

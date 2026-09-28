@@ -15,7 +15,7 @@ import {saveFlashcard} from '@features/review';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-108 TASK-020: production `executeAccountReplacementTransaction` and

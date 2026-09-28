@@ -7,7 +7,7 @@ import {
 import {getActiveSession} from '../sessionStore';
 import type {AuthHttpClient} from '../authClient';
 import type {AuthSession, AuthUser} from '../authTypes';
-import {installKeychainVault} from '../../../test-support/keychainVault';
+import {installKeychainVault} from '../../../test/support/keychainVault';
 
 const user: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

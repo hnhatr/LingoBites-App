@@ -13,7 +13,7 @@ import {
   saveContentLesson,
   startContentLesson,
 } from '../ContentLessonStateRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
 
 const NOW = '2026-09-27T12:00:00.000Z';
 

@@ -18,8 +18,8 @@ import * as dataRuntime from '../../data/ContentRuntimeRepository';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
-import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
+} from '@test/support/adversarial/realSqlite';
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 
 /**
  * LING-102 adversarial review (INV-001 / INV-005, TASK-013 content domain

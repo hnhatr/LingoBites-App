@@ -23,11 +23,11 @@ import {
   saveSession,
   setActiveSessionId,
 } from '@core/auth/sessionStore';
-import {installKeychainVault} from '@/test-support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 
 export const P2_USER_A: AuthUser = {

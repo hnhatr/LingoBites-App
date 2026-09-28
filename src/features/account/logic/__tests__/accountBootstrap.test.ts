@@ -25,7 +25,7 @@ import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {
   installKeychainVault,
   vault,
-} from '../../../../test-support/keychainVault';
+} from '../../../../test/support/keychainVault';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

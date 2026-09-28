@@ -10,8 +10,8 @@ import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRep
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
-import {PRIOR_SCHEMA_403BC52} from '@/test-support/adversarial/priorSchema403bc52';
+} from '@test/support/adversarial/realSqlite';
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 
 /**
  * LING-93 adversarial review (INV-001 / HC-006). A real SQLite file is created

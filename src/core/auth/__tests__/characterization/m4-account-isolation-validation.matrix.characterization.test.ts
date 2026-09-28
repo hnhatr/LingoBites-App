@@ -18,7 +18,7 @@ import {
   seedSession,
   stageAwaitingAB,
   writeP2LearnerData,
-} from '@/test-support/p2RealInfra/harness';
+} from '@test/support/realInfra/harness';
 import {
   countAudioAssetRows,
   expectM4RelocatedDomainCleared,
@@ -29,7 +29,7 @@ import {
   setupM4AccountIsolationHarness,
   teardownM4AccountIsolationHarness,
   writeM4RelocatedDomainLearnerData,
-} from '@/test-support/m4AccountIsolation/harness';
+} from '@test/support/accountIsolation/harness';
 
 jest.mock('@features/profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

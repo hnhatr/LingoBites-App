@@ -11,7 +11,7 @@ import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {CurriculumLessonScreen} from '../../screens/CurriculumLessonScreen';
 import {

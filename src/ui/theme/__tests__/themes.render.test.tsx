@@ -5,7 +5,7 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@/test-support';
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support/index';
 import {AppThemeProvider} from '../ThemeProvider';
 import {themeList} from '../themeRegistry';
 import {THEME_STORAGE_KEY} from '../themeStorage';

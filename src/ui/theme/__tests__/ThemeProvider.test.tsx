@@ -7,7 +7,7 @@ import {
   makeTestReleaseConfig,
   CORE_BETA_WITHOUT_REVIEW,
   THEME_UI_FLAGS,
-} from '@/test-support';
+} from '@test/support/index';
 import {AppThemeProvider} from '../ThemeProvider';
 import {THEME_STORAGE_KEY} from '../themeStorage';
 import {useAppTheme} from '../useAppTheme';

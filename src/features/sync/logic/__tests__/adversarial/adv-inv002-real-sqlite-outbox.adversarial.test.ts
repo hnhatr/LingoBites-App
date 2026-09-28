@@ -23,7 +23,7 @@ import {drainOutboxOnce} from '../../outboxSync';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-93 adversarial review (INV-002). Production repositories,

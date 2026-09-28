@@ -1,6 +1,6 @@
 import {spawnSync} from 'node:child_process';
 import path from 'node:path';
-import {CHARACTERIZATION_INVARIANTS} from '../../../src/test-support/characterization/invariants';
+import {CHARACTERIZATION_INVARIANTS} from '../../../src/test/support/characterization/invariants';
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_002} real SQLite commit (HC-001)`, () => {
   it('runs the node:sqlite outbox commit script successfully', () => {

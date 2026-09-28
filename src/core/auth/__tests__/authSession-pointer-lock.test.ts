@@ -18,7 +18,7 @@ import {
   saveSession,
   setActiveSessionId,
 } from '../sessionStore';
-import {installKeychainVault} from '@/test-support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 import {confirmAccountSwitch} from '@features/account/logic/accountBootstrap';
 import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {

@@ -11,7 +11,7 @@ import {
   setActiveSessionId,
 } from '../sessionStore';
 import type {StoredSession} from '../sessionStore';
-import {installKeychainVault, vault} from '../../../test-support/keychainVault';
+import {installKeychainVault, vault} from '../../../test/support/keychainVault';
 
 function record(overrides: Partial<StoredSession> = {}): StoredSession {
   return {

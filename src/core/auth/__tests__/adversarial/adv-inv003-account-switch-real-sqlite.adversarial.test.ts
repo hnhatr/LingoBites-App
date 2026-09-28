@@ -18,11 +18,11 @@ import {
 } from '@features/account/logic/useAccountStore';
 import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {resetRefreshStateForTests} from '../../authSession';
-import {installKeychainVault} from '@/test-support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 import type {AuthUser} from '../../authTypes';
 
 jest.mock('@features/profile/logic/legacyClear', () => ({

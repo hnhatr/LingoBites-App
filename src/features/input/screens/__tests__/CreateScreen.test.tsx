@@ -7,7 +7,7 @@ import {
   CORE_WITH_REVIEW,
   makeTestReleaseConfig,
   OFFLINE_REVIEW_MVP,
-} from '@/test-support';
+} from '@test/support/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {CreateScreen} from '../CreateScreen';
 

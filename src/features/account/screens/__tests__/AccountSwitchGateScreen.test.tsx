@@ -8,7 +8,7 @@ import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {resetBootStateForTests} from '../../logic/accountBootstrap';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
-import {installKeychainVault} from '../../../../test-support/keychainVault';
+import {installKeychainVault} from '../../../../test/support/keychainVault';
 import type {AuthUser} from '@core/auth/authTypes';
 import {AccountSwitchGateScreen} from '../AccountSwitchGateScreen';
 import {

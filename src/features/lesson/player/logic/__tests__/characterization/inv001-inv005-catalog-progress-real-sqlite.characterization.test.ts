@@ -13,11 +13,11 @@ import {
   saveContentLesson,
   startContentLesson,
 } from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * Supplemental same-schema reopen checks on real `node:sqlite` (not the upgrade

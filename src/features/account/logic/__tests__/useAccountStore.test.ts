@@ -10,7 +10,7 @@ import {getActiveSession} from '@core/auth/sessionStore';
 import {
   installKeychainVault,
   vault,
-} from '../../../../test-support/keychainVault';
+} from '../../../../test/support/keychainVault';
 import {resetAccountStoreForTests, useAccountStore} from '../useAccountStore';
 import type {AuthSession, AuthUser} from '@core/auth/index';
 

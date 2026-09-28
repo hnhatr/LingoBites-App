@@ -9,7 +9,7 @@ import {
   saveFlashcard,
 } from '@features/review/logic/FlashcardRepository';
 import {drainOutboxOnce} from '../../outboxSync';
-import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

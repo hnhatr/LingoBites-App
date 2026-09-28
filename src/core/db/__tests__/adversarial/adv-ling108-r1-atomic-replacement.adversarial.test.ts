@@ -15,7 +15,7 @@ import {saveFlashcard} from '@features/review';
 import {
   openRealSqlite,
   type RealSqliteConnection,
-} from '@/test-support/adversarial/realSqlite';
+} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-108 adversarial r1 — attack INV-001/002/003 against the production

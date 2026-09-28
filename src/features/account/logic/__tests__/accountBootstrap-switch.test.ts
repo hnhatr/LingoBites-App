@@ -22,7 +22,7 @@ import {hasInstallMarker} from '@core/db/installMarker';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {getActiveSession, getActiveSessionId} from '@core/auth/sessionStore';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
-import {installKeychainVault} from '@/test-support/keychainVault';
+import {installKeychainVault} from '@test/support/keychainVault';
 
 jest.mock('../../../profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

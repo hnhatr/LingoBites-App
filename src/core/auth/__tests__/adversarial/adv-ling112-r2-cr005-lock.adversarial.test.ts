@@ -39,7 +39,7 @@ import {
   seedInstall,
   setupP2RealInfraHarness,
   teardownP2RealInfraHarness,
-} from '@/test-support/p2RealInfra/harness';
+} from '@test/support/realInfra/harness';
 
 jest.mock('@features/profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

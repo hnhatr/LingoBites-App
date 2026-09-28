@@ -11,7 +11,7 @@ import {
   teardownP2RealInfraHarness,
   writeP2LearnerData,
   type P2HarnessContext,
-} from '@/test-support/p2RealInfra/harness';
+} from '@test/support/realInfra/harness';
 
 const M4_AUDIO_NOW = '2026-09-28T08:00:00.000Z';
 

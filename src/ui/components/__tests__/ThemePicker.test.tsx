@@ -9,7 +9,7 @@ import {
   makeTestReleaseConfig,
   OFFLINE_REVIEW_MVP,
   THEME_UI_FLAGS,
-} from '@/test-support';
+} from '@test/support/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {ThemeContext} from '@ui/theme/useAppTheme';
 import {defaultTheme} from '@ui/theme/themes/default';

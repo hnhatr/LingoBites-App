@@ -1,4 +1,4 @@
-import {P2_REAL_INFRA_MATRIX} from '@/test-support/p2RealInfra/matrixManifest';
+import {P2_REAL_INFRA_MATRIX} from '@test/support/realInfra/matrixManifest';
 
 describe('P2 real-infra matrix manifest (LING-110)', () => {
   it('lists every authoritative row with a unique id and test prefix', () => {

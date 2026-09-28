@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@/test-support';
+import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support/index';
 import {AppThemeProvider} from '@ui/theme/index';
 import {Banner} from '../Banner';
 import {RatingControl} from '../RatingControl';
