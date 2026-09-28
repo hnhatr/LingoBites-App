@@ -166,6 +166,14 @@ export type P2HarnessContext = {
   mockFetch: jest.Mock;
 };
 
+function meResponse(user: AuthUser) {
+  return jsonResponse(200, {
+    request_id: 'm',
+    status: 'success',
+    user,
+  });
+}
+
 export function createP2FetchMock(serverUser: {current: AuthUser}) {
   return jest.fn(async (url: string, init?: RequestInit) => {
     if (url.endsWith('/v1/auth/bootstrap')) {
@@ -186,12 +194,20 @@ export function createP2FetchMock(serverUser: {current: AuthUser}) {
     if (url.endsWith('/v1/auth/logout')) {
       return jsonResponse(200, {status: 'success'});
     }
-    if (url.endsWith('/v1/auth/me')) {
+    if (url.endsWith('/v1/auth/refresh')) {
+      const rotated = {
+        ...P2_SESSION_A,
+        access_token: 'lb_at_rotated',
+        access_expires_at: new Date(Date.now() + 3600_000).toISOString(),
+      };
       return jsonResponse(200, {
-        request_id: 'm',
-        status: 'success',
-        user: serverUser.current,
+        request_id: 'r1',
+        status: 'rotated',
+        session: rotated,
       });
+    }
+    if (url.endsWith('/v1/me') || url.endsWith('/v1/auth/me')) {
+      return meResponse(serverUser.current);
     }
     if (String(url).endsWith('/v1/review-events') && init?.body) {
       const parsed = JSON.parse(String(init.body));
