@@ -11,12 +11,19 @@ import type {AccountPhase} from '@modules/account';
  */
 export function accountGateRouteForPhase(
   phase: AccountPhase,
-): 'BootGate' | 'Onboarding' | 'Tabs' {
+): 'BootGate' | 'Onboarding' | 'AccountSwitch' | 'Tabs' {
   if (phase === 'authenticated') {
     return 'Tabs';
   }
   if (phase === 'needs-onboarding') {
     return 'Onboarding';
+  }
+  if (
+    phase === 'switch-confirmation' ||
+    phase === 'switching' ||
+    phase === 'switch-failed'
+  ) {
+    return 'AccountSwitch';
   }
   if (phase === 'signed-out') {
     return 'BootGate';

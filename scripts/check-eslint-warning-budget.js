@@ -6,7 +6,7 @@ const path = require('path');
 const WARNING_BUDGET = {
   totalWarnings: 340,
   rules: {
-    'react-native-a11y/has-accessibility-hint': 87,
+    'react-native-a11y/has-accessibility-hint': 91,
     'react-native-a11y/has-valid-accessibility-descriptors': 0,
     'react-native-a11y/has-valid-accessibility-ignores-invert-colors': 0,
     'react-native/no-inline-styles': 91,

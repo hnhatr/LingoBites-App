@@ -171,10 +171,10 @@ export function ensureValidSession(input: {
 }
 
 /**
- * Persists a freshly issued session (bootstrap / account creation) and
- * marks it active. Returns the user so callers can hydrate account state.
+ * Persists a candidate session without moving the active pointer (P2 A→B
+ * staging). Tokens stay in Keychain but are not active until confirmation.
  */
-export async function persistNewSession(input: {
+export async function saveCandidateSession(input: {
   session: AuthSession;
   user: AuthUser;
 }): Promise<{ok: true} | {ok: false; error: unknown}> {
@@ -186,11 +186,33 @@ export async function persistNewSession(input: {
   if (!saved.ok) {
     return {ok: false, error: saved.error};
   }
-  const pointed = await setActiveSessionId(input.session.session_id);
+  return {ok: true};
+}
+
+/** Moves the active-session pointer to an already persisted session id. */
+export async function activateStoredSession(
+  sessionId: string,
+): Promise<{ok: true} | {ok: false; error: unknown}> {
+  const pointed = await setActiveSessionId(sessionId);
   if (!pointed.ok) {
     return {ok: false, error: pointed.error};
   }
   return {ok: true};
+}
+
+/**
+ * Persists a freshly issued session (bootstrap / account creation) and
+ * marks it active. Returns the user so callers can hydrate account state.
+ */
+export async function persistNewSession(input: {
+  session: AuthSession;
+  user: AuthUser;
+}): Promise<{ok: true} | {ok: false; error: unknown}> {
+  const saved = await saveCandidateSession(input);
+  if (!saved.ok) {
+    return saved;
+  }
+  return activateStoredSession(input.session.session_id);
 }
 
 /** Signs out: best-effort server logout, then clears every stored session. */
