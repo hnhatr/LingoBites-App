@@ -17,7 +17,7 @@ import {
 import {
   getCapabilityProgressReport,
   exportPrivacySafeMetrics,
-} from '@shared/db/PilotMetricsRepository';
+} from '@modules/analytics';
 import {clearAllLocalDatabaseRows} from '@shared/db/localDataWipe';
 import {listActivePackageLessons} from '@shared/db/ContentRuntimeRepository';
 

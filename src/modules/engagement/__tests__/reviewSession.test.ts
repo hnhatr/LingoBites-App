@@ -2,7 +2,7 @@ import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {resetDatabaseForTests} from '@shared/db/database';
 import {open} from 'react-native-quick-sqlite';
 import {DB_NAME} from '@shared/db/constants';
-import {listGamificationEvents} from '@shared/db/GamificationRepository';
+import {listGamificationEvents} from '../data/GamificationRepository';
 import {startReviewSession} from '../reviewSession';
 
 describe('reviewSession (engagement)', () => {
