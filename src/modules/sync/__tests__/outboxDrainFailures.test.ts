@@ -6,7 +6,7 @@ import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
 import {listPendingSyncEvents} from '../adapters/SyncOutboxRepository';
 import {PRACTICE_EVENT_TYPE} from '@shared/db/types';
 import type {SyncOutboxPayload} from '@shared/db/types';
-import {savePracticeSet} from '@shared/db/PracticeRepository';
+import {savePracticeSet} from '@modules/practice/data/PracticeRepository';
 import type {PracticeSet} from '@shared/schemas/practice';
 import {
   answerCurrentQuestion,

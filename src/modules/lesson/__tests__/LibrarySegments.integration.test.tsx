@@ -6,7 +6,7 @@ import {
   saveGrammarBookmark,
   unsaveGrammarBookmark,
 } from '@modules/review/GrammarBookmarkRepository';
-import {useBookmarkOptimistic} from '../useBookmarkOptimistic';
+import {useBookmarkOptimistic} from '@modules/review';
 
 jest.mock('@modules/review/FlashcardRepository', () => ({
   saveFlashcard: jest.fn(),

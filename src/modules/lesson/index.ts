@@ -1,6 +1,6 @@
 export {LessonsHistoryScreen} from './LessonsHistoryScreen';
-export {useBookmarkOptimistic} from './useBookmarkOptimistic';
-export {useFlashcardLibrary} from './useFlashcardLibrary';
+export {useBookmarkOptimistic, useFlashcardLibrary} from '@modules/review';
+export type {UseBookmarkOptimisticResult} from '@modules/review';
 export {useLibrarySegments} from './useLibrarySegments';
 export type {
   SegmentFilterState,

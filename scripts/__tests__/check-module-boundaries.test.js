@@ -13,22 +13,8 @@ const {
 const appRoot = path.resolve(__dirname, '../..');
 const srcRoot = path.join(appRoot, 'src');
 
-/** Staged legacy shims (Integration Owner manifest; TASK-008 / TASK-012 / TASK-013 / TASK-014 expiry). */
+/** Staged legacy shims (Integration Owner manifest; TASK-012 / TASK-013 / TASK-014 / TASK-015 expiry). */
 const LEGACY_SHIM_ALLOWANCES = [
-  {
-    file: 'src/shared/db/PracticeRepository.ts',
-    specifier: '../../modules/practice/data/PracticeRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-008',
-  },
-  {
-    file: 'src/shared/api/practiceEventsClient.ts',
-    specifier: '../../modules/practice/api/practiceEventsClient',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-008',
-  },
   {
     file: 'src/shared/db/AudioAssetRepository.ts',
     specifier: '../../modules/audio/data/AudioAssetRepository',
@@ -141,25 +127,25 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expectManifestMatchesLegacyShimDelta(manifest);
     });
 
-    it('rejects a new shared-to-module violation beyond the staged practice shim allowances', () => {
-      const practiceRepoShim = path.join(
+    it('rejects a new shared-to-module violation beyond the staged legacy shim allowances', () => {
+      const audioAssetShim = path.join(
         srcRoot,
-        'shared/db/PracticeRepository.ts',
+        'shared/db/AudioAssetRepository.ts',
       );
-      const original = fs.readFileSync(practiceRepoShim, 'utf8');
-      const extraImport = `import {x} from '../../modules/practice/sessionEngine';\n${original}`;
+      const original = fs.readFileSync(audioAssetShim, 'utf8');
+      const extraImport = `import {x} from '../../modules/audio/audioManifestClient';\n${original}`;
 
       const result = checkModuleBoundaries({
-        files: [practiceRepoShim],
-        fileContents: {[practiceRepoShim]: extraImport},
+        files: [audioAssetShim],
+        fileContents: {[audioAssetShim]: extraImport},
       });
 
       expect(result.passed).toBe(false);
       expect(
         result.newViolations.some(
           v =>
-            v.file === 'src/shared/db/PracticeRepository.ts' &&
-            v.specifier === '../../modules/practice/sessionEngine' &&
+            v.file === 'src/shared/db/AudioAssetRepository.ts' &&
+            v.specifier === '../../modules/audio/audioManifestClient' &&
             v.rule === 'shared-to-module',
         ),
       ).toBe(true);

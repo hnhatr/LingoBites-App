@@ -39,9 +39,23 @@ jest.mock('@modules/curriculumLesson', () => ({
 
 const mockGetDueFlashcards = jest.fn(() => []);
 
-jest.mock('../useFlashcardLibrary', () => ({
+jest.mock('@modules/review', () => ({
   useFlashcardLibrary: () => ({
     getDueFlashcards: mockGetDueFlashcards,
+  }),
+  useBookmarkOptimistic: () => ({
+    vocabularySaveState: {
+      isSaved: new Map(),
+      getIsSaved: (_itemId: string, dbValue: boolean) => dbValue,
+    },
+    grammarSaveState: {
+      isSaved: new Map(),
+      getIsSaved: (_itemId: string, dbValue: boolean) => dbValue,
+    },
+    onVocabularySave: jest.fn(),
+    onVocabularyUnsave: jest.fn(),
+    onGrammarSave: jest.fn(),
+    onGrammarUnsave: jest.fn(),
   }),
 }));
 

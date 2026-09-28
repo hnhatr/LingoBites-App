@@ -17,6 +17,6 @@ function addImport(file) {
 
 addImport('src/shared/api/analysisJobClient.ts');
 addImport('src/shared/api/ocrClient.ts');
-addImport('src/shared/api/practiceEventsClient.ts');
+addImport('src/modules/practice/api/practiceEventsClient.ts');
 addImport('src/modules/review/api/reviewEventsClient.ts');
 addImport('src/shared/api/youtubeCapabilities.ts');
