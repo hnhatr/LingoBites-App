@@ -5,6 +5,7 @@ import type {
 } from './authClient';
 import {isAuthApiError} from './authClient';
 import type {AuthSession, AuthUser} from './authTypes';
+import {isAccountStillOwner} from '@shared/sync/syncDrainOwnership';
 import {
   clearAllSessions,
   deleteSession,
@@ -113,6 +114,13 @@ async function runRefresh(input: {
     };
   }
   const next: AuthSession = rotated.session;
+  if (!(await isAccountStillOwner(userId))) {
+    return {
+      status: 'refresh-failed',
+      code: 'ACCOUNT_OWNERSHIP_CHANGED',
+      message: 'Session refresh was superseded by an account change.',
+    };
+  }
   const saved = await saveSession({
     ...next,
     user_id: userId,

@@ -273,10 +273,12 @@ async function drainOutboxOnceInner(
       // For any failures not in results (though syncPush returns all), we could handle them.
       // But syncPush either succeeds the whole batch (and returns results for each) or fails the whole batch.
     } else {
-      markSyncEventsFailed(
-        genericEvents.map(event => event.id),
-        result.message,
-      );
+      if (result.errorCode !== SYNC_OWNERSHIP_CHANGED) {
+        markSyncEventsFailed(
+          genericEvents.map(event => event.id),
+          result.message,
+        );
+      }
       const failure = {errorCode: result.errorCode, message: result.message};
       if (result.retryable) {
         firstRetryableFailure ??= failure;

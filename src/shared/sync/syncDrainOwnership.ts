@@ -25,6 +25,25 @@ export function endSyncDrainOwnership(): void {
   drainOwnerAccountId = undefined;
 }
 
+/**
+ * True when `userId` still owns the local account pointer and active session.
+ * Used after async gaps (refresh rotation, sync fetch) before writing Keychain.
+ */
+export async function isAccountStillOwner(userId: string): Promise<boolean> {
+  const local = readLocalAccountId();
+  if (local !== null && local !== userId) {
+    return false;
+  }
+  const active = await getActiveSession();
+  if (!active.ok) {
+    return false;
+  }
+  if (active.value === null) {
+    return local === null;
+  }
+  return active.value.user_id === userId;
+}
+
 /** Aborts network work when the active session or local pointer moved mid-drain. */
 export async function assertSyncDrainOwnershipUnchanged(): Promise<boolean> {
   if (drainOwnerAccountId === undefined) {
