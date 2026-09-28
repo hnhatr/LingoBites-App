@@ -7,10 +7,12 @@ import {
   retryAccountSwitch,
   signOut,
   submitOnboardingName,
+  terminalReset,
   type AccountSwitchConfirmation,
   type AuthUser,
   type BootResult,
 } from '@shared/auth';
+import {clearAllSessions, getActiveSession} from '@shared/auth/sessionStore';
 
 /**
  * Account bootstrap state for navigation gating (SETE-303 / T6).
@@ -131,6 +133,23 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
  */
 let inFlightLogout: Promise<void> | null = null;
 
+/**
+ * CR-005 / AF-002 terminal-transition boundary (root-cause checkpoint §5.2).
+ * `committedLogoutCount` increments only on successful logout commit.
+ * Boots that start before a commit must not publish; stale runs re-clear
+ * Keychain and register on `staleBootCleanup` so later boots (Continue) do
+ * not join the stale `bootAccount` run.
+ */
+let committedLogoutCount = 0;
+let keychainTouchedDuringLogout = false;
+let staleBootCleanup: Promise<void> = Promise.resolve();
+let logoutServerDone = false;
+let inFlightStoreBoot: Promise<void> | null = null;
+
+function localSignOut(): Promise<{ok: boolean}> {
+  return signOut({client: createAuthClient()});
+}
+
 export const useAccountStore = create<AccountState>()((set, get) => ({
   phase: 'bootstrapping',
   user: null,
@@ -141,8 +160,34 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
   failureMessage: null,
 
   boot: async () => {
-    const result = await bootAccount();
-    set(fromBootResult(result));
+    const committedAtStart = committedLogoutCount;
+    await staleBootCleanup;
+    if (inFlightStoreBoot) {
+      await inFlightStoreBoot;
+    }
+    const run = async (): Promise<void> => {
+      const result = await bootAccount();
+      if (inFlightLogout && logoutServerDone) {
+        keychainTouchedDuringLogout = true;
+        await inFlightLogout;
+      }
+      if (committedLogoutCount > committedAtStart) {
+        const cleanup = localSignOut().then(() => {});
+        staleBootCleanup = staleBootCleanup.then(() => cleanup);
+        await cleanup;
+        return;
+      }
+      set(fromBootResult(result));
+    };
+    const task = run();
+    inFlightStoreBoot = task;
+    try {
+      await task;
+    } finally {
+      if (inFlightStoreBoot === task) {
+        inFlightStoreBoot = null;
+      }
+    }
   },
 
   submitDisplayName: async (displayName, phone) => {
@@ -299,12 +344,19 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
       return;
     }
     const task = (async (): Promise<void> => {
-      // Best-effort server logout, then local secure-storage wipe — the
-      // shared lifecycle. An offline/server failure with a successful local
-      // wipe still reaches `signed-out`; only a local Keychain failure
-      // keeps the current phase and reports instead of claiming logout.
-      const result = await signOut({client: createAuthClient()});
-      if (!result.ok) {
+      keychainTouchedDuringLogout = false;
+      logoutServerDone = false;
+      const client = createAuthClient();
+      const stored = await getActiveSession();
+      const accessToken = stored.ok ? stored.value?.access_token ?? null : null;
+      try {
+        await client.logout(accessToken);
+      } catch {
+        // Offline server logout must not block the local wipe (signOut parity).
+      }
+      logoutServerDone = true;
+      const cleared = await clearAllSessions();
+      if (!cleared.ok) {
         set({
           failureCode: 'KEYCHAIN_ERROR',
           failureMessage:
@@ -312,6 +364,18 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
         });
         return;
       }
+      if (keychainTouchedDuringLogout) {
+        const secondPass = await terminalReset({accessToken: null, client});
+        if (!secondPass.cleared) {
+          set({
+            failureCode: 'KEYCHAIN_ERROR',
+            failureMessage:
+              'Could not sign out on this device. Please try again.',
+          });
+          return;
+        }
+      }
+      committedLogoutCount += 1;
       set({
         phase: 'signed-out',
         user: null,
@@ -336,6 +400,11 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
 /** Test seam: restores the store to its initial state between tests. */
 export function resetAccountStoreForTests(): void {
   inFlightLogout = null;
+  committedLogoutCount = 0;
+  keychainTouchedDuringLogout = false;
+  staleBootCleanup = Promise.resolve();
+  logoutServerDone = false;
+  inFlightStoreBoot = null;
   useAccountStore.setState({
     phase: 'bootstrapping',
     user: null,
