@@ -50,6 +50,27 @@ const LEGACY_SHIM_ALLOWANCES = [
     owner: 'React Native Developer',
     expiry: 'TASK-012',
   },
+  {
+    file: 'src/shared/db/ContentPackageRepository.ts',
+    specifier: '../../modules/content/data/ContentPackageRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-013',
+  },
+  {
+    file: 'src/shared/db/ContentLessonStateRepository.ts',
+    specifier: '../../modules/content/data/ContentLessonStateRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-013',
+  },
+  {
+    file: 'src/shared/db/ContentRuntimeRepository.ts',
+    specifier: '../../modules/content/data/ContentRuntimeRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-013',
+  },
 ];
 
 function expectManifestMatchesLegacyShimDelta(manifest) {

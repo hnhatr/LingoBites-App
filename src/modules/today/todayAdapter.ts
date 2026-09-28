@@ -3,7 +3,7 @@ import {
   getDueContentReviewItems,
   listActivePackageLessons,
   listContentReviewItems,
-} from '@shared/db/ContentRuntimeRepository';
+} from '@modules/content';
 import {getDueFlashcards} from '@modules/review';
 import {
   listErrorEvents,

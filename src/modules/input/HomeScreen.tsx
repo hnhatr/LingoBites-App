@@ -15,11 +15,12 @@ import {MaterialIcon} from '@components/MaterialIcon';
 import {ShelfSurface} from '@components/ShelfSurface';
 import {getGamificationSnapshot} from '@modules/engagement';
 import type {HandoffIconName} from '@components/icons/iconRegistry';
-import {useContentLibrary, type ContentLessonRow} from '../content';
 import {
   listSavedLessons,
   listStartedLessons,
-} from '@shared/db/ContentLessonStateRepository';
+  useContentLibrary,
+  type ContentLessonRow,
+} from '@modules/content';
 import {
   listYouTubeLessons,
   countYouTubeLessons,

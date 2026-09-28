@@ -20,7 +20,7 @@ import {
   getActivePackage,
   getMostRecentInactivePackage,
   getPackageById,
-} from '@shared/db/ContentPackageRepository';
+} from '../data/ContentPackageRepository';
 import {constantTimeEqualHex, sha256Hex} from './packageChecksum';
 import {
   lintContentPackage,

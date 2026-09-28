@@ -1,6 +1,6 @@
 import {Buffer} from 'buffer';
 import {importContentPackage} from '../importer/ContentPackageImporter';
-import {getActivePackage} from '@shared/db/ContentPackageRepository';
+import {getActivePackage} from '../data/ContentPackageRepository';
 import {constantTimeEqualHex} from '../importer/packageChecksum';
 import {
   BUNDLED_PACKAGE_SLUG,
