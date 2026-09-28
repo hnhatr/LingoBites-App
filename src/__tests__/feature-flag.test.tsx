@@ -18,11 +18,11 @@ import {
 import type {FeatureKey} from '../release/feature-registry';
 import {DB_NAME} from '../shared/db/constants';
 import {resetDatabaseForTests} from '../shared/db/database';
-import {saveFlashcard} from '@modules/review';
+import {saveFlashcard} from '@features/review';
 import {validFullOutput} from '../shared/fixtures';
 import {AppThemeProvider} from '../ui/theme';
 import {__resetMockDatabases} from '../../test-utils/sqliteMock';
-import {DailyReviewScreen} from '../modules/review';
+import {DailyReviewScreen} from '../features/review';
 import {isIngestionRouteEnabled} from '../app/navigation/ingestionRouteGate';
 
 const renderedTrees: ReactTestRenderer.ReactTestRenderer[] = [];

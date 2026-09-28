@@ -147,6 +147,21 @@ jest.mock('react-native-audio-recorder-player', () => {
 
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
 
+jest.mock('react-native-tts', () => ({
+  __esModule: true,
+  default: {
+    getInitStatus: jest.fn().mockResolvedValue('success'),
+    voices: jest.fn().mockResolvedValue([]),
+    setIgnoreSilentSwitch: jest.fn(),
+    setDefaultLanguage: jest.fn(),
+    setDefaultRate: jest.fn(),
+    speak: jest.fn(),
+    stop: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  },
+}));
+
 // Reanimated runs animations on the UI thread, which does not exist under
 // Jest. The official `react-native-reanimated/mock` points at the library's
 // untranspiled TS sources, so this repo uses a small synchronous mock with

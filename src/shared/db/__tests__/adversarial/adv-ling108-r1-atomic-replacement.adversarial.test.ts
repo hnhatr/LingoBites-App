@@ -11,7 +11,7 @@ import {
 import {runMigrations} from '@shared/db/migrations';
 import {INSTALL_MARKER_KEY} from '@shared/db/installMarker';
 import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
-import {saveFlashcard} from '@modules/review';
+import {saveFlashcard} from '@features/review';
 import {
   openRealSqlite,
   type RealSqliteConnection,

@@ -761,7 +761,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
       });
       return results;
     };
-    const screens = walk(path.join(__dirname, '../../../modules'));
+    const screens = walk(path.join(__dirname, '../../../features'));
     const missing: string[] = [];
     for (const screen of screens) {
       const code = fs.readFileSync(screen, 'utf8');

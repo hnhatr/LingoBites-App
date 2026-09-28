@@ -1,6 +1,6 @@
 import {getDatabase} from '@shared/db/database';
-import {getYouTubeProgress} from '@shared/db/YouTubeProgressRepository';
-import {insertPendingChapterAudioAsset} from '@modules/audio/data/AudioAssetRepository';
+import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
+import {insertPendingChapterAudioAsset} from '@features/audio/logic/data/AudioAssetRepository';
 import type {AuthSession} from '@shared/auth/authTypes';
 import {
   getActiveSessionId,

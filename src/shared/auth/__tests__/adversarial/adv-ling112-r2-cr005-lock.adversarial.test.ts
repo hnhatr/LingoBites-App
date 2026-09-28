@@ -21,7 +21,7 @@
  * ADV-001a/b (`adv-ling112-r1-cr001-af002.adversarial.test.ts`) stay unchanged
  * and are the r1 control.
  */
-import {useAccountStore} from '@modules/account/useAccountStore';
+import {useAccountStore} from '@features/account/logic/useAccountStore';
 import type {AuthSession} from '@shared/auth/authTypes';
 import {
   AUTH_ACTIVE_SESSION_SERVICE,
@@ -41,7 +41,7 @@ import {
   teardownP2RealInfraHarness,
 } from '@/test-support/p2RealInfra/harness';
 
-jest.mock('../../../db/legacyClear', () => ({
+jest.mock('../../../../features/profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

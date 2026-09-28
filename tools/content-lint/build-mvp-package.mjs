@@ -1613,14 +1613,16 @@ const zipPath = path.resolve(
 );
 fs.writeFileSync(zipPath, zipBuffer);
 
-// Write src/modules/content/bootstrap/bundledPackageData.ts
+// Write src/features/lesson/packages/logic/bootstrap/bundledPackageData.ts
 const bootstrapDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
   '..',
   'src',
-  'modules',
-  'content',
+  'features',
+  'lesson',
+  'packages',
+  'logic',
   'bootstrap',
 );
 fs.mkdirSync(bootstrapDir, {recursive: true});

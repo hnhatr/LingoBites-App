@@ -2,7 +2,7 @@
  * CR-001 / AF-002 — CONFIRMED production defect at reviewed head `12ad16e…`.
  * Quarantined from default CI: enable with `M4_RUN_CR001=1` to reproduce red.
  */
-import {useAccountStore} from '@modules/account/useAccountStore';
+import {useAccountStore} from '@features/account/logic/useAccountStore';
 import {
   bootStoreAuthenticated,
   createP2FetchMock,
@@ -18,7 +18,7 @@ import {
   writeM4RelocatedDomainLearnerData,
 } from '@/test-support/m4AccountIsolation/harness';
 
-jest.mock('@shared/db/legacyClear', () => ({
+jest.mock('@features/profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

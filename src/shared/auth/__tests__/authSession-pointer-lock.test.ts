@@ -19,8 +19,8 @@ import {
   setActiveSessionId,
 } from '../sessionStore';
 import {installKeychainVault} from '@/test-support/keychainVault';
-import {confirmAccountSwitch} from '../accountBootstrap';
-import {resetBootStateForTests} from '../accountBootstrap';
+import {confirmAccountSwitch} from '../../../features/account/logic/accountBootstrap';
+import {resetBootStateForTests} from '../../../features/account/logic/accountBootstrap';
 import {
   resetAccountSwitchCoordinatorForTests,
   stageAccountSwitchAttempt,

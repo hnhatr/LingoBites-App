@@ -9,7 +9,7 @@ import {
 import {
   getYouTubeProgress,
   saveYouTubeProgress,
-} from '../../YouTubeProgressRepository';
+} from '../../../../features/youtube/logic/data/YouTubeProgressRepository';
 import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
 import {simulateDatabaseProcessRestart} from '@/test-support/characterization';
 

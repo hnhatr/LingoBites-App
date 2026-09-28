@@ -12,7 +12,7 @@
  * logout clear and the stale boot activation, so the failure is not timing
  * dependent.
  */
-import {useAccountStore} from '@modules/account/useAccountStore';
+import {useAccountStore} from '@features/account/logic/useAccountStore';
 import {
   bootStoreAuthenticated,
   createP2FetchMock,
@@ -32,7 +32,7 @@ import {
   getActiveSession,
 } from '@shared/auth/sessionStore';
 
-jest.mock('../../../db/legacyClear', () => ({
+jest.mock('../../../../features/profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

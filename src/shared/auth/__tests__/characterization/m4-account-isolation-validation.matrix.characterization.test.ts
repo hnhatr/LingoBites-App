@@ -1,11 +1,11 @@
-import type {AccountPhase} from '@modules/account';
+import type {AccountPhase} from '@features/account';
 import {
   useAccountStore,
   resetAccountStoreForTests,
-} from '@modules/account/useAccountStore';
+} from '@features/account/logic/useAccountStore';
 import {accountGateRouteForPhase} from '@/app/navigation/accountGate';
 import {createAuthClient} from '@shared/auth';
-import {resetBootStateForTests} from '@shared/auth/accountBootstrap';
+import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {ensureValidSession} from '@shared/auth/authSession';
 import {
   expectAccountBNotActive,
@@ -31,7 +31,7 @@ import {
   writeM4RelocatedDomainLearnerData,
 } from '@/test-support/m4AccountIsolation/harness';
 
-jest.mock('@shared/db/legacyClear', () => ({
+jest.mock('@features/profile/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

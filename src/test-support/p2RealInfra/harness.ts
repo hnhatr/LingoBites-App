@@ -3,16 +3,16 @@ import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {
   getYouTubeProgress,
   saveYouTubeProgress,
-} from '@shared/db/YouTubeProgressRepository';
-import {recordFlashcardRating, saveFlashcard} from '@modules/review';
-import {saveContentLesson} from '@shared/db/ContentLessonStateRepository';
-import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
+import {recordFlashcardRating, saveFlashcard} from '@features/review';
+import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
 import * as DeviceIdentityNative from '@shared/identity/deviceIdentityNative';
 import {
   resetAccountStoreForTests,
   useAccountStore,
-} from '@modules/account/useAccountStore';
-import {resetBootStateForTests} from '@shared/auth/accountBootstrap';
+} from '@features/account/logic/useAccountStore';
+import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {resetRefreshStateForTests} from '@shared/auth/authSession';
 import {
   resetAccountSwitchCoordinatorForTests,

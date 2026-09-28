@@ -3,7 +3,7 @@ import {open} from 'react-native-quick-sqlite';
 import {getDatabase, resetDatabaseForTests} from '../database';
 import {DB_NAME} from '../constants';
 import {enqueueSyncOutboxEvent} from '../syncOutboxCore';
-import {listPendingSyncEvents} from '@modules/sync/adapters/SyncOutboxRepository';
+import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
 import type {ReviewEventPayload} from '../types';
 
 const payload: ReviewEventPayload = {

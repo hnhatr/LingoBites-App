@@ -5,7 +5,7 @@ import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {
   saveYouTubeProgress,
   getYouTubeProgress,
-} from '@shared/db/YouTubeProgressRepository';
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
 import * as DeviceIdentityNative from '@shared/identity/deviceIdentityNative';
 import {
   bootAccount,
@@ -13,7 +13,7 @@ import {
   resetBootStateForTests,
   submitOnboardingName,
   SIGNUP_IDEMPOTENCY_KEY,
-} from '../../accountBootstrap';
+} from '../../../../features/account/logic/accountBootstrap';
 import {resetRefreshStateForTests} from '../../authSession';
 import {clearAllSessions} from '../../sessionStore';
 import {installKeychainVault, vault} from '@/test-support/keychainVault';

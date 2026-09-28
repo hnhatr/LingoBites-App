@@ -50,11 +50,11 @@ export {
   resetBootStateForTests,
   retryAccountSwitch,
   submitOnboardingName,
-} from './accountBootstrap';
+} from '../../features/account/logic/accountBootstrap';
 export type {
   AccountSwitchActionResult,
   AccountSwitchConfirmation,
   BootDeps,
   BootResult,
   SubmitNameResult,
-} from './accountBootstrap';
+} from '../../features/account/logic/accountBootstrap';

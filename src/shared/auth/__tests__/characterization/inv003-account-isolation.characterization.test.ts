@@ -5,7 +5,7 @@ import {getDatabase, resetDatabaseForTests} from '@shared/db/database';
 import {
   saveYouTubeProgress,
   getYouTubeProgress,
-} from '@shared/db/YouTubeProgressRepository';
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
 import {CHARACTERIZATION_INVARIANTS} from '@/test-support/characterization';
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_003} account isolation`, () => {

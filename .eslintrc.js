@@ -19,7 +19,7 @@ module.exports = {
       files: [
         'src/ui/components/**/*.tsx',
         'src/ui/icons/**/*.tsx',
-        'src/modules/**/*.tsx',
+        'src/features/**/*.tsx',
       ],
       rules: {
         'react-native/no-color-literals': 'error',

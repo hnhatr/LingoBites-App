@@ -1,4 +1,4 @@
-import type {AccountPhase} from '@modules/account';
+import type {AccountPhase} from '@features/account';
 import {accountGateRouteForPhase} from '@/app/navigation/accountGate';
 import {
   INGESTION_ROUTE_REQUIREMENTS,
