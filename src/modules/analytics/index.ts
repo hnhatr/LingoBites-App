@@ -14,3 +14,13 @@ export {
 export {getTextLengthBucket, type TextLengthBucket} from './textLengthBucket';
 export {sanitizeAnalyticsPayload} from './sanitizeAnalyticsPayload';
 export type {AnalyticsAdapter, AnalyticsEventName, InputMethod} from './types';
+export {
+  exportPrivacySafeMetrics,
+  formatDurationMs,
+  formatPercentage,
+  getCapabilityProgressReport,
+} from './pilotMetricsPort';
+export type {
+  CapabilityProgressReport,
+  PrivacySafeMetricsExport,
+} from './pilotMetricsPort';

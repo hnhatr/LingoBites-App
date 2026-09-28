@@ -1,12 +1,12 @@
-import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
-import {resetDatabaseForTests} from '../database';
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {resetDatabaseForTests} from '@shared/db/database';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '../constants';
+import {DB_NAME} from '@shared/db/constants';
 import {
   insertGamificationEvent,
   listGamificationEvents,
 } from '../GamificationRepository';
-import type {GamificationEventRecord} from '../types';
+import type {GamificationEventRecord} from '@shared/db/types';
 
 describe('GamificationRepository', () => {
   beforeEach(() => {

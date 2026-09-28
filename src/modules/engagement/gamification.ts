@@ -1,4 +1,4 @@
-import {listGamificationEvents} from '@shared/db/GamificationRepository';
+import {listGamificationEvents} from './data/GamificationRepository';
 import {deriveGamificationSnapshot} from './gamificationPolicy';
 import type {GamificationSnapshot} from './gamificationPolicy';
 

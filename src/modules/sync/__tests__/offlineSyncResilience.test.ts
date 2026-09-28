@@ -5,7 +5,7 @@ import {DB_NAME} from '@shared/db/constants';
 import {enqueueSyncOutboxEvent} from '@shared/db/syncOutboxCore';
 import {listPendingSyncEvents} from '../adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '../outboxSync';
-import {getCapabilityProgressReport} from '@shared/db/PilotMetricsRepository';
+import {getCapabilityProgressReport} from '@modules/analytics';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
