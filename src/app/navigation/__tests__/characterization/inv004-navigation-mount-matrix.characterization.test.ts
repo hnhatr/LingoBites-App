@@ -1,4 +1,5 @@
 import type {AccountPhase} from '@modules/account';
+import {accountGateRouteForPhase} from '@/app/navigation/accountGate';
 import {
   buildNavigationMountSnapshot,
   CHARACTERIZATION_INVARIANTS,
@@ -17,6 +18,10 @@ const PHASES: AccountPhase[] = [
   'bootstrapping',
   'offline',
   'failed',
+  'switch-confirmation',
+  'switching',
+  'switch-failed',
+  'merge-in-progress',
 ];
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_004} navigation mount matrix`, () => {
@@ -35,7 +40,22 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_004} navigation mount matrix`, () =>
       'BootGate',
       'BootGate',
       'BootGate',
+      'AccountSwitch',
+      'AccountSwitch',
+      'AccountSwitch',
+      'BootGate',
     ]);
+  });
+
+  it('never maps a non-authenticated phase to Tabs (INV-004 / AC-007)', () => {
+    for (const phase of PHASES) {
+      const route = accountGateRouteForPhase(phase);
+      if (phase === 'authenticated') {
+        expect(route).toBe('Tabs');
+      } else {
+        expect(route).not.toBe('Tabs');
+      }
+    }
   });
 
   it('pins root stack and ingestion routes for representative release presets', () => {
