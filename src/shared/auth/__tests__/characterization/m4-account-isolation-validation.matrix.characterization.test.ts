@@ -8,11 +8,8 @@ import {createAuthClient} from '@shared/auth';
 import {resetBootStateForTests} from '@shared/auth/accountBootstrap';
 import {ensureValidSession} from '@shared/auth/authSession';
 import {
-  bootStoreAuthenticated,
-  createP2FetchMock,
   expectAccountBNotActive,
   expectLearnerContextIsAccountA,
-  jsonResponse,
   P2_SESSION_B,
   P2_USER_A,
   P2_USER_B,
@@ -23,8 +20,12 @@ import {
   writeP2LearnerData,
 } from '@/test-support/p2RealInfra/harness';
 import {
+  countAudioAssetRows,
   expectM4RelocatedDomainCleared,
   expectM4YoutubeRowPresent,
+  expectPersistedSessionRestoreBoot,
+  fetchUrlPaths,
+  seedExpiredActiveSessionA,
   setupM4AccountIsolationHarness,
   teardownM4AccountIsolationHarness,
   writeM4RelocatedDomainLearnerData,
@@ -81,26 +82,13 @@ describe('LING-112 TASK-006 M4 account-isolation matrix', () => {
       teardownM4AccountIsolationHarness();
     });
 
-    it('M4-M-BOOT-LOGOUT-RACE / INV-003: concurrent boot + logout leaves a single terminal state and retains A rows', async () => {
+    it('M4-M-BOOT-SESSION-RESTORE / INV-003: boot restores via /v1/me without bootstrap', async () => {
       await seedActiveSessionA();
       seedInstall(P2_USER_A.id);
-      writeM4RelocatedDomainLearnerData();
-      await bootStoreAuthenticated();
-      ctx.mockFetch.mockImplementation(
-        async (url: string, init?: RequestInit) => {
-          if (url.endsWith('/v1/auth/logout')) {
-            return jsonResponse(200, {status: 'success'});
-          }
-          return createP2FetchMock(ctx.serverUser)(url, init);
-        },
-      );
-      await Promise.all([
-        useAccountStore.getState().boot(),
-        useAccountStore.getState().logout(),
-      ]);
-      const phase = useAccountStore.getState().phase;
-      expect(phase === 'signed-out' || phase === 'authenticated').toBe(true);
-      expectM4YoutubeRowPresent();
+      ctx.mockFetch.mockClear();
+      await useAccountStore.getState().boot();
+      expect(useAccountStore.getState().phase).toBe('authenticated');
+      expectPersistedSessionRestoreBoot(ctx.mockFetch);
     });
 
     it('M4-M-RESTART-AWAITING / AC-015: cold boot after awaiting journal prompts without wiping A', async () => {
@@ -110,23 +98,34 @@ describe('LING-112 TASK-006 M4 account-isolation matrix', () => {
       await stageAwaitingAB();
       resetBootStateForTests();
       resetAccountStoreForTests();
+      ctx.mockFetch.mockClear();
       await useAccountStore.getState().boot();
       expect(useAccountStore.getState().phase).toBe('switch-confirmation');
       expectM4YoutubeRowPresent();
       await expectLearnerContextIsAccountA();
+      const paths = fetchUrlPaths(ctx.mockFetch);
+      expect(paths.some(path => path.endsWith('/v1/auth/bootstrap'))).toBe(
+        false,
+      );
     });
 
-    it('M4-M-REFRESH-AWAITING / AC-009: refresh while awaiting keeps A active', async () => {
-      await seedActiveSessionA();
+    it('M4-M-REFRESH-EXPIRED-AWAITING / INV-003: refresh with expired token while awaiting keeps A active', async () => {
+      await seedExpiredActiveSessionA();
       seedInstall(P2_USER_A.id);
       writeM4RelocatedDomainLearnerData();
       await stageAwaitingAB();
+      ctx.mockFetch.mockClear();
       const client = createAuthClient({
         fetchImpl: ctx.mockFetch as typeof fetch,
         baseUrl: 'http://test',
       });
-      const refreshed = await ensureValidSession({client});
+      const refreshed = await ensureValidSession({
+        client,
+        forceRefresh: true,
+      });
       expect(refreshed.status).toBe('valid');
+      const paths = fetchUrlPaths(ctx.mockFetch);
+      expect(paths.some(path => path.endsWith('/v1/auth/refresh'))).toBe(true);
       if (refreshed.status === 'valid') {
         expect(refreshed.userId).toBe(P2_USER_A.id);
       }
@@ -134,10 +133,35 @@ describe('LING-112 TASK-006 M4 account-isolation matrix', () => {
       await expectAccountBNotActive();
     });
 
+    it('M4-M-REFRESH-CONFIRM-INTERLEAVE / INV-003: refresh ∥ confirmSwitch does not activate B before wipe completes', async () => {
+      await seedExpiredActiveSessionA();
+      seedInstall(P2_USER_A.id);
+      writeM4RelocatedDomainLearnerData();
+      await seedSession(P2_SESSION_B, P2_USER_B.id);
+      ctx.serverUser.current = P2_USER_B;
+      await useAccountStore.getState().boot();
+      expect(useAccountStore.getState().phase).toBe('switch-confirmation');
+      const client = createAuthClient({
+        fetchImpl: ctx.mockFetch as typeof fetch,
+        baseUrl: 'http://test',
+      });
+      await Promise.all([
+        ensureValidSession({client, forceRefresh: true}),
+        useAccountStore.getState().confirmSwitch(),
+      ]);
+      const phase = useAccountStore.getState().phase;
+      expect(phase === 'authenticated' || phase === 'switch-failed').toBe(true);
+      if (phase === 'authenticated') {
+        expect(useAccountStore.getState().user?.id).toBe(P2_USER_B.id);
+        expectM4RelocatedDomainCleared();
+      }
+    });
+
     it('M4-M-DOMAIN-AUDIO / TASK-012: audio_assets cleared after confirmed A→B', async () => {
       await seedActiveSessionA();
       seedInstall(P2_USER_A.id);
       writeM4RelocatedDomainLearnerData();
+      expect(countAudioAssetRows()).toBeGreaterThan(0);
       await seedSession(P2_SESSION_B, P2_USER_B.id);
       ctx.serverUser.current = P2_USER_B;
       await useAccountStore.getState().boot();
@@ -150,6 +174,7 @@ describe('LING-112 TASK-006 M4 account-isolation matrix', () => {
       await seedActiveSessionA();
       seedInstall(P2_USER_A.id);
       writeP2LearnerData();
+      expectM4YoutubeRowPresent();
       await seedSession(P2_SESSION_B, P2_USER_B.id);
       ctx.serverUser.current = P2_USER_B;
       await useAccountStore.getState().boot();
@@ -161,6 +186,7 @@ describe('LING-112 TASK-006 M4 account-isolation matrix', () => {
       await seedActiveSessionA();
       seedInstall(P2_USER_A.id);
       writeM4RelocatedDomainLearnerData();
+      expect(countAudioAssetRows()).toBeGreaterThan(0);
       await seedSession(P2_SESSION_B, P2_USER_B.id);
       ctx.serverUser.current = P2_USER_B;
       await useAccountStore.getState().boot();

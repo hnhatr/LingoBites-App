@@ -1,7 +1,15 @@
 import {getDatabase} from '@shared/db/database';
 import {getYouTubeProgress} from '@shared/db/YouTubeProgressRepository';
 import {insertPendingChapterAudioAsset} from '@modules/audio/data/AudioAssetRepository';
+import type {AuthSession} from '@shared/auth/authTypes';
 import {
+  getActiveSessionId,
+  setActiveSessionId,
+} from '@shared/auth/sessionStore';
+import {
+  P2_SESSION_A,
+  P2_USER_A,
+  seedSession,
   setupP2RealInfraHarness,
   teardownP2RealInfraHarness,
   writeP2LearnerData,
@@ -48,4 +56,34 @@ export function expectM4YoutubeRowPresent(): void {
 export function expectM4RelocatedDomainCleared(): void {
   expect(getYouTubeProgress('yt-a')).toBeNull();
   expect(countAudioAssetRows()).toBe(0);
+}
+
+export function expiredSessionA(): AuthSession {
+  return {
+    ...P2_SESSION_A,
+    access_expires_at: new Date(Date.now() - 60_000).toISOString(),
+  };
+}
+
+export async function seedExpiredActiveSessionA(): Promise<void> {
+  const session = expiredSessionA();
+  await seedSession(session, P2_USER_A.id);
+  await setActiveSessionId(session.session_id);
+}
+
+export function fetchUrlPaths(mockFetch: jest.Mock): string[] {
+  return mockFetch.mock.calls.map(([url]) => String(url));
+}
+
+export function expectPersistedSessionRestoreBoot(mockFetch: jest.Mock): void {
+  const paths = fetchUrlPaths(mockFetch);
+  expect(paths.some(path => path.endsWith('/v1/me'))).toBe(true);
+  expect(paths.some(path => path.endsWith('/v1/auth/bootstrap'))).toBe(false);
+}
+
+export async function expectSignedOutWithClearedActivePointer(): Promise<void> {
+  await expect(getActiveSessionId()).resolves.toEqual({
+    ok: true,
+    value: null,
+  });
 }

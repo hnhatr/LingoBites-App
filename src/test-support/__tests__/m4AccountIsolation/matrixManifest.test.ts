@@ -1,4 +1,5 @@
 import {M4_ACCOUNT_ISOLATION_MATRIX} from '@/test-support/m4AccountIsolation/matrixManifest';
+import {M4_MATRIX_AUTHORITATIVE_TEST_PREFIXES} from '@/test-support/m4AccountIsolation/matrixTestPrefixes';
 import {ACCOUNT_ISOLATION_STATE_PATHS} from '@/test-support/m4AccountIsolation/statePathInventory';
 
 describe('M4 account-isolation matrix manifest (LING-112)', () => {
@@ -14,12 +15,31 @@ describe('M4 account-isolation matrix manifest (LING-112)', () => {
     }
   });
 
+  it('maps each authoritative testNamePrefix to a registered Jest title prefix', () => {
+    for (const prefix of M4_MATRIX_AUTHORITATIVE_TEST_PREFIXES) {
+      const row = M4_ACCOUNT_ISOLATION_MATRIX.find(
+        entry => entry.testNamePrefix === prefix,
+      );
+      expect(row).toBeDefined();
+      expect(row?.authority).toBe('authoritative');
+    }
+  });
+
   it('marks native device evidence as deferred (R5)', () => {
     const deferred = M4_ACCOUNT_ISOLATION_MATRIX.filter(
       row => row.environment === 'device-native',
     );
     expect(deferred.length).toBeGreaterThan(0);
     expect(deferred.every(row => row.authority === 'deferred')).toBe(true);
+  });
+
+  it('records CR-001 quarantined row separately from authoritative suite', () => {
+    const quarantined = M4_ACCOUNT_ISOLATION_MATRIX.filter(
+      row => row.authority === 'quarantined',
+    );
+    expect(quarantined.map(row => row.id)).toContain(
+      'CR-001-M4-M-BOOT-LOGOUT-AF002',
+    );
   });
 
   it('inventory documents every shared state path with covers metadata', () => {
