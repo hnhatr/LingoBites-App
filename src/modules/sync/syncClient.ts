@@ -1,4 +1,8 @@
 import {authenticatedFetch} from '@shared/api/authenticatedFetch';
+import {
+  SYNC_OWNERSHIP_CHANGED,
+  SyncOwnershipChangedError,
+} from '@shared/sync/syncDrainOwnership';
 import {getAppConfig} from '@shared/api/appConfig';
 import type {
   SyncPushRequest,
@@ -94,6 +98,14 @@ export async function syncPush(
     }
     return {ok: true, data};
   } catch (error) {
+    if (error instanceof SyncOwnershipChangedError) {
+      return {
+        ok: false,
+        errorCode: SYNC_OWNERSHIP_CHANGED,
+        message: 'Sync paused because the active account changed.',
+        retryable: true,
+      };
+    }
     return {
       ok: false,
       errorCode: 'NETWORK_ERROR',

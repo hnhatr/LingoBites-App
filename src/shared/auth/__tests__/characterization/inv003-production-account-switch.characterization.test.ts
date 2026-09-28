@@ -9,6 +9,7 @@ import {
 import * as DeviceIdentityNative from '@shared/identity/deviceIdentityNative';
 import {
   bootAccount,
+  confirmAccountSwitch,
   resetBootStateForTests,
   submitOnboardingName,
   SIGNUP_IDEMPOTENCY_KEY,
@@ -98,7 +99,7 @@ afterEach(() => {
 });
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_003} production account switch (HC-005)`, () => {
-  it('submitOnboardingName then bootAccount enforceAccountIsolation wipes prior learner rows', async () => {
+  it('submitOnboardingName cross-account stages confirmation then confirm wipes prior learner rows', async () => {
     mockFetch.mockResolvedValueOnce(ticketResponse());
     const ticket = await bootAccount({platform: 'android'});
     expect(ticket.status).toBe('needs-onboarding');
@@ -134,9 +135,16 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_003} production account switch (HC-0
       bootstrapTicket: 'bt_ticket_1',
       displayName: 'User B',
     });
-    expect(switched.status).toBe('authenticated');
-    if (switched.status === 'authenticated') {
-      expect(switched.user.id).toBe(userB.id);
+    expect(switched.status).toBe('switch-confirmation');
+    expect(getYouTubeProgress('lesson-account-a')).not.toBeNull();
+
+    if (switched.status !== 'switch-confirmation') {
+      throw new Error('expected switch-confirmation');
+    }
+    const confirmed = await confirmAccountSwitch(switched.switch.attemptId);
+    expect(confirmed.status).toBe('authenticated');
+    if (confirmed.status === 'authenticated') {
+      expect(confirmed.user.id).toBe(userB.id);
     }
 
     expect(getYouTubeProgress('lesson-account-a')).toBeNull();

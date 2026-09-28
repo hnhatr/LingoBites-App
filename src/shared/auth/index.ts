@@ -18,10 +18,12 @@ export type {
 } from './authClient';
 export {
   ACCESS_TOKEN_SKEW_MARGIN_MS,
+  activateStoredSession,
   ensureValidSession,
   isAccessTokenExpired,
   persistNewSession,
   resetRefreshStateForTests,
+  saveCandidateSession,
   signOut,
   terminalReset,
 } from './authSession';
@@ -43,7 +45,16 @@ export {
   FALLBACK_DEVICE_ID_KEY,
   SIGNUP_IDEMPOTENCY_KEY,
   bootAccount,
+  cancelAccountSwitch,
+  confirmAccountSwitch,
   resetBootStateForTests,
+  retryAccountSwitch,
   submitOnboardingName,
 } from './accountBootstrap';
-export type {BootDeps, BootResult, SubmitNameResult} from './accountBootstrap';
+export type {
+  AccountSwitchActionResult,
+  AccountSwitchConfirmation,
+  BootDeps,
+  BootResult,
+  SubmitNameResult,
+} from './accountBootstrap';

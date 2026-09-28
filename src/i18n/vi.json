@@ -411,6 +411,17 @@
     "signed_out_title": "Bạn đã đăng xuất",
     "signed_out_message": "Bạn đã đăng xuất khỏi thiết bị này. Tiếp tục để đăng nhập lại.",
     "signed_out_continue": "Tiếp tục",
-    "signed_out_continue_hint": "Đăng nhập lại trên thiết bị này"
+    "signed_out_continue_hint": "Đăng nhập lại trên thiết bị này",
+    "switch_title": "Đổi tài khoản?",
+    "switch_warning": "Đăng nhập với {{name}} sẽ xóa dữ liệu học trên máy và các thay đổi chưa đồng bộ. Thao tác này không thể hoàn tác.",
+    "switch_confirm": "Đổi tài khoản",
+    "switch_confirm_hint": "Xác nhận đổi sang tài khoản mới và xóa dữ liệu trên máy",
+    "switch_cancel": "Giữ tài khoản hiện tại",
+    "switch_cancel_hint": "Hủy đổi tài khoản và giữ dữ liệu hiện tại",
+    "switch_retry": "Thử lại",
+    "switch_retry_hint": "Thử hoàn tất đổi tài khoản lần nữa",
+    "switching": "Đang đổi tài khoản…",
+    "switch_failed_title": "Không đổi được tài khoản",
+    "switch_failed_message": "Không thể hoàn tất đổi tài khoản. Bạn có thể thử lại."
   }
 }

@@ -16,6 +16,7 @@
     "start": "react-native start",
     "test": "jest",
     "test:characterization:real-infra": "node scripts/characterization/inv002-sqlite-outbox-commit.mjs && jest --testPathPattern='inv002-(real-http-replay|sqlite-real-infra)\\.characterization'",
+    "test:characterization:p2-real-infra": "jest --testPathPattern='p2-real-infra.*\\.matrix\\.characterization|p2RealInfra/matrixManifest\\.test'",
     "test:adversarial": "jest --testPathPattern='\\.adversarial\\.test'",
     "ios:dev": "cross-env ENVFILE=.env.development ruby ./node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb . ios/tmp.xcconfig && cp .env.development .env && cross-env ENVFILE=.env.development react-native run-ios --scheme Development --mode DebugDev --simulator \"iPhone 17 Pro\"",
     "ios:staging": "cross-env ENVFILE=.env.staging ruby ./node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb . ios/tmp.xcconfig && cp .env.staging .env && cross-env ENVFILE=.env.staging react-native run-ios --scheme Staging --mode DebugStag --simulator \"iPhone 17\"",

@@ -1,9 +1,13 @@
 import {create} from 'zustand';
 import {
   bootAccount,
+  cancelAccountSwitch,
+  confirmAccountSwitch,
   createAuthClient,
+  retryAccountSwitch,
   signOut,
   submitOnboardingName,
+  type AccountSwitchConfirmation,
   type AuthUser,
   type BootResult,
 } from '@shared/auth';
@@ -30,6 +34,9 @@ export type AccountPhase =
   | 'needs-onboarding'
   | 'authenticated'
   | 'signed-out'
+  | 'switch-confirmation'
+  | 'switching'
+  | 'switch-failed'
   | 'offline'
   | 'merge-in-progress'
   | 'failed';
@@ -39,6 +46,7 @@ export type AccountState = {
   user: AuthUser | null;
   bootstrapTicket: string | null;
   bootstrapTicketExpiresAt: string | null;
+  switchContext: AccountSwitchConfirmation | null;
   failureCode: string | null;
   failureMessage: string | null;
   boot: () => Promise<void>;
@@ -46,6 +54,9 @@ export type AccountState = {
     displayName: string,
     phone?: string | null,
   ) => Promise<void>;
+  confirmSwitch: () => Promise<void>;
+  cancelSwitch: () => Promise<void>;
+  retrySwitch: () => Promise<void>;
   retry: () => Promise<void>;
   signOutLocal: () => void;
   logout: () => Promise<void>;
@@ -59,6 +70,7 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
         user: result.user,
         bootstrapTicket: null,
         bootstrapTicketExpiresAt: null,
+        switchContext: null,
         failureCode: null,
         failureMessage: null,
       };
@@ -68,20 +80,44 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
         user: null,
         bootstrapTicket: result.bootstrapTicket,
         bootstrapTicketExpiresAt: result.bootstrapTicketExpiresAt,
+        switchContext: null,
         failureCode: null,
         failureMessage: null,
       };
+    case 'switch-confirmation':
+      return {
+        phase: 'switch-confirmation',
+        user: result.switch.sourceUser,
+        switchContext: result.switch,
+        failureCode: null,
+        failureMessage: null,
+      };
+    case 'switch-failed':
+      return {
+        phase: 'switch-failed',
+        user: null,
+        switchContext: null,
+        failureCode: result.code,
+        failureMessage: result.message,
+      };
     case 'offline':
-      return {phase: 'offline', failureCode: null, failureMessage: null};
+      return {
+        phase: 'offline',
+        switchContext: null,
+        failureCode: null,
+        failureMessage: null,
+      };
     case 'merge-in-progress':
       return {
         phase: 'merge-in-progress',
+        switchContext: null,
         failureCode: null,
         failureMessage: null,
       };
     case 'failed':
       return {
         phase: 'failed',
+        switchContext: null,
         failureCode: result.code,
         failureMessage: result.message,
       };
@@ -100,6 +136,7 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
   user: null,
   bootstrapTicket: null,
   bootstrapTicketExpiresAt: null,
+  switchContext: null,
   failureCode: null,
   failureMessage: null,
 
@@ -122,18 +159,120 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
       {bootstrapTicket: ticket, displayName, phone: phone ?? null},
       {},
     );
-    if (result.status === 'authenticated') {
+    if (
+      result.status === 'authenticated' ||
+      result.status === 'switch-confirmation' ||
+      result.status === 'switch-failed'
+    ) {
       set(fromBootResult(result));
       return;
     }
     if (result.status === 'offline') {
-      set({phase: 'offline', failureCode: null, failureMessage: null});
+      set({
+        phase: 'offline',
+        switchContext: null,
+        failureCode: null,
+        failureMessage: null,
+      });
       return;
     }
     set({
       phase: 'failed',
+      switchContext: null,
       failureCode: result.code,
       failureMessage: result.message,
+    });
+  },
+
+  confirmSwitch: async () => {
+    const ctx = get().switchContext;
+    if (!ctx) {
+      return;
+    }
+    set({phase: 'switching'});
+    let result;
+    try {
+      result = await confirmAccountSwitch(ctx.attemptId);
+    } catch {
+      set({
+        phase: 'switch-failed',
+        failureCode: 'ACCOUNT_REPLACEMENT_FAILED',
+        failureMessage: 'Account switch could not be completed.',
+      });
+      return;
+    }
+    if (result.status === 'authenticated') {
+      set({
+        phase: 'authenticated',
+        user: result.user,
+        switchContext: null,
+        failureCode: null,
+        failureMessage: null,
+      });
+      return;
+    }
+    set({
+      phase: 'switch-failed',
+      failureCode: result.code,
+      failureMessage: 'Account switch could not be completed.',
+    });
+  },
+
+  cancelSwitch: async () => {
+    const ctx = get().switchContext;
+    if (!ctx) {
+      return;
+    }
+    set({phase: 'switching'});
+    const result = await cancelAccountSwitch(ctx.attemptId);
+    if (result.status === 'authenticated') {
+      set({
+        phase: 'authenticated',
+        user: result.user,
+        switchContext: null,
+        failureCode: null,
+        failureMessage: null,
+      });
+      return;
+    }
+    set({
+      phase: 'switch-failed',
+      failureCode: result.code,
+      failureMessage: 'Could not cancel the account switch.',
+    });
+  },
+
+  retrySwitch: async () => {
+    const ctx = get().switchContext;
+    if (!ctx) {
+      return;
+    }
+    set({phase: 'switching'});
+    let result;
+    try {
+      result = await retryAccountSwitch(ctx.attemptId);
+    } catch {
+      set({
+        phase: 'switch-failed',
+        failureCode: 'ACCOUNT_REPLACEMENT_FAILED',
+        failureMessage: 'Account switch could not be completed.',
+      });
+      return;
+    }
+    if (result.status === 'authenticated') {
+      set({
+        phase: 'authenticated',
+        user: result.user,
+        switchContext: null,
+        failureCode: null,
+        failureMessage: null,
+      });
+      return;
+    }
+    set({
+      phase: 'switch-failed',
+      failureCode: result.code,
+      failureMessage: 'Account switch could not be completed.',
     });
   },
 
@@ -148,6 +287,7 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
       user: null,
       bootstrapTicket: null,
       bootstrapTicketExpiresAt: null,
+      switchContext: null,
       failureCode: null,
       failureMessage: null,
     });
@@ -177,6 +317,7 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
         user: null,
         bootstrapTicket: null,
         bootstrapTicketExpiresAt: null,
+        switchContext: null,
         failureCode: null,
         failureMessage: null,
       });
@@ -200,6 +341,7 @@ export function resetAccountStoreForTests(): void {
     user: null,
     bootstrapTicket: null,
     bootstrapTicketExpiresAt: null,
+    switchContext: null,
     failureCode: null,
     failureMessage: null,
   });
