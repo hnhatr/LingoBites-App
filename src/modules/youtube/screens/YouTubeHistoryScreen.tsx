@@ -12,11 +12,8 @@ import {MaterialIcon} from '@components/MaterialIcon';
 import {ScreenHeader} from '@components/ScreenHeader';
 import {useAppTheme, type AppTheme} from '@theme';
 import {useTranslation} from 'react-i18next';
-import {
-  deleteYouTubeLesson,
-  listYouTubeLessons,
-} from '@shared/db/YouTubeLessonRepository';
-import type {YouTubeTranscript} from '@shared/schemas/youtube-transcript-v1';
+import {deleteYouTubeLesson, listYouTubeLessons} from '../youtubeQueryPort';
+import type {YouTubeTranscript} from '../youtubeTranscriptPort';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'YouTubeHistory'>;
 

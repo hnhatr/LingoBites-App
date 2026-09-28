@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "description": "Baseline module boundary exceptions for AD-004 staged enforcement",
   "soleWriter": "Integration Owner",
-  "totalExceptions": 10,
+  "totalExceptions": 13,
   "exceptions": [
     {
       "file": "src/shared/db/PracticeRepository.ts",
@@ -73,6 +73,27 @@
       "rule": "shared-to-module",
       "owner": "React Native Developer",
       "expiry": "TASK-013"
+    },
+    {
+      "file": "src/shared/db/YouTubeLessonRepository.ts",
+      "specifier": "../../modules/youtube/data/YouTubeLessonRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-015"
+    },
+    {
+      "file": "src/shared/db/YouTubeProgressRepository.ts",
+      "specifier": "../../modules/youtube/data/YouTubeProgressRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-015"
+    },
+    {
+      "file": "src/shared/api/ocrClient.ts",
+      "specifier": "../../modules/ocr/api/ocrClient",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-015"
     }
   ]
 }

@@ -8,6 +8,17 @@ import {resetDatabaseForTests} from '@shared/db/database';
 import {AppThemeProvider} from '@theme';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {startReviewSession} from '../../engagement/reviewSession';
+
+const mockListYouTubeLessons = jest.fn(() => []);
+const mockCountYoutubeLessons = jest.fn(() => 0);
+
+jest.mock('@modules/youtube', () => ({
+  listYouTubeLessons: (...args: unknown[]) =>
+    mockListYouTubeLessons.apply(undefined, args),
+  countYouTubeLessons: (...args: unknown[]) =>
+    mockCountYoutubeLessons.apply(undefined, args),
+}));
+
 import {HomeScreen} from '../HomeScreen';
 
 const EXPLORE_IDS = [

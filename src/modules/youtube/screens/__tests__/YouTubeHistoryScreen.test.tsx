@@ -12,7 +12,7 @@ const mockDeleteYouTubeLesson = jest.fn();
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
 
-jest.mock('@shared/db/YouTubeLessonRepository', () => ({
+jest.mock('../../youtubeQueryPort', () => ({
   listYouTubeLessons: (...args: unknown[]) => mockListYouTubeLessons(...args),
   deleteYouTubeLesson: (...args: unknown[]) => mockDeleteYouTubeLesson(...args),
 }));

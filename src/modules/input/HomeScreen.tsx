@@ -21,10 +21,7 @@ import {
   useContentLibrary,
   type ContentLessonRow,
 } from '@modules/content';
-import {
-  listYouTubeLessons,
-  countYouTubeLessons,
-} from '@shared/db/YouTubeLessonRepository';
+import {countYouTubeLessons, listYouTubeLessons} from '@modules/youtube';
 import {useYouTubeServerEnabled} from '@shared/api/youtubeCapabilities';
 import {useFeatureFlags} from '@/release';
 import {
