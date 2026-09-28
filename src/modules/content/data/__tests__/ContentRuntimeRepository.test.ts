@@ -5,11 +5,11 @@
  * behaviour the runtime engine depends on.
  */
 
-import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '../constants';
-import {resetDatabaseForTests} from '../database';
-import {runMigrations} from '../migrations';
+import {DB_NAME} from '@shared/db/constants';
+import {resetDatabaseForTests} from '@shared/db/database';
+import {runMigrations} from '@shared/db/migrations';
 import {insertPackageRecord} from '../ContentPackageRepository';
 import {
   getContentLessonById,

@@ -11,7 +11,7 @@ import type {
   ContentActivityRow,
   ContentChunkRow,
   ContentLessonRow,
-} from '@shared/db/ContentRuntimeRepository';
+} from '../data/ContentRuntimeRepository';
 import type {
   AudioAsset,
   CheckOutcome,

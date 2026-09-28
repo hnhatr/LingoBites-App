@@ -7,14 +7,9 @@ import {
 import {
   listSavedLessons,
   listStartedLessons,
-} from '@shared/db/ContentLessonStateRepository';
+  useContentLibrary,
+} from '@modules/content';
 import {listAllBookmarkedGrammar, listFlashcards} from '@modules/review';
-import {useContentLibrary} from '@modules/content';
-
-jest.mock('@shared/db/ContentLessonStateRepository', () => ({
-  listSavedLessons: jest.fn(),
-  listStartedLessons: jest.fn(),
-}));
 
 jest.mock('@modules/review', () => ({
   listAllBookmarkedGrammar: jest.fn(),
@@ -23,6 +18,8 @@ jest.mock('@modules/review', () => ({
 
 jest.mock('@modules/content', () => ({
   useContentLibrary: jest.fn(),
+  listSavedLessons: jest.fn(),
+  listStartedLessons: jest.fn(),
 }));
 
 function TestWrapper({

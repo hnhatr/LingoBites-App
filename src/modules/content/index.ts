@@ -4,6 +4,30 @@ export {
   ContentLessonRuntimeScreen,
   useContentLibrary,
 } from './runtime';
+export {
+  getActivePackage,
+  getContentLessonById,
+  getContentLessonState,
+  getDueContentReviewItems,
+  getLessonActivities,
+  getLessonAudioAssets,
+  getLessonChunks,
+  insertPackageRecord,
+  listActivePackageLessons,
+  listContentReviewItems,
+  listSavedLessons,
+  listStartedLessons,
+  saveContentLesson,
+  startContentLesson,
+  swapActivePackage,
+} from './contentQueryPort';
+export type {
+  ContentActivityRow,
+  ContentChunkRow,
+  ContentLessonState,
+  SaveContentLessonInput,
+  SaveContentLessonResult,
+} from './contentQueryPort';
 export type {
   ContentLessonListRouteParams,
   ContentLessonDetailRouteParams,
