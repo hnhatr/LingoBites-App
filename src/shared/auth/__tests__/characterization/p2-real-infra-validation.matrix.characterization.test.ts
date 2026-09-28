@@ -17,14 +17,19 @@ import {
   stageAccountSwitchAttempt,
 } from '@shared/auth/accountSwitchCoordinator';
 import * as accountSwitchJournal from '@shared/auth/accountSwitchJournal';
+import {readAccountSwitchJournal} from '@shared/auth/accountSwitchJournal';
 import * as authSession from '@shared/auth/authSession';
 import {AUTH_ACTIVE_SESSION_SERVICE} from '@shared/auth/sessionStore';
 import {
   bootStoreAuthenticated,
   createP2FetchMock,
+  expectAccountBNotActive,
+  expectLearnerContextIsAccountA,
+  expectLearnerContextIsAccountB,
   expectLearnerDataIntact,
   expectNoCrossAccountLeakUnderB,
   jsonResponse,
+  readCurrentAccountId,
   P2_SESSION_B,
   P2_SESSION_C,
   P2_USER_A,
@@ -114,7 +119,12 @@ describe('LING-110 TASK-023 P2 real-infra matrix (AC-008 / four triggers)', () =
     );
     const cancelled = await cancelAccountSwitch(staged.attempt_id);
     expect(cancelled.status).toBe('authenticated');
+    if (cancelled.status === 'authenticated') {
+      expect(cancelled.user.id).toBe(P2_USER_A.id);
+    }
     expectLearnerDataIntact();
+    await expectLearnerContextIsAccountA();
+    await expectAccountBNotActive();
   });
 
   it('P2-M-014-CONFIRM / AC-014: confirmSwitch wipes SQLite+outbox and activates B', async () => {
@@ -155,8 +165,10 @@ describe('LING-110 TASK-023 P2 real-infra matrix (AC-008 / four triggers)', () =
 });
 
 describe('LING-110 TASK-023 P2 real-infra matrix (AC-015 / recovery / failures)', () => {
+  let ctx: ReturnType<typeof setupP2RealInfraHarness>;
+
   beforeEach(() => {
-    setupP2RealInfraHarness();
+    ctx = setupP2RealInfraHarness();
   });
 
   afterEach(() => {
@@ -173,6 +185,68 @@ describe('LING-110 TASK-023 P2 real-infra matrix (AC-015 / recovery / failures)'
     await useAccountStore.getState().boot();
     expect(useAccountStore.getState().phase).toBe('switch-confirmation');
     expectLearnerDataIntact();
+  });
+
+  it('P2-M-015-RECOVERY-CONFIRMED-RETRY / AC-015: restart after confirmed journal resumes retry wipe', async () => {
+    await seedActiveSessionA();
+    seedInstall(P2_USER_A.id);
+    writeP2LearnerData();
+    const staged = await stageAwaitingAB();
+    await confirmAccountSwitchAttempt(staged.attempt_id, {
+      sourceAccountId: P2_USER_A.id,
+      targetAccountId: P2_USER_B.id,
+    });
+    ctx.serverUser.current = P2_USER_A;
+    ctx.mockFetch.mockImplementation(
+      async (url: string, init?: RequestInit) => {
+        if (url.endsWith('/v1/auth/me')) {
+          return jsonResponse(200, {
+            request_id: 'm-retry',
+            status: 'success',
+            user: P2_USER_A,
+          });
+        }
+        return createP2FetchMock(ctx.serverUser)(url, init);
+      },
+    );
+    resetBootStateForTests();
+    resetAccountStoreForTests();
+    await useAccountStore.getState().boot();
+    const state = useAccountStore.getState();
+    expect(state.phase).toBe('switch-confirmation');
+    if (state.phase === 'switch-confirmation' && state.switchContext) {
+      expect(state.switchContext.needsRetry).toBe(true);
+      expect(state.switchContext.sourceAccountId).toBe(P2_USER_A.id);
+      expect(state.switchContext.targetAccountId).toBe(P2_USER_B.id);
+    }
+    expectLearnerDataIntact();
+    await expectLearnerContextIsAccountA();
+  });
+
+  it('P2-M-015-RECOVERY-CONFIRMED-ACTIVATE / AC-015: restart after pointer failure activates B', async () => {
+    await seedActiveSessionA();
+    seedInstall(P2_USER_A.id);
+    writeP2LearnerData();
+    await seedSession(P2_SESSION_B, P2_USER_B.id);
+    const staged = await stageAwaitingAB();
+    jest.spyOn(authSession, 'activateStoredSession').mockResolvedValueOnce({
+      ok: false,
+      error: new Error('KEYCHAIN_ERROR'),
+    });
+    const failed = await confirmAccountSwitch(staged.attempt_id);
+    expect(failed.status).toBe('failed');
+    expectNoCrossAccountLeakUnderB();
+    expect(readCurrentAccountId()).toBe(P2_USER_B.id);
+
+    resetBootStateForTests();
+    resetAccountStoreForTests();
+    ctx.serverUser.current = P2_USER_B;
+    await useAccountStore.getState().boot();
+    expect(useAccountStore.getState()).toMatchObject({
+      phase: 'authenticated',
+      user: {id: P2_USER_B.id},
+    });
+    await expectLearnerContextIsAccountB();
   });
 
   it('P2-M-015-OFFLINE-CONFIRM / AC-015: confirm completes with fetch unavailable', async () => {
@@ -238,15 +312,29 @@ describe('LING-110 TASK-023 P2 real-infra matrix (AC-015 / recovery / failures)'
     await seedActiveSessionA();
     seedInstall(P2_USER_A.id);
     writeP2LearnerData();
-    await stageAwaitingAB();
+    const stagedB = await stageAwaitingAB();
+    const staleBAttemptId = stagedB.attempt_id;
     const replaced = await stageAccountSwitchAttempt({
       sourceAccountId: P2_USER_A.id,
       targetAccountId: P2_USER_C.id,
-      targetSessionId: '77777777-7777-4777-8777-777777777777',
+      targetSessionId: P2_SESSION_C.session_id,
       targetUserSnapshot: P2_USER_C,
     });
     expect(replaced.ok).toBe(true);
+    if (replaced.ok) {
+      expect(replaced.value.target_account_id).toBe(P2_USER_C.id);
+      expect(replaced.value.attempt_id).not.toBe(staleBAttemptId);
+    }
+    const staleConfirm = await confirmAccountSwitch(staleBAttemptId);
+    expect(staleConfirm.status).toBe('failed');
+    if (staleConfirm.status === 'failed') {
+      expect(staleConfirm.code).toBe('STALE_ATTEMPT_ID');
+    }
     expectLearnerDataIntact();
+    await expectLearnerContextIsAccountA();
+    await expectAccountBNotActive();
+    const journal = await readAccountSwitchJournal();
+    expect(journal.ok && journal.value?.target_account_id).toBe(P2_USER_C.id);
   });
 
   it('P2-M-DUP-ATTEMPT / AC-015: staging while confirmed journal is locked', async () => {
@@ -269,6 +357,66 @@ describe('LING-110 TASK-023 P2 real-infra matrix (AC-015 / recovery / failures)'
       'CONFIRMED_ATTEMPT_LOCKED',
     );
     expectLearnerDataIntact();
+  });
+
+  it('P2-M-DUP-DOUBLE-CONFIRM / AC-015: concurrent duplicate confirm yields one wipe', async () => {
+    await seedActiveSessionA();
+    seedInstall(P2_USER_A.id);
+    writeP2LearnerData();
+    await seedSession(P2_SESSION_B, P2_USER_B.id);
+    const staged = await stageAwaitingAB();
+    const [first, second] = await Promise.all([
+      confirmAccountSwitch(staged.attempt_id),
+      confirmAccountSwitch(staged.attempt_id),
+    ]);
+    const outcomes = [first, second].map(r => r.status);
+    expect(outcomes.every(s => s === 'authenticated')).toBe(true);
+    expectNoCrossAccountLeakUnderB();
+    await expectLearnerContextIsAccountB();
+    const journal = await readAccountSwitchJournal();
+    expect(journal).toEqual({ok: true, value: null});
+  });
+
+  it('P2-M-DUP-CONFIRM-RACE-STAGE / AC-015: confirm vs stage C settles without orphan wipe', async () => {
+    await seedActiveSessionA();
+    seedInstall(P2_USER_A.id);
+    writeP2LearnerData();
+    await seedSession(P2_SESSION_B, P2_USER_B.id);
+    await seedSession(P2_SESSION_C, P2_USER_C.id);
+    const staged = await stageAwaitingAB();
+    const bAttemptId = staged.attempt_id;
+    const [confirmResult, stageResult] = await Promise.all([
+      confirmAccountSwitch(bAttemptId),
+      stageAccountSwitchAttempt({
+        sourceAccountId: P2_USER_A.id,
+        targetAccountId: P2_USER_C.id,
+        targetSessionId: P2_SESSION_C.session_id,
+        targetUserSnapshot: P2_USER_C,
+      }),
+    ]);
+    const journal = await readAccountSwitchJournal();
+    expect(journal.ok).toBe(true);
+    if (!journal.ok || !journal.value) {
+      throw new Error('expected journal');
+    }
+    if (journal.value.phase === 'confirmed') {
+      expect(journal.value.attempt_id).toBe(bAttemptId);
+      expect(journal.value.target_account_id).toBe(P2_USER_B.id);
+      expect(confirmResult.status).toBe('authenticated');
+      expect(stageResult.ok).toBe(false);
+      if (!stageResult.ok) {
+        expect(stageResult.errorCode).toBe('CONFIRMED_ATTEMPT_LOCKED');
+      }
+      expectNoCrossAccountLeakUnderB();
+      await expectLearnerContextIsAccountB();
+    } else {
+      expect(journal.value.phase).toBe('awaiting');
+      expect(journal.value.target_account_id).toBe(P2_USER_C.id);
+      expect(stageResult.ok).toBe(true);
+      expect(confirmResult.status).toBe('failed');
+      expectLearnerDataIntact();
+      await expectLearnerContextIsAccountA();
+    }
   });
 });
 

@@ -82,11 +82,31 @@ export const P2_REAL_INFRA_MATRIX: readonly P2MatrixRow[] = [
   {
     id: 'P2-M-015-RECOVERY',
     ac: ['AC-015', 'INV-001', 'INV-002', 'INV-003'],
-    trigger: 'restart/recovery while awaiting or confirmed',
+    trigger: 'restart/recovery while awaiting (pre-confirm)',
     environment: 'real-sqlite+keychain-vault',
     command: 'yarn test:characterization:p2-real-infra',
     authority: 'authoritative',
     testNamePrefix: 'P2-M-015-RECOVERY',
+  },
+  {
+    id: 'P2-M-015-RECOVERY-CONFIRMED-RETRY',
+    ac: ['AC-015', 'INV-001', 'INV-002'],
+    trigger:
+      'restart after confirmed journal before DB wipe → confirmed_retry_wipe',
+    environment: 'real-sqlite+keychain-vault',
+    command: 'yarn test:characterization:p2-real-infra',
+    authority: 'authoritative',
+    testNamePrefix: 'P2-M-015-RECOVERY-CONFIRMED-RETRY',
+  },
+  {
+    id: 'P2-M-015-RECOVERY-CONFIRMED-ACTIVATE',
+    ac: ['AC-015', 'INV-003'],
+    trigger:
+      'restart after DB commit + activation failure → confirmed_activate',
+    environment: 'real-sqlite+keychain-vault',
+    command: 'yarn test:characterization:p2-real-infra',
+    authority: 'authoritative',
+    testNamePrefix: 'P2-M-015-RECOVERY-CONFIRMED-ACTIVATE',
   },
   {
     id: 'P2-M-015-OFFLINE-CONFIRM',
@@ -145,11 +165,29 @@ export const P2_REAL_INFRA_MATRIX: readonly P2MatrixRow[] = [
   {
     id: 'P2-M-DUP-ATTEMPT',
     ac: ['AC-015', 'BR-009'],
-    trigger: 'duplicate/concurrent stage attempts are serialized',
+    trigger: 'confirmed attempt locks a sequential re-stage',
     environment: 'real-sqlite+keychain-vault',
     command: 'yarn test:characterization:p2-real-infra',
     authority: 'authoritative',
     testNamePrefix: 'P2-M-DUP-ATTEMPT',
+  },
+  {
+    id: 'P2-M-DUP-DOUBLE-CONFIRM',
+    ac: ['AC-015', 'BR-009', 'INV-001'],
+    trigger: 'concurrent duplicate confirmAccountSwitch on one attempt',
+    environment: 'real-sqlite+keychain-vault',
+    command: 'yarn test:characterization:p2-real-infra',
+    authority: 'authoritative',
+    testNamePrefix: 'P2-M-DUP-DOUBLE-CONFIRM',
+  },
+  {
+    id: 'P2-M-DUP-CONFIRM-RACE-STAGE',
+    ac: ['AC-015', 'BR-009', 'INV-001'],
+    trigger: 'confirmAccountSwitch races stageAccountSwitchAttempt to C',
+    environment: 'real-sqlite+keychain-vault',
+    command: 'yarn test:characterization:p2-real-infra',
+    authority: 'authoritative',
+    testNamePrefix: 'P2-M-DUP-CONFIRM-RACE-STAGE',
   },
   {
     id: 'P2-M-NATIVE-KEYCHAIN',

@@ -18,7 +18,11 @@ import {
   resetAccountSwitchCoordinatorForTests,
   stageAccountSwitchAttempt,
 } from '@shared/auth/accountSwitchCoordinator';
-import {saveSession, setActiveSessionId} from '@shared/auth/sessionStore';
+import {
+  getActiveSessionId,
+  saveSession,
+  setActiveSessionId,
+} from '@shared/auth/sessionStore';
 import {installKeychainVault} from '@/test-support/keychainVault';
 import {
   openRealSqlite,
@@ -248,6 +252,39 @@ export function expectNoCrossAccountLeakUnderB() {
   expect(getYouTubeProgress('yt-a')).toBeNull();
   expect(listPendingSyncEvents()).toEqual([]);
   expect(totalNonSettingsRows()).toBe(0);
+}
+
+export function readCurrentAccountId(): string | undefined {
+  const row = getDatabase()
+    .execute(
+      "SELECT value FROM app_settings WHERE key = 'current_account_id' LIMIT 1;",
+    )
+    .rows?.item(0) as {value?: string} | undefined;
+  return row?.value;
+}
+
+export async function expectLearnerContextIsAccountA() {
+  expect(readCurrentAccountId()).toBe(P2_USER_A.id);
+  await expect(getActiveSessionId()).resolves.toEqual({
+    ok: true,
+    value: P2_SESSION_A.session_id,
+  });
+}
+
+export async function expectLearnerContextIsAccountB() {
+  expect(readCurrentAccountId()).toBe(P2_USER_B.id);
+  await expect(getActiveSessionId()).resolves.toEqual({
+    ok: true,
+    value: P2_SESSION_B.session_id,
+  });
+}
+
+export async function expectAccountBNotActive() {
+  expect(readCurrentAccountId()).toBe(P2_USER_A.id);
+  await expect(getActiveSessionId()).resolves.toEqual({
+    ok: true,
+    value: P2_SESSION_A.session_id,
+  });
 }
 
 export async function bootStoreAuthenticated() {
