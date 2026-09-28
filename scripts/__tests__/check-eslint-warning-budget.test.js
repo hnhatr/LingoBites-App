@@ -67,7 +67,7 @@ describe('evaluateWarningBudget', () => {
         filePath: '/repo/src/synthetic.tsx',
         messages: [
           ...createWarnings('no-bitwise', 133),
-          ...createWarnings('react-native-a11y/has-accessibility-hint', 91),
+          ...createWarnings('react-native-a11y/has-accessibility-hint', 87),
           ...createWarnings('react-native/no-inline-styles', 91),
           ...createWarnings('no-void', 17),
           ...createWarnings('no-regex-spaces', 13),
@@ -79,7 +79,7 @@ describe('evaluateWarningBudget', () => {
       totalWarnings: 340,
       rules: {
         'no-bitwise': 133,
-        'react-native-a11y/has-accessibility-hint': 91,
+        'react-native-a11y/has-accessibility-hint': 87,
         'react-native/no-inline-styles': 91,
         'no-void': 17,
         'no-regex-spaces': 43,
@@ -98,7 +98,7 @@ describe('evaluateWarningBudget', () => {
         filePath: '/repo/src/synthetic.tsx',
         messages: [
           ...createWarnings('no-bitwise', 131),
-          ...createWarnings('react-native-a11y/has-accessibility-hint', 91),
+          ...createWarnings('react-native-a11y/has-accessibility-hint', 87),
           ...createWarnings('react-native/no-inline-styles', 89),
           ...createWarnings('no-void', 16),
           ...createWarnings('no-undef-init', 1),

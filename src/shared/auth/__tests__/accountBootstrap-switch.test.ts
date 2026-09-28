@@ -1,6 +1,7 @@
 import {open} from 'react-native-quick-sqlite';
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {DB_NAME} from '../../db/constants';
+import * as database from '../../db/database';
 import {getDatabase, resetDatabaseForTests} from '../../db/database';
 import {
   saveYouTubeProgress,
@@ -182,6 +183,10 @@ describe('accountBootstrap P2 account switch (LING-109 / TASK-021)', () => {
     expect(cancelled.status).toBe('authenticated');
     expect(getYouTubeProgress('keep-a')).not.toBeNull();
     const stored = await getActiveSession();
+    expect(stored.ok).toBe(true);
+    if (!stored.ok) {
+      throw new Error('expected active session');
+    }
     expect(stored.value?.user_id).toBe(userA.id);
   });
 
@@ -222,7 +227,71 @@ describe('accountBootstrap P2 account switch (LING-109 / TASK-021)', () => {
       userB.id,
     );
     const active = await getActiveSession();
+    expect(active.ok).toBe(true);
+    if (!active.ok) {
+      throw new Error('expected active session');
+    }
     expect(active.value?.session_id).toBe(sessionB.session_id);
     expect(getYouTubeProgress('gone')).toBeNull();
+  });
+
+  it('rejects stale attempt id on confirm (exact-attempt gate)', async () => {
+    mockFetch.mockResolvedValueOnce(ticketResponse());
+    await bootAccount({platform: 'android'});
+    mockFetch.mockResolvedValueOnce(createdResponse(userA, sessionA));
+    await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_1',
+      displayName: 'User A',
+    });
+    mockFetch.mockResolvedValueOnce(createdResponse(userB, sessionB));
+    const staged = await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_2',
+      displayName: 'User B',
+    });
+    if (staged.status !== 'switch-confirmation') {
+      throw new Error('expected switch-confirmation');
+    }
+    const result = await confirmAccountSwitch('stale-attempt-id');
+    expect(result.status).toBe('failed');
+    expect(result.status === 'failed' && result.code).toBe('STALE_ATTEMPT_ID');
+  });
+
+  it('INV-GAP-002: replacement transaction is not invoked inside another open transaction', async () => {
+    let outerTxnDepth = 0;
+    const {withTransaction, executeAccountReplacementTransaction} = database;
+    jest.spyOn(database, 'withTransaction').mockImplementation((db, fn) => {
+      outerTxnDepth += 1;
+      try {
+        return withTransaction(db, fn);
+      } finally {
+        outerTxnDepth -= 1;
+      }
+    });
+    let depthWhenReplacementCalled = -1;
+    const replaceSpy = jest
+      .spyOn(database, 'executeAccountReplacementTransaction')
+      .mockImplementation((db, targetId, options) => {
+        depthWhenReplacementCalled = outerTxnDepth;
+        return executeAccountReplacementTransaction(db, targetId, options);
+      });
+
+    mockFetch.mockResolvedValueOnce(ticketResponse());
+    await bootAccount({platform: 'android'});
+    mockFetch.mockResolvedValueOnce(createdResponse(userA, sessionA));
+    await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_1',
+      displayName: 'User A',
+    });
+    mockFetch.mockResolvedValueOnce(createdResponse(userB, sessionB));
+    const staged = await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_2',
+      displayName: 'User B',
+    });
+    if (staged.status !== 'switch-confirmation') {
+      throw new Error('expected switch-confirmation');
+    }
+    await confirmAccountSwitch(staged.switch.attemptId);
+    expect(replaceSpy).toHaveBeenCalled();
+    expect(depthWhenReplacementCalled).toBe(0);
   });
 });

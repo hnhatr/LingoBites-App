@@ -9,3 +9,5 @@ ios/
 node_modules/
 vendor/
 workdir/
+# Step 0 (LING-109): frozen byte-identical to adversarial/LING-108-r1 @ 5bb1697
+src/shared/db/__tests__/adversarial/adv-ling108-r1-atomic-replacement.adversarial.test.ts

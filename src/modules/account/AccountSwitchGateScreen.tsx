@@ -41,6 +41,7 @@ export function AccountSwitchGateScreen() {
           </AppText>
           <View style={styles.actions}>
             <AppButton
+              accessibilityHint={t('account.retry_hint')}
               accessibilityLabel={t('common.retry')}
               onPress={() => {
                 retry();
@@ -78,6 +79,7 @@ export function AccountSwitchGateScreen() {
         <View style={styles.actions}>
           {switchContext.needsRetry ? (
             <AppButton
+              accessibilityHint={t('account.switch_retry_hint')}
               accessibilityLabel={t('account.switch_retry')}
               onPress={() => {
                 retrySwitch();
@@ -87,6 +89,7 @@ export function AccountSwitchGateScreen() {
             />
           ) : (
             <AppButton
+              accessibilityHint={t('account.switch_confirm_hint')}
               accessibilityLabel={t('account.switch_confirm')}
               onPress={() => {
                 confirmSwitch();
@@ -97,6 +100,7 @@ export function AccountSwitchGateScreen() {
           )}
           {!switchContext.needsRetry && (
             <AppButton
+              accessibilityHint={t('account.switch_cancel_hint')}
               accessibilityLabel={t('account.switch_cancel')}
               onPress={() => {
                 cancelSwitch();

@@ -91,11 +91,7 @@ function seedAccountAData(): void {
   );
   db.execute(
     'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
-    [
-      INSTALL_MARKER_KEY,
-      '2026-09-27T00:00:00.000Z',
-      '2026-09-27T00:00:00.000Z',
-    ],
+    [INSTALL_MARKER_KEY, '2026-09-27T00:00:00.000Z', '2026-09-27T00:00:00.000Z'],
   );
   db.execute(
     'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
@@ -200,9 +196,7 @@ describe('LING-108 adversarial r1 atomic replacement (real SQLite)', () => {
     expect(readSetting('current_account_id')).toBe(USER_A);
     expect(count('SELECT COUNT(*) AS c FROM sync_outbox')).toBe(2);
     expect(
-      count(
-        "SELECT COUNT(*) AS c FROM sync_outbox WHERE id = 'outbox-pending-1'",
-      ),
+      count("SELECT COUNT(*) AS c FROM sync_outbox WHERE id = 'outbox-pending-1'"),
     ).toBe(1);
   });
 
@@ -216,7 +210,9 @@ describe('LING-108 adversarial r1 atomic replacement (real SQLite)', () => {
     expect(readSetting('current_account_id')).toBe(USER_B);
     expect(count('SELECT COUNT(*) AS c FROM sync_outbox')).toBe(0);
     expect(
-      count("SELECT COUNT(*) AS c FROM sync_outbox WHERE entity_id LIKE '%'"),
+      count(
+        "SELECT COUNT(*) AS c FROM sync_outbox WHERE entity_id LIKE '%'",
+      ),
     ).toBe(0);
     const counts = tableCounts();
     const nonEmpty = Object.entries(counts).filter(
