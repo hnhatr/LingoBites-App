@@ -13,7 +13,7 @@ const {
 const appRoot = path.resolve(__dirname, '../..');
 const srcRoot = path.join(appRoot, 'src');
 
-/** Staged legacy shims (Integration Owner manifest; TASK-008 / TASK-012 expiry). */
+/** Staged legacy shims (Integration Owner manifest; TASK-008 / TASK-012 / TASK-014 expiry). */
 const LEGACY_SHIM_ALLOWANCES = [
   {
     file: 'src/shared/db/PracticeRepository.ts',
@@ -49,6 +49,20 @@ const LEGACY_SHIM_ALLOWANCES = [
     rule: 'shared-to-module',
     owner: 'React Native Developer',
     expiry: 'TASK-012',
+  },
+  {
+    file: 'src/shared/db/GamificationRepository.ts',
+    specifier: '../../modules/engagement/data/GamificationRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-014',
+  },
+  {
+    file: 'src/shared/db/PilotMetricsRepository.ts',
+    specifier: '../../modules/analytics/data/PilotMetricsRepository',
+    rule: 'shared-to-module',
+    owner: 'React Native Developer',
+    expiry: 'TASK-014',
   },
 ];
 
