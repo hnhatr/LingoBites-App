@@ -261,6 +261,32 @@ describe('useAccountStore logout (TASK-005 signed-out lifecycle)', () => {
     expect(useAccountStore.getState().phase).toBe('bootstrapping');
   });
 
+  it('CR-001 / AF-002: stale boot after logout stays signed-out with cleared pointer', async () => {
+    await bootToAuthenticated();
+    let releaseBoot!: () => void;
+    const bootGate = new Promise<void>(resolve => {
+      releaseBoot = resolve;
+    });
+    mockFetch.mockImplementation(async (url: string) => {
+      if (String(url).endsWith('/v1/auth/logout')) {
+        return loggedOutResponse();
+      }
+      if (String(url).endsWith('/v1/me')) {
+        await bootGate;
+      }
+      return knownDeviceResponse();
+    });
+
+    const staleBoot = useAccountStore.getState().boot();
+    mockFetch.mockResolvedValueOnce(loggedOutResponse());
+    await useAccountStore.getState().logout();
+    expect(useAccountStore.getState().phase).toBe('signed-out');
+    releaseBoot();
+    await staleBoot;
+    expect(useAccountStore.getState().phase).toBe('signed-out');
+    await expect(getActiveSession()).resolves.toEqual({ok: true, value: null});
+  });
+
   it('clears auth keychain entries but keeps non-auth entries and SQLite data', async () => {
     await bootToAuthenticated();
     vault.set('com.example.unrelated', {username: 'u', password: 'p'});

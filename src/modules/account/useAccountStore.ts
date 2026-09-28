@@ -131,6 +131,29 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
  */
 let inFlightLogout: Promise<void> | null = null;
 
+/**
+ * Monotonic terminal-ownership generation (AF-002 / CR-001). Successful
+ * explicit logout bumps this so any `boot()` that started earlier cannot
+ * publish session-facing state after logout wins. Stale `bootAccount`
+ * completions may still touch Keychain; when the store remains `signed-out`,
+ * a follow-up local sign-out clears that re-activation without widening scope
+ * beyond this module.
+ */
+let terminalOwnershipEpoch = 0;
+
+async function discardStaleBootCompletion(
+  ownershipAtStart: number,
+  signOutFn: typeof signOut,
+): Promise<void> {
+  if (ownershipAtStart === terminalOwnershipEpoch) {
+    return;
+  }
+  const {phase} = useAccountStore.getState();
+  if (phase === 'signed-out') {
+    await signOutFn({client: createAuthClient()});
+  }
+}
+
 export const useAccountStore = create<AccountState>()((set, get) => ({
   phase: 'bootstrapping',
   user: null,
@@ -141,7 +164,12 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
   failureMessage: null,
 
   boot: async () => {
+    const ownershipAtStart = terminalOwnershipEpoch;
     const result = await bootAccount();
+    if (ownershipAtStart !== terminalOwnershipEpoch) {
+      await discardStaleBootCompletion(ownershipAtStart, signOut);
+      return;
+    }
     set(fromBootResult(result));
   },
 
@@ -312,6 +340,7 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
         });
         return;
       }
+      terminalOwnershipEpoch += 1;
       set({
         phase: 'signed-out',
         user: null,
@@ -336,6 +365,7 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
 /** Test seam: restores the store to its initial state between tests. */
 export function resetAccountStoreForTests(): void {
   inFlightLogout = null;
+  terminalOwnershipEpoch = 0;
   useAccountStore.setState({
     phase: 'bootstrapping',
     user: null,
