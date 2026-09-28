@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "description": "Baseline module boundary exceptions for AD-004 staged enforcement",
   "soleWriter": "Integration Owner",
-  "totalExceptions": 5,
+  "totalExceptions": 7,
   "exceptions": [
     {
       "file": "src/shared/db/PracticeRepository.ts",
@@ -38,6 +38,20 @@
       "rule": "shared-to-module",
       "owner": "React Native Developer",
       "expiry": "TASK-012"
+    },
+    {
+      "file": "src/shared/db/GamificationRepository.ts",
+      "specifier": "../../modules/engagement/data/GamificationRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-014"
+    },
+    {
+      "file": "src/shared/db/PilotMetricsRepository.ts",
+      "specifier": "../../modules/analytics/data/PilotMetricsRepository",
+      "rule": "shared-to-module",
+      "owner": "React Native Developer",
+      "expiry": "TASK-014"
     }
   ]
 }

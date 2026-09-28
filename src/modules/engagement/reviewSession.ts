@@ -1,5 +1,5 @@
 import {createRequestId} from '@shared/api/requestId';
-import {insertGamificationEvent} from '@shared/db/GamificationRepository';
+import {insertGamificationEvent} from './data/GamificationRepository';
 import {
   ON_TIME_WATER_POINTS,
   isOnTimeReview,
