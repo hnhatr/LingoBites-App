@@ -10,8 +10,8 @@
  *   for control flow on invalid input (every check returns pass/fail).
  * - Zero runtime imports: this file must compile and run verbatim on both
  *   the API server (Node) and the mobile client (Hermes/RN).
- * - Vendored verbatim at `src/features/practice/logic/validator.ts`.
- *   Keep the two copies byte-identical; the constant-sync test in
+ * - Vendored verbatim from `api-server/src/practice/validator.ts`; keep the
+ *   logic of the two copies identical. The constant-sync test in
  *   `api-server/test/practiceValidator.test.ts` guards the contract side.
  *
  * Offset semantics: cloze `char_start`/`char_end` are UTF-16 code-unit

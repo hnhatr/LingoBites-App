@@ -3,7 +3,7 @@ import type {FeatureRegistryEntry} from './types';
 export const featureRegistry = [
   {
     key: 'pasteTextInput',
-    module: 'modules/input',
+    module: 'src/features/input',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
@@ -11,7 +11,7 @@ export const featureRegistry = [
   },
   {
     key: 'imageInput',
-    module: 'modules/input',
+    module: 'src/features/input',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
@@ -19,7 +19,7 @@ export const featureRegistry = [
   },
   {
     key: 'ocrScanner',
-    module: 'modules/ocr',
+    module: 'src/features/ocr',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
@@ -27,7 +27,7 @@ export const featureRegistry = [
   },
   {
     key: 'ocrReviewEdit',
-    module: 'modules/ocr',
+    module: 'src/features/ocr',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
@@ -35,7 +35,7 @@ export const featureRegistry = [
   },
   {
     key: 'shortPractice',
-    module: 'modules/practice',
+    module: 'src/features/practice',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
@@ -43,7 +43,7 @@ export const featureRegistry = [
   },
   {
     key: 'pronunciationSupport',
-    module: 'modules/speaking',
+    module: 'src/features/speaking',
     required: false,
     releaseGroup: 'foundation',
     status: 'not_implemented',
@@ -51,7 +51,7 @@ export const featureRegistry = [
   },
   {
     key: 'themeSystem',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -59,7 +59,7 @@ export const featureRegistry = [
   },
   {
     key: 'themeSwitcher',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -67,7 +67,7 @@ export const featureRegistry = [
   },
   {
     key: 'darkTheme',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -75,7 +75,7 @@ export const featureRegistry = [
   },
   {
     key: 'pastelKidsTheme',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -83,7 +83,7 @@ export const featureRegistry = [
   },
   {
     key: 'coreTheme',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -91,7 +91,7 @@ export const featureRegistry = [
   },
   {
     key: 'neoTheme',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -99,7 +99,7 @@ export const featureRegistry = [
   },
   {
     key: 'comicTheme',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -107,7 +107,7 @@ export const featureRegistry = [
   },
   {
     key: 'cartoonTheme',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -115,7 +115,7 @@ export const featureRegistry = [
   },
   {
     key: 'stickerSoftTheme',
-    module: 'theme',
+    module: 'src/ui/theme',
     required: false,
     releaseGroup: 'ui',
     status: 'ready',
@@ -123,7 +123,7 @@ export const featureRegistry = [
   },
   {
     key: 'reviewSystem',
-    module: 'modules/review',
+    module: 'src/features/review',
     required: false,
     releaseGroup: 'practice',
     status: 'ready',
@@ -131,7 +131,7 @@ export const featureRegistry = [
   },
   {
     key: 'miniGame',
-    module: 'modules/engagement',
+    module: 'src/features/engagement',
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
@@ -139,7 +139,7 @@ export const featureRegistry = [
   },
   {
     key: 'wordMatchGame',
-    module: 'modules/engagement',
+    module: 'src/features/engagement',
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
@@ -147,7 +147,7 @@ export const featureRegistry = [
   },
   {
     key: 'fillBlankGame',
-    module: 'modules/engagement',
+    module: 'src/features/engagement',
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
@@ -155,7 +155,7 @@ export const featureRegistry = [
   },
   {
     key: 'tenseQuizGame',
-    module: 'modules/engagement',
+    module: 'src/features/engagement',
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
@@ -163,7 +163,7 @@ export const featureRegistry = [
   },
   {
     key: 'sentenceOrderGame',
-    module: 'modules/engagement',
+    module: 'src/features/engagement',
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
@@ -171,7 +171,7 @@ export const featureRegistry = [
   },
   {
     key: 'flashcardChallenge',
-    module: 'modules/engagement',
+    module: 'src/features/engagement',
     required: false,
     releaseGroup: 'practice',
     status: 'not_implemented',
@@ -179,7 +179,7 @@ export const featureRegistry = [
   },
   {
     key: 'situationLearning',
-    module: 'modules/content',
+    module: 'src/features/lesson/packages',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -187,7 +187,7 @@ export const featureRegistry = [
   },
   {
     key: 'dialogueGenerator',
-    module: 'modules/content',
+    module: 'src/features/lesson/packages',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -195,7 +195,7 @@ export const featureRegistry = [
   },
   {
     key: 'phraseExtractor',
-    module: 'modules/content',
+    module: 'src/features/lesson/packages',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -203,7 +203,7 @@ export const featureRegistry = [
   },
   {
     key: 'situationPractice',
-    module: 'modules/content',
+    module: 'src/features/lesson/packages',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -211,7 +211,7 @@ export const featureRegistry = [
   },
   {
     key: 'youtubeLearning',
-    module: 'modules/youtube',
+    module: 'src/features/youtube',
     required: false,
     releaseGroup: 'expansion',
     status: 'beta',
