@@ -41,7 +41,7 @@ import {
   teardownP2RealInfraHarness,
 } from '@test/support/realInfra/harness';
 
-jest.mock('@features/profile/logic/legacyClear', () => ({
+jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

@@ -1,8 +1,5 @@
-import {
-  executeLegacyClear,
-  executeCanonicalLegacyClear,
-} from '../../../profile/logic/legacyClear';
-jest.mock('../../../profile/logic/legacyClear', () => ({
+import {executeLegacyClear, executeCanonicalLegacyClear} from '../legacyClear';
+jest.mock('../legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));
@@ -365,9 +362,7 @@ describe('submitOnboardingName idempotency (SETE-303 / T6)', () => {
 });
 
 describe('accountBootstrap lesson quarantine (Checkpoint A)', () => {
-  const realLegacyClear = jest.requireActual(
-    '../../../profile/logic/legacyClear',
-  ) as {
+  const realLegacyClear = jest.requireActual('../legacyClear') as {
     executeLegacyClear: () => Promise<void>;
     executeCanonicalLegacyClear: (opts: {
       authorizationRef: string;
