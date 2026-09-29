@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import type {YouTubeSegment} from '../logic/youtubeTranscriptPort';
 import {getYouTubeLesson} from '../logic/youtubeQueryPort';
 import type {NavigationProp} from '@react-navigation/native';

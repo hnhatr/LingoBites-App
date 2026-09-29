@@ -17,7 +17,7 @@ import type {RootTabParamList} from '@features/home';
 import type {ProfileStackParamList} from '@features/profile';
 import {AppScreen} from '@ui/components/AppScreen';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import {UnifiedLessonsScreen} from './UnifiedLessonsScreen';
 
 type Props = NativeStackScreenProps<

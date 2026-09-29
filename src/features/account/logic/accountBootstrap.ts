@@ -40,6 +40,7 @@ import {
   getActiveSession,
 } from '@core/auth/sessionStore';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
+import {executeLegacyClear, executeCanonicalLegacyClear} from './legacyClear';
 
 /**
  * Bootstrap/onboarding state machine (SETE-303 / T6).
@@ -193,11 +194,6 @@ export function bootAccount(deps: BootDeps = {}): Promise<BootResult> {
   task.then(clearInFlight, clearInFlight);
   return task;
 }
-
-import {
-  executeLegacyClear,
-  executeCanonicalLegacyClear,
-} from '@features/profile';
 
 async function runBoot(deps: BootDeps): Promise<BootResult> {
   const platform =

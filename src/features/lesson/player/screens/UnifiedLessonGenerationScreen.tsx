@@ -14,7 +14,7 @@ import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {trackEvent} from '@features/analytics';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import type {UnifiedLessonGenerationRouteParams} from './navigationTypes';
 import {
   createLessonGenerationJob,

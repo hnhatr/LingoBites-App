@@ -5,7 +5,7 @@ import {
 
 /**
  * Public entry point for downloaded-audio reads. Screens call this instead
- * of importing `shared/db/AudioAssetRepository` directly (SETE-118 Việc 3) —
+ * of importing `features/audio/logic/data/AudioAssetRepository` directly (SETE-118 Việc 3) —
  * the repository stays synchronous under the hood, this only relocates
  * which layer is allowed to know about it.
  *

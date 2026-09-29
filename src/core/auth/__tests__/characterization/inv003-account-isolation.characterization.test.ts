@@ -6,7 +6,7 @@ import {
   saveYouTubeProgress,
   getYouTubeProgress,
 } from '@features/youtube/logic/data/YouTubeProgressRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_003} account isolation`, () => {
   beforeEach(() => {

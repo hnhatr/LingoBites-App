@@ -1,4 +1,4 @@
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {resetDatabaseForTests} from '@core/db/database';
 import {
   getYouTubeProgress,
@@ -25,7 +25,7 @@ import {
 } from '@test/support/adversarial/realSqlite';
 import type {AuthUser} from '../../authTypes';
 
-jest.mock('@features/profile/logic/legacyClear', () => ({
+jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

@@ -4,7 +4,7 @@ import {
   resetAccountStoreForTests,
 } from '@features/account/logic/useAccountStore';
 import {accountGateRouteForPhase} from '@app/navigation/accountGate';
-import {createAuthClient} from '@core/auth/index';
+import {createAuthClient} from '@core/auth';
 import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {ensureValidSession} from '@core/auth/authSession';
 import {
@@ -31,7 +31,7 @@ import {
   writeM4RelocatedDomainLearnerData,
 } from '@test/support/accountIsolation/harness';
 
-jest.mock('@features/profile/logic/legacyClear', () => ({
+jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

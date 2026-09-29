@@ -14,7 +14,7 @@ import {
   swapActivePackage,
 } from '@features/lesson/packages';
 import {getPackageById} from '../../contentQueryPort';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 import {
   openRealSqlite,
   type RealSqliteConnection,

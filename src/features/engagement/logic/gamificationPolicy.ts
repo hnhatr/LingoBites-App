@@ -171,7 +171,7 @@ export type PetStage = {
 
 /**
  * Virtual plant growth milestones (SETE-89 product rule, MochiMochi-style).
- * Display labels for each stage live in `src/i18n (gamification.pet_stage / gamification.badge_label / gamification.badge_description)` —
+ * Display labels for each stage live in `src/core/i18n (gamification.pet_stage / gamification.badge_label / gamification.badge_description)` —
  * this policy only owns the IDs and thresholds.
  */
 export const PET_STAGES: readonly PetStage[] = [
@@ -242,7 +242,7 @@ export type BadgeDefinition = {
 
 /**
  * Badges rewarded purely from committed review events (SETE-89 product rule).
- * Display labels/descriptions live in `src/i18n (gamification.pet_stage / gamification.badge_label / gamification.badge_description)` —
+ * Display labels/descriptions live in `src/core/i18n (gamification.pet_stage / gamification.badge_label / gamification.badge_description)` —
  * this policy only owns the IDs and earn conditions.
  */
 export const BADGE_DEFINITIONS: readonly BadgeDefinition[] = [

@@ -10,7 +10,7 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {runYouTubeJob, type YouTubeJobProgress} from '../logic/api/youtubeApi';
 import {useTranslation} from 'react-i18next';
 import {saveYouTubeLesson} from '../logic/youtubeQueryPort';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'YouTubeProcessing'>;
 

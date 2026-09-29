@@ -10,7 +10,7 @@ import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 
 export function PrivacyNoteScreen() {
   const {theme} = useAppTheme();

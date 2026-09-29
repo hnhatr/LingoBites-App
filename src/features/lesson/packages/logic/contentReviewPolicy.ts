@@ -2,9 +2,9 @@
  * Generalized SRS scheduler for `content_review_items` (SETE-109 / M4).
  *
  * Generalizes the fixed-interval, two-rating model of the legacy flashcard
- * scheduler (`shared/db/reviewScheduler.ts`, SETE-92) to every M1-declared
+ * scheduler (`features/review/logic/reviewScheduler.ts`, SETE-92) to every M1-declared
  * `SrsItemType` (vocabulary, grammar, dialogue_turn, qa — see
- * `modules/content/schema`), adds the five-state mastery lifecycle (REQ-25),
+ * `features/lesson/packages/logic/schema`), adds the five-state mastery lifecycle (REQ-25),
  * and factors in hints-used / response-time signals when present (REQ-27).
  *
  * REQ-26 is explicit that the MVP scheduler is fixed transparent intervals,

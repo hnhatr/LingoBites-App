@@ -18,7 +18,7 @@ import {resetRefreshStateForTests} from '../../authSession';
 import {clearAllSessions} from '../../sessionStore';
 import {installKeychainVault, vault} from '@test/support/keychainVault';
 import type {AuthSession, AuthUser} from '../../authTypes';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support/index';
+import {FeatureFlagProvider} from '@core/release';
+import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {AppThemeProvider} from '@ui/theme/index';
+import {AppThemeProvider} from '@ui/theme';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {TodayScreen} from '../TodayScreen';
 import {captureErrorEvent} from '@features/speaking/logic/data/SpeakingRepository';

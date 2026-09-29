@@ -1,4 +1,4 @@
-import i18n from '@core/i18n/index';
+import i18n from '@core/i18n';
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {createRequestId} from '@core/api/requestId';

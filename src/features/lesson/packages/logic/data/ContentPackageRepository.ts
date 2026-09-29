@@ -4,7 +4,7 @@
  * Every function here is synchronous and works directly against the shared
  * `getDatabase()` connection. Callers that wrap multiple writes in a
  * transaction (the importer's atomic activation swap) use `withTransaction`
- * from `shared/db/database`; the repository functions stay transaction-agnostic
+ * from `core/db/database`; the repository functions stay transaction-agnostic
  * so they compose inside any transaction scope.
  *
  * Read functions return plain records shaped by `types.ts` so the rest of

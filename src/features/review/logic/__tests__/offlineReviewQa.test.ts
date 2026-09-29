@@ -1,4 +1,4 @@
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {open} from 'react-native-quick-sqlite';

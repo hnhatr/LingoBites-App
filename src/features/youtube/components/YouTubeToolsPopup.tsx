@@ -11,7 +11,7 @@ import {useTranslation} from 'react-i18next';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
 import {
   formatYouTubePlaybackRate,

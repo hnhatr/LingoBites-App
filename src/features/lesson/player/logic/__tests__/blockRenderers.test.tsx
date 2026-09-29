@@ -1,9 +1,9 @@
 import React from 'react';
 import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+import {AppThemeProvider} from '@ui/theme';
 import {
   CURRICULUM_LESSON_BLOCK_RENDERERS,
   resolveCurriculumLessonBlockRenderer,

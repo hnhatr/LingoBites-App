@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
+import {FeatureFlagProvider} from '@core/release';
 import type {ReleaseConfig} from '@core/release/types';
 import {
   CORE_BETA_WITHOUT_REVIEW,
@@ -9,8 +9,8 @@ import {
   makeTestReleaseConfig,
   OFFLINE_REVIEW_MVP,
   THEME_UI_FLAGS,
-} from '@test/support/index';
-import {AppThemeProvider} from '@ui/theme/index';
+} from '@test/support';
+import {AppThemeProvider} from '@ui/theme';
 import {ThemeContext} from '@ui/theme/useAppTheme';
 import {defaultTheme} from '@ui/theme/themes/default';
 import {stickerSoftTheme} from '@ui/theme/themes/stickerSoft';

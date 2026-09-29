@@ -1,8 +1,8 @@
 /**
  * Minimal structural source for practice eligibility, owned by the practice
- * domain (LING-48 / TASK-007). `LessonV2` from the legacy lesson-v2 schema
- * (removed in TASK-010) satisfies this shape, but eligibility no longer
- * imports that schema.
+ * domain (LING-48 / TASK-007). `LessonV2` from `@core/schemas/lesson-v2`
+ * satisfies this shape, but eligibility no longer imports the v2 lesson
+ * schema scheduled for removal (TASK-010).
  */
 export type PracticeEligibleLesson = {
   status: string;

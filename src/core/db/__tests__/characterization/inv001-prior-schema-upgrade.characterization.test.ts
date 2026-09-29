@@ -10,8 +10,8 @@ import {
   getYouTubeProgress,
   saveYouTubeProgress,
 } from '@features/youtube/logic/data/YouTubeProgressRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
-import {simulateDatabaseProcessRestart} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+import {simulateDatabaseProcessRestart} from '@test/support/characterization';
 
 /** SETE-290 initial DDL before revision/tombstone columns (mock quick-sqlite). */
 const PRIOR_YOUTUBE_PROGRESS_DDL = `CREATE TABLE IF NOT EXISTS youtube_progress (

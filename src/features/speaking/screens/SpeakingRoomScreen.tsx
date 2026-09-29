@@ -7,10 +7,10 @@ import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {listSpeakingRoomModes} from '../logic/speakingModes';
 import type {SpeakingModeInfo} from '../logic/speakingModes';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import type {SpeakingRoomRouteParams} from './navigationTypes';
 
 export interface SpeakingRoomScreenProps {

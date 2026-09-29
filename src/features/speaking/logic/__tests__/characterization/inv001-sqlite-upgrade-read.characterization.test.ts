@@ -10,7 +10,7 @@ import {
 import {
   CHARACTERIZATION_INVARIANTS,
   simulateDatabaseProcessRestart,
-} from '@test/support/characterization/index';
+} from '@test/support/characterization';
 
 const NOW = '2026-09-27T12:00:00.000Z';
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
 import {FlatList} from 'react-native';
-import {FeatureFlagProvider} from '@core/release/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {AppThemeProvider} from '@ui/theme';
 import {SentenceCarousel} from '../SentenceCarousel';
 import {
   makeEnrichment,

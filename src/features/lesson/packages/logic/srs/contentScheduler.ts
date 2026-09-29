@@ -1,12 +1,11 @@
 /**
  * Generalized SRS scheduler for `content_review_items` (SETE-109 / M4).
  *
- * Scheduling policy implementation has been moved to
- * `@features/lesson/packages/logic/contentReviewPolicy` so that shared database
- * repositories can execute review state calculations without depending on
- * `@features/lesson`.
+ * Scheduling policy implementation has been moved to `@features/lesson/packages/logic/contentReviewPolicy`
+ * so that shared database repositories can execute review state calculations without
+ * depending on `@features/lesson/packages`.
  *
- * Exports preserved for `@features/lesson` compatibility.
+ * Exports preserved for `@features/lesson/packages` compatibility.
  */
 
 export {

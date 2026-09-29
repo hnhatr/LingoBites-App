@@ -8,7 +8,7 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {useContentLibrary} from '../logic/runtime/useContentLibrary';
 import type {ContentLessonRow} from '../logic/runtime/useContentLibrary';
 type Props = NativeStackScreenProps<

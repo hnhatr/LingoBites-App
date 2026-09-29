@@ -3,7 +3,7 @@
  *
  * Follows the per-domain convention in `src/core/api/*Client.ts`
  * (`authenticatedFetch`, `getAppConfig`, injected `fetchImpl`,
- * `AbortSignal`) but lives under `src/features/lesson/player/logic` so the
+ * `AbortSignal`) but lives under `src/features/lesson/player` so the
  * shared layer never depends on a feature module. Exact learner routes:
  * `GET /api/v1/lessons/:id` and `POST /api/v1/exercises/:id/check`.
  *

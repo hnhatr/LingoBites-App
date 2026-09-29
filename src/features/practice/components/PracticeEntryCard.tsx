@@ -4,7 +4,7 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {summarizeSession} from '../logic/sessionEngine';
 import type {UsePracticeController} from '../logic/usePracticeController';
 

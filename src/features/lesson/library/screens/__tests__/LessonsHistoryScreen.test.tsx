@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {AppThemeProvider} from '@ui/theme/index';
-import {FeatureFlagProvider} from '@core/release/index';
+import {AppThemeProvider} from '@ui/theme';
+import {FeatureFlagProvider} from '@core/release';
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();

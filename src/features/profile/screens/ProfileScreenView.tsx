@@ -10,8 +10,8 @@ import {SectionHeader} from '@ui/components/SectionHeader';
 import {TextField} from '@ui/components/TextField';
 import {ThemePicker} from '@ui/components/ThemePicker';
 import {AccountProfileSection} from '@features/account';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
 
 /** Settings without a backing store yet — show an honest "not set" value. */

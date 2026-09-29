@@ -1,6 +1,6 @@
 /**
  * Shared metrics for the floating bottom tab bar.
- * @deprecated Moved to `@components/layout` in TASK-003 (AD-002 / AD-004).
+ * @deprecated Moved to `@ui/components/layout` in TASK-003 (AD-002 / AD-004).
  */
 export {
   FLOATING_TAB_BAR_HEIGHT,
@@ -12,4 +12,4 @@ export {
   getFloatingTabBarClearance,
   useFloatingTabBarClearance,
   withAlpha,
-} from '@ui/components/layout/index';
+} from '@ui/components/layout';

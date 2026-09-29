@@ -7,11 +7,11 @@ import type {CreateStackParamList} from './navigationTypes';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {useTranslation} from 'react-i18next';
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
-import {useFeatureFlags} from '@core/release/index';
+import {useFeatureFlags} from '@core/release';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'CreateMain'>;
 

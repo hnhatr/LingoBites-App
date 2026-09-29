@@ -15,7 +15,7 @@ import {saveSession, setActiveSessionId} from '@core/auth/sessionStore';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {installKeychainVault} from '@test/support/keychainVault';
 
-jest.mock('../../../profile/logic/legacyClear', () => ({
+jest.mock('../legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));

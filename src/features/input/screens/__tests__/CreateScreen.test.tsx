@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
+import {FeatureFlagProvider} from '@core/release';
 import type {ReleaseConfig} from '@core/release/types';
 import {
   ALL_IMPLEMENTED_FEATURES,
   CORE_WITH_REVIEW,
   makeTestReleaseConfig,
   OFFLINE_REVIEW_MVP,
-} from '@test/support/index';
-import {AppThemeProvider} from '@ui/theme/index';
+} from '@test/support';
+import {AppThemeProvider} from '@ui/theme';
 import {CreateScreen} from '../CreateScreen';
 
 const mockUseYouTubeServerEnabled = jest.fn();

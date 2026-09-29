@@ -251,7 +251,7 @@ export type SyncOutboxRecord = {
  * SETE-109 / M4). Created when the lesson runtime exits and a declared SRS
  * item (M1 `content_units` where `unit_type = 'srs'`) was backed by content
  * the learner actually completed. `mastery_state` and `next_review_at` are
- * owned by the fixed-interval scheduler in `modules/content/srs/contentScheduler`.
+ * owned by the fixed-interval scheduler in `features/lesson/packages/logic/srs/contentScheduler`.
  */
 export type ContentReviewItemMasteryState = ContentMasteryState;
 

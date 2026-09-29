@@ -2,8 +2,8 @@ import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import * as Reanimated from 'react-native-reanimated';
-import {AppThemeProvider, useAppTheme} from '@ui/theme/index';
-import {FeatureFlagProvider} from '@core/release/index';
+import {AppThemeProvider, useAppTheme} from '@ui/theme';
+import {FeatureFlagProvider} from '@core/release';
 import {SegmentedTabBar} from '../SegmentedTabBar';
 
 function render(ui: React.ReactElement) {

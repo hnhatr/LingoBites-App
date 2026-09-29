@@ -31,12 +31,12 @@ import {
   TOAST_DURATION_MS,
   type SentenceLoopCount,
 } from './utils/toolsLogic';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {useBookmarkOptimistic, useFlashcardLibrary} from '@features/review';
 import type {YouTubePlaybackRate} from './utils/playbackRate';
 import type {YouTubeLessonScreenProps} from '../screens/youtubeLessonScreenTypes';
 import {createYouTubeLessonScreenStyles} from '../screens/youtubeLessonScreenStyles';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 
 /** Runs an async side effect without returning its promise to the caller. */
 function fireAndForget(task: Promise<unknown>): void {

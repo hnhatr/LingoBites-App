@@ -16,11 +16,11 @@ import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {Medallion} from '@ui/components/Medallion';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {bootstrapContentPackage} from '../logic/bootstrap';
 import {useContentLibrary} from '../logic/runtime/useContentLibrary';
 import type {ContentLessonListItem} from '../logic/runtime/useContentLibrary';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'ContentLessonList'>;
 

@@ -207,7 +207,7 @@ const MIGRATIONS = [
   // the upsert key: replaying the same lesson never duplicates a review item,
   // it only creates rows for chunks/qa/dialogue-turns not yet completed.
   // `next_review_at` is a placeholder (`now + 1 day`) until M4's real
-  // fixed-interval scheduler (`modules/content/srs/contentScheduler`, SETE-109)
+  // fixed-interval scheduler (`features/lesson/packages/logic/srs/contentScheduler`, SETE-109)
   // reschedules it on the item's first real review; MVP scheduling is fixed
   // transparent intervals per REQ-26, not SM-2/FSRS.
   `CREATE TABLE IF NOT EXISTS content_review_items (

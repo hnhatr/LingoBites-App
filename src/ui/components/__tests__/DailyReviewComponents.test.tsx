@@ -1,9 +1,9 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support';
+import {AppThemeProvider} from '@ui/theme';
 import {Banner} from '../Banner';
 import {RatingControl} from '../RatingControl';
 

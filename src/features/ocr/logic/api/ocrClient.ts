@@ -2,7 +2,7 @@ import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {Platform} from 'react-native';
 import {createRequestId} from '@core/api/requestId';
 import {getAppConfig} from '@core/api/appConfig';
-import i18n from '@core/i18n/index';
+import i18n from '@core/i18n';
 import type {
   ApiErrorBody,
   OCRImageInput,

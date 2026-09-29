@@ -13,7 +13,7 @@ import {
   createSession,
 } from '@features/practice/logic/sessionEngine';
 import {drainOutboxOnce} from '../../outboxSync';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

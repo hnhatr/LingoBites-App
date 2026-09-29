@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {useFeatureEnabled} from '@core/release/index';
+import {useFeatureEnabled} from '@core/release';
 import {bootstrapGoldenHourReminders} from '../logic/nativeReminderScheduler';
 
 /**

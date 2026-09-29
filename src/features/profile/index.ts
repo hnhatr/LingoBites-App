@@ -9,11 +9,3 @@ export type {
   FeatureStatusRouteParams,
   ProfileStackParamList,
 } from './screens/navigationTypes';
-export {
-  executeLegacyClear,
-  executeCanonicalLegacyClear,
-} from './logic/legacyClear';
-export type {
-  CanonicalLegacyClearOptions,
-  CanonicalLegacyClearResult,
-} from './logic/legacyClear';

@@ -10,8 +10,8 @@ import {
   savePracticeSession,
 } from '../../logic/data/PracticeRepository';
 import type {PracticeSet} from '@core/schemas/practice';
-import {FeatureFlagProvider} from '@core/release/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {AppThemeProvider} from '@ui/theme';
 import {PracticeScreen} from '../PracticeScreen';
 
 const navigation = {
