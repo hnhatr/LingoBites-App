@@ -11,7 +11,7 @@ describe('ProfileScreen UI seam (TASK-018)', () => {
 
   it('ProfileScreenView does not import repository or client modules', () => {
     const forbidden = [
-      '@shared/api/',
+      '@core/api/',
       'Repository',
       'LocalDataDeletionService',
       'getGamificationSnapshot',
