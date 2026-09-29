@@ -10,7 +10,7 @@
  *   for control flow on invalid input (every check returns pass/fail).
  * - Zero runtime imports: this file must compile and run verbatim on both
  *   the API server (Node) and the mobile client (Hermes/RN).
- * - Vendored verbatim at `mobile-app/src/modules/practice/validator.ts`.
+ * - Vendored verbatim at `src/features/practice/logic/validator.ts`.
  *   Keep the two copies byte-identical; the constant-sync test in
  *   `api-server/test/practiceValidator.test.ts` guards the contract side.
  *
