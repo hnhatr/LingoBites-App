@@ -157,7 +157,7 @@ describe('LING-102 adversarial: content domain ownership (real SQLite)', () => {
     }
   });
 
-  it('ADV-H02 / INV-001 / INV-005: rows persisted by the pre-move schema survive cold-start upgrade and repeated runMigrations through @modules/content', () => {
+  it('ADV-H02 / INV-001 / INV-005: rows persisted by the pre-move schema survive cold-start upgrade and repeated runMigrations through @features/lesson', () => {
     const seed = openRealSqlite(dbFile);
     seedPriorInstall(seed);
     seed.close();

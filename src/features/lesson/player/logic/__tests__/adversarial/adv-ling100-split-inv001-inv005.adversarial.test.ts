@@ -26,7 +26,7 @@ import {
  * `node:sqlite` file, production migrations and repositories.
  *
  * ADV-H02 / INV-005: every learner-progress mutation reached through the
- * `@modules/curriculumLesson` Public surface keeps the pre-split request
+ * `@features/lesson/player` Public surface keeps the pre-split request
  * contract and issues exactly one request on retryable failures, so the split
  * cannot duplicate a server-side progress write.
  *

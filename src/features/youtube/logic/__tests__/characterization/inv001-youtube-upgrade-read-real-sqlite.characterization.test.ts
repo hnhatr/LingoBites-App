@@ -153,7 +153,7 @@ describe('youtube domain ownership (real SQLite / node:sqlite)', () => {
     dbFile = path.join(dir, 'lingobites.sqlite');
   });
 
-  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: lesson and resume progress survive reopen via @modules/youtube`, () => {
+  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: lesson and resume progress survive reopen via @features/youtube`, () => {
     let db = coldStart();
     runMigrations(getDatabase());
 
@@ -206,7 +206,7 @@ describe('youtube prior-schema upgrade-read (real SQLite / node:sqlite)', () => 
     prior.close();
   });
 
-  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: pre-move lesson/progress upgrade-read through @modules/youtube`, () => {
+  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: pre-move lesson/progress upgrade-read through @features/youtube`, () => {
     let db = coldStart();
 
     expect(getYouTubeLesson(PRIOR_LESSON_ID)).toMatchObject({

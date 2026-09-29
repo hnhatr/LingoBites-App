@@ -133,7 +133,7 @@ describe('content domain ownership (real SQLite / node:sqlite)', () => {
     );
     dbFile = path.join(dir, 'lingobites.sqlite');
   });
-  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: active package singleton and lesson progress survive reopen via @modules/content`, () => {
+  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: active package singleton and lesson progress survive reopen via @features/lesson`, () => {
     let db = coldStart();
 
     insertPackageRecord({
@@ -241,7 +241,7 @@ describe('content prior-schema upgrade-read (real SQLite / node:sqlite)', () => 
     prior.close();
   });
 
-  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: pre-move catalog, lesson, and progress upgrade-read through @modules/content (CR-001)`, () => {
+  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: pre-move catalog, lesson, and progress upgrade-read through @features/lesson (CR-001)`, () => {
     let db = coldStart();
 
     expect(getActivePackage()).toMatchObject({
