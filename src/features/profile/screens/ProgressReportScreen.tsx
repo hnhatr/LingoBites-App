@@ -10,7 +10,7 @@ import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {AppButton} from '@ui/components/AppButton';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {
   useProgressReport,
   type CapabilityProgressReport,

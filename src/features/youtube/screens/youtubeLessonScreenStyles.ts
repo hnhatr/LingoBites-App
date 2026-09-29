@@ -1,5 +1,5 @@
 import {StyleSheet} from 'react-native';
-import type {AppTheme} from '@ui/theme/index';
+import type {AppTheme} from '@ui/theme';
 
 export function createYouTubeLessonScreenStyles(theme: AppTheme) {
   return StyleSheet.create({

@@ -16,7 +16,7 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {IconButton} from '@ui/components/IconButton';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import type {
   GrammarPoint,
   SentenceEnrichment,

@@ -6,7 +6,7 @@
  * Moved here from `@shared/schemas/ai-output-v1` (LING-48 / TASK-007) so
  * surviving non-lesson domains no longer depend on the v1 lesson schema
  * scheduled for removal (TASK-010). The shape is intentionally unchanged —
- * do not extend it. New practice work uses `@shared/schemas/practice`.
+ * do not extend it. New practice work uses `@core/schemas/practice`.
  */
 export type PracticeQuestion = {
   id: string;

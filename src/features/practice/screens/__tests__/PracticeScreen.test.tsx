@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import {validFullOutput} from '@core/fixtures/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {validFullOutput} from '@core/fixtures';
+import {AppThemeProvider} from '@ui/theme';
 import {
   PracticeScreen,
   type PracticeRouteParams,

@@ -1,4 +1,4 @@
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {resetDatabaseForTests} from '@core/db/database';
 import {
   getYouTubeProgress,

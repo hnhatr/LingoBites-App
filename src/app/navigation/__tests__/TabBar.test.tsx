@@ -14,7 +14,7 @@ import {
   FLOATING_TAB_BAR_CONTENT_GAP,
   FLOATING_TAB_BAR_HEIGHT,
   getFloatingTabBarClearance,
-} from '@ui/components/layout/index';
+} from '@ui/components/layout';
 import {stickerSoftTheme} from '@ui/theme/themes/stickerSoft';
 
 jest.mock('react-native-safe-area-context', () => ({

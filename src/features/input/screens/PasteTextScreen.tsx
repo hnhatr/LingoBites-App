@@ -14,12 +14,12 @@ import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {TextField} from '@ui/components/TextField';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
 import {validateConfirmedText} from '@core/utils/textValidation';
 import {startLessonFromConfirmedText} from '@features/lesson/player';
 import {createLessonGenerationJob} from '@features/lesson/player';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;
 
 export type PasteTextScreenProps = Props;

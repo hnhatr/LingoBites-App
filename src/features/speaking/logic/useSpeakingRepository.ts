@@ -2,7 +2,7 @@ import {insertSpeakingRecording} from './data/SpeakingRepository';
 
 /**
  * Public entry point for speaking-recording persistence. Screens call this
- * instead of importing `shared/db/SpeakingRepository` directly (SETE-118
+ * instead of importing `features/speaking/logic/data/SpeakingRepository` directly (SETE-118
  * Việc 3) — the repository stays synchronous under the hood, this only
  * relocates which layer is allowed to know about it.
  *

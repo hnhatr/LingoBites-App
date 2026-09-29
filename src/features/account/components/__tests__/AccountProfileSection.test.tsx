@@ -1,15 +1,15 @@
 import React from 'react';
 import {TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {AppThemeProvider} from '@ui/theme';
 import {AccountProfileSection} from '../AccountProfileSection';
 import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '../../logic/useAccountStore';
 import * as accountProfile from '../../logic/accountProfile';
-import type {AuthUser} from '@core/auth/index';
+import type {AuthUser} from '@core/auth';
 
 const user: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

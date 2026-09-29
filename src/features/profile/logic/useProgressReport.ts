@@ -9,7 +9,7 @@ export type {CapabilityProgressReport};
 
 /**
  * Settings-facing facade for pilot-metrics reads. Screens call this instead of
- * importing `@modules/analytics` directly so settings stays the documented
+ * importing `@features/analytics` directly so settings stays the documented
  * entry for profile/progress UI (SETE-118 Việc 3).
  *
  * Each member forwards to the analytics public port at call time (not captured

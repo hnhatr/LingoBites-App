@@ -4,7 +4,7 @@ import {
   resetAccountStoreForTests,
 } from '@features/account/logic/useAccountStore';
 import {accountGateRouteForPhase} from '@app/navigation/accountGate';
-import {createAuthClient} from '@core/auth/index';
+import {createAuthClient} from '@core/auth';
 import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {ensureValidSession} from '@core/auth/authSession';
 import {

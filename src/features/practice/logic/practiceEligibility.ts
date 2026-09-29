@@ -1,6 +1,6 @@
 /**
  * Minimal structural source for practice eligibility, owned by the practice
- * domain (LING-48 / TASK-007). `LessonV2` from `@shared/schemas/lesson-v2`
+ * domain (LING-48 / TASK-007). `LessonV2` from `@core/schemas/lesson-v2`
  * satisfies this shape, but eligibility no longer imports the v2 lesson
  * schema scheduled for removal (TASK-010).
  */

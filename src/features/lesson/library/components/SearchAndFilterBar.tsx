@@ -3,7 +3,7 @@ import {View, ScrollView, StyleSheet} from 'react-native';
 import {TextField} from '@ui/components/TextField';
 import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
 export interface SearchAndFilterBarProps {

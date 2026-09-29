@@ -13,7 +13,7 @@ import {
   saveContentLesson,
   startContentLesson,
 } from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 import {
   openRealSqlite,
   type RealSqliteConnection,

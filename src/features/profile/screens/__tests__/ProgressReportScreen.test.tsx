@@ -1,8 +1,8 @@
 import React from 'react';
 import {Alert, Text} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {AppThemeProvider} from '@ui/theme';
 import {ProgressReportScreen} from '../ProgressReportScreen';
 import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 

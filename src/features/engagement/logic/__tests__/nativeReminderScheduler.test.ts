@@ -4,7 +4,7 @@ import {resetDatabaseForTests} from '@core/db/database';
 import {open} from 'react-native-quick-sqlite';
 import {DB_NAME} from '@core/db/constants';
 import {saveFlashcard, recordFlashcardRating} from '@features/review';
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {
   configureReminderScheduler,
   noopReminderScheduler,

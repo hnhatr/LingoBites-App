@@ -8,7 +8,7 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release/index';
+import {FeatureFlagProvider} from '@core/release';
 import {
   CORE_BETA_WITHOUT_REVIEW,
   CORE_WITH_REVIEW,
@@ -19,8 +19,8 @@ import type {FeatureKey} from '@core/release/feature-registry';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {saveFlashcard} from '@features/review';
-import {validFullOutput} from '@core/fixtures/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {validFullOutput} from '@core/fixtures';
+import {AppThemeProvider} from '@ui/theme';
 import {__resetMockDatabases} from '../../../test-utils/sqliteMock';
 import {DailyReviewScreen} from '@features/review';
 import {isIngestionRouteEnabled} from '@app/navigation/ingestionRouteGate';

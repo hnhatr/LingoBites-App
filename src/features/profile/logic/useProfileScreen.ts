@@ -17,7 +17,7 @@ import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
 } from '@features/profile/logic/LocalDataDeletionService';
-import {useFeatureFlags} from '@core/release/index';
+import {useFeatureFlags} from '@core/release';
 import {formatProfileAccuracy, formatProfileWordCount} from './profileMetrics';
 import {useProgressReport} from './useProgressReport';
 import {useAccountStore} from '@features/account';

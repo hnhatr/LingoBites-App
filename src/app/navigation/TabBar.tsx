@@ -18,13 +18,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {AnimatedMaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import {useTranslation} from 'react-i18next';
 import {
   FLOATING_TAB_BAR_BOTTOM_GAP,
   FLOATING_TAB_BAR_HORIZONTAL_MARGIN,
   withAlpha,
-} from '@ui/components/layout/index';
+} from '@ui/components/layout';
 import {isTabBarHiddenForDescriptors} from './immersiveTabRoutes';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 

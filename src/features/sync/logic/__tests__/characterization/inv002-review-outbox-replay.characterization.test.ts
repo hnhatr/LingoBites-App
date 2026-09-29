@@ -1,4 +1,4 @@
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
@@ -9,7 +9,7 @@ import {
   saveFlashcard,
 } from '@features/review/logic/FlashcardRepository';
 import {drainOutboxOnce} from '../../outboxSync';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

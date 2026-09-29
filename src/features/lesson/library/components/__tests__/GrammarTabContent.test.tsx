@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {AppThemeProvider} from '@ui/theme/index';
-import {FeatureFlagProvider} from '@core/release/index';
+import {AppThemeProvider} from '@ui/theme';
+import {FeatureFlagProvider} from '@core/release';
 import {GrammarTabContent} from '../GrammarTabContent';
 import type {GrammarBookmark} from '@core/db/types';
 

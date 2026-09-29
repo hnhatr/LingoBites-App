@@ -13,7 +13,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {AppText} from '@ui/components/AppText';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
 export type LibraryTabId = 'lessons' | 'vocabulary' | 'grammar';

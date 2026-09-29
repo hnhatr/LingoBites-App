@@ -2,9 +2,9 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {RatingControl} from '../RatingControl';
-import {AppThemeProvider, useAppTheme} from '@ui/theme/index';
-import type {AppTheme} from '@ui/theme/index';
-import {FeatureFlagProvider} from '@core/release/index';
+import {AppThemeProvider, useAppTheme} from '@ui/theme';
+import type {AppTheme} from '@ui/theme';
+import {FeatureFlagProvider} from '@core/release';
 import {
   findMaskedContent,
   hasIconAndTextLabel,
@@ -62,7 +62,7 @@ describe('RatingControl - Accessibility (NFR-ACC-004)', () => {
     // visible text that isn't a literal substring of the accessibilityLabel.
     // The "forgot" button intentionally paraphrases "Quên" as "Không nhớ -
     // ôn lại sau 1 ngày" (rating.forgot_label vs rating.forgot_a11y in
-    // src/i18n/vi.json) — a richer description, not lost content, confirmed
+    // src/core/i18n/vi.json) — a richer description, not lost content, confirmed
     // by manual reading during the SETE-122 audit. If this list grows
     // beyond that one known case, a new candidate needs the same manual
     // review before being added here.

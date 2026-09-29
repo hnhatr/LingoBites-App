@@ -14,7 +14,7 @@ import {
   getFloatingTabBarClearance,
   getTabBarVisualHeight,
   useFloatingTabBarClearance,
-} from '@ui/components/layout/index';
+} from '@ui/components/layout';
 
 function ClearanceProbe() {
   return <Text testID="clearance">{useFloatingTabBarClearance()}</Text>;

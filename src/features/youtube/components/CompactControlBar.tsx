@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import {
   formatRemaining,
   formatSentenceLabel,

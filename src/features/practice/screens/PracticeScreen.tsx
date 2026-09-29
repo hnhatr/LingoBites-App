@@ -9,7 +9,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {QuizOption, type QuizOptionState} from '@ui/components/QuizOption';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import type {PracticeQuestion as LegacyPracticeQuestion} from '../logic/practiceQuestion';
 import type {PracticeQuestion, ResultSummary} from '@core/schemas/practice';
 import {useQuiz} from '../logic/useQuiz';

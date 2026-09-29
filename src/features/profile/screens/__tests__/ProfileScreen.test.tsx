@@ -4,9 +4,9 @@ import ReactTestRenderer from 'react-test-renderer';
 import {TextField} from '@ui/components/TextField';
 import {open} from 'react-native-quick-sqlite';
 import * as Keychain from 'react-native-keychain';
-import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, OFFLINE_REVIEW_MVP} from '@test/support/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {makeTestReleaseConfig, OFFLINE_REVIEW_MVP} from '@test/support';
+import {AppThemeProvider} from '@ui/theme';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
@@ -33,7 +33,7 @@ const mockClearSpeakingLocalData = jest.fn(async () => ({
   failedFilePaths: [],
 }));
 
-jest.mock('@core/localData/index', () => ({
+jest.mock('@core/localData', () => ({
   clearAllLocalDataWithFiles: () => mockClearAllLocalDataWithFiles(),
   clearSpeakingLocalData: () => mockClearSpeakingLocalData(),
 }));

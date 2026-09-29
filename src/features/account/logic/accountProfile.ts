@@ -5,7 +5,7 @@ import {
   type AuthClientError,
   type AuthHttpClient,
   type AuthUser,
-} from '@core/auth/index';
+} from '@core/auth';
 
 export type UpdateProfileResult =
   | {ok: true; user: AuthUser}

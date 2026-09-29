@@ -1,4 +1,4 @@
-import i18n from '@core/i18n/index';
+import i18n from '@core/i18n';
 
 export const MAX_INPUT_TEXT_LENGTH = 3000;
 export const MAX_LESSON_V2_WORDS = 500;

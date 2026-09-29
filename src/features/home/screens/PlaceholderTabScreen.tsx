@@ -2,7 +2,7 @@ import React from 'react';
 import {View} from 'react-native';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 
 type Props = {
   title: string;

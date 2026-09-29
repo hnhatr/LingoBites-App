@@ -12,7 +12,7 @@ import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {playContentAudio, useContentLibrary} from '@features/lesson/packages';
 import {captureSpeakingErrorIfNeeded} from '../../logic/errorNotebookService';
 import {
@@ -23,7 +23,7 @@ import {
 } from '../../logic/recordingService';
 import {getShadowingContent} from '../../logic/speakingModes';
 import {useSpeakingRepository} from '../../logic/useSpeakingRepository';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 
 export interface SpeakingShadowingActivityProps {
   navigation: {

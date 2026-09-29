@@ -1,8 +1,8 @@
 import React from 'react';
 import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {AppThemeProvider} from '@ui/theme';
 import {defaultThemeId, themes} from '@ui/theme/themeRegistry';
 import {AppText} from '../AppText';
 

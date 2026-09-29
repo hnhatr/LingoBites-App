@@ -6,7 +6,7 @@ import {ErrorCard} from '@ui/components/ErrorCard';
 import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {IconButton} from '@ui/components/IconButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {createLessonRuntimeSession} from '../logic/runtime/ContentLessonRuntime';
 import {evaluateCheck} from '../logic/checks/checkEvaluator';
 import {playContentAudio} from '../logic/runtime/contentAudioPlayer';
@@ -18,7 +18,7 @@ import {GuidedPracticeCard} from '../components/runtime/activities/GuidedPractic
 import {RolePlayCard} from '../components/runtime/activities/RolePlayCard';
 import {ShadowingCard} from '../components/runtime/activities/ShadowingCard';
 import type {FeedbackStepData} from '../logic/runtime/types';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 
 type Props = {
   navigation: {goBack: () => void};

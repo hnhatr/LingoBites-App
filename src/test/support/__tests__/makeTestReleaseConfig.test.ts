@@ -1,5 +1,5 @@
 import {featureKeys} from '@core/release/feature-registry';
-import {makeTestReleaseConfig} from '@test/support/index';
+import {makeTestReleaseConfig} from '@test/support';
 
 describe('makeTestReleaseConfig', () => {
   it('defaults every registry flag to false', () => {

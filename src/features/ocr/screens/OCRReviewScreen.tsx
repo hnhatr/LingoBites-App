@@ -14,7 +14,7 @@ import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {TextField} from '@ui/components/TextField';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
 import {
   MAX_INPUT_TEXT_LENGTH,

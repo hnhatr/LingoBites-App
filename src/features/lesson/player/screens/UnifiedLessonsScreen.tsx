@@ -22,8 +22,8 @@ import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {Medallion} from '@ui/components/Medallion';
 import {trackEvent} from '@features/analytics';
-import {useFloatingTabBarClearance} from '@ui/components/layout/index';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import {
   useLessonCatalog,
   type UseLessonCatalogResult,

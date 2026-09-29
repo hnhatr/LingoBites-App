@@ -4,7 +4,7 @@ import {
   signOut,
   terminalReset,
   type AuthUser,
-} from '@core/auth/index';
+} from '@core/auth';
 import {
   bootAccount,
   cancelAccountSwitch,

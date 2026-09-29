@@ -14,7 +14,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
 import {RatingControl} from '@ui/components/RatingControl';
 import {speak} from '@features/audio';
-import {useFeatureEnabled} from '@core/release/index';
+import {useFeatureEnabled} from '@core/release';
 import {requestSync} from '@features/sync';
 import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
 import type {FlashcardRecord, ReviewRating} from '@core/db/types';
@@ -23,7 +23,7 @@ import {
   startReviewSession,
   type ReviewSession,
 } from '@features/engagement';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 
 const DEFAULT_SOFT_CAP = 10;
 

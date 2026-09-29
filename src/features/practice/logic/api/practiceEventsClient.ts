@@ -1,5 +1,5 @@
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
-import i18n from '@core/i18n/index';
+import i18n from '@core/i18n';
 import type {PracticeEventPayload} from '@core/db/types';
 import {PRACTICE_CONTRACT_VERSION} from '@core/schemas/practice';
 import {getAppConfig} from '@core/api/appConfig';

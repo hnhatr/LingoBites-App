@@ -3,13 +3,13 @@ import {accountGateRouteForPhase} from '@app/navigation/accountGate';
 import {
   buildNavigationMountSnapshot,
   CHARACTERIZATION_INVARIANTS,
-} from '@test/support/characterization/index';
+} from '@test/support/characterization';
 import {
   CORE_BETA_WITHOUT_REVIEW,
   CORE_WITH_REVIEW,
   ALL_IMPLEMENTED_FEATURES,
   makeTestReleaseConfig,
-} from '@test/support/index';
+} from '@test/support';
 
 const PHASES: AccountPhase[] = [
   'authenticated',

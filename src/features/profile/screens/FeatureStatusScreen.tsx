@@ -3,8 +3,8 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {AppCard} from '@ui/components/AppCard';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
-import {featureRegistry, useFeatureFlags} from '@core/release/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
+import {featureRegistry, useFeatureFlags} from '@core/release';
 import type {FeatureRegistryEntry} from '@core/release/types';
 
 export function FeatureStatusScreen() {

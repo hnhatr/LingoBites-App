@@ -1,9 +1,9 @@
 import React from 'react';
 import {Text, TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import i18n from '@core/i18n/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import i18n from '@core/i18n';
+import {AppThemeProvider} from '@ui/theme';
 import {PasteTextScreen} from '../PasteTextScreen';
 
 const mockNavigate = jest.fn();

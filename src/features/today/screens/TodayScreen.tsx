@@ -11,7 +11,7 @@ import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import {
   generateStudyBlock,
   REASON_CODE_VI_LABELS,

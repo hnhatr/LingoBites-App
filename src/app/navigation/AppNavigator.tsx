@@ -48,7 +48,7 @@ import {
   FeatureStatusScreen,
 } from '@features/profile';
 import {TtsSpikeScreen} from '@features/audio';
-import {useFeatureFlags} from '@core/release/index';
+import {useFeatureFlags} from '@core/release';
 import {TabBar} from './TabBar';
 import {accountGateRouteForPhase} from './accountGate';
 import {getRootStackRouteNames} from './rootStackRoutes';

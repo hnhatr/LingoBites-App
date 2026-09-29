@@ -30,7 +30,7 @@ import {parseYouTubeVideoId} from '../logic/api/youtubeApi';
 import {parseManualTranscript} from '../logic/transcript/parser';
 import {ensureYouTubeDisclosureAcknowledged} from '../logic/utils/youtubeDisclosure';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 
 // SETE-316 (Option A2): typed URLs flicker valid→invalid→valid while the
 // 11-char video ID is being entered, so the Step 2 reveal waits for a

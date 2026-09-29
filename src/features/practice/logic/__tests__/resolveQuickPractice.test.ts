@@ -1,4 +1,4 @@
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {resolveQuickPractice} from '../resolveQuickPractice';
 
 describe('resolveQuickPractice', () => {

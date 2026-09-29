@@ -9,7 +9,7 @@ import type Sound from 'react-native-sound';
  * {@link defaultCurriculumLessonSoundFactory} (react-native-sound, loaded
  * defensively so an unlinked build degrades to `unavailable` instead of
  * crashing). This mirrors the lazy native-module pattern in
- * `src/modules/audio/ttsService.ts`.
+ * `src/features/audio/logic/ttsService.ts`.
  */
 
 export type CurriculumLessonSoundHandle = {

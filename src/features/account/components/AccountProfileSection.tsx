@@ -7,7 +7,7 @@ import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {TextField} from '@ui/components/TextField';
-import {useAppTheme, type AppTheme} from '@ui/theme/index';
+import {useAppTheme, type AppTheme} from '@ui/theme';
 import {updateAccountProfile} from '../logic/accountProfile';
 import {validateDisplayName, validatePhone} from '../logic/profileValidation';
 import {useAccountStore} from '../logic/useAccountStore';

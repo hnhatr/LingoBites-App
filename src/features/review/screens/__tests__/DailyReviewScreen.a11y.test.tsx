@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release/index';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support/index';
+import {FeatureFlagProvider} from '@core/release';
+import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {saveFlashcard} from '../../logic/FlashcardRepository';
-import {validFullOutput} from '@core/fixtures/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {validFullOutput} from '@core/fixtures';
+import {AppThemeProvider} from '@ui/theme';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {DailyReviewScreen} from '../DailyReviewScreen';
 import {getAnnouncedText} from '../../../../../test-utils/a11yTestUtils';

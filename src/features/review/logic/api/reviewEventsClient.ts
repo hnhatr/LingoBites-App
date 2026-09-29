@@ -3,7 +3,7 @@ import {
   SYNC_OWNERSHIP_CHANGED,
   SyncOwnershipChangedError,
 } from '@core/sync/syncDrainOwnership';
-import i18n from '@core/i18n/index';
+import i18n from '@core/i18n';
 import type {ReviewEventPayload} from '@core/db/types';
 import {getAppConfig} from '@core/api/appConfig';
 

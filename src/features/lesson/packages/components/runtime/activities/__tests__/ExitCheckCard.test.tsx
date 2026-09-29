@@ -1,6 +1,6 @@
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release/index';
-import {AppThemeProvider} from '@ui/theme/index';
+import {FeatureFlagProvider} from '@core/release';
+import {AppThemeProvider} from '@ui/theme';
 import {AppButton} from '@ui/components/AppButton';
 import {ExitCheckCard} from '../ExitCheckCard';
 

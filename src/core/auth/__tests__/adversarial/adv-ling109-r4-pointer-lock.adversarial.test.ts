@@ -1,4 +1,4 @@
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {saveYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
 import {recordFlashcardRating, saveFlashcard} from '@features/review';

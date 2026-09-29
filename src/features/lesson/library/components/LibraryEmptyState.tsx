@@ -2,7 +2,7 @@ import React, {useMemo} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {Medallion} from '@ui/components/Medallion';
 import {AppText} from '@ui/components/AppText';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
 export interface LibraryEmptyStateProps {

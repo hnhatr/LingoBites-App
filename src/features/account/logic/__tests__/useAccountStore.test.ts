@@ -9,7 +9,7 @@ import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {getActiveSession} from '@core/auth/sessionStore';
 import {installKeychainVault, vault} from '@test/support/keychainVault';
 import {resetAccountStoreForTests, useAccountStore} from '../useAccountStore';
-import type {AuthSession, AuthUser} from '@core/auth/index';
+import type {AuthSession, AuthUser} from '@core/auth';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

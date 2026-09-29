@@ -3,7 +3,7 @@
  * REQ-20/21).
  *
  * Follows the same "native adapter degrades gracefully" convention as
- * `modules/audio/deviceChapterAudio.ts`: every function returns an explicit
+ * `features/audio/logic/deviceChapterAudio.ts`: every function returns an explicit
  * `{ok:false, errorCode}` result instead of throwing when the native
  * recorder module or file system is unavailable (e.g. on a bare simulator
  * without the native module linked), so the Speaking Room UI can show a

@@ -7,7 +7,7 @@ import {
   insertSpeakingRecording,
   listSpeakingRecordings,
 } from '../../data/SpeakingRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,

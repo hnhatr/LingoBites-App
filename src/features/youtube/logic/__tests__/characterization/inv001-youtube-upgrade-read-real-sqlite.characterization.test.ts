@@ -10,7 +10,7 @@ import {
   saveYouTubeLesson,
   saveYouTubeProgress,
 } from '../../youtubeQueryPort';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization/index';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 import {
   openRealSqlite,
   type RealSqliteConnection,

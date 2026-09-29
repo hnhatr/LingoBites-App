@@ -2,7 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {validFullOutput} from '@core/fixtures/index';
+import {validFullOutput} from '@core/fixtures';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';

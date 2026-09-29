@@ -20,7 +20,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@ui/theme/index';
+import {useAppTheme} from '@ui/theme';
 import {extractText} from '@features/ocr';
 import {getImageSizeCategory, trackEvent} from '@features/analytics';
 import {
