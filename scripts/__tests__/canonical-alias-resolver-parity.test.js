@@ -12,19 +12,9 @@ describe('canonical alias resolver parity (TS / Babel / Jest)', () => {
   const babelConfig = require(path.join(appRoot, 'babel.config.js'));
   const jestConfig = require(path.join(appRoot, 'jest.config.js'));
 
-  const canonicalAliases = [
-    '@app',
-    '@contracts',
-    '@modules',
-    '@shared',
-    '@components',
-    '@theme',
-    '@release',
-    '@i18n',
-    '@test-support',
-  ];
+  const canonicalAliases = ['@app', '@features', '@ui', '@core', '@test'];
 
-  it('declares all 9 canonical aliases in tsconfig.json paths', () => {
+  it('declares all 5 canonical aliases in tsconfig.json paths', () => {
     const paths = tsconfig.compilerOptions.paths;
     expect(paths).toBeDefined();
 
@@ -37,7 +27,7 @@ describe('canonical alias resolver parity (TS / Babel / Jest)', () => {
     });
   });
 
-  it('declares all 9 canonical aliases in babel.config.js module-resolver plugin', () => {
+  it('declares all 5 canonical aliases in babel.config.js module-resolver plugin', () => {
     const moduleResolverPlugin = babelConfig.plugins.find(
       p => Array.isArray(p) && p[0] === 'module-resolver',
     );
@@ -52,7 +42,7 @@ describe('canonical alias resolver parity (TS / Babel / Jest)', () => {
     });
   });
 
-  it('declares all 9 canonical aliases in jest.config.js moduleNameMapper', () => {
+  it('declares all 5 canonical aliases in jest.config.js moduleNameMapper', () => {
     const mappers = jestConfig.moduleNameMapper;
     expect(mappers).toBeDefined();
 
@@ -79,20 +69,16 @@ describe('canonical alias resolver parity (TS / Babel / Jest)', () => {
     canonicalAliases.forEach(alias => {
       const subpath = alias.replace(/^@/, '');
 
-      // 1. Target directory from tsconfig
       const tsPath = tsconfig.compilerOptions.paths[alias][0];
       const tsResolvedDir = path.resolve(appRoot, tsPath);
 
-      // 2. Target directory from babel
       const babelPath = babelAliases[alias];
       const babelResolvedDir = path.resolve(appRoot, babelPath);
 
-      // 3. Target directory from jest
       const jestExactKey = `^${alias}$`;
       const jestPath = jestMappers[jestExactKey].replace('<rootDir>', appRoot);
       const jestResolvedDir = path.resolve(jestPath);
 
-      // Parity assertion: all three point to the exact same absolute directory
       expect(tsResolvedDir).toBe(babelResolvedDir);
       expect(babelResolvedDir).toBe(jestResolvedDir);
       expect(jestResolvedDir).toBe(path.join(srcRoot, subpath));
@@ -105,31 +91,30 @@ describe('canonical alias resolver parity (TS / Babel / Jest)', () => {
       appRoot,
     ).options;
 
-    const fromFile = path.join(srcRoot, 'App.tsx');
+    const fromFile = path.join(srcRoot, 'app/navigation/AppNavigator.tsx');
 
-    // Test a sample import for each alias
     const aliasSamples = [
       {
         alias: '@app/navigation/rootStackRoutes',
         expectedFile: 'src/app/navigation/rootStackRoutes.ts',
       },
       {
-        alias: '@contracts/navigation',
-        expectedFile: 'src/contracts/navigation/index.ts',
+        alias: '@features/practice',
+        expectedFile: 'src/features/practice/index.ts',
       },
       {
-        alias: '@contracts/release',
-        expectedFile: 'src/contracts/release/index.ts',
+        alias: '@features/lesson/packages',
+        expectedFile: 'src/features/lesson/packages/index.ts',
       },
       {
-        alias: '@modules/practice',
-        expectedFile: 'src/modules/practice/index.ts',
+        alias: '@ui/components/AppButton',
+        expectedFile: 'src/ui/components/AppButton.tsx',
       },
-      {alias: '@shared/db/database', expectedFile: 'src/shared/db/database.ts'},
-      {alias: '@theme', expectedFile: 'src/theme/index.ts'},
-      {alias: '@release', expectedFile: 'src/release/index.ts'},
-      {alias: '@i18n', expectedFile: 'src/i18n/index.ts'},
-      {alias: '@test-support', expectedFile: 'src/test-support/index.ts'},
+      {alias: '@ui/theme', expectedFile: 'src/ui/theme/index.ts'},
+      {alias: '@core/db/database', expectedFile: 'src/core/db/database.ts'},
+      {alias: '@core/release', expectedFile: 'src/core/release/index.ts'},
+      {alias: '@core/i18n', expectedFile: 'src/core/i18n/index.ts'},
+      {alias: '@test/support', expectedFile: 'src/test/support/index.ts'},
     ];
 
     aliasSamples.forEach(({alias, expectedFile}) => {

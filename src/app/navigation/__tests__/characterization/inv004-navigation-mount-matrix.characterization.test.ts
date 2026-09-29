@@ -1,15 +1,15 @@
-import type {AccountPhase} from '@modules/account';
-import {accountGateRouteForPhase} from '@/app/navigation/accountGate';
+import type {AccountPhase} from '@features/account';
+import {accountGateRouteForPhase} from '@app/navigation/accountGate';
 import {
   buildNavigationMountSnapshot,
   CHARACTERIZATION_INVARIANTS,
-} from '@/test-support/characterization';
+} from '@test/support/characterization/index';
 import {
   CORE_BETA_WITHOUT_REVIEW,
   CORE_WITH_REVIEW,
   ALL_IMPLEMENTED_FEATURES,
   makeTestReleaseConfig,
-} from '@/test-support';
+} from '@test/support/index';
 
 const PHASES: AccountPhase[] = [
   'authenticated',

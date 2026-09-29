@@ -6,7 +6,7 @@ import glyphmap from '../node_modules/react-native-vector-icons/glyphmaps/Materi
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
-const REGISTRY_PATH = path.join(ROOT, 'src/components/icons/iconRegistry.ts');
+const REGISTRY_PATH = path.join(ROOT, 'src/ui/icons/iconRegistry.ts');
 const SOURCE_FONT = path.join(
   ROOT,
   'node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf',

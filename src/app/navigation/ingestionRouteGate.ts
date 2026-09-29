@@ -1,5 +1,5 @@
-import type {FeatureKey} from '@/release';
-import {featureDependencies} from '@/release';
+import type {FeatureKey} from '@core/release/index';
+import {featureDependencies} from '@core/release/index';
 
 export const INGESTION_ROUTE_REQUIREMENTS = {
   PasteText: 'pasteTextInput',

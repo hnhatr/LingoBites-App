@@ -3,7 +3,7 @@
  * Run with: npx ts-node test-utils/generateContrastReport.ts
  */
 
-import {themes} from '../src/theme/themeRegistry';
+import {themes} from '../src/ui/theme/themeRegistry';
 import {checkContrast} from './a11yTestUtils';
 
 type ContrastCheck = {

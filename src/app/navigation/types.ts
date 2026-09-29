@@ -1,9 +1,9 @@
 export type {
-  CreateStackParamList,
   HomeStackParamList,
+  LearningDetailParamList,
   RootStackParamList,
   RootTabParamList,
-  LearningDetailParamList,
-} from '@modules/input';
-export type {LessonsStackParamList} from '@modules/lesson';
-export type {ProfileStackParamList} from '@modules/settings';
+} from '@features/home';
+export type {CreateStackParamList} from '@features/input';
+export type {LessonsStackParamList} from '@features/lesson/library';
+export type {ProfileStackParamList} from '@features/profile';

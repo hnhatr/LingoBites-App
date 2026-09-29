@@ -1,4 +1,4 @@
-import type {AccountPhase} from '@modules/account';
+import type {AccountPhase} from '@features/account';
 
 /**
  * Deterministic account gate mapping (SETE-303 / T6): exactly one root

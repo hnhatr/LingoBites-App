@@ -5,7 +5,7 @@ import {
   BootGateScreen,
   OnboardingNameScreen,
   useAccountStore,
-} from '@modules/account';
+} from '@features/account';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import type {
@@ -16,39 +16,39 @@ import type {
   RootStackParamList,
   RootTabParamList,
 } from './types';
+import {HomeScreen} from '@features/home';
 import {
   CreateScreen,
-  HomeScreen,
   PasteTextScreen,
   ImageCaptureScreen,
-} from '@modules/input';
-import {OCRReviewScreen} from '@modules/ocr';
-import {LessonsHistoryScreen} from '@modules/lesson';
-import {PracticeScreen} from '@modules/practice';
+} from '@features/input';
+import {OCRReviewScreen} from '@features/ocr';
+import {LessonsHistoryScreen} from '@features/lesson/library';
+import {PracticeScreen} from '@features/practice';
 import {
   CurriculumLessonScreen,
   UnifiedLessonGenerationScreen,
   UnifiedLessonsPreviewScreen,
-} from '@modules/curriculumLesson';
-import {DailyReviewScreen} from '@modules/review';
-import {TodayScreen} from '@modules/today';
+} from '@features/lesson/player';
+import {DailyReviewScreen} from '@features/review';
+import {TodayScreen} from '@features/today';
 import {
   ContentLessonListScreen,
   ContentLessonDetailScreen,
   ContentLessonRuntimeScreen,
-} from '@modules/content';
+} from '@features/lesson/packages';
 import {
   SpeakingRoomScreen,
   SpeakingShadowingActivity,
-} from '@modules/speaking/speakingUiPort';
+} from '@features/speaking/screens/speakingUiPort';
 import {
   PrivacyNoteScreen,
   ProgressReportScreen,
   ProfileScreen,
   FeatureStatusScreen,
-} from '@modules/settings';
-import {TtsSpikeScreen} from '@modules/tts';
-import {useFeatureFlags} from '@/release';
+} from '@features/profile';
+import {TtsSpikeScreen} from '@features/audio';
+import {useFeatureFlags} from '@core/release/index';
 import {TabBar} from './TabBar';
 import {accountGateRouteForPhase} from './accountGate';
 import {getRootStackRouteNames} from './rootStackRoutes';
@@ -59,7 +59,7 @@ import {
   YouTubeHistoryScreen,
   YouTubeProcessingScreen,
   YouTubeLessonRouteScreen,
-} from '@modules/youtube';
+} from '@features/youtube';
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const CreateStack = createNativeStackNavigator<CreateStackParamList>();

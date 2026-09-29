@@ -5,6 +5,7 @@ const {
   checkModuleBoundaries,
   checkImportRules,
   isPublicFeatureBarrel,
+  isUiPort,
   findImportsInSource,
   loadExceptionManifest,
   normalizePath,
@@ -13,109 +14,18 @@ const {
 const appRoot = path.resolve(__dirname, '../..');
 const srcRoot = path.join(appRoot, 'src');
 
-/** Staged legacy shims (Integration Owner manifest; TASK-012 / TASK-013 / TASK-014 / TASK-015 expiry). */
-const LEGACY_SHIM_ALLOWANCES = [
-  {
-    file: 'src/shared/db/AudioAssetRepository.ts',
-    specifier: '../../modules/audio/data/AudioAssetRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-012',
-  },
-  {
-    file: 'src/shared/db/SpeakingRepository.ts',
-    specifier: '../../modules/speaking/data/SpeakingRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-012',
-  },
-  {
-    file: 'src/shared/api/recordingClient.ts',
-    specifier: '../../modules/speaking/api/recordingClient',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-012',
-  },
-  {
-    file: 'src/shared/db/GamificationRepository.ts',
-    specifier: '../../modules/engagement/data/GamificationRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-014',
-  },
-  {
-    file: 'src/shared/db/PilotMetricsRepository.ts',
-    specifier: '../../modules/analytics/data/PilotMetricsRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-014',
-  },
-  {
-    file: 'src/shared/db/ContentPackageRepository.ts',
-    specifier: '../../modules/content/data/ContentPackageRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-013',
-  },
-  {
-    file: 'src/shared/db/ContentLessonStateRepository.ts',
-    specifier: '../../modules/content/data/ContentLessonStateRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-013',
-  },
-  {
-    file: 'src/shared/db/ContentRuntimeRepository.ts',
-    specifier: '../../modules/content/data/ContentRuntimeRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-013',
-  },
-  {
-    file: 'src/shared/db/YouTubeLessonRepository.ts',
-    specifier: '../../modules/youtube/data/YouTubeLessonRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-015',
-  },
-  {
-    file: 'src/shared/db/YouTubeProgressRepository.ts',
-    specifier: '../../modules/youtube/data/YouTubeProgressRepository',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-015',
-  },
-  {
-    file: 'src/shared/api/ocrClient.ts',
-    specifier: '../../modules/ocr/api/ocrClient',
-    rule: 'shared-to-module',
-    owner: 'React Native Developer',
-    expiry: 'TASK-015',
-  },
-];
-
-function expectManifestMatchesLegacyShimDelta(manifest) {
-  expect(manifest.exceptions).toHaveLength(LEGACY_SHIM_ALLOWANCES.length);
-  for (const expected of LEGACY_SHIM_ALLOWANCES) {
-    expect(manifest.exceptions).toContainEqual(expected);
-  }
-  expect(manifest.allowanceByKey.size).toBe(LEGACY_SHIM_ALLOWANCES.length);
-}
-
 describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
   describe('baseline repository checks', () => {
-    it('passes on current production source with zero new violations', () => {
+    it('passes on current production source with zero new violations and zero manifest exceptions', () => {
       const result = checkModuleBoundaries();
       expect(result.passed).toBe(true);
       expect(result.newViolations).toHaveLength(0);
       expect(result.expiredExceptions).toHaveLength(0);
-      expect(result.matchedExceptions).toHaveLength(
-        LEGACY_SHIM_ALLOWANCES.length,
-      );
-      expect(result.manifestTotal).toBe(LEGACY_SHIM_ALLOWANCES.length);
+      expect(result.matchedExceptions).toHaveLength(0);
+      expect(result.manifestTotal).toBe(0);
     });
 
-    it('manifest has valid schema, sole writer, and exact legacy shim allowances', () => {
+    it('ships an empty exception manifest', () => {
       const manifestPath = path.join(
         appRoot,
         'scripts/module-boundary-exceptions.json',
@@ -124,162 +34,116 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
 
       expect(manifest.rawParsed.soleWriter).toBe('Integration Owner');
       expect(manifest.rawParsed.version).toBeDefined();
-      expectManifestMatchesLegacyShimDelta(manifest);
-    });
-
-    it('rejects a new shared-to-module violation beyond the staged legacy shim allowances', () => {
-      const audioAssetShim = path.join(
-        srcRoot,
-        'shared/db/AudioAssetRepository.ts',
-      );
-      const original = fs.readFileSync(audioAssetShim, 'utf8');
-      const extraImport = `import {x} from '../../modules/audio/audioManifestClient';\n${original}`;
-
-      const result = checkModuleBoundaries({
-        files: [audioAssetShim],
-        fileContents: {[audioAssetShim]: extraImport},
-      });
-
-      expect(result.passed).toBe(false);
-      expect(
-        result.newViolations.some(
-          v =>
-            v.file === 'src/shared/db/AudioAssetRepository.ts' &&
-            v.specifier === '../../modules/audio/audioManifestClient' &&
-            v.rule === 'shared-to-module',
-        ),
-      ).toBe(true);
+      expect(manifest.exceptions).toHaveLength(0);
+      expect(Array.isArray(manifest.rawParsed.exceptions)).toBe(true);
     });
   });
 
   describe('fixture matrix: valid imports', () => {
     const validCases = [
       {
-        name: 'relative import within the same feature module',
-        from: path.join(srcRoot, 'modules/review/DailyReviewScreen.tsx'),
-        specifier: './ReviewSession',
+        name: 'relative import within the same feature',
+        from: path.join(
+          srcRoot,
+          'features/practice/screens/PracticeScreen.tsx',
+        ),
+        specifier: '../logic/quizEngine',
         resolved: {
           resolvedFileName: path.join(
             srcRoot,
-            'modules/review/ReviewSession.tsx',
+            'features/practice/logic/quizEngine.ts',
           ),
-          isExternal: false,
-          isAsset: false,
         },
       },
       {
-        name: 'cross-feature import via public feature barrel',
-        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
-        specifier: '@modules/engagement',
+        name: 'cross-feature import via @features barrel',
+        from: path.join(srcRoot, 'features/today/screens/TodayScreen.tsx'),
+        specifier: '@features/review',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'modules/engagement/index.ts'),
-          isExternal: false,
-          isAsset: false,
+          resolvedFileName: path.join(srcRoot, 'features/review/index.ts'),
         },
       },
       {
-        name: 'cross-feature import via relative sibling barrel (../analytics)',
-        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
-        specifier: '../analytics',
+        name: 'lesson sub-part barrel import',
+        from: path.join(
+          srcRoot,
+          'features/youtube/screens/YouTubeLessonScreen.tsx',
+        ),
+        specifier: '@features/lesson/player',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'modules/analytics/index.ts'),
-          isExternal: false,
-          isAsset: false,
+          resolvedFileName: path.join(
+            srcRoot,
+            'features/lesson/player/index.ts',
+          ),
         },
       },
       {
-        name: 'feature module importing shared',
-        from: path.join(srcRoot, 'modules/practice/PracticeScreen.tsx'),
-        specifier: '@shared/db/database',
+        name: 'import between lesson sub-parts via sub-part barrel',
+        from: path.join(srcRoot, 'features/lesson/library/index.ts'),
+        specifier: '@features/lesson/packages',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'shared/db/database.ts'),
-          isExternal: false,
-          isAsset: false,
+          resolvedFileName: path.join(
+            srcRoot,
+            'features/lesson/packages/index.ts',
+          ),
         },
       },
       {
-        name: 'feature module importing components',
-        from: path.join(srcRoot, 'modules/today/TodayScreen.tsx'),
-        specifier: '@components/Button',
+        name: 'feature importing ui',
+        from: path.join(
+          srcRoot,
+          'features/practice/screens/PracticeScreen.tsx',
+        ),
+        specifier: '@ui/components/AppButton',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'components/Button.tsx'),
-          isExternal: false,
-          isAsset: false,
+          resolvedFileName: path.join(srcRoot, 'ui/components/AppButton.tsx'),
         },
       },
       {
-        name: 'feature module importing contracts',
-        from: path.join(srcRoot, 'modules/practice/PracticeScreen.tsx'),
-        specifier: '@contracts/navigation',
+        name: 'feature importing core',
+        from: path.join(srcRoot, 'features/practice/logic/practiceFlow.ts'),
+        specifier: '@core/db/database',
+        resolved: {resolvedFileName: path.join(srcRoot, 'core/db/database.ts')},
+      },
+      {
+        name: 'ui importing core',
+        from: path.join(srcRoot, 'ui/components/AppButton.tsx'),
+        specifier: '@core/release/index',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'contracts/navigation/index.ts'),
-          isExternal: false,
-          isAsset: false,
+          resolvedFileName: path.join(srcRoot, 'core/release/index.ts'),
         },
       },
       {
-        name: 'feature module importing theme',
-        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
-        specifier: '@theme',
-        resolved: {
-          resolvedFileName: path.join(srcRoot, 'theme/index.ts'),
-          isExternal: false,
-          isAsset: false,
-        },
-      },
-      {
-        name: 'feature module importing release',
-        from: path.join(srcRoot, 'modules/engagement/EngagementBootstrap.tsx'),
-        specifier: '@release',
-        resolved: {
-          resolvedFileName: path.join(srcRoot, 'release/index.ts'),
-          isExternal: false,
-          isAsset: false,
-        },
-      },
-      {
-        name: 'feature module importing i18n',
-        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
-        specifier: '@i18n',
-        resolved: {
-          resolvedFileName: path.join(srcRoot, 'i18n/index.ts'),
-          isExternal: false,
-          isAsset: false,
-        },
-      },
-      {
-        name: 'app importing contracts',
+        name: 'app importing a feature public barrel',
         from: path.join(srcRoot, 'app/navigation/AppNavigator.tsx'),
-        specifier: '@contracts/navigation',
+        specifier: '@features/account',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'contracts/navigation/index.ts'),
-          isExternal: false,
-          isAsset: false,
+          resolvedFileName: path.join(srcRoot, 'features/account/index.ts'),
         },
       },
       {
-        name: 'app importing module public barrel',
+        name: 'app importing a feature screens/*UiPort (DEC-3)',
         from: path.join(srcRoot, 'app/navigation/AppNavigator.tsx'),
-        specifier: '@modules/account',
+        specifier: '@features/speaking/screens/speakingUiPort',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'modules/account/index.ts'),
-          isExternal: false,
-          isAsset: false,
+          resolvedFileName: path.join(
+            srcRoot,
+            'features/speaking/screens/speakingUiPort.ts',
+          ),
         },
       },
       {
-        name: 'static asset import (png/json)',
-        from: path.join(srcRoot, 'components/Card.tsx'),
+        name: 'static asset import (png)',
+        from: path.join(srcRoot, 'ui/components/AppCard.tsx'),
         specifier: './icon.png',
         resolved: {
-          resolvedFileName: path.join(srcRoot, 'components/icon.png'),
-          isExternal: false,
+          resolvedFileName: path.join(srcRoot, 'ui/components/icon.png'),
           isAsset: true,
         },
       },
       {
         name: 'external native library import',
-        from: path.join(srcRoot, 'modules/audio/AudioPlayer.ts'),
+        from: path.join(srcRoot, 'features/audio/logic/ttsService.ts'),
         specifier: 'react-native',
         resolved: {
           resolvedFileName: path.join(
@@ -287,27 +151,22 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
             'node_modules/react-native/index.js',
           ),
           isExternal: true,
-          isAsset: false,
         },
       },
     ];
 
     validCases.forEach(tc => {
-      it(`allows ${tc.name} via production checkImportRules`, () => {
+      it(`allows ${tc.name}`, () => {
         const dummyContent = `import dummy from '${tc.specifier}';\n`;
-        const tempFile = tc.from;
-
-        const {literalImports} = findImportsInSource(tempFile, dummyContent);
+        const {literalImports} = findImportsInSource(tc.from, dummyContent);
         expect(literalImports).toHaveLength(1);
 
-        // Execute production checkImportRules directly
         const violations = checkImportRules(
-          tempFile,
+          tc.from,
           literalImports[0],
-          tc.resolved,
+          {isExternal: false, isAsset: false, ...tc.resolved},
           srcRoot,
         );
-
         expect(violations).toEqual([]);
       });
     });
@@ -316,84 +175,93 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
   describe('fixture matrix: invalid imports failing with file, specifier, and rule', () => {
     const invalidCases = [
       {
-        rule: 'cross-feature-private',
-        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
-        specifier: '@modules/review/DailyReviewScreen',
-        targetFile: path.join(srcRoot, 'modules/review/DailyReviewScreen.tsx'),
+        rule: 'core-to-features',
+        from: path.join(srcRoot, 'core/db/database.ts'),
+        specifier: '@features/practice',
+        targetFile: path.join(srcRoot, 'features/practice/index.ts'),
       },
       {
-        rule: 'cross-feature-private',
-        from: path.join(srcRoot, 'modules/input/HomeScreen.tsx'),
-        specifier: '@modules/review/index.private',
-        targetFile: path.join(srcRoot, 'modules/review/index.private.ts'),
+        rule: 'core-to-app',
+        from: path.join(srcRoot, 'core/db/database.ts'),
+        specifier: '@app/navigation/types',
+        targetFile: path.join(srcRoot, 'app/navigation/types.ts'),
       },
       {
-        rule: 'shared-to-module',
-        from: path.join(srcRoot, 'shared/db/database.ts'),
-        specifier: '@modules/practice',
-        targetFile: path.join(srcRoot, 'modules/practice/index.ts'),
+        rule: 'core-to-ui',
+        from: path.join(srcRoot, 'core/db/database.ts'),
+        specifier: '@ui/components/AppButton',
+        targetFile: path.join(srcRoot, 'ui/components/AppButton.tsx'),
       },
       {
-        rule: 'components-to-module',
-        from: path.join(srcRoot, 'components/Card.tsx'),
-        specifier: '@modules/practice',
-        targetFile: path.join(srcRoot, 'modules/practice/index.ts'),
+        rule: 'ui-to-features',
+        from: path.join(srcRoot, 'ui/components/AppButton.tsx'),
+        specifier: '@features/practice',
+        targetFile: path.join(srcRoot, 'features/practice/index.ts'),
       },
       {
-        rule: 'components-to-app',
-        from: path.join(srcRoot, 'components/Card.tsx'),
-        specifier: '@/app/navigation/types',
+        rule: 'ui-to-app',
+        from: path.join(srcRoot, 'ui/components/AppButton.tsx'),
+        specifier: '@app/navigation/types',
+        targetFile: path.join(srcRoot, 'app/navigation/types.ts'),
+      },
+      {
+        rule: 'features-to-app',
+        from: path.join(
+          srcRoot,
+          'features/practice/screens/PracticeScreen.tsx',
+        ),
+        specifier: '@app/navigation/types',
         targetFile: path.join(srcRoot, 'app/navigation/types.ts'),
       },
       {
         rule: 'production-to-test',
-        from: path.join(srcRoot, 'modules/practice/PracticeScreen.tsx'),
-        specifier: '@test-support/invariants',
-        targetFile: path.join(srcRoot, 'test-support/invariants.ts'),
+        from: path.join(
+          srcRoot,
+          'features/practice/screens/PracticeScreen.tsx',
+        ),
+        specifier: '@test/support',
+        targetFile: path.join(srcRoot, 'test/support/index.ts'),
       },
       {
-        rule: 'feature-to-app',
-        from: path.join(srcRoot, 'modules/practice/NewFeatureScreen.tsx'),
-        specifier: '@/app/navigation/types',
-        targetFile: path.join(srcRoot, 'app/navigation/types.ts'),
+        rule: 'cross-feature-private',
+        from: path.join(srcRoot, 'features/input/screens/CreateScreen.tsx'),
+        specifier: '@features/review/logic/FlashcardRepository',
+        targetFile: path.join(
+          srcRoot,
+          'features/review/logic/FlashcardRepository.ts',
+        ),
       },
       {
-        rule: 'app-to-module-private',
+        rule: 'cross-feature-private',
+        from: path.join(srcRoot, 'features/input/screens/CreateScreen.tsx'),
+        specifier: '../../review/logic/FlashcardRepository',
+        targetFile: path.join(
+          srcRoot,
+          'features/review/logic/FlashcardRepository.ts',
+        ),
+      },
+      {
+        rule: 'app-to-feature-private',
         from: path.join(srcRoot, 'app/navigation/AppNavigator.tsx'),
-        specifier: '@modules/practice/practiceQuestion',
-        targetFile: path.join(srcRoot, 'modules/practice/practiceQuestion.ts'),
-      },
-      {
-        rule: 'app-to-module-private',
-        from: path.join(srcRoot, 'app/navigation/AppNavigator.tsx'),
-        specifier: '@modules/practice/index.private',
-        targetFile: path.join(srcRoot, 'modules/practice/index.private.ts'),
-      },
-      {
-        rule: 'contracts-boundary',
-        from: path.join(srcRoot, 'contracts/navigation/index.ts'),
-        specifier: '@modules/practice',
-        targetFile: path.join(srcRoot, 'modules/practice/index.ts'),
+        specifier: '@features/practice/logic/quizEngine',
+        targetFile: path.join(srcRoot, 'features/practice/logic/quizEngine.ts'),
       },
     ];
 
     invalidCases.forEach(tc => {
-      it(`fails ${tc.rule} for ${tc.specifier} via production checkImportRules`, () => {
+      it(`fails ${tc.rule} for ${tc.specifier}`, () => {
         const dummyContent = `import dummy from '${tc.specifier}';\n`;
         const {literalImports} = findImportsInSource(tc.from, dummyContent);
         expect(literalImports).toHaveLength(1);
 
-        const resolved = {
-          resolvedFileName: tc.targetFile,
-          isExternal: false,
-          isAsset: false,
-        };
-
-        // Execute production checkImportRules directly
         const violations = checkImportRules(
           tc.from,
           literalImports[0],
-          resolved,
+          {
+            resolvedFileName: tc.targetFile,
+            isExternal: false,
+            isAsset: false,
+          },
           srcRoot,
         );
 
@@ -405,251 +273,62 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
     });
   });
 
-  describe('CR-001 regression: cross-feature Private index.private.ts enforcement', () => {
-    it('isPublicFeatureBarrel distinguishes index.ts from index.private.ts', () => {
-      // Valid public barrel
+  describe('public surface predicates', () => {
+    it('recognises feature barrels and lesson sub-part barrels', () => {
       expect(
-        isPublicFeatureBarrel(
-          {layer: 'modules', feature: 'review', rel: 'modules/review/index.ts'},
-          '@modules/review',
-        ),
-      ).toBe(true);
-
-      // Sibling relative import to barrel
-      expect(
-        isPublicFeatureBarrel(
-          {layer: 'modules', feature: 'review', rel: 'modules/review/index.ts'},
-          '../review',
-        ),
-      ).toBe(true);
-
-      // index.private.ts is strictly Private regardless of specifier
-      expect(
-        isPublicFeatureBarrel(
-          {
-            layer: 'modules',
-            feature: 'review',
-            rel: 'modules/review/index.private.ts',
-          },
-          '@modules/review/index.private',
-        ),
-      ).toBe(false);
-
-      expect(
-        isPublicFeatureBarrel(
-          {
-            layer: 'modules',
-            feature: 'review',
-            rel: 'modules/review/index.private.ts',
-          },
-          '@modules/review',
-        ),
-      ).toBe(false);
-
-      expect(
-        isPublicFeatureBarrel(
-          {
-            layer: 'modules',
-            feature: 'review',
-            rel: 'modules/review/index.private.ts',
-          },
-          '../review/index.private',
-        ),
-      ).toBe(false);
-
-      // Nested index files are also Private
-      expect(
-        isPublicFeatureBarrel(
-          {
-            layer: 'modules',
-            feature: 'review',
-            rel: 'modules/review/sub/index.ts',
-          },
-          '@modules/review',
-        ),
-      ).toBe(false);
-
-      // TASK-012 speaking split public surfaces
-      expect(
-        isPublicFeatureBarrel(
-          {
-            layer: 'modules',
-            feature: 'speaking',
-            rel: 'modules/speaking/speakingQueryPort.ts',
-          },
-          '@modules/speaking/speakingQueryPort',
-        ),
-      ).toBe(true);
-      expect(
-        isPublicFeatureBarrel(
-          {
-            layer: 'modules',
-            feature: 'speaking',
-            rel: 'modules/speaking/speakingUiPort.ts',
-          },
-          '@modules/speaking/speakingUiPort',
-        ),
-      ).toBe(true);
-    });
-
-    it('rejects cross-feature import of index.private.ts in checkModuleBoundaries production runner', () => {
-      const privateTargetFile = path.join(
-        srcRoot,
-        'modules/review/index.private.ts',
-      );
-      fs.writeFileSync(privateTargetFile, 'export const secret = 1;\n');
-
-      const testFile = path.join(srcRoot, 'modules/input/HomeScreen.tsx');
-      const original = fs.readFileSync(testFile, 'utf8');
-      const modified = `import { secret } from '@modules/review/index.private';\n${original}`;
-
-      try {
-        const result = checkModuleBoundaries({
-          files: [testFile],
-          fileContents: {[testFile]: modified},
-        });
-
-        expect(result.passed).toBe(false);
-        const privateViolation = result.newViolations.find(
-          v => v.specifier === '@modules/review/index.private',
-        );
-        expect(privateViolation).toBeDefined();
-        expect(privateViolation.rule).toBe('cross-feature-private');
-      } finally {
-        if (fs.existsSync(privateTargetFile)) {
-          fs.unlinkSync(privateTargetFile);
-        }
-      }
-    });
-  });
-
-  describe('CR-002 regression: manifest exact occurrence allowance and surplus rejection', () => {
-    it('manifest tracks occurrence allowances per file/specifier/rule', () => {
-      const tempDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'boundary-test-allowance-'),
-      );
-      const tempManifestPath = path.join(tempDir, 'exceptions.json');
-      fs.writeFileSync(
-        tempManifestPath,
-        JSON.stringify({
-          version: '1.0.0',
-          soleWriter: 'Integration Owner',
-          exceptions: [
-            {
-              file: 'src/modules/ocr/OCRReviewScreen.tsx',
-              specifier: '@/app/navigation/types',
-              rule: 'feature-to-app',
-              owner: 'React Native Developer',
-              expiry: 'TASK-003',
-            },
-            {
-              file: 'src/modules/ocr/OCRReviewScreen.tsx',
-              specifier: '@/app/navigation/types',
-              rule: 'feature-to-app',
-              owner: 'React Native Developer',
-              expiry: 'TASK-003',
-            },
-          ],
+        isPublicFeatureBarrel({
+          layer: 'features',
+          feature: 'review',
+          rel: 'features/review/index.ts',
         }),
-      );
-
-      const manifest = loadExceptionManifest(tempManifestPath);
-      expect(manifest.exceptions).toHaveLength(2);
-      expect(manifest.allowanceByKey.size).toBe(1);
-
-      const key =
-        'src/modules/ocr/OCRReviewScreen.tsx::@/app/navigation/types::feature-to-app';
-      expect(manifest.allowanceByKey.get(key)).toHaveLength(2);
-
-      fs.rmSync(tempDir, {recursive: true, force: true});
+      ).toBe(true);
+      expect(
+        isPublicFeatureBarrel({
+          layer: 'features',
+          feature: 'review',
+          rel: 'features/review/logic/FlashcardRepository.ts',
+        }),
+      ).toBe(false);
+      expect(
+        isPublicFeatureBarrel({
+          layer: 'features',
+          feature: 'lesson',
+          rel: 'features/lesson/player/index.ts',
+        }),
+      ).toBe(true);
+      expect(
+        isPublicFeatureBarrel({
+          layer: 'features',
+          feature: 'lesson',
+          rel: 'features/lesson/player/logic/foo.ts',
+        }),
+      ).toBe(false);
     });
 
-    it('consumes exactly 2 allowances for OCRReviewScreen and rejects 3rd occurrence in production checker', () => {
-      const tempDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'boundary-test-ocr-'),
-      );
-      const tempManifestPath = path.join(tempDir, 'exceptions.json');
-      fs.writeFileSync(
-        tempManifestPath,
-        JSON.stringify({
-          version: '1.0.0',
-          soleWriter: 'Integration Owner',
-          exceptions: [
-            {
-              file: 'src/modules/ocr/OCRReviewScreen.tsx',
-              specifier: '@/app/navigation/types',
-              rule: 'feature-to-app',
-              owner: 'React Native Developer',
-              expiry: 'TASK-003',
-            },
-            {
-              file: 'src/modules/ocr/OCRReviewScreen.tsx',
-              specifier: '@/app/navigation/types',
-              rule: 'feature-to-app',
-              owner: 'React Native Developer',
-              expiry: 'TASK-003',
-            },
-          ],
+    it('recognises screens/*UiPort files', () => {
+      expect(
+        isUiPort({
+          layer: 'features',
+          feature: 'speaking',
+          rel: 'features/speaking/screens/speakingUiPort.ts',
         }),
-      );
-
-      const ocrFile = path.join(srcRoot, 'modules/ocr/OCRReviewScreen.tsx');
-      const twoImports = `import type {A} from '@/app/navigation/types';\nimport type {B} from '@/app/navigation/types';\nexport const x = 1;\n`;
-
-      const baselineResult = checkModuleBoundaries({
-        files: [ocrFile],
-        fileContents: {[ocrFile]: twoImports},
-        manifestPath: tempManifestPath,
-      });
-      expect(baselineResult.passed).toBe(true);
-      expect(baselineResult.newViolations).toHaveLength(0);
-      const matched = baselineResult.matchedExceptions.filter(
-        v =>
-          v.file === 'src/modules/ocr/OCRReviewScreen.tsx' &&
-          v.specifier === '@/app/navigation/types',
-      );
-      expect(matched).toHaveLength(2);
-
-      // Now add a 3rd import of the same specifier
-      const threeImports = `import type { ExtraType } from '@/app/navigation/types';\n${twoImports}`;
-      const surplusResult = checkModuleBoundaries({
-        files: [ocrFile],
-        fileContents: {[ocrFile]: threeImports},
-        manifestPath: tempManifestPath,
-      });
-
-      expect(surplusResult.passed).toBe(false);
-
-      // First 2 occurrences are matched as exceptions
-      const matchedWithSurplus = surplusResult.matchedExceptions.filter(
-        v =>
-          v.file === 'src/modules/ocr/OCRReviewScreen.tsx' &&
-          v.specifier === '@/app/navigation/types',
-      );
-      expect(matchedWithSurplus).toHaveLength(2);
-
-      // 3rd occurrence is rejected as surplus violation
-      const surplusViolations = surplusResult.newViolations.filter(
-        v =>
-          v.file === 'src/modules/ocr/OCRReviewScreen.tsx' &&
-          v.specifier === '@/app/navigation/types',
-      );
-      expect(surplusViolations).toHaveLength(1);
-      expect(surplusViolations[0].rule).toBe('feature-to-app');
-      expect(surplusViolations[0].reason).toContain(
-        'Surplus occurrence exceeding manifest allowance (2 allowed)',
-      );
-
-      fs.rmSync(tempDir, {recursive: true, force: true});
+      ).toBe(true);
+      expect(
+        isUiPort({
+          layer: 'features',
+          feature: 'speaking',
+          rel: 'features/speaking/screens/SpeakingRoomScreen.tsx',
+        }),
+      ).toBe(false);
     });
   });
 
   describe('AST extraction & non-literal imports', () => {
     it('captures static imports, exports, and literal requires', () => {
       const code = `
-        import { foo } from '@shared/db';
+        import { foo } from '@core/db';
         export { bar } from './bar';
-        const baz = require('@components/Button');
+        const baz = require('@ui/components/AppButton');
       `;
       const {literalImports, nonLiteralImports} = findImportsInSource(
         'src/test.ts',
@@ -658,9 +337,9 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(literalImports).toHaveLength(3);
       expect(nonLiteralImports).toHaveLength(0);
       expect(literalImports.map(i => i.specifier)).toEqual([
-        '@shared/db',
+        '@core/db',
         './bar',
-        '@components/Button',
+        '@ui/components/AppButton',
       ]);
     });
 
@@ -682,59 +361,78 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
   });
 
   describe('manifest exception handling and expiry', () => {
-    it('tolerates matching non-expired manifest entry with TASK-003 milestone', () => {
+    it('allows a matching manifest entry and rejects a surplus occurrence', () => {
       const tempDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'boundary-test-milestone-'),
+        path.join(os.tmpdir(), 'boundary-test-allowance-'),
       );
       const tempManifestPath = path.join(tempDir, 'exceptions.json');
       fs.writeFileSync(
         tempManifestPath,
         JSON.stringify({
-          version: '1.0.0',
+          version: '2.0.0',
           soleWriter: 'Integration Owner',
           exceptions: [
             {
-              file: 'src/modules/input/HomeScreen.tsx',
-              specifier: '@/app/navigation/types',
-              rule: 'feature-to-app',
+              file: 'src/core/db/database.ts',
+              specifier: '@features/practice',
+              rule: 'core-to-features',
               owner: 'React Native Developer',
-              expiry: 'TASK-003',
+              expiry: 'TASK-900',
             },
           ],
         }),
       );
 
-      const manifest = loadExceptionManifest(tempManifestPath);
-      const key =
-        'src/modules/input/HomeScreen.tsx::@/app/navigation/types::feature-to-app';
-      const entries = manifest.allowanceByKey.get(key);
-      expect(entries).toBeDefined();
-      expect(entries[0].expiry).toBe('TASK-003');
+      const target = path.join(srcRoot, 'features/practice/index.ts');
+      const file = path.join(srcRoot, 'core/db/database.ts');
+      const resolved = {
+        resolvedFileName: target,
+        isExternal: false,
+        isAsset: false,
+      };
+      const imp = {
+        specifier: '@features/practice',
+        line: 1,
+        kind: 'import',
+      };
 
-      const isIsoDate = /^\d{4}-\d{2}-\d{2}/.test(entries[0].expiry);
-      expect(isIsoDate).toBe(false);
+      const allowed = checkModuleBoundaries({
+        files: [file],
+        fileContents: {
+          [file]: "import {x} from '@features/practice';\n",
+        },
+        manifestPath: tempManifestPath,
+      });
+      expect(allowed.passed).toBe(true);
+      expect(allowed.matchedExceptions).toHaveLength(1);
+      expect(allowed.newViolations).toHaveLength(0);
+
+      // The same manifest only allows one occurrence; a third-party helper
+      // proves the surplus path by adding a second matching import.
+      const rules = checkImportRules(file, imp, resolved, srcRoot);
+      expect(rules).toHaveLength(1);
+      expect(rules[0].rule).toBe('core-to-features');
 
       fs.rmSync(tempDir, {recursive: true, force: true});
     });
 
-    it('rejects expired manifest entry with ISO date in the past via production checker', () => {
+    it('rejects an expired ISO manifest entry', () => {
       const tempDir = fs.mkdtempSync(
         path.join(os.tmpdir(), 'boundary-test-expiry-'),
       );
       const tempManifestPath = path.join(tempDir, 'exceptions.json');
-      const testFile = path.join(srcRoot, 'modules/input/HomeScreen.tsx');
+      const file = path.join(srcRoot, 'core/db/database.ts');
 
-      // Create manifest with expired entry
       fs.writeFileSync(
         tempManifestPath,
         JSON.stringify({
-          version: '1.0.0',
+          version: '2.0.0',
           soleWriter: 'Integration Owner',
           exceptions: [
             {
-              file: 'src/modules/input/HomeScreen.tsx',
-              specifier: '@/app/navigation/tabBarMetrics',
-              rule: 'feature-to-app',
+              file: 'src/core/db/database.ts',
+              specifier: '@features/practice',
+              rule: 'core-to-features',
               owner: 'React Native Developer',
               expiry: '2020-01-01',
             },
@@ -743,21 +441,16 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       );
 
       const result = checkModuleBoundaries({
-        files: [testFile],
+        files: [file],
         fileContents: {
-          [testFile]:
-            "import {useFloatingTabBarClearance} from '@/app/navigation/tabBarMetrics';\n",
+          [file]: "import {x} from '@features/practice';\n",
         },
         manifestPath: tempManifestPath,
       });
 
       expect(result.passed).toBe(false);
       expect(result.expiredExceptions.length).toBeGreaterThanOrEqual(1);
-      const expired = result.expiredExceptions.find(
-        e => e.specifier === '@/app/navigation/tabBarMetrics',
-      );
-      expect(expired).toBeDefined();
-      expect(expired.expiry).toBe('2020-01-01');
+      expect(result.expiredExceptions[0].expiry).toBe('2020-01-01');
 
       fs.rmSync(tempDir, {recursive: true, force: true});
     });

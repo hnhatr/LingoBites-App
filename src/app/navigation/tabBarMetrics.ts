@@ -12,4 +12,4 @@ export {
   getFloatingTabBarClearance,
   useFloatingTabBarClearance,
   withAlpha,
-} from '@components/layout';
+} from '@ui/components/layout/index';

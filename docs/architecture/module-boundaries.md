@@ -1,72 +1,101 @@
 # Module dependency boundaries
 
-This is the source-of-truth rule for the React Native app's `src/modules`,
-`src/shared`, `src/components`, `src/contracts`, `src/app`, and supporting layers,
-governed by Technical Design AD-004. The automated check is `yarn lint:boundaries`
-and is also enforced as part of `yarn lint`.
+This is the source-of-truth rule for the React Native app's `src/` layering,
+governed by Technical Design AD-004. The automated check is
+`yarn lint:boundaries` (`scripts/check-module-boundaries.js`), which is also
+enforced as part of `yarn lint`.
 
-## Canonical Aliases and Resolver Parity
+## Layers and dependency direction
 
-Nine canonical aliases are synchronized identically across TypeScript (`tsconfig.json`),
-Babel (`babel.config.js`), and Jest (`jest.config.js`):
-
-- `@app` → `src/app`
-- `@contracts` → `src/contracts`
-- `@modules` → `src/modules`
-- `@shared` → `src/shared`
-- `@components` → `src/components`
-- `@theme` → `src/theme`
-- `@release` → `src/release`
-- `@i18n` → `src/i18n`
-- `@test-support` → `src/test-support`
-
-The legacy `@/*` alias is retained during migration but will be eliminated in future cohorts.
-
-## Target Dependency Matrix (AD-004)
+`src/` is organised into five top-level directories:
 
 ```text
 src/
-├── app/{bootstrap,navigation,providers}/     # composition/lifecycle only
-├── contracts/{navigation,release}/           # shell contracts; no feature runtime
-├── modules/<feature>/                        # feature modules (17 names)
-│   ├── index.ts                              # only cross-boundary entry
-│   └── {api,data,domain,hooks,screens,components}/
-├── shared/{api,db,auth,identity,localData,security,errors,types,utils}/
-├── components/{*.tsx,layout,feedback}/       # reusable UI; first-level files public
-├── theme/  release/  i18n/  assets/
-└── test-support/                             # tests only
+├── app/       # composition/lifecycle only: App root, navigation, providers
+├── features/  # feature modules; one folder per feature
+├── ui/        # design system: components, icons, theme, assets
+├── core/      # infrastructure: api, auth, db, contracts, release, i18n, ...
+└── test/      # test support and cross-feature integration tests
 ```
 
-| Source Layer | May Import | Forbidden / Qualification |
+Imports may only go **down** this list:
+
+```text
+app -> features -> ui -> core
+```
+
+| Source layer | May import | Forbidden |
 |---|---|---|
-| `app` | contracts; module Public; shared; components; theme/release/i18n | module Private; test-support |
-| `contracts` | self; external type-only | app/modules/components/native runtime |
-| `modules/<feature>` | `<feature>` Private/relative; other module Public; contracts/shared/components/theme/release/i18n | app; other module Private; test-support |
-| `shared` | shared; i18n Public where current error text requires it | app/modules/components/test-support; domain behavior after owner cohort |
-| `components` | components; shared types/utils; theme/release/i18n | app/modules/test-support |
-| `theme` | theme; release Public | app/modules/components/test-support |
-| `release`, `i18n` | self only plus external packages | app/modules/components/test-support |
-| `test-support`, tests | any public surface; same-feature Private/fixtures | production may never import test-support/fixture |
+| `app` | `features` (public), `ui`, `core` | feature private paths; `test` |
+| `features` | own private files; other features via their public barrel; `ui`; `core` | `app`; other-feature private paths; `test` |
+| `ui` | `ui`, `core` | `app`, `features`, `test` |
+| `core` | `core` | `app`, `features`, `ui`, `test` |
+| `test` | any public surface | production may never import `test` |
 
-- Each feature's root `index.ts` (accessed via canonical `@modules/<feature>` or relative sibling barrel) is its only public API. All other files below a feature—including `index.private.ts` or deep paths—are strictly Private implementation. Relative imports within the same feature are allowed.
-- Cross-feature deep or private imports (e.g. `@modules/content/runtime/...`, `@modules/review/index.private`) are strictly forbidden.
-- App composition must only import feature public surfaces via `@modules/<feature>`.
-- Production code must never import `src/test-support`, test fixtures, or test files.
+- Production code (anything outside `src/test`) must never import `test/`,
+  test-support or test files.
+- An "upward" import (for example `core -> features`, `ui -> app`) fails the
+  checker with a `<source>-to-<target>` rule id.
 
-## Automated Checker and Baseline Exception Manifest
+## Features and public surfaces
 
-`scripts/check-module-boundaries.js` uses TypeScript AST parsing (`ts.createSourceFile`)
-and module resolution (`ts.resolveModuleName`) to inspect static import/export and
-literal require/import statements across production code. Non-literal/dynamic imports
-are reported for manual review.
+Each feature lives at `src/features/<feature>/`:
 
-Baseline exceptions are stored in `scripts/module-boundary-exceptions.json`:
-- Each entry defines `file`, `specifier`, `rule`, `owner`, and `expiry`.
-- The Integration Owner is the sole future writer of this manifest.
-- Existing exceptions in this foundation cohort cover pre-existing `feature-to-app`
-  and `app-to-module-private` navigation imports expiring in TASK-003.
-- Manifest entries enforce exact occurrence limits per `file::specifier::rule`: each entry permits exactly one violation occurrence. Surplus occurrences beyond the baseline allowance immediately fail the checker.
-- Any violation not matching an active entry in the manifest immediately fails the
-  checker ("zero new violations").
-- Subsequent cohorts (TASK-003, Wave 4 domain ownership, etc.) ratchet the manifest
-  down to zero.
+- `index.ts` — the only public entry point for other layers/features.
+- `screens/`, `components/`, `logic/` — created only when non-empty.
+
+Every other file below a feature is private: cross-feature deep imports
+(alias or relative) fail with the `cross-feature-private` rule. The `lesson`
+feature is split into three public sub-parts:
+
+```text
+src/features/lesson/
+├── index.ts             # export * from './library' | './player' | './packages'
+├── library/index.ts     # public sub-part barrel
+├── player/index.ts      # public sub-part barrel
+└── packages/index.ts    # public sub-part barrel
+```
+
+Cross-feature and app imports of a lesson sub-part use
+`@features/lesson/<part>`. Importing `@features/lesson/...` from inside a
+sub-part is avoided to keep the runtime import graph acyclic.
+
+`app` may additionally import a feature's explicit UI port
+`features/<feature>/screens/*UiPort.ts(x)` (DEC-3).
+
+## Canonical aliases and resolver parity
+
+Five canonical aliases are synchronised identically across TypeScript
+(`tsconfig.json`), Babel (`babel.config.js`) and Jest (`jest.config.js`):
+
+- `@app` → `src/app`
+- `@features` → `src/features`
+- `@ui` → `src/ui`
+- `@core` → `src/core`
+- `@test` → `src/test`
+
+Legacy aliases (`@/…`, `@modules`, `@shared`, `@components`, `@theme`,
+`@release`, `@i18n`, `@contracts`, `@test-support`) and the LING-119 shims were
+removed in the LING-121 restructure.
+
+## Automated checker and baseline manifest
+
+`scripts/check-module-boundaries.js` uses TypeScript AST parsing
+(`ts.createSourceFile`) and module resolution (`ts.resolveModuleName`) to
+inspect static import/export and literal `require`/`import` statements across
+production code. Non-literal/dynamic imports are reported for manual review.
+
+Rules enforced:
+
+- upward imports between ranked layers (`core-to-features`, `core-to-app`,
+  `core-to-ui`, `ui-to-features`, `ui-to-app`, `features-to-app`);
+- `app-to-feature-private` — app must use a feature barrel or a `*UiPort`;
+- `cross-feature-private` — cross-feature imports must use the target barrel;
+- `production-to-test`.
+
+Baseline exceptions are stored in `scripts/module-boundary-exceptions.json`.
+After the LING-121 restructure the manifest is empty
+(`{"exceptions": []}`): the checker enforces zero violations with no
+exceptions. The Integration Owner is the sole future writer of this manifest.
+Any violation not matching an active entry fails immediately
+("zero new violations").

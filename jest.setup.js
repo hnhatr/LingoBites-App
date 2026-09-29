@@ -1,8 +1,8 @@
 import {jest} from '@jest/globals';
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
-import vi from './src/i18n/vi.json';
-import en from './src/i18n/en.json';
+import vi from './src/core/i18n/vi.json';
+import en from './src/core/i18n/en.json';
 
 // Initialise a real i18next instance so that useTranslation() in components
 // resolves to the actual Vietnamese strings that existing tests assert on.
@@ -146,6 +146,25 @@ jest.mock('react-native-audio-recorder-player', () => {
 });
 
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
+
+// `react-native-tts` ships untranspiled ESM. The audio feature barrel
+// (`@features/audio`) re-exports `TtsSpikeScreen`, which imports it eagerly,
+// so any module that touches the barrel needs the native adapter stubbed out
+// under Jest. Adapters that exercise TTS behaviour inject their own fake.
+jest.mock('react-native-tts', () => ({
+  __esModule: true,
+  default: {
+    getInitStatus: jest.fn().mockResolvedValue('success'),
+    voices: jest.fn().mockResolvedValue([]),
+    setIgnoreSilentSwitch: jest.fn(),
+    setDefaultLanguage: jest.fn(),
+    setDefaultRate: jest.fn(),
+    speak: jest.fn(),
+    stop: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  },
+}));
 
 // Reanimated runs animations on the UI thread, which does not exist under
 // Jest. The official `react-native-reanimated/mock` points at the library's

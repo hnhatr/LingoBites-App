@@ -21,7 +21,11 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['src/components/**/*.tsx', 'src/modules/**/*.tsx'],
+      files: [
+        'src/ui/components/**/*.tsx',
+        'src/ui/icons/**/*.tsx',
+        'src/features/**/*.tsx',
+      ],
       rules: {
         'react-native/no-color-literals': 'error',
       },
