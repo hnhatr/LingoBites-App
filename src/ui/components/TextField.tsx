@@ -147,8 +147,8 @@ export function TextField({
         />
       </View>
       {hasErrorText ? (
-        <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-          <AppText color="danger" style={{fontSize: 14}}>
+        <View style={styles.errorRow}>
+          <AppText color="danger" style={styles.errorIcon}>
             ⚠
           </AppText>
           <AppText
@@ -171,5 +171,13 @@ const styles = StyleSheet.create({
   },
   focusRing: {
     borderWidth: FOCUS_RING_WIDTH,
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  errorIcon: {
+    fontSize: 14,
   },
 });
