@@ -249,7 +249,7 @@ export function useLessonGenerationJob(
         if (result.ok) {
           commit({status: 'polling', job: result.job});
           release();
-          void poll();
+          poll();
           return {ok: true, job: result.job};
         }
         if (result.cancelled) {
@@ -279,7 +279,7 @@ export function useLessonGenerationJob(
             } else {
               commit({status: 'polling', job});
               release();
-              void poll();
+              poll();
             }
             return {
               ok: false,
@@ -321,7 +321,7 @@ export function useLessonGenerationJob(
     commit({status: 'polling', job: null});
     setRetrying(null);
     retryingRef.current = false;
-    void poll();
+    poll();
     return () => {
       roundRef.current += 1;
       controllerRef.current?.abort();

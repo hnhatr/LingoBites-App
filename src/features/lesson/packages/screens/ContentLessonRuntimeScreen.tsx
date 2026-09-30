@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {Alert, Pressable, ScrollView, View} from 'react-native';
+import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -179,7 +179,7 @@ export function ContentLessonRuntimeScreen({navigation, route}: Props) {
               accessibilityLabel="Bước trước"
               accessibilityRole="button"
               onPress={handlePreviousStep}
-              style={{alignSelf: 'flex-start'}}
+              style={styles.previousStep}
               testID="lesson-runtime-previous-step"
             >
               <AppText color="primary" variant="label">
@@ -197,7 +197,7 @@ export function ContentLessonRuntimeScreen({navigation, route}: Props) {
           padding: theme.gutter,
           paddingBottom: floatingClearance,
         }}
-        style={{flex: 1}}
+        style={styles.scroll}
       >
         {audioError ? (
           <ErrorCard
@@ -252,3 +252,12 @@ export function ContentLessonRuntimeScreen({navigation, route}: Props) {
     </AppScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  previousStep: {
+    alignSelf: 'flex-start',
+  },
+  scroll: {
+    flex: 1,
+  },
+});
