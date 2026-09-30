@@ -99,8 +99,8 @@ describe('evaluateWarningBudget', () => {
         messages: [
           ...createWarnings('no-bitwise', 131),
           ...createWarnings('react-native-a11y/has-accessibility-hint', 84),
-          ...createWarnings('react-native/no-inline-styles', 76),
-          ...createWarnings('no-void', 16),
+          ...createWarnings('react-native/no-inline-styles', 73),
+          ...createWarnings('no-void', 10),
           ...createWarnings('react/no-unstable-nested-components', 1),
         ],
       },
@@ -108,6 +108,6 @@ describe('evaluateWarningBudget', () => {
 
     const result = evaluateWarningBudget(validResults);
     expect(result.ok).toBe(true);
-    expect(result.summary.totalWarnings).toBe(308);
+    expect(result.summary.totalWarnings).toBe(299);
   });
 });

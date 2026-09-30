@@ -1,5 +1,5 @@
 import React from 'react';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
@@ -40,7 +40,7 @@ export function ContextCard({data, onPlayAudio, onComplete, onSkip}: Props) {
           testID="context-phrase-row"
         >
           <AppText
-            style={{flex: 1, flexShrink: 1}}
+            style={styles.phrase}
             testID="context-phrase-en"
             variant="h2"
           >
@@ -68,3 +68,10 @@ export function ContextCard({data, onPlayAudio, onComplete, onSkip}: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  phrase: {
+    flex: 1,
+    flexShrink: 1,
+  },
+});

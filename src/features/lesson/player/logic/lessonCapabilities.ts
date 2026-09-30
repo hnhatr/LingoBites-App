@@ -97,7 +97,7 @@ export function useLessonServerCapabilities(
       return;
     }
     const controller = new AbortController();
-    void fetchLessonServerCapabilities(controller.signal).then(value => {
+    fetchLessonServerCapabilities(controller.signal).then(value => {
       if (!controller.signal.aborted) {
         setCapabilities(value);
       }

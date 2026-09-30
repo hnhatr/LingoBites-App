@@ -79,7 +79,7 @@ export function useLessonCatalog(
           items: prev.items,
           hasMore: true,
         }));
-        void loadPage(cursorRef.current, generation, true);
+        loadPage(cursorRef.current, generation, true);
         return;
       }
       cursorRef.current = null;
@@ -88,7 +88,7 @@ export function useLessonCatalog(
         status: mode === 'refresh' ? 'refreshing' : 'loading',
         items: mode === 'refresh' ? prev.items : [],
       }));
-      void loadPage(null, generation, false);
+      loadPage(null, generation, false);
     },
     [loadPage],
   );
