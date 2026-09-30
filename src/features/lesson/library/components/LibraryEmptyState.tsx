@@ -1,7 +1,8 @@
 import React, {useMemo} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {Medallion} from '@ui/components/Medallion';
+import {StyleSheet, View} from 'react-native';
+
 import {AppText} from '@ui/components/AppText';
+import {Medallion} from '@ui/components/Medallion';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 

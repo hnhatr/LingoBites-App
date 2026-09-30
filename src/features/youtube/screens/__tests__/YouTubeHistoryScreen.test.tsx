@@ -1,10 +1,13 @@
 import React from 'react';
-import ReactTestRenderer, {act} from 'react-test-renderer';
 import {Alert} from 'react-native';
-import {AppThemeProvider} from '@ui/theme';
-import {FeatureFlagProvider} from '@core/release';
+import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
 import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
+
 import {YouTubeHistoryScreen} from '../YouTubeHistoryScreen';
 
 const mockListYouTubeLessons = jest.fn();

@@ -1,6 +1,8 @@
 import React, {useEffect} from 'react';
 import renderer, {act} from 'react-test-renderer';
+
 import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
+
 import {
   findActiveSegmentIndex,
   interpolateMediaTimeMs,

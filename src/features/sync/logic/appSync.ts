@@ -1,6 +1,7 @@
 import {AppState, type AppStateStatus} from 'react-native';
-import {createSyncManager, type SyncManager} from './syncManager';
+
 import {startPullWorker, stopPullWorker} from './pullWorker';
+import {createSyncManager, type SyncManager} from './syncManager';
 
 /**
  * App-lifecycle wiring for the outbox sync manager (SETE-87).

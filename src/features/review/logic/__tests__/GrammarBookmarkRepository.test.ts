@@ -1,15 +1,17 @@
-import {describe, it, expect, beforeEach} from '@jest/globals';
+import {beforeEach, describe, expect, it} from '@jest/globals';
 import {open} from 'react-native-quick-sqlite';
+
 import {DB_NAME} from '@core/db/constants';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   getGrammarBookmark,
+  listAllBookmarkedGrammar,
+  listBookmarkedGrammar,
   saveGrammarBookmark,
   unsaveGrammarBookmark,
-  listBookmarkedGrammar,
-  listAllBookmarkedGrammar,
 } from '../GrammarBookmarkRepository';
 
 describe('GrammarBookmarkRepository', () => {

@@ -14,36 +14,37 @@
  */
 
 import {getDatabase, withTransaction} from '@core/db/database';
+
 import {
-  insertPackageRecord,
-  swapActivePackage,
   getActivePackage,
   getMostRecentInactivePackage,
   getPackageById,
+  insertPackageRecord,
+  swapActivePackage,
 } from '../data/ContentPackageRepository';
-import {constantTimeEqualHex, sha256Hex} from './packageChecksum';
-import {
-  lintContentPackage,
-  validateLessonShape,
-  validateManifestShape,
-  RUNTIME_CONTENT_SCHEMA_VERSION,
-} from './packageLint';
 import {
   reportFailure,
   reportProgress,
   reportSuccess,
   startImport,
 } from './importState';
+import {constantTimeEqualHex, sha256Hex} from './packageChecksum';
+import {
+  lintContentPackage,
+  RUNTIME_CONTENT_SCHEMA_VERSION,
+  validateLessonShape,
+  validateManifestShape,
+} from './packageLint';
 import type {
+  ContentLesson,
   ContentPackageImportError,
   ContentPackageImportProgress,
   ContentPackageImportResult,
-  ContentPackageRollbackResult,
-  ContentLesson,
   ContentPackageManifest,
+  ContentPackageRollbackResult,
 } from './types';
-import {extractZip} from './zipReader';
 import {decodeUtf8} from './utf8';
+import {extractZip} from './zipReader';
 
 /**
  * Fetches a URL and returns the raw bytes. The default implementation

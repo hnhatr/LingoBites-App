@@ -1,9 +1,11 @@
 import React from 'react';
 import {View} from 'react-native';
-import {AppCard} from '@ui/components/AppCard';
+
 import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {useAppTheme} from '@ui/theme';
+
 import type {FeedbackStepData} from '../../../logic/runtime/types';
 
 type Props = {

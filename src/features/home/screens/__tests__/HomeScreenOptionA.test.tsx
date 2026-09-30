@@ -1,13 +1,18 @@
 import React from 'react';
-import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support';
-import {DB_NAME} from '@core/db/constants';
-import {resetDatabaseForTests} from '@core/db/database';
+import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {startContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {listActivePackageLessons} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests} from '@core/db/database';
+import {FeatureFlagProvider} from '@core/release';
+
+import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
+
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {bootstrapContentPackage} from '../../../lesson/packages/logic/bootstrap/contentBootstrap';
 

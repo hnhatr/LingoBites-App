@@ -1,14 +1,17 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {getPracticeSet, savePracticeSet} from '../../data/PracticeRepository';
+import type {PracticeSet} from '@core/schemas/practice';
+
 import {
   CHARACTERIZATION_INVARIANTS,
   simulateDatabaseProcessRestart,
 } from '@test/support/characterization';
-import type {PracticeSet} from '@core/schemas/practice';
+
+import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+import {getPracticeSet, savePracticeSet} from '../../data/PracticeRepository';
 
 const mockSet: PracticeSet = {
   id: 'char-set-1',

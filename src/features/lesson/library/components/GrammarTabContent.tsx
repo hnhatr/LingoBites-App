@@ -1,15 +1,19 @@
-import React, {useCallback, useMemo} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {LessonsStackParamList} from '../screens/navigationTypes';
-import {useAppTheme} from '@ui/theme';
+import React, {useCallback, useMemo} from 'react';
+import {FlatList, StyleSheet, View} from 'react-native';
+
+import {useBookmarkOptimistic} from '@features/review';
+
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
+
 import type {GrammarBookmark, SaveGrammarBookmarkInput} from '@core/db/types';
+
+import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {GrammarRowCard} from './GrammarRowCard';
 import {LibraryEmptyState} from './LibraryEmptyState';
-import {useBookmarkOptimistic} from '@features/review';
 
 export interface GrammarTabContentProps {
   grammar: (GrammarBookmark & {title?: string; content?: string})[];

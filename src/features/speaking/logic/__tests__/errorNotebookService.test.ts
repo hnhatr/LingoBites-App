@@ -2,13 +2,16 @@
  * Tests for automatic Error Notebook capture (SETE-110 / M5, REQ-28/29, VC-18).
  */
 
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
+
+import {getDueContentReviewItems} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
+import {listErrorEvents} from '@features/speaking/logic/data/SpeakingRepository';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {listErrorEvents} from '@features/speaking/logic/data/SpeakingRepository';
-import {getDueContentReviewItems} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   captureSpeakingErrorIfNeeded,
   classifySpeakingAttempt,

@@ -1,4 +1,7 @@
 import * as Keychain from 'react-native-keychain';
+
+import {installKeychainVault} from '@test/support/keychainVault';
+
 import {
   cancelAccountSwitchAttempt,
   confirmAccountSwitchAttempt,
@@ -9,12 +12,11 @@ import {
   type StageAccountSwitchInput,
 } from '../../accountSwitchCoordinator';
 import {
+  type AccountSwitchAttemptV1,
   readAccountSwitchJournal,
   writeAccountSwitchJournal,
-  type AccountSwitchAttemptV1,
 } from '../../accountSwitchJournal';
 import type {AuthUser} from '../../authTypes';
-import {installKeychainVault} from '@test/support/keychainVault';
 
 /**
  * LING-107 adversarial review (INV-001 / INV-002 / INV-003) of the TASK-019

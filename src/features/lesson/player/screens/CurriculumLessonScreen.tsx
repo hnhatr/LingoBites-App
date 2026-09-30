@@ -1,23 +1,25 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import type {CurriculumLessonRouteParams} from './navigationTypes';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import {
-  checkCurriculumLessonExercise,
-  fetchCurriculumLesson,
-  type CurriculumLessonAnswerInput,
-  type CurriculumLessonCheckResult,
-} from '../logic/curriculumLessonClient';
-import type {CurriculumLesson} from '../logic/curriculumLessonSchema';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {CurriculumLessonPlayer} from '../components/CurriculumLessonPlayer';
 import {
   startLessonProgress,
   submitExerciseAttempt,
 } from '../logic/api/learningProgressClient';
+import {
+  checkCurriculumLessonExercise,
+  type CurriculumLessonAnswerInput,
+  type CurriculumLessonCheckResult,
+  fetchCurriculumLesson,
+} from '../logic/curriculumLessonClient';
+import type {CurriculumLesson} from '../logic/curriculumLessonSchema';
+import type {CurriculumLessonRouteParams} from './navigationTypes';
 
 /**
  * Mounted in both the Lessons and Home stacks (LING-41 TASK-006: Home

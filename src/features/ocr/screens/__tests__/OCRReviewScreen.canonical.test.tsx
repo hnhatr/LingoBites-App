@@ -1,8 +1,11 @@
 import React from 'react';
 import {Text, TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {OCRReviewScreen} from '../OCRReviewScreen';
 
 jest.mock('../../logic/OCRService', () => ({

@@ -1,7 +1,7 @@
 import {
   isPublishable,
-  pickKeyword,
   type LessonPayloadV1,
+  pickKeyword,
   type YouTubeSegmentV1,
 } from '../sentence-contract';
 

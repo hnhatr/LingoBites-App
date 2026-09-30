@@ -7,7 +7,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {blockBaseStyles} from '../logic/blockStyles';
 import type {
   CurriculumLessonAnswerInput,

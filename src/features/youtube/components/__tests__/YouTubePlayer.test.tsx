@@ -1,9 +1,10 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
+
 import {
   mapYouTubePlayerError,
-  YouTubePlayer,
   YOUTUBE_PLAYER_ERROR_CODES,
+  YouTubePlayer,
 } from '../YouTubePlayer';
 
 jest.mock('react-native-youtube-iframe', () => {

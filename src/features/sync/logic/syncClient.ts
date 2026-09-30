@@ -1,19 +1,19 @@
+import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import type {
+  SyncPullSuccessResponse,
+  SyncPushRequest,
+  SyncPushSuccessResponse,
+} from '@core/schemas/sync';
+import {
+  SYNC_CONTRACT_VERSION,
+  SyncPullSuccessResponseSchema,
+  SyncPushSuccessResponseSchema,
+} from '@core/schemas/sync';
 import {
   SYNC_OWNERSHIP_CHANGED,
   SyncOwnershipChangedError,
 } from '@core/sync/syncDrainOwnership';
-import {getAppConfig} from '@core/api/appConfig';
-import type {
-  SyncPushRequest,
-  SyncPushSuccessResponse,
-  SyncPullSuccessResponse,
-} from '@core/schemas/sync';
-import {
-  SYNC_CONTRACT_VERSION,
-  SyncPushSuccessResponseSchema,
-  SyncPullSuccessResponseSchema,
-} from '@core/schemas/sync';
 
 function withTimeout(timeoutMs: number, externalSignal?: AbortSignal) {
   const controller = new AbortController();

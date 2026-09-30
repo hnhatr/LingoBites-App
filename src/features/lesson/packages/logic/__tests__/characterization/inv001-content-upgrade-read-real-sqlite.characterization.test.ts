@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
+
 import {
   getActivePackage,
   getContentLessonById,
@@ -13,13 +12,18 @@ import {
   startContentLesson,
   swapActivePackage,
 } from '@features/lesson/packages';
-import {getPackageById} from '../../contentQueryPort';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
-import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+
+import {getPackageById} from '../../contentQueryPort';
 
 const NOW = '2026-09-27T12:00:00.000Z';
 const T0 = '2026-09-10T08:00:00.000Z';

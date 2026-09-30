@@ -1,8 +1,9 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
+
+import {useAppTheme} from '../theme';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
-import {useAppTheme} from '../theme';
 
 type BannerVariant = 'info' | 'neutral';
 

@@ -1,14 +1,17 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
+
 import * as analyticsPublic from '@features/analytics';
 import * as analyticsRepository from '@features/analytics/logic/data/PilotMetricsRepository';
+import * as legacyPilotMetricsRepository from '@features/analytics/logic/data/PilotMetricsRepository';
 import * as engagementRepository from '@features/engagement/logic/data/GamificationRepository';
 import * as legacyGamificationRepository from '@features/engagement/logic/data/GamificationRepository';
-import * as legacyPilotMetricsRepository from '@features/analytics/logic/data/PilotMetricsRepository';
+import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
+
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+
 import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,

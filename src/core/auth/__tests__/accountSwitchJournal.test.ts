@@ -1,14 +1,15 @@
+import {installKeychainVault, vault} from '@test/support/keychainVault';
+
 import {
   ACCOUNT_SWITCH_JOURNAL_SERVICE,
+  type AccountSwitchAttemptV1,
   clearAccountSwitchJournal,
   parseAccountSwitchAttemptV1,
   readAccountSwitchJournal,
   serializeAccountSwitchAttemptV1,
   writeAccountSwitchJournal,
-  type AccountSwitchAttemptV1,
 } from '../accountSwitchJournal';
 import type {AuthUser} from '../authTypes';
-import {installKeychainVault, vault} from '@test/support/keychainVault';
 
 const userA: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

@@ -1,9 +1,9 @@
+import type {CapabilityProgressReport} from '@features/analytics';
 import {
   exportPrivacySafeMetrics,
   formatPercentage,
   getCapabilityProgressReport,
 } from '@features/analytics';
-import type {CapabilityProgressReport} from '@features/analytics';
 
 export type {CapabilityProgressReport};
 

@@ -1,14 +1,15 @@
-import {preparePracticeSet, hashPracticeConfig} from '../practiceFlow';
 import {
   createPracticeSetApi,
   getPracticeSetApi,
 } from '@core/api/practiceClient';
+
 import {
   findActiveSessionLocally,
   findReusablePracticeSetLocally,
   getPracticeSet,
   savePracticeSet,
 } from '../data/PracticeRepository';
+import {hashPracticeConfig, preparePracticeSet} from '../practiceFlow';
 
 jest.mock('@core/api/practiceClient');
 jest.mock('../data/PracticeRepository');

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {getSavedThemeId, saveThemeId, THEME_STORAGE_KEY} from '../themeStorage';
 
 describe('themeStorage', () => {

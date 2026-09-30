@@ -1,27 +1,30 @@
-import {useCallback, useRef, useState} from 'react';
-import {Alert, Linking} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {getSupportEmail} from '@core/api/appConfig';
+import {useCallback, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Alert, Linking} from 'react-native';
+
+import {useAccountStore} from '@features/account';
 import {
   formatCacheBytes,
   playReadyChapterAudio,
   useAudioLibrary,
 } from '@features/audio';
 import {
-  getGamificationSnapshot,
   type GamificationSnapshot,
+  getGamificationSnapshot,
 } from '@features/engagement';
-import {useTranslation} from 'react-i18next';
 import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
 } from '@features/profile/logic/LocalDataDeletionService';
+
+import {getSupportEmail} from '@core/api/appConfig';
 import {useFeatureFlags} from '@core/release';
+
+import type {ProfileStackParamList} from '../screens/navigationTypes';
 import {formatProfileAccuracy, formatProfileWordCount} from './profileMetrics';
 import {useProgressReport} from './useProgressReport';
-import {useAccountStore} from '@features/account';
-import type {ProfileStackParamList} from '../screens/navigationTypes';
 
 /**
  * Header copy: the account store (SETE-303 / T6) drives the display name

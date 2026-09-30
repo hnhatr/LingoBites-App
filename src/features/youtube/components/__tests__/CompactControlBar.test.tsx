@@ -1,7 +1,10 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {
   CompactControlBar,
   type CompactControlBarProps,

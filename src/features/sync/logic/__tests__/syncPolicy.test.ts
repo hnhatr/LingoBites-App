@@ -1,7 +1,7 @@
 import {
+  isSyncStuck,
   MAX_SYNC_ATTEMPTS,
   SYNC_RETRY_MAX_MS,
-  isSyncStuck,
   syncRetryDelayMs,
 } from '../syncPolicy';
 

@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
-import {FeatureFlagProvider} from '@core/release';
-import {VocabularyRowCard} from '../VocabularyRowCard';
+
 import type {FlashcardRecord} from '@core/db/types';
+import {FeatureFlagProvider} from '@core/release';
+
+import {VocabularyRowCard} from '../VocabularyRowCard';
 
 function render(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;

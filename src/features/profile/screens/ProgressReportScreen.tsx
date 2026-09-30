@@ -1,20 +1,22 @@
-import React, {useState, useCallback} from 'react';
-import {Alert, ScrollView, View, StyleSheet} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {ProfileStackParamList} from './navigationTypes';
+import React, {useCallback, useState} from 'react';
+import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+
+import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
-import {AppButton} from '@ui/components/AppButton';
 import {useAppTheme} from '@ui/theme';
+
 import {
-  useProgressReport,
   type CapabilityProgressReport,
+  useProgressReport,
 } from '../logic/useProgressReport';
+import type {ProfileStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProgressReport'>;
 

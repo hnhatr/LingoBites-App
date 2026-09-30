@@ -1,11 +1,13 @@
 import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {StyleSheet, View} from 'react-native';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {TextField} from '@ui/components/TextField';
+
 import {validateDisplayName} from '../logic/profileValidation';
 import {useAccountStore} from '../logic/useAccountStore';
 

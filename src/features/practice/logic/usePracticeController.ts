@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useEffect, useMemo, useState} from 'react';
+
 import {createRequestId} from '@core/api/requestId';
+
 import {
   findLatestPracticeSetForLesson,
   findLatestSessionForLesson,
@@ -8,8 +10,8 @@ import {
 import {buildDefaultPracticeConfig} from './practiceDefaults';
 import {preparePracticeSet} from './practiceFlow';
 import {
-  projectPracticeUi,
   type PracticeUiProjection,
+  projectPracticeUi,
 } from './practiceUiProjection';
 import {createSession, retrySession} from './sessionEngine';
 

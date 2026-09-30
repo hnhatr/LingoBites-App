@@ -1,12 +1,13 @@
 import React, {useId, useState} from 'react';
 import {
-  StyleSheet,
-  TextInput,
-  View,
   type BlurEvent,
   type FocusEvent,
+  StyleSheet,
+  TextInput,
   type TextInputProps,
+  View,
 } from 'react-native';
+
 import {useAppTheme} from '../theme';
 import {AppText} from './AppText';
 

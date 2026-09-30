@@ -18,14 +18,16 @@
  * server-enforced.
  */
 import {useCallback, useEffect, useRef, useState} from 'react';
+
 import {createRequestId} from '@core/api/requestId';
+
 import {
   fetchLessonGenerationJob,
   isLessonGenerationTerminal,
-  retryLessonJobPart,
   type LessonGenerationJob,
   type LessonGenerationPartTarget,
   type LessonJobError,
+  retryLessonJobPart,
 } from './lessonJobClient';
 
 const POLL_AFTER_MIN_MS = 500;

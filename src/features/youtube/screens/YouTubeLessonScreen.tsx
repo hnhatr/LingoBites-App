@@ -1,21 +1,24 @@
+import type {NavigationProp} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {View} from 'react-native';
+
+import type {RootStackParamList, RootTabParamList} from '@features/home';
+import type {CreateStackParamList} from '@features/input';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
-import type {YouTubeSegment} from '../logic/youtubeTranscriptPort';
-import {getYouTubeLesson} from '../logic/youtubeQueryPort';
-import type {NavigationProp} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {CreateStackParamList} from '@features/input';
-import type {RootStackParamList, RootTabParamList} from '@features/home';
-import {mapTranscriptToPractice} from '../logic/utils/practiceMapper';
-import {YouTubeLessonScreenView} from './YouTubeLessonScreenView';
-import {createYouTubeLessonScreenStyles} from './youtubeLessonScreenStyles';
+
 import {useYouTubeLessonScreenController} from '../logic/useYouTubeLessonScreenController';
+import {mapTranscriptToPractice} from '../logic/utils/practiceMapper';
+import {getYouTubeLesson} from '../logic/youtubeQueryPort';
+import type {YouTubeSegment} from '../logic/youtubeTranscriptPort';
+import {createYouTubeLessonScreenStyles} from './youtubeLessonScreenStyles';
 import type {YouTubeLessonScreenProps} from './youtubeLessonScreenTypes';
+import {YouTubeLessonScreenView} from './YouTubeLessonScreenView';
 
 export type {YouTubeLessonScreenProps} from './youtubeLessonScreenTypes';
 

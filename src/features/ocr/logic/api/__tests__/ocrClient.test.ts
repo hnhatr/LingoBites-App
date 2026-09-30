@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import i18n from '@core/i18n';
+
 import {extractTextFromImage} from '../ocrClient';
 
 const mockFetch = jest.fn();

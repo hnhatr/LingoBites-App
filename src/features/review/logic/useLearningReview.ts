@@ -5,12 +5,14 @@
  * `submitExerciseAttempt`.
  */
 import {useCallback, useEffect, useState} from 'react';
+
 import {
+  type LearningAttemptAnswer,
   setVocabularyProgress,
   submitExerciseAttempt,
-  type LearningAttemptAnswer,
   type VocabularyProgressStatus,
 } from '@features/lesson/player';
+
 import {
   fetchReview,
   type ReviewExerciseEntry,

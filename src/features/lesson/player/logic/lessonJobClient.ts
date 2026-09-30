@@ -13,10 +13,11 @@
  * conventions (`authenticatedFetch`, `getAppConfig`, injected
  * `fetchImpl`, `AbortSignal`).
  */
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
-import {getAppConfig} from '@core/api/appConfig';
-import {createRequestId} from '@core/api/requestId';
 import {z} from 'zod';
+
+import {getAppConfig} from '@core/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {createRequestId} from '@core/api/requestId';
 
 const LESSON_JOBS_PATH = '/api/v1/lesson-jobs';
 

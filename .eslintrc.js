@@ -1,6 +1,7 @@
 module.exports = {
   root: true,
   extends: ['@react-native', 'plugin:react-native-a11y/all'],
+  plugins: ['simple-import-sort'],
   rules: {
     '@typescript-eslint/no-unused-vars': [
       'error',
@@ -28,6 +29,46 @@ module.exports = {
       ],
       rules: {
         'react-native/no-color-literals': 'error',
+      },
+    },
+    // TASK-001 (LING-137) FR-003: autofixable import order, src/** only.
+    // Groups mirror the canonical aliases in babel.config.js / tsconfig.json /
+    // jest.config.js. Aliases match by longest-prefix, so `@ui/...` lands in
+    // its alias group even though it also matches the packages pattern.
+    // Export sorting stays off; no import-resolver plugin (source-string
+    // grouping changes no specifiers).
+    {
+      files: ['src/**'],
+      rules: {
+        'simple-import-sort/imports': [
+          'error',
+          {
+            groups: [
+              ['^\\u0000'],
+              ['^node:'],
+              ['^@?\\w'],
+              ['^@app'],
+              ['^@features'],
+              ['^@ui'],
+              ['^@core'],
+              ['^@test'],
+              ['^'],
+              ['^\\.'],
+            ],
+          },
+        ],
+      },
+    },
+    // BR-005 protected paths: never reordered, never edited.
+    {
+      files: [
+        'src/core/db/__tests__/adversarial/adv-ling108-r1-atomic-replacement.adversarial.test.ts',
+        'src/features/practice/logic/__tests__/validator.test.ts',
+        'src/features/practice/logic/validator.ts',
+        'src/features/lesson/packages/logic/bootstrap/bundledPackageData.ts',
+      ],
+      rules: {
+        'simple-import-sort/imports': 'off',
       },
     },
   ],

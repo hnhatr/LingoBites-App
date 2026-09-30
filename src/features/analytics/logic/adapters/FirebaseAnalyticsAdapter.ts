@@ -1,9 +1,9 @@
+import {sanitizeAnalyticsPayload} from '../sanitizeAnalyticsPayload';
 import type {
   AnalyticsAdapter,
   AnalyticsEventName,
   AnalyticsProperties,
 } from '../types';
-import {sanitizeAnalyticsPayload} from '../sanitizeAnalyticsPayload';
 import {createConsoleAnalyticsAdapter} from './ConsoleAnalyticsAdapter';
 
 /**

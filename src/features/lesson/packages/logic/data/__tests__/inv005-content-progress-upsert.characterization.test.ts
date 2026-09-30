@@ -1,19 +1,22 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../../../test-utils/sqliteMock';
+
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {
-  getActivePackage,
-  insertPackageRecord,
-  swapActivePackage,
-} from '../ContentPackageRepository';
+
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+
+import {__resetMockDatabases} from '../../../../../../../test-utils/sqliteMock';
 import {
   getContentLessonState,
   saveContentLesson,
   startContentLesson,
 } from '../ContentLessonStateRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+import {
+  getActivePackage,
+  insertPackageRecord,
+  swapActivePackage,
+} from '../ContentPackageRepository';
 
 const NOW = '2026-09-27T12:00:00.000Z';
 

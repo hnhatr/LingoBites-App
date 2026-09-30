@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, type ViewProps} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+
 import {useAppTheme} from '../theme';
 
 export function AppScreen({style, children, ...rest}: ViewProps) {

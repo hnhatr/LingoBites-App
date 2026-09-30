@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import {featureRegistry} from '../feature-registry';
 
 // `FeatureStatusScreen` casts registry entries with `as unknown as`, so a typo

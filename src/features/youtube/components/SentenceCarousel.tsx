@@ -7,29 +7,32 @@ import React, {
 } from 'react';
 import {
   FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-  useWindowDimensions,
   type ListRenderItemInfo,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
 } from 'react-native';
+
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
 import type {GrammarPoint, VocabEntry} from '@core/schemas/sentence-contract';
-import {SentenceCard, type SentenceCardSegment} from './SentenceCard';
-import type {RetryBlockFn} from '../logic/sentence/useSentenceEnrichment';
+
 import {
+  calculateNearestCardIndex,
   CARD_SPACING_PT,
   CAROUSEL_HORIZONTAL_PADDING_PT,
-  calculateNearestCardIndex,
   getCardSnapInterval,
   getCardWidth,
 } from '../logic/sentence/sentenceCardGeometry';
+import type {RetryBlockFn} from '../logic/sentence/useSentenceEnrichment';
 import {shouldShowDots} from '../logic/utils/toolsLogic';
+import {SentenceCard, type SentenceCardSegment} from './SentenceCard';
 
 export type SentenceCarouselRef = {
   scrollToIndex: (params: {

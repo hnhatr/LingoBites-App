@@ -1,17 +1,20 @@
 import React from 'react';
 import {Modal, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
+import {AccountProfileSection} from '@features/account';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {TextField} from '@ui/components/TextField';
 import {ThemePicker} from '@ui/components/ThemePicker';
-import {AccountProfileSection} from '@features/account';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
 
 /** Settings without a backing store yet — show an honest "not set" value. */

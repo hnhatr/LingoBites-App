@@ -8,6 +8,7 @@
  */
 
 import {createHash} from 'crypto';
+
 import type {
   ContentLesson,
   ContentPackageManifest,

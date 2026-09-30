@@ -1,23 +1,23 @@
 import {
   AXIS_LOCK_THRESHOLD_PT,
+  calculateNearestCardIndex,
+  calculateSnapIndex,
   CARD_BORDER_RADIUS_PT,
   CARD_HEADER_HEIGHT_PT,
   CARD_SPACING_PT,
   CARD_WIDTH_OFFSET_PT,
   CAROUSEL_HORIZONTAL_PADDING_PT,
-  PINNED_AUDIO_BUTTON_SIZE_PT,
-  SNAP_DISTANCE_RATIO,
-  SNAP_VELOCITY_THRESHOLD_PT_PER_MS,
-  calculateNearestCardIndex,
-  calculateSnapIndex,
   formatCardHeaderTitle,
   formatGrammarBottomHint,
   formatNextSentencePrompt,
   getCardPeekWidth,
   getCardSnapInterval,
   getCardWidth,
+  PINNED_AUDIO_BUTTON_SIZE_PT,
   resolveAxisLock,
   shouldShowPinnedSentence,
+  SNAP_DISTANCE_RATIO,
+  SNAP_VELOCITY_THRESHOLD_PT_PER_MS,
 } from '../sentenceCardGeometry';
 
 describe('sentenceCardGeometry (SETE-330 & SETE-336 logic tests)', () => {

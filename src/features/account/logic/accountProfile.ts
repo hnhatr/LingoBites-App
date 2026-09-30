@@ -1,10 +1,10 @@
 import {
-  createAuthClient,
-  ensureValidSession,
-  isAuthApiError,
   type AuthClientError,
   type AuthHttpClient,
   type AuthUser,
+  createAuthClient,
+  ensureValidSession,
+  isAuthApiError,
 } from '@core/auth';
 
 export type UpdateProfileResult =

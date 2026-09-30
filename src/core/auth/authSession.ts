@@ -1,3 +1,5 @@
+import {isAccountStillOwner} from '@core/sync/syncDrainOwnership';
+
 import type {
   AuthClientError,
   AuthHttpClient,
@@ -5,7 +7,6 @@ import type {
 } from './authClient';
 import {isAuthApiError} from './authClient';
 import type {AuthSession, AuthUser} from './authTypes';
-import {isAccountStillOwner} from '@core/sync/syncDrainOwnership';
 import {
   clearAllSessions,
   deleteSession,

@@ -1,19 +1,23 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
 import {AppThemeProvider} from '@ui/theme';
-import {CurriculumLessonScreen} from '../CurriculumLessonScreen';
-import {
-  parseCurriculumLessonAggregateResponse,
-  type CurriculumLesson,
-} from '../../logic/curriculumLessonSchema';
+
+import {FeatureFlagProvider} from '@core/release';
+
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
+import learnerLessonFixture from '../../logic/__tests__/fixtures/valid-learner-lesson-aggregate.json';
 import type {
   CurriculumLessonCheckResult,
   CurriculumLessonResult,
 } from '../../logic/curriculumLessonClient';
-import learnerLessonFixture from '../../logic/__tests__/fixtures/valid-learner-lesson-aggregate.json';
+import {
+  type CurriculumLesson,
+  parseCurriculumLessonAggregateResponse,
+} from '../../logic/curriculumLessonSchema';
+import {CurriculumLessonScreen} from '../CurriculumLessonScreen';
 
 jest.mock('../../logic/curriculumLessonClient', () => ({
   fetchCurriculumLesson: jest.fn(),

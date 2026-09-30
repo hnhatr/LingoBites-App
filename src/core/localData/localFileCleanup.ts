@@ -1,4 +1,5 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
+
 import type {FileDeleter} from './types';
 
 function nativeFsAvailable(): boolean {

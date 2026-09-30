@@ -1,14 +1,25 @@
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '../../db/constants';
+
+import {confirmAccountSwitch} from '@features/account/logic/accountBootstrap';
+import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+
+import {installKeychainVault} from '@test/support/keychainVault';
+
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
+import {DB_NAME} from '../../db/constants';
+import {
+  resetAccountSwitchCoordinatorForTests,
+  stageAccountSwitchAttempt,
+} from '../accountSwitchCoordinator';
+import type {AuthHttpClient} from '../authClient';
 import {
   activateStoredSession,
   ensureValidSession,
   persistNewSession,
   resetRefreshStateForTests,
 } from '../authSession';
-import type {AuthHttpClient} from '../authClient';
 import type {AuthSession, AuthUser} from '../authTypes';
 import * as sessionStore from '../sessionStore';
 import {
@@ -18,13 +29,6 @@ import {
   saveSession,
   setActiveSessionId,
 } from '../sessionStore';
-import {installKeychainVault} from '@test/support/keychainVault';
-import {confirmAccountSwitch} from '@features/account/logic/accountBootstrap';
-import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
-import {
-  resetAccountSwitchCoordinatorForTests,
-  stageAccountSwitchAttempt,
-} from '../accountSwitchCoordinator';
 
 const userA: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

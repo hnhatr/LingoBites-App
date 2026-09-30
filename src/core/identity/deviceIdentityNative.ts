@@ -1,4 +1,5 @@
 import {NativeModules, Platform} from 'react-native';
+
 import type {RawPlatformIdentifiers} from './deviceIdentifier';
 
 type DeviceIdentityNativeModule = {

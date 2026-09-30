@@ -1,25 +1,29 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, {useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
+import {getTextLengthBucket, trackEvent} from '@features/analytics';
 import type {RootTabParamList} from '@features/home';
-import type {CreateStackParamList} from './navigationTypes';
+import {startLessonFromConfirmedText} from '@features/lesson/player';
+import {createLessonGenerationJob} from '@features/lesson/player';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {Chip} from '@ui/components/Chip';
 import {ErrorCard} from '@ui/components/ErrorCard';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {TextField} from '@ui/components/TextField';
-import {useTranslation} from 'react-i18next';
 import {useAppTheme} from '@ui/theme';
-import {getTextLengthBucket, trackEvent} from '@features/analytics';
+
 import {validateConfirmedText} from '@core/utils/textValidation';
-import {startLessonFromConfirmedText} from '@features/lesson/player';
-import {createLessonGenerationJob} from '@features/lesson/player';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
+
+import type {CreateStackParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;
 
 export type PasteTextScreenProps = Props;

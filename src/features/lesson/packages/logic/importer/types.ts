@@ -12,18 +12,18 @@
  */
 
 import type {
+  ContentPackageId,
+  ContentPackageSummary,
+} from '@core/contracts/contentContracts';
+
+import type {
   AudioAsset,
+  ContentVocabItem as VocabItem,
   GrammarPattern,
   Lesson,
   Manifest,
   SrsItem,
-  ContentVocabItem as VocabItem,
 } from '../schema';
-
-import type {
-  ContentPackageId,
-  ContentPackageSummary,
-} from '@core/contracts/contentContracts';
 
 export type {ContentPackageId, ContentPackageSummary};
 export type ContentLessonId = string;

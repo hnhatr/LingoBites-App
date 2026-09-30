@@ -1,8 +1,16 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+
+import {drainOutboxOnce} from '@features/sync';
+import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
+
+import {getPracticeSetApi} from '@core/api/practiceClient';
 import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {resetDatabaseForTests, getDatabase} from '@core/db/database';
+import type {PracticeSet} from '@core/schemas/practice';
+import * as TokenStore from '@core/security/lessonTokenStore';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   findActiveSessionLocally,
   findReusablePracticeSetLocally,
@@ -12,17 +20,12 @@ import {
   purgeExpiredPracticeData,
   savePracticeSet,
 } from '../data/PracticeRepository';
-import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import type {PracticeSet} from '@core/schemas/practice';
-import * as TokenStore from '@core/security/lessonTokenStore';
-import {getPracticeSetApi} from '@core/api/practiceClient';
 import {
   answerCurrentQuestion,
   createSession,
   resumeSession,
   summarizeSession,
 } from '../sessionEngine';
-import {drainOutboxOnce} from '@features/sync';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

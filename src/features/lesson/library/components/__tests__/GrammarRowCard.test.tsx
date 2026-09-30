@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
-import {FeatureFlagProvider} from '@core/release';
-import {GrammarRowCard} from '../GrammarRowCard';
+
 import type {GrammarBookmark} from '@core/db/types';
+import {FeatureFlagProvider} from '@core/release';
+
+import {GrammarRowCard} from '../GrammarRowCard';
 
 function render(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;

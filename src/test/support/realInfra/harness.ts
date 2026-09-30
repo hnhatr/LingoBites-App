@@ -1,34 +1,36 @@
-import {validFullOutput} from '@core/fixtures';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
-import {recordFlashcardRating, saveFlashcard} from '@features/review';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '@features/account/logic/useAccountStore';
-import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
-import {resetRefreshStateForTests} from '@core/auth/authSession';
+import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import {recordFlashcardRating, saveFlashcard} from '@features/review';
+import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
+import {
+  getYouTubeProgress,
+  saveYouTubeProgress,
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
 import {
   resetAccountSwitchCoordinatorForTests,
   stageAccountSwitchAttempt,
 } from '@core/auth/accountSwitchCoordinator';
+import {resetRefreshStateForTests} from '@core/auth/authSession';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {
   getActiveSessionId,
   saveSession,
   setActiveSessionId,
 } from '@core/auth/sessionStore';
-import {installKeychainVault} from '@test/support/keychainVault';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {validFullOutput} from '@core/fixtures';
+import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
-import type {AuthSession, AuthUser} from '@core/auth/authTypes';
+import {installKeychainVault} from '@test/support/keychainVault';
 
 export const P2_USER_A: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

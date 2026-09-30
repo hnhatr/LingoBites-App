@@ -1,9 +1,9 @@
+import type {PendingReminder, UpcomingReviewReminder} from '../reminderPolicy';
 import {
   computeReminderPlan,
   REVIEW_REMINDER_BODY,
   REVIEW_REMINDER_TITLE,
 } from '../reminderPolicy';
-import type {PendingReminder, UpcomingReviewReminder} from '../reminderPolicy';
 
 const card = (cardId: string, dueAt: string): UpcomingReviewReminder => ({
   cardId,

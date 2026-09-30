@@ -1,10 +1,11 @@
 import {listUpcomingReviewReminders} from '@features/review';
+
+import type {PendingReminder} from './reminderPolicy';
 import {
   computeReminderPlan,
   REVIEW_REMINDER_BODY,
   REVIEW_REMINDER_TITLE,
 } from './reminderPolicy';
-import type {PendingReminder} from './reminderPolicy';
 
 /**
  * Golden-hour reminders (REQ-10 / SETE-89).

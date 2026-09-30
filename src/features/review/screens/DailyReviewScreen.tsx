@@ -1,6 +1,15 @@
 import React, {useMemo, useState} from 'react';
-import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
+import {speak} from '@features/audio';
+import {
+  reconcileReminders,
+  type ReviewSession,
+  startReviewSession,
+} from '@features/engagement';
+import {requestSync} from '@features/sync';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -13,17 +22,12 @@ import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
 import {RatingControl} from '@ui/components/RatingControl';
-import {speak} from '@features/audio';
-import {useFeatureEnabled} from '@core/release';
-import {requestSync} from '@features/sync';
-import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
-import type {FlashcardRecord, ReviewRating} from '@core/db/types';
-import {
-  reconcileReminders,
-  startReviewSession,
-  type ReviewSession,
-} from '@features/engagement';
 import {useAppTheme} from '@ui/theme';
+
+import type {FlashcardRecord, ReviewRating} from '@core/db/types';
+import {useFeatureEnabled} from '@core/release';
+
+import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
 
 const DEFAULT_SOFT_CAP = 10;
 

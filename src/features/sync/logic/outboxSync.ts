@@ -1,29 +1,31 @@
 import {
-  countPendingSyncEvents,
-  listPendingSyncEvents,
-  markSyncEventsFailed,
-  markSyncEventsSynced,
-} from './adapters/SyncOutboxRepository';
-import {
   markPracticeEventsSynced,
   pushPracticeEvents,
   type SyncPracticeEvent,
 } from '@features/practice';
+import {pushReviewEvents, type SyncReviewEvent} from '@features/review';
+
 import type {
   PracticeEventPayload,
   ReviewEventPayload,
   SyncOutboxRecord,
 } from '@core/db/types';
 import {PRACTICE_EVENT_TYPE, REVIEW_EVENT_TYPE} from '@core/db/types';
-import {pushReviewEvents, type SyncReviewEvent} from '@features/review';
-import {MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT, isSyncStuck} from './syncPolicy';
-import {syncPush} from './syncClient';
 import {SyncCollectionSchema, type SyncPushMutation} from '@core/schemas/sync';
 import {
   beginSyncDrainOwnership,
   endSyncDrainOwnership,
   SYNC_OWNERSHIP_CHANGED,
 } from '@core/sync/syncDrainOwnership';
+
+import {
+  countPendingSyncEvents,
+  listPendingSyncEvents,
+  markSyncEventsFailed,
+  markSyncEventsSynced,
+} from './adapters/SyncOutboxRepository';
+import {syncPush} from './syncClient';
+import {isSyncStuck, MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT} from './syncPolicy';
 
 export type SyncDrainOutcome =
   | {status: 'idle'}

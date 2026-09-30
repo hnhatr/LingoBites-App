@@ -1,20 +1,23 @@
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo, useState} from 'react';
-import type {LessonsStackParamList} from './navigationTypes';
-import {Pressable, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {Pressable, StyleSheet, View} from 'react-native';
+
+import {UnifiedLessonsScreen} from '@features/lesson/player';
+import {useFlashcardLibrary} from '@features/review';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import {UnifiedLessonsScreen} from '@features/lesson/player';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
 import {SegmentedTabBar} from '../components/SegmentedTabBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
-import {useFlashcardLibrary} from '@features/review';
 import {useLibrarySegments} from '../logic/useLibrarySegments';
+import type {LessonsStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
 

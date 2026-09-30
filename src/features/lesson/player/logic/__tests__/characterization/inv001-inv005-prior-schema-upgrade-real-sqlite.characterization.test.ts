@@ -1,22 +1,25 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
-import {
-  getActivePackage,
-  getPackageById,
-} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
 import {
   getContentLessonState,
   saveContentLesson,
 } from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+import {
+  getActivePackage,
+  getPackageById,
+} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+
 import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 /**
  * LING-100 HC-02: real SQLite upgrade-read oracle for curriculumLesson catalog

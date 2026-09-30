@@ -5,11 +5,13 @@
  * the activation-swap invariants the importer depends on.
  */
 
-import {__resetMockDatabases} from '../../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+
+import {__resetMockDatabases} from '../../../../../../../test-utils/sqliteMock';
 import {
   deletePackageContent,
   getActivePackage,

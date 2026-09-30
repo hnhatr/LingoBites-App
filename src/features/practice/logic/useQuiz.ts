@@ -1,4 +1,5 @@
 import {useCallback, useMemo, useState} from 'react';
+
 import type {PracticeQuestion} from './practiceQuestion';
 import {
   accuracyPercent,
@@ -6,10 +7,10 @@ import {
   goNext,
   initialQuizState,
   isMultipleChoice,
+  type QuizState,
   restartQuiz,
   revealAnswer,
   selectAnswer,
-  type QuizState,
 } from './quizEngine';
 
 export type UseQuiz = {

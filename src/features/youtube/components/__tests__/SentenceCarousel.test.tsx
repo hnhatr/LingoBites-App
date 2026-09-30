@@ -1,13 +1,16 @@
 import React from 'react';
-import renderer, {act} from 'react-test-renderer';
 import {FlatList} from 'react-native';
-import {FeatureFlagProvider} from '@core/release';
+import renderer, {act} from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
-import {SentenceCarousel} from '../SentenceCarousel';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {
   makeEnrichment,
   VIDEO_ID,
 } from '../../logic/sentence/__tests__/fixtures/sentenceFixtures';
+import {SentenceCarousel} from '../SentenceCarousel';
 
 const CAROUSEL_TEST_ID = 'test-sentence-carousel';
 

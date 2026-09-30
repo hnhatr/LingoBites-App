@@ -1,12 +1,15 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '@core/db/constants';
-import {resetDatabaseForTests} from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
+
 import {
   captureErrorEvent,
   insertSpeakingRecording,
 } from '@features/speaking/logic/data/SpeakingRepository';
+
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   getLearnerProfileData,
   getLearnerStateSnapshot,

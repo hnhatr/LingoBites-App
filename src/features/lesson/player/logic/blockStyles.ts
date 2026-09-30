@@ -1,4 +1,5 @@
 import {StyleSheet} from 'react-native';
+
 import type {AppTheme} from '@ui/theme';
 
 /**

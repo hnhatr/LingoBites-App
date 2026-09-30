@@ -1,5 +1,5 @@
-import {themes} from '../themeRegistry';
 import {checkContrast} from '../../../../test-utils/a11yTestUtils';
+import {themes} from '../themeRegistry';
 
 /**
  * WCAG AA Contrast Compliance Tests for All Themes

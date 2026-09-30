@@ -7,11 +7,19 @@
  * milestone's rows, never M3/M4 lesson-runtime review items).
  */
 
-import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
+
+import {
+  getDueContentReviewItems,
+  insertContentReviewItems,
+  listContentReviewItems,
+} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+
+import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {
   captureErrorEvent,
   clearSpeakingData,
@@ -20,11 +28,6 @@ import {
   listErrorEvents,
   listSpeakingRecordings,
 } from '../SpeakingRepository';
-import {
-  getDueContentReviewItems,
-  insertContentReviewItems,
-  listContentReviewItems,
-} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
 
 const NOW = '2026-09-06T12:00:00.000Z';
 

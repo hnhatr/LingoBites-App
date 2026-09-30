@@ -1,8 +1,11 @@
 import React from 'react';
 import {Text, TextInput} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
+
 import {FeatureFlagProvider} from '@core/release';
+
 import {SearchAndFilterBar} from '../SearchAndFilterBar';
 
 function render(ui: React.ReactElement) {

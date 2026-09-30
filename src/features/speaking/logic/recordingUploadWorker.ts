@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import * as RNFS from '@dr.pogodin/react-native-fs';
+
+import {createRequestId} from '@core/api/requestId';
+
 import {
   createRecordingMetadata,
   uploadRecordingBinary,
 } from './api/recordingClient';
-import {createRequestId} from '@core/api/requestId';
-import * as RNFS from '@dr.pogodin/react-native-fs';
 
 export async function uploadRecordingBackground(
   filePath: string,

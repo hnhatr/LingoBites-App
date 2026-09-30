@@ -1,10 +1,11 @@
 import React from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
+
+import type {HandoffIconName} from '../icons/iconRegistry';
+import {type AppTheme, useAppTheme} from '../theme';
 import {AppText} from './AppText';
 import {Chip} from './Chip';
-import type {HandoffIconName} from '../icons/iconRegistry';
 import {MaterialIcon} from './MaterialIcon';
-import {useAppTheme, type AppTheme} from '../theme';
 
 type MedallionTone = 'teal' | 'coral' | 'gold';
 

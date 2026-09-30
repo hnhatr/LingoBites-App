@@ -1,4 +1,5 @@
 import {featureKeys} from '@core/release/feature-registry';
+
 import {makeTestReleaseConfig} from '@test/support';
 
 describe('makeTestReleaseConfig', () => {

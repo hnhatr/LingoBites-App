@@ -1,20 +1,24 @@
 import React from 'react';
 import {Alert, Linking, Modal, Text} from 'react-native';
-import ReactTestRenderer from 'react-test-renderer';
-import {TextField} from '@ui/components/TextField';
-import {open} from 'react-native-quick-sqlite';
 import * as Keychain from 'react-native-keychain';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, OFFLINE_REVIEW_MVP} from '@test/support';
+import {open} from 'react-native-quick-sqlite';
+import ReactTestRenderer from 'react-test-renderer';
+
+import {TextField} from '@ui/components/TextField';
 import {AppThemeProvider} from '@ui/theme';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+
+import {resetRefreshStateForTests} from '@core/auth/authSession';
+import {getActiveSession} from '@core/auth/sessionStore';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
-import {resetBootStateForTests} from '../../../account/logic/accountBootstrap';
-import {resetRefreshStateForTests} from '@core/auth/authSession';
-import {getActiveSession} from '@core/auth/sessionStore';
+import {FeatureFlagProvider} from '@core/release';
+
+import {makeTestReleaseConfig, OFFLINE_REVIEW_MVP} from '@test/support';
 import {installKeychainVault} from '@test/support/keychainVault';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {resetBootStateForTests} from '../../../account/logic/accountBootstrap';
 import {
   resetAccountStoreForTests,
   useAccountStore,

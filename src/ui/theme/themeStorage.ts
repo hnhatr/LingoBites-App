@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import type {ThemePreference} from './themeRegistry';
 
 export const THEME_STORAGE_KEY = 'app_theme_id';

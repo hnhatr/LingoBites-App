@@ -1,8 +1,11 @@
 import React from 'react';
 import renderer, {act, type ReactTestInstance} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
 import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
+
 import {TranscriptLine} from '../TranscriptLine';
 
 const LINE_TEST_ID = 'transcript-line-seg-0';

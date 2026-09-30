@@ -1,17 +1,20 @@
 import React from 'react';
-import ReactTestRenderer from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '@core/db/constants';
-import {runMigrations} from '@core/db/migrations';
-import {resetDatabaseForTests} from '@core/db/database';
-import {
-  savePracticeSet,
-  savePracticeSession,
-} from '../../logic/data/PracticeRepository';
-import type {PracticeSet} from '@core/schemas/practice';
-import {FeatureFlagProvider} from '@core/release';
+import ReactTestRenderer from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+import {FeatureFlagProvider} from '@core/release';
+import type {PracticeSet} from '@core/schemas/practice';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {
+  savePracticeSession,
+  savePracticeSet,
+} from '../../logic/data/PracticeRepository';
 import {PracticeScreen} from '../PracticeScreen';
 
 const navigation = {

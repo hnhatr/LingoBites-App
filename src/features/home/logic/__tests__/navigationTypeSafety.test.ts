@@ -1,6 +1,8 @@
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {HomeStackParamList} from '../../screens/navigationTypes';
+
 import type {ProfileStackParamList} from '@features/profile';
+
+import type {HomeStackParamList} from '../../screens/navigationTypes';
 
 type HomeNav = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
 type ProfileNav = NativeStackNavigationProp<

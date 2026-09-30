@@ -11,6 +11,7 @@
  */
 import {useContext} from 'react';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
+
 import type {AppTheme} from '@ui/theme/types';
 import {ThemeContext} from '@ui/theme/useAppTheme';
 

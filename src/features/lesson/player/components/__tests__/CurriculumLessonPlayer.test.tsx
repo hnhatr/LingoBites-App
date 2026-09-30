@@ -1,22 +1,26 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
 import {AppThemeProvider} from '@ui/theme';
-import {CurriculumLessonPlayer} from '../CurriculumLessonPlayer';
+
+import {FeatureFlagProvider} from '@core/release';
+
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
+import checkFixture from '../../logic/__tests__/fixtures/valid-exercise-check-response.json';
+import learnerLessonFixture from '../../logic/__tests__/fixtures/valid-learner-lesson-aggregate.json';
 import type {
   CurriculumLessonAnswerInput,
   CurriculumLessonCheckResult,
 } from '../../logic/curriculumLessonClient';
 import {
+  type CurriculumLesson,
   parseCurriculumLessonAggregateResponse,
   parseCurriculumLessonBlock,
   parseCurriculumLessonCheckResponse,
-  type CurriculumLesson,
 } from '../../logic/curriculumLessonSchema';
-import learnerLessonFixture from '../../logic/__tests__/fixtures/valid-learner-lesson-aggregate.json';
-import checkFixture from '../../logic/__tests__/fixtures/valid-exercise-check-response.json';
+import {CurriculumLessonPlayer} from '../CurriculumLessonPlayer';
 
 async function renderWithTheme(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;

@@ -1,5 +1,5 @@
-import i18n from '@core/i18n';
 import type {OCRImageInput, OCRTextResult} from '@core/api/types';
+import i18n from '@core/i18n';
 
 const DEFAULT_MOCK_TEXT =
   'We are offering a special discount for new customers.';

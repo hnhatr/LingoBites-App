@@ -1,4 +1,8 @@
 import {
+  makeEnrichment,
+  VIDEO_ID,
+} from '../../sentence/__tests__/fixtures/sentenceFixtures';
+import {
   buildLessonEnrichmentUrl,
   buildRetryUrl,
   buildSegmentEnrichmentUrl,
@@ -6,10 +10,6 @@ import {
   fetchSegmentEnrichment,
   retrySentenceBlock,
 } from '../sentenceEnrichmentApi';
-import {
-  makeEnrichment,
-  VIDEO_ID,
-} from '../../sentence/__tests__/fixtures/sentenceFixtures';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {YouTubeInputScreen} from '../YouTubeInputScreen';
 
 // Simulate a binary built before `pod install`: evaluating the native

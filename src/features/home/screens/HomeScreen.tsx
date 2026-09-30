@@ -1,7 +1,8 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {HomeStackParamList} from './navigationTypes';
-import {HomeScreenView} from './HomeScreenView';
+
 import {useHomeScreenController} from '../logic/useHomeScreenController';
+import {HomeScreenView} from './HomeScreenView';
+import type {HomeStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'HomeMain'>;
 

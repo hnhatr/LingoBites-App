@@ -1,15 +1,15 @@
 import React, {useCallback, useState} from 'react';
 import {Alert, Pressable, ScrollView, View} from 'react-native';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {ErrorCard} from '@ui/components/ErrorCard';
 import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {IconButton} from '@ui/components/IconButton';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
-import {createLessonRuntimeSession} from '../logic/runtime/ContentLessonRuntime';
-import {evaluateCheck} from '../logic/checks/checkEvaluator';
-import {playContentAudio} from '../logic/runtime/contentAudioPlayer';
+
 import {ActiveRecallCard} from '../components/runtime/activities/ActiveRecallCard';
 import {ContextCard} from '../components/runtime/activities/ContextCard';
 import {ExitCheckCard} from '../components/runtime/activities/ExitCheckCard';
@@ -17,8 +17,10 @@ import {FeedbackCard} from '../components/runtime/activities/FeedbackCard';
 import {GuidedPracticeCard} from '../components/runtime/activities/GuidedPracticeCard';
 import {RolePlayCard} from '../components/runtime/activities/RolePlayCard';
 import {ShadowingCard} from '../components/runtime/activities/ShadowingCard';
+import {evaluateCheck} from '../logic/checks/checkEvaluator';
+import {playContentAudio} from '../logic/runtime/contentAudioPlayer';
+import {createLessonRuntimeSession} from '../logic/runtime/ContentLessonRuntime';
 import type {FeedbackStepData} from '../logic/runtime/types';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
 
 type Props = {
   navigation: {goBack: () => void};

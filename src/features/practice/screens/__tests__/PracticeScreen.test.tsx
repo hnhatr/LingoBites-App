@@ -1,11 +1,14 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
-import {validFullOutput} from '@core/fixtures';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {validFullOutput} from '@core/fixtures';
+import {FeatureFlagProvider} from '@core/release';
+
 import {
-  PracticeScreen,
   type PracticeRouteParams,
+  PracticeScreen,
   type PracticeScreenProps,
 } from '../PracticeScreen';
 

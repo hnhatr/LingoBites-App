@@ -1,9 +1,9 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
-  View,
+  type LayoutChangeEvent,
   Pressable,
   StyleSheet,
-  type LayoutChangeEvent,
+  View,
 } from 'react-native';
 import Animated, {
   Easing,
@@ -12,6 +12,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+
 import {AppText} from '@ui/components/AppText';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';

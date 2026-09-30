@@ -1,9 +1,12 @@
 import React from 'react';
 import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
 import {defaultThemeId, themes} from '@ui/theme/themeRegistry';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {AppText} from '../AppText';
 
 async function render(ui: React.ReactElement) {

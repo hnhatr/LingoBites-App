@@ -11,10 +11,11 @@
  * Fail-closed like `fetchYouTubeCapability`: any network, parse, or
  * config problem resolves to all-`false`.
  */
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
-import {getAppConfig} from '@core/api/appConfig';
 import {useEffect, useState} from 'react';
 import {z} from 'zod';
+
+import {getAppConfig} from '@core/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
 
 export const LessonServerCapabilitiesSchema = z.object({
   capabilities: z.object({

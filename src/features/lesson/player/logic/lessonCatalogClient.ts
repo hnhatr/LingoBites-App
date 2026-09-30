@@ -8,9 +8,10 @@
  * (`authenticatedFetch`, `getAppConfig`, injected `fetchImpl`,
  * `AbortSignal`).
  */
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
-import {getAppConfig} from '@core/api/appConfig';
 import {z} from 'zod';
+
+import {getAppConfig} from '@core/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
 
 export const LESSON_CATALOG_LIMIT_MIN = 1;
 export const LESSON_CATALOG_LIMIT_MAX = 100;

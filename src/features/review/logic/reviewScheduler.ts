@@ -1,11 +1,12 @@
-import type {ReviewScheduleRecord} from '@core/db/types';
 import {
-  DEFAULT_REVIEW_INTERVAL_DAYS,
-  FIXED_INTERVAL_DAYS,
   calculateNextReviewState,
   type CalculateNextReviewStateInput,
+  DEFAULT_REVIEW_INTERVAL_DAYS,
+  FIXED_INTERVAL_DAYS,
   type NextReviewState,
 } from '@features/review/logic/reviewPolicy';
+
+import type {ReviewScheduleRecord} from '@core/db/types';
 
 export {
   DEFAULT_REVIEW_INTERVAL_DAYS,

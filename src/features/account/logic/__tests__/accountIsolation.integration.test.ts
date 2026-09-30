@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {useAccountStore} from '../useAccountStore';
 import {
-  saveYouTubeProgress,
   getYouTubeProgress,
+  saveYouTubeProgress,
 } from '@features/youtube/logic/data/YouTubeProgressRepository';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {useAccountStore} from '../useAccountStore';
 
 describe('cross-account cache isolation', () => {
   beforeEach(() => {

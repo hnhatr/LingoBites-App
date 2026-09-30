@@ -1,11 +1,12 @@
 import * as AuthSession from '@core/auth/authSession';
+
 import {
   checkCurriculumLessonExercise,
   fetchCurriculumLesson,
 } from '../curriculumLessonClient';
-import aggregateResponseFixture from './fixtures/valid-lesson-aggregate-response.json';
 import checkResponseFixture from './fixtures/valid-exercise-check-response.json';
 import fullAggregateFixture from './fixtures/valid-learner-lesson-aggregate.json';
+import aggregateResponseFixture from './fixtures/valid-lesson-aggregate-response.json';
 
 const LESSON_ID = '00000000-0000-4000-8000-000000000010';
 const EXERCISE_ID = '00000000-0000-4000-8000-000000000040';

@@ -1,18 +1,19 @@
+import type {GamificationEventRecord} from '@core/db/types';
+
 import {
-  BADGE_DEFINITIONS,
-  ON_TIME_WATER_POINTS,
-  XP_PER_RATING,
   addLocalDays,
+  BADGE_DEFINITIONS,
+  completedReviewSessionDays,
   computeBestStreak,
   computeCurrentStreak,
-  completedReviewSessionDays,
   deriveGamificationSnapshot,
   derivePetState,
   isOnTimeReview,
+  ON_TIME_WATER_POINTS,
   sessionXp,
   toLocalDayKey,
+  XP_PER_RATING,
 } from '../gamificationPolicy';
-import type {GamificationEventRecord} from '@core/db/types';
 
 function localIsoForDayKey(key: string, hour = 12): string {
   const [year, month, day] = key.split('-').map(Number);

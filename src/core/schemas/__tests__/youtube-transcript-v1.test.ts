@@ -1,12 +1,12 @@
 import validYoutubeTranscriptJson from '../../fixtures/youtube-transcript-valid.json';
 import {
   SCHEMA_VERSION,
-  YOUTUBE_MAX_SEGMENT_CHAR_COUNT,
-  YOUTUBE_MAX_SEGMENTS,
-  YOUTUBE_SEGMENT_SILENCE_GAP_MS,
   validateCreateYouTubeTranscriptRequest,
   validateGetYouTubeTranscriptResponse,
   validateYouTubeTranscript,
+  YOUTUBE_MAX_SEGMENT_CHAR_COUNT,
+  YOUTUBE_MAX_SEGMENTS,
+  YOUTUBE_SEGMENT_SILENCE_GAP_MS,
   type YouTubeTranscript,
 } from '../youtube-transcript-v1';
 

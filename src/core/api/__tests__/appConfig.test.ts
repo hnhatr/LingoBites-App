@@ -1,4 +1,5 @@
 import Config from 'react-native-config';
+
 import {getAppConfig} from '../appConfig';
 
 const mockedConfig = Config as jest.Mocked<typeof Config>;

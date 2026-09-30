@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, type TextProps} from 'react-native';
+
 import {useAppTheme} from '../theme';
 
 type Variant =

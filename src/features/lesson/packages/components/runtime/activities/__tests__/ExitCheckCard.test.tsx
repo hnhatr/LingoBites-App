@@ -1,7 +1,10 @@
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
-import {AppThemeProvider} from '@ui/theme';
+
 import {AppButton} from '@ui/components/AppButton';
+import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {ExitCheckCard} from '../ExitCheckCard';
 
 const items = [

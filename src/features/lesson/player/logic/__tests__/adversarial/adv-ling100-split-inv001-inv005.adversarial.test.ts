@@ -1,17 +1,20 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import * as AuthSession from '@core/auth/authSession';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
-import {
-  insertPackageRecord,
-  swapActivePackage,
-} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
 import {
   saveContentLesson,
   startContentLesson,
 } from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import {
+  insertPackageRecord,
+  swapActivePackage,
+} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
+import * as AuthSession from '@core/auth/authSession';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+
 import {
   openRealSqlite,
   type RealSqliteConnection,

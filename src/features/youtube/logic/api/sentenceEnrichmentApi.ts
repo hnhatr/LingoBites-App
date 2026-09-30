@@ -1,7 +1,9 @@
 import {z} from 'zod';
+
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
+
 import type {SentenceBlockId} from '../sentence/sentencePipeline';
 
 const VocabEntrySchema = z.object({

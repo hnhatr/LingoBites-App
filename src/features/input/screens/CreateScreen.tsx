@@ -1,17 +1,21 @@
-import React, {useCallback} from 'react';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, {useCallback} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
 import type {RootStackParamList, RootTabParamList} from '@features/home';
-import type {CreateStackParamList} from './navigationTypes';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {useTranslation} from 'react-i18next';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useFeatureFlags} from '@core/release';
+
+import type {CreateStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<CreateStackParamList, 'CreateMain'>;
 

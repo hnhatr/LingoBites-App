@@ -1,11 +1,14 @@
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+
+import {getCapabilityProgressReport} from '@features/analytics';
+
 import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {listPendingSyncEvents} from '../adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '../outboxSync';
-import {getCapabilityProgressReport} from '@features/analytics';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

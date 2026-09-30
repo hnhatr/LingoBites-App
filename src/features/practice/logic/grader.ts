@@ -1,5 +1,5 @@
-import {PRACTICE_GRADER_VERSION} from '@core/schemas/practice';
 import type {PracticeQuestion} from '@core/schemas/practice';
+import {PRACTICE_GRADER_VERSION} from '@core/schemas/practice';
 
 export const GRADER_VERSION = PRACTICE_GRADER_VERSION;
 

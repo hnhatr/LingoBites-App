@@ -1,13 +1,14 @@
+import {installKeychainVault} from '@test/support/keychainVault';
+
+import type {AuthHttpClient} from '../authClient';
 import {
   ensureValidSession,
   persistNewSession,
   resetRefreshStateForTests,
   signOut,
 } from '../authSession';
-import {getActiveSession} from '../sessionStore';
-import type {AuthHttpClient} from '../authClient';
 import type {AuthSession, AuthUser} from '../authTypes';
-import {installKeychainVault} from '@test/support/keychainVault';
+import {getActiveSession} from '../sessionStore';
 
 const user: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

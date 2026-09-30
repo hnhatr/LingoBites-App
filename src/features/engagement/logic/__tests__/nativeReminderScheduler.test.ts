@@ -1,25 +1,28 @@
-import {Platform} from 'react-native';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {resetDatabaseForTests} from '@core/db/database';
-import {open} from 'react-native-quick-sqlite';
-import {DB_NAME} from '@core/db/constants';
-import {saveFlashcard, recordFlashcardRating} from '@features/review';
-import {validFullOutput} from '@core/fixtures';
-import {
-  configureReminderScheduler,
-  noopReminderScheduler,
-} from '../reminderService';
-import {AuthorizationStatus, TriggerType} from '@notifee/react-native';
 import type {NotificationSettings} from '@notifee/react-native';
+import {AuthorizationStatus, TriggerType} from '@notifee/react-native';
+import {Platform} from 'react-native';
+import {open} from 'react-native-quick-sqlite';
+
+import {recordFlashcardRating, saveFlashcard} from '@features/review';
+
+import {DB_NAME} from '@core/db/constants';
+import {resetDatabaseForTests} from '@core/db/database';
+import {validFullOutput} from '@core/fixtures';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import type {NotifeeLike} from '../nativeReminderScheduler';
 import {
-  createNativeReminderScheduler,
   configureNativeReminderNotifications,
+  createNativeReminderScheduler,
   GOLDEN_HOUR_CHANNEL_ID,
   permissionStatusFromSettings,
   shouldRequestReminderPermission,
 } from '../nativeReminderScheduler';
-import type {NotifeeLike} from '../nativeReminderScheduler';
 import type {PendingReminder} from '../reminderPolicy';
+import {
+  configureReminderScheduler,
+  noopReminderScheduler,
+} from '../reminderService';
 
 const NOW = '2026-09-02T09:00:00.000Z';
 const FIXED_NOW_MS = () => Date.parse('2026-09-02T00:00:00.000Z');

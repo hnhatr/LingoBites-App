@@ -1,12 +1,16 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+
+import {
+  getYouTubeProgress,
+  saveYouTubeProgress,
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {
-  saveYouTubeProgress,
-  getYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_003} account isolation`, () => {
   beforeEach(() => {

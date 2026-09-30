@@ -1,37 +1,41 @@
 import React from 'react';
 import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
 import {AppThemeProvider} from '@ui/theme';
-import {
-  CURRICULUM_LESSON_BLOCK_RENDERERS,
-  resolveCurriculumLessonBlockRenderer,
-} from '../blockRegistry';
+
+import {FeatureFlagProvider} from '@core/release';
+
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
 import {ActivityBlockView} from '../../components/ActivityBlockView';
 import {ContextBlockView} from '../../components/ContextBlockView';
 import {ExampleBlockView} from '../../components/ExampleBlockView';
-import {GrammarBlockView} from '../../components/GrammarBlockView';
 import {
-  ExerciseBlockView,
   type CurriculumLessonCheckFn,
+  ExerciseBlockView,
 } from '../../components/ExerciseBlockView';
+import {GrammarBlockView} from '../../components/GrammarBlockView';
 import {MediaBlockView} from '../../components/MediaBlockView';
 import {TextBlockView} from '../../components/TextBlockView';
 import {UnsupportedBlockView} from '../../components/UnsupportedBlockView';
 import {VocabularyBlockView} from '../../components/VocabularyBlockView';
+import {
+  CURRICULUM_LESSON_BLOCK_RENDERERS,
+  resolveCurriculumLessonBlockRenderer,
+} from '../blockRegistry';
 import type {
-  CurriculumLessonCheckResult,
+  CurriculumLessonSoundFactory,
+  CurriculumLessonSoundHandle,
+} from '../curriculumLessonAudio';
+import type {
   CurriculumLessonAnswerInput,
+  CurriculumLessonCheckResult,
 } from '../curriculumLessonClient';
 import type {
   CurriculumLessonExercise,
   CurriculumLessonMediaAsset,
 } from '../curriculumLessonSchema';
-import type {
-  CurriculumLessonSoundFactory,
-  CurriculumLessonSoundHandle,
-} from '../curriculumLessonAudio';
 
 async function renderWithTheme(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;

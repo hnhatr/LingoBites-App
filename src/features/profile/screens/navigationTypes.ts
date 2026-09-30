@@ -1,5 +1,5 @@
-import type {UnifiedLessonsPreviewRouteParams} from '@features/lesson/player';
 import type {TtsSpikeRouteParams} from '@features/audio';
+import type {UnifiedLessonsPreviewRouteParams} from '@features/lesson/player';
 
 export type ProfileMainRouteParams = undefined;
 export type PrivacyNoteRouteParams = undefined;

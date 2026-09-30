@@ -1,31 +1,39 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
   AccessibilityInfo,
   Animated,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-  useWindowDimensions,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
 } from 'react-native';
-import {useTranslation} from 'react-i18next';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {IconButton} from '@ui/components/IconButton';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import type {
   GrammarPoint,
   SentenceEnrichment,
   VocabEntry,
 } from '@core/schemas/sentence-contract';
+
 import {
-  useSentenceEnrichment,
-  type RetryBlockFn,
-} from '../logic/sentence/useSentenceEnrichment';
+  CARD_BORDER_RADIUS_PT,
+  CARD_HEADER_HEIGHT_PT,
+  formatGrammarBottomHint,
+  formatNextSentencePrompt,
+  getCardWidth,
+  PINNED_AUDIO_BUTTON_SIZE_PT,
+  shouldShowPinnedSentence,
+} from '../logic/sentence/sentenceCardGeometry';
 import {
   resolveKeyword,
   type SentenceBlockId,
@@ -39,14 +47,9 @@ import {
   tokenizeSentenceWords,
 } from '../logic/sentence/sentenceWordSelection';
 import {
-  CARD_BORDER_RADIUS_PT,
-  CARD_HEADER_HEIGHT_PT,
-  PINNED_AUDIO_BUTTON_SIZE_PT,
-  formatGrammarBottomHint,
-  formatNextSentencePrompt,
-  getCardWidth,
-  shouldShowPinnedSentence,
-} from '../logic/sentence/sentenceCardGeometry';
+  type RetryBlockFn,
+  useSentenceEnrichment,
+} from '../logic/sentence/useSentenceEnrichment';
 
 export type SentenceCardSegment = {
   index: number;

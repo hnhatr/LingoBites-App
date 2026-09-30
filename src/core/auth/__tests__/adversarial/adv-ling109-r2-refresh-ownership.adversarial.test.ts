@@ -1,21 +1,30 @@
-import {validFullOutput} from '@core/fixtures';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {saveYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
-import {recordFlashcardRating, saveFlashcard} from '@features/review';
+import {
+  confirmAccountSwitch,
+  resetBootStateForTests,
+} from '@features/account/logic/accountBootstrap';
+import {resetAccountStoreForTests} from '@features/account/logic/useAccountStore';
 import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import {recordFlashcardRating, saveFlashcard} from '@features/review';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '@features/sync/logic/outboxSync';
+import {saveYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {validFullOutput} from '@core/fixtures';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
-import {resetAccountStoreForTests} from '@features/account/logic/useAccountStore';
+
 import {
-  resetBootStateForTests,
-  confirmAccountSwitch,
-} from '@features/account/logic/accountBootstrap';
-import {resetRefreshStateForTests} from '../../authSession';
+  openRealSqlite,
+  type RealSqliteConnection,
+} from '@test/support/adversarial/realSqlite';
+import {installKeychainVault} from '@test/support/keychainVault';
+
 import {
   resetAccountSwitchCoordinatorForTests,
   stageAccountSwitchAttempt,
 } from '../../accountSwitchCoordinator';
+import {resetRefreshStateForTests} from '../../authSession';
+import type {AuthUser} from '../../authTypes';
 import {
   AUTH_ACTIVE_SESSION_SERVICE,
   clearAllSessions,
@@ -23,12 +32,6 @@ import {
   saveSession,
   setActiveSessionId,
 } from '../../sessionStore';
-import {installKeychainVault} from '@test/support/keychainVault';
-import {
-  openRealSqlite,
-  type RealSqliteConnection,
-} from '@test/support/adversarial/realSqlite';
-import type {AuthUser} from '../../authTypes';
 
 jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

@@ -1,4 +1,5 @@
-import {vault, installKeychainVault} from '@test/support/keychainVault';
+import {installKeychainVault, vault} from '@test/support/keychainVault';
+
 import {
   confirmAccountSwitchAttempt,
   recoverAccountSwitchAttempt,

@@ -1,15 +1,18 @@
-import {open} from 'react-native-quick-sqlite';
 import * as Keychain from 'react-native-keychain';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {open} from 'react-native-quick-sqlite';
+
+import type {AuthSession, AuthUser} from '@core/auth';
+import {resetRefreshStateForTests} from '@core/auth/authSession';
+import {getActiveSession} from '@core/auth/sessionStore';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
-import {resetBootStateForTests} from '../accountBootstrap';
-import {resetRefreshStateForTests} from '@core/auth/authSession';
-import {getActiveSession} from '@core/auth/sessionStore';
+
 import {installKeychainVault, vault} from '@test/support/keychainVault';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {resetBootStateForTests} from '../accountBootstrap';
 import {resetAccountStoreForTests, useAccountStore} from '../useAccountStore';
-import type {AuthSession, AuthUser} from '@core/auth';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

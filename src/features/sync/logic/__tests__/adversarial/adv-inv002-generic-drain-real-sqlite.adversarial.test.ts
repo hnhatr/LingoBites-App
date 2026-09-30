@@ -1,16 +1,20 @@
-import http from 'node:http';
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+
+import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
-import {drainOutboxOnce} from '../../outboxSync';
+
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+
+import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
+import {drainOutboxOnce} from '../../outboxSync';
 
 /**
  * LING-97 adversarial review (INV-002, TASK-004 generic drain path). A generic

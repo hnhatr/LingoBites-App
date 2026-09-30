@@ -1,12 +1,13 @@
 import React from 'react';
 import {View} from 'react-native';
+
 import {
   CURRICULUM_LESSON_BLOCK_RENDERERS,
   resolveCurriculumLessonBlockRenderer,
 } from '../logic/blockRegistry';
 import type {CurriculumLessonSoundFactory} from '../logic/curriculumLessonAudio';
-import type {CurriculumLessonCheckFn} from './ExerciseBlockView';
 import type {CurriculumLessonParsedBlock} from '../logic/curriculumLessonSchema';
+import type {CurriculumLessonCheckFn} from './ExerciseBlockView';
 
 export type CurriculumLessonBlockViewProps = {
   block: CurriculumLessonParsedBlock;

@@ -1,6 +1,12 @@
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import type {PracticeSet} from '@core/schemas/practice';
+
+import {
+  openRealSqlite,
+  type RealSqliteConnection,
+} from '@test/support/adversarial/realSqlite';
+
 import {
   getAnswerEvents,
   markPracticeEventsSynced,
@@ -8,10 +14,6 @@ import {
   savePracticeSet,
 } from '../../data/PracticeRepository';
 import {answerCurrentQuestion, createSession} from '../../sessionEngine';
-import {
-  openRealSqlite,
-  type RealSqliteConnection,
-} from '@test/support/adversarial/realSqlite';
 
 /**
  * LING-98 adversarial review (INV-001/005 with INV-002 practice events).

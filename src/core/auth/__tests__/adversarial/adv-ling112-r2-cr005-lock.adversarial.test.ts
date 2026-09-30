@@ -22,6 +22,7 @@
  * and are the r1 control.
  */
 import {useAccountStore} from '@features/account/logic/useAccountStore';
+
 import type {AuthSession} from '@core/auth/authTypes';
 import {
   AUTH_ACTIVE_SESSION_SERVICE,
@@ -30,6 +31,7 @@ import {
   getActiveSessionId,
   listSessionIds,
 } from '@core/auth/sessionStore';
+
 import {
   bootStoreAuthenticated,
   createP2FetchMock,

@@ -1,8 +1,9 @@
 import React from 'react';
 import {Pressable, type PressableProps} from 'react-native';
+
+import {useAppTheme} from '../theme';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
-import {useAppTheme} from '../theme';
 
 type Props = Pick<PressableProps, 'disabled' | 'onPress' | 'testID'> & {
   accessibilityLabel: string;

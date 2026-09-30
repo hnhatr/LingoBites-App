@@ -1,17 +1,20 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {validFullOutput} from '@core/fixtures';
+
+import {saveFlashcard} from '@features/review';
+
 import {
   executeAccountReplacementTransaction,
   getDatabase,
   resetDatabaseForTests,
   wipeDatabase,
 } from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
 import {INSTALL_MARKER_KEY} from '@core/db/installMarker';
+import {runMigrations} from '@core/db/migrations';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
-import {saveFlashcard} from '@features/review';
+import {validFullOutput} from '@core/fixtures';
+
 import {
   openRealSqlite,
   type RealSqliteConnection,

@@ -1,14 +1,17 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {RatingControl} from '../RatingControl';
-import {AppThemeProvider, useAppTheme} from '@ui/theme';
+
 import type {AppTheme} from '@ui/theme';
+import {AppThemeProvider, useAppTheme} from '@ui/theme';
+
 import {FeatureFlagProvider} from '@core/release';
+
 import {
   findMaskedContent,
   hasIconAndTextLabel,
 } from '../../../../test-utils/a11yTestUtils';
+import {RatingControl} from '../RatingControl';
 
 const RATING_BUTTONS = [
   {testID: 'rating-remembered', label: 'Đã nhớ - lên lịch ôn sau'},

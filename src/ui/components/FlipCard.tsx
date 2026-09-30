@@ -1,9 +1,10 @@
 import React from 'react';
 import {Pressable, StyleSheet, View, type ViewStyle} from 'react-native';
+
+import {useAppTheme} from '../theme';
 import {AppCard} from './AppCard';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
-import {useAppTheme} from '../theme';
 
 export interface FlipCardProps {
   flipped: boolean;

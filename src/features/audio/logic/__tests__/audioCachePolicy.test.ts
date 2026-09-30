@@ -1,14 +1,15 @@
+import type {AudioAssetRecord, ChapterAudioSummary} from '@core/db/types';
+
 import {
   DEFAULT_MAX_BYTES_PER_CHAPTER,
   DEFAULT_MAX_CACHE_BYTES,
-  STALE_CHAPTER_DAYS,
   formatCacheBytes,
   isChapterStale,
   selectChaptersToEvict,
   selectStaleChapters,
+  STALE_CHAPTER_DAYS,
   summarizeReadyAssets,
 } from '../audioCachePolicy';
-import type {AudioAssetRecord, ChapterAudioSummary} from '@core/db/types';
 
 const NOW = '2026-09-01T00:00:00.000Z';
 

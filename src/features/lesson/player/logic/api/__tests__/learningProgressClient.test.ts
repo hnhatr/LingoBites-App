@@ -1,4 +1,5 @@
 import * as AuthSession from '@core/auth/authSession';
+
 import {
   completeLessonProgress,
   fetchContinueLearning,
@@ -8,14 +9,14 @@ import {
   startLessonProgress,
   submitExerciseAttempt,
 } from '../learningProgressClient';
-import startFixture from './fixtures/start-lesson-response.json';
 import completeFixture from './fixtures/complete-lesson-response.json';
+import continueNullFixture from './fixtures/continue-learning-null-response.json';
+import continueFixture from './fixtures/continue-learning-response.json';
 import listFixture from './fixtures/list-lesson-progress-response.json';
+import setProgressFixture from './fixtures/set-vocabulary-progress-response.json';
+import startFixture from './fixtures/start-lesson-response.json';
 import attemptFixture from './fixtures/submit-attempt-response.json';
 import seenFixture from './fixtures/vocabulary-seen-response.json';
-import setProgressFixture from './fixtures/set-vocabulary-progress-response.json';
-import continueFixture from './fixtures/continue-learning-response.json';
-import continueNullFixture from './fixtures/continue-learning-null-response.json';
 
 const LESSON_ID = '11111111-1111-4111-8111-111111111111';
 const EXERCISE_ID = '33333333-3333-4333-8333-333333333333';

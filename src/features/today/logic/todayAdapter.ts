@@ -1,4 +1,3 @@
-import {getDatabase} from '@core/db/database';
 import {
   getDueContentReviewItems,
   listActivePackageLessons,
@@ -6,6 +5,9 @@ import {
 } from '@features/lesson/packages';
 import {getDueFlashcards} from '@features/review';
 import {listErrorEvents, listSpeakingRecordings} from '@features/speaking';
+
+import {getDatabase} from '@core/db/database';
+
 import type {LearnerProfileData, LearnerStateSnapshot} from './types';
 
 export function getLearnerProfileData(): LearnerProfileData | null {
@@ -68,7 +70,7 @@ export function getLearnerStateSnapshot(nowIso?: string): LearnerStateSnapshot {
 
   let nextLessonId: string | null = null;
   let nextLessonTitle: string | null = null;
-  let nextLessonEstimatedMinutes: number | undefined = undefined;
+  let nextLessonEstimatedMinutes: number | undefined;
   let prerequisiteGapLessonId: string | null = null;
   let prerequisiteGapTitle: string | null = null;
   let oldLessonId: string | null = null;

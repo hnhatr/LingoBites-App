@@ -1,5 +1,6 @@
-import {PRACTICE_CALCULATOR_VERSION} from '@core/schemas/practice';
 import type {AnswerEvent, PracticeQuestion} from '@core/schemas/practice';
+import {PRACTICE_CALCULATOR_VERSION} from '@core/schemas/practice';
+
 import {
   accuracyOverGraded,
   calculateResultSummary,

@@ -1,20 +1,24 @@
 import React from 'react';
-import ReactTestRenderer from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release';
+import ReactTestRenderer from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+
+import {resetRefreshStateForTests} from '@core/auth/authSession';
+import type {AuthUser} from '@core/auth/authTypes';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {resetBootStateForTests} from '../../logic/accountBootstrap';
-import {resetRefreshStateForTests} from '@core/auth/authSession';
+import {FeatureFlagProvider} from '@core/release';
+
 import {installKeychainVault} from '@test/support/keychainVault';
-import type {AuthUser} from '@core/auth/authTypes';
-import {AccountSwitchGateScreen} from '../AccountSwitchGateScreen';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {resetBootStateForTests} from '../../logic/accountBootstrap';
 import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '../../logic/useAccountStore';
+import {AccountSwitchGateScreen} from '../AccountSwitchGateScreen';
 
 const userA: AuthUser = {
   id: '11111111-1111-4111-8111-111111111111',

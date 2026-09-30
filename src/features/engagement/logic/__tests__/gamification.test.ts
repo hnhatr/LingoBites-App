@@ -1,9 +1,11 @@
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {resetDatabaseForTests} from '@core/db/database';
 import {open} from 'react-native-quick-sqlite';
+
 import {DB_NAME} from '@core/db/constants';
-import {addLocalDays, toLocalDayKey} from '../gamificationPolicy';
+import {resetDatabaseForTests} from '@core/db/database';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {getGamificationSnapshot} from '../gamification';
+import {addLocalDays, toLocalDayKey} from '../gamificationPolicy';
 import {startReviewSession} from '../reviewSession';
 
 function isoOnDayKey(key: string, hour: number): string {

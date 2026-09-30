@@ -1,9 +1,11 @@
-import React, {useCallback, useState} from 'react';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import React, {useCallback, useState} from 'react';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
 import type {HomeStackParamList, RootTabParamList} from '@features/home';
 import type {LessonsStackParamList} from '@features/lesson/library';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -11,7 +13,8 @@ import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {
   generateStudyBlock,
   REASON_CODE_VI_LABELS,

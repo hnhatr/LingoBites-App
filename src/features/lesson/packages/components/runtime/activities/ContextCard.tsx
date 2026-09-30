@@ -1,9 +1,11 @@
 import React from 'react';
 import {View} from 'react-native';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {useAppTheme} from '@ui/theme';
+
 import {isRedundantContextSentence} from '../../../logic/runtime/contextSentenceDisplay';
 import type {ContextStepData} from '../../../logic/runtime/types';
 import {StepActions} from './StepActions';

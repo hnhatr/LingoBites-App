@@ -1,16 +1,17 @@
-import {sha256Hex} from '@core/utils/sha256';
 import {
   createPracticeSetApi,
   getPracticeSetApi,
   type PracticeConfigInput,
 } from '@core/api/practiceClient';
+import type {PracticeSession, PracticeSet} from '@core/schemas/practice';
+import {sha256Hex} from '@core/utils/sha256';
+
 import {
   findActiveSessionLocally,
   findReusablePracticeSetLocally,
   getPracticeSet,
   savePracticeSet,
 } from './data/PracticeRepository';
-import type {PracticeSet, PracticeSession} from '@core/schemas/practice';
 
 export function hashPracticeConfig(config: PracticeConfigInput): string {
   const normalized = JSON.stringify({

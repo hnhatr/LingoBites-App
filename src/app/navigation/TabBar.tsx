@@ -1,32 +1,34 @@
+import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
+  type LayoutChangeEvent,
   Pressable,
   StyleSheet,
   View,
-  type LayoutChangeEvent,
 } from 'react-native';
-import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {
   Easing,
   interpolateColor,
+  type SharedValue,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withTiming,
-  type SharedValue,
 } from 'react-native-reanimated';
-import type {HandoffIconName} from '@ui/icons/iconRegistry';
-import {AnimatedMaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
 import {
   FLOATING_TAB_BAR_BOTTOM_GAP,
   FLOATING_TAB_BAR_HORIZONTAL_MARGIN,
   withAlpha,
 } from '@ui/components/layout';
-import {isTabBarHiddenForDescriptors} from './immersiveTabRoutes';
+import {AnimatedMaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
+import {isTabBarHiddenForDescriptors} from './immersiveTabRoutes';
 
 const TAB_ITEMS: Record<string, {labelKey: string; icon: HandoffIconName}> = {
   Home: {labelKey: 'nav.tab.home', icon: 'home'},

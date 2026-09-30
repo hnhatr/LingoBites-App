@@ -1,4 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
   PanResponder,
   Pressable,
@@ -7,12 +8,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {useTranslation} from 'react-i18next';
+
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import type {YouTubeSegment} from '@core/schemas/youtube-transcript-v1';
+
 import {
   formatYouTubePlaybackRate,
   YOUTUBE_PLAYBACK_RATES,

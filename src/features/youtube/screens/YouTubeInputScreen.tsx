@@ -1,20 +1,23 @@
+import type {NavigationProp} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
   AccessibilityInfo,
   Keyboard,
   KeyboardAvoidingView,
+  type KeyboardEvent,
   LayoutAnimation,
   Platform,
   ScrollView,
   StyleSheet,
   UIManager,
   View,
-  type KeyboardEvent,
 } from 'react-native';
-import type {NavigationProp} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {CreateStackParamList} from '@features/input';
+
 import type {RootStackParamList, RootTabParamList} from '@features/home';
+import type {CreateStackParamList} from '@features/input';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -22,15 +25,16 @@ import {Banner} from '@ui/components/Banner';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {TextField} from '@ui/components/TextField';
+import {useAppTheme} from '@ui/theme';
+
 import {
   YOUTUBE_MAX_DURATION_SECONDS,
   YOUTUBE_MAX_SEGMENTS,
 } from '@core/schemas/youtube-transcript-v1';
+
 import {parseYouTubeVideoId} from '../logic/api/youtubeApi';
 import {parseManualTranscript} from '../logic/transcript/parser';
 import {ensureYouTubeDisclosureAcknowledged} from '../logic/utils/youtubeDisclosure';
-import {useTranslation} from 'react-i18next';
-import {useAppTheme} from '@ui/theme';
 
 // SETE-316 (Option A2): typed URLs flicker valid→invalid→valid while the
 // 11-char video ID is being entered, so the Step 2 reveal waits for a

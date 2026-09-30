@@ -1,11 +1,12 @@
+import type {LearningDetailParamList} from '@features/home';
+import type {OCRReviewRouteParams} from '@features/ocr';
 import type {
   YouTubeInputRouteParams,
-  YouTubeProcessingRouteParams,
   YouTubeLessonRouteParams,
+  YouTubeProcessingRouteParams,
 } from '@features/youtube';
-import type {OCRReviewRouteParams} from '@features/ocr';
+
 import type {OCRSourceType} from '@core/api/types';
-import type {LearningDetailParamList} from '@features/home';
 
 export type CreateMainRouteParams = undefined;
 export type PasteTextRouteParams = {analyzeError?: string} | undefined;

@@ -19,6 +19,7 @@
  */
 
 import {Buffer} from 'buffer';
+
 import {decodeUtf8} from './utf8';
 
 const SIG_LOCAL = 0x04034b50;

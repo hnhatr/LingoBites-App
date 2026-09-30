@@ -1,3 +1,13 @@
+import {createRequestId} from '@core/api/requestId';
+import type {
+  AnswerEvent,
+  PracticeQuestion,
+  PracticeSession,
+  PracticeSet,
+  ResultSummary,
+} from '@core/schemas/practice';
+import {PRACTICE_CONTRACT_VERSION} from '@core/schemas/practice';
+
 import {
   getAnswerEvents,
   getPracticeSession,
@@ -6,15 +16,6 @@ import {
   recordAnswerEvent,
   savePracticeSession,
 } from './data/PracticeRepository';
-import {createRequestId} from '@core/api/requestId';
-import {PRACTICE_CONTRACT_VERSION} from '@core/schemas/practice';
-import type {
-  AnswerEvent,
-  PracticeQuestion,
-  PracticeSession,
-  PracticeSet,
-  ResultSummary,
-} from '@core/schemas/practice';
 import {gradeAnswer} from './grader';
 import {calculateResultSummary} from './resultSummary';
 

@@ -3,6 +3,13 @@
  * Quarantined from default CI: enable with `M4_RUN_CR001=1` to reproduce red.
  */
 import {useAccountStore} from '@features/account/logic/useAccountStore';
+
+import {
+  expectSignedOutWithClearedActivePointer,
+  setupM4AccountIsolationHarness,
+  teardownM4AccountIsolationHarness,
+  writeM4RelocatedDomainLearnerData,
+} from '@test/support/accountIsolation/harness';
 import {
   bootStoreAuthenticated,
   createP2FetchMock,
@@ -11,12 +18,6 @@ import {
   seedActiveSessionA,
   seedInstall,
 } from '@test/support/realInfra/harness';
-import {
-  expectSignedOutWithClearedActivePointer,
-  setupM4AccountIsolationHarness,
-  teardownM4AccountIsolationHarness,
-  writeM4RelocatedDomainLearnerData,
-} from '@test/support/accountIsolation/harness';
 
 jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

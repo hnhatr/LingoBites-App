@@ -1,21 +1,24 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
+
 import * as legacyAudioRepository from '@features/audio/logic/data/AudioAssetRepository';
-import * as legacySpeakingRepository from '@features/speaking/logic/data/SpeakingRepository';
-import * as legacyRecordingClient from '@features/speaking/logic/api/recordingClient';
 import * as audioRepository from '@features/audio/logic/data/AudioAssetRepository';
-import * as speakingRepository from '@features/speaking/logic/data/SpeakingRepository';
-import * as recordingClient from '@features/speaking/logic/api/recordingClient';
-import * as speakingPublic from '@features/speaking/logic/speakingQueryPort';
-import {getLearnerStateSnapshot} from '@features/today/logic/todayAdapter';
 import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
 } from '@features/profile/logic/LocalDataDeletionService';
+import * as legacyRecordingClient from '@features/speaking/logic/api/recordingClient';
+import * as recordingClient from '@features/speaking/logic/api/recordingClient';
+import * as legacySpeakingRepository from '@features/speaking/logic/data/SpeakingRepository';
+import * as speakingRepository from '@features/speaking/logic/data/SpeakingRepository';
+import * as speakingPublic from '@features/speaking/logic/speakingQueryPort';
+import {getLearnerStateSnapshot} from '@features/today/logic/todayAdapter';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
 import type {FileDeleter} from '@core/localData/types';
+
 import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,

@@ -1,10 +1,11 @@
+import type {ReviewScheduleRecord} from '@core/db/types';
+
 import {
+  calculateNextReviewState,
   DEFAULT_REVIEW_INTERVAL_DAYS,
   FIXED_INTERVAL_DAYS,
-  calculateNextReviewState,
   selectDueReviewCards,
 } from '../reviewScheduler';
-import type {ReviewScheduleRecord} from '@core/db/types';
 
 function schedule(
   overrides: Partial<ReviewScheduleRecord>,

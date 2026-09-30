@@ -1,6 +1,8 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {blockBaseStyles} from '../logic/blockStyles';
 import type {CurriculumLessonExampleBlockData} from '../logic/curriculumLessonSchema';
 
