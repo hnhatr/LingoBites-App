@@ -70,6 +70,6 @@ You (the AI) MUST follow these rules throughout this repository.
 
 ## 6. Quality
 
-- New code must be consistent with the project's existing style.
+- New code must be consistent with the project's existing style (see the written code conventions in `docs/architecture/code-conventions.md`).
 - Do not hardcode secrets or API keys. Do not log sensitive data.
 - Clearly warn about risky changes (migrations, data deletion, or public API changes).
