@@ -208,7 +208,7 @@ export function ProgressReportScreen({navigation}: Props) {
           </View>
           {report.beforeAfterRecordings.earliest &&
           report.beforeAfterRecordings.latest ? (
-            <View style={{gap: 8, marginTop: 4}}>
+            <View style={styles.recordingsRow}>
               <AppText variant="body">
                 • Bản ghi đầu:{' '}
                 {new Date(
@@ -316,5 +316,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 4,
+  },
+  recordingsRow: {
+    gap: 8,
+    marginTop: 4,
   },
 });

@@ -103,7 +103,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
       : 'Hoàn thành một phiên ôn tập để bắt đầu chuỗi.';
 
   const executeClearData = useCallback(() => {
-    void (async () => {
+    (async () => {
       const result = await clearAllLocalDataWithFiles();
       if (!result.dbCleared) {
         setStatusMessage(t('settings.clear_data_partial_failure'));
@@ -143,7 +143,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
 
   function handleSupport() {
     const subject = encodeURIComponent('LingoBites — Góp ý / báo lỗi');
-    void Linking.openURL(`mailto:${supportEmail}?subject=${subject}`);
+    Linking.openURL(`mailto:${supportEmail}?subject=${subject}`);
   }
 
   /**
@@ -179,7 +179,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
           text: t('account.sign_out_confirm'),
           style: 'destructive',
           onPress: () => {
-            void executeLogout();
+            executeLogout();
           },
         },
       ],

@@ -2,7 +2,7 @@ import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {ScrollView, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -70,7 +70,7 @@ export function PrivacyNoteScreen() {
 function SectionTitle({icon, title}: {icon: HandoffIconName; title: string}) {
   const {theme} = useAppTheme();
   return (
-    <View style={{alignItems: 'center', flexDirection: 'row', gap: 8}}>
+    <View style={styles.sectionTitleRow}>
       <MaterialIcon color={theme.colors.primary} name={icon} size={22} />
       <AppText accessibilityRole="header" variant="h3">
         {title}
@@ -78,3 +78,11 @@ function SectionTitle({icon, title}: {icon: HandoffIconName; title: string}) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  sectionTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+});

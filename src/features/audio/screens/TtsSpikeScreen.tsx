@@ -48,7 +48,7 @@ export function TtsSpikeScreen() {
       return undefined;
     };
 
-    void loadNativeTts();
+    loadNativeTts();
 
     const onStart = () => mounted && setIsSpeaking(true);
     const onFinish = () => mounted && setIsSpeaking(false);
@@ -75,7 +75,7 @@ export function TtsSpikeScreen() {
       if (Platform.OS === 'android') {
         Tts.removeEventListener('tts-error', onError);
       }
-      void Tts.stop();
+      Tts.stop();
     };
   }, []);
 

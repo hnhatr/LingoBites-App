@@ -229,7 +229,7 @@ export function SpeakingShadowingActivity({
           paddingTop: theme.spacing.sm,
         }}
         showsVerticalScrollIndicator={false}
-        style={{flex: 1}}
+        style={styles.flex1}
       >
         <AppCard style={{gap: theme.spacing.sm}}>
           <View
@@ -349,6 +349,9 @@ const styles = StyleSheet.create({
   lineText: {
     flex: 1,
     flexShrink: 1,
+  },
+  flex1: {
+    flex: 1,
   },
 });
 
