@@ -521,7 +521,7 @@ function HeroMascot() {
       importantForAccessibility="no-hide-descendants"
     >
       <Image
-        source={require('../../../ui/assets/home-hero-cat.png')}
+        source={require('@ui/assets/home-hero-cat.png')}
         style={styles.heroMascotImage}
         resizeMode="contain"
         accessibilityIgnoresInvertColors

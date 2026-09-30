@@ -413,7 +413,7 @@ export function DailyReviewScreen({
             paddingHorizontal: theme.gutter,
           },
         ]}
-        style={{flex: 1}}
+        style={styles.flex1}
       >
         {carryOverCount > 0 ? (
           <Banner
@@ -534,5 +534,8 @@ const styles = StyleSheet.create({
   },
   xpText: {
     fontWeight: '700',
+  },
+  flex1: {
+    flex: 1,
   },
 });

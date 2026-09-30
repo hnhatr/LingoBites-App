@@ -165,6 +165,18 @@ function createStyles(theme: AppTheme) {
     dictationResult: {
       marginTop: theme.spacing.xs,
     },
+    headerBody: {
+      flex: 1,
+    },
+    dictationToggleFullWidth: {
+      width: '100%',
+      justifyContent: 'space-between',
+    },
+    dictationToggleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
     transcriptButton: {
       alignItems: 'center',
       backgroundColor: theme.colors.surfaceHigh,
@@ -266,7 +278,7 @@ export function YouTubeToolsPopup({
       testID="youtube-tools-popup"
     >
       <View {...panResponder.panHandlers} style={styles.header}>
-        <View style={{flex: 1}}>
+        <View style={styles.headerBody}>
           <View style={styles.handleBar} />
           <AppText
             style={styles.title}
@@ -486,13 +498,10 @@ export function YouTubeToolsPopup({
             accessibilityLabel="Chép chính tả"
             accessibilityRole="button"
             onPress={() => setDictationOpen(o => !o)}
-            style={[
-              styles.actionButton,
-              {width: '100%', justifyContent: 'space-between'},
-            ]}
+            style={[styles.actionButton, styles.dictationToggleFullWidth]}
             testID="youtube-tools-dictation-toggle"
           >
-            <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+            <View style={styles.dictationToggleRow}>
               <MaterialIcon name="edit" size={20} />
               <AppText variant="label">
                 {t('youtube.dictation_title', {

@@ -54,7 +54,7 @@ function findPressableByText(
 
 describe('ProgressReportScreen (REQ-39)', () => {
   beforeEach(() => {
-    void clearAllLocalDatabaseRows();
+    clearAllLocalDatabaseRows();
     mockGoBack.mockReset();
     jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   });

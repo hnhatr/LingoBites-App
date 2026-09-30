@@ -104,7 +104,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
 
   useEffect(() => {
     if (!isGallery) {
-      void launchPicker();
+      launchPicker();
     }
   }, [isGallery, launchPicker]);
 
@@ -181,7 +181,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           }}
         >
           <ActivityIndicator color={theme.colors.primary} size="large" />
-          <AppText color="secondary" style={{textAlign: 'center'}}>
+          <AppText color="secondary" style={styles.centerText}>
             {screenState.type === 'ocr_loading'
               ? 'Đang nhận diện chữ trong ảnh...'
               : isGallery

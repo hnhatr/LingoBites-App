@@ -479,7 +479,7 @@ export function YouTubeInputScreen({navigation, route}: Props) {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
-        style={{flex: 1}}
+        style={styles.flex1}
       >
         <ScrollView
           ref={scrollRef}
