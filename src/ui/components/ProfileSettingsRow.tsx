@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import type {HandoffIconName} from '../icons/iconRegistry';
 import {useAppTheme} from '../theme';
@@ -87,9 +87,7 @@ export function ProfileSettingsRow({
       >
         <MaterialIcon color={medallion.fg} name={icon} size={22} />
       </View>
-      <AppText style={{flex: 1, fontSize: 16, fontWeight: '600'}}>
-        {label}
-      </AppText>
+      <AppText style={styles.label}>{label}</AppText>
       {trailingNode}
     </>
   );
@@ -140,3 +138,11 @@ export function ProfileSettingsRow({
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  label: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

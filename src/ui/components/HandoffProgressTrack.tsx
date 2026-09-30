@@ -1,6 +1,6 @@
 import React from 'react';
 import type {DimensionValue} from 'react-native';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {useAppTheme} from '../theme';
 import {AppText} from './AppText';
@@ -20,7 +20,7 @@ export function HandoffProgressTrack({progress, label}: Props) {
       accessibilityLabel={label}
       accessibilityRole="progressbar"
       accessibilityValue={{min: 0, max: 100, now: progressPercent}}
-      style={{alignItems: 'center', flexDirection: 'row', gap: 12}}
+      style={styles.row}
     >
       <View
         style={{
@@ -51,3 +51,11 @@ export function HandoffProgressTrack({progress, label}: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
+});

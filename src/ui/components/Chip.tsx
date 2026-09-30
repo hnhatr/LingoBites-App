@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import {useAppTheme} from '../theme';
 import type {AppTheme} from '../theme/types';
@@ -118,10 +118,17 @@ export function Chip({
       accessibilityLabel={label}
       accessibilityState={{selected}}
       onPress={onPress}
-      style={{justifyContent: 'center', minHeight: 44}}
+      style={styles.pressable}
       testID={testID}
     >
       {inner}
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  pressable: {
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+});
