@@ -1,14 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {useCallback, useMemo, useState} from 'react';
-import {hasPendingPracticeSync} from './data/PracticeRepository';
+
 import type {PracticeQuestion} from '@core/schemas/practice';
+
+import {hasPendingPracticeSync} from './data/PracticeRepository';
 import {gradeAnswer} from './grader';
 import {
   answerCurrentQuestion,
   resumeSession,
   retrySession,
-  summarizeSession,
   type SessionSnapshot,
+  summarizeSession,
 } from './sessionEngine';
 
 export type PendingFeedback = {

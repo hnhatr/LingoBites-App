@@ -11,22 +11,25 @@
  */
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
+
+import {trackEvent} from '@features/analytics';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {trackEvent} from '@features/analytics';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import type {UnifiedLessonGenerationRouteParams} from './navigationTypes';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {
   createLessonGenerationJob,
-  listRetryableJobParts,
   type LessonGenerationJob,
   type LessonGenerationPartTarget,
+  listRetryableJobParts,
   type RetryableLessonGenerationPart,
 } from '../logic/lessonJobClient';
 import {
-  useLessonGenerationJob,
   type LessonGenerationState,
+  useLessonGenerationJob,
 } from '../logic/useLessonGenerationJob';
+import type {UnifiedLessonGenerationRouteParams} from './navigationTypes';
 
 export interface UnifiedLessonGenerationScreenProps {
   navigation: {

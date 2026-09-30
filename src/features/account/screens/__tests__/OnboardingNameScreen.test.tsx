@@ -1,20 +1,24 @@
 import React from 'react';
 import {TextInput} from 'react-native';
-import ReactTestRenderer from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release';
+import ReactTestRenderer from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+
+import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {FeatureFlagProvider} from '@core/release';
+
 import {installKeychainVault} from '@test/support/keychainVault';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {resetBootStateForTests} from '../../logic/accountBootstrap';
-import {resetRefreshStateForTests} from '@core/auth/authSession';
-import {OnboardingNameScreen} from '../OnboardingNameScreen';
 import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '../../logic/useAccountStore';
+import {OnboardingNameScreen} from '../OnboardingNameScreen';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

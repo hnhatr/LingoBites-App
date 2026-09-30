@@ -1,7 +1,9 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Image, Pressable, StyleSheet, View} from 'react-native';
+
 import {AppText} from '@ui/components/AppText';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {formatElapsed, formatSentenceLabel} from '../logic/utils/sentenceSeek';
 
 /**

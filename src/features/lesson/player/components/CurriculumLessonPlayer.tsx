@@ -1,15 +1,17 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import {blockBaseStyles} from '../logic/blockStyles';
-import {CurriculumLessonBlockSlot} from './CurriculumLessonBlockView';
-import type {CurriculumLessonSoundFactory} from '../logic/curriculumLessonAudio';
-import type {CurriculumLessonCheckFn} from './ExerciseBlockView';
-import type {CurriculumLesson} from '../logic/curriculumLessonSchema';
+
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {
   completeLessonProgress,
   markVocabularySeen,
 } from '../logic/api/learningProgressClient';
+import {blockBaseStyles} from '../logic/blockStyles';
+import type {CurriculumLessonSoundFactory} from '../logic/curriculumLessonAudio';
+import type {CurriculumLesson} from '../logic/curriculumLessonSchema';
+import {CurriculumLessonBlockSlot} from './CurriculumLessonBlockView';
+import type {CurriculumLessonCheckFn} from './ExerciseBlockView';
 
 function fireAndForget(task: Promise<unknown>): void {
   task.catch(() => undefined);

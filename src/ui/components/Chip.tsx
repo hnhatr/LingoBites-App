@@ -1,8 +1,9 @@
 import React from 'react';
 import {Pressable, View} from 'react-native';
-import {AppText} from './AppText';
+
 import {useAppTheme} from '../theme';
 import type {AppTheme} from '../theme/types';
+import {AppText} from './AppText';
 
 export type ChipTone =
   | 'default'

@@ -1,14 +1,16 @@
 import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {useTranslation} from 'react-i18next';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {
   HERO_BADGE_BG,
   HERO_BADGE_INK,

@@ -1,15 +1,19 @@
-import {validFullOutput} from '@core/fixtures';
-import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {DB_NAME} from '@core/db/constants';
-import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
+
 import {
   recordFlashcardRating,
   saveFlashcard,
 } from '@features/review/logic/FlashcardRepository';
-import {drainOutboxOnce} from '../../outboxSync';
+
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {validFullOutput} from '@core/fixtures';
+
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+
+import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
+import {drainOutboxOnce} from '../../outboxSync';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

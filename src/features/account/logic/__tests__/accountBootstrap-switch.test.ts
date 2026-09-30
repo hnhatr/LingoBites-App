@@ -1,13 +1,23 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+
+import * as accountSwitchCoordinator from '@core/auth/accountSwitchCoordinator';
+import {resetAccountSwitchCoordinatorForTests} from '@core/auth/accountSwitchCoordinator';
+import {resetRefreshStateForTests} from '@core/auth/authSession';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
+import {getActiveSession, getActiveSessionId} from '@core/auth/sessionStore';
 import {DB_NAME} from '@core/db/constants';
 import * as database from '@core/db/database';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {
-  saveYouTubeProgress,
-  getYouTubeProgress,
-} from '../../../youtube/logic/data/YouTubeProgressRepository';
+import {hasInstallMarker} from '@core/db/installMarker';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+
+import {installKeychainVault} from '@test/support/keychainVault';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {
+  getYouTubeProgress,
+  saveYouTubeProgress,
+} from '../../../youtube/logic/data/YouTubeProgressRepository';
 import {
   bootAccount,
   cancelAccountSwitch,
@@ -16,13 +26,6 @@ import {
   SIGNUP_IDEMPOTENCY_KEY,
   submitOnboardingName,
 } from '../accountBootstrap';
-import * as accountSwitchCoordinator from '@core/auth/accountSwitchCoordinator';
-import {resetAccountSwitchCoordinatorForTests} from '@core/auth/accountSwitchCoordinator';
-import {hasInstallMarker} from '@core/db/installMarker';
-import {resetRefreshStateForTests} from '@core/auth/authSession';
-import {getActiveSession, getActiveSessionId} from '@core/auth/sessionStore';
-import type {AuthSession, AuthUser} from '@core/auth/authTypes';
-import {installKeychainVault} from '@test/support/keychainVault';
 
 jest.mock('../legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

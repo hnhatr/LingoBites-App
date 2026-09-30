@@ -13,6 +13,18 @@
  * dependent.
  */
 import {useAccountStore} from '@features/account/logic/useAccountStore';
+
+import {
+  AUTH_ACTIVE_SESSION_SERVICE,
+  getActiveSession,
+} from '@core/auth/sessionStore';
+
+import {
+  expectSignedOutWithClearedActivePointer,
+  setupM4AccountIsolationHarness,
+  teardownM4AccountIsolationHarness,
+  writeM4RelocatedDomainLearnerData,
+} from '@test/support/accountIsolation/harness';
 import {
   bootStoreAuthenticated,
   createP2FetchMock,
@@ -21,16 +33,6 @@ import {
   seedActiveSessionA,
   seedInstall,
 } from '@test/support/realInfra/harness';
-import {
-  expectSignedOutWithClearedActivePointer,
-  setupM4AccountIsolationHarness,
-  teardownM4AccountIsolationHarness,
-  writeM4RelocatedDomainLearnerData,
-} from '@test/support/accountIsolation/harness';
-import {
-  AUTH_ACTIVE_SESSION_SERVICE,
-  getActiveSession,
-} from '@core/auth/sessionStore';
 
 jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

@@ -1,17 +1,17 @@
 import {createRequestId} from '../api/requestId';
-import type {AuthUser} from './authTypes';
 import {
   ACCOUNT_SWITCH_ATTEMPT_VERSION,
-  attemptMatchesOwnership,
-  canonicalizeTargetUserSnapshot,
-  clearAccountSwitchJournal,
-  readAccountSwitchJournal,
-  writeAccountSwitchJournal,
   type AccountSwitchAttemptV1,
   type AccountSwitchOwnership,
   type AccountSwitchPhase,
+  attemptMatchesOwnership,
+  canonicalizeTargetUserSnapshot,
+  clearAccountSwitchJournal,
   type JournalResult,
+  readAccountSwitchJournal,
+  writeAccountSwitchJournal,
 } from './accountSwitchJournal';
+import type {AuthUser} from './authTypes';
 
 export type StageAccountSwitchInput = AccountSwitchOwnership & {
   targetSessionId: string;

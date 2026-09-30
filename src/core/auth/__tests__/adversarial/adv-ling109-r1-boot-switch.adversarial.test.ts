@@ -1,40 +1,43 @@
-import {validFullOutput} from '@core/fixtures';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
-import {recordFlashcardRating, saveFlashcard} from '@features/review';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import {drainOutboxOnce} from '@features/sync/logic/outboxSync';
-import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+  bootAccount,
+  resetBootStateForTests,
+} from '@features/account/logic/accountBootstrap';
+import {confirmAccountSwitch} from '@features/account/logic/accountBootstrap';
 import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '@features/account/logic/useAccountStore';
+import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import {recordFlashcardRating, saveFlashcard} from '@features/review';
+import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
+import {drainOutboxOnce} from '@features/sync/logic/outboxSync';
 import {
-  resetBootStateForTests,
-  bootAccount,
-} from '@features/account/logic/accountBootstrap';
-import {confirmAccountSwitch} from '@features/account/logic/accountBootstrap';
-import {resetRefreshStateForTests} from '../../authSession';
+  getYouTubeProgress,
+  saveYouTubeProgress,
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {validFullOutput} from '@core/fixtures';
+import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+
 import {
+  openRealSqlite,
+  type RealSqliteConnection,
+} from '@test/support/adversarial/realSqlite';
+import {installKeychainVault} from '@test/support/keychainVault';
+
+import {
+  confirmAccountSwitchAttempt,
   resetAccountSwitchCoordinatorForTests,
   stageAccountSwitchAttempt,
-  confirmAccountSwitchAttempt,
 } from '../../accountSwitchCoordinator';
+import {resetRefreshStateForTests} from '../../authSession';
+import type {AuthUser} from '../../authTypes';
 import {
   AUTH_ACTIVE_SESSION_SERVICE,
   saveSession,
   setActiveSessionId,
 } from '../../sessionStore';
-import {installKeychainVault} from '@test/support/keychainVault';
-import {
-  openRealSqlite,
-  type RealSqliteConnection,
-} from '@test/support/adversarial/realSqlite';
-import type {AuthUser} from '../../authTypes';
 
 jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

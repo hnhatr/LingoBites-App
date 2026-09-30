@@ -1,11 +1,11 @@
+import type {
+  ContentLessonListItem,
+  ContentLessonRow,
+} from '../data/ContentRuntimeRepository';
 import {
   getContentLessonById,
   getLessonAudioAssets,
   listActivePackageLessons,
-} from '../data/ContentRuntimeRepository';
-import type {
-  ContentLessonListItem,
-  ContentLessonRow,
 } from '../data/ContentRuntimeRepository';
 
 export type {ContentLessonListItem, ContentLessonRow};

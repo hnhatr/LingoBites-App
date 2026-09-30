@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
-import {FeatureFlagProvider} from '@core/release';
-import {GrammarTabContent} from '../GrammarTabContent';
+
 import type {GrammarBookmark} from '@core/db/types';
+import {FeatureFlagProvider} from '@core/release';
+
+import {GrammarTabContent} from '../GrammarTabContent';
 
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({

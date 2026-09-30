@@ -1,10 +1,12 @@
-import i18n from '@core/i18n';
 import {
   persistNewSession,
   resetRefreshStateForTests,
 } from '@core/auth/authSession';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
+import i18n from '@core/i18n';
+
 import {installKeychainVault} from '@test/support/keychainVault';
+
 import {parseYouTubeVideoId, runYouTubeJob} from '../youtubeApi';
 
 const mockFetch = jest.fn();

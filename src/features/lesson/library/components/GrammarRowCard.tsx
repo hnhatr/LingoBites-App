@@ -1,10 +1,12 @@
 import React, {useMemo} from 'react';
-import {Pressable, View, StyleSheet} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
+
 import type {GrammarBookmark} from '@core/db/types';
 
 export interface GrammarRowCardProps {

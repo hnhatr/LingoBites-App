@@ -7,23 +7,32 @@
  * repository wrappers.
  */
 
-import {__resetMockDatabases} from '../../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
+
+import {
+  getActivePackage,
+  getPackageById,
+  listPackages,
+} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests, withTransaction} from '@core/db/database';
 import {
   downgradeContentPackageMigrations,
   runMigrations,
 } from '@core/db/migrations';
+
+import {__resetMockDatabases} from '../../../../../../../test-utils/sqliteMock';
+import {
+  lessonFileName,
+  makeLesson,
+  makeManifest,
+} from '../_fixtures/testLesson';
+import {buildStoredZip, sha256HexTest} from '../_fixtures/testZip';
 import {
   importContentPackage,
   rollbackToPreviousPackage,
 } from '../ContentPackageImporter';
-import {
-  getActivePackage,
-  getPackageById,
-  listPackages,
-} from '@features/lesson/packages/logic/data/ContentPackageRepository';
 import {
   __resetImportStateForTests,
   getImportState,
@@ -31,12 +40,6 @@ import {
 } from '../importState';
 import {sha256Hex} from '../packageChecksum';
 import type {ContentLesson, ContentPackageManifest} from '../types';
-import {buildStoredZip, sha256HexTest} from '../_fixtures/testZip';
-import {
-  lessonFileName,
-  makeLesson,
-  makeManifest,
-} from '../_fixtures/testLesson';
 
 const NOW = '2026-09-06T12:00:00.000Z';
 

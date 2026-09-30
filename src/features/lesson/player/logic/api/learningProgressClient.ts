@@ -25,8 +25,9 @@
  */
 
 import {z} from 'zod';
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
+
 import {getAppConfig} from '@core/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
 
 export const LEARNING_PROGRESS_CLIENT_FIXTURE_REVISION = 'ling-17-task-005-r1';
 export const LEARNING_PROGRESS_CLIENT_DESIGN_REF =

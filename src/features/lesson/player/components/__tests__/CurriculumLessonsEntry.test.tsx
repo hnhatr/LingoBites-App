@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
-import {CurriculumLessonsEntry} from '../CurriculumLessonsEntry';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import type {CurriculumLessonSelectionItem} from '../../logic/curriculumLessonSelection';
+import {CurriculumLessonsEntry} from '../CurriculumLessonsEntry';
 
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({

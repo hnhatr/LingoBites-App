@@ -1,17 +1,21 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {listFlashcards, recordFlashcardRating} from '../../FlashcardRepository';
-import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
 import {getContentLessonState} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {listBookmarkedGrammar} from '../../GrammarBookmarkRepository';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
+import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
-import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
+
+import {listFlashcards, recordFlashcardRating} from '../../FlashcardRepository';
+import {listBookmarkedGrammar} from '../../GrammarBookmarkRepository';
 
 /**
  * LING-93 adversarial review (INV-001 / HC-006). A real SQLite file is created

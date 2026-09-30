@@ -5,8 +5,8 @@
  * dependency is needed.
  */
 
-import {extractZipSync, ZipReadError} from '../zipReader';
 import {buildStoredZip} from '../_fixtures/testZip';
+import {extractZipSync, ZipReadError} from '../zipReader';
 
 function decode(s: Uint8Array): string {
   return new TextDecoder('utf-8').decode(s);

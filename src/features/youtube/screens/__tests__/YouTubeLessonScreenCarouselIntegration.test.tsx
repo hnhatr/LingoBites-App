@@ -1,21 +1,25 @@
 import React from 'react';
-import renderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release';
+import renderer, {act} from 'react-test-renderer';
+
+import {speak} from '@features/audio';
+
 import {AppThemeProvider} from '@ui/theme';
+
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+import {FeatureFlagProvider} from '@core/release';
 import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
+
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {
-  YouTubeLessonScreen,
-  YouTubeLessonRouteScreen,
-} from '../YouTubeLessonScreen';
-import {SentenceCarousel} from '../../components/SentenceCarousel';
 import {SentenceCard} from '../../components/SentenceCard';
+import {SentenceCarousel} from '../../components/SentenceCarousel';
 import {makeEnrichment} from '../../logic/sentence/__tests__/fixtures/sentenceFixtures';
-import {speak} from '@features/audio';
+import {
+  YouTubeLessonRouteScreen,
+  YouTubeLessonScreen,
+} from '../YouTubeLessonScreen';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

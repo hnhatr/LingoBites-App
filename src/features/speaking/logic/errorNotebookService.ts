@@ -9,12 +9,13 @@
  * qualifying attempt outcome the caller already computed.
  */
 
-import {captureErrorEvent} from './data/SpeakingRepository';
 import type {
   ErrorEventCategory,
   ErrorEventRecord,
   ErrorEventSource,
 } from '@core/db/types';
+
+import {captureErrorEvent} from './data/SpeakingRepository';
 
 const SLOW_RESPONSE_MS = 8000;
 

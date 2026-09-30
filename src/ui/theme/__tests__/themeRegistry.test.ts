@@ -1,9 +1,9 @@
 import {
-  SYSTEM_THEME_ID,
   defaultThemeId,
   isThemeId,
   isThemePreference,
   productionThemeOptions,
+  SYSTEM_THEME_ID,
   themeIds,
   themeList,
   themeReleaseFlag,

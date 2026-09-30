@@ -1,8 +1,9 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
+
+import {type AppTheme, useAppTheme} from '../theme';
 import {AppText} from './AppText';
 import {IconButton} from './IconButton';
-import {useAppTheme, type AppTheme} from '../theme';
 
 type Props = {
   title: string;

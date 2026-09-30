@@ -2,6 +2,7 @@ import {
   assertSyncDrainOwnershipUnchanged,
   SyncOwnershipChangedError,
 } from '@core/sync/syncDrainOwnership';
+
 import {createAuthClient} from '../auth/authClient';
 import {ensureValidSession} from '../auth/authSession';
 

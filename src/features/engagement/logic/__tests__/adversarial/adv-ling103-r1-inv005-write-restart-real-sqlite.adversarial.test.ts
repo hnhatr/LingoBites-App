@@ -1,19 +1,22 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
 import * as analyticsPublic from '@features/analytics';
-import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
+import * as legacyPilotMetricsRepository from '@features/analytics/logic/data/PilotMetricsRepository';
 import {listGamificationEvents} from '@features/engagement/logic/data/GamificationRepository';
+import * as legacyGamificationRepository from '@features/engagement/logic/data/GamificationRepository';
+import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
 import {startReviewSession} from '@features/engagement/logic/reviewSession';
 import {useProgressReport} from '@features/profile/logic/useProgressReport';
 import {
   captureErrorEvent,
   insertSpeakingRecording,
 } from '@features/speaking/logic/speakingQueryPort';
-import * as legacyGamificationRepository from '@features/engagement/logic/data/GamificationRepository';
-import * as legacyPilotMetricsRepository from '@features/analytics/logic/data/PilotMetricsRepository';
+
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+
 import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,

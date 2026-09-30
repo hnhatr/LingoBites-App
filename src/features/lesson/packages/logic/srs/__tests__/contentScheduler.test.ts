@@ -1,8 +1,8 @@
-import {
-  CONTENT_INTERVAL_MINUTES,
-  calculateNextContentReviewState,
-} from '../contentScheduler';
 import type {ContentMasteryState} from '../contentScheduler';
+import {
+  calculateNextContentReviewState,
+  CONTENT_INTERVAL_MINUTES,
+} from '../contentScheduler';
 
 const REVIEWED_AT = '2026-08-17T12:00:00.000Z';
 

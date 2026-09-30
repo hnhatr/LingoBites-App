@@ -1,12 +1,13 @@
 import React from 'react';
 import {StatusBar} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
+import {ThemedStatusBar} from '../ThemedStatusBar';
 import {darkTheme} from '../themes/dark';
 import {defaultTheme} from '../themes/default';
 import {stickerSoftTheme} from '../themes/stickerSoft';
-import {ThemedStatusBar} from '../ThemedStatusBar';
-import {ThemeContext} from '../useAppTheme';
 import type {AppTheme} from '../types';
+import {ThemeContext} from '../useAppTheme';
 
 function barStyleFor(theme: AppTheme): string {
   let tree!: ReactTestRenderer.ReactTestRenderer;

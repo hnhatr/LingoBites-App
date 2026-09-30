@@ -1,8 +1,9 @@
 import React from 'react';
-import {View} from 'react-native';
 import type {DimensionValue} from 'react-native';
-import {AppText} from './AppText';
+import {View} from 'react-native';
+
 import {useAppTheme} from '../theme';
+import {AppText} from './AppText';
 
 type Props = {
   progress: number;

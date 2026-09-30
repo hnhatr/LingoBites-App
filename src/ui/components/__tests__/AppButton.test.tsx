@@ -1,10 +1,13 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
 import {themes} from '@ui/theme/themeRegistry';
 import {THEME_STORAGE_KEY} from '@ui/theme/themeStorage';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {AppButton} from '../AppButton';
 
 async function render(ui: React.ReactElement) {

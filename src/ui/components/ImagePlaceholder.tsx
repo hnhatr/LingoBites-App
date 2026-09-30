@@ -1,7 +1,8 @@
 import React from 'react';
 import {View} from 'react-native';
-import {AppText} from './AppText';
+
 import {useAppTheme} from '../theme';
+import {AppText} from './AppText';
 
 type Props = {
   label?: string;

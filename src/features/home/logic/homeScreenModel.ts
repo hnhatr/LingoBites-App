@@ -1,6 +1,7 @@
-import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import type {ContentLessonRow} from '@features/lesson/packages';
 import type {UnifiedLessonSummary} from '@features/lesson/player';
+
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
 export const RECENT_LIMIT = 3;
 export const SUGGESTION_LIMIT = 3;

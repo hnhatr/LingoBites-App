@@ -8,6 +8,7 @@
  * no grouping, no source sections.
  */
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+
 import {
   fetchLessonCatalogPage,
   type LessonCatalogError,

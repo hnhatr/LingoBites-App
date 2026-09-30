@@ -1,16 +1,20 @@
 import React from 'react';
-import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support';
+import ReactTestRenderer, {act} from 'react-test-renderer';
+
+import {AppThemeProvider} from '@ui/theme';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
-import {saveFlashcard} from '../../logic/FlashcardRepository';
 import {validFullOutput} from '@core/fixtures';
-import {AppThemeProvider} from '@ui/theme';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DailyReviewScreen} from '../DailyReviewScreen';
+import {FeatureFlagProvider} from '@core/release';
+
+import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
+
 import {getAnnouncedText} from '../../../../../test-utils/a11yTestUtils';
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {saveFlashcard} from '../../logic/FlashcardRepository';
+import {DailyReviewScreen} from '../DailyReviewScreen';
 
 const renderedTrees: ReactTestRenderer.ReactTestRenderer[] = [];
 

@@ -1,15 +1,17 @@
-import React, {useEffect, useRef, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useRef, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
-import type {CurriculumLessonRouteParams} from '../screens/navigationTypes';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {SectionHeader} from '@ui/components/SectionHeader';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {
-  fetchPublishedCurriculumLessons,
   type CurriculumLessonSelectionItem,
+  fetchPublishedCurriculumLessons,
 } from '../logic/curriculumLessonSelection';
+import type {CurriculumLessonRouteParams} from '../screens/navigationTypes';
 
 /** Runs an async side effect without returning its promise to the caller. */
 function fireAndForget(task: Promise<unknown>): void {

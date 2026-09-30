@@ -1,12 +1,12 @@
 import {
-  MeaningChoiceSchema,
   ClozeChoiceSchema,
+  MeaningChoiceSchema,
+  PRACTICE_CALCULATOR_VERSION,
   PRACTICE_CONTRACT_VERSION,
   PRACTICE_GENERATOR_VERSION,
-  PRACTICE_VALIDATOR_VERSION,
   PRACTICE_GRADER_VERSION,
-  PRACTICE_CALCULATOR_VERSION,
   PRACTICE_SNAPSHOT_SCHEMA_VERSION,
+  PRACTICE_VALIDATOR_VERSION,
 } from '../practice';
 describe('practice schemas', () => {
   it('Version constants are defined', () => {

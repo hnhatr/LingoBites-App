@@ -4,8 +4,8 @@ import {
 } from './adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from './outboxSync';
 import {
-  SYNC_MAX_ROUNDS_PER_REQUEST,
   isSyncStuck,
+  SYNC_MAX_ROUNDS_PER_REQUEST,
   syncRetryDelayMsWithJitter,
 } from './syncPolicy';
 

@@ -1,3 +1,5 @@
+import {useFocusEffect} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useState} from 'react';
 import {
   ActivityIndicator,
@@ -6,21 +8,22 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+
 import type {LessonsStackParamList} from '@features/lesson/library';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
-import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {Medallion} from '@ui/components/Medallion';
-import {useAppTheme} from '@ui/theme';
-import {bootstrapContentPackage} from '../logic/bootstrap';
-import {useContentLibrary} from '../logic/runtime/useContentLibrary';
-import type {ContentLessonListItem} from '../logic/runtime/useContentLibrary';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {Medallion} from '@ui/components/Medallion';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme} from '@ui/theme';
+
+import {bootstrapContentPackage} from '../logic/bootstrap';
+import type {ContentLessonListItem} from '../logic/runtime/useContentLibrary';
+import {useContentLibrary} from '../logic/runtime/useContentLibrary';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'ContentLessonList'>;
 

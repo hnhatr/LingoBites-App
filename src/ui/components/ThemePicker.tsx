@@ -1,15 +1,17 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+
 import {useFeatureFlags} from '@core/release';
+
 import {useAppTheme} from '../theme';
 import {
+  productionThemeOptions,
   SYSTEM_THEME_ID,
   SYSTEM_THEME_LABEL,
-  productionThemeOptions,
   themeIds,
+  type ThemePreference,
   themeReleaseFlag,
   themes,
-  type ThemePreference,
 } from '../theme/themeRegistry';
 
 type PickerOption = {id: ThemePreference; label: string};

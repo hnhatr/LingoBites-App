@@ -1,15 +1,20 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
-import {AppThemeProvider} from '@ui/theme';
+
 import {trackEvent} from '@features/analytics';
+
+import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
+import type {UnifiedLessonSummary} from '../../logic/lessonCatalogClient';
+import type {UseLessonCatalogResult} from '../../logic/useLessonCatalog';
 import {
   UnifiedLessonCatalogView,
   UnifiedLessonsScreen,
 } from '../UnifiedLessonsScreen';
-import type {UseLessonCatalogResult} from '../../logic/useLessonCatalog';
-import type {UnifiedLessonSummary} from '../../logic/lessonCatalogClient';
 
 jest.mock('@features/analytics', () => ({
   trackEvent: jest.fn(),

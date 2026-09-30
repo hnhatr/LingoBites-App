@@ -7,6 +7,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+
 import {useAppTheme} from '../theme';
 
 interface ShelfSurfaceProps {

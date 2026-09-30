@@ -7,29 +7,34 @@
  * - Review surface integration via useLearningReview
  * - Home surface Continue Learning integration via fetchContinueLearning
  */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
+import {useLearningReview} from '@features/review/logic/useLearningReview';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
+import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+
+import {fetchReview} from '../../../../review/logic/api/learningReviewClient';
 import {CurriculumLessonScreen} from '../../screens/CurriculumLessonScreen';
 import {
-  parseCurriculumLessonAggregateResponse,
-  type CurriculumLesson,
-} from '../curriculumLessonSchema';
-import type {CurriculumLessonResult} from '../curriculumLessonClient';
-import learnerLessonFixture from './fixtures/valid-learner-lesson-aggregate.json';
-import {useLearningReview} from '@features/review/logic/useLearningReview';
-import {
-  startLessonProgress,
-  markVocabularySeen,
-  submitExerciseAttempt,
   completeLessonProgress,
-  setVocabularyProgress,
   fetchContinueLearning,
+  markVocabularySeen,
+  setVocabularyProgress,
+  startLessonProgress,
+  submitExerciseAttempt,
 } from '../api/learningProgressClient';
-import {fetchReview} from '../../../../review/logic/api/learningReviewClient';
+import type {CurriculumLessonResult} from '../curriculumLessonClient';
+import {
+  type CurriculumLesson,
+  parseCurriculumLessonAggregateResponse,
+} from '../curriculumLessonSchema';
+import learnerLessonFixture from './fixtures/valid-learner-lesson-aggregate.json';
 
 jest.mock('../curriculumLessonClient', () => ({
   fetchCurriculumLesson: jest.fn(),

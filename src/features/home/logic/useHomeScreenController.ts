@@ -1,23 +1,26 @@
-import {useCallback, useMemo, useState} from 'react';
-import {useFocusEffect, type NavigationProp} from '@react-navigation/native';
+import {type NavigationProp, useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useCallback, useMemo, useState} from 'react';
+
+import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
 import {
+  type ContentLessonRow,
   listSavedLessons,
   listStartedLessons,
   useContentLibrary,
-  type ContentLessonRow,
 } from '@features/lesson/packages';
-import {countYouTubeLessons, listYouTubeLessons} from '@features/youtube';
-import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
-import {useFeatureFlags} from '@core/release';
 import {
   fetchContinueLearning,
   isUnifiedLessonReady,
   useLessonCatalog,
   useLessonServerCapabilities,
 } from '@features/lesson/player';
-import {trackEvent} from '@features/analytics';
+import {countYouTubeLessons, listYouTubeLessons} from '@features/youtube';
+
+import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
+import {useFeatureFlags} from '@core/release';
+
 import type {
   HomeStackParamList,
   RootStackParamList,

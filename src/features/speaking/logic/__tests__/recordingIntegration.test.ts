@@ -1,9 +1,10 @@
-import {uploadRecordingBackground} from '../recordingUploadWorker';
+import * as RNFS from '@dr.pogodin/react-native-fs';
+
 import {
   createRecordingMetadata,
   uploadRecordingBinary,
 } from '../api/recordingClient';
-import * as RNFS from '@dr.pogodin/react-native-fs';
+import {uploadRecordingBackground} from '../recordingUploadWorker';
 
 jest.mock('../api/recordingClient', () => ({
   createRecordingMetadata: jest.fn(),

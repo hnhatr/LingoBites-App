@@ -1,10 +1,11 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
+
 import {AppText} from '@ui/components/AppText';
-import {FeatureFlagProvider} from '@core/release';
 import {AppThemeProvider} from '@ui/theme';
-import {SentenceCard} from '../SentenceCard';
-import type {RetryBlockFn} from '../../logic/sentence/useSentenceEnrichment';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {
   makeEnrichment,
   makeFailedSegment,
@@ -12,6 +13,8 @@ import {
   makeSegment,
   VIDEO_ID,
 } from '../../logic/sentence/__tests__/fixtures/sentenceFixtures';
+import type {RetryBlockFn} from '../../logic/sentence/useSentenceEnrichment';
+import {SentenceCard} from '../SentenceCard';
 
 const CARD_TEST_ID = 'sentence-card-0';
 

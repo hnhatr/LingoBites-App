@@ -17,18 +17,21 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+
+import {trackEvent} from '@features/analytics';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {Medallion} from '@ui/components/Medallion';
-import {trackEvent} from '@features/analytics';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {Medallion} from '@ui/components/Medallion';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
+import type {UnifiedLessonSummary} from '../logic/lessonCatalogClient';
 import {
   useLessonCatalog,
   type UseLessonCatalogResult,
 } from '../logic/useLessonCatalog';
-import type {UnifiedLessonSummary} from '../logic/lessonCatalogClient';
 
 export interface UnifiedLessonsRouteScreenProps {
   navigation: {

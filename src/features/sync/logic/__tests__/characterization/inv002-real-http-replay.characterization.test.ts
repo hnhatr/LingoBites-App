@@ -1,15 +1,19 @@
 import http from 'node:http';
-import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+
 import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
-import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
 import type {ReviewEventPayload} from '@core/db/types';
-import {PRACTICE_EVENT_TYPE} from '@core/db/types';
 import type {PracticeEventPayload} from '@core/db/types';
-import {drainOutboxOnce} from '../../outboxSync';
+import {PRACTICE_EVENT_TYPE} from '@core/db/types';
+
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+
+import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
+import {drainOutboxOnce} from '../../outboxSync';
 
 const reviewPayload: ReviewEventPayload = {
   schema_version: 1,

@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
+
 import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
+
 import {
   fetchLessonEnrichment,
   fetchSegmentEnrichment,

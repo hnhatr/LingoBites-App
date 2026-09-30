@@ -1,8 +1,11 @@
 import React from 'react';
 import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {ScreenHeader} from '../ScreenHeader';
 
 async function renderHeader(

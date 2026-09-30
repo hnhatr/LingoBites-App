@@ -1,12 +1,26 @@
-import type {AccountPhase} from '@features/account';
-import {
-  useAccountStore,
-  resetAccountStoreForTests,
-} from '@features/account/logic/useAccountStore';
 import {accountGateRouteForPhase} from '@app/navigation/accountGate';
-import {createAuthClient} from '@core/auth';
+
+import type {AccountPhase} from '@features/account';
 import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
+import {
+  resetAccountStoreForTests,
+  useAccountStore,
+} from '@features/account/logic/useAccountStore';
+
+import {createAuthClient} from '@core/auth';
 import {ensureValidSession} from '@core/auth/authSession';
+
+import {
+  countAudioAssetRows,
+  expectM4RelocatedDomainCleared,
+  expectM4YoutubeRowPresent,
+  expectPersistedSessionRestoreBoot,
+  fetchUrlPaths,
+  seedExpiredActiveSessionA,
+  setupM4AccountIsolationHarness,
+  teardownM4AccountIsolationHarness,
+  writeM4RelocatedDomainLearnerData,
+} from '@test/support/accountIsolation/harness';
 import {
   expectAccountBNotActive,
   expectLearnerContextIsAccountA,
@@ -19,17 +33,6 @@ import {
   stageAwaitingAB,
   writeP2LearnerData,
 } from '@test/support/realInfra/harness';
-import {
-  countAudioAssetRows,
-  expectM4RelocatedDomainCleared,
-  expectM4YoutubeRowPresent,
-  expectPersistedSessionRestoreBoot,
-  fetchUrlPaths,
-  seedExpiredActiveSessionA,
-  setupM4AccountIsolationHarness,
-  teardownM4AccountIsolationHarness,
-  writeM4RelocatedDomainLearnerData,
-} from '@test/support/accountIsolation/harness';
 
 jest.mock('@features/account/logic/legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),

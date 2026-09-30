@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {FeatureStatusScreen} from '../FeatureStatusScreen';
 
 function renderFeatureStatusScreen() {

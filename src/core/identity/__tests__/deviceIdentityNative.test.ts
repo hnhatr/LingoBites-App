@@ -1,4 +1,5 @@
 import {Platform} from 'react-native';
+
 import {readPlatformIdentifiers} from '../deviceIdentityNative';
 
 describe('readPlatformIdentifiers (SETE-303 / T6)', () => {

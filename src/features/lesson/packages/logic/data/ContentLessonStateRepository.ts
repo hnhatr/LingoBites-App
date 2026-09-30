@@ -1,6 +1,6 @@
+import {createRequestId} from '@core/api/requestId';
 import {getDatabase, withTransaction} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
-import {createRequestId} from '@core/api/requestId';
 import type {
   ContentLessonState,
   SaveContentLessonInput,

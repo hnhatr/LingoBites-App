@@ -1,14 +1,15 @@
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {Platform} from 'react-native';
-import {createRequestId} from '@core/api/requestId';
+
 import {getAppConfig} from '@core/api/appConfig';
-import i18n from '@core/i18n';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {createRequestId} from '@core/api/requestId';
 import type {
   ApiErrorBody,
   OCRImageInput,
   OCRSuccessBody,
   OCRTextResult,
 } from '@core/api/types';
+import i18n from '@core/i18n';
 
 const OCR_FETCH_TIMEOUT_MS = 30_000;
 

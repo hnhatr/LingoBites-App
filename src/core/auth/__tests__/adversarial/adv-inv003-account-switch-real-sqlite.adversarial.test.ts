@@ -1,28 +1,31 @@
-import {validFullOutput} from '@core/fixtures';
-import {resetDatabaseForTests} from '@core/db/database';
+import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
+  resetAccountStoreForTests,
+  useAccountStore,
+} from '@features/account/logic/useAccountStore';
+import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {
   listFlashcards,
   recordFlashcardRating,
   saveFlashcard,
 } from '@features/review';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {
-  resetAccountStoreForTests,
-  useAccountStore,
-} from '@features/account/logic/useAccountStore';
-import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
-import {resetRefreshStateForTests} from '../../authSession';
-import {installKeychainVault} from '@test/support/keychainVault';
+  getYouTubeProgress,
+  saveYouTubeProgress,
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
+import {resetDatabaseForTests} from '@core/db/database';
+import {validFullOutput} from '@core/fixtures';
+import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+import {installKeychainVault} from '@test/support/keychainVault';
+
+import {resetRefreshStateForTests} from '../../authSession';
 import type {AuthUser} from '../../authTypes';
 
 jest.mock('@features/account/logic/legacyClear', () => ({

@@ -1,29 +1,33 @@
-import http from 'node:http';
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
-import {validFullOutput} from '@core/fixtures';
-import {resetDatabaseForTests} from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
-import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
-import {
-  recordFlashcardRating,
-  saveFlashcard,
-} from '@features/review/logic/FlashcardRepository';
+
 import {
   getAnswerEvents,
   savePracticeSet,
 } from '@features/practice/logic/data/PracticeRepository';
-import type {PracticeSet} from '@core/schemas/practice';
 import {
   answerCurrentQuestion,
   createSession,
 } from '@features/practice/logic/sessionEngine';
-import {drainOutboxOnce} from '../../outboxSync';
+import {
+  recordFlashcardRating,
+  saveFlashcard,
+} from '@features/review/logic/FlashcardRepository';
+
+import {resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+import {validFullOutput} from '@core/fixtures';
+import type {PracticeSet} from '@core/schemas/practice';
+
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+
+import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
+import {drainOutboxOnce} from '../../outboxSync';
 
 /**
  * LING-93 adversarial review (INV-002). Production repositories,

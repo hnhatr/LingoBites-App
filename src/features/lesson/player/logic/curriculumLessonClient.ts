@@ -10,14 +10,15 @@
  * No local persistence of any kind: this module imports no repository,
  * storage, or database code, and never writes responses anywhere.
  */
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {getAppConfig} from '@core/api/appConfig';
+import {authenticatedFetch} from '@core/api/authenticatedFetch';
+
 import {
+  type CurriculumLesson,
   CurriculumLessonErrorResponseSchema,
+  type CurriculumLessonExerciseExplanation,
   parseCurriculumLessonAggregateResponse,
   parseCurriculumLessonCheckResponse,
-  type CurriculumLesson,
-  type CurriculumLessonExerciseExplanation,
 } from './curriculumLessonSchema';
 
 const LESSON_AGGREGATE_PATH = '/api/v1/lessons';

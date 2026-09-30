@@ -1,23 +1,26 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {runMigrations} from '@core/db/migrations';
-import {
-  getActivePackage,
-  insertPackageRecord,
-  swapActivePackage,
-} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
 import {
   getContentLessonState,
   saveContentLesson,
   startContentLesson,
 } from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+import {
+  getActivePackage,
+  insertPackageRecord,
+  swapActivePackage,
+} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {runMigrations} from '@core/db/migrations';
+
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 /**
  * Supplemental same-schema reopen checks on real `node:sqlite` (not the upgrade

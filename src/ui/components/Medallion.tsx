@@ -1,7 +1,8 @@
 import React from 'react';
 import {View} from 'react-native';
+
+import {type AppTheme, useAppTheme} from '../theme';
 import {AppText} from './AppText';
-import {useAppTheme, type AppTheme} from '../theme';
 
 export type MedallionTone = 'teal' | 'coral' | 'gold';
 

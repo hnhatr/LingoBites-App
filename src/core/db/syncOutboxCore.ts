@@ -1,6 +1,6 @@
-import {REVIEW_EVENT_TYPE} from './types';
 import {getDatabase} from './database';
 import type {SyncOutboxEventType, SyncOutboxPayload} from './types';
+import {REVIEW_EVENT_TYPE} from './types';
 
 export type EnqueueSyncOutboxEventInput = {
   /** Client-generated id — doubles as the server-side idempotency key. */

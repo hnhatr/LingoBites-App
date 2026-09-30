@@ -1,21 +1,21 @@
 import {Platform} from 'react-native';
+
 import {createRequestId} from '@core/api/requestId';
 import {
-  executeAccountReplacementTransaction,
-  getDatabase,
-} from '@core/db/database';
+  cancelAccountSwitchAttempt,
+  confirmAccountSwitchAttempt,
+  type CoordinatorErrorCode,
+  readCurrentAccountSwitchAttempt,
+  recoverAccountSwitchAttempt,
+  stageAccountSwitchAttempt,
+} from '@core/auth/accountSwitchCoordinator';
+import type {AccountSwitchAttemptV1} from '@core/auth/accountSwitchJournal';
+import {clearAccountSwitchJournal} from '@core/auth/accountSwitchJournal';
 import {
-  canonicalizeIdentifier,
-  resolveDeviceIdentifier,
-  type DeviceIdentifier,
-} from '@core/identity/deviceIdentifier';
-import {readPlatformIdentifiers} from '@core/identity/deviceIdentityNative';
-import {hasInstallMarker, setInstallMarker} from '@core/db/installMarker';
-import {
-  createAuthClient,
-  isAuthApiError,
   type AuthClientError,
   type AuthHttpClient,
+  createAuthClient,
+  isAuthApiError,
 } from '@core/auth/authClient';
 import {
   activateStoredSession,
@@ -24,23 +24,25 @@ import {
   saveCandidateSession,
   terminalReset,
 } from '@core/auth/authSession';
-import {
-  cancelAccountSwitchAttempt,
-  confirmAccountSwitchAttempt,
-  readCurrentAccountSwitchAttempt,
-  recoverAccountSwitchAttempt,
-  stageAccountSwitchAttempt,
-  type CoordinatorErrorCode,
-} from '@core/auth/accountSwitchCoordinator';
-import type {AccountSwitchAttemptV1} from '@core/auth/accountSwitchJournal';
-import {clearAccountSwitchJournal} from '@core/auth/accountSwitchJournal';
+import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {
   clearAllSessions,
   deleteSession,
   getActiveSession,
 } from '@core/auth/sessionStore';
-import type {AuthSession, AuthUser} from '@core/auth/authTypes';
-import {executeLegacyClear, executeCanonicalLegacyClear} from './legacyClear';
+import {
+  executeAccountReplacementTransaction,
+  getDatabase,
+} from '@core/db/database';
+import {hasInstallMarker, setInstallMarker} from '@core/db/installMarker';
+import {
+  canonicalizeIdentifier,
+  type DeviceIdentifier,
+  resolveDeviceIdentifier,
+} from '@core/identity/deviceIdentifier';
+import {readPlatformIdentifiers} from '@core/identity/deviceIdentityNative';
+
+import {executeCanonicalLegacyClear, executeLegacyClear} from './legacyClear';
 
 /**
  * Bootstrap/onboarding state machine (SETE-303 / T6).

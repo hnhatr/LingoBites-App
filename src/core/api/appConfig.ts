@@ -1,4 +1,5 @@
 import Config from 'react-native-config';
+
 import {DEFAULT_SUPPORT_EMAIL} from '../appMetadata';
 
 export type AppConfig = {

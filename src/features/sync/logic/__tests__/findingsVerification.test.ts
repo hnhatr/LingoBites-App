@@ -1,15 +1,17 @@
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import {getGrammarBookmark} from '@features/review/logic/GrammarBookmarkRepository';
+
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
+import {SyncCollectionSchema} from '@core/schemas/sync';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   listPendingSyncEvents,
   markSyncEventsFailed,
 } from '../adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '../outboxSync';
 import {applySyncRecord} from '../pullWorker';
-import {SyncCollectionSchema} from '@core/schemas/sync';
-import {getGrammarBookmark} from '@features/review/logic/GrammarBookmarkRepository';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

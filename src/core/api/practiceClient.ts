@@ -1,6 +1,6 @@
+import type {PracticeSet} from '../schemas/practice';
 import {getAppConfig} from './appConfig';
 import {authenticatedFetch} from './authenticatedFetch';
-import type {PracticeSet} from '../schemas/practice';
 
 export type PracticeConfigInput = {
   types: ('meaning_choice' | 'cloze_choice')[];

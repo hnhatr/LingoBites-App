@@ -3,12 +3,15 @@
  * (SETE-110 / M5, REQ-23, VC-17).
  */
 
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
+
+import {insertPackageRecord} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import {insertPackageRecord} from '@features/lesson/packages/logic/data/ContentPackageRepository';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {getShadowingContent, listSpeakingRoomModes} from '../speakingModes';
 
 function setup() {

@@ -1,8 +1,11 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {AppThemeProvider} from '@ui/theme';
+
 import {FeatureFlagProvider} from '@core/release';
+
 import {LessonsTabContent} from '../LessonsTabContent';
 
 // Mock navigation

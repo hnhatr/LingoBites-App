@@ -1,11 +1,12 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Platform, ScrollView, StyleSheet, View} from 'react-native';
 import Tts, {type Voice} from 'react-native-tts';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
 
 const SENTENCE = 'The quick brown fox jumps over the lazy dog.';
 const LOCALE = 'en-US';

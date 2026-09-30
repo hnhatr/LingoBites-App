@@ -1,17 +1,16 @@
-import * as database from '@core/db/database';
-import {getDatabase} from '@core/db/database';
-import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import {drainOutboxOnce} from '@features/sync/logic/outboxSync';
-import {clearAllLocalDataWithFiles} from '@features/profile/logic/LocalDataDeletionService';
+import {
+  cancelAccountSwitch,
+  confirmAccountSwitch,
+  resetBootStateForTests,
+} from '@features/account/logic/accountBootstrap';
 import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '@features/account/logic/useAccountStore';
-import {
-  confirmAccountSwitch,
-  cancelAccountSwitch,
-  resetBootStateForTests,
-} from '@features/account/logic/accountBootstrap';
+import {clearAllLocalDataWithFiles} from '@features/profile/logic/LocalDataDeletionService';
+import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
+import {drainOutboxOnce} from '@features/sync/logic/outboxSync';
+
 import {
   confirmAccountSwitchAttempt,
   stageAccountSwitchAttempt,
@@ -20,6 +19,9 @@ import * as accountSwitchJournal from '@core/auth/accountSwitchJournal';
 import {readAccountSwitchJournal} from '@core/auth/accountSwitchJournal';
 import * as authSession from '@core/auth/authSession';
 import {AUTH_ACTIVE_SESSION_SERVICE} from '@core/auth/sessionStore';
+import * as database from '@core/db/database';
+import {getDatabase} from '@core/db/database';
+
 import {
   bootStoreAuthenticated,
   createP2FetchMock,
@@ -29,12 +31,12 @@ import {
   expectLearnerDataIntact,
   expectNoCrossAccountLeakUnderB,
   jsonResponse,
-  readCurrentAccountId,
   P2_SESSION_B,
   P2_SESSION_C,
   P2_USER_A,
   P2_USER_B,
   P2_USER_C,
+  readCurrentAccountId,
   seedActiveSessionA,
   seedInstall,
   seedSession,

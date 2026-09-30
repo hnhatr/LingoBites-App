@@ -1,25 +1,29 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
+import * as contentBarrel from '@features/lesson/packages';
+import * as legacyLessonState from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import * as legacyPackage from '@features/lesson/packages/logic/data/ContentPackageRepository';
+import * as legacyRuntime from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
+
 import {
   getDatabase,
   resetDatabaseForTests,
   withTransaction,
 } from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
-import * as legacyLessonState from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
-import * as legacyPackage from '@features/lesson/packages/logic/data/ContentPackageRepository';
-import * as legacyRuntime from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
-import * as contentBarrel from '@features/lesson/packages';
-import * as queryPort from '../../contentQueryPort';
-import * as dataLessonState from '../../data/ContentLessonStateRepository';
-import * as dataPackage from '../../data/ContentPackageRepository';
-import * as dataRuntime from '../../data/ContentRuntimeRepository';
+
+import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
-import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
+
+import * as queryPort from '../../contentQueryPort';
+import * as dataLessonState from '../../data/ContentLessonStateRepository';
+import * as dataPackage from '../../data/ContentPackageRepository';
+import * as dataRuntime from '../../data/ContentRuntimeRepository';
 
 /**
  * LING-102 adversarial review (INV-001 / INV-005, TASK-013 content domain

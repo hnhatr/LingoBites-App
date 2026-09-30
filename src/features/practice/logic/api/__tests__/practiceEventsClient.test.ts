@@ -1,6 +1,7 @@
-import i18n from '@core/i18n';
-import {pushPracticeEvents} from '../practiceEventsClient';
 import type {PracticeEventPayload} from '@core/db/types';
+import i18n from '@core/i18n';
+
+import {pushPracticeEvents} from '../practiceEventsClient';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

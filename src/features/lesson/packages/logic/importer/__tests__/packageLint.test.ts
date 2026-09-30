@@ -7,16 +7,16 @@
  */
 
 import {
-  lintContentPackage,
-  validateLessonShape,
-  validateManifestShape,
-  RUNTIME_CONTENT_SCHEMA_VERSION,
-} from '../packageLint';
-import {
   lessonFileName,
   makeLesson,
   makeManifest,
 } from '../_fixtures/testLesson';
+import {
+  lintContentPackage,
+  RUNTIME_CONTENT_SCHEMA_VERSION,
+  validateLessonShape,
+  validateManifestShape,
+} from '../packageLint';
 
 describe('packageLint', () => {
   it('accepts a valid manifest + lesson pair', () => {

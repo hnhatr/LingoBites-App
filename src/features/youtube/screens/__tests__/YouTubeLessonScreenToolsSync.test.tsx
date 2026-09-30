@@ -1,10 +1,13 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
+
 import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
 import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
-import {YouTubeLessonScreen} from '../YouTubeLessonScreen';
+
 import {YouTubeToolsPopup} from '../../components/YouTubeToolsPopup';
+import {YouTubeLessonScreen} from '../YouTubeLessonScreen';
 
 let mockCurrentTimeSeconds = 0;
 const mockSeekTo = jest.fn((seconds: number) => {

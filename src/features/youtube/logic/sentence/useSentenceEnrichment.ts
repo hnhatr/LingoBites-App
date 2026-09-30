@@ -1,5 +1,7 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+
 import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
+
 import {retrySentenceBlock} from '../api/sentenceEnrichmentApi';
 import {
   deriveBlockStates,

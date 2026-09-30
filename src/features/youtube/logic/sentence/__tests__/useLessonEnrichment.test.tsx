@@ -1,19 +1,21 @@
 import React from 'react';
 import renderer, {act} from 'react-test-renderer';
-import {
-  useLessonEnrichment,
-  type UseLessonEnrichmentOptions,
-} from '../useLessonEnrichment';
+
+import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
+
 import {
   fetchLessonEnrichment,
   fetchSegmentEnrichment,
 } from '../../api/sentenceEnrichmentApi';
 import {
+  useLessonEnrichment,
+  type UseLessonEnrichmentOptions,
+} from '../useLessonEnrichment';
+import {
   makeEnrichment,
   makeSegment,
   VIDEO_ID,
 } from './fixtures/sentenceFixtures';
-import type {SentenceEnrichment} from '@core/schemas/sentence-contract';
 
 jest.mock('../../api/sentenceEnrichmentApi', () => ({
   fetchLessonEnrichment: jest.fn(),

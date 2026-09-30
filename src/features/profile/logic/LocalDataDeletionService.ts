@@ -1,9 +1,10 @@
 import {listAudioAssetLocalPaths} from '@features/audio';
-import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 import {
   clearSpeakingData,
   listSpeakingRecordingFilePaths,
 } from '@features/speaking';
+
+import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 import {
   defaultFileDeleter,
   deleteLocalFiles,

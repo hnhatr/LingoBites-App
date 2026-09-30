@@ -1,17 +1,19 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {deleteLocalFiles} from '@core/localData/localFileCleanup';
+import {clearLessonTokens} from '@core/security/lessonTokenStore';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {listSpeakingRecordingFilePaths} from '../../../speaking/logic/data/SpeakingRepository';
 import {
   CANONICAL_LEGACY_CLEAR_MARKER,
   CANONICAL_LEGACY_TABLES_TO_DROP,
-  LEGACY_CLEAR_MARKER,
-  executeLegacyClear,
   executeCanonicalLegacyClear,
+  executeLegacyClear,
+  LEGACY_CLEAR_MARKER,
 } from '../legacyClear';
-import {clearLessonTokens} from '@core/security/lessonTokenStore';
-import {deleteLocalFiles} from '@core/localData/localFileCleanup';
-import {listSpeakingRecordingFilePaths} from '../../../speaking/logic/data/SpeakingRepository';
 
 jest.mock('@core/security/lessonTokenStore');
 jest.mock('@core/localData/localFileCleanup');

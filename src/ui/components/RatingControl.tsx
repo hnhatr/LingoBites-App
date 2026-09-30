@@ -1,11 +1,13 @@
 import React from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {Pressable, StyleSheet, View} from 'react-native';
+
+import type {ReviewRating} from '@core/db/types';
+
+import type {AppTheme} from '../theme';
+import {useAppTheme} from '../theme';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
-import {useAppTheme} from '../theme';
-import type {AppTheme} from '../theme';
-import type {ReviewRating} from '@core/db/types';
 
 type Props = {
   onRate: (rating: ReviewRating) => void;

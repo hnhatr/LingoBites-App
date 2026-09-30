@@ -1,4 +1,5 @@
 import {open, type QuickSQLiteConnection} from 'react-native-quick-sqlite';
+
 import {DB_NAME} from './constants';
 import {runMigrations} from './migrations';
 

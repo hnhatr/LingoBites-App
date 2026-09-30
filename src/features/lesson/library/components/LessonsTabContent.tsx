@@ -1,15 +1,17 @@
-import React, {useMemo} from 'react';
-import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {LessonsStackParamList} from '../screens/navigationTypes';
+import React, {useMemo} from 'react';
+import {Pressable, SectionList, StyleSheet, View} from 'react-native';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {useAppTheme} from '@ui/theme';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import type {AppTheme} from '@ui/theme/types';
-import {LibraryEmptyState} from './LibraryEmptyState';
 import {SectionHeader} from '@ui/components/SectionHeader';
+import {useAppTheme} from '@ui/theme';
+import type {AppTheme} from '@ui/theme/types';
+
+import type {LessonsStackParamList} from '../screens/navigationTypes';
+import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface LessonsTabContentProps {
   personalLessons?: any[];

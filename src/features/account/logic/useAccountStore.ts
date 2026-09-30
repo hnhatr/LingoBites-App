@@ -1,20 +1,22 @@
 import {create} from 'zustand';
+
 import {
+  type AuthUser,
   createAuthClient,
   signOut,
   terminalReset,
-  type AuthUser,
 } from '@core/auth';
+import {clearAllSessions, getActiveSession} from '@core/auth/sessionStore';
+
 import {
+  type AccountSwitchConfirmation,
   bootAccount,
+  type BootResult,
   cancelAccountSwitch,
   confirmAccountSwitch,
   retryAccountSwitch,
   submitOnboardingName,
-  type AccountSwitchConfirmation,
-  type BootResult,
 } from './accountBootstrap';
-import {clearAllSessions, getActiveSession} from '@core/auth/sessionStore';
 
 /**
  * Account bootstrap state for navigation gating (SETE-303 / T6).

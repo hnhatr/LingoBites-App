@@ -13,11 +13,14 @@ import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
+
 import type {RootTabParamList} from '@features/home';
 import type {ProfileStackParamList} from '@features/profile';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {UnifiedLessonsScreen} from './UnifiedLessonsScreen';
 
 type Props = NativeStackScreenProps<

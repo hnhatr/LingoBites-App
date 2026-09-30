@@ -1,15 +1,15 @@
+import {PRACTICE_RETENTION} from '@core/db/constants';
 import {getDatabase, withTransaction} from '@core/db/database';
+import type {PracticeEventPayload} from '@core/db/types';
+import {PRACTICE_EVENT_TYPE} from '@core/db/types';
 import type {
-  PracticeSet,
+  AnswerEvent,
+  ClozeChoice,
+  MeaningChoice,
   PracticeQuestion,
   PracticeSession,
-  AnswerEvent,
-  MeaningChoice,
-  ClozeChoice,
+  PracticeSet,
 } from '@core/schemas/practice';
-import {PRACTICE_RETENTION} from '@core/db/constants';
-import {PRACTICE_EVENT_TYPE} from '@core/db/types';
-import type {PracticeEventPayload} from '@core/db/types';
 
 function parseJson<T>(value: string | null | undefined): T | undefined {
   if (!value) return undefined;

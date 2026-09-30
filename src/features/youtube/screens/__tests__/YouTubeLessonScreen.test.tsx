@@ -1,27 +1,31 @@
 import React from 'react';
-import renderer, {act} from 'react-test-renderer';
 import {Alert} from 'react-native';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release';
-import {AppThemeProvider} from '@ui/theme';
+import renderer, {act} from 'react-test-renderer';
+
+import {speak} from '@features/audio';
+
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {AppThemeProvider} from '@ui/theme';
+
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+import {FeatureFlagProvider} from '@core/release';
+import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {TranscriptLine} from '../../components/TranscriptLine';
+import {YouTubeTranscriptPopup} from '../../components/YouTubeTranscriptPopup';
 import {
   getYouTubeProgress,
   saveYouTubeProgress,
 } from '../../logic/youtubeQueryPort';
 import {saveYouTubeLesson} from '../../logic/youtubeQueryPort';
-import type {YouTubeTranscript} from '@core/schemas/youtube-transcript-v1';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   YouTubeLessonRouteScreen,
   YouTubeLessonScreen,
 } from '../YouTubeLessonScreen';
-import {YouTubeTranscriptPopup} from '../../components/YouTubeTranscriptPopup';
-import {TranscriptLine} from '../../components/TranscriptLine';
-import {speak} from '@features/audio';
 
 jest.mock('@features/audio', () => ({
   isEnUsVoiceAvailable: jest.fn(),

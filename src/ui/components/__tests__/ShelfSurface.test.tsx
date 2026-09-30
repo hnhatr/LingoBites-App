@@ -1,10 +1,13 @@
 import React from 'react';
-import {Text, StyleSheet} from 'react-native';
-import ReactTestRenderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
-import {AppThemeProvider} from '@ui/theme';
-import {ShelfSurface} from '../ShelfSurface';
+import {StyleSheet, Text} from 'react-native';
 import {AccessibilityInfo} from 'react-native';
+import ReactTestRenderer, {act} from 'react-test-renderer';
+
+import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
+import {ShelfSurface} from '../ShelfSurface';
 
 jest.mock('react-native', () => {
   const rn = jest.requireActual('react-native');

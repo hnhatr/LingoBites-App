@@ -1,7 +1,8 @@
 import React from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
-import {AppText} from './AppText';
+
 import {useAppTheme} from '../theme';
+import {AppText} from './AppText';
 
 export type QuizOptionState = 'default' | 'selected' | 'correct' | 'wrong';
 

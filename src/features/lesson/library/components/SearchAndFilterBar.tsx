@@ -1,8 +1,9 @@
 import React, {useMemo} from 'react';
-import {View, ScrollView, StyleSheet} from 'react-native';
-import {TextField} from '@ui/components/TextField';
+import {ScrollView, StyleSheet, View} from 'react-native';
+
 import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 

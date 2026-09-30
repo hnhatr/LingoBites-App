@@ -1,13 +1,13 @@
-import {createRequestId} from '@core/api/requestId';
 import type {UpcomingReviewReminder} from '@features/review/logic/contracts';
+import {
+  calculateNextReviewState,
+  DEFAULT_REVIEW_INTERVAL_DAYS,
+} from '@features/review/logic/reviewPolicy';
+
+import {createRequestId} from '@core/api/requestId';
 import {getOrCreateAnonymousUserId} from '@core/db/anonymousUserId';
 import {getDatabase, withTransaction} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
-import {REVIEW_EVENT_SCHEMA_VERSION} from '@core/db/types';
-import {
-  DEFAULT_REVIEW_INTERVAL_DAYS,
-  calculateNextReviewState,
-} from '@features/review/logic/reviewPolicy';
 import type {
   FlashcardRecord,
   GetDueFlashcardsOptions,
@@ -17,6 +17,7 @@ import type {
   SaveFlashcardInput,
   SaveFlashcardResult,
 } from '@core/db/types';
+import {REVIEW_EVENT_SCHEMA_VERSION} from '@core/db/types';
 
 type FlashcardRow = {
   id: string;

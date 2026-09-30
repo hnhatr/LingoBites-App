@@ -1,4 +1,5 @@
 import * as AuthSession from '@core/auth/authSession';
+
 import {createPracticeSetApi, getPracticeSetApi} from '../practiceClient';
 
 const mockFetch = jest.fn();

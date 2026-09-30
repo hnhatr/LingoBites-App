@@ -1,6 +1,7 @@
 import {useContext} from 'react';
-import {FeatureFlagContext} from './FeatureFlagContext';
+
 import type {FeatureKey} from './feature-registry';
+import {FeatureFlagContext} from './FeatureFlagContext';
 
 export function useFeatureFlags() {
   const context = useContext(FeatureFlagContext);

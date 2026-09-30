@@ -1,3 +1,6 @@
+import {installKeychainVault, vault} from '@test/support/keychainVault';
+
+import type {StoredSession} from '../sessionStore';
 import {
   AUTH_ACTIVE_SESSION_SERVICE,
   AUTH_SESSION_SERVICE_PREFIX,
@@ -10,8 +13,6 @@ import {
   saveSession,
   setActiveSessionId,
 } from '../sessionStore';
-import type {StoredSession} from '../sessionStore';
-import {installKeychainVault, vault} from '@test/support/keychainVault';
 
 function record(overrides: Partial<StoredSession> = {}): StoredSession {
   return {

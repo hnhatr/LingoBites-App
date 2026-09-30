@@ -1,13 +1,15 @@
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+
 import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import type {PracticeSet} from '@core/schemas/practice';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   getPracticeSession,
   markPracticeEventsSynced,
   savePracticeSet,
 } from '../data/PracticeRepository';
-import type {PracticeSet} from '@core/schemas/practice';
 import {
   abandonSession,
   answerCurrentQuestion,

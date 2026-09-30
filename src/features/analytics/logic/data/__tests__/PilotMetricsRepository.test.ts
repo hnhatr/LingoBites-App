@@ -1,12 +1,14 @@
+import {captureErrorEvent, insertSpeakingRecording} from '@features/speaking';
+
 import {getDatabase} from '@core/db/database';
+import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
+
 import {
-  getCapabilityProgressReport,
   exportPrivacySafeMetrics,
   formatDurationMs,
   formatPercentage,
+  getCapabilityProgressReport,
 } from '../PilotMetricsRepository';
-import {insertSpeakingRecording, captureErrorEvent} from '@features/speaking';
-import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 
 describe('PilotMetricsRepository (REQ-39 & CON-6)', () => {
   beforeEach(() => {

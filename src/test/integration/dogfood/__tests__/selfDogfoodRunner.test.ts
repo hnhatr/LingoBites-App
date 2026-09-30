@@ -1,25 +1,28 @@
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {DB_NAME} from '@core/db/constants';
-import {saveLearnerProfileData, getLearnerStateSnapshot} from '@features/today';
+
 import {
+  exportPrivacySafeMetrics,
+  getCapabilityProgressReport,
+} from '@features/analytics';
+import {
+  getActivePackage,
   insertPackageRecord,
   swapActivePackage,
-  getActivePackage,
 } from '@features/lesson/packages/logic/data/ContentPackageRepository';
-import {
-  insertSpeakingRecording,
-  captureErrorEvent,
-  listSpeakingRecordings,
-  listErrorEvents,
-} from '@features/speaking/logic/data/SpeakingRepository';
-import {
-  getCapabilityProgressReport,
-  exportPrivacySafeMetrics,
-} from '@features/analytics';
-import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
 import {listActivePackageLessons} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
+import {
+  captureErrorEvent,
+  insertSpeakingRecording,
+  listErrorEvents,
+  listSpeakingRecordings,
+} from '@features/speaking/logic/data/SpeakingRepository';
+import {getLearnerStateSnapshot, saveLearnerProfileData} from '@features/today';
+
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 
 beforeEach(() => {
   __resetMockDatabases();

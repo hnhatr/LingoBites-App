@@ -1,4 +1,5 @@
 import {createContext, useContext} from 'react';
+
 import type {ThemePreference} from './themeRegistry';
 import type {AppTheme} from './types';
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import {View} from 'react-native';
+
+import {useAppTheme} from '../theme';
 import {AppButton} from './AppButton';
 import {AppText} from './AppText';
-import {useAppTheme} from '../theme';
 
 type Props = {
   message: string;

@@ -1,19 +1,23 @@
-import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {open} from 'react-native-quick-sqlite';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {DB_NAME} from '@core/db/constants';
-import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
+
 import {
   getAnswerEvents,
   savePracticeSet,
 } from '@features/practice/logic/data/PracticeRepository';
-import type {PracticeSet} from '@core/schemas/practice';
 import {
   answerCurrentQuestion,
   createSession,
 } from '@features/practice/logic/sessionEngine';
-import {drainOutboxOnce} from '../../outboxSync';
+
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import type {PracticeSet} from '@core/schemas/practice';
+
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+
+import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+import {listPendingSyncEvents} from '../../adapters/SyncOutboxRepository';
+import {drainOutboxOnce} from '../../outboxSync';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

@@ -1,18 +1,20 @@
 import React from 'react';
-import {View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {View} from 'react-native';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import type {YouTubePlayerErrorCode} from '../components/YouTubePlayer';
-import {YouTubeMiniPlayer} from '../components/YouTubeMiniPlayer';
+
 import {SentenceCarousel} from '../components/SentenceCarousel';
-import {YouTubeTranscriptPopup} from '../components/YouTubeTranscriptPopup';
+import {YouTubeMiniPlayer} from '../components/YouTubeMiniPlayer';
+import type {YouTubePlayerErrorCode} from '../components/YouTubePlayer';
 import {YouTubeToolsPopup} from '../components/YouTubeToolsPopup';
-import type {YouTubeLessonScreenProps} from './youtubeLessonScreenTypes';
+import {YouTubeTranscriptPopup} from '../components/YouTubeTranscriptPopup';
 import type {YouTubeLessonScreenViewModel} from '../logic/useYouTubeLessonScreenController';
+import type {YouTubeLessonScreenProps} from './youtubeLessonScreenTypes';
 
 export function getPlayerErrorMessage(
   error: YouTubePlayerErrorCode,

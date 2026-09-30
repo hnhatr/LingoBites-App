@@ -1,14 +1,16 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useColorScheme} from 'react-native';
+
 import {useFeatureFlags} from '@core/release';
+
 import {
-  SYSTEM_THEME_ID,
   defaultThemeId,
   isThemePreference,
   productionThemeOptions,
+  SYSTEM_THEME_ID,
+  type ThemePreference,
   themeReleaseFlag,
   themes,
-  type ThemePreference,
 } from './themeRegistry';
 
 const disabledPersistedThemeFallbackId: ThemePreference = 'default';

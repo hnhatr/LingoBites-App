@@ -1,8 +1,9 @@
-import React from 'react';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React from 'react';
+
+import {useProfileScreen} from '../logic/useProfileScreen';
 import type {ProfileStackParamList} from './navigationTypes';
 import {ProfileScreenView} from './ProfileScreenView';
-import {useProfileScreen} from '../logic/useProfileScreen';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileMain'>;
 

@@ -1,16 +1,20 @@
-import React, {useCallback, useMemo} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {LessonsStackParamList} from '../screens/navigationTypes';
-import {useAppTheme} from '@ui/theme';
+import React, {useCallback, useMemo} from 'react';
+import {FlatList, StyleSheet, View} from 'react-native';
+
+import {useBookmarkOptimistic} from '@features/review';
+
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
+
 import type {FlashcardRecord} from '@core/db/types';
 import type {SaveFlashcardInput} from '@core/db/types';
-import {VocabularyRowCard} from './VocabularyRowCard';
+
+import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {LibraryEmptyState} from './LibraryEmptyState';
-import {useBookmarkOptimistic} from '@features/review';
+import {VocabularyRowCard} from './VocabularyRowCard';
 
 export interface VocabularyTabContentProps {
   vocabulary: FlashcardRecord[];

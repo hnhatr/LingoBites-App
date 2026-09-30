@@ -1,7 +1,9 @@
-import {authenticatedFetch} from './authenticatedFetch';
 import {useEffect, useState} from 'react';
 import {z} from 'zod';
+
 import {getAppConfig} from '@core/api/appConfig';
+
+import {authenticatedFetch} from './authenticatedFetch';
 
 export const CapabilitiesResponseSchema = z.object({
   capabilities: z.object({

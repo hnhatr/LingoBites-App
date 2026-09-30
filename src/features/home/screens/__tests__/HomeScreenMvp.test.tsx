@@ -1,13 +1,17 @@
 import React from 'react';
-import ReactTestRenderer, {act} from 'react-test-renderer';
 import {open} from 'react-native-quick-sqlite';
-import {FeatureFlagProvider} from '@core/release';
-import {makeTestReleaseConfig, CORE_WITH_REVIEW} from '@test/support';
+import ReactTestRenderer, {act} from 'react-test-renderer';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
+import {FeatureFlagProvider} from '@core/release';
+
+import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
 const saveLesson = (_args: unknown) => ({ok: true, lessonId: 'l1'});
-import {validFullOutput, validMinimalOutput} from '@core/fixtures';
 import {AppThemeProvider} from '@ui/theme';
+
+import {validFullOutput, validMinimalOutput} from '@core/fixtures';
+
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 

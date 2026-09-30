@@ -1,8 +1,17 @@
 import React from 'react';
 import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
+import {AppThemeProvider} from '@ui/theme';
+import {themeIds, themes} from '@ui/theme/themeRegistry';
+import {defaultTheme} from '@ui/theme/themes/default';
+import {stickerSoftTheme} from '@ui/theme/themes/stickerSoft';
+import type {AppTheme} from '@ui/theme/types';
+import {ThemeContext} from '@ui/theme/useAppTheme';
+
 import {FeatureFlagProvider} from '@core/release';
 import type {ReleaseConfig} from '@core/release/types';
+
 import {
   CORE_BETA_WITHOUT_REVIEW,
   FULL_FEATURE_SHOWCASE_FLAGS,
@@ -10,12 +19,7 @@ import {
   OFFLINE_REVIEW_MVP,
   THEME_UI_FLAGS,
 } from '@test/support';
-import {AppThemeProvider} from '@ui/theme';
-import {ThemeContext} from '@ui/theme/useAppTheme';
-import {defaultTheme} from '@ui/theme/themes/default';
-import {stickerSoftTheme} from '@ui/theme/themes/stickerSoft';
-import type {AppTheme} from '@ui/theme/types';
-import {themeIds, themes} from '@ui/theme/themeRegistry';
+
 import {ThemePicker} from '../ThemePicker';
 
 async function render(releaseConfig: ReleaseConfig) {

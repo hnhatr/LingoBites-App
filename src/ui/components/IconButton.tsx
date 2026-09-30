@@ -1,9 +1,10 @@
 import React from 'react';
 import {Pressable, type StyleProp, type ViewStyle} from 'react-native';
+
 import type {HandoffIconName} from '../icons/iconRegistry';
-import {MaterialIcon} from './MaterialIcon';
 import {useAppTheme} from '../theme';
 import type {AppTheme} from '../theme/types';
+import {MaterialIcon} from './MaterialIcon';
 
 export type IconButtonTone =
   | 'accent'

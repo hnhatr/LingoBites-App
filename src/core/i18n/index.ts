@@ -1,7 +1,8 @@
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
-import vi from './vi.json';
+
 import en from './en.json';
+import vi from './vi.json';
 
 const resources = {
   vi: {translation: vi},

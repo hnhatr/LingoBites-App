@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, type ViewProps} from 'react-native';
-import {useAppTheme} from '../theme';
 
+import {useAppTheme} from '../theme';
 import {ShelfSurface} from './ShelfSurface';
 
 export function AppCard({style, children, ...rest}: ViewProps) {

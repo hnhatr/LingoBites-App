@@ -1,9 +1,3 @@
-import {Platform} from 'react-native';
-import notifee, {
-  AndroidImportance,
-  AuthorizationStatus,
-  TriggerType,
-} from '@notifee/react-native';
 import type {
   AndroidChannel,
   Notification,
@@ -11,14 +5,22 @@ import type {
   TimestampTrigger,
   TriggerNotification,
 } from '@notifee/react-native';
+import notifee, {
+  AndroidImportance,
+  AuthorizationStatus,
+  TriggerType,
+} from '@notifee/react-native';
+import {Platform} from 'react-native';
+
 import {listUpcomingReviewReminders} from '@features/review';
+
 import type {PendingReminder} from './reminderPolicy';
+import type {ReminderScheduler} from './reminderService';
 import {
   buildReminderNotification,
   configureReminderScheduler,
   reconcileReminders,
 } from './reminderService';
-import type {ReminderScheduler} from './reminderService';
 
 /**
  * Real on-device Golden Hour notifications (REQ-10 / VC-5 / SETE-90).

@@ -7,11 +7,13 @@ import {
   Text,
   View,
 } from 'react-native';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {blockBaseStyles} from '../logic/blockStyles';
 import {
-  useCurriculumLessonAudio,
   type CurriculumLessonSoundFactory,
+  useCurriculumLessonAudio,
 } from '../logic/curriculumLessonAudio';
 import type {CurriculumLessonMediaAsset} from '../logic/curriculumLessonSchema';
 

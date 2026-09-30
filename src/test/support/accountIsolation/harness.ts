@@ -1,16 +1,18 @@
-import {getDatabase} from '@core/db/database';
-import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
 import {insertPendingChapterAudioAsset} from '@features/audio/logic/data/AudioAssetRepository';
+import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
 import type {AuthSession} from '@core/auth/authTypes';
 import {getActiveSessionId, setActiveSessionId} from '@core/auth/sessionStore';
+import {getDatabase} from '@core/db/database';
+
 import {
   P2_SESSION_A,
   P2_USER_A,
+  type P2HarnessContext,
   seedSession,
   setupP2RealInfraHarness,
   teardownP2RealInfraHarness,
   writeP2LearnerData,
-  type P2HarnessContext,
 } from '@test/support/realInfra/harness';
 
 const M4_AUDIO_NOW = '2026-09-28T08:00:00.000Z';

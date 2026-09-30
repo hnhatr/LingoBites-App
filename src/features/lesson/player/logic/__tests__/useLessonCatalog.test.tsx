@@ -1,6 +1,8 @@
-import * as AuthSession from '@core/auth/authSession';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
+import * as AuthSession from '@core/auth/authSession';
+
 import {
   useLessonCatalog,
   type UseLessonCatalogResult,

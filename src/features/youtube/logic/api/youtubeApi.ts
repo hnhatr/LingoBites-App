@@ -1,11 +1,11 @@
-import i18n from '@core/i18n';
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {createRequestId} from '@core/api/requestId';
+import i18n from '@core/i18n';
 import {
   CreateYouTubeTranscriptResponseSchema,
-  validateGetYouTubeTranscriptResponse,
   type RawCue,
+  validateGetYouTubeTranscriptResponse,
   type YouTubeErrorCode,
   type YouTubeTranscript,
 } from '@core/schemas/youtube-transcript-v1';

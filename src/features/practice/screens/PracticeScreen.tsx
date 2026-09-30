@@ -1,5 +1,7 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import {ScrollView, StyleSheet, View} from 'react-native';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -8,13 +10,14 @@ import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {QuizOption, type QuizOptionState} from '@ui/components/QuizOption';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useTranslation} from 'react-i18next';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import type {PracticeQuestion as LegacyPracticeQuestion} from '../logic/practiceQuestion';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import type {PracticeQuestion, ResultSummary} from '@core/schemas/practice';
-import {useQuiz} from '../logic/useQuiz';
+
+import type {PracticeQuestion as LegacyPracticeQuestion} from '../logic/practiceQuestion';
 import {hasInvalidMetaOptions} from '../logic/quizEngine';
 import {usePracticeSessionScreen} from '../logic/usePracticeSessionScreen';
+import {useQuiz} from '../logic/useQuiz';
 
 export type PracticeRouteParams =
   | {questions: LegacyPracticeQuestion[]; title?: string}

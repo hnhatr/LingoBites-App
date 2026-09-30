@@ -1,16 +1,19 @@
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {resetDatabaseForTests} from '@core/db/database';
 import {open} from 'react-native-quick-sqlite';
+
+import {recordFlashcardRating, saveFlashcard} from '@features/review';
+
 import {DB_NAME} from '@core/db/constants';
-import {saveFlashcard, recordFlashcardRating} from '@features/review';
+import {resetDatabaseForTests} from '@core/db/database';
 import {validFullOutput} from '@core/fixtures';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import type {PendingReminder} from '../reminderPolicy';
 import {
   configureReminderScheduler,
   noopReminderScheduler,
   reconcileReminders,
   syncReviewReminders,
 } from '../reminderService';
-import type {PendingReminder} from '../reminderPolicy';
 
 const NOW = '2026-09-01T00:00:00.000Z';
 

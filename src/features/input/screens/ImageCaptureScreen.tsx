@@ -1,4 +1,6 @@
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
@@ -7,8 +9,10 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {CreateStackParamList} from './navigationTypes';
+
+import {getImageSizeCategory, trackEvent} from '@features/analytics';
+import {extractText} from '@features/ocr';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -19,15 +23,14 @@ import {ImagePlaceholder} from '@ui/components/ImagePlaceholder';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SectionHeader} from '@ui/components/SectionHeader';
-import {useTranslation} from 'react-i18next';
 import {useAppTheme} from '@ui/theme';
-import {extractText} from '@features/ocr';
-import {getImageSizeCategory, trackEvent} from '@features/analytics';
+
 import {
+  type PickedImage,
   pickImageFromCamera,
   pickImageFromGallery,
-  type PickedImage,
 } from '../logic/imagePicker';
+import type {CreateStackParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CreateStackParamList, 'ImageCapture'>;
 
 export type ImageCaptureScreenProps = Props;

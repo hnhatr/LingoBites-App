@@ -1,7 +1,8 @@
 import React, {createContext, useMemo} from 'react';
+
 import {featureDependencies} from './feature-dependencies';
-import {featureRegistry} from './feature-registry';
 import type {FeatureKey} from './feature-registry';
+import {featureRegistry} from './feature-registry';
 import {
   DEFAULT_RELEASE_NAME,
   getReleaseConfig,

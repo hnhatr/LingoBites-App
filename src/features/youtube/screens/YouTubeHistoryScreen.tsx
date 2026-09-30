@@ -1,17 +1,20 @@
-import React, {useCallback, useContext, useState} from 'react';
-import {Alert, FlatList, Pressable, StyleSheet, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '@features/home';
+import React, {useCallback, useContext, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Alert, FlatList, Pressable, StyleSheet, View} from 'react-native';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
+
+import type {RootStackParamList} from '@features/home';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {useAppTheme, type AppTheme} from '@ui/theme';
-import {useTranslation} from 'react-i18next';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {
   deleteYouTubeLesson,
   listYouTubeLessons,

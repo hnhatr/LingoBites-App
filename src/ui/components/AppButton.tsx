@@ -8,8 +8,9 @@ import {
   Text,
   type ViewStyle,
 } from 'react-native';
-import {useAppTheme} from '../theme';
+
 import type {HandoffIconName} from '../icons/iconRegistry';
+import {useAppTheme} from '../theme';
 import {MaterialIcon} from './MaterialIcon';
 import {ShelfSurface} from './ShelfSurface';
 

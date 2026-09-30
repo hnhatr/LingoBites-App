@@ -1,42 +1,46 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Alert, useWindowDimensions, type LayoutChangeEvent} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import type {YouTubeSegment} from './youtubeTranscriptPort';
-import {
-  clearYouTubeProgress,
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from './youtubeQueryPort';
+import {Alert, type LayoutChangeEvent, useWindowDimensions} from 'react-native';
+import {View} from 'react-native';
+
+import {speak} from '@features/audio';
+import {useBookmarkOptimistic, useFlashcardLibrary} from '@features/review';
+
+import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {useAppTheme} from '@ui/theme';
+
+import type {GrammarPoint, VocabEntry} from '@core/schemas/sentence-contract';
+
+import {CompactControlBar} from '../components/CompactControlBar';
+import type {SentenceCardSegment} from '../components/SentenceCard';
+import type {SentenceCarouselRef} from '../components/SentenceCarousel';
 import {
   YouTubePlayer,
   type YouTubePlayerErrorCode,
   type YouTubePlayerRef,
 } from '../components/YouTubePlayer';
-import {CompactControlBar} from '../components/CompactControlBar';
-import {View} from 'react-native';
-import {shouldShowMiniPlayer} from './utils/sentenceSeek';
-import type {SentenceCarouselRef} from '../components/SentenceCarousel';
-import type {SentenceCardSegment} from '../components/SentenceCard';
-import type {GrammarPoint, VocabEntry} from '@core/schemas/sentence-contract';
+import {createYouTubeLessonScreenStyles} from '../screens/youtubeLessonScreenStyles';
+import type {YouTubeLessonScreenProps} from '../screens/youtubeLessonScreenTypes';
 import {useLessonEnrichment} from './sentence/useLessonEnrichment';
-import {speak} from '@features/audio';
 import {
-  useTranscriptSync,
   TRANSCRIPT_SYNC_POLL_INTERVAL_MS,
+  useTranscriptSync,
 } from './sync/useTranscriptSync';
+import type {YouTubePlaybackRate} from './utils/playbackRate';
+import {shouldShowMiniPlayer} from './utils/sentenceSeek';
 import {
   abWrap,
   formatLoopLabel,
-  toolsBadgeActive,
-  TOAST_DURATION_MS,
   type SentenceLoopCount,
+  TOAST_DURATION_MS,
+  toolsBadgeActive,
 } from './utils/toolsLogic';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {useBookmarkOptimistic, useFlashcardLibrary} from '@features/review';
-import type {YouTubePlaybackRate} from './utils/playbackRate';
-import type {YouTubeLessonScreenProps} from '../screens/youtubeLessonScreenTypes';
-import {createYouTubeLessonScreenStyles} from '../screens/youtubeLessonScreenStyles';
-import {useAppTheme} from '@ui/theme';
+import {
+  clearYouTubeProgress,
+  getYouTubeProgress,
+  saveYouTubeProgress,
+} from './youtubeQueryPort';
+import type {YouTubeSegment} from './youtubeTranscriptPort';
 
 /** Runs an async side effect without returning its promise to the caller. */
 function fireAndForget(task: Promise<unknown>): void {

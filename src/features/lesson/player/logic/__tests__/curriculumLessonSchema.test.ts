@@ -9,10 +9,10 @@ import {
   parseCurriculumLessonBlock,
   parseCurriculumLessonCheckResponse,
 } from '../curriculumLessonSchema';
+import provenance from './fixtures/provenance.json';
+import checkResponseFixture from './fixtures/valid-exercise-check-response.json';
 import aggregateFixture from './fixtures/valid-learner-lesson-aggregate.json';
 import aggregateResponseFixture from './fixtures/valid-lesson-aggregate-response.json';
-import checkResponseFixture from './fixtures/valid-exercise-check-response.json';
-import provenance from './fixtures/provenance.json';
 
 describe('curriculumLessonSchema provenance', () => {
   it('records the originating Server SHA and fixture revision', () => {

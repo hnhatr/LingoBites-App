@@ -1,11 +1,12 @@
+import {CORE_BETA_WITHOUT_REVIEW, makeTestReleaseConfig} from '@test/support';
+
 import {featureDependencies} from '../feature-dependencies';
 import {featureRegistry} from '../feature-registry';
 import {
+  DEFAULT_RELEASE_NAME,
   getReleaseConfig,
   listReleaseConfigNames,
-  DEFAULT_RELEASE_NAME,
 } from '../release-manifest';
-import {CORE_BETA_WITHOUT_REVIEW, makeTestReleaseConfig} from '@test/support';
 import {validateReleaseConfig} from '../validate-release-config';
 
 describe('validateReleaseConfig', () => {

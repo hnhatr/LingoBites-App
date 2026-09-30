@@ -9,8 +9,8 @@ import {
   reportProgress,
   reportSuccess,
   startImport,
-  subscribeImportState,
   subscribeImportProgress,
+  subscribeImportState,
 } from '../importState';
 
 describe('importState', () => {

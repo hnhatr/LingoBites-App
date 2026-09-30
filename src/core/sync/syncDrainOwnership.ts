@@ -1,5 +1,5 @@
-import {getDatabase} from '@core/db/database';
 import {getActiveSession} from '@core/auth/sessionStore';
+import {getDatabase} from '@core/db/database';
 
 export const SYNC_OWNERSHIP_CHANGED = 'SYNC_OWNERSHIP_CHANGED';
 

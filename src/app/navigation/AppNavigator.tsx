@@ -1,13 +1,60 @@
-import React, {useEffect} from 'react';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React, {useEffect} from 'react';
+
 import {
   AccountSwitchGateScreen,
   BootGateScreen,
   OnboardingNameScreen,
   useAccountStore,
 } from '@features/account';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {TtsSpikeScreen} from '@features/audio';
+import {HomeScreen} from '@features/home';
+import {
+  CreateScreen,
+  ImageCaptureScreen,
+  PasteTextScreen,
+} from '@features/input';
+import {LessonsHistoryScreen} from '@features/lesson/library';
+import {
+  ContentLessonDetailScreen,
+  ContentLessonListScreen,
+  ContentLessonRuntimeScreen,
+} from '@features/lesson/packages';
+import {
+  CurriculumLessonScreen,
+  UnifiedLessonGenerationScreen,
+  UnifiedLessonsPreviewScreen,
+} from '@features/lesson/player';
+import {OCRReviewScreen} from '@features/ocr';
+import {PracticeScreen} from '@features/practice';
+import {
+  FeatureStatusScreen,
+  PrivacyNoteScreen,
+  ProfileScreen,
+  ProgressReportScreen,
+} from '@features/profile';
+import {DailyReviewScreen} from '@features/review';
+import {
+  SpeakingRoomScreen,
+  SpeakingShadowingActivity,
+} from '@features/speaking/screens/speakingUiPort';
+import {TodayScreen} from '@features/today';
+import {
+  YouTubeHistoryScreen,
+  YouTubeInputScreen,
+  YouTubeLessonRouteScreen,
+  YouTubeProcessingScreen,
+} from '@features/youtube';
+
+import {useFeatureFlags} from '@core/release';
+
+import {accountGateRouteForPhase} from './accountGate';
+import {tabBarVisibilityOptions} from './immersiveTabRoutes';
+import {isIngestionRouteEnabled} from './ingestionRouteGate';
+import {getRootStackRouteNames} from './rootStackRoutes';
+import {TabBar} from './TabBar';
 import type {
   CreateStackParamList,
   HomeStackParamList,
@@ -16,50 +63,6 @@ import type {
   RootStackParamList,
   RootTabParamList,
 } from './types';
-import {HomeScreen} from '@features/home';
-import {
-  CreateScreen,
-  PasteTextScreen,
-  ImageCaptureScreen,
-} from '@features/input';
-import {OCRReviewScreen} from '@features/ocr';
-import {LessonsHistoryScreen} from '@features/lesson/library';
-import {PracticeScreen} from '@features/practice';
-import {
-  CurriculumLessonScreen,
-  UnifiedLessonGenerationScreen,
-  UnifiedLessonsPreviewScreen,
-} from '@features/lesson/player';
-import {DailyReviewScreen} from '@features/review';
-import {TodayScreen} from '@features/today';
-import {
-  ContentLessonListScreen,
-  ContentLessonDetailScreen,
-  ContentLessonRuntimeScreen,
-} from '@features/lesson/packages';
-import {
-  SpeakingRoomScreen,
-  SpeakingShadowingActivity,
-} from '@features/speaking/screens/speakingUiPort';
-import {
-  PrivacyNoteScreen,
-  ProgressReportScreen,
-  ProfileScreen,
-  FeatureStatusScreen,
-} from '@features/profile';
-import {TtsSpikeScreen} from '@features/audio';
-import {useFeatureFlags} from '@core/release';
-import {TabBar} from './TabBar';
-import {accountGateRouteForPhase} from './accountGate';
-import {getRootStackRouteNames} from './rootStackRoutes';
-import {tabBarVisibilityOptions} from './immersiveTabRoutes';
-import {isIngestionRouteEnabled} from './ingestionRouteGate';
-import {
-  YouTubeInputScreen,
-  YouTubeHistoryScreen,
-  YouTubeProcessingScreen,
-  YouTubeLessonRouteScreen,
-} from '@features/youtube';
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const CreateStack = createNativeStackNavigator<CreateStackParamList>();

@@ -1,7 +1,8 @@
 import React from 'react';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 import type {StyleProp, TextStyle} from 'react-native';
+import Animated, {type AnimatedStyle} from 'react-native-reanimated';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import {
   type HandoffIconName,
   isValidMaterialIconGlyph,

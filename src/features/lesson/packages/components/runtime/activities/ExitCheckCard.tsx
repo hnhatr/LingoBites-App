@@ -1,9 +1,11 @@
 import React, {useMemo, useState} from 'react';
 import {Pressable, View} from 'react-native';
-import {AppCard} from '@ui/components/AppCard';
+
 import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {useAppTheme} from '@ui/theme';
+
 import type {ExitCheckStepData} from '../../../logic/runtime/types';
 
 type Props = {

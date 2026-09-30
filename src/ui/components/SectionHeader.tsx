@@ -1,5 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
+
 import {useAppTheme} from '../theme';
 import {AppText} from './AppText';
 

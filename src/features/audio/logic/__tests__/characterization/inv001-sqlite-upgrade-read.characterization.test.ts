@@ -1,17 +1,20 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+
+import {
+  CHARACTERIZATION_INVARIANTS,
+  simulateDatabaseProcessRestart,
+} from '@test/support/characterization';
+
+import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {
   getReadyAudioAsset,
   insertPendingChapterAudioAsset,
   markChapterAudioAssetReady,
 } from '../../data/AudioAssetRepository';
-import {
-  CHARACTERIZATION_INVARIANTS,
-  simulateDatabaseProcessRestart,
-} from '@test/support/characterization';
 
 const NOW = '2026-09-27T12:00:00.000Z';
 

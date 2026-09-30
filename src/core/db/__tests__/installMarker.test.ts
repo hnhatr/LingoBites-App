@@ -1,4 +1,5 @@
 import {open} from 'react-native-quick-sqlite';
+
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {DB_NAME} from '../constants';
 import {getDatabase, resetDatabaseForTests} from '../database';

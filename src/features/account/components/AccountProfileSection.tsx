@@ -1,13 +1,15 @@
 import React, {useState} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {Pressable, StyleSheet, View} from 'react-native';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {TextField} from '@ui/components/TextField';
-import {useAppTheme, type AppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
 import {updateAccountProfile} from '../logic/accountProfile';
 import {validateDisplayName, validatePhone} from '../logic/profileValidation';
 import {useAccountStore} from '../logic/useAccountStore';

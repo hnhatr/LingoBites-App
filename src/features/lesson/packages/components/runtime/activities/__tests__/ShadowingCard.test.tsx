@@ -1,10 +1,13 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import renderer, {act} from 'react-test-renderer';
-import {FeatureFlagProvider} from '@core/release';
-import {AppThemeProvider} from '@ui/theme';
+
 import {AppButton} from '@ui/components/AppButton';
 import {IconButton} from '@ui/components/IconButton';
+import {AppThemeProvider} from '@ui/theme';
+
+import {FeatureFlagProvider} from '@core/release';
+
 import {ShadowingCard} from '../ShadowingCard';
 
 const data = {

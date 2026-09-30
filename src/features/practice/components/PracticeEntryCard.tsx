@@ -1,10 +1,12 @@
 import React from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {useAppTheme} from '@ui/theme';
+
 import {summarizeSession} from '../logic/sessionEngine';
 import type {UsePracticeController} from '../logic/usePracticeController';
 

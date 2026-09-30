@@ -1,24 +1,28 @@
 import {open} from 'react-native-quick-sqlite';
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {DB_NAME} from '@core/db/constants';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
-import {
-  saveYouTubeProgress,
-  getYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
-import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+
 import {
   bootAccount,
   confirmAccountSwitch,
   resetBootStateForTests,
-  submitOnboardingName,
   SIGNUP_IDEMPOTENCY_KEY,
+  submitOnboardingName,
 } from '@features/account/logic/accountBootstrap';
-import {resetRefreshStateForTests} from '../../authSession';
-import {clearAllSessions} from '../../sessionStore';
-import {installKeychainVault, vault} from '@test/support/keychainVault';
-import type {AuthSession, AuthUser} from '../../authTypes';
+import {
+  getYouTubeProgress,
+  saveYouTubeProgress,
+} from '@features/youtube/logic/data/YouTubeProgressRepository';
+
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
+
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+import {installKeychainVault, vault} from '@test/support/keychainVault';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {resetRefreshStateForTests} from '../../authSession';
+import type {AuthSession, AuthUser} from '../../authTypes';
+import {clearAllSessions} from '../../sessionStore';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

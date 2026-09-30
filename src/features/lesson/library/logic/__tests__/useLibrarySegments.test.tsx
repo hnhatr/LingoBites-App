@@ -1,15 +1,17 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
-import {
-  useLibrarySegments,
-  UseLibrarySegmentsResult,
-} from '../useLibrarySegments';
+
 import {
   listSavedLessons,
   listStartedLessons,
   useContentLibrary,
 } from '@features/lesson/packages';
 import {listAllBookmarkedGrammar, listFlashcards} from '@features/review';
+
+import {
+  useLibrarySegments,
+  UseLibrarySegmentsResult,
+} from '../useLibrarySegments';
 
 jest.mock('@features/review', () => ({
   listAllBookmarkedGrammar: jest.fn(),

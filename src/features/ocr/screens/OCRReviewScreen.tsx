@@ -1,9 +1,15 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {CreateStackParamList} from '@features/input';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
+import {getTextLengthBucket, trackEvent} from '@features/analytics';
 import type {RootTabParamList} from '@features/home';
+import type {CreateStackParamList} from '@features/input';
+import {startLessonFromConfirmedText} from '@features/lesson/player';
+import {createLessonGenerationJob} from '@features/lesson/player';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
@@ -13,16 +19,14 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {TextField} from '@ui/components/TextField';
-import {useTranslation} from 'react-i18next';
 import {useAppTheme} from '@ui/theme';
-import {getTextLengthBucket, trackEvent} from '@features/analytics';
+
 import {
   MAX_INPUT_TEXT_LENGTH,
   validateConfirmedText,
 } from '@core/utils/textValidation';
+
 import {extractText} from '../logic/OCRService';
-import {startLessonFromConfirmedText} from '@features/lesson/player';
-import {createLessonGenerationJob} from '@features/lesson/player';
 type Props = NativeStackScreenProps<CreateStackParamList, 'OCRReview'>;
 
 export type OCRReviewScreenProps = Props;

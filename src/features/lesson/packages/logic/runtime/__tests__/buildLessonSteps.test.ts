@@ -4,8 +4,9 @@
  * activity-type -> step-kind contract documented in `buildLessonSteps.ts`.
  */
 
-import {buildLessonSteps} from '../buildLessonSteps';
 import type {ContentChunkRow} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
+
+import {buildLessonSteps} from '../buildLessonSteps';
 import type {LessonRuntimeData} from '../types';
 
 function chunk(
