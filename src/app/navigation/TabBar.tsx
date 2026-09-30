@@ -385,10 +385,7 @@ export function TabBar({
             testID="tab-bar-indicator"
           />
         ) : null}
-        <View
-          accessibilityRole="tablist"
-          style={{flexDirection: 'row', flex: 1, height: '100%'}}
-        >
+        <View accessibilityRole="tablist" style={styles.tabRow}>
           {state.routes.map((route, index) => {
             const focused = state.index === index;
             const item = TAB_ITEMS[route.name] ?? {
@@ -535,6 +532,11 @@ function makeStyles(theme: AppTheme) {
       position: 'absolute',
       right: 0,
       top: 0,
+    },
+    tabRow: {
+      flexDirection: 'row',
+      flex: 1,
+      height: '100%',
     },
   });
 }
