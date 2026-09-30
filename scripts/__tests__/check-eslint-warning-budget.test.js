@@ -98,10 +98,9 @@ describe('evaluateWarningBudget', () => {
         filePath: '/repo/src/synthetic.tsx',
         messages: [
           ...createWarnings('no-bitwise', 131),
-          ...createWarnings('react-native-a11y/has-accessibility-hint', 87),
-          ...createWarnings('react-native/no-inline-styles', 89),
+          ...createWarnings('react-native-a11y/has-accessibility-hint', 84),
+          ...createWarnings('react-native/no-inline-styles', 82),
           ...createWarnings('no-void', 16),
-          ...createWarnings('no-undef-init', 1),
           ...createWarnings('react/no-unstable-nested-components', 1),
         ],
       },
@@ -109,6 +108,6 @@ describe('evaluateWarningBudget', () => {
 
     const result = evaluateWarningBudget(validResults);
     expect(result.ok).toBe(true);
-    expect(result.summary.totalWarnings).toBe(325);
+    expect(result.summary.totalWarnings).toBe(314);
   });
 });

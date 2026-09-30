@@ -50,7 +50,7 @@ export function useYouTubeServerEnabled(): boolean {
   const [enabled, setEnabled] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
-    void fetchYouTubeCapability(controller.signal).then(value => {
+    fetchYouTubeCapability(controller.signal).then(value => {
       if (!controller.signal.aborted) {
         setEnabled(value);
       }

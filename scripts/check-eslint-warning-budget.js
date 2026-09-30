@@ -4,21 +4,21 @@ const {spawnSync} = require('child_process');
 const path = require('path');
 
 const WARNING_BUDGET = {
-  totalWarnings: 340,
+  totalWarnings: 314,
   rules: {
-    'react-native-a11y/has-accessibility-hint': 87,
+    'react-native-a11y/has-accessibility-hint': 84,
     'react-native-a11y/has-valid-accessibility-descriptors': 0,
     'react-native-a11y/has-valid-accessibility-ignores-invert-colors': 0,
-    'react-native/no-inline-styles': 91,
-    'no-bitwise': 133,
-    'no-void': 17,
-    'eslint-comments/no-unused-disable': 8,
-    'jest/no-disabled-tests': 1,
-    '@typescript-eslint/no-shadow': 1,
-    'no-undef-init': 1,
+    'react-native/no-inline-styles': 82,
+    'no-bitwise': 131,
+    'no-void': 16,
+    'eslint-comments/no-unused-disable': 0,
+    'jest/no-disabled-tests': 0,
+    '@typescript-eslint/no-shadow': 0,
+    'no-undef-init': 0,
     'react/no-unstable-nested-components': 1,
-    'no-regex-spaces': 43,
-    'no-useless-escape': 23,
+    'no-regex-spaces': 0,
+    'no-useless-escape': 0,
   },
 };
 
