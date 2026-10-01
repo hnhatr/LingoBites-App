@@ -11,12 +11,14 @@ import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {FeatureFlagProvider} from '@core/release';
 
+import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
+
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
-// LING-41 TASK-006: pin the capability probe through a mutable mock so
+// LING-179 TASK-001: pin the capability probe through a mutable mock so
 // each test selects ready vs degraded Server behavior while the real
-// `useLessonCatalog` exercises the live catalog client.
+// `useCanonicalCatalog` exercises the canonical catalog client.
 let mockLessonCapabilities = {
   catalog: true,
   canonicalDelivery: true,
@@ -50,29 +52,49 @@ const validSession = {
   userId: 'user1',
 };
 
+const SEEDED_LESSON_ID = '33333333-3333-4333-8333-333333333301';
+
+function catalogLesson(index: number) {
+  const id = `33333333-3333-4333-8333-3333333333${String(index).padStart(
+    2,
+    '0',
+  )}`;
+  return {
+    id,
+    title: `Canonical ${index}`,
+    description: index === 32 ? '' : `Lesson ${index} description`,
+    origin: 'admin',
+    source_type: 'admin_text',
+    content_revision: 1,
+    sentence_count: index,
+    youtube_video_id: null,
+    unit: null,
+    updated_at: '2026-09-30T04:15:00.000Z',
+  };
+}
+
+// Canonical contract shape: contract_version + snake_case (AC-003). Eight
+// lessons so the six-item rail cap is observable.
 const CATALOG_PAGE = {
-  request_id: 'req-home-cat',
-  status: 'success',
-  lessons: [
-    {
-      id: '00000000-0000-4000-8000-000000000021',
-      title: 'Canonical one',
-      description: 'First backend lesson',
-      estimatedMinutes: 5,
-      contentRevision: 1,
-      updatedAt: '2026-09-25T10:00:00.000Z',
-    },
-    {
-      id: '00000000-0000-4000-8000-000000000022',
-      title: 'Canonical two',
-      description: 'Second backend lesson',
-      estimatedMinutes: null,
-      contentRevision: 1,
-      updatedAt: '2026-09-25T11:00:00.000Z',
-    },
-  ],
+  contract_version: 1,
+  lessons: [31, 32, 33, 34, 35, 36, 37, 38].map(catalogLesson),
   next_cursor: null,
 };
+
+const CONTINUE_NULL = {
+  request_id: 'req-continue-null',
+  status: 'success',
+  progress: null,
+};
+
+function catalogResponse() {
+  return {
+    ok: true,
+    status: 200,
+    headers: new Headers(),
+    json: async () => CATALOG_PAGE,
+  };
+}
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
@@ -127,7 +149,16 @@ async function renderHome(nav = navigation()) {
   return {tree, nav};
 }
 
-describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
+function railPressables(tree: ReactTestRenderer.ReactTestRenderer) {
+  return tree.root.findAll(
+    node =>
+      typeof node.props.testID === 'string' &&
+      node.props.testID.startsWith('home-recent-item-') &&
+      typeof node.props.onPress === 'function',
+  );
+}
+
+describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
   beforeEach(() => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
@@ -143,30 +174,50 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
     jest
       .spyOn(AuthSession, 'ensureValidSession')
       .mockResolvedValue(validSession);
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CATALOG_PAGE,
-    });
+    mockFetch.mockImplementation(async (url: string) =>
+      String(url).includes('/api/v1/lessons')
+        ? catalogResponse()
+        : {
+            ok: true,
+            status: 200,
+            headers: new Headers(),
+            json: async () => CONTINUE_NULL,
+          },
+    );
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  it('renders the rail from backend summaries with no local lessons', async () => {
+  it('renders the rail from canonical catalog summaries with no local lessons', async () => {
     const {tree} = await renderHome();
     expect(
       tree.root.findByProps({
-        testID: 'home-recent-item-00000000-0000-4000-8000-000000000021',
+        testID: 'home-recent-item-33333333-3333-4333-8333-333333333331',
       }),
     ).toBeDefined();
-    expect(
+  });
+
+  it('caps the rail at six lessons', async () => {
+    const {tree} = await renderHome();
+    expect(railPressables(tree)).toHaveLength(6);
+    expect(() =>
       tree.root.findByProps({
-        testID: 'home-recent-item-00000000-0000-4000-8000-000000000022',
+        testID: 'home-recent-item-33333333-3333-4333-8333-333333333337',
       }),
-    ).toBeDefined();
+    ).toThrow();
+    expect(() =>
+      tree.root.findByProps({
+        testID: 'home-recent-item-33333333-3333-4333-8333-333333333338',
+      }),
+    ).toThrow();
+  });
+
+  it('falls back to the sentence count when the description is empty', async () => {
+    const {tree} = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('32 câu');
   });
 
   it('opens the canonical player and tracks the open', async () => {
@@ -175,7 +226,7 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
       .findAll(
         node =>
           node.props.testID ===
-          'home-recent-item-00000000-0000-4000-8000-000000000021',
+          'home-recent-item-33333333-3333-4333-8333-333333333331',
       )
       .find(node => typeof node.props.onPress === 'function');
     if (!target) throw new Error('No pressable found for canonical rail item');
@@ -183,12 +234,75 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
       target.props.onPress();
     });
     expect(nav.navigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
-      lessonId: '00000000-0000-4000-8000-000000000021',
+      lessonId: '33333333-3333-4333-8333-333333333331',
     });
     expect(mockTrackEvent).toHaveBeenCalledWith('unified_lesson_opened', {
-      lesson_id: '00000000-0000-4000-8000-000000000021',
+      lesson_id: '33333333-3333-4333-8333-333333333331',
       source: 'home_rail',
     });
+  });
+
+  it('prefers downloaded lessons over the catalog fallback', async () => {
+    seedCanonicalLessonDownload();
+    const {tree} = await renderHome();
+    expect(
+      tree.root.findByProps({
+        testID: `home-recent-item-${SEEDED_LESSON_ID}`,
+      }),
+    ).toBeDefined();
+    expect(railPressables(tree)).toHaveLength(1);
+  });
+
+  it('opens the downloaded lesson from the Continue action', async () => {
+    seedCanonicalLessonDownload();
+    mockFetch.mockImplementation(async (url: string) =>
+      String(url).includes('/api/v1/lessons')
+        ? catalogResponse()
+        : {
+            ok: true,
+            status: 200,
+            headers: new Headers(),
+            json: async () => ({
+              request_id: 'req-continue-1',
+              status: 'success',
+              progress: {
+                id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
+                lesson_id: SEEDED_LESSON_ID,
+                status: 'in_progress',
+                started_at: '2026-09-25T07:00:00.000Z',
+                completed_at: null,
+                created_at: '2026-09-25T07:00:00.000Z',
+                updated_at: '2026-09-25T07:15:00.000Z',
+              },
+            }),
+          },
+    );
+    const {tree, nav} = await renderHome();
+    const target = tree.root
+      .findAll(node => node.props.testID === 'home-continue-action')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!target) throw new Error('No pressable found for continue action');
+    await act(async () => {
+      target.props.onPress();
+    });
+    expect(nav.navigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
+      lessonId: SEEDED_LESSON_ID,
+    });
+  });
+
+  it('routes home-starter-pick to Today and keeps its Vietnamese label', async () => {
+    seedCanonicalLessonDownload();
+    const {tree, nav} = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Chọn bài để học');
+    const target = tree.root
+      .findAll(node => node.props.testID === 'home-starter-pick')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!target) throw new Error('No pressable found for home-starter-pick');
+    await act(async () => {
+      target.props.onPress();
+    });
+    expect(nav.navigate).toHaveBeenCalledWith('Today');
   });
 
   it('disables canonical catalog when a capability is missing (fail-closed fallback)', async () => {
@@ -204,7 +318,7 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
     const canonicalItems = tree.root.findAll(
       node =>
         typeof node.props.testID === 'string' &&
-        node.props.testID.startsWith('home-recent-item-00000000-'),
+        node.props.testID.startsWith('home-recent-item-33333333-'),
     );
     expect(canonicalItems.length).toBe(0);
     expect(nav.navigate).not.toHaveBeenCalledWith(

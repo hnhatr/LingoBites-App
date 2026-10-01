@@ -3,6 +3,8 @@ import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useMemo} from 'react';
 import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 
+import {openLesson} from '@features/lesson/player';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
@@ -14,7 +16,6 @@ import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface LessonsTabContentProps {
-  personalLessons?: any[];
   packagedLessons: any[];
 }
 
@@ -88,7 +89,7 @@ export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
   }, [packagedLessons]);
 
   const handleLessonPress = (item: LessonItem) => {
-    navigation.navigate('CanonicalLessonPlayer', {lessonId: item.id});
+    openLesson(navigation, item.id);
   };
 
   const renderLessonItem = ({item}: {item: LessonItem}) => (

@@ -21,7 +21,7 @@ describe('HomeScreen UI seam (LING-115 TASK-017)', () => {
     'listStartedLessons',
     'trackEvent',
     'useContentLibrary',
-    'useLessonCatalog',
+    'useCanonicalCatalog',
     'useYouTubeServerEnabled',
   ];
 

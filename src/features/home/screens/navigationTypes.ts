@@ -13,6 +13,7 @@ import type {
 } from '@features/lesson/player';
 import type {ProfileStackParamList} from '@features/profile';
 import type {DailyReviewRouteParams} from '@features/review';
+import type {SpeakingRoomRouteParams} from '@features/speaking';
 import type {TodayRouteParams} from '@features/today';
 
 export type HomeMainRouteParams = undefined;
@@ -23,6 +24,7 @@ export type HomeStackParamList = {
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
   DailyReview: DailyReviewRouteParams;
   Today: TodayRouteParams;
+  SpeakingRoom: SpeakingRoomRouteParams;
 };
 
 export type RootTabParamList = {

@@ -17,6 +17,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LearnerLessonCreationRequestBody} from '@core/schemas/lesson';
 
+import {openLesson} from '../logic/lessonNavigation';
 import {useLessonCreation} from '../logic/useLessonCreation';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonCreation'>;
@@ -196,11 +197,7 @@ export function LessonCreationScreen({navigation, route}: Props) {
             <Pressable
               accessibilityRole="button"
               testID="lesson-creation-open"
-              onPress={() =>
-                navigation.navigate('CanonicalLessonPlayer', {
-                  lessonId: state.lessonId,
-                })
-              }
+              onPress={() => openLesson(navigation, state.lessonId)}
             >
               <AppText>Open lesson</AppText>
             </Pressable>

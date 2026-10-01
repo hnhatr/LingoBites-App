@@ -28,4 +28,19 @@ describe('TASK-008 retired App routes', () => {
     expect(source).toContain('CanonicalLessonPlayer');
     expect(source).toContain('CanonicalCatalog');
   });
+
+  it('registers Today and SpeakingRoom inside the Home stack (LING-179)', () => {
+    const source = readFileSync(
+      join(__dirname, '..', 'AppNavigator.tsx'),
+      'utf8',
+    );
+    const homeStack = source.slice(
+      source.indexOf('function HomeStackNavigator'),
+      source.indexOf('function CreateStackNavigator'),
+    );
+    expect(homeStack).toContain('name="Today"');
+    expect(homeStack).toContain('name="SpeakingRoom"');
+    expect(homeStack).toContain('name="CanonicalLessonPlayer"');
+    expect(homeStack).toContain('name="CanonicalCatalog"');
+  });
 });

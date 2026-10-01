@@ -86,6 +86,11 @@ function HomeStackNavigator() {
         name="Today"
         options={{headerShown: false}}
       />
+      <HomeStack.Screen
+        component={SpeakingRoomScreen}
+        name="SpeakingRoom"
+        options={{headerShown: false}}
+      />
     </HomeStack.Navigator>
   );
 }

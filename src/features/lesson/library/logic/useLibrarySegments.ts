@@ -12,7 +12,6 @@ export interface SegmentFilterState {
 }
 
 export interface UseLibrarySegmentsResult {
-  personalLessons: LibraryLessonCardView[];
   packagedLessons: LibraryLessonCardView[];
   vocabulary: FlashcardRecord[];
   grammar: (GrammarBookmark & {title?: string; content?: string})[];
@@ -44,8 +43,6 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
   const refresh = useCallback(() => {
     setRefreshVersion(v => v + 1);
   }, []);
-
-  const personalLessons = useMemo(() => [], []);
 
   const packagedLessons = useMemo(() => {
     const cards: LibraryLessonCardView[] = listDownloadedLessonSummaries().map(
@@ -82,7 +79,6 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
   }, [grammarFilter, refreshVersion]);
 
   return {
-    personalLessons,
     packagedLessons,
     vocabulary,
     grammar,

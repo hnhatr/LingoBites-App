@@ -11,7 +11,6 @@ const mockRefresh = jest.fn();
 
 jest.mock('../../logic/useLibrarySegments', () => ({
   useLibrarySegments: () => ({
-    personalLessons: [],
     packagedLessons: [],
     vocabulary: [],
     grammar: [],
@@ -36,9 +35,13 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
-jest.mock('@features/lesson/player', () => ({
-  UnifiedLessonsScreen: () => null,
-}));
+jest.mock('@features/lesson/player', () => {
+  const actual = jest.requireActual('@features/lesson/player');
+  return {
+    ...actual,
+    UnifiedLessonsScreen: () => null,
+  };
+});
 
 const mockGetDueFlashcards = jest.fn(() => []);
 
@@ -169,6 +172,20 @@ describe('LessonsHistoryScreen', () => {
     expect(
       tree.root.findByProps({testID: 'library-practice-speaking'}),
     ).toBeDefined();
+  });
+
+  it('opens the catalog in the current stack from the library action', () => {
+    const tree = render(
+      <LessonsHistoryScreen navigation={navigation} route={route} />,
+    );
+
+    const target = tree.root
+      .findAll(node => node.props.testID === 'library-open-catalog')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!target) throw new Error('No pressable found for library-open-catalog');
+    act(() => target.props.onPress());
+
+    expect(navigation.navigate).toHaveBeenCalledWith('CanonicalCatalog');
   });
 
   it('routes practice chips to DailyReview and SpeakingRoom', () => {

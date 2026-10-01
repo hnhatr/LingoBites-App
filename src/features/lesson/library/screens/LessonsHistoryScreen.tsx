@@ -4,6 +4,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {openLessonCatalog} from '@features/lesson/player';
 import {useFlashcardLibrary} from '@features/review';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -45,7 +46,6 @@ export function LessonsHistoryScreen({navigation}: Props) {
   >('lessons');
 
   const {
-    personalLessons,
     packagedLessons,
     vocabulary,
     grammar,
@@ -157,7 +157,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
           <Pressable
             accessibilityRole="button"
             testID="library-open-catalog"
-            onPress={() => navigation.navigate('CanonicalCatalog')}
+            onPress={() => openLessonCatalog(navigation)}
             style={({pressed}) => [
               themedStyles.catalogLink,
               pressed && themedStyles.pressed,
@@ -165,10 +165,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
           >
             <AppText variant="label">Duyệt tất cả bài học</AppText>
           </Pressable>
-          <LessonsTabContent
-            personalLessons={personalLessons}
-            packagedLessons={packagedLessons}
-          />
+          <LessonsTabContent packagedLessons={packagedLessons} />
         </View>
       )}
       {activeTab === 'vocabulary' && (

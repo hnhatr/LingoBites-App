@@ -17,6 +17,7 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {openLesson} from '../logic/lessonNavigation';
 import {useCanonicalCatalog} from '../logic/useCanonicalCatalog';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'CanonicalCatalog'>;
@@ -79,11 +80,7 @@ export function CanonicalLessonCatalogScreen({navigation}: Props) {
             <Pressable
               accessibilityRole="button"
               testID={`canonical-catalog-row-${item.id}`}
-              onPress={() =>
-                navigation.navigate('CanonicalLessonPlayer', {
-                  lessonId: item.id,
-                })
-              }
+              onPress={() => openLesson(navigation, item.id)}
             >
               <View style={styles.row}>
                 <AppText testID={`canonical-catalog-title-${item.id}`}>

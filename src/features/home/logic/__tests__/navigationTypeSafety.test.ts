@@ -16,6 +16,7 @@ describe('Home stack navigation types', () => {
     nav.navigate('CanonicalCatalog');
     nav.navigate('DailyReview');
     nav.navigate('Today');
+    nav.navigate('SpeakingRoom');
     expect(nav.navigate).toHaveBeenCalled();
   });
 });

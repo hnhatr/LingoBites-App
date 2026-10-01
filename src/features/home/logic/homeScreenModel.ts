@@ -1,6 +1,6 @@
-import type {UnifiedLessonSummary} from '@features/lesson/player';
-
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
+
+import type {LessonCatalogItem} from '@core/schemas/lesson';
 
 export const RECENT_LIMIT = 3;
 export const SUGGESTION_LIMIT = 3;
@@ -47,15 +47,15 @@ export type RelearnTarget = {
   level: string;
 };
 
-export function toCanonicalRecentItem(item: UnifiedLessonSummary): RecentItem {
+export function toCanonicalRecentItem(item: LessonCatalogItem): RecentItem {
   return {
     kind: 'canonical',
     id: item.id,
     title: item.title,
     meta:
-      item.estimatedMinutes != null
-        ? `${item.estimatedMinutes} phút`
-        : item.description ?? '',
+      item.description.trim().length > 0
+        ? item.description
+        : `${item.sentence_count} câu`,
   };
 }
 
