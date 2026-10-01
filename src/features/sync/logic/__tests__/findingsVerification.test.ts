@@ -1,9 +1,9 @@
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {getGrammarBookmark} from '@features/review/logic/GrammarBookmarkRepository';
 
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import {SyncCollectionSchema} from '@core/schemas/sync';
+import {recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
@@ -24,14 +24,33 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
   });
 
   describe('CR-001: Event Type & Schema Routing', () => {
-    it('validates content_lesson_state is in SyncCollectionSchema', () => {
-      expect(
-        SyncCollectionSchema.safeParse('content_lesson_state').success,
-      ).toBe(true);
+    it('validates lesson_progress is in SyncCollectionSchema (v2)', () => {
+      expect(SyncCollectionSchema.safeParse('lesson_progress').success).toBe(
+        true,
+      );
     });
 
-    it('drains content_lesson_state as generic sync push event', async () => {
-      saveContentLesson({lessonId: 'lesson-cr1', now: '2026-01-01T00:00:00Z'});
+    it('rejects retired collections from SyncCollectionSchema (v2)', () => {
+      for (const retired of [
+        'content_review_items',
+        'content_review_state',
+        'content_lesson_state',
+        'youtube_lessons',
+        'youtube_sentences',
+        'youtube_progress',
+      ]) {
+        expect(SyncCollectionSchema.safeParse(retired).success).toBe(false);
+      }
+    });
+
+    it('drains lesson_progress in its own sync push batch', async () => {
+      const recorded = recordLessonEvent({
+        lessonId: 'lesson-cr1',
+        event: 'start',
+        occurredAt: '2026-01-01T00:00:00Z',
+        eventId: '11111111-1111-4111-8111-111111111111',
+      });
+      expect(recorded.ok).toBe(true);
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -39,11 +58,11 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
         json: async () => ({
           request_id: '11111111-1111-1111-1111-111111111111',
           status: 'success',
-          contract_version: 1,
+          contract_version: 2,
           results: [
             {
               mutation_id: listPendingSyncEvents()[0].id,
-              collection: 'content_lesson_state',
+              collection: 'lesson_progress',
               entity_id: 'lesson-cr1',
               status: 'applied',
               revision: 1,
@@ -79,7 +98,7 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
   });
 
   describe('CR-002: Pull Worker Error & Cursor Safety', () => {
-    it('does not advance cursor if any record fails to apply in page', async () => {
+    it('skips unknown collections without stalling paging (AD-008)', async () => {
       const db = getDatabase();
       db.execute(
         'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
@@ -92,7 +111,7 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
         json: async () => ({
           request_id: '22222222-2222-2222-2222-222222222222',
           status: 'success',
-          contract_version: 1,
+          contract_version: 2,
           has_more: false,
           next_cursor: 'c1',
           records: [
@@ -118,7 +137,7 @@ describe('Findings Verification (CR-001 to CR-004)', () => {
         'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
         ['sync_cursor'],
       );
-      expect(res.rows?.item(0).value).toBe('c0');
+      expect(res.rows?.item(0).value).toBe('c1');
     });
   });
 

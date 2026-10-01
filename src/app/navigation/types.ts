@@ -1,6 +1,5 @@
 export type {
   HomeStackParamList,
-  LearningDetailParamList,
   RootStackParamList,
   RootTabParamList,
 } from '@features/home';

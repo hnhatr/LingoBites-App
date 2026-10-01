@@ -4,7 +4,6 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
-import {UnifiedLessonsScreen} from '@features/lesson/player';
 import {useFlashcardLibrary} from '@features/review';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -13,6 +12,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {GrammarTabContent} from '../components/GrammarTabContent';
+import {LessonsTabContent} from '../components/LessonsTabContent';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
 import {SegmentedTabBar} from '../components/SegmentedTabBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
@@ -45,6 +45,8 @@ export function LessonsHistoryScreen({navigation}: Props) {
   >('lessons');
 
   const {
+    personalLessons,
+    packagedLessons,
     vocabulary,
     grammar,
     vocabularyFilter,
@@ -152,10 +154,20 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
       {activeTab === 'lessons' && (
         <View style={themedStyles.tabContent} testID="lessons-tab-content">
-          <UnifiedLessonsScreen
-            onOpenLesson={lessonId =>
-              navigation.navigate('CurriculumLesson', {lessonId})
-            }
+          <Pressable
+            accessibilityRole="button"
+            testID="library-open-catalog"
+            onPress={() => navigation.navigate('CanonicalCatalog')}
+            style={({pressed}) => [
+              themedStyles.catalogLink,
+              pressed && themedStyles.pressed,
+            ]}
+          >
+            <AppText variant="label">Duyệt tất cả bài học</AppText>
+          </Pressable>
+          <LessonsTabContent
+            personalLessons={personalLessons}
+            packagedLessons={packagedLessons}
           />
         </View>
       )}
@@ -204,6 +216,11 @@ function makeStyles(theme: AppTheme) {
     pressed: {opacity: theme.states.pressedOpacity},
     tabContent: {
       flex: 1,
+    },
+    catalogLink: {
+      marginHorizontal: theme.gutter,
+      marginBottom: theme.spacing.sm,
+      paddingVertical: theme.spacing.sm,
     },
   });
 }

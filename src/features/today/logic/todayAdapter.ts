@@ -1,8 +1,7 @@
 import {
-  getDueContentReviewItems,
-  listActivePackageLessons,
-  listContentReviewItems,
-} from '@features/lesson/packages';
+  buildCanonicalLessonProgression,
+  hasDownloadedLessons,
+} from '@features/lesson/player';
 import {getDueFlashcards} from '@features/review';
 import {listErrorEvents, listSpeakingRecordings} from '@features/speaking';
 
@@ -42,11 +41,9 @@ export function saveLearnerProfileData(profile: LearnerProfileData): void {
 }
 
 export function getLearnerStateSnapshot(nowIso?: string): LearnerStateSnapshot {
-  const dueContentItems = getDueContentReviewItems(nowIso ? {now: nowIso} : {});
   const dueFlashcards = getDueFlashcards(nowIso ? {today: nowIso} : {});
 
-  const dueReviewCount = dueContentItems.length + dueFlashcards.length;
-  // Estimated review minutes: ~0.5 minutes per due item (rounded up)
+  const dueReviewCount = dueFlashcards.length;
   const estimatedReviewMinutes = Math.ceil(dueReviewCount * 0.5);
 
   const recentErrors = listErrorEvents();
@@ -57,81 +54,26 @@ export function getLearnerStateSnapshot(nowIso?: string): LearnerStateSnapshot {
       ? speakingRecordings[speakingRecordings.length - 1].createdAt
       : null;
 
-  const activeLessons = listActivePackageLessons();
-  const allReviewItems = listContentReviewItems();
-
-  const completedLessonIdSet = new Set<string>();
-  for (const item of allReviewItems) {
-    if (item.masteryState !== 'new') {
-      completedLessonIdSet.add(item.lessonId);
-    }
-  }
-  const completedLessonIds = Array.from(completedLessonIdSet);
-
-  let nextLessonId: string | null = null;
-  let nextLessonTitle: string | null = null;
-  let nextLessonEstimatedMinutes: number | undefined;
-  let prerequisiteGapLessonId: string | null = null;
-  let prerequisiteGapTitle: string | null = null;
-  let oldLessonId: string | null = null;
-  let oldLessonTitle: string | null = null;
-
-  for (let i = 0; i < activeLessons.length; i += 1) {
-    const lesson = activeLessons[i];
-    if (!completedLessonIdSet.has(lesson.id)) {
-      if (!nextLessonId) {
-        nextLessonId = lesson.id;
-        nextLessonTitle = lesson.titleVi || lesson.titleEn;
-        nextLessonEstimatedMinutes = lesson.estimatedDurationMinutes;
-
-        // If previous lesson in active package sequence was not completed, it's a prerequisite gap
-        if (i > 0 && !completedLessonIdSet.has(activeLessons[i - 1].id)) {
-          const prereq = activeLessons[i - 1];
-          prerequisiteGapLessonId = prereq.id;
-          prerequisiteGapTitle = prereq.titleVi || prereq.titleEn;
-        }
-      }
-    } else {
-      oldLessonId = lesson.id;
-      oldLessonTitle = lesson.titleVi || lesson.titleEn;
-    }
-  }
-
-  // Fast mastery & recognition items
-  const fastMasteryItemIds = allReviewItems
-    .filter(item => item.masteryState === 'mastered')
-    .map(item => item.id);
-
-  const recognitionOnlyItemIds = allReviewItems
-    .filter(
-      item =>
-        item.masteryState === 'new' ||
-        item.masteryState === 'learning' ||
-        item.itemType === 'vocabulary',
-    )
-    .map(item => item.id);
-
+  const progression = buildCanonicalLessonProgression();
   const profileData = getLearnerProfileData();
 
   return {
     dueReviewCount,
-    dueReviewItems: dueContentItems,
     estimatedReviewMinutes,
     recentErrors,
     speakingRecordings,
     lastSpeakingAtIso,
+    hasDownloadedLessons: hasDownloadedLessons(),
     lessonProgression: {
-      completedLessonIds,
-      nextLessonId,
-      nextLessonTitle,
-      nextLessonEstimatedMinutes,
-      prerequisiteGapLessonId,
-      prerequisiteGapTitle,
-      oldLessonId,
-      oldLessonTitle,
+      completedLessonIds: progression.completedLessonIds,
+      nextLessonId: progression.nextLessonId,
+      nextLessonTitle: progression.nextLessonTitle,
+      nextLessonEstimatedMinutes: progression.nextLessonEstimatedMinutes,
+      prerequisiteGapLessonId: progression.prerequisiteGapLessonId,
+      prerequisiteGapTitle: progression.prerequisiteGapTitle,
+      oldLessonId: progression.oldLessonId,
+      oldLessonTitle: progression.oldLessonTitle,
     },
-    fastMasteryItemIds,
-    recognitionOnlyItemIds,
     profileData,
   };
 }

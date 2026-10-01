@@ -88,7 +88,7 @@ export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
   }, [packagedLessons]);
 
   const handleLessonPress = (item: LessonItem) => {
-    navigation.navigate('ContentLessonRuntime', {lessonId: item.id});
+    navigation.navigate('CanonicalLessonPlayer', {lessonId: item.id});
   };
 
   const renderLessonItem = ({item}: {item: LessonItem}) => (

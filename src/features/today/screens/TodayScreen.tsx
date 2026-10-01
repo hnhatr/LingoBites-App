@@ -45,9 +45,11 @@ export function TodayScreen() {
 
   const [mode, setMode] = useState<TodayMode>('normal');
   const [plan, setPlan] = useState<StudyBlockPlan | null>(null);
+  const [hasDownloads, setHasDownloads] = useState(true);
 
   const loadPlan = useCallback((selectedMode: TodayMode) => {
     const snapshot = getLearnerStateSnapshot();
+    setHasDownloads(snapshot.hasDownloadedLessons);
     const newPlan = generateStudyBlock(snapshot, selectedMode);
     setPlan(newPlan);
   }, []);
@@ -70,12 +72,14 @@ export function TodayScreen() {
     // screen (never the removed v1 `SavedLessonDetail`), and `FlashcardList`
     // targets fall back to `DailyReview` (never the removed v1
     // `FlashcardList` screen).
-    if (resolved.screen === 'ContentLessonRuntime') {
-      navigation.navigate('ContentLessonRuntime', {
+    if (resolved.screen === 'CanonicalLessonPlayer') {
+      navigation.navigate('CanonicalLessonPlayer', {
         lessonId: resolved.lessonId,
       });
-    } else if (resolved.screen === 'LessonsList') {
-      navigation.navigate('LessonsList');
+    } else if (resolved.screen === 'CanonicalCatalog') {
+      navigation.navigate('CanonicalCatalog');
+    } else if (resolved.screen === 'SpeakingRoom') {
+      navigation.navigate('SpeakingRoom');
     } else {
       navigation.navigate('DailyReview');
     }
@@ -98,6 +102,24 @@ export function TodayScreen() {
         contentContainerStyle={themedStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {!hasDownloads ? (
+          <View
+            style={themedStyles.consolidationBanner}
+            testID="today-empty-downloads"
+          >
+            <AppText variant="h3">Chưa có bài học trên máy</AppText>
+            <AppText color="secondary" variant="body">
+              Hôm nay chỉ gợi ý bài đã tải về. Mở thư viện bài học để tải một
+              bài trước khi học.
+            </AppText>
+            <AppButton
+              title="Đi tới thư viện"
+              onPress={() => navigation.navigate('CanonicalCatalog')}
+              testID="today-go-download"
+            />
+          </View>
+        ) : null}
+
         {/* Mode Selector (REQ-12, REQ-13) */}
         <View style={styles.modeBlock}>
           <AppText variant="label" color="secondary">

@@ -7,11 +7,8 @@
  * only by `filePath` (deletion of the file itself is the caller's job — see
  * `deleteRecording`, which returns the path to delete).
  *
- * A captured error event (`error_events`) automatically creates a linked row
- * in the existing M4 `content_review_items` table, tagged
- * `item_type = SPEAKING_ERROR_REVIEW_ITEM_TYPE`, so the item surfaces via the
- * same due-item query (`getDueContentReviewItems`) used for lesson-runtime
- * SRS items, without a separate remediation system (REQ-28).
+ * A captured error event (`error_events`) stores remediation metadata locally
+ * without the retired package SRS tables (LING-149 TASK-008).
  */
 
 import {getDatabase} from '@core/db/database';
@@ -21,7 +18,6 @@ import type {
   InsertSpeakingRecordingInput,
   SpeakingRecordingRecord,
 } from '@core/db/types';
-import {SPEAKING_ERROR_REVIEW_ITEM_TYPE} from '@core/db/types';
 
 type SpeakingRecordingDbRow = {
   id: string;
@@ -148,11 +144,7 @@ export function listErrorEvents(lessonId?: string): ErrorEventRecord[] {
 }
 
 /**
- * Records a failed/weak attempt as an `error_events` row and automatically
- * creates the linked `content_review_items` row (REQ-28/29, VC-18) — there is
- * no manual "add flashcard" step. `reviewFront`/`reviewBack` default to
- * category-only copy when the caller has no richer text to show (CON-6: the
- * stored row must never carry the raw sentence the learner spoke/typed).
+ * Records a failed/weak attempt as an `error_events` row (REQ-28/29, VC-18).
  */
 export function captureErrorEvent(input: CaptureErrorEventInput): {
   errorEvent: ErrorEventRecord;
@@ -161,27 +153,6 @@ export function captureErrorEvent(input: CaptureErrorEventInput): {
   const db = getDatabase();
   const createdAt = input.createdAt ?? new Date().toISOString();
   const reviewItemId = `speaking-error-${input.id}`;
-
-  db.execute(
-    `INSERT INTO content_review_items (
-      id, srs_item_id, lesson_id, package_id, item_type, source_ref_id,
-      front, back, hint_vi, mastery_state, next_review_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?);`,
-    [
-      reviewItemId,
-      reviewItemId,
-      input.lessonId ?? '',
-      '',
-      SPEAKING_ERROR_REVIEW_ITEM_TYPE,
-      input.activityId ?? input.id,
-      input.reviewFront ?? errorCategoryLabel(input.category),
-      input.reviewBack ?? errorCategoryLabel(input.category),
-      input.reviewHintVi ?? null,
-      addDaysIso(createdAt, 1),
-      createdAt,
-      createdAt,
-    ],
-  );
 
   db.execute(
     `INSERT INTO error_events (
@@ -212,39 +183,10 @@ export function captureErrorEvent(input: CaptureErrorEventInput): {
   };
 }
 
-function errorCategoryLabel(
-  category: CaptureErrorEventInput['category'],
-): string {
-  switch (category) {
-    case 'vocabulary':
-      return 'Từ vựng cần ôn lại';
-    case 'structure':
-      return 'Cấu trúc câu cần ôn lại';
-    case 'listening':
-      return 'Kỹ năng nghe cần ôn lại';
-    case 'pronunciation_affecting_meaning':
-      return 'Phát âm ảnh hưởng nghĩa cần ôn lại';
-    case 'slow_response':
-      return 'Phản xạ trả lời cần luyện thêm';
-    case 'context_mismatch':
-      return 'Ngữ cảnh sử dụng cần ôn lại';
-    default:
-      return 'Nội dung cần ôn lại';
-  }
-}
-
-function addDaysIso(iso: string, days: number): string {
-  const date = new Date(iso);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString();
-}
-
 /**
- * CHANGE-S3 delete-my-data: removes all recordings rows, all error events,
- * and this milestone's contribution to `content_review_items`
- * (`item_type = SPEAKING_ERROR_REVIEW_ITEM_TYPE`) — never touches M3/M4
- * lesson-runtime review items. Returns the file paths of deleted recordings
- * so the caller can unlink them from disk.
+ * CHANGE-S3 delete-my-data: removes all recordings rows and error events.
+ * Returns the file paths of deleted recordings so the caller can unlink them
+ * from disk.
  */
 /**
  * File paths for all managed recordings — collect before deleting metadata.
@@ -267,8 +209,5 @@ export function clearSpeakingData(): {deletedFilePaths: string[]} {
   const db = getDatabase();
   db.execute('DELETE FROM speaking_recordings;');
   db.execute('DELETE FROM error_events;');
-  db.execute('DELETE FROM content_review_items WHERE item_type = ?;', [
-    SPEAKING_ERROR_REVIEW_ITEM_TYPE,
-  ]);
   return {deletedFilePaths};
 }

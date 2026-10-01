@@ -2,14 +2,10 @@ import type {ParamListBase, RouteProp} from '@react-navigation/native';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 export const IMMERSIVE_STACK_ROUTES = new Set([
-  'ContentLessonRuntime',
-  'CurriculumLesson',
+  'CanonicalLessonPlayer',
   'DailyReview',
   'SpeakingRoom',
   'SpeakingShadowing',
-  'YouTubeInput',
-  'YouTubeLesson',
-  'YouTubeProcessing',
 ]);
 
 export function shouldHideTabBarForRouteName(

@@ -7,7 +7,6 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
 import type {RootTabParamList} from '@features/home';
 import {startLessonFromConfirmedText} from '@features/lesson/player';
-import {createLessonGenerationJob} from '@features/lesson/player';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -80,18 +79,17 @@ export function PasteTextScreen({navigation, route}: Props) {
     const result = await startLessonFromConfirmedText({
       confirmedText: validation.value,
       sourceType: 'paste_text',
+      origin: 'PasteText',
       navigate: (screen, params) => {
-        if (screen === 'UnifiedLessonGeneration' && 'jobId' in params) {
-          const {jobId, confirmedText, level} = params;
+        if (screen === 'LessonCreation') {
           navigation
             .getParent<NavigationProp<RootTabParamList>>()
             ?.navigate('Lessons', {
-              screen: 'UnifiedLessonGeneration',
-              params: {jobId, confirmedText, level},
+              screen: 'LessonCreation',
+              params,
             });
         }
       },
-      createGenerationJob: createLessonGenerationJob,
     });
 
     if (!result.ok) {

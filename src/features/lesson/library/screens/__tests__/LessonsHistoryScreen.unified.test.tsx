@@ -13,7 +13,14 @@ const mockRefresh = jest.fn();
 jest.mock('../../logic/useLibrarySegments', () => ({
   useLibrarySegments: () => ({
     personalLessons: [],
-    packagedLessons: [],
+    packagedLessons: [
+      {
+        id: '00000000-0000-4000-8000-000000000010',
+        title: 'Unified one',
+        summary: 'First',
+        source: 'canonical',
+      },
+    ],
     vocabulary: [],
     grammar: [],
     lessonsFilter: {searchQuery: '', sourceFilter: 'all'},
@@ -157,34 +164,23 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
     jest.restoreAllMocks();
   });
 
-  it('renders one flat canonical catalog instead of source sections', async () => {
+  it('renders downloaded-lesson list from library segments (TASK-008)', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
     let navigation!: {navigate: jest.Mock};
     await act(async () => {
       ({tree, navigation} = renderUnified());
     });
     expect(
-      tree.root.findByProps({testID: 'unified-lessons-content'}),
-    ).toBeDefined();
-    expect(
-      tree.root.findByProps({testID: 'unified-lessons-list'}),
+      tree.root.findByProps({testID: 'lessons-section-list'}),
     ).toBeDefined();
     expect(() =>
-      tree.root.findByProps({testID: 'lessons-section-list'}),
+      tree.root.findByProps({testID: 'unified-lessons-content'}),
     ).toThrow();
     expect(() =>
       tree.root.findByProps({testID: 'curriculum-entry-section'}),
     ).toThrow();
 
-    act(() => {
-      tree.root
-        .findByProps({
-          testID: 'unified-lesson-item-00000000-0000-4000-8000-000000000011',
-        })
-        .props.onPress();
-    });
-    expect(navigation.navigate).toHaveBeenCalledWith('CurriculumLesson', {
-      lessonId: '00000000-0000-4000-8000-000000000011',
-    });
+    expect(mockRefresh).toHaveBeenCalled();
+    expect(navigation.navigate).not.toHaveBeenCalled();
   });
 });

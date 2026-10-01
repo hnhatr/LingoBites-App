@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import {playContentAudio, useContentLibrary} from '@features/lesson/packages';
+import {speak} from '@features/audio';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -47,15 +47,10 @@ export function SpeakingShadowingActivity({
 }: SpeakingShadowingActivityProps) {
   const {theme} = useAppTheme();
   const floatingClearance = useFloatingTabBarClearance();
-  const {getLessonAudioAssets} = useContentLibrary();
   const {insertSpeakingRecording} = useSpeakingRepository();
   const content = useMemo(() => getShadowingContent(), []);
   const lesson = content[0] ?? null;
   const line = lesson?.lines[0] ?? null;
-  const audioAssets = useMemo(
-    () => (lesson ? getLessonAudioAssets(lesson.lessonId) : new Map()),
-    [getLessonAudioAssets, lesson],
-  );
 
   const [phase, setPhase] = useState<RecordingPhase>('idle');
   const [filePath, setFilePath] = useState<string | null>(null);
@@ -107,10 +102,13 @@ export function SpeakingShadowingActivity({
   );
 
   function handlePlayReference() {
-    const result = playContentAudio(line?.audioAssetId ?? null, audioAssets);
-    if (!result.ok) {
-      Alert.alert('Âm thanh mẫu', result.message);
+    if (!line?.textEn) {
+      Alert.alert('Âm thanh mẫu', 'Không có câu mẫu cho bài này.');
+      return;
     }
+    speak(line.textEn).catch(() => {
+      Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
+    });
   }
 
   useEffect(() => {

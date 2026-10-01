@@ -126,11 +126,6 @@ function seedAccountAData(): void {
     ],
   );
   db.execute(
-    `INSERT INTO youtube_progress (lesson_id, position_ms, segment_index, updated_at)
-     VALUES (?, ?, ?, ?);`,
-    ['yt-1', 1000, 0, '2026-09-27T02:00:00.000Z'],
-  );
-  db.execute(
     `INSERT INTO gamification_events (id, event_type, points, created_at)
      VALUES (?, ?, ?, ?);`,
     ['game-1', 'review', 5, '2026-09-27T02:00:00.000Z'],

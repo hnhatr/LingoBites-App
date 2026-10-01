@@ -39,25 +39,6 @@ async function flushPromises() {
 }
 
 const mockTabNavigate = jest.fn();
-const mockCreateGenerationJob = jest.fn();
-
-jest.mock('@features/lesson/player', () => {
-  const actual = jest.requireActual('@features/lesson/player');
-  return {
-    ...actual,
-    useLessonServerCapabilities: () => ({
-      catalog: true,
-      canonicalDelivery: true,
-      aiMaterialization: true,
-      packagedImport: true,
-      partialRetry: true,
-      privateLibrary: true,
-    }),
-    createLessonGenerationJob: (...args: unknown[]) =>
-      mockCreateGenerationJob(...args),
-  };
-});
-
 const navigation = {
   navigate: mockNavigate,
   setParams: jest.fn(),
@@ -84,13 +65,9 @@ describe('PasteTextScreen', () => {
   beforeEach(() => {
     mockNavigate.mockReset();
     mockTabNavigate.mockReset();
-    mockCreateGenerationJob.mockResolvedValue({
-      ok: true,
-      job: {id: 'job-1'},
-    });
   });
 
-  it('navigates to Analyzing with the confirmed text and paste source', async () => {
+  it('navigates to LessonCreation with validated paste text', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
 
     await ReactTestRenderer.act(async () => {
@@ -115,12 +92,12 @@ describe('PasteTextScreen', () => {
     });
 
     expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'UnifiedLessonGeneration',
-      params: {
-        jobId: 'job-1',
-        confirmedText: 'We are offering a special discount for new customers.',
-        level: undefined,
-      },
+      screen: 'LessonCreation',
+      params: expect.objectContaining({
+        initialSource: 'text',
+        initialText: 'We are offering a special discount for new customers.',
+        submissionId: expect.stringMatching(/^PasteText-/),
+      }),
     });
   });
 

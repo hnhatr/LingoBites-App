@@ -12,17 +12,6 @@ import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {startReviewSession} from '../../../engagement/logic/reviewSession';
-
-const mockListYouTubeLessons = jest.fn(() => []);
-const mockCountYoutubeLessons = jest.fn(() => 0);
-
-jest.mock('@features/youtube', () => ({
-  listYouTubeLessons: (...args: unknown[]) =>
-    mockListYouTubeLessons.apply(undefined, args),
-  countYouTubeLessons: (...args: unknown[]) =>
-    mockCountYoutubeLessons.apply(undefined, args),
-}));
-
 import {HomeScreen} from '../HomeScreen';
 
 const EXPLORE_IDS = [

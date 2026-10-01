@@ -1,33 +1,25 @@
 import {resolveTodayNavigation} from '../todayNavigation';
 
 describe('resolveTodayNavigation', () => {
-  it('opens the content-package runtime screen for lesson targets', () => {
+  it('opens the canonical player for lesson targets', () => {
     expect(
       resolveTodayNavigation({
-        screen: 'ContentLessonRuntime',
+        screen: 'CanonicalLessonPlayer',
         params: {lessonId: 'lesson-1'},
       }),
-    ).toEqual({screen: 'ContentLessonRuntime', lessonId: 'lesson-1'});
+    ).toEqual({screen: 'CanonicalLessonPlayer', lessonId: 'lesson-1'});
   });
 
-  it('never routes to the removed v1 SavedLessonDetail screen', () => {
-    const resolved = resolveTodayNavigation({
-      screen: 'ContentLessonRuntime',
-      params: {lessonId: 'lesson-1'},
-    });
-    expect(resolved.screen).not.toBe('SavedLessonDetail');
-  });
-
-  it('falls back to DailyReview when a lesson target has no lesson id', () => {
+  it('falls back to the catalog when a lesson target has no lesson id', () => {
     expect(
-      resolveTodayNavigation({screen: 'ContentLessonRuntime', params: {}}),
-    ).toEqual({screen: 'DailyReview'});
-    expect(resolveTodayNavigation({screen: 'ContentLessonRuntime'})).toEqual({
-      screen: 'DailyReview',
+      resolveTodayNavigation({screen: 'CanonicalLessonPlayer', params: {}}),
+    ).toEqual({screen: 'CanonicalCatalog'});
+    expect(resolveTodayNavigation({screen: 'CanonicalLessonPlayer'})).toEqual({
+      screen: 'CanonicalCatalog',
     });
   });
 
-  it('sends FlashcardList targets to DailyReview, not the removed screen', () => {
+  it('sends FlashcardList targets to DailyReview', () => {
     expect(
       resolveTodayNavigation({
         screen: 'FlashcardList',
@@ -45,6 +37,6 @@ describe('resolveTodayNavigation', () => {
         screen: 'SpeakingRoom',
         params: {sentenceText: 'Hello'},
       }),
-    ).toEqual({screen: 'LessonsList'});
+    ).toEqual({screen: 'SpeakingRoom'});
   });
 });

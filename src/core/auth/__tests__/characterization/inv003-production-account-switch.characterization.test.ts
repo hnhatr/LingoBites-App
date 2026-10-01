@@ -7,15 +7,15 @@ import {
   SIGNUP_IDEMPOTENCY_KEY,
   submitOnboardingName,
 } from '@features/account/logic/accountBootstrap';
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
 
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 
+import {
+  readSeededLessonDownload,
+  seedCanonicalLessonDownload,
+} from '@test/support/canonicalDownloadSeed';
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 import {installKeychainVault, vault} from '@test/support/keychainVault';
 
@@ -115,12 +115,10 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_003} production account switch (HC-0
     });
     expect(onboarded.status).toBe('authenticated');
 
-    saveYouTubeProgress({
-      lessonId: 'lesson-account-a',
-      positionMs: 1200,
-      segmentIndex: 1,
-    });
-    expect(getYouTubeProgress('lesson-account-a')).not.toBeNull();
+    seedCanonicalLessonDownload('44444444-4444-4444-8444-444444444401');
+    expect(
+      readSeededLessonDownload('44444444-4444-4444-8444-444444444401'),
+    ).not.toBeNull();
 
     await clearAllSessions();
     vault.clear();
@@ -140,7 +138,9 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_003} production account switch (HC-0
       displayName: 'User B',
     });
     expect(switched.status).toBe('switch-confirmation');
-    expect(getYouTubeProgress('lesson-account-a')).not.toBeNull();
+    expect(
+      readSeededLessonDownload('44444444-4444-4444-8444-444444444401'),
+    ).not.toBeNull();
 
     if (switched.status !== 'switch-confirmation') {
       throw new Error('expected switch-confirmation');
@@ -151,6 +151,8 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_003} production account switch (HC-0
       expect(confirmed.user.id).toBe(userB.id);
     }
 
-    expect(getYouTubeProgress('lesson-account-a')).toBeNull();
+    expect(
+      readSeededLessonDownload('44444444-4444-4444-8444-444444444401'),
+    ).toBeNull();
   });
 });

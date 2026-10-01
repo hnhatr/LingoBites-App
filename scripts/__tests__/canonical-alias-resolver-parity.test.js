@@ -99,12 +99,12 @@ describe('canonical alias resolver parity (TS / Babel / Jest)', () => {
         expectedFile: 'src/app/navigation/rootStackRoutes.ts',
       },
       {
-        alias: '@features/practice',
-        expectedFile: 'src/features/practice/index.ts',
+        alias: '@features/lesson/player',
+        expectedFile: 'src/features/lesson/player/index.ts',
       },
       {
-        alias: '@features/lesson/packages',
-        expectedFile: 'src/features/lesson/packages/index.ts',
+        alias: '@features/review',
+        expectedFile: 'src/features/review/index.ts',
       },
       {
         alias: '@ui/components/AppButton',

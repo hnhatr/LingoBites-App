@@ -4,7 +4,7 @@ import React, {useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import type {RootStackParamList, RootTabParamList} from '@features/home';
+import type {RootTabParamList} from '@features/home';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -50,7 +50,17 @@ export function CreateScreen({navigation}: Props) {
   const youtubeServerEnabled = useYouTubeServerEnabled();
   const youtubeEnabled =
     config.features.youtubeLearning && youtubeServerEnabled;
-  const youtubeHistoryEnabled = config.features.youtubeLearning;
+  const tabNavigation =
+    navigation.getParent<NavigationProp<RootTabParamList>>();
+  const openYoutubeCreation = useCallback(() => {
+    tabNavigation?.navigate('Lessons', {
+      screen: 'LessonCreation',
+      params: {
+        submissionId: `create-youtube-${Date.now()}`,
+        initialSource: 'youtube',
+      },
+    });
+  }, [tabNavigation]);
   const pasteEnabled = config.features.pasteTextInput;
 
   const openCamera = useCallback(
@@ -77,7 +87,7 @@ export function CreateScreen({navigation}: Props) {
       icon: 'play_circle',
       labelKey: 'home.youtube',
       a11yKey: 'home.youtube_a11y',
-      onPress: () => navigation.navigate('YouTubeInput'),
+      onPress: openYoutubeCreation,
       testID: 'create-tile-youtube',
     });
   }
@@ -179,18 +189,14 @@ export function CreateScreen({navigation}: Props) {
                 ))}
               </View>
             ) : null}
-            {youtubeHistoryEnabled ? (
+            {youtubeEnabled ? (
               <Pressable
                 accessibilityLabel={t('home.youtube_history_a11y')}
                 accessibilityRole="button"
-                // SETE-289: History is a RootStack route above the tabs —
-                // reach it through the tab parent so the stack-id lookup
-                // stays type-safe (screen nav props carry no navigator id).
                 onPress={() =>
-                  navigation
-                    .getParent<NavigationProp<RootTabParamList>>()
-                    ?.getParent<NavigationProp<RootStackParamList>>('RootStack')
-                    ?.navigate('YouTubeHistory')
+                  tabNavigation?.navigate('Lessons', {
+                    screen: 'CanonicalCatalog',
+                  })
                 }
                 style={({pressed}) => [
                   styles.historyLink,

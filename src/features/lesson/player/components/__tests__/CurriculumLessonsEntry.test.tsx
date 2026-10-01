@@ -116,7 +116,7 @@ describe('CurriculumLessonsEntry', () => {
         })
         .props.onPress();
     });
-    expect(mockNavigate).toHaveBeenCalledWith('CurriculumLesson', {
+    expect(mockNavigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
       lessonId: '00000000-0000-4000-8000-000000000010',
     });
     await act(async () => {

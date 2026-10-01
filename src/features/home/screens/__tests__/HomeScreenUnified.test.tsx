@@ -14,22 +14,6 @@ import {FeatureFlagProvider} from '@core/release';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
-const mockListYouTubeLessons = jest.fn();
-const mockCountYoutubeLessons = jest.fn();
-const mockUseYouTubeServerEnabled = jest.fn();
-
-jest.mock('@features/youtube', () => ({
-  listYouTubeLessons: (...args: unknown[]) =>
-    mockListYouTubeLessons.apply(undefined, args),
-  countYouTubeLessons: (...args: unknown[]) =>
-    mockCountYoutubeLessons.apply(undefined, args),
-}));
-
-jest.mock('@core/api/youtubeCapabilities', () => ({
-  useYouTubeServerEnabled: (...args: unknown[]) =>
-    mockUseYouTubeServerEnabled(...args),
-}));
-
 // LING-41 TASK-006: pin the capability probe through a mutable mock so
 // each test selects ready vs degraded Server behavior while the real
 // `useLessonCatalog` exercises the live catalog client.
@@ -148,9 +132,6 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.clearAllMocks();
-    mockListYouTubeLessons.mockReturnValue([]);
-    mockCountYoutubeLessons.mockReturnValue(0);
-    mockUseYouTubeServerEnabled.mockReturnValue(false);
     mockLessonCapabilities = {
       catalog: true,
       canonicalDelivery: true,
@@ -201,7 +182,7 @@ describe('HomeScreen unified rail (LING-41 TASK-006)', () => {
     await act(async () => {
       target.props.onPress();
     });
-    expect(nav.navigate).toHaveBeenCalledWith('CurriculumLesson', {
+    expect(nav.navigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
       lessonId: '00000000-0000-4000-8000-000000000021',
     });
     expect(mockTrackEvent).toHaveBeenCalledWith('unified_lesson_opened', {

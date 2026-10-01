@@ -525,6 +525,18 @@ const DOWN_MIGRATIONS_M2: string[] = [
 ];
 
 export function runMigrations(db: QuickSQLiteConnection): void {
+  // `MIGRATIONS` is the pre-cutover baseline and still creates the tables
+  // that schema v3 drops. A database already at v3 must skip it, otherwise
+  // every launch would recreate the retired tables (ADV-001 / INV-003).
+  // Schema changes after v3 belong in a new versioned upgrade step.
+  if (readAppSchemaVersion(db) < APP_SCHEMA_VERSION) {
+    runLegacyBaselineMigrations(db);
+  }
+  ensureSchemaV2Upgrade(db);
+  ensureSchemaV3Upgrade(db);
+}
+
+function runLegacyBaselineMigrations(db: QuickSQLiteConnection): void {
   for (const sql of MIGRATIONS) {
     try {
       db.execute(sql);
@@ -539,6 +551,212 @@ export function runMigrations(db: QuickSQLiteConnection): void {
       }
       throw error;
     }
+  }
+}
+
+/**
+ * Local schema version gated by `PRAGMA user_version` (LING-149 AD-008).
+ * Version 2 is the canonical-lesson cutover: it adds the v2 persistence
+ * (`lesson_downloads`, `lesson_progress`, bookmark content-snapshot columns),
+ * purges outbox rows for retired sync collections, and resets the v1 sync
+ * cursor. Runs at most once: a database already at version 2 is untouched.
+ *
+ * Physical removal of the retired tables (`content_*`, `practice_*`,
+ * `youtube_*`, `lessons`, `lesson_v2`, old `grammar_bookmarks`) stays with
+ * TASK-008, which removes the features (and their tests) that still read
+ * them; dropping them here would break the live build. The purge below keeps
+ * every `lesson_progress` row and every live transport row (`review`,
+ * `practice`): only retired-collection rows are deleted.
+ */
+export const APP_SCHEMA_VERSION = 3;
+
+/** Outbox event types for collections retired by LING-149. Purged at cutover. */
+const RETIRED_SYNC_OUTBOX_EVENT_TYPES = [
+  'content_review_items',
+  'content_review_state',
+  'content_lesson_state',
+  'youtube_lessons',
+  'youtube_sentences',
+  'youtube_progress',
+];
+
+const SCHEMA_V2_STATEMENTS: string[] = [
+  // AD-005/AD-007 download row (writers land in TASK-007; the wipe in this
+  // package already clears it).
+  `CREATE TABLE IF NOT EXISTS lesson_downloads (
+    lesson_id TEXT PRIMARY KEY NOT NULL,
+    content_revision INTEGER,
+    server_revision INTEGER,
+    contract_version INTEGER,
+    snapshot_json TEXT NOT NULL,
+    media_dir TEXT,
+    downloaded_at TEXT
+  );`,
+  // AD-002 local progress (one row per lesson; see `core/sync/lessonProgress`).
+  `CREATE TABLE IF NOT EXISTS lesson_progress (
+    lesson_id TEXT PRIMARY KEY NOT NULL,
+    status TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    revision INTEGER NOT NULL DEFAULT 0,
+    tombstone INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL
+  );`,
+];
+
+/**
+ * AD-010 content snapshot on bookmarks. Additive only: `package_id` and the
+ * existing repository keep working until TASK-008 rewrites the writers, so
+ * this never drops or recreates the table.
+ */
+const GRAMMAR_BOOKMARK_SNAPSHOT_COLUMNS: string[] = [
+  'ADD COLUMN name TEXT',
+  'ADD COLUMN description TEXT',
+  'ADD COLUMN formula TEXT',
+  'ADD COLUMN analysis TEXT',
+  'ADD COLUMN sentence_en TEXT',
+];
+
+export function readAppSchemaVersion(db: QuickSQLiteConnection): number {
+  try {
+    const rows = db.execute('PRAGMA user_version;').rows;
+    const value = (rows?.item(0) as {user_version?: unknown} | undefined)
+      ?.user_version;
+    const parsed = typeof value === 'number' ? value : Number(value ?? 0);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 0;
+  } catch {
+    // Connections that cannot report a version (e.g. the Jest mock) are
+    // treated as pre-cutover; every statement below is idempotent.
+    return 0;
+  }
+}
+
+function ignoreBenignSchemaError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.message.includes('duplicate column name') ||
+      error.message.includes('no such table'))
+  );
+}
+
+function ensureSchemaV2Upgrade(db: QuickSQLiteConnection): void {
+  if (readAppSchemaVersion(db) >= 2) {
+    return;
+  }
+  db.execute('BEGIN');
+  try {
+    for (const sql of SCHEMA_V2_STATEMENTS) {
+      db.execute(sql);
+    }
+    for (const column of GRAMMAR_BOOKMARK_SNAPSHOT_COLUMNS) {
+      try {
+        db.execute(`ALTER TABLE grammar_bookmarks ${column};`);
+      } catch (error) {
+        if (!ignoreBenignSchemaError(error)) {
+          throw error;
+        }
+      }
+    }
+    // Purge by id so the statement stays precise on every engine: the
+    // shared Jest mock only understands `WHERE id = ?` deletes.
+    const retired = db.execute(
+      `SELECT id FROM sync_outbox WHERE event_type IN (${RETIRED_SYNC_OUTBOX_EVENT_TYPES.map(
+        () => '?',
+      ).join(', ')});`,
+      RETIRED_SYNC_OUTBOX_EVENT_TYPES,
+    ).rows;
+    for (let index = 0; index < (retired?.length ?? 0); index += 1) {
+      const row = retired?.item(index) as {id?: unknown} | undefined;
+      if (typeof row?.id === 'string') {
+        db.execute('DELETE FROM sync_outbox WHERE id = ?;', [row.id]);
+      }
+    }
+    db.execute('DELETE FROM app_settings WHERE key = ?;', ['sync_cursor']);
+    db.execute('PRAGMA user_version = 2;');
+    db.execute('COMMIT');
+  } catch (error) {
+    try {
+      db.execute('ROLLBACK');
+    } catch {
+      // Rollback failure leaves the connection unusable; the original error
+      // is what matters and will surface to the caller.
+    }
+    throw error;
+  }
+}
+
+const DOWN_MIGRATIONS_M6_CONTENT_LESSON_STATE: string[] = [
+  `DROP INDEX IF EXISTS idx_content_lesson_state_is_started;`,
+  `DROP INDEX IF EXISTS idx_content_lesson_state_is_saved;`,
+  `DROP TABLE IF EXISTS content_lesson_state;`,
+];
+
+const DOWN_MIGRATIONS_LEGACY_LESSON_TABLES: string[] = [
+  `DROP INDEX IF EXISTS idx_lesson_v2_sentences_lesson_id;`,
+  `DROP TABLE IF EXISTS lesson_v2_units;`,
+  `DROP TABLE IF EXISTS lesson_v2_grammar;`,
+  `DROP TABLE IF EXISTS lesson_v2_vocabulary;`,
+  `DROP TABLE IF EXISTS lesson_v2_chunks;`,
+  `DROP TABLE IF EXISTS lesson_v2_sentences;`,
+  `DROP INDEX IF EXISTS idx_lesson_v2_updated_at;`,
+  `DROP TABLE IF EXISTS lesson_v2;`,
+  `DROP INDEX IF EXISTS idx_lessons_input_hash;`,
+  `DROP INDEX IF EXISTS idx_lessons_created_at;`,
+  `DROP TABLE IF EXISTS lessons;`,
+];
+
+const SCHEMA_V3_DROP_STATEMENTS: string[] = [
+  ...DOWN_MIGRATIONS_M3,
+  ...DOWN_MIGRATIONS_M8,
+  ...DOWN_MIGRATIONS_M9,
+  ...DOWN_MIGRATIONS_M10,
+  ...DOWN_MIGRATIONS_M6_CONTENT_LESSON_STATE,
+  ...DOWN_MIGRATIONS_M2,
+  ...DOWN_MIGRATIONS_LEGACY_LESSON_TABLES,
+];
+
+/** Purged at v3 cutover together with dropped local practice tables. */
+const RETIRED_V3_SYNC_OUTBOX_EVENT_TYPES = [
+  ...RETIRED_SYNC_OUTBOX_EVENT_TYPES,
+  'practice_answered',
+];
+
+export function ensureSchemaV3Upgrade(db: QuickSQLiteConnection): void {
+  if (readAppSchemaVersion(db) >= APP_SCHEMA_VERSION) {
+    return;
+  }
+  db.execute('BEGIN');
+  try {
+    for (const sql of SCHEMA_V3_DROP_STATEMENTS) {
+      try {
+        db.execute(sql);
+      } catch (error) {
+        if (!ignoreBenignSchemaError(error)) {
+          throw error;
+        }
+      }
+    }
+    const retired = db.execute(
+      `SELECT id FROM sync_outbox WHERE event_type IN (${RETIRED_V3_SYNC_OUTBOX_EVENT_TYPES.map(
+        () => '?',
+      ).join(', ')});`,
+      RETIRED_V3_SYNC_OUTBOX_EVENT_TYPES,
+    ).rows;
+    for (let index = 0; index < (retired?.length ?? 0); index += 1) {
+      const row = retired?.item(index) as {id?: unknown} | undefined;
+      if (typeof row?.id === 'string') {
+        db.execute('DELETE FROM sync_outbox WHERE id = ?;', [row.id]);
+      }
+    }
+    db.execute(`PRAGMA user_version = ${APP_SCHEMA_VERSION};`);
+    db.execute('COMMIT');
+  } catch (error) {
+    try {
+      db.execute('ROLLBACK');
+    } catch {
+      // ignore rollback failure
+    }
+    throw error;
   }
 }
 

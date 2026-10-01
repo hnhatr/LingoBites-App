@@ -12,6 +12,11 @@ import {getDatabase} from './database';
  * Flashcard/review/content-package/YouTube/speaking tables are wiped as
  * part of this explicit user-invoked deletion only — no table is dropped
  * and no other flow calls this function.
+ *
+ * LING-149 (EC-015/AC-015): canonical downloads (`lesson_downloads`) and
+ * local progress (`lesson_progress`) are wiped here too. Media-file sweeping
+ * for staged download files lands with TASK-007's media staging helper;
+ * until then there is no on-disk media registry to clear.
  */
 export async function clearAllLocalDatabaseRows(): Promise<void> {
   const db = getDatabase();
@@ -46,15 +51,39 @@ export async function clearAllLocalDatabaseRows(): Promise<void> {
   db.execute('DELETE FROM error_events;');
   db.execute('DELETE FROM sync_outbox;');
   db.execute('DELETE FROM audio_assets;');
-  db.execute('DELETE FROM content_review_items;');
   db.execute('DELETE FROM grammar_bookmarks;');
-  db.execute('DELETE FROM content_lesson_state;');
   try {
     db.execute('DELETE FROM lesson_v2;');
   } catch {
     // Table may be dropped after canonical legacy clear
   }
-  db.execute('DELETE FROM youtube_sentences;');
-  db.execute('DELETE FROM youtube_lessons;');
+  for (const sql of [
+    'DELETE FROM content_review_items;',
+    'DELETE FROM content_lesson_state;',
+    'DELETE FROM youtube_sentences;',
+    'DELETE FROM youtube_lessons;',
+    'DELETE FROM youtube_progress;',
+    'DELETE FROM practice_sets;',
+    'DELETE FROM practice_questions;',
+    'DELETE FROM practice_sessions;',
+    'DELETE FROM practice_events;',
+  ]) {
+    try {
+      db.execute(sql);
+    } catch {
+      // Retired tables (schema v3) may already be dropped.
+    }
+  }
+  // LING-149 canonical state (tables may predate v2 on old databases).
+  try {
+    db.execute('DELETE FROM lesson_downloads;');
+  } catch {
+    // Table does not exist before the v2 cutover.
+  }
+  try {
+    db.execute('DELETE FROM lesson_progress;');
+  } catch {
+    // Table does not exist before the v2 cutover.
+  }
   return tokenCleanup;
 }

@@ -5,21 +5,14 @@ import {
 } from '../immersiveTabRoutes';
 
 describe('immersiveTabRoutes', () => {
-  it('hides the tab bar on immersive lesson and YouTube processing routes', () => {
-    for (const name of [
-      'ContentLessonRuntime',
-      'YouTubeProcessing',
-      'YouTubeLesson',
-      'YouTubeInput',
-    ]) {
-      expect(shouldHideTabBarForRouteName(name)).toBe(true);
-    }
+  it('hides the tab bar on the canonical player route', () => {
+    expect(shouldHideTabBarForRouteName('CanonicalLessonPlayer')).toBe(true);
   });
 
   it('hides the tab bar on focused sessions (SETE-255)', () => {
     for (const name of [
       'DailyReview',
-      'ContentLessonRuntime',
+      'CanonicalLessonPlayer',
       'SpeakingRoom',
       'SpeakingShadowing',
     ]) {

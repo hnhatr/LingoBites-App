@@ -1,4 +1,3 @@
-import type {ContentLessonRow} from '@features/lesson/packages';
 import type {UnifiedLessonSummary} from '@features/lesson/player';
 
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
@@ -69,5 +68,10 @@ export type HomeScreenStarterState = {
 };
 
 export type HomeScreenHeroState = {
-  startedLesson: ContentLessonRow | null;
+  startedLesson: {
+    id: string;
+    titleVi: string;
+    estimatedDurationMinutes: number;
+    level: string;
+  } | null;
 };

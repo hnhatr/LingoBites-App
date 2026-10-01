@@ -1,0 +1,22 @@
+{
+  "request_id": "88888888-8888-4888-8888-888888888801",
+  "status": "success",
+  "contract_version": 2,
+  "records": [
+    {
+      "collection": "lesson_progress",
+      "entity_id": "33333333-3333-4333-8333-333333333301",
+      "payload": {
+        "status": "completed",
+        "started_at": "2026-09-30T06:02:00.000Z",
+        "completed_at": "2026-09-30T06:10:00.000Z"
+      },
+      "revision": 42,
+      "occurred_at": "2026-09-30T06:10:00.000Z",
+      "updated_at": "2026-09-30T06:10:01.000Z",
+      "tombstone": false
+    }
+  ],
+  "next_cursor": "c2V5LTE0OS1maXh0dXJl",
+  "has_more": false
+}
