@@ -1,7 +1,16 @@
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {getDatabase, withTransaction} from '@core/db/database';
-import type {SyncRecord} from '@core/schemas/sync';
+import {
+  LessonProgressStatePayloadSchema,
+  SyncCollectionSchema,
+  type SyncPullRecord,
+  type SyncRecord,
+} from '@core/schemas/sync';
+import {
+  LESSON_PROGRESS_EVENT_TYPE,
+  lessonProgressRank,
+} from '@core/sync/lessonProgress';
 
 import {syncPull} from './syncClient';
 
@@ -13,7 +22,8 @@ let subscription: {remove: () => void} | null = null;
 function getCursor(): string {
   const db = getDatabase();
   const res = db.execute(
-    "SELECT value FROM app_settings WHERE key = 'sync_cursor' LIMIT 1;",
+    'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
+    ['sync_cursor'],
   );
   if (res.rows && res.rows.length > 0) {
     return res.rows.item(0).value as string;
@@ -24,8 +34,8 @@ function getCursor(): string {
 function saveCursor(cursor: string) {
   const db = getDatabase();
   db.execute(
-    "INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('sync_cursor', ?, ?);",
-    [cursor, new Date().toISOString()],
+    'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+    ['sync_cursor', cursor, new Date().toISOString()],
   );
 }
 
@@ -53,7 +63,76 @@ function getTableForCollection(collection: string): string {
   return collection;
 }
 
-export function applySyncRecord(record: SyncRecord) {
+/**
+ * Applies one `lesson_progress` pull record with the AD-002 rank merge
+ * (INV-001, App half): the local state is replaced only when the remote rank
+ * is greater than or equal to the local rank, so a pull never overwrites a
+ * higher local rank. This path deliberately bypasses the generic
+ * revision/`tombstone` handling — progress rows are never tombstoned and
+ * completion must never regress locally.
+ *
+ * Returns true when the record was consumed (applied or intentionally kept
+ * local).
+ */
+export function applyLessonProgressRecord(
+  record: SyncRecord | SyncPullRecord,
+): boolean {
+  const db = getDatabase();
+  if (record.tombstone) {
+    // Progress is never deleted; ignore a tombstone rather than regressing.
+    return true;
+  }
+  const parsed = LessonProgressStatePayloadSchema.safeParse(record.payload);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid lesson_progress payload for lesson ${record.entity_id}`,
+    );
+  }
+  const remoteRank = lessonProgressRank(parsed.data.status);
+  const existingRes = db.execute(
+    'SELECT status FROM lesson_progress WHERE lesson_id = ? LIMIT 1;',
+    [record.entity_id],
+  );
+  const existingRow = existingRes.rows?.item(0) as
+    | {status?: unknown}
+    | undefined;
+  if (typeof existingRow?.status === 'string') {
+    const localRank = lessonProgressRank(
+      existingRow.status as 'in_progress' | 'completed',
+    );
+    if (remoteRank < localRank) {
+      return true;
+    }
+  }
+  db.execute(
+    `INSERT OR REPLACE INTO lesson_progress (
+      lesson_id, status, started_at, completed_at, revision,
+      tombstone, updated_at
+    ) VALUES (?, ?, ?, ?, ?, 0, ?);`,
+    [
+      record.entity_id,
+      parsed.data.status,
+      parsed.data.started_at,
+      parsed.data.completed_at,
+      record.revision,
+      record.updated_at,
+    ],
+  );
+  return true;
+}
+
+export function applySyncRecord(record: SyncRecord | SyncPullRecord) {
+  if (record.collection === LESSON_PROGRESS_EVENT_TYPE) {
+    applyLessonProgressRecord(record);
+    return;
+  }
+  if (!SyncCollectionSchema.safeParse(record.collection).success) {
+    // AD-008: skip records of collections this build does not know instead of
+    // throwing, so an unknown collection cannot stall paging. The cursor
+    // still advances past the page.
+    console.log(`[sync] skipping unknown collection: ${record.collection}`);
+    return;
+  }
   const db = getDatabase();
   const table = getTableForCollection(record.collection);
 
@@ -95,22 +174,6 @@ export function applySyncRecord(record: SyncRecord) {
     payload.created_at = payload.created_at ?? record.occurred_at;
   } else if (record.collection === 'review_schedules') {
     payload.card_id = payload.card_id ?? record.entity_id;
-  } else if (
-    record.collection === 'content_lesson_state' ||
-    record.collection === 'content_review_state'
-  ) {
-    payload.lesson_id = payload.lesson_id ?? record.entity_id;
-    if (payload.is_saved === undefined && payload.isSaved !== undefined) {
-      payload.is_saved = payload.isSaved ? 1 : 0;
-    }
-    if (payload.is_started === undefined && payload.isStarted !== undefined) {
-      payload.is_started = payload.isStarted ? 1 : 0;
-    }
-    payload.created_at = payload.created_at ?? record.occurred_at;
-  } else if (record.collection === 'youtube_sentences') {
-    const parts = record.entity_id.split(':');
-    payload.lesson_id = payload.lesson_id ?? parts[0];
-    payload.sentence_id = payload.sentence_id ?? parts[1];
   }
 
   // Extract PK values

@@ -1014,6 +1014,17 @@ function createMockDatabase() {
       return toRows([{count: pending.length}]);
     }
 
+    // LING-149 cutover purge: filter by `event_type IN (...)` like real
+    // SQLite does. No other statement uses this shape.
+    if (
+      normalized.startsWith('select') &&
+      normalized.includes('from sync_outbox') &&
+      normalized.includes('event_type in')
+    ) {
+      const types = params.map(String);
+      return toRows(syncOutbox.filter(row => types.includes(row.event_type)));
+    }
+
     if (
       normalized.startsWith('select') &&
       normalized.includes('from sync_outbox')

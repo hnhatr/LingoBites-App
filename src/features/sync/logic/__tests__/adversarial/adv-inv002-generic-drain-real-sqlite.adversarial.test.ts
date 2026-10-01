@@ -3,7 +3,7 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
+import {saveGrammarBookmark} from '@features/review/logic/GrammarBookmarkRepository';
 
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
@@ -18,11 +18,14 @@ import {drainOutboxOnce} from '../../outboxSync';
 
 /**
  * LING-97 adversarial review (INV-002, TASK-004 generic drain path). A generic
- * collection event (`content_lesson_state`) is drained by the production
+ * collection event (`grammar_bookmarks`) is drained by the production
  * `drainOutboxOnce` → sync-owned `syncClient.syncPush` → sync-owned outbox
  * adapter, on a real SQLite file and a real local HTTP server that applies each
  * `mutation_id` once. Failure is injected only at the transport boundary
  * (HTTP 503, response dropped after the server applied the batch).
+ *
+ * LING-172: the producer moved from the retired `content_lesson_state`
+ * collection to the surviving `grammar_bookmarks` collection (sync v2).
  */
 
 type PushServer = {
@@ -89,7 +92,7 @@ async function startPushServer(): Promise<PushServer> {
             '0',
           )}`,
           status: 'success',
-          contract_version: 1,
+          contract_version: 2,
           results,
         }),
       );
@@ -162,12 +165,15 @@ afterEach(async () => {
 describe('ADV / INV-002 generic sync drain (sync-owned adapter + syncClient) on real SQLite + HTTP', () => {
   it('ADV-H08 / INV-002: a generic event survives 503 and a dropped response across restart, replays with the same mutation_id, and is applied once', async () => {
     const fetchImpl = fetchFor(server.port);
-    saveContentLesson({
+    const saved = saveGrammarBookmark({
       lessonId: 'content-g1',
+      grammarId: 'grammar-g1',
+      packageId: 'package-g1',
       now: '2026-09-28T01:00:00.000Z',
     });
+    expect(saved.ok).toBe(true);
     const [event] = listPendingSyncEvents();
-    expect(event).toMatchObject({eventType: 'content_lesson_state'});
+    expect(event).toMatchObject({eventType: 'grammar_bookmarks'});
 
     // Definite failure: 503 before any effect.
     server.failNext('503', 1);

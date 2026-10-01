@@ -12,6 +12,11 @@ import {getDatabase} from './database';
  * Flashcard/review/content-package/YouTube/speaking tables are wiped as
  * part of this explicit user-invoked deletion only — no table is dropped
  * and no other flow calls this function.
+ *
+ * LING-149 (EC-015/AC-015): canonical downloads (`lesson_downloads`) and
+ * local progress (`lesson_progress`) are wiped here too. Media-file sweeping
+ * for staged download files lands with TASK-007's media staging helper;
+ * until then there is no on-disk media registry to clear.
  */
 export async function clearAllLocalDatabaseRows(): Promise<void> {
   const db = getDatabase();
@@ -56,5 +61,16 @@ export async function clearAllLocalDatabaseRows(): Promise<void> {
   }
   db.execute('DELETE FROM youtube_sentences;');
   db.execute('DELETE FROM youtube_lessons;');
+  // LING-149 canonical state (tables may predate v2 on old databases).
+  try {
+    db.execute('DELETE FROM lesson_downloads;');
+  } catch {
+    // Table does not exist before the v2 cutover.
+  }
+  try {
+    db.execute('DELETE FROM lesson_progress;');
+  } catch {
+    // Table does not exist before the v2 cutover.
+  }
   return tokenCleanup;
 }
