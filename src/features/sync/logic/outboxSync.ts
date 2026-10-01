@@ -11,7 +11,12 @@ import type {
   SyncOutboxRecord,
 } from '@core/db/types';
 import {PRACTICE_EVENT_TYPE, REVIEW_EVENT_TYPE} from '@core/db/types';
-import {SyncCollectionSchema, type SyncPushMutation} from '@core/schemas/sync';
+import {
+  LessonProgressPushPayloadSchema,
+  SyncCollectionSchema,
+  type SyncPushMutation,
+} from '@core/schemas/sync';
+import {LESSON_PROGRESS_EVENT_TYPE} from '@core/sync/lessonProgress';
 import {
   beginSyncDrainOwnership,
   endSyncDrainOwnership,
@@ -248,8 +253,77 @@ async function drainOutboxOnceInner(
     }
   }
 
-  if (genericEvents.length > 0) {
-    const mutations: SyncPushMutation[] = genericEvents.map(event => ({
+  // LING-149 (INV-003): `lesson_progress` travels in its own push batch so a
+  // batch-level 400 caused by another collection (e.g. an invalid flashcard
+  // mutation) can never block progress. The server never rejects a
+  // well-formed `lesson_progress` mutation (clamp, no lesson lookup).
+  const lessonProgressEvents = genericEvents.filter(
+    event => event.eventType === LESSON_PROGRESS_EVENT_TYPE,
+  );
+  const otherGenericEvents = genericEvents.filter(
+    event => event.eventType !== LESSON_PROGRESS_EVENT_TYPE,
+  );
+
+  // DEV-002: a `lesson_progress` mutation must carry the v2 `{event}` payload
+  // and must never be a tombstone — the server rejects such a batch with 400
+  // `VALIDATION_SYNC`. These rows are failed permanently here instead of
+  // being sent: they can never succeed by retrying.
+  const wellFormedProgressEvents: SyncOutboxRecord[] = [];
+  for (const event of lessonProgressEvents) {
+    const payload = event.payload as Record<string, unknown>;
+    if (
+      payload?.tombstone === true ||
+      !LessonProgressPushPayloadSchema.safeParse(payload).success
+    ) {
+      markSyncEventsFailed([event.id], 'INVALID_LESSON_PROGRESS_PAYLOAD');
+      firstPermanentFailure ??= {
+        errorCode: 'INVALID_LESSON_PROGRESS_PAYLOAD',
+        message: 'Invalid lesson_progress payload',
+      };
+    } else {
+      wellFormedProgressEvents.push(event);
+    }
+  }
+
+  if (wellFormedProgressEvents.length > 0) {
+    const mutations: SyncPushMutation[] = wellFormedProgressEvents.map(
+      event => ({
+        mutation_id: event.id,
+        collection: LESSON_PROGRESS_EVENT_TYPE,
+        entity_id: event.entityId,
+        payload: event.payload as Record<string, unknown>,
+        tombstone: false,
+        occurred_at: event.createdAt,
+      }),
+    );
+
+    const result = await syncPush({mutations}, deps);
+    if (result.ok) {
+      // Every returned id — `applied`, `duplicate` or `stale` — is
+      // acknowledged by the server and leaves the outbox.
+      const successfulIds = result.data.results.map(r => r.mutation_id);
+      if (successfulIds.length > 0) {
+        markSyncEventsSynced(successfulIds);
+        syncedIds.push(...successfulIds);
+      }
+    } else {
+      if (result.errorCode !== SYNC_OWNERSHIP_CHANGED) {
+        markSyncEventsFailed(
+          wellFormedProgressEvents.map(event => event.id),
+          result.message,
+        );
+      }
+      const failure = {errorCode: result.errorCode, message: result.message};
+      if (result.retryable) {
+        firstRetryableFailure ??= failure;
+      } else {
+        firstPermanentFailure ??= failure;
+      }
+    }
+  }
+
+  if (otherGenericEvents.length > 0) {
+    const mutations: SyncPushMutation[] = otherGenericEvents.map(event => ({
       mutation_id: event.id,
       collection: event.eventType as any, // We know it's valid
       entity_id: event.entityId,
@@ -274,7 +348,7 @@ async function drainOutboxOnceInner(
     } else {
       if (result.errorCode !== SYNC_OWNERSHIP_CHANGED) {
         markSyncEventsFailed(
-          genericEvents.map(event => event.id),
+          otherGenericEvents.map(event => event.id),
           result.message,
         );
       }
