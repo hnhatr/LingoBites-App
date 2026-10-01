@@ -525,6 +525,18 @@ const DOWN_MIGRATIONS_M2: string[] = [
 ];
 
 export function runMigrations(db: QuickSQLiteConnection): void {
+  // `MIGRATIONS` is the pre-cutover baseline and still creates the tables
+  // that schema v3 drops. A database already at v3 must skip it, otherwise
+  // every launch would recreate the retired tables (ADV-001 / INV-003).
+  // Schema changes after v3 belong in a new versioned upgrade step.
+  if (readAppSchemaVersion(db) < APP_SCHEMA_VERSION) {
+    runLegacyBaselineMigrations(db);
+  }
+  ensureSchemaV2Upgrade(db);
+  ensureSchemaV3Upgrade(db);
+}
+
+function runLegacyBaselineMigrations(db: QuickSQLiteConnection): void {
   for (const sql of MIGRATIONS) {
     try {
       db.execute(sql);
@@ -540,8 +552,6 @@ export function runMigrations(db: QuickSQLiteConnection): void {
       throw error;
     }
   }
-  ensureSchemaV2Upgrade(db);
-  ensureSchemaV3Upgrade(db);
 }
 
 /**
