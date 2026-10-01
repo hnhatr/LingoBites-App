@@ -11,7 +11,7 @@ import type {LessonsStackParamList} from '@features/lesson/library';
  * video (`react-native-youtube-iframe` is untransformed ESM under jest).
  */
 const YouTubePlayer = React.lazy(() =>
-  import('@features/youtube').then(module => ({
+  import('../components/YouTubePlayer').then(module => ({
     default: module.YouTubePlayer,
   })),
 );

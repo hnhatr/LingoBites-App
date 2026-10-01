@@ -72,12 +72,10 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_004} navigation mount matrix`, () =>
       OCRReview: true,
     });
 
-    const withYoutube = buildNavigationMountSnapshot(
+    const fullFeatures = buildNavigationMountSnapshot(
       'authenticated',
       makeTestReleaseConfig(ALL_IMPLEMENTED_FEATURES).features,
     );
-    expect(withYoutube.rootStackRoutes).toEqual(
-      expect.arrayContaining(['YouTubeHistory', 'YouTubeLesson', 'Practice']),
-    );
+    expect(fullFeatures.rootStackRoutes).toEqual(['Tabs']);
   });
 });

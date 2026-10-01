@@ -9,29 +9,11 @@ import {FeatureFlagProvider} from '@core/release';
 import {OCRReviewScreen} from '../OCRReviewScreen';
 
 const mockNavigate = jest.fn();
-const mockCreateGenerationJob = jest.fn();
 const mockTabNavigate = jest.fn();
 
 jest.mock('../../logic/OCRService', () => ({
   extractText: jest.fn(),
 }));
-
-jest.mock('@features/lesson/player', () => {
-  const actual = jest.requireActual('@features/lesson/player');
-  return {
-    ...actual,
-    useLessonServerCapabilities: () => ({
-      catalog: true,
-      canonicalDelivery: true,
-      aiMaterialization: true,
-      packagedImport: true,
-      partialRetry: true,
-      privateLibrary: true,
-    }),
-    createLessonGenerationJob: (...args: unknown[]) =>
-      mockCreateGenerationJob(...args),
-  };
-});
 
 function findPressableByLabel(
   root: ReactTestRenderer.ReactTestInstance,
@@ -76,14 +58,9 @@ describe('OCRReviewScreen', () => {
   beforeEach(() => {
     mockNavigate.mockReset();
     mockTabNavigate.mockReset();
-    mockCreateGenerationJob.mockReset();
-    mockCreateGenerationJob.mockResolvedValue({
-      ok: true,
-      job: {id: 'job-ocr-1'},
-    });
   });
 
-  it('navigates to UnifiedLessonGeneration with edited confirmed text and gallery source (TC-006)', async () => {
+  it('navigates to LessonCreation with edited confirmed text (TC-006)', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
 
     await ReactTestRenderer.act(async () => {
@@ -114,12 +91,12 @@ describe('OCRReviewScreen', () => {
     });
 
     expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'UnifiedLessonGeneration',
-      params: {
-        jobId: 'job-ocr-1',
-        confirmedText: 'Edited OCR text.',
-        level: undefined,
-      },
+      screen: 'LessonCreation',
+      params: expect.objectContaining({
+        initialSource: 'ocr',
+        initialText: 'Edited OCR text.',
+        submissionId: expect.stringMatching(/^OCRReview-/),
+      }),
     });
   });
 

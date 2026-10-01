@@ -3,13 +3,8 @@ import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '@features/account/logic/useAccountStore';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {recordFlashcardRating, saveFlashcard} from '@features/review';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
 
 import {
   resetAccountSwitchCoordinatorForTests,
@@ -30,6 +25,11 @@ import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+import {
+  DEFAULT_CANONICAL_LESSON_ID,
+  readSeededLessonDownload,
+  seedCanonicalLessonDownload,
+} from '@test/support/canonicalDownloadSeed';
 import {installKeychainVault} from '@test/support/keychainVault';
 
 export const P2_USER_A: AuthUser = {
@@ -111,9 +111,9 @@ export function seedInstall(accountId: string) {
 }
 
 export function writeP2LearnerData() {
-  saveYouTubeProgress({lessonId: 'yt-a', positionMs: 5000, segmentIndex: 2});
+  seedCanonicalLessonDownload();
   const saved = saveFlashcard({
-    lessonId: 'lesson-a',
+    lessonId: DEFAULT_CANONICAL_LESSON_ID,
     vocabulary: validFullOutput.vocabulary[0],
     now: '2026-09-27T01:00:00.000Z',
   });
@@ -125,7 +125,6 @@ export function writeP2LearnerData() {
     rating: 'remembered',
     reviewedAt: '2026-09-27T02:00:00.000Z',
   });
-  saveContentLesson({lessonId: 'content-a', now: '2026-09-27T03:00:00.000Z'});
 }
 
 export async function seedSession(
@@ -262,12 +261,12 @@ export async function stageAwaitingAB() {
 }
 
 export function expectLearnerDataIntact() {
-  expect(getYouTubeProgress('yt-a')).not.toBeNull();
+  expect(readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID)).not.toBeNull();
   expect(listPendingSyncEvents().length).toBeGreaterThan(0);
 }
 
 export function expectNoCrossAccountLeakUnderB() {
-  expect(getYouTubeProgress('yt-a')).toBeNull();
+  expect(readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID)).toBeNull();
   expect(listPendingSyncEvents()).toEqual([]);
   expect(totalNonSettingsRows()).toBe(0);
 }

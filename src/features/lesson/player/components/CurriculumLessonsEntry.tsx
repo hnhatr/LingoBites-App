@@ -11,7 +11,7 @@ import {
   type CurriculumLessonSelectionItem,
   fetchPublishedCurriculumLessons,
 } from '../logic/curriculumLessonSelection';
-import type {CurriculumLessonRouteParams} from '../screens/navigationTypes';
+import type {CanonicalLessonPlayerRouteParams} from '../screens/navigationTypes';
 
 /** Runs an async side effect without returning its promise to the caller. */
 function fireAndForget(task: Promise<unknown>): void {
@@ -51,8 +51,8 @@ export function CurriculumLessonsEntry() {
   const styles = createStyles(theme);
   const navigation = useNavigation<{
     navigate: (
-      screen: 'CurriculumLesson',
-      params: CurriculumLessonRouteParams,
+      screen: 'CanonicalLessonPlayer',
+      params: CanonicalLessonPlayerRouteParams,
     ) => void;
   }>();
   const [lessons, setLessons] = useState<
@@ -95,7 +95,7 @@ export function CurriculumLessonsEntry() {
           accessibilityLabel={item.title}
           accessibilityHint="Curriculum lesson. Opens the guided lesson."
           onPress={() =>
-            navigation.navigate('CurriculumLesson', {lessonId: item.id})
+            navigation.navigate('CanonicalLessonPlayer', {lessonId: item.id})
           }
           testID={`curriculum-entry-item-${item.id}`}
           style={styles.pressable}

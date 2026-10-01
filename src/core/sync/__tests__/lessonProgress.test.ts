@@ -162,7 +162,7 @@ describe('recordLessonEvent', () => {
       startedAt: T1,
       completedAt: T1,
     });
-    // The non-advancing tap is still queued: the server answers `stale`.
+    // Both taps stay queued; the late start is answered `stale` on the server.
     expect(listPendingSyncEvents()).toHaveLength(2);
   });
 

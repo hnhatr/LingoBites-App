@@ -51,6 +51,10 @@ function createMockDatabase() {
   const youtubeSentences = [];
   // SETE-290 / DEV-3: per-video resume progress
   const youtubeProgress = [];
+  // LING-149 v2: canonical lesson downloads + progress
+  const lessonDownloads = [];
+  const lessonProgress = [];
+  let userVersion = 0;
   const droppedTables = new Set();
 
   const execute = (sql, params = []) => {
@@ -90,6 +94,16 @@ function createMockDatabase() {
       ) {
         throw new Error(`no such table: ${dropped}`);
       }
+    }
+
+    if (normalized === 'pragma user_version;') {
+      return toRows([{user_version: userVersion}]);
+    }
+
+    const userVersionSet = normalized.match(/^pragma user_version = (\d+);$/);
+    if (userVersionSet) {
+      userVersion = Number(userVersionSet[1]);
+      return {rowsAffected: 0};
     }
 
     if (normalized.startsWith('pragma table_info')) {
@@ -245,6 +259,110 @@ function createMockDatabase() {
         else reviewSchedule[index] = {...reviewSchedule[index], ...row};
         return {rowsAffected: 1};
       }
+    }
+
+    if (normalized.startsWith('insert or replace into lesson_downloads')) {
+      const match = normalized.match(
+        /insert or replace into lesson_downloads \(([^)]+)\)/,
+      );
+      if (match) {
+        const cols = match[1].split(',').map(c => c.trim());
+        const row = {};
+        cols.forEach((col, idx) => {
+          row[col] = params[idx];
+        });
+        const index = lessonDownloads.findIndex(
+          r => r.lesson_id === row.lesson_id,
+        );
+        if (index === -1) lessonDownloads.push(row);
+        else lessonDownloads[index] = {...lessonDownloads[index], ...row};
+        return {rowsAffected: 1};
+      }
+    }
+
+    if (normalized.startsWith('delete from lesson_downloads where lesson_id')) {
+      const before = lessonDownloads.length;
+      const remaining = lessonDownloads.filter(
+        row => row.lesson_id !== params[0],
+      );
+      lessonDownloads.length = 0;
+      lessonDownloads.push(...remaining);
+      return {rowsAffected: before - remaining.length};
+    }
+
+    if (
+      normalized.startsWith('select * from lesson_downloads where lesson_id')
+    ) {
+      return toRows(
+        lessonDownloads.filter(row => row.lesson_id === params[0]).slice(0, 1),
+      );
+    }
+
+    if (normalized.startsWith('select * from lesson_downloads order by')) {
+      return toRows(
+        [...lessonDownloads].sort((a, b) =>
+          String(b.downloaded_at).localeCompare(String(a.downloaded_at)),
+        ),
+      );
+    }
+
+    if (normalized.startsWith('update lesson_downloads set server_revision')) {
+      const lessonId = params[params.length - 1];
+      const index = lessonDownloads.findIndex(r => r.lesson_id === lessonId);
+      if (index !== -1) {
+        if (normalized.includes('server_revision = null')) {
+          lessonDownloads[index].server_revision = null;
+        } else {
+          lessonDownloads[index].server_revision = params[0];
+        }
+      }
+      return {rowsAffected: index === -1 ? 0 : 1};
+    }
+
+    if (normalized.startsWith('insert into lesson_progress')) {
+      const row = {
+        lesson_id: params[0],
+        status: params[1],
+        started_at: params[2],
+        completed_at: params[3],
+        revision: params[4],
+        tombstone: params[5],
+        updated_at: params[6],
+      };
+      lessonProgress.push(row);
+      return {rowsAffected: 1};
+    }
+
+    if (normalized.startsWith('update lesson_progress')) {
+      const lessonId = params[params.length - 1];
+      const index = lessonProgress.findIndex(r => r.lesson_id === lessonId);
+      if (index !== -1) {
+        lessonProgress[index] = {
+          ...lessonProgress[index],
+          status: params[0],
+          started_at: params[1],
+          completed_at: params[2],
+          updated_at: params[3],
+        };
+      }
+      return {rowsAffected: index === -1 ? 0 : 1};
+    }
+
+    if (
+      normalized.startsWith('select * from lesson_progress where lesson_id')
+    ) {
+      return toRows(
+        lessonProgress.filter(row => row.lesson_id === params[0]).slice(0, 1),
+      );
+    }
+
+    if (normalized.startsWith('select status from lesson_progress where')) {
+      const row = lessonProgress.find(r => r.lesson_id === params[0]);
+      return toRows(row ? [{status: row.status}] : []);
+    }
+
+    if (normalized === 'select count(*) as c from lesson_progress;') {
+      return toRows([{c: lessonProgress.length}]);
     }
 
     if (normalized.startsWith('insert or replace into content_lesson_state')) {
@@ -2157,6 +2275,8 @@ function createMockDatabase() {
         youtube_lessons: youtubeLessons,
         youtube_sentences: youtubeSentences,
         youtube_progress: youtubeProgress,
+        lesson_downloads: lessonDownloads,
+        lesson_progress: lessonProgress,
       };
       return toRows(
         Object.keys(tableArrays)
@@ -2201,6 +2321,8 @@ function createMockDatabase() {
         youtube_lessons: youtubeLessons,
         youtube_sentences: youtubeSentences,
         youtube_progress: youtubeProgress,
+        lesson_downloads: lessonDownloads,
+        lesson_progress: lessonProgress,
       };
       const arr = tableArrays[table];
       if (arr) {

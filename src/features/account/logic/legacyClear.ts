@@ -77,24 +77,12 @@ export async function executeLegacyClear(): Promise<void> {
 
     // V2 Analysis Surface (lesson rows quarantined — see above)
 
-    // Practice Surface
-    db.execute('DELETE FROM practice_sets;');
-    db.execute('DELETE FROM practice_questions;');
-    db.execute('DELETE FROM practice_sessions;');
-    db.execute('DELETE FROM practice_events;');
-
-    // YouTube Progress
-    db.execute('DELETE FROM youtube_progress;');
-
     // Outbox (Legacy events)
     db.execute('DELETE FROM sync_outbox;');
 
     // Speaking / Error Notebook (user-created Analysis)
     db.execute('DELETE FROM speaking_recordings;');
     db.execute('DELETE FROM error_events;');
-    db.execute(
-      "DELETE FROM content_review_items WHERE item_type = 'speaking_error';",
-    );
 
     // Clear settings, preserving approved keys + the new marker
     db.execute(`

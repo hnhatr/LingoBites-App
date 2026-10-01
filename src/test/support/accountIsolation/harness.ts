@@ -1,10 +1,13 @@
 import {insertPendingChapterAudioAsset} from '@features/audio/logic/data/AudioAssetRepository';
-import {getYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
 
 import type {AuthSession} from '@core/auth/authTypes';
 import {getActiveSessionId, setActiveSessionId} from '@core/auth/sessionStore';
 import {getDatabase} from '@core/db/database';
 
+import {
+  DEFAULT_CANONICAL_LESSON_ID,
+  readSeededLessonDownload,
+} from '@test/support/canonicalDownloadSeed';
 import {
   P2_SESSION_A,
   P2_USER_A,
@@ -49,11 +52,11 @@ export function countAudioAssetRows(): number {
 }
 
 export function expectM4YoutubeRowPresent(): void {
-  expect(getYouTubeProgress('yt-a')).not.toBeNull();
+  expect(readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID)).not.toBeNull();
 }
 
 export function expectM4RelocatedDomainCleared(): void {
-  expect(getYouTubeProgress('yt-a')).toBeNull();
+  expect(readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID)).toBeNull();
   expect(countAudioAssetRows()).toBe(0);
 }
 

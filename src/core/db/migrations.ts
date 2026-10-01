@@ -525,6 +525,18 @@ const DOWN_MIGRATIONS_M2: string[] = [
 ];
 
 export function runMigrations(db: QuickSQLiteConnection): void {
+  // `MIGRATIONS` is the pre-cutover baseline and still creates the tables
+  // that schema v3 drops. A database already at v3 must skip it, otherwise
+  // every launch would recreate the retired tables (ADV-001 / INV-003).
+  // Schema changes after v3 belong in a new versioned upgrade step.
+  if (readAppSchemaVersion(db) < APP_SCHEMA_VERSION) {
+    runLegacyBaselineMigrations(db);
+  }
+  ensureSchemaV2Upgrade(db);
+  ensureSchemaV3Upgrade(db);
+}
+
+function runLegacyBaselineMigrations(db: QuickSQLiteConnection): void {
   for (const sql of MIGRATIONS) {
     try {
       db.execute(sql);
@@ -540,7 +552,6 @@ export function runMigrations(db: QuickSQLiteConnection): void {
       throw error;
     }
   }
-  ensureSchemaV2Upgrade(db);
 }
 
 /**
@@ -557,7 +568,7 @@ export function runMigrations(db: QuickSQLiteConnection): void {
  * every `lesson_progress` row and every live transport row (`review`,
  * `practice`): only retired-collection rows are deleted.
  */
-export const APP_SCHEMA_VERSION = 2;
+export const APP_SCHEMA_VERSION = 3;
 
 /** Outbox event types for collections retired by LING-149. Purged at cutover. */
 const RETIRED_SYNC_OUTBOX_EVENT_TYPES = [
@@ -629,7 +640,7 @@ function ignoreBenignSchemaError(error: unknown): boolean {
 }
 
 function ensureSchemaV2Upgrade(db: QuickSQLiteConnection): void {
-  if (readAppSchemaVersion(db) >= APP_SCHEMA_VERSION) {
+  if (readAppSchemaVersion(db) >= 2) {
     return;
   }
   db.execute('BEGIN');
@@ -661,7 +672,7 @@ function ensureSchemaV2Upgrade(db: QuickSQLiteConnection): void {
       }
     }
     db.execute('DELETE FROM app_settings WHERE key = ?;', ['sync_cursor']);
-    db.execute(`PRAGMA user_version = ${APP_SCHEMA_VERSION};`);
+    db.execute('PRAGMA user_version = 2;');
     db.execute('COMMIT');
   } catch (error) {
     try {
@@ -669,6 +680,81 @@ function ensureSchemaV2Upgrade(db: QuickSQLiteConnection): void {
     } catch {
       // Rollback failure leaves the connection unusable; the original error
       // is what matters and will surface to the caller.
+    }
+    throw error;
+  }
+}
+
+const DOWN_MIGRATIONS_M6_CONTENT_LESSON_STATE: string[] = [
+  `DROP INDEX IF EXISTS idx_content_lesson_state_is_started;`,
+  `DROP INDEX IF EXISTS idx_content_lesson_state_is_saved;`,
+  `DROP TABLE IF EXISTS content_lesson_state;`,
+];
+
+const DOWN_MIGRATIONS_LEGACY_LESSON_TABLES: string[] = [
+  `DROP INDEX IF EXISTS idx_lesson_v2_sentences_lesson_id;`,
+  `DROP TABLE IF EXISTS lesson_v2_units;`,
+  `DROP TABLE IF EXISTS lesson_v2_grammar;`,
+  `DROP TABLE IF EXISTS lesson_v2_vocabulary;`,
+  `DROP TABLE IF EXISTS lesson_v2_chunks;`,
+  `DROP TABLE IF EXISTS lesson_v2_sentences;`,
+  `DROP INDEX IF EXISTS idx_lesson_v2_updated_at;`,
+  `DROP TABLE IF EXISTS lesson_v2;`,
+  `DROP INDEX IF EXISTS idx_lessons_input_hash;`,
+  `DROP INDEX IF EXISTS idx_lessons_created_at;`,
+  `DROP TABLE IF EXISTS lessons;`,
+];
+
+const SCHEMA_V3_DROP_STATEMENTS: string[] = [
+  ...DOWN_MIGRATIONS_M3,
+  ...DOWN_MIGRATIONS_M8,
+  ...DOWN_MIGRATIONS_M9,
+  ...DOWN_MIGRATIONS_M10,
+  ...DOWN_MIGRATIONS_M6_CONTENT_LESSON_STATE,
+  ...DOWN_MIGRATIONS_M2,
+  ...DOWN_MIGRATIONS_LEGACY_LESSON_TABLES,
+];
+
+/** Purged at v3 cutover together with dropped local practice tables. */
+const RETIRED_V3_SYNC_OUTBOX_EVENT_TYPES = [
+  ...RETIRED_SYNC_OUTBOX_EVENT_TYPES,
+  'practice_answered',
+];
+
+export function ensureSchemaV3Upgrade(db: QuickSQLiteConnection): void {
+  if (readAppSchemaVersion(db) >= APP_SCHEMA_VERSION) {
+    return;
+  }
+  db.execute('BEGIN');
+  try {
+    for (const sql of SCHEMA_V3_DROP_STATEMENTS) {
+      try {
+        db.execute(sql);
+      } catch (error) {
+        if (!ignoreBenignSchemaError(error)) {
+          throw error;
+        }
+      }
+    }
+    const retired = db.execute(
+      `SELECT id FROM sync_outbox WHERE event_type IN (${RETIRED_V3_SYNC_OUTBOX_EVENT_TYPES.map(
+        () => '?',
+      ).join(', ')});`,
+      RETIRED_V3_SYNC_OUTBOX_EVENT_TYPES,
+    ).rows;
+    for (let index = 0; index < (retired?.length ?? 0); index += 1) {
+      const row = retired?.item(index) as {id?: unknown} | undefined;
+      if (typeof row?.id === 'string') {
+        db.execute('DELETE FROM sync_outbox WHERE id = ?;', [row.id]);
+      }
+    }
+    db.execute(`PRAGMA user_version = ${APP_SCHEMA_VERSION};`);
+    db.execute('COMMIT');
+  } catch (error) {
+    try {
+      db.execute('ROLLBACK');
+    } catch {
+      // ignore rollback failure
     }
     throw error;
   }

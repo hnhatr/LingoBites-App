@@ -2,6 +2,8 @@ import {useFocusEffect} from '@react-navigation/native';
 import React from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
+import {hasDownloadedLessons} from '@features/lesson/player';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -36,10 +38,14 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
   const [modes, setModes] = React.useState<SpeakingModeInfo[]>(() =>
     listSpeakingRoomModes(),
   );
+  const [showDownloadHint, setShowDownloadHint] = React.useState(
+    () => !hasDownloadedLessons(),
+  );
 
   useFocusEffect(
     React.useCallback(() => {
       setModes(listSpeakingRoomModes());
+      setShowDownloadHint(!hasDownloadedLessons());
     }, []),
   );
 
@@ -67,6 +73,15 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
         }}
         showsVerticalScrollIndicator={false}
       >
+        {showDownloadHint ? (
+          <AppCard testID="speaking-empty-downloads">
+            <AppText variant="h3">Chưa có bài học trên máy</AppText>
+            <AppText color="secondary" variant="body">
+              Các chế độ luyện nói cần câu EN + VI từ bài đã tải. Tải một bài
+              trong thư viện để bắt đầu.
+            </AppText>
+          </AppCard>
+        ) : null}
         {modes.map(mode => (
           <Pressable
             key={mode.mode}

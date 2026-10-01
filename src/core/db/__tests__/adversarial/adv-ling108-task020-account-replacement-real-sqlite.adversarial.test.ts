@@ -103,11 +103,6 @@ function seedAccountAData(): void {
     payload: {kind: 'test'},
     createdAt: '2026-09-27T02:00:00.000Z',
   });
-  db.execute(
-    `INSERT INTO youtube_progress (lesson_id, position_ms, segment_index, updated_at)
-     VALUES (?, ?, ?, ?);`,
-    ['yt-1', 1000, 0, '2026-09-27T02:00:00.000Z'],
-  );
 }
 
 beforeEach(() => {
@@ -142,7 +137,6 @@ describe('LING-108 TASK-020 account replacement (real SQLite)', () => {
     expect(readSetting(INSTALL_MARKER_KEY)).toBe(INSTALL_AT);
     expect(count('SELECT COUNT(*) AS c FROM flashcards')).toBe(0);
     expect(count('SELECT COUNT(*) AS c FROM sync_outbox')).toBe(0);
-    expect(count('SELECT COUNT(*) AS c FROM youtube_progress')).toBe(0);
     expect(readSetting('account.fallback_device_id')).toBeNull();
     expect(totalUserTableRows()).toBe(2);
   });

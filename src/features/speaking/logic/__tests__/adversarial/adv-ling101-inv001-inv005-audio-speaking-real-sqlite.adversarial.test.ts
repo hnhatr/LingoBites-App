@@ -110,21 +110,6 @@ function seedPriorInstall(raw: RealSqliteConnection) {
     ['rec-prior', 'act-prior', 'lesson-prior', recordingPath, T0],
   );
   raw.execute(
-    `INSERT INTO content_review_items (id, srs_item_id, lesson_id, package_id,
-      item_type, source_ref_id, front, back, hint_vi, mastery_state,
-      next_review_at, created_at, updated_at)
-      VALUES (?, ?, ?, '', 'speaking_error', ?, 'f', 'b', NULL, 'new', ?, ?, ?)`,
-    [
-      'speaking-error-err-prior',
-      'speaking-error-err-prior',
-      'lesson-prior',
-      'act-prior',
-      T0,
-      T0,
-      T0,
-    ],
-  );
-  raw.execute(
     `INSERT INTO error_events (id, source, category, activity_id, lesson_id,
       review_item_id, created_at) VALUES (?, 'speaking_room', 'listening', ?, ?, ?, ?)`,
     ['err-prior', 'act-prior', 'lesson-prior', 'speaking-error-err-prior', T0],
@@ -205,12 +190,6 @@ describe('LING-101 adversarial: audio/speaking ownership move', () => {
           reviewItemId: 'speaking-error-err-prior',
         }),
       ]);
-      expect(
-        count(
-          "SELECT COUNT(*) AS n FROM content_review_items WHERE item_type = 'speaking_error'",
-        ),
-      ).toBe(1);
-
       const audio = audioRepository.getReadyAudioAsset('a-prior');
       expect(audio).toMatchObject({localPath: audioPath, bytes: 3});
       expect(legacyAudioRepository.getReadyAudioAsset('a-prior')).toEqual(
@@ -265,24 +244,11 @@ describe('LING-101 adversarial: audio/speaking ownership move', () => {
     expect(
       count('SELECT COUNT(*) AS n FROM error_events WHERE id = ?', ['err-dup']),
     ).toBe(1);
-    expect(
-      count('SELECT COUNT(*) AS n FROM content_review_items WHERE id = ?', [
-        'speaking-error-err-dup',
-      ]),
-    ).toBe(1);
   });
 
   it('ADV-004 / INV-001: speaking-only deletion removes recordings but keeps audio cache rows/files and lesson review items', async () => {
     const prior = openRealSqlite(dbFile);
     const {audioPath, recordingPath} = seedPriorInstall(prior);
-    prior.execute(
-      `INSERT INTO content_review_items (id, srs_item_id, lesson_id, package_id,
-        item_type, source_ref_id, front, back, hint_vi, mastery_state,
-        next_review_at, created_at, updated_at)
-        VALUES ('srs-1', 'srs-1', 'lesson-prior', 'pkg', 'vocabulary', 'c', 'f',
-        'b', NULL, 'new', ?, ?, ?)`,
-      [T0, T0, T0],
-    );
     prior.close();
     coldStart();
 
@@ -296,11 +262,7 @@ describe('LING-101 adversarial: audio/speaking ownership move', () => {
     expect(audioRepository.getReadyAudioAsset('a-prior')?.localPath).toBe(
       audioPath,
     );
-    expect(
-      count('SELECT COUNT(*) AS n FROM content_review_items WHERE id = ?', [
-        'srs-1',
-      ]),
-    ).toBe(1);
+    expect(count('SELECT COUNT(*) AS n FROM error_events')).toBe(0);
   });
 
   it('ADV-005 / INV-001: explicit all-data deletion removes both recording and cached audio files collected through the moved repositories', async () => {

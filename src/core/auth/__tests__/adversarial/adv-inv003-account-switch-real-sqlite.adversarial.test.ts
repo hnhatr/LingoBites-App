@@ -3,17 +3,12 @@ import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '@features/account/logic/useAccountStore';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {
   listFlashcards,
   recordFlashcardRating,
   saveFlashcard,
 } from '@features/review';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
 
 import {resetDatabaseForTests} from '@core/db/database';
 import {validFullOutput} from '@core/fixtures';
@@ -23,6 +18,10 @@ import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+import {
+  readSeededLessonDownload,
+  seedCanonicalLessonDownload,
+} from '@test/support/canonicalDownloadSeed';
 import {installKeychainVault} from '@test/support/keychainVault';
 
 import {resetRefreshStateForTests} from '../../authSession';
@@ -112,9 +111,9 @@ function tableCounts(): Record<string, number> {
 }
 
 function writeLearnerDataAsCurrentUser() {
-  saveYouTubeProgress({lessonId: 'yt-a', positionMs: 5000, segmentIndex: 2});
+  seedCanonicalLessonDownload('33333333-3333-4333-8333-333333333301');
   const saved = saveFlashcard({
-    lessonId: 'lesson-a',
+    lessonId: '33333333-3333-4333-8333-333333333301',
     vocabulary: validFullOutput.vocabulary[0],
     now: '2026-09-27T01:00:00.000Z',
   });
@@ -126,7 +125,6 @@ function writeLearnerDataAsCurrentUser() {
     rating: 'remembered',
     reviewedAt: '2026-09-27T02:00:00.000Z',
   });
-  saveContentLesson({lessonId: 'content-a', now: '2026-09-27T03:00:00.000Z'});
 }
 
 beforeEach(() => {
@@ -165,22 +163,26 @@ describe('ADV / INV-003 production account switch on real SQLite', () => {
 
     await useAccountStore.getState().boot();
     expect(useAccountStore.getState().user?.id).toBe(userA.id);
-    expect(getYouTubeProgress('yt-a')?.positionMs).toBe(5000);
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).not.toBeNull();
     expect(listFlashcards()).toHaveLength(1);
-    expect(listPendingSyncEvents()).toHaveLength(2); // review + content_lesson_state
+    expect(listPendingSyncEvents()).toHaveLength(1);
   });
 
   it('ADV-H07 / INV-003 (P2): logout A → login B prompts before wipe; confirm removes A data', async () => {
     await useAccountStore.getState().boot();
     writeLearnerDataAsCurrentUser();
-    expect(listPendingSyncEvents()).toHaveLength(2); // review + content_lesson_state
+    expect(listPendingSyncEvents()).toHaveLength(1);
 
     await useAccountStore.getState().logout();
     serverUser = userB;
     await useAccountStore.getState().boot();
     expect(useAccountStore.getState().phase).toBe('switch-confirmation');
-    expect(getYouTubeProgress('yt-a')).not.toBeNull();
-    expect(listPendingSyncEvents()).toHaveLength(2);
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).not.toBeNull();
+    expect(listPendingSyncEvents()).toHaveLength(1);
 
     await useAccountStore.getState().confirmSwitch();
     expect(useAccountStore.getState()).toMatchObject({
@@ -199,7 +201,9 @@ describe('ADV / INV-003 production account switch on real SQLite', () => {
     expect(settings).toContainEqual(
       expect.objectContaining({key: 'current_account_id', value: userB.id}),
     );
-    expect(getYouTubeProgress('yt-a')).toBeNull();
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).toBeNull();
     expect(listPendingSyncEvents()).toEqual([]);
   });
 });

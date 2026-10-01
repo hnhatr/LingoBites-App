@@ -385,8 +385,33 @@ describe('accountBootstrap lesson quarantine (Checkpoint A)', () => {
     'lesson_v2_units',
   ];
 
+  function restoreLegacyLessonTablesForTest(db: {
+    execute: (sql: string, params?: unknown[]) => unknown;
+  }): void {
+    db.execute('CREATE TABLE IF NOT EXISTS lessons (id TEXT PRIMARY KEY);');
+    db.execute(
+      'CREATE TABLE IF NOT EXISTS lesson_v2 (lesson_id TEXT PRIMARY KEY);',
+    );
+    db.execute(
+      'CREATE TABLE IF NOT EXISTS lesson_v2_sentences (lesson_id TEXT, sentence_id TEXT);',
+    );
+    db.execute(
+      'CREATE TABLE IF NOT EXISTS lesson_v2_chunks (lesson_id TEXT, chunk_id TEXT);',
+    );
+    db.execute(
+      'CREATE TABLE IF NOT EXISTS lesson_v2_vocabulary (lesson_id TEXT, vocabulary_id TEXT);',
+    );
+    db.execute(
+      'CREATE TABLE IF NOT EXISTS lesson_v2_grammar (lesson_id TEXT, grammar_id TEXT);',
+    );
+    db.execute(
+      'CREATE TABLE IF NOT EXISTS lesson_v2_units (lesson_id TEXT, unit_id TEXT);',
+    );
+  }
+
   function seedLessonFixtures(): void {
     const db = getDatabase();
+    restoreLegacyLessonTablesForTest(db);
     db.execute(
       'INSERT INTO lessons (id, anonymous_user_id, lesson_input_hash, title, source_type, confirmed_text, vietnamese_translation, level, ai_output_json, is_saved, created_at, updated_at, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
       [

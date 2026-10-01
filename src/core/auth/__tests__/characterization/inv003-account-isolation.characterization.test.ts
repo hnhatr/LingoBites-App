@@ -1,13 +1,13 @@
 import {open} from 'react-native-quick-sqlite';
 
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
-
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 
+import {
+  DEFAULT_CANONICAL_LESSON_ID,
+  readSeededLessonDownload,
+  seedCanonicalLessonDownload,
+} from '@test/support/canonicalDownloadSeed';
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
@@ -20,16 +20,14 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_003} account isolation`, () => {
   });
 
   it('does not leak learner cache rows after an account switch wipe', () => {
-    saveYouTubeProgress({
-      lessonId: 'lesson-user-a',
-      positionMs: 5000,
-      segmentIndex: 2,
-    });
-    expect(getYouTubeProgress('lesson-user-a')).not.toBeNull();
+    seedCanonicalLessonDownload();
+    expect(
+      readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID),
+    ).not.toBeNull();
 
     __resetMockDatabases();
     resetDatabaseForTests();
 
-    expect(getYouTubeProgress('lesson-user-a')).toBeNull();
+    expect(readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID)).toBeNull();
   });
 });

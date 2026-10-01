@@ -218,7 +218,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
   }, [navigation]);
 
   const openUnifiedLessonsPreview = useCallback(() => {
-    navigation.navigate('UnifiedLessonsPreview');
+    navigation.getParent()?.navigate('Lessons', {screen: 'CanonicalCatalog'});
   }, [navigation]);
 
   const hideClearDataModal = useCallback(() => {

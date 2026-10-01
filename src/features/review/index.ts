@@ -2,7 +2,6 @@ export {DailyReviewScreen} from './screens/DailyReviewScreen';
 export {useBookmarkOptimistic} from './logic/useBookmarkOptimistic';
 export type {UseBookmarkOptimisticResult} from './logic/useBookmarkOptimistic';
 export {useFlashcardLibrary} from './logic/useFlashcardLibrary';
-export {useLearningReview} from './logic/useLearningReview';
 export {
   DEFAULT_REVIEW_INTERVAL_DAYS,
   calculateNextReviewState,
