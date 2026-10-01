@@ -2,7 +2,16 @@ import React from 'react';
 import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
-import {captureErrorEvent} from '@features/speaking/logic/data/SpeakingRepository';
+const mockGetDueFlashcards = jest.fn<
+  import('@core/db/types').FlashcardRecord[],
+  [import('@core/db/types').GetDueFlashcardsOptions?]
+>(() => []);
+
+jest.mock('@features/review', () => ({
+  getDueFlashcards: (
+    options?: import('@core/db/types').GetDueFlashcardsOptions,
+  ) => mockGetDueFlashcards(options),
+}));
 
 import {AppThemeProvider} from '@ui/theme';
 
@@ -62,6 +71,7 @@ describe('TodayScreen UI', () => {
   beforeEach(() => {
     setupDb();
     mockNavigate.mockClear();
+    mockGetDueFlashcards.mockReturnValue([]);
   });
 
   it('renders Today screen with mode selector and explainability card', async () => {
@@ -111,15 +121,28 @@ describe('TodayScreen UI', () => {
   });
 
   it('shows backlog consolidation banner when backlog threshold is exceeded', async () => {
-    // Seed error events to exceed threshold if needed, or check normal mode
-    for (let i = 0; i < 25; i += 1) {
-      captureErrorEvent({
-        id: `err-test-${i}`,
-        source: 'speaking_room',
-        category: 'vocabulary',
+    mockGetDueFlashcards.mockReturnValue(
+      Array.from({length: 25}, (_, index) => ({
+        revision: 1,
+        tombstone: false,
+        id: `fc-${index}`,
+        lessonId: 'lesson-1',
+        vocabularyId: `voc-${index}`,
+        word: 'word',
+        phraseFromText: null,
+        wordType: null,
+        meaningVi: 'nghĩa',
+        pronunciationGuideVi: null,
+        ipa: null,
+        cefrLevel: null,
+        sourceSentence: null,
+        example: null,
+        exampleTranslation: null,
+        isSaved: false,
         createdAt: '2026-09-01T00:00:00.000Z',
-      });
-    }
+        updatedAt: '2026-09-01T00:00:00.000Z',
+      })),
+    );
 
     const tree = await renderTodayScreen();
 

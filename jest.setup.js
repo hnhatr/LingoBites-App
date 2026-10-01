@@ -31,6 +31,16 @@ if (typeof global !== 'undefined' && !global.crypto) {
   };
 }
 
+jest.mock('react-native-youtube-iframe', () => {
+  const React = require('react');
+  const {View} = require('react-native');
+  return {
+    __esModule: true,
+    default: React.forwardRef(() => <View testID="mock-youtube-iframe" />),
+    PLAYER_ERRORS: {},
+  };
+});
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );

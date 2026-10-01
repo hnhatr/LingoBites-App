@@ -1,8 +1,4 @@
-import type {
-  ContentReviewItemRecord,
-  ErrorEventRecord,
-  SpeakingRecordingRecord,
-} from '@core/db/types';
+import type {ErrorEventRecord, SpeakingRecordingRecord} from '@core/db/types';
 
 export type TodayMode = '5-minute' | 'normal' | 'deep-practice';
 
@@ -31,12 +27,12 @@ export type StudyActivityType =
 export type TodayNavigationTarget = {
   screen:
     | 'DailyReview'
-    | 'ContentLessonRuntime'
-    | 'ContentLessonDetail'
+    | 'CanonicalLessonPlayer'
+    | 'CanonicalCatalog'
     | 'SpeakingRoom'
     | 'SpeakingShadowing'
     | 'FlashcardList';
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 };
 
 export type StudyActivityItem = {
@@ -60,8 +56,9 @@ export type LearnerProfileData = {
 
 export type LearnerStateSnapshot = {
   dueReviewCount: number;
-  dueReviewItems: ContentReviewItemRecord[];
   estimatedReviewMinutes: number;
+  /** False when no canonical lesson is stored offline (FR-021 empty hint). */
+  hasDownloadedLessons: boolean;
   recentErrors: ErrorEventRecord[];
   speakingRecordings: SpeakingRecordingRecord[];
   lastSpeakingAtIso?: string | null;
@@ -75,8 +72,6 @@ export type LearnerStateSnapshot = {
     oldLessonId?: string | null;
     oldLessonTitle?: string | null;
   };
-  fastMasteryItemIds?: string[];
-  recognitionOnlyItemIds?: string[];
   profileData?: LearnerProfileData | null;
 };
 

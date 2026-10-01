@@ -7,14 +7,9 @@ import {
   resetAccountStoreForTests,
   useAccountStore,
 } from '@features/account/logic/useAccountStore';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {recordFlashcardRating, saveFlashcard} from '@features/review';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '@features/sync/logic/outboxSync';
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
 
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {validFullOutput} from '@core/fixtures';
@@ -24,6 +19,10 @@ import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+import {
+  readSeededLessonDownload,
+  seedCanonicalLessonDownload,
+} from '@test/support/canonicalDownloadSeed';
 import {installKeychainVault} from '@test/support/keychainVault';
 
 import {
@@ -140,9 +139,9 @@ function seedInstall(accountId: string) {
 }
 
 function writeLearnerData() {
-  saveYouTubeProgress({lessonId: 'yt-a', positionMs: 5000, segmentIndex: 2});
+  seedCanonicalLessonDownload('33333333-3333-4333-8333-333333333301');
   const saved = saveFlashcard({
-    lessonId: 'lesson-a',
+    lessonId: '33333333-3333-4333-8333-333333333301',
     vocabulary: validFullOutput.vocabulary[0],
     now: '2026-09-27T01:00:00.000Z',
   });
@@ -152,7 +151,6 @@ function writeLearnerData() {
     rating: 'remembered',
     reviewedAt: '2026-09-27T02:00:00.000Z',
   });
-  saveContentLesson({lessonId: 'content-a', now: '2026-09-27T03:00:00.000Z'});
 }
 
 async function seedSession(session: typeof sessionA, userId: string) {
@@ -296,8 +294,10 @@ describe('HELD / INV-001: unconfirmed and same-account paths never delete A data
     serverUser = userA;
     await useAccountStore.getState().boot();
     expect(useAccountStore.getState().phase).toBe('switch-confirmation');
-    expect(getYouTubeProgress('yt-a')).not.toBeNull();
-    expect(listPendingSyncEvents()).toHaveLength(2);
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).not.toBeNull();
+    expect(listPendingSyncEvents()).toHaveLength(1);
 
     // process restart
     resetBootStateForTests();
@@ -306,8 +306,10 @@ describe('HELD / INV-001: unconfirmed and same-account paths never delete A data
     resetAccountStoreForTests();
     await useAccountStore.getState().boot();
     expect(useAccountStore.getState().phase).toBe('switch-confirmation');
-    expect(getYouTubeProgress('yt-a')).not.toBeNull();
-    expect(listPendingSyncEvents()).toHaveLength(2);
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).not.toBeNull();
+    expect(listPendingSyncEvents()).toHaveLength(1);
   });
 
   it('HELD / INV-001: same-account re-login preserves data and stages no switch', async () => {
@@ -323,8 +325,10 @@ describe('HELD / INV-001: unconfirmed and same-account paths never delete A data
       phase: 'authenticated',
       user: {id: userA.id},
     });
-    expect(getYouTubeProgress('yt-a')).not.toBeNull();
-    expect(listPendingSyncEvents()).toHaveLength(2);
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).not.toBeNull();
+    expect(listPendingSyncEvents()).toHaveLength(1);
   });
 
   it('HELD / INV-001: a foreign active session with a pending journal fails closed', async () => {
@@ -336,8 +340,10 @@ describe('HELD / INV-001: unconfirmed and same-account paths never delete A data
 
     await useAccountStore.getState().boot();
     expect(useAccountStore.getState().phase).toBe('switch-failed');
-    expect(getYouTubeProgress('yt-a')).not.toBeNull();
-    expect(listPendingSyncEvents()).toHaveLength(2);
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).not.toBeNull();
+    expect(listPendingSyncEvents()).toHaveLength(1);
   });
 });
 
@@ -353,26 +359,32 @@ describe('HELD / INV-003: confirmed switch ordering and isolation', () => {
     await useAccountStore.getState().boot();
     expect(useAccountStore.getState().phase).toBe('switch-confirmation');
     expect(useAccountStore.getState().switchContext?.needsRetry).toBe(true);
-    expect(getYouTubeProgress('yt-a')).not.toBeNull();
-    expect(listPendingSyncEvents()).toHaveLength(2);
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).not.toBeNull();
+    expect(listPendingSyncEvents()).toHaveLength(1);
   });
 
-  it('HELD / INV-003: recovered activated switch leaves no A row queryable under B', async () => {
+  it('HELD / INV-003: recovered switch retry wipe leaves no A row queryable under B', async () => {
     await seedActiveSessionA();
-    // DB commit proof: current_account_id already B
-    seedInstall(userB.id);
+    seedInstall(userA.id);
     writeLearnerData();
     await seedSession(sessionB, userB.id);
     await confirmJournalAB();
-    getDatabase().execute('DELETE FROM youtube_progress;');
     getDatabase().execute('DELETE FROM sync_outbox;');
 
     await useAccountStore.getState().boot();
+    expect(useAccountStore.getState().phase).toBe('switch-confirmation');
+    expect(useAccountStore.getState().switchContext?.needsRetry).toBe(true);
+
+    await useAccountStore.getState().confirmSwitch();
     expect(useAccountStore.getState()).toMatchObject({
       phase: 'authenticated',
       user: {id: userB.id},
     });
-    expect(getYouTubeProgress('yt-a')).toBeNull();
+    expect(
+      readSeededLessonDownload('33333333-3333-4333-8333-333333333301'),
+    ).toBeNull();
     expect(listPendingSyncEvents()).toEqual([]);
   });
 });

@@ -25,14 +25,14 @@ jest.mock('@core/api/youtubeCapabilities', () => ({
 }));
 
 function navigation() {
+  const tabNavigate = jest.fn();
   const rootNavigate = jest.fn();
   return {
     navigate: jest.fn(),
     rootNavigate,
-    // SETE-289: the history link reaches the RootStack through the tab
-    // parent.
+    tabNavigate,
     getParent: () => ({
-      navigate: jest.fn(),
+      navigate: tabNavigate,
       getParent: () => ({navigate: rootNavigate}),
     }),
   };
@@ -110,13 +110,20 @@ describe('CreateScreen (SETE-247)', () => {
       makeTestReleaseConfig(ALL_IMPLEMENTED_FEATURES),
     );
     await pressByTestID(flaggedOn, 'create-tile-youtube');
-    expect(nav.navigate).toHaveBeenCalledWith('YouTubeInput');
+    expect(nav.tabNavigate).toHaveBeenCalledWith('Lessons', {
+      screen: 'LessonCreation',
+      params: expect.objectContaining({
+        initialSource: 'youtube',
+        submissionId: expect.stringMatching(/^create-youtube-/),
+      }),
+    });
     await pressByTestID(flaggedOn, 'create-history-link');
-    // SETE-289: History is a RootStack route above the tabs.
-    expect(nav.rootNavigate).toHaveBeenCalledWith('YouTubeHistory');
+    expect(nav.tabNavigate).toHaveBeenCalledWith('Lessons', {
+      screen: 'CanonicalCatalog',
+    });
   });
 
-  it('hides the creation tile but keeps history when the server is off (SETE-290)', async () => {
+  it('hides YouTube entry points when the server capability is off (SETE-290)', async () => {
     mockUseYouTubeServerEnabled.mockReturnValue(false);
     const tree = await renderCreate(
       navigation(),
@@ -126,11 +133,10 @@ describe('CreateScreen (SETE-247)', () => {
       tree.root.findAll(node => node.props.testID === 'create-tile-youtube')
         .length,
     ).toBe(0);
-    // Saved lessons are local data — history stays reachable.
     expect(
       tree.root.findAll(node => node.props.testID === 'create-history-link')
         .length,
-    ).toBeGreaterThan(0);
+    ).toBe(0);
   });
 
   it('renders an empty state instead of a blank screen when all sources are off', async () => {

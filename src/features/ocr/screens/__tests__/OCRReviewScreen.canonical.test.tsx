@@ -17,30 +17,6 @@ jest.mock('@features/analytics', () => ({
   getTextLengthBucket: () => '1-100',
 }));
 
-const mockCreateGenerationJob = jest.fn();
-const ALL_CAPS = {
-  catalog: true,
-  canonicalDelivery: true,
-  aiMaterialization: true,
-  packagedImport: true,
-  partialRetry: true,
-  privateLibrary: true,
-};
-
-// LING-41 TASK-006: ready capabilities + an injected job creator so the
-// canonical creation path is deterministic without network.
-jest.mock('@features/lesson/player', () => {
-  const actual = jest.requireActual('@features/lesson/player');
-  return {
-    ...actual,
-    useLessonServerCapabilities: () => ALL_CAPS,
-    createLessonGenerationJob: (...args: unknown[]) =>
-      mockCreateGenerationJob(...args),
-  };
-});
-
-const createSkeleton = jest.fn();
-
 const mockNavigate = jest.fn();
 const mockTabNavigate = jest.fn();
 
@@ -93,16 +69,12 @@ function renderOCRReviewScreen() {
   );
 }
 
-describe('OCRReviewScreen canonical creation (LING-41 TASK-006)', () => {
+describe('OCRReviewScreen canonical creation (LING-176 TASK-008)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreateGenerationJob.mockResolvedValue({
-      ok: true,
-      job: {id: 'job-ocr-1'},
-    });
   });
 
-  it('creates one canonical job and opens generation progress', async () => {
+  it('opens LessonCreation with edited OCR text', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
     await ReactTestRenderer.act(async () => {
       tree = renderOCRReviewScreen();
@@ -122,20 +94,17 @@ describe('OCRReviewScreen canonical creation (LING-41 TASK-006)', () => {
       await flushPromises();
     });
 
-    expect(mockCreateGenerationJob).toHaveBeenCalledWith({
-      confirmedText: 'Edited OCR text for the lesson.',
-    });
     expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'UnifiedLessonGeneration',
-      params: {
-        jobId: 'job-ocr-1',
-        confirmedText: 'Edited OCR text for the lesson.',
-        level: undefined,
-      },
+      screen: 'LessonCreation',
+      params: expect.objectContaining({
+        initialSource: 'ocr',
+        initialText: 'Edited OCR text for the lesson.',
+        submissionId: expect.stringMatching(/^OCRReview-/),
+      }),
     });
   });
 
-  it('makes zero v1/v2 writes on the canonical path', async () => {
+  it('does not navigate to legacy Analyzing flow', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
     await ReactTestRenderer.act(async () => {
       tree = renderOCRReviewScreen();
@@ -150,8 +119,6 @@ describe('OCRReviewScreen canonical creation (LING-41 TASK-006)', () => {
       await flushPromises();
     });
 
-    // No v1 Analyzing navigation and no v2 skeleton request.
-    expect(createSkeleton).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalledWith(
       'Analyzing',
       expect.anything(),

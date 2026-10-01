@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  getYouTubeProgress,
-  saveYouTubeProgress,
-} from '@features/youtube/logic/data/YouTubeProgressRepository';
+import {resetDatabaseForTests} from '@core/db/database';
 
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {
+  DEFAULT_CANONICAL_LESSON_ID,
+  readSeededLessonDownload,
+  seedCanonicalLessonDownload,
+} from '@test/support/canonicalDownloadSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {useAccountStore} from '../useAccountStore';
 
 describe('cross-account cache isolation', () => {
   beforeEach(() => {
@@ -15,20 +14,13 @@ describe('cross-account cache isolation', () => {
     resetDatabaseForTests();
   });
 
-  it('switch account → wipe → no leakage', async () => {
-    // 1. Setup user 1
-    saveYouTubeProgress({
-      lessonId: 'user1-lesson',
-      positionMs: 1000,
-      segmentIndex: 0,
-    });
-    expect(getYouTubeProgress('user1-lesson')).toBeTruthy();
+  it('switch account → wipe → no leakage', () => {
+    seedCanonicalLessonDownload();
+    expect(readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID)).toBeTruthy();
 
-    // 2. Wipe database (simulating switch account)
     __resetMockDatabases();
     resetDatabaseForTests();
 
-    // 3. Verify wiped
-    expect(getYouTubeProgress('user1-lesson')).toBeNull();
+    expect(readSeededLessonDownload(DEFAULT_CANONICAL_LESSON_ID)).toBeNull();
   });
 });

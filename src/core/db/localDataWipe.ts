@@ -51,16 +51,29 @@ export async function clearAllLocalDatabaseRows(): Promise<void> {
   db.execute('DELETE FROM error_events;');
   db.execute('DELETE FROM sync_outbox;');
   db.execute('DELETE FROM audio_assets;');
-  db.execute('DELETE FROM content_review_items;');
   db.execute('DELETE FROM grammar_bookmarks;');
-  db.execute('DELETE FROM content_lesson_state;');
   try {
     db.execute('DELETE FROM lesson_v2;');
   } catch {
     // Table may be dropped after canonical legacy clear
   }
-  db.execute('DELETE FROM youtube_sentences;');
-  db.execute('DELETE FROM youtube_lessons;');
+  for (const sql of [
+    'DELETE FROM content_review_items;',
+    'DELETE FROM content_lesson_state;',
+    'DELETE FROM youtube_sentences;',
+    'DELETE FROM youtube_lessons;',
+    'DELETE FROM youtube_progress;',
+    'DELETE FROM practice_sets;',
+    'DELETE FROM practice_questions;',
+    'DELETE FROM practice_sessions;',
+    'DELETE FROM practice_events;',
+  ]) {
+    try {
+      db.execute(sql);
+    } catch {
+      // Retired tables (schema v3) may already be dropped.
+    }
+  }
   // LING-149 canonical state (tables may predate v2 on old databases).
   try {
     db.execute('DELETE FROM lesson_downloads;');

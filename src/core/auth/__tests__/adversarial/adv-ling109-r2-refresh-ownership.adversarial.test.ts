@@ -3,12 +3,10 @@ import {
   resetBootStateForTests,
 } from '@features/account/logic/accountBootstrap';
 import {resetAccountStoreForTests} from '@features/account/logic/useAccountStore';
-import {saveContentLesson} from '@features/lesson/packages/logic/data/ContentLessonStateRepository';
 import {recordFlashcardRating, saveFlashcard} from '@features/review';
 import {saveGrammarBookmark} from '@features/review/logic/GrammarBookmarkRepository';
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '@features/sync/logic/outboxSync';
-import {saveYouTubeProgress} from '@features/youtube/logic/data/YouTubeProgressRepository';
 
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {validFullOutput} from '@core/fixtures';
@@ -18,6 +16,7 @@ import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
+import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 import {installKeychainVault} from '@test/support/keychainVault';
 
 import {
@@ -124,9 +123,9 @@ function seedInstall(accountId: string) {
 }
 
 function writeLearnerData() {
-  saveYouTubeProgress({lessonId: 'yt-a', positionMs: 5000, segmentIndex: 2});
+  seedCanonicalLessonDownload('33333333-3333-4333-8333-333333333301');
   const saved = saveFlashcard({
-    lessonId: 'lesson-a',
+    lessonId: '33333333-3333-4333-8333-333333333301',
     vocabulary: validFullOutput.vocabulary[0],
     now: '2026-09-27T01:00:00.000Z',
   });
@@ -136,7 +135,6 @@ function writeLearnerData() {
     rating: 'remembered',
     reviewedAt: '2026-09-27T02:00:00.000Z',
   });
-  saveContentLesson({lessonId: 'content-a', now: '2026-09-27T03:00:00.000Z'});
 }
 
 function readCurrentAccountId(): string | null {

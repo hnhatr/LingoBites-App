@@ -1,17 +1,16 @@
 /**
- * Speaking Room mode listing + content availability (SETE-110 / M5, M7 MVP expansion, REQ-23).
+ * Speaking Room mode listing + content availability (LING-149 TASK-008).
  *
- * All six required modes are a fixed list. When content for a mode is installed
- * in the active package, `available` is true and usable content lines/prompts
- * are returned.
+ * Practice lines come from canonical lesson sentences stored in
+ * `lesson_downloads`. Keyword and shadowing availability rules match the
+ * pre-cutover package behavior (E-025), without package activities.
  */
 
 import {
-  getContentLessonById,
-  getLessonActivities,
-  getLessonChunks,
-  listActivePackageLessons,
-} from '@features/lesson/packages';
+  lessonMatchesKeywords,
+  listDownloadedLessonSummaries,
+  sentencesToSpeakingLines,
+} from '@features/lesson/player';
 
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
@@ -32,11 +31,6 @@ export type SpeakingModeInfo = {
   recommended: boolean;
 };
 
-const SHADOWING_ACTIVITY_TYPES = new Set([
-  'listen_and_repeat',
-  'speaking_drill',
-]);
-
 export type SpeakingContentLine = {
   textEn: string;
   textVi: string;
@@ -49,76 +43,36 @@ export type SpeakingModeContent = {
   lines: SpeakingContentLine[];
 };
 
-/** Shadowing content: lines built from listen_and_repeat / speaking_drill activities. */
-export function getShadowingContent(): SpeakingModeContent[] {
-  const lessons = listActivePackageLessons();
+function buildContentForLessons(
+  lessons: ReturnType<typeof listDownloadedLessonSummaries>,
+): SpeakingModeContent[] {
   const content: SpeakingModeContent[] = [];
   for (const lesson of lessons) {
-    const activities = getLessonActivities(lesson.id).filter(activity =>
-      SHADOWING_ACTIVITY_TYPES.has(activity.type),
-    );
-    if (activities.length === 0) {
+    const lines = sentencesToSpeakingLines(lesson);
+    if (lines.length === 0) {
       continue;
     }
-    const chunks = getLessonChunks(lesson.id);
-    const chunksById = new Map(chunks.map(chunk => [chunk.id, chunk]));
-    const lines: SpeakingContentLine[] = [];
-    for (const activity of activities) {
-      for (const chunkId of activity.chunkRefIds) {
-        const chunk = chunksById.get(chunkId);
-        if (!chunk) {
-          continue;
-        }
-        lines.push({
-          textEn: chunk.phraseEn,
-          textVi: chunk.phraseVi,
-          audioAssetId: chunk.audioRefIds[0] ?? null,
-        });
-      }
-    }
-    if (lines.length > 0) {
-      content.push({
-        lessonId: lesson.id,
-        lessonTitleVi: lesson.titleVi,
-        lines,
-      });
-    }
+    content.push({
+      lessonId: lesson.lessonId,
+      lessonTitleVi: lesson.title,
+      lines,
+    });
   }
   return content;
 }
 
-/** Helper to collect content for a given mode by matching lesson slugs/keywords/activities. */
+/** Shadowing: every EN+VI sentence from downloaded lessons. */
+export function getShadowingContent(): SpeakingModeContent[] {
+  return buildContentForLessons(listDownloadedLessonSummaries());
+}
+
 export function getModeContentByKeywords(
   keywords: string[],
 ): SpeakingModeContent[] {
-  const lessons = listActivePackageLessons();
-  const content: SpeakingModeContent[] = [];
-  for (const lessonSummary of lessons) {
-    const lesson = getContentLessonById(lessonSummary.id);
-    if (!lesson) continue;
-    const matchesKeyword = keywords.some(
-      kw =>
-        lesson.slug.toLowerCase().includes(kw) ||
-        lesson.titleEn.toLowerCase().includes(kw) ||
-        lesson.titleVi.toLowerCase().includes(kw),
-    );
-    if (matchesKeyword) {
-      const chunks = getLessonChunks(lesson.id);
-      const lines: SpeakingContentLine[] = chunks.map(chunk => ({
-        textEn: chunk.phraseEn,
-        textVi: chunk.phraseVi,
-        audioAssetId: chunk.audioRefIds[0] ?? null,
-      }));
-      if (lines.length > 0) {
-        content.push({
-          lessonId: lesson.id,
-          lessonTitleVi: lesson.titleVi,
-          lines,
-        });
-      }
-    }
-  }
-  return content;
+  const lessons = listDownloadedLessonSummaries().filter(lesson =>
+    lessonMatchesKeywords(lesson, keywords),
+  );
+  return buildContentForLessons(lessons);
 }
 
 export function getQuickAnswerContent(): SpeakingModeContent[] {
@@ -159,11 +113,6 @@ export function getMockInterviewContent(): SpeakingModeContent[] {
   ]);
 }
 
-/**
- * SETE-262: fixed per-mode metadata, ordered by commitment (shortest and
- * easiest first, mock interview last). Shadowing is the recommended default:
- * it is the shortest warm-up and the only mode backed by installed content.
- */
 const MODE_COPY: Record<
   SpeakingMode,
   {

@@ -110,7 +110,7 @@ describe('LessonsTabContent', () => {
       pressable.props.onPress();
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('ContentLessonRuntime', {
+    expect(mockNavigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
       lessonId: 'packaged-1',
     });
   });

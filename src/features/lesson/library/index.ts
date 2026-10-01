@@ -9,5 +9,4 @@ export type {
 export type {
   LessonsListRouteParams,
   LessonsStackParamList,
-  LearningDetailParamList,
 } from './screens/navigationTypes';

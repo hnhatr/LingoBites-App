@@ -374,7 +374,7 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
           exceptions: [
             {
               file: 'src/core/db/database.ts',
-              specifier: '@features/practice',
+              specifier: '@features/review',
               rule: 'core-to-features',
               owner: 'React Native Developer',
               expiry: 'TASK-900',
@@ -383,7 +383,7 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
         }),
       );
 
-      const target = path.join(srcRoot, 'features/practice/index.ts');
+      const target = path.join(srcRoot, 'features/review/index.ts');
       const file = path.join(srcRoot, 'core/db/database.ts');
       const resolved = {
         resolvedFileName: target,
@@ -391,7 +391,7 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
         isAsset: false,
       };
       const imp = {
-        specifier: '@features/practice',
+        specifier: '@features/review',
         line: 1,
         kind: 'import',
       };
@@ -399,7 +399,7 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       const allowed = checkModuleBoundaries({
         files: [file],
         fileContents: {
-          [file]: "import {x} from '@features/practice';\n",
+          [file]: "import {x} from '@features/review';\n",
         },
         manifestPath: tempManifestPath,
       });
@@ -431,7 +431,7 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
           exceptions: [
             {
               file: 'src/core/db/database.ts',
-              specifier: '@features/practice',
+              specifier: '@features/review',
               rule: 'core-to-features',
               owner: 'React Native Developer',
               expiry: '2020-01-01',
@@ -443,7 +443,7 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       const result = checkModuleBoundaries({
         files: [file],
         fileContents: {
-          [file]: "import {x} from '@features/practice';\n",
+          [file]: "import {x} from '@features/review';\n",
         },
         manifestPath: tempManifestPath,
       });

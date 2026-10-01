@@ -18,20 +18,11 @@ import {
 } from '@features/input';
 import {LessonsHistoryScreen} from '@features/lesson/library';
 import {
-  ContentLessonDetailScreen,
-  ContentLessonListScreen,
-  ContentLessonRuntimeScreen,
-} from '@features/lesson/packages';
-import {
   CanonicalLessonCatalogScreen,
   CanonicalLessonPlayerScreen,
-  CurriculumLessonScreen,
   LessonCreationScreen,
-  UnifiedLessonGenerationScreen,
-  UnifiedLessonsPreviewScreen,
 } from '@features/lesson/player';
 import {OCRReviewScreen} from '@features/ocr';
-import {PracticeScreen} from '@features/practice';
 import {
   FeatureStatusScreen,
   PrivacyNoteScreen,
@@ -44,19 +35,12 @@ import {
   SpeakingShadowingActivity,
 } from '@features/speaking/screens/speakingUiPort';
 import {TodayScreen} from '@features/today';
-import {
-  YouTubeHistoryScreen,
-  YouTubeInputScreen,
-  YouTubeLessonRouteScreen,
-  YouTubeProcessingScreen,
-} from '@features/youtube';
 
 import {useFeatureFlags} from '@core/release';
 
 import {accountGateRouteForPhase} from './accountGate';
 import {tabBarVisibilityOptions} from './immersiveTabRoutes';
 import {isIngestionRouteEnabled} from './ingestionRouteGate';
-import {getRootStackRouteNames} from './rootStackRoutes';
 import {TabBar} from './TabBar';
 import type {
   CreateStackParamList,
@@ -83,13 +67,13 @@ function HomeStackNavigator() {
         options={{headerShown: false}}
       />
       <HomeStack.Screen
-        component={ContentLessonRuntimeScreen}
-        name="ContentLessonRuntime"
-        options={{headerShown: false, gestureEnabled: false}}
+        component={CanonicalLessonCatalogScreen}
+        name="CanonicalCatalog"
+        options={{headerShown: false}}
       />
       <HomeStack.Screen
-        component={CurriculumLessonScreen}
-        name="CurriculumLesson"
+        component={CanonicalLessonPlayerScreen}
+        name="CanonicalLessonPlayer"
         options={{headerShown: false, gestureEnabled: false}}
       />
       <HomeStack.Screen
@@ -100,11 +84,6 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         component={TodayScreen}
         name="Today"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={PracticeScreen}
-        name="Practice"
         options={{headerShown: false}}
       />
     </HomeStack.Navigator>
@@ -123,25 +102,6 @@ function CreateStackNavigator() {
         name="CreateMain"
         options={{headerShown: false}}
       />
-      {config.features.youtubeLearning && (
-        <>
-          <CreateStack.Screen
-            component={YouTubeInputScreen}
-            name="YouTubeInput"
-            options={{headerShown: false, gestureEnabled: false}}
-          />
-          <CreateStack.Screen
-            component={YouTubeProcessingScreen}
-            name="YouTubeProcessing"
-            options={{headerShown: false, gestureEnabled: false}}
-          />
-          <CreateStack.Screen
-            component={YouTubeLessonRouteScreen}
-            name="YouTubeLesson"
-            options={{headerShown: false, orientation: 'portrait'}}
-          />
-        </>
-      )}
       {canMount('PasteText') && (
         <CreateStack.Screen
           component={PasteTextScreen}
@@ -163,11 +123,6 @@ function CreateStackNavigator() {
           options={{headerShown: false}}
         />
       )}
-      <CreateStack.Screen
-        component={PracticeScreen}
-        name="Practice"
-        options={{headerShown: false}}
-      />
     </CreateStack.Navigator>
   );
 }
@@ -196,31 +151,6 @@ function LessonsStackNavigator() {
         options={{headerShown: false, gestureEnabled: false}}
       />
       <LessonsStack.Screen
-        component={CurriculumLessonScreen}
-        name="CurriculumLesson"
-        options={{headerShown: false, gestureEnabled: false}}
-      />
-      <LessonsStack.Screen
-        component={UnifiedLessonGenerationScreen}
-        name="UnifiedLessonGeneration"
-        options={{headerShown: false, gestureEnabled: false}}
-      />
-      <LessonsStack.Screen
-        component={ContentLessonListScreen}
-        name="ContentLessonList"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={ContentLessonDetailScreen}
-        name="ContentLessonDetail"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={ContentLessonRuntimeScreen}
-        name="ContentLessonRuntime"
-        options={{headerShown: false, gestureEnabled: false}}
-      />
-      <LessonsStack.Screen
         component={SpeakingRoomScreen}
         name="SpeakingRoom"
         options={{headerShown: false}}
@@ -236,8 +166,8 @@ function LessonsStackNavigator() {
         options={{headerShown: false}}
       />
       <LessonsStack.Screen
-        component={PracticeScreen}
-        name="Practice"
+        component={DailyReviewScreen}
+        name="DailyReview"
         options={{headerShown: false}}
       />
     </LessonsStack.Navigator>
@@ -273,13 +203,6 @@ function ProfileStackNavigator() {
         <ProfileStack.Screen
           component={TtsSpikeScreen}
           name="TtsSpike"
-          options={{headerShown: false}}
-        />
-      ) : null}
-      {__DEV__ ? (
-        <ProfileStack.Screen
-          component={UnifiedLessonsPreviewScreen}
-          name="UnifiedLessonsPreview"
           options={{headerShown: false}}
         />
       ) : null}
@@ -330,8 +253,7 @@ function TabNavigator() {
 }
 
 export function AppNavigator() {
-  const {config} = useFeatureFlags();
-  const rootRouteNames = getRootStackRouteNames(config.features);
+  useFeatureFlags();
   const phase = useAccountStore(state => state.phase);
   const boot = useAccountStore(state => state.boot);
   useEffect(() => {
@@ -367,22 +289,6 @@ export function AppNavigator() {
     <NavigationContainer>
       <RootStack.Navigator id="RootStack" screenOptions={{headerShown: false}}>
         <RootStack.Screen component={TabNavigator} name="Tabs" />
-        {rootRouteNames.includes('YouTubeHistory') && (
-          <RootStack.Screen
-            component={YouTubeHistoryScreen}
-            name="YouTubeHistory"
-          />
-        )}
-        {rootRouteNames.includes('YouTubeLesson') && (
-          <RootStack.Screen
-            component={YouTubeLessonRouteScreen}
-            name="YouTubeLesson"
-            options={{headerShown: false, orientation: 'portrait'}}
-          />
-        )}
-        {rootRouteNames.includes('Practice') && (
-          <RootStack.Screen component={PracticeScreen} name="Practice" />
-        )}
       </RootStack.Navigator>
     </NavigationContainer>
   );

@@ -4,7 +4,6 @@
 
 import {open} from 'react-native-quick-sqlite';
 
-import {getDueContentReviewItems} from '@features/lesson/packages/logic/data/ContentRuntimeRepository';
 import {listErrorEvents} from '@features/speaking/logic/data/SpeakingRepository';
 
 import {DB_NAME} from '@core/db/constants';
@@ -95,8 +94,6 @@ describe('captureSpeakingErrorIfNeeded', () => {
 
     expect(result).toMatchObject({id: 'attempt-1', category: 'vocabulary'});
     expect(listErrorEvents('lesson-1')).toHaveLength(1);
-
-    const due = getDueContentReviewItems({now: '2026-09-10T00:00:00.000Z'});
-    expect(due.map(item => item.id)).toContain(result?.reviewItemId);
+    expect(listErrorEvents('lesson-1')[0].reviewItemId).toBeTruthy();
   });
 });

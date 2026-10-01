@@ -1,10 +1,4 @@
-import type {LearningDetailParamList} from '@features/home';
 import type {OCRReviewRouteParams} from '@features/ocr';
-import type {
-  YouTubeInputRouteParams,
-  YouTubeLessonRouteParams,
-  YouTubeProcessingRouteParams,
-} from '@features/youtube';
 
 import type {OCRSourceType} from '@core/api/types';
 
@@ -16,10 +10,7 @@ export interface ImageCaptureRouteParams {
 
 export type CreateStackParamList = {
   CreateMain: CreateMainRouteParams;
-  YouTubeInput: YouTubeInputRouteParams;
-  YouTubeProcessing: YouTubeProcessingRouteParams;
-  YouTubeLesson: YouTubeLessonRouteParams;
   PasteText: PasteTextRouteParams;
   ImageCapture: ImageCaptureRouteParams;
   OCRReview: OCRReviewRouteParams;
-} & LearningDetailParamList;
+};

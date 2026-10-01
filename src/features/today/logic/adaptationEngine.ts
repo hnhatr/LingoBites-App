@@ -176,22 +176,6 @@ export function generateStudyBlock(
   }
 
   // 4. Active Recall for Recognition Weakness (REQ-33)
-  if (
-    snapshot.recognitionOnlyItemIds &&
-    snapshot.recognitionOnlyItemIds.length > 0
-  ) {
-    reasonCodes.push('ACTIVE_RECALL_WEAKNESS');
-    candidateActivities.push({
-      id: 'activity-active-recall',
-      type: 'active_recall',
-      titleVi: 'Ôn tập phản xạ chủ động',
-      subtitleVi: 'Chuyển đổi từ nhận diện thụ động sang sản xuất câu chủ động',
-      estimatedMinutes: 3,
-      targetId: 'active_recall',
-      navigationTarget: {screen: 'DailyReview'},
-    });
-  }
-
   // 5. Prerequisite Micro-Lesson (REQ-33)
   if (snapshot.lessonProgression?.prerequisiteGapLessonId) {
     reasonCodes.push('PREREQUISITE_NEEDED');
@@ -205,28 +189,9 @@ export function generateStudyBlock(
       estimatedMinutes: 5,
       targetId: snapshot.lessonProgression.prerequisiteGapLessonId,
       navigationTarget: {
-        screen: 'ContentLessonRuntime',
+        screen: 'CanonicalLessonPlayer',
         params: {lessonId: snapshot.lessonProgression.prerequisiteGapLessonId},
       },
-    });
-  }
-
-  // 6. Fast Mastery Variation (REQ-33)
-  if (snapshot.fastMasteryItemIds && snapshot.fastMasteryItemIds.length > 0) {
-    reasonCodes.push('FAST_MASTERY_VARIATION');
-    candidateActivities.push({
-      id: 'activity-fast-mastery-variation',
-      type: 'old_situation_practice',
-      titleVi: 'Luyện tập biến thể tình huống',
-      subtitleVi: 'Tăng cường biến thể bài tập cho các từ vựng đã nhớ nhanh',
-      estimatedMinutes: 5,
-      targetId: snapshot.lessonProgression?.oldLessonId ?? 'fast_mastery',
-      navigationTarget: snapshot.lessonProgression?.oldLessonId
-        ? {
-            screen: 'ContentLessonRuntime',
-            params: {lessonId: snapshot.lessonProgression.oldLessonId},
-          }
-        : {screen: 'DailyReview'},
     });
   }
 
@@ -273,7 +238,7 @@ export function generateStudyBlock(
       estimatedMinutes: nextLessonMins,
       targetId: snapshot.lessonProgression.nextLessonId,
       navigationTarget: {
-        screen: 'ContentLessonRuntime',
+        screen: 'CanonicalLessonPlayer',
         params: {lessonId: snapshot.lessonProgression.nextLessonId},
       },
     });
@@ -295,7 +260,7 @@ export function generateStudyBlock(
       estimatedMinutes: 5,
       targetId: snapshot.lessonProgression.oldLessonId,
       navigationTarget: {
-        screen: 'ContentLessonRuntime',
+        screen: 'CanonicalLessonPlayer',
         params: {lessonId: snapshot.lessonProgression.oldLessonId},
       },
     });

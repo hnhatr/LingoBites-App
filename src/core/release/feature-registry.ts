@@ -35,11 +35,11 @@ export const featureRegistry = [
   },
   {
     key: 'shortPractice',
-    module: 'src/features/practice',
+    module: 'src/features/review',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
-    entryPoint: 'HomeScreen -> PasteText',
+    entryPoint: 'Today tab -> DailyReview',
   },
   {
     key: 'pronunciationSupport',
@@ -179,7 +179,7 @@ export const featureRegistry = [
   },
   {
     key: 'situationLearning',
-    module: 'src/features/lesson/packages',
+    module: 'src/features/lesson/player',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -187,7 +187,7 @@ export const featureRegistry = [
   },
   {
     key: 'dialogueGenerator',
-    module: 'src/features/lesson/packages',
+    module: 'src/features/lesson/player',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -195,7 +195,7 @@ export const featureRegistry = [
   },
   {
     key: 'phraseExtractor',
-    module: 'src/features/lesson/packages',
+    module: 'src/features/lesson/player',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -203,7 +203,7 @@ export const featureRegistry = [
   },
   {
     key: 'situationPractice',
-    module: 'src/features/lesson/packages',
+    module: 'src/features/lesson/player',
     required: false,
     releaseGroup: 'expansion',
     status: 'not_implemented',
@@ -211,12 +211,12 @@ export const featureRegistry = [
   },
   {
     key: 'youtubeLearning',
-    module: 'src/features/youtube',
+    module: 'src/features/lesson/player',
     required: false,
     releaseGroup: 'expansion',
     status: 'beta',
     entryPoint:
-      'Home video card -> YouTubeHistory (root stack) when lessons are saved or the read fails, Create/YouTubeInput when empty (card disabled while the flag is off)',
+      'Home video card -> Lessons/LessonCreation (initialSource youtube) when unified catalog is ready',
   },
 ] as const satisfies readonly FeatureRegistryEntry[];
 

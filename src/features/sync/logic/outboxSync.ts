@@ -1,8 +1,3 @@
-import {
-  markPracticeEventsSynced,
-  pushPracticeEvents,
-  type SyncPracticeEvent,
-} from '@features/practice';
 import {pushReviewEvents, type SyncReviewEvent} from '@features/review';
 
 import type {
@@ -29,6 +24,10 @@ import {
   markSyncEventsFailed,
   markSyncEventsSynced,
 } from './adapters/SyncOutboxRepository';
+import {
+  pushPracticeEvents,
+  type SyncPracticeEvent,
+} from './api/practiceEventsClient';
 import {syncPush} from './syncClient';
 import {isSyncStuck, MAX_SYNC_ATTEMPTS, SYNC_BATCH_LIMIT} from './syncPolicy';
 
@@ -223,7 +222,6 @@ async function drainOutboxOnceInner(
         const ids = [...result.acceptedIds, ...result.duplicateIds];
         if (ids.length > 0) {
           markSyncEventsSynced(ids);
-          markPracticeEventsSynced(ids);
           syncedIds.push(...ids);
         }
         for (const rejection of result.rejected) {

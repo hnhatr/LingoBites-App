@@ -6,8 +6,8 @@ function createMockSnapshot(
 ): LearnerStateSnapshot {
   return {
     dueReviewCount: 0,
-    dueReviewItems: [],
     estimatedReviewMinutes: 0,
+    hasDownloadedLessons: true,
     recentErrors: [],
     speakingRecordings: [],
     lastSpeakingAtIso: new Date().toISOString(),
@@ -21,8 +21,6 @@ function createMockSnapshot(
       oldLessonId: null,
       oldLessonTitle: null,
     },
-    fastMasteryItemIds: [],
-    recognitionOnlyItemIds: [],
     profileData: null,
     ...overrides,
   };
@@ -145,17 +143,6 @@ describe('adaptationEngine', () => {
       expect(plan.explanationVi).toContain('luyện nghe không kịch bản');
     });
 
-    it('activates ACTIVE_RECALL_WEAKNESS for recognition-only weakness', () => {
-      const snapshot = createMockSnapshot({
-        recognitionOnlyItemIds: ['rec-1', 'rec-2'],
-      });
-
-      const plan = generateStudyBlock(snapshot, 'normal', mockNow);
-
-      expect(plan.reasonCodes).toContain('ACTIVE_RECALL_WEAKNESS');
-      expect(plan.activities.some(a => a.type === 'active_recall')).toBe(true);
-    });
-
     it('activates PREREQUISITE_NEEDED when prerequisite gap exists', () => {
       const snapshot = createMockSnapshot({
         lessonProgression: {
@@ -175,26 +162,6 @@ describe('adaptationEngine', () => {
         true,
       );
       expect(plan.explanationVi).toContain('tiền đề');
-    });
-
-    it('activates FAST_MASTERY_VARIATION for fast mastery items', () => {
-      const snapshot = createMockSnapshot({
-        fastMasteryItemIds: ['fast-1', 'fast-2'],
-        lessonProgression: {
-          completedLessonIds: ['lesson-0'],
-          nextLessonId: 'lesson-1',
-          nextLessonTitle: 'Bài 1',
-          oldLessonId: 'lesson-0',
-          oldLessonTitle: 'Bài 0',
-        },
-      });
-
-      const plan = generateStudyBlock(snapshot, 'normal', mockNow);
-
-      expect(plan.reasonCodes).toContain('FAST_MASTERY_VARIATION');
-      expect(
-        plan.activities.some(a => a.type === 'old_situation_practice'),
-      ).toBe(true);
     });
 
     it('activates SPEAKING_GAP_PRIORITY when speaking history is empty or old', () => {
@@ -318,11 +285,10 @@ describe('adaptationEngine', () => {
       );
     });
 
-    it('Case 3: Prerequisite Gap + Fast Mastery + Normal Backlog => Prerequisite before next lesson', () => {
+    it('Case 3: Prerequisite Gap + Normal Backlog => Prerequisite before next lesson', () => {
       const snapshot = createMockSnapshot({
         dueReviewCount: 2,
         estimatedReviewMinutes: 1,
-        fastMasteryItemIds: ['item-mastered'],
         lessonProgression: {
           completedLessonIds: ['lesson-0'],
           nextLessonId: 'lesson-2',
@@ -339,7 +305,6 @@ describe('adaptationEngine', () => {
 
       expect(plan.isConsolidation).toBe(false);
       expect(plan.reasonCodes).toContain('PREREQUISITE_NEEDED');
-      expect(plan.reasonCodes).toContain('FAST_MASTERY_VARIATION');
 
       const prereqIndex = plan.activities.findIndex(
         a => a.type === 'prerequisite_lesson',

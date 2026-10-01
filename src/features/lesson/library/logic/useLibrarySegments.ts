@@ -1,11 +1,7 @@
 import {useCallback, useMemo, useState} from 'react';
 
 import type {LibraryLessonCardView} from '@features/lesson/library/logic/lesson';
-import {
-  listSavedLessons,
-  listStartedLessons,
-  useContentLibrary,
-} from '@features/lesson/packages';
+import {listDownloadedLessonSummaries} from '@features/lesson/player';
 import {listAllBookmarkedGrammar, listFlashcards} from '@features/review';
 
 import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
@@ -17,7 +13,7 @@ export interface SegmentFilterState {
 
 export interface UseLibrarySegmentsResult {
   personalLessons: LibraryLessonCardView[];
-  packagedLessons: any[];
+  packagedLessons: LibraryLessonCardView[];
   vocabulary: FlashcardRecord[];
   grammar: (GrammarBookmark & {title?: string; content?: string})[];
   lessonsFilter: SegmentFilterState;
@@ -30,7 +26,6 @@ export interface UseLibrarySegmentsResult {
 }
 
 export function useLibrarySegments(): UseLibrarySegmentsResult {
-  const {listActivePackageLessons} = useContentLibrary();
   const [refreshVersion, setRefreshVersion] = useState(0);
 
   const [lessonsFilter, setLessonsFilter] = useState<SegmentFilterState>({
@@ -50,32 +45,26 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
     setRefreshVersion(v => v + 1);
   }, []);
 
-  // Personal lessons (legacy v1/v2 personal lessons removed; canonical uses UnifiedLessonsScreen)
   const personalLessons = useMemo(() => [], []);
 
-  // Packaged lessons (from ContentLessonStateRepository)
   const packagedLessons = useMemo(() => {
-    const savedLessons = listSavedLessons();
-    const startedLessons = listStartedLessons();
-    const combined = [...savedLessons, ...startedLessons];
-    const deduped = Array.from(
-      new Map(combined.map(l => [l.lessonId, l])).values(),
+    const cards: LibraryLessonCardView[] = listDownloadedLessonSummaries().map(
+      item => ({
+        id: item.lessonId,
+        title: item.title,
+        blurb: item.description,
+        dateLabel: item.downloadedAt.slice(0, 10),
+        vocabularyCount: item.snapshot.sentences.length,
+        durationMin: item.estimatedDurationMinutes,
+        subjectLabel: 'Offline',
+        subjectTone: 'neutral' as const,
+        subjectKey: 'conversation' as const,
+      }),
     );
-
-    // Enrich with content library metadata
-    const activePackageLessons = listActivePackageLessons();
-    const enriched = deduped.map(state => {
-      const contentItem = activePackageLessons.find(
-        item => item.id === state.lessonId,
-      );
-      return {...contentItem, ...state};
-    });
-
-    return filterLessonsByQueryAndSource(enriched, lessonsFilter);
+    return filterLessonsByQueryAndSource(cards, lessonsFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonsFilter, refreshVersion]);
 
-  // Vocabulary (saved flashcards)
   const vocabulary = useMemo(() => {
     const cards = listFlashcards({includeUnsaved: false});
     return filterBySearchAndSource(cards, vocabularyFilter, {
@@ -84,7 +73,6 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vocabularyFilter, refreshVersion]);
 
-  // Grammar (saved bookmarks)
   const grammar = useMemo(() => {
     const bookmarks = listAllBookmarkedGrammar();
     return filterBySearchAndSource(bookmarks, grammarFilter, {
@@ -108,29 +96,23 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
   };
 }
 
-// Helper: filter lessons by search + source
 function filterLessonsByQueryAndSource(
-  lessons: any[],
+  lessons: LibraryLessonCardView[],
   filter: SegmentFilterState,
-): any[] {
+): LibraryLessonCardView[] {
   return lessons.filter(lesson => {
     const matchesSearch =
       !filter.searchQuery ||
       lesson.title?.toLowerCase().includes(filter.searchQuery.toLowerCase()) ||
-      lesson.summary
-        ?.toLowerCase()
-        .includes(filter.searchQuery.toLowerCase()) ||
       lesson.blurb?.toLowerCase().includes(filter.searchQuery.toLowerCase());
 
     const matchesSource =
-      filter.sourceFilter === 'all' ||
-      normalizeSourceType(lesson.sourceType) === filter.sourceFilter;
+      filter.sourceFilter === 'all' || filter.sourceFilter === 'offline';
 
     return matchesSearch && matchesSource;
   });
 }
 
-// Helper: filter by search + source (generic)
 function filterBySearchAndSource(
   items: any[],
   filter: SegmentFilterState,
@@ -151,7 +133,6 @@ function filterBySearchAndSource(
   });
 }
 
-// Helper: normalize source types (camera/gallery -> image_ocr, paste_text -> paste)
 function normalizeSourceType(sourceType: string | undefined): string {
   if (!sourceType) return 'all';
   if (sourceType === 'camera' || sourceType === 'gallery') {

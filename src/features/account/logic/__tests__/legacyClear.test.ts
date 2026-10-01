@@ -36,8 +36,34 @@ function countRows(db: any, query: string, params: any[] = []): number {
   return result.rows?.length ?? 0;
 }
 
+/** v3 migrations drop legacy lesson tables; recreate them for clear tests. */
+function restoreLegacyLessonTablesForTest(db: {
+  execute: (sql: string, params?: unknown[]) => unknown;
+}): void {
+  db.execute('CREATE TABLE IF NOT EXISTS lessons (id TEXT PRIMARY KEY);');
+  db.execute(
+    'CREATE TABLE IF NOT EXISTS lesson_v2 (lesson_id TEXT PRIMARY KEY);',
+  );
+  db.execute(
+    'CREATE TABLE IF NOT EXISTS lesson_v2_sentences (lesson_id TEXT, sentence_id TEXT);',
+  );
+  db.execute(
+    'CREATE TABLE IF NOT EXISTS lesson_v2_chunks (lesson_id TEXT, chunk_id TEXT);',
+  );
+  db.execute(
+    'CREATE TABLE IF NOT EXISTS lesson_v2_vocabulary (lesson_id TEXT, vocabulary_id TEXT);',
+  );
+  db.execute(
+    'CREATE TABLE IF NOT EXISTS lesson_v2_grammar (lesson_id TEXT, grammar_id TEXT);',
+  );
+  db.execute(
+    'CREATE TABLE IF NOT EXISTS lesson_v2_units (lesson_id TEXT, unit_id TEXT);',
+  );
+}
+
 /** Seeds one v1 lesson row plus a full v2 lesson (parent + 5 child rows). */
 function seedLessonFixtures(db: any): void {
+  restoreLegacyLessonTablesForTest(db);
   db.execute(
     'INSERT INTO lessons (id, anonymous_user_id, lesson_input_hash, title, source_type, confirmed_text, vietnamese_translation, level, ai_output_json, is_saved, created_at, updated_at, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
     [
@@ -198,25 +224,9 @@ describe('executeLegacyClear', () => {
     const db = getDatabase();
     seedLessonFixtures(db);
     db.execute(
-      'INSERT OR REPLACE INTO practice_sets (id, contract_version, status, lesson_id, lesson_revision, source_fingerprint, config_hash, seed, difficulty, requested_count, set_revision, generator_json, validation_summary_json, created_at, ready_at, error_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
-      [
-        'ps1',
-        1,
-        'ready',
-        V1_LESSON_ID,
-        1,
-        'hash',
-        'hash',
-        null,
-        'A1',
-        10,
-        1,
-        '{}',
-        null,
-        CREATED_AT,
-        CREATED_AT,
-        null,
-      ],
+      `INSERT INTO sync_outbox (id, event_type, entity_id, payload_json, created_at, attempt_count, last_error, synced_at)
+       VALUES (?, ?, ?, ?, ?, 0, NULL, NULL);`,
+      ['out-legacy', 'review', 'entity-1', '{}', CREATED_AT],
     );
     db.execute(
       'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
@@ -243,7 +253,7 @@ describe('executeLegacyClear', () => {
     // Unrelated cleanup still runs.
     expect(deleteLocalFiles).toHaveBeenCalledWith(['/path/to/file.mp4']);
     expect(
-      countRows(db, 'SELECT * FROM practice_sets WHERE id = ?;', ['ps1']),
+      countRows(db, 'SELECT * FROM sync_outbox WHERE id = ?;', ['out-legacy']),
     ).toBe(0);
     expect(
       getCount(db, 'SELECT COUNT(*) as count FROM app_settings WHERE key = ?', [
