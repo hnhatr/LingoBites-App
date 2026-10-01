@@ -44,6 +44,16 @@ export {
 } from './logic/api/sentenceEnrichmentApi';
 export {SentenceCard} from './components/SentenceCard';
 export {
+  YOUTUBE_PLAYER_ERROR_CODES,
+  YouTubePlayer,
+  mapYouTubePlayerError,
+} from './components/YouTubePlayer';
+export type {
+  YouTubePlayerErrorCode,
+  YouTubePlayerProps,
+  YouTubePlayerRef,
+} from './components/YouTubePlayer';
+export {
   SentenceCarousel,
   type SentenceCarouselProps,
   type SentenceCarouselRef,

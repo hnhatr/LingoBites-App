@@ -23,7 +23,10 @@ import {
   ContentLessonRuntimeScreen,
 } from '@features/lesson/packages';
 import {
+  CanonicalLessonCatalogScreen,
+  CanonicalLessonPlayerScreen,
   CurriculumLessonScreen,
+  LessonCreationScreen,
   UnifiedLessonGenerationScreen,
   UnifiedLessonsPreviewScreen,
 } from '@features/lesson/player';
@@ -176,6 +179,21 @@ function LessonsStackNavigator() {
         component={LessonsHistoryScreen}
         name="LessonsList"
         options={{headerShown: false}}
+      />
+      <LessonsStack.Screen
+        component={CanonicalLessonCatalogScreen}
+        name="CanonicalCatalog"
+        options={{headerShown: false}}
+      />
+      <LessonsStack.Screen
+        component={CanonicalLessonPlayerScreen}
+        name="CanonicalLessonPlayer"
+        options={{headerShown: false, gestureEnabled: false}}
+      />
+      <LessonsStack.Screen
+        component={LessonCreationScreen}
+        name="LessonCreation"
+        options={{headerShown: false, gestureEnabled: false}}
       />
       <LessonsStack.Screen
         component={CurriculumLessonScreen}

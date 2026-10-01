@@ -4,7 +4,10 @@ import type {
   ContentLessonRuntimeRouteParams,
 } from '@features/lesson/packages';
 import type {
+  CanonicalCatalogRouteParams,
+  CanonicalLessonPlayerRouteParams,
   CurriculumLessonRouteParams,
+  LessonCreationRouteParams,
   UnifiedLessonGenerationRouteParams,
 } from '@features/lesson/player';
 import type {PracticeRouteParams} from '@features/practice';
@@ -23,6 +26,9 @@ export type LearningDetailParamList = {
 
 export type LessonsStackParamList = {
   LessonsList: LessonsListRouteParams;
+  CanonicalCatalog: CanonicalCatalogRouteParams;
+  CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
+  LessonCreation: LessonCreationRouteParams;
   CurriculumLesson: CurriculumLessonRouteParams;
   UnifiedLessonGeneration: UnifiedLessonGenerationRouteParams;
   ContentLessonList: ContentLessonListRouteParams;
