@@ -5,6 +5,7 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import type {HomeStackParamList, RootTabParamList} from '@features/home';
 import type {LessonsStackParamList} from '@features/lesson/library';
+import {openLesson, openLessonCatalog} from '@features/lesson/player';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
@@ -73,11 +74,9 @@ export function TodayScreen() {
     // targets fall back to `DailyReview` (never the removed v1
     // `FlashcardList` screen).
     if (resolved.screen === 'CanonicalLessonPlayer') {
-      navigation.navigate('CanonicalLessonPlayer', {
-        lessonId: resolved.lessonId,
-      });
+      openLesson(navigation, resolved.lessonId);
     } else if (resolved.screen === 'CanonicalCatalog') {
-      navigation.navigate('CanonicalCatalog');
+      openLessonCatalog(navigation);
     } else if (resolved.screen === 'SpeakingRoom') {
       navigation.navigate('SpeakingRoom');
     } else {
@@ -114,7 +113,7 @@ export function TodayScreen() {
             </AppText>
             <AppButton
               title="Đi tới thư viện"
-              onPress={() => navigation.navigate('CanonicalCatalog')}
+              onPress={() => openLessonCatalog(navigation)}
               testID="today-go-download"
             />
           </View>

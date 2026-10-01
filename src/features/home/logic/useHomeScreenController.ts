@@ -8,7 +8,8 @@ import {
   fetchContinueLearning,
   isUnifiedLessonReady,
   listDownloadedLessonSummaries,
-  useLessonCatalog,
+  openLesson,
+  useCanonicalCatalog,
   useLessonServerCapabilities,
 } from '@features/lesson/player';
 
@@ -43,9 +44,9 @@ export function useHomeScreenController({navigation}: Args) {
     config.features.unifiedLesson !== false,
   );
   const unifiedMode = isUnifiedLessonReady(config.features, lessonCapabilities);
-  const canonicalCatalog = useLessonCatalog({enabled: unifiedMode});
+  const canonicalCatalog = useCanonicalCatalog();
   const canonicalRefresh = canonicalCatalog.refresh;
-  const canonicalItems = canonicalCatalog.items;
+  const catalogState = canonicalCatalog.state;
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
   const [continueLessonId, setContinueLessonId] = useState<string | null>(null);
   const [streak, setStreak] = useState<number>(
@@ -159,12 +160,14 @@ export function useHomeScreenController({navigation}: Args) {
       return downloaded;
     }
     if (unifiedMode) {
+      const canonicalItems =
+        catalogState.status === 'ready' ? catalogState.lessons : [];
       return canonicalItems
         .slice(0, UNIFIED_RAIL_LIMIT)
         .map(toCanonicalRecentItem);
     }
     return [];
-  }, [unifiedMode, canonicalItems]);
+  }, [unifiedMode, catalogState]);
 
   const openRecentItem = useCallback(
     (item: RecentItem) => {
@@ -172,7 +175,7 @@ export function useHomeScreenController({navigation}: Args) {
         lesson_id: item.id,
         source: 'home_rail',
       });
-      navigation.navigate('CanonicalLessonPlayer', {lessonId: item.id});
+      openLesson(navigation, item.id);
     },
     [navigation],
   );
@@ -188,18 +191,13 @@ export function useHomeScreenController({navigation}: Args) {
   );
 
   const onNavigateLessonList = useCallback(
-    () =>
-      tabNavigation?.navigate('Lessons', {
-        screen: 'CanonicalCatalog',
-      }),
-    [tabNavigation],
+    () => navigation.navigate('Today'),
+    [navigation],
   );
 
   const onContinueStartedLesson = useCallback(() => {
     if (!startedDownload) return;
-    navigation.navigate('CanonicalLessonPlayer', {
-      lessonId: startedDownload.lessonId,
-    });
+    openLesson(navigation, startedDownload.lessonId);
   }, [navigation, startedDownload]);
 
   return {

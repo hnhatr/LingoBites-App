@@ -188,6 +188,11 @@ export {
 } from './logic/canonicalYouTubeCues';
 export {useCanonicalCatalog} from './logic/useCanonicalCatalog';
 export type {CanonicalCatalogState} from './logic/useCanonicalCatalog';
+export {openLesson, openLessonCatalog} from './logic/lessonNavigation';
+export type {
+  LessonCatalogNavigation,
+  LessonPlayerNavigation,
+} from './logic/lessonNavigation';
 export {useCanonicalLesson} from './logic/useCanonicalLesson';
 export type {CanonicalLessonViewState} from './logic/useCanonicalLesson';
 export {useLessonCreation} from './logic/useLessonCreation';
@@ -202,21 +207,7 @@ export {
   fetchCurriculumLesson,
   checkCurriculumLessonExercise,
 } from './logic/curriculumLessonClient';
-export {
-  fetchLessonCatalogPage,
-  UnifiedLessonSummarySchema,
-  UnifiedLessonCatalogResponseSchema,
-  LESSON_CATALOG_LIMIT_MIN,
-  LESSON_CATALOG_LIMIT_MAX,
-  LESSON_CATALOG_LIMIT_DEFAULT,
-} from './logic/lessonCatalogClient';
-export type {
-  UnifiedLessonSummary,
-  LessonCatalogErrorKind,
-  LessonCatalogError,
-  LessonCatalogResult,
-  LessonCatalogClientOptions,
-} from './logic/lessonCatalogClient';
+
 export {
   createLessonGenerationJob,
   fetchLessonGenerationJob,
@@ -245,12 +236,6 @@ export type {
   LessonServerCapabilities,
   UnifiedLessonReleaseFlags,
 } from './logic/lessonCapabilities';
-export {useLessonCatalog} from './logic/useLessonCatalog';
-export type {
-  LessonCatalogState,
-  UseLessonCatalogOptions,
-  UseLessonCatalogResult,
-} from './logic/useLessonCatalog';
 export {useLessonGenerationJob} from './logic/useLessonGenerationJob';
 export type {
   LessonGenerationState,
