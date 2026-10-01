@@ -1,0 +1,51 @@
+{
+  "contract_version": 1,
+  "lessons": [
+    {
+      "id": "33333333-3333-4333-8333-333333333301",
+      "title": "Morning routine",
+      "description": "Three sentences about a weekday morning.",
+      "origin": "admin",
+      "source_type": "admin_text",
+      "content_revision": 3,
+      "sentence_count": 3,
+      "youtube_video_id": null,
+      "unit": {
+        "course_id": "44444444-4444-4444-8444-444444444401",
+        "course_title": "English Foundations",
+        "level_id": "44444444-4444-4444-8444-444444444402",
+        "level_title": "Beginner",
+        "unit_id": "44444444-4444-4444-8444-444444444403",
+        "unit_title": "Daily life",
+        "unit_position": 1,
+        "lesson_position": 2
+      },
+      "updated_at": "2026-09-30T04:15:00.000Z"
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333302",
+      "title": "A short talk about coffee",
+      "description": "",
+      "origin": "learner",
+      "source_type": "learner_text",
+      "content_revision": 1,
+      "sentence_count": 4,
+      "youtube_video_id": null,
+      "unit": null,
+      "updated_at": "2026-09-30T05:02:11.000Z"
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333303",
+      "title": "How to make tea",
+      "description": "",
+      "origin": "learner",
+      "source_type": "youtube",
+      "content_revision": 1,
+      "sentence_count": 12,
+      "youtube_video_id": "dQw4w9WgXcQ",
+      "unit": null,
+      "updated_at": "2026-09-30T05:20:00.000Z"
+    }
+  ],
+  "next_cursor": null
+}

@@ -110,10 +110,76 @@ export type {CurriculumLessonPlayerProps} from './components/CurriculumLessonPla
 export {CurriculumLessonScreen} from './screens/CurriculumLessonScreen';
 export {CurriculumLessonsEntry} from './components/CurriculumLessonsEntry';
 export type {
+  CanonicalCatalogRouteParams,
+  CanonicalLessonPlayerRouteParams,
   CurriculumLessonRouteParams,
+  LessonCreationRouteParams,
   UnifiedLessonGenerationRouteParams,
   UnifiedLessonsPreviewRouteParams,
 } from './screens/navigationTypes';
+export {CanonicalLessonCatalogScreen} from './screens/CanonicalLessonCatalogScreen';
+export {CanonicalLessonPlayerScreen} from './screens/CanonicalLessonPlayerScreen';
+export {LessonCreationScreen} from './screens/LessonCreationScreen';
+export {CanonicalLessonPlayer} from './components/CanonicalLessonPlayer';
+export type {CanonicalLessonPlayerProps} from './components/CanonicalLessonPlayer';
+export {CanonicalBlockView} from './components/CanonicalBlockView';
+export {SentenceAnalysisPanel} from './components/SentenceAnalysisPanel';
+export type {
+  SentenceAnalysisPanelError,
+  SentenceAnalysisPanelProps,
+  SentenceAnalysisPanelState,
+} from './components/SentenceAnalysisPanel';
+export {YouTubeTimeline} from './components/YouTubeTimeline';
+export type {YouTubeTimelineProps} from './components/YouTubeTimeline';
+export {
+  fetchLessonCatalog,
+  fetchLessonCreationStatus,
+  fetchLessonRevisions,
+  fetchLessonSnapshot,
+  fetchSentenceAnalysis,
+  submitLessonCreation,
+} from './logic/canonicalLessonClient';
+export type {
+  CanonicalLessonClientOptions,
+  CanonicalLessonError,
+  CanonicalLessonErrorKind,
+  CanonicalLessonResult,
+  LessonDownloadStatus,
+} from './logic/canonicalLessonClient';
+export {
+  applyLessonRevisionStates,
+  getLessonDownload,
+  InvalidLessonSnapshotError,
+  lessonMediaDirFor,
+  listLessonDownloads,
+  removeLessonDownload,
+  saveLessonSnapshotBody,
+  stageLessonMedia,
+  sweepLessonMedia,
+  LESSON_MEDIA_ROOT_SEGMENT,
+} from './logic/canonicalDownloadRepository';
+export type {
+  LessonDownloadRecord,
+  LessonMediaFileSystem,
+  RevisionApplication,
+  SaveLessonSnapshotInput,
+} from './logic/canonicalDownloadRepository';
+export {
+  clearCreationIdempotencyKey,
+  getOrCreateCreationIdempotencyKey,
+  rotateCreationIdempotencyKey,
+} from './logic/creationIdempotencyStore';
+export {
+  activeSentenceIndexAt,
+  areCuesBoundedByDuration,
+  formatCueTimestamp,
+} from './logic/canonicalYouTubeCues';
+export {useCanonicalCatalog} from './logic/useCanonicalCatalog';
+export type {CanonicalCatalogState} from './logic/useCanonicalCatalog';
+export {useCanonicalLesson} from './logic/useCanonicalLesson';
+export type {CanonicalLessonViewState} from './logic/useCanonicalLesson';
+export {useLessonCreation} from './logic/useLessonCreation';
+export type {LessonCreationState} from './logic/useLessonCreation';
 export {fetchPublishedCurriculumLessons} from './logic/curriculumLessonSelection';
 export type {
   CurriculumLessonSelectionItem,
