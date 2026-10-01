@@ -107,7 +107,6 @@ export {
 export type {CurriculumLessonBlockViewProps} from './components/CurriculumLessonBlockView';
 export {CurriculumLessonPlayer} from './components/CurriculumLessonPlayer';
 export type {CurriculumLessonPlayerProps} from './components/CurriculumLessonPlayer';
-export {CurriculumLessonsEntry} from './components/CurriculumLessonsEntry';
 export type {
   CanonicalCatalogRouteParams,
   CanonicalLessonPlayerRouteParams,
@@ -197,12 +196,6 @@ export {useCanonicalLesson} from './logic/useCanonicalLesson';
 export type {CanonicalLessonViewState} from './logic/useCanonicalLesson';
 export {useLessonCreation} from './logic/useLessonCreation';
 export type {LessonCreationState} from './logic/useLessonCreation';
-export {fetchPublishedCurriculumLessons} from './logic/curriculumLessonSelection';
-export type {
-  CurriculumLessonSelectionItem,
-  CurriculumLessonSelectionResult,
-  CurriculumLessonSelectionOptions,
-} from './logic/curriculumLessonSelection';
 export {
   fetchCurriculumLesson,
   checkCurriculumLessonExercise,
