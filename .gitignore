@@ -110,3 +110,11 @@ reply.md
 .temp/
 .tmp/
 .tmp-sim/
+.cursor/
+.gemini/
+.kiro/
+.qoder/
+.cursorrules
+.windsurfrules
+GEMINI.md
+QODER.md
