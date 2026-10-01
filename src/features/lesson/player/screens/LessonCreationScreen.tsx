@@ -66,7 +66,8 @@ export function LessonCreationScreen({navigation, route}: Props) {
   );
   const [text, setText] = useState(initialText ?? '');
   const [url, setUrl] = useState('');
-  const {state, submit, retryWithFreshKey} = useLessonCreation(submissionId);
+  const {state, submit, checkAgain, retryWithFreshKey} =
+    useLessonCreation(submissionId);
 
   const body = useMemo<LearnerLessonCreationRequestBody | null>(() => {
     if (source === 'youtube') {
@@ -143,6 +144,23 @@ export function LessonCreationScreen({navigation, route}: Props) {
           <AppText testID="lesson-creation-processing-text">
             Creating your lesson…
           </AppText>
+        ) : null}
+        {state.status === 'timedOut' ? (
+          <View testID="lesson-creation-timeout">
+            <AppText>
+              Creation is taking longer than expected. You can check again or go
+              back and return later.
+            </AppText>
+            <Pressable
+              accessibilityRole="button"
+              testID="lesson-creation-check-again"
+              onPress={() => {
+                checkAgain();
+              }}
+            >
+              <AppText>Check again</AppText>
+            </Pressable>
+          </View>
         ) : null}
         {state.status === 'failed' ? (
           <View testID="lesson-creation-error">
