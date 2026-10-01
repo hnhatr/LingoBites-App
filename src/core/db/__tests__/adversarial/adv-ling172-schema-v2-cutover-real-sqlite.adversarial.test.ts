@@ -166,9 +166,11 @@ describe('ADV / LING-172 schema v2 cutover on real SQLite', () => {
     expect(outboxIds()).not.toContain('retired-1');
     // v1 cursor reset.
     expect(
-      db.execute(
-        "SELECT COUNT(*) AS c FROM app_settings WHERE key = 'sync_cursor';",
-      ).rows?.item(0),
+      db
+        .execute(
+          "SELECT COUNT(*) AS c FROM app_settings WHERE key = 'sync_cursor';",
+        )
+        .rows?.item(0),
     ).toMatchObject({c: 0});
 
     // Second launch: no-op, version stable, rows untouched.
@@ -199,16 +201,16 @@ describe('ADV / LING-172 schema v2 cutover on real SQLite', () => {
 
     expect(
       (
-        db.execute('SELECT COUNT(*) AS c FROM lesson_downloads;').rows?.item(
-          0,
-        ) as {c: number}
+        db
+          .execute('SELECT COUNT(*) AS c FROM lesson_downloads;')
+          .rows?.item(0) as {c: number}
       ).c,
     ).toBe(0);
     expect(
       (
-        db.execute('SELECT COUNT(*) AS c FROM lesson_progress;').rows?.item(
-          0,
-        ) as {c: number}
+        db
+          .execute('SELECT COUNT(*) AS c FROM lesson_progress;')
+          .rows?.item(0) as {c: number}
       ).c,
     ).toBe(0);
     // The wipe is data-only: the schema stays at v2.

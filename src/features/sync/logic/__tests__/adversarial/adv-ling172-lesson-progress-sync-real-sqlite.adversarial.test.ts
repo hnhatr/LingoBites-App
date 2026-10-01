@@ -7,10 +7,7 @@ import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import type {SyncPushMutation} from '@core/schemas/sync';
-import {
-  getLessonProgress,
-  recordLessonEvent,
-} from '@core/sync/lessonProgress';
+import {getLessonProgress, recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {
   openRealSqlite,
@@ -65,8 +62,7 @@ async function startPushServer(): Promise<PushServer> {
         collections: [...new Set(mutations.map(m => m.collection))],
       });
       const invalid = mutations.find(
-        m =>
-          (m.payload as {invalid?: unknown} | undefined)?.invalid === true,
+        m => (m.payload as {invalid?: unknown} | undefined)?.invalid === true,
       );
       if (invalid) {
         res.writeHead(400, {'Content-Type': 'application/json'});

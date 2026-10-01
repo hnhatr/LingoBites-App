@@ -1,4 +1,4 @@
-import {type ChildProcess,spawn} from 'node:child_process';
+import {type ChildProcess, spawn} from 'node:child_process';
 import {randomBytes, randomUUID} from 'node:crypto';
 import fs from 'node:fs';
 import net from 'node:net';
@@ -37,9 +37,7 @@ import {drainOutboxOnce} from '../../outboxSync';
  * merged `completed` state with the action times.
  */
 
-const LIVE = (
-  process.env.LING172_LIVE_DRAIN ?? ''
-).trim() === '1';
+const LIVE = (process.env.LING172_LIVE_DRAIN ?? '').trim() === '1';
 const DATABASE_URL = (process.env.DATABASE_URL ?? '').trim();
 const PORT = Number(process.env.LING172_LIVE_PORT ?? 45571);
 
@@ -180,113 +178,109 @@ afterEach(async () => {
   fs.rmSync(path.dirname(dbFile), {recursive: true, force: true});
 });
 
-it(
-  'live drain: offline attempts, restart, then accepted; invalid flashcard cannot block lesson_progress',
-  async () => {
-    if (!LIVE || !DATABASE_URL) {
-      console.log('skip: needs LING172_LIVE_DRAIN=1 and DATABASE_URL');
-      return;
-    }
-    expect(fs.existsSync(tsxBin)).toBe(true);
+it('live drain: offline attempts, restart, then accepted; invalid flashcard cannot block lesson_progress', async () => {
+  if (!LIVE || !DATABASE_URL) {
+    console.log('skip: needs LING172_LIVE_DRAIN=1 and DATABASE_URL');
+    return;
+  }
+  expect(fs.existsSync(tsxBin)).toBe(true);
 
-    recordLessonEvent({
-      lessonId: LESSON_ID,
-      event: 'start',
-      occurredAt: T1,
-      eventId: START_ID,
-    });
-    recordLessonEvent({
-      lessonId: LESSON_ID,
-      event: 'complete',
-      occurredAt: T2,
-      eventId: COMPLETE_ID,
-    });
-    // Invalid flashcard mutation: the real server rejects the batch with 400.
-    enqueueSyncOutboxEvent({
-      id: FLASH_ID,
-      eventType: 'flashcards',
-      entityId: 'card-live-bad',
-      payload: {word: 'x'},
-      createdAt: 'not-a-date',
-    });
-    const offlineFetch = liveFetch(PORT);
+  recordLessonEvent({
+    lessonId: LESSON_ID,
+    event: 'start',
+    occurredAt: T1,
+    eventId: START_ID,
+  });
+  recordLessonEvent({
+    lessonId: LESSON_ID,
+    event: 'complete',
+    occurredAt: T2,
+    eventId: COMPLETE_ID,
+  });
+  // Invalid flashcard mutation: the real server rejects the batch with 400.
+  enqueueSyncOutboxEvent({
+    id: FLASH_ID,
+    eventType: 'flashcards',
+    entityId: 'card-live-bad',
+    payload: {word: 'x'},
+    createdAt: 'not-a-date',
+  });
+  const offlineFetch = liveFetch(PORT);
 
-    // N offline attempts: connection refused, rows kept with growing attempts.
-    for (let attempt = 1; attempt <= 2; attempt += 1) {
-      const outcome = await drainOutboxOnce({fetchImpl: offlineFetch});
-      expect(outcome).toMatchObject({status: 'failed', retryable: true});
-      expect(listPendingSyncEvents().map(e => e.id).sort()).toEqual(
-        [COMPLETE_ID, FLASH_ID, START_ID].sort(),
-      );
-    }
-
-    // Process kill + cold start before the retry.
-    db.close();
-    db = openFileDb();
-    expect(listPendingSyncEvents()).toHaveLength(3);
-
-    // Bring up the real Server + Postgres.
-    server = spawn(tsxBin, ['src/app/server.ts'], {
-      cwd: serverDir,
-      env: {
-        ...process.env,
-        DATABASE_URL,
-        HOST: '127.0.0.1',
-        PORT: String(PORT),
-        AI_PROVIDER: 'mock',
-        OCR_PROVIDER: 'mock',
-        TRANSCRIPT_PROVIDER: 'mock',
-        LOG_LEVEL: 'warn',
-      },
-      stdio: 'ignore',
-    });
-    await waitForPort(PORT, 120000);
-
-    const {userId, session} = await signupOverHttp(PORT);
+  // N offline attempts: connection refused, rows kept with growing attempts.
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const outcome = await drainOutboxOnce({fetchImpl: offlineFetch});
+    expect(outcome).toMatchObject({status: 'failed', retryable: true});
     expect(
-      await saveSession({
-        ...session,
-        user_id: userId,
-        stored_at: new Date().toISOString(),
-      }),
-    ).toMatchObject({ok: true});
-    expect(await setActiveSessionId(session.session_id)).toMatchObject({
-      ok: true,
-    });
-    // Mirror login: the local account pointer must match the session owner,
-    // or the drain ownership guard aborts the push.
-    db.execute(
-      'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
-      ['current_account_id', userId, new Date().toISOString()],
-    );
+      listPendingSyncEvents()
+        .map(e => e.id)
+        .sort(),
+    ).toEqual([COMPLETE_ID, FLASH_ID, START_ID].sort());
+  }
 
-    const outcome = await drainOutboxOnce({fetchImpl: liveFetch(PORT)});
-    expect(outcome.status).toBe('synced');
-    if (outcome.status === 'synced') {
-      expect(outcome.syncedIds).toEqual(
-        expect.arrayContaining([START_ID, COMPLETE_ID]),
-      );
-    }
-    // Progress accepted; the invalid flashcard row stays pending.
-    expect(listPendingSyncEvents().map(e => e.id)).toEqual([FLASH_ID]);
+  // Process kill + cold start before the retry.
+  db.close();
+  db = openFileDb();
+  expect(listPendingSyncEvents()).toHaveLength(3);
 
-    // Pull exposes the merged completed state with the action times.
-    const pull = await (
-      await fetch(
-        `http://127.0.0.1:${PORT}/v1/sync/pull?cursor=&limit=100`,
-        {headers: {Authorization: `Bearer ${session.access_token}`}},
-      )
-    ).json();
-    const record = (pull.records as Array<any>).find(
-      item =>
-        item.collection === 'lesson_progress' &&
-        item.entity_id === LESSON_ID,
+  // Bring up the real Server + Postgres.
+  server = spawn(tsxBin, ['src/app/server.ts'], {
+    cwd: serverDir,
+    env: {
+      ...process.env,
+      DATABASE_URL,
+      HOST: '127.0.0.1',
+      PORT: String(PORT),
+      AI_PROVIDER: 'mock',
+      OCR_PROVIDER: 'mock',
+      TRANSCRIPT_PROVIDER: 'mock',
+      LOG_LEVEL: 'warn',
+    },
+    stdio: 'ignore',
+  });
+  await waitForPort(PORT, 120000);
+
+  const {userId, session} = await signupOverHttp(PORT);
+  expect(
+    await saveSession({
+      ...session,
+      user_id: userId,
+      stored_at: new Date().toISOString(),
+    }),
+  ).toMatchObject({ok: true});
+  expect(await setActiveSessionId(session.session_id)).toMatchObject({
+    ok: true,
+  });
+  // Mirror login: the local account pointer must match the session owner,
+  // or the drain ownership guard aborts the push.
+  db.execute(
+    'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+    ['current_account_id', userId, new Date().toISOString()],
+  );
+
+  const outcome = await drainOutboxOnce({fetchImpl: liveFetch(PORT)});
+  expect(outcome.status).toBe('synced');
+  if (outcome.status === 'synced') {
+    expect(outcome.syncedIds).toEqual(
+      expect.arrayContaining([START_ID, COMPLETE_ID]),
     );
-    expect(record?.payload).toEqual({
-      status: 'completed',
-      started_at: T1,
-      completed_at: T2,
-    });
-  },
-  240000,
-);
+  }
+  // Progress accepted; the invalid flashcard row stays pending.
+  expect(listPendingSyncEvents().map(e => e.id)).toEqual([FLASH_ID]);
+
+  // Pull exposes the merged completed state with the action times.
+  const pull = await (
+    await fetch(`http://127.0.0.1:${PORT}/v1/sync/pull?cursor=&limit=100`, {
+      headers: {Authorization: `Bearer ${session.access_token}`},
+    })
+  ).json();
+  const record = (pull.records as Array<any>).find(
+    item =>
+      item.collection === 'lesson_progress' && item.entity_id === LESSON_ID,
+  );
+  expect(record?.payload).toEqual({
+    status: 'completed',
+    started_at: T1,
+    completed_at: T2,
+  });
+}, 240000);

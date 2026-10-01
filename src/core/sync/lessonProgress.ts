@@ -108,10 +108,11 @@ export function recordLessonEvent(
     const eventId = input.eventId ?? createRequestId();
     const nextStatus = lessonEventStatus(input.event);
     return withTransaction(db, () => {
-      const existing = db.execute(
-        'SELECT * FROM lesson_progress WHERE lesson_id = ? LIMIT 1;',
-        [input.lessonId],
-      ).rows?.item(0) as LessonProgressRow | undefined;
+      const existing = db
+        .execute('SELECT * FROM lesson_progress WHERE lesson_id = ? LIMIT 1;', [
+          input.lessonId,
+        ])
+        .rows?.item(0) as LessonProgressRow | undefined;
 
       let status = nextStatus;
       let startedAt = occurredAt;

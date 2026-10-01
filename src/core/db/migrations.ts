@@ -609,9 +609,8 @@ const GRAMMAR_BOOKMARK_SNAPSHOT_COLUMNS: string[] = [
 export function readAppSchemaVersion(db: QuickSQLiteConnection): number {
   try {
     const rows = db.execute('PRAGMA user_version;').rows;
-    const value = (
-      rows?.item(0) as {user_version?: unknown} | undefined
-    )?.user_version;
+    const value = (rows?.item(0) as {user_version?: unknown} | undefined)
+      ?.user_version;
     const parsed = typeof value === 'number' ? value : Number(value ?? 0);
     return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 0;
   } catch {

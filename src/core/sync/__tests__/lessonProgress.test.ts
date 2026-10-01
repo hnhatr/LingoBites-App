@@ -120,9 +120,7 @@ describe('recordLessonEvent', () => {
     expect(pending[1]).toMatchObject({payload: {event: 'complete'}});
     // DEV-002: queued mutations are never tombstones.
     for (const event of pending) {
-      expect((event.payload as {tombstone?: unknown}).tombstone).not.toBe(
-        true,
-      );
+      expect((event.payload as {tombstone?: unknown}).tombstone).not.toBe(true);
     }
   });
 
@@ -154,7 +152,11 @@ describe('recordLessonEvent', () => {
       occurredAt: T2,
       eventId: START_ID,
     });
-    expect(late).toMatchObject({ok: true, status: 'completed', advanced: false});
+    expect(late).toMatchObject({
+      ok: true,
+      status: 'completed',
+      advanced: false,
+    });
     expect(getLessonProgress('lesson-3')).toMatchObject({
       status: 'completed',
       startedAt: T1,
@@ -241,7 +243,11 @@ describe('recordLessonEvent', () => {
     const statuses: LessonProgressStatus[] = ['in_progress', 'completed'];
     expect(statuses.map(lessonProgressRank)).toEqual([1, 2]);
     recordLessonEvent({lessonId: 'lesson-7', event: 'start', occurredAt: T1});
-    recordLessonEvent({lessonId: 'lesson-7', event: 'complete', occurredAt: T2});
+    recordLessonEvent({
+      lessonId: 'lesson-7',
+      event: 'complete',
+      occurredAt: T2,
+    });
     expect(count('SELECT COUNT(*) AS c FROM lesson_progress')).toBe(1);
   });
 });
