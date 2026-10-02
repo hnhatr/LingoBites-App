@@ -154,8 +154,16 @@ function SentenceCarouselCardBody({
           {onOpenAnalysis ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('youtube.study.view_analysis')}
-              accessibilityHint={t('youtube.study.view_analysis_hint')}
+              accessibilityLabel={
+                analysis
+                  ? t('youtube.study.view_analysis')
+                  : t('lessonPlayer.analyze')
+              }
+              accessibilityHint={
+                analysis
+                  ? t('youtube.study.view_analysis_hint')
+                  : t('lessonPlayer.analyze_hint')
+              }
               onPress={() => onOpenAnalysis(sentence.id)}
               style={({pressed}) => [
                 styles.analysisButton,
@@ -164,7 +172,9 @@ function SentenceCarouselCardBody({
               testID={`youtube-open-analysis-${sentence.id}`}
             >
               <AppText style={styles.analysisButtonText} variant="label">
-                {t('youtube.study.view_analysis')}
+                {analysis
+                  ? t('youtube.study.view_analysis')
+                  : t('lessonPlayer.analyze')}
               </AppText>
             </Pressable>
           ) : null}

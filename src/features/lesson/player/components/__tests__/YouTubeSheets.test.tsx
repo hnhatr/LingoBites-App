@@ -138,16 +138,15 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
     ).toBeDefined();
   });
 
-  it('shows analyze CTA and calls onRequestAnalysis (AC-006 S2)', async () => {
+  it('requests analysis from the card CTA in one tap (AC-009 S1)', async () => {
     const onRequestAnalysis = jest.fn();
     const tree = await renderStudy({onRequestAnalysis});
     pressByTestId(tree.root, `youtube-open-analysis-${S1}`);
-    const analyze = tree.root.findByProps({testID: `canonical-analyze-${S1}`});
-    await act(async () => {
-      analyze.props.onPress();
-    });
     expect(onRequestAnalysis).toHaveBeenCalledTimes(1);
     expect(onRequestAnalysis).toHaveBeenCalledWith(S1);
+    expect(
+      tree.root.findByProps({testID: 'youtube-sheet-analysis'}),
+    ).toBeDefined();
   });
 
   it('renders loading state in the analysis sheet (AC-006 S3)', async () => {
@@ -238,6 +237,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
               onSelectSentence={jest.fn()}
               sentences={sentences}
               showTranslation
+              videoAvailable
               visible
             />
           </AppThemeProvider>

@@ -115,10 +115,18 @@ describe('CanonicalLessonPlayer', () => {
         <CanonicalLessonPlayer snapshot={snapshotOf(source)} analyses={{}} />,
       );
       expect(tree.root.findByProps({testID: 'canonical-player'})).toBeDefined();
-      expect(
-        tree.root.findByProps({testID: 'canonical-player-title'}).props
-          .children,
-      ).toBe('Test lesson');
+      if (source === 'youtube') {
+        expect(
+          tree.root.findAll(
+            node => node.props.testID === 'canonical-player-title',
+          ),
+        ).toHaveLength(0);
+      } else {
+        expect(
+          tree.root.findByProps({testID: 'canonical-player-title'}).props
+            .children,
+        ).toBe('Test lesson');
+      }
     },
   );
 

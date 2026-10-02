@@ -1,13 +1,15 @@
-import React, {useMemo} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
 } from 'react-native';
 import {useReducedMotion} from 'react-native-reanimated';
+import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
@@ -33,10 +35,12 @@ export function YouTubeSheet({
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const {height: windowHeight} = useWindowDimensions();
+  const insets = useContext(SafeAreaInsetsContext);
+  const bottomInset = insets?.bottom ?? 0;
   const reducedMotion = useReducedMotion();
   const styles = useMemo(
-    () => makeStyles(theme, windowHeight),
-    [theme, windowHeight],
+    () => makeStyles(theme, windowHeight, bottomInset),
+    [bottomInset, theme, windowHeight],
   );
 
   return (
@@ -68,13 +72,24 @@ export function YouTubeSheet({
             tone="ghost"
           />
         </View>
-        <View style={styles.body}>{children}</View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator
+          style={styles.body}
+        >
+          {children}
+        </ScrollView>
       </View>
     </Modal>
   );
 }
 
-function makeStyles(theme: AppTheme, windowHeight: number) {
+function makeStyles(
+  theme: AppTheme,
+  windowHeight: number,
+  bottomInset: number,
+) {
   const panelHeight = Math.round(windowHeight * 0.6);
   return StyleSheet.create({
     backdrop: {
@@ -102,6 +117,10 @@ function makeStyles(theme: AppTheme, windowHeight: number) {
       paddingTop: theme.spacing.md,
       position: 'absolute',
       right: 0,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: Math.max(bottomInset, theme.spacing.md),
     },
     title: {
       flex: 1,

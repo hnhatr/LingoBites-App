@@ -47,6 +47,7 @@ import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from '../components/SentenceAnalysisPanel';
+import type {YouTubePlayerRef} from '../components/YouTubePlayer';
 import {
   collectLessonGrammar,
   collectLessonVocabulary,
@@ -91,6 +92,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [videoMountKey, setVideoMountKey] = useState(0);
+  const youtubePlayerRef = useRef<YouTubePlayerRef>(null);
+  const seekHoldMsRef = useRef<number | null>(null);
   const [view, setView] = useState<PlayerView>('hub');
   const [lateAnalyses, setLateAnalyses] = useState<
     Record<string, LessonAnalysis>
@@ -197,9 +200,30 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   );
 
   const showHub = snapshot !== null && !isYouTube && view === 'hub';
-  const title = inSection
-    ? t(SECTION_TITLE_KEYS[view as LessonHubSection])
-    : t('lessonPlayer.player_title');
+  const title =
+    isYouTubeStudy && snapshot
+      ? snapshot.title
+      : inSection
+      ? t(SECTION_TITLE_KEYS[view as LessonHubSection])
+      : t('lessonPlayer.player_title');
+
+  const handleSeek = useCallback((ms: number) => {
+    seekHoldMsRef.current = ms;
+    setPositionMs(ms);
+    youtubePlayerRef.current?.seekTo(ms / 1000);
+  }, []);
+
+  const handleTimeUpdate = useCallback((seconds: number) => {
+    const ms = Math.floor(seconds * 1000);
+    const hold = seekHoldMsRef.current;
+    if (hold !== null) {
+      if (ms + 500 < hold) {
+        return;
+      }
+      seekHoldMsRef.current = null;
+    }
+    setPositionMs(ms);
+  }, []);
 
   const handleRetryVideo = useCallback(() => {
     setVideoAvailable(true);
@@ -222,7 +246,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         unavailableReason={t('lessonPlayer.video_unavailable')}
         videoSlot={options?.videoSlot}
         onRetryVideo={options?.onRetryVideo}
-        onSeek={ms => setPositionMs(ms)}
+        onSeek={handleSeek}
         onRequestAnalysis={handleRequestAnalysis}
         onRetryAnalysis={handleRequestAnalysis}
         analysisStates={analysisStates}
@@ -302,17 +326,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           >
             <YouTubePlayer
               key={videoMountKey}
+              ref={youtubePlayerRef}
               videoId={snapshot.youtube!.video_id}
-              onTimeUpdate={seconds =>
-                setPositionMs(Math.floor(seconds * 1000))
-              }
-              onError={code => {
-                if (
-                  code === 'YOUTUBE_VIDEO_NOT_FOUND' ||
-                  code === 'YOUTUBE_NOT_EMBEDDABLE'
-                ) {
-                  setVideoAvailable(false);
-                }
+              onTimeUpdate={handleTimeUpdate}
+              onError={() => {
+                setVideoAvailable(false);
               }}
             />
           </Suspense>
@@ -383,7 +401,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           themedStyles.content,
-          showHub ? null : {paddingBottom: floatingClearance},
+          showHub || isYouTubeStudy ? null : {paddingBottom: floatingClearance},
         ]}
       >
         {renderBody()}

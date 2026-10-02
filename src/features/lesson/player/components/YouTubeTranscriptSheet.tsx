@@ -21,6 +21,7 @@ export type YouTubeTranscriptSheetProps = {
   sentences: LessonSentence[];
   activeIndex: number | null;
   currentIndex: number;
+  videoAvailable: boolean;
   showTranslation: boolean;
   onClose: () => void;
   onSelectSentence: (index: number, startMs: number | null) => void;
@@ -31,10 +32,12 @@ export function YouTubeTranscriptSheet({
   sentences,
   activeIndex,
   currentIndex,
+  videoAvailable,
   showTranslation,
   onClose,
   onSelectSentence,
 }: YouTubeTranscriptSheetProps) {
+  const highlightIndex = videoAvailable ? activeIndex : currentIndex;
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -42,9 +45,9 @@ export function YouTubeTranscriptSheet({
 
   const initialScrollIndex = useMemo(() => {
     if (sentences.length === 0) return 0;
-    const target = activeIndex ?? currentIndex;
+    const target = highlightIndex ?? currentIndex;
     return Math.max(0, Math.min(target, sentences.length - 1));
-  }, [activeIndex, currentIndex, sentences.length]);
+  }, [currentIndex, highlightIndex, sentences.length]);
 
   const handleScrollToIndexFailed = useCallback(
     (info: {index: number; averageItemLength: number}) => {
@@ -62,7 +65,7 @@ export function YouTubeTranscriptSheet({
 
   const renderItem = useCallback(
     ({item, index}: ListRenderItemInfo<LessonSentence>) => {
-      const selected = activeIndex === index;
+      const selected = highlightIndex === index;
       return (
         <Pressable
           accessibilityRole="button"
@@ -89,7 +92,7 @@ export function YouTubeTranscriptSheet({
         </Pressable>
       );
     },
-    [activeIndex, onSelectSentence, showTranslation, styles],
+    [highlightIndex, onSelectSentence, showTranslation, styles],
   );
 
   const listHeader =
