@@ -380,4 +380,46 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
       );
     });
   });
+
+  describe('AC-020 waiting_transcript (LING-200)', () => {
+    it('S1 shows a distinct waiting message while polling', () => {
+      mockState = {
+        status: 'waiting_transcript',
+        requestId: 'r-wait',
+        polling: true,
+      };
+      const tree = renderScreen('youtube', {
+        navigate: jest.fn(),
+        goBack: jest.fn(),
+      });
+      const texts = tree.root
+        .findAllByType(Text)
+        .map(node => node.props.children);
+      expect(texts).toContain(vi.youtube.create.waiting_transcript_title);
+      expect(
+        tree.root.findByProps({testID: 'lesson-creation-waiting-text'}),
+      ).toBeTruthy();
+      expect(
+        tree.root.findAllByProps({testID: 'lesson-creation-error'}),
+      ).toHaveLength(0);
+    });
+
+    it('S2 offers check again without retry when polling paused', () => {
+      mockState = {
+        status: 'waiting_transcript',
+        requestId: 'r-wait',
+        polling: false,
+      };
+      const tree = renderScreen('youtube', {
+        navigate: jest.fn(),
+        goBack: jest.fn(),
+      });
+      pressByTestId(tree.root, 'lesson-creation-check-again');
+      expect(mockCheckAgain).toHaveBeenCalledTimes(1);
+      expect(
+        tree.root.findAll(node => node.props.testID === 'lesson-creation-retry')
+          .length,
+      ).toBe(0);
+    });
+  });
 });
