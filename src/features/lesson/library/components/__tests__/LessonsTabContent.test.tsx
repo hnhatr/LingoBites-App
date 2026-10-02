@@ -6,7 +6,7 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
-import {LessonsTabContent} from '../LessonsTabContent';
+import {CATALOG_PREVIEW_LIMIT, LessonsTabContent} from '../LessonsTabContent';
 
 // Mock navigation
 const mockNavigate = jest.fn();
@@ -39,6 +39,21 @@ const mockPackagedLesson = {
   level: 'A1',
   estimatedDurationMinutes: 30,
 };
+
+function catalogLesson(index: number, description = `Catalog ${index}`) {
+  return {
+    id: `catalog-${index}`,
+    title: `Catalog lesson ${index}`,
+    description,
+    origin: 'admin' as const,
+    source_type: 'admin_text' as const,
+    content_revision: 1,
+    sentence_count: index,
+    youtube_video_id: null,
+    unit: null,
+    updated_at: '2026-09-30T04:15:00.000Z',
+  };
+}
 
 const mockPackagedLesson2 = {
   id: 'packaged-2',
@@ -147,5 +162,79 @@ describe('LessonsTabContent', () => {
     const flat = StyleSheet.flatten(header.props.style);
     expect(flat.backgroundColor).toBeTruthy();
     expect(flat.zIndex).toBeGreaterThan(0);
+  });
+  it('adds a capped "Tất cả bài học" section after the packaged lessons', () => {
+    const catalog = [1, 2, 3, 4, 5, 6, 7].map(i => catalogLesson(i));
+    const tree = render(
+      <LessonsTabContent
+        packagedLessons={[mockPackagedLesson]}
+        catalogLessons={catalog as never}
+        onViewAllCatalog={jest.fn()}
+      />,
+    );
+
+    const sectionList = tree.root.findByProps({testID: 'lessons-section-list'});
+    expect(sectionList.props.sections).toHaveLength(2);
+    expect(sectionList.props.sections[1].title).toBe('Tất cả bài học');
+    expect(sectionList.props.sections[1].data).toHaveLength(
+      CATALOG_PREVIEW_LIMIT,
+    );
+  });
+
+  it('shows the catalog section alone when nothing is downloaded', () => {
+    const tree = render(
+      <LessonsTabContent
+        packagedLessons={[]}
+        catalogLessons={[catalogLesson(4, '')] as never}
+      />,
+    );
+
+    expect(() =>
+      tree.root.findByProps({testID: 'empty-state-message-lessons'}),
+    ).toThrow();
+    const summary = tree.root.findByProps({
+      testID: 'lesson-summary-catalog-4',
+    });
+    expect(summary.props.children).toBe('4 câu');
+  });
+
+  it('renders "Xem tất cả" only on the catalog section header', () => {
+    const onViewAll = jest.fn();
+    const tree = render(
+      <LessonsTabContent
+        packagedLessons={[mockPackagedLesson]}
+        catalogLessons={[catalogLesson(1)] as never}
+        onViewAllCatalog={onViewAll}
+      />,
+    );
+
+    const sectionList = tree.root.findByProps({testID: 'lessons-section-list'});
+    const headerFor = (index: number) =>
+      ReactTestRenderer.create(
+        <FeatureFlagProvider>
+          <AppThemeProvider>
+            {sectionList.props.renderSectionHeader({
+              section: sectionList.props.sections[index],
+            })}
+          </AppThemeProvider>
+        </FeatureFlagProvider>,
+      );
+    let packagedHeader!: ReactTestRenderer.ReactTestRenderer;
+    let catalogHeader!: ReactTestRenderer.ReactTestRenderer;
+    act(() => {
+      packagedHeader = headerFor(0);
+      catalogHeader = headerFor(1);
+    });
+    renderedTrees.push(packagedHeader, catalogHeader);
+
+    expect(
+      packagedHeader.root.findAllByProps({testID: 'library-catalog-view-all'}),
+    ).toHaveLength(0);
+    act(() => {
+      catalogHeader.root
+        .findByProps({testID: 'library-catalog-view-all'})
+        .props.onPress();
+    });
+    expect(onViewAll).toHaveBeenCalledTimes(1);
   });
 });

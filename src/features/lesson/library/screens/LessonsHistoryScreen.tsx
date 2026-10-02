@@ -4,7 +4,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
-import {openLessonCatalog} from '@features/lesson/player';
+import {openLessonCatalog, useCanonicalCatalog} from '@features/lesson/player';
 import {useFlashcardLibrary} from '@features/review';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -12,14 +12,10 @@ import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import {CatalogTabContent} from '../components/CatalogTabContent';
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {LessonsTabContent} from '../components/LessonsTabContent';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
-import {
-  type LibraryTabId,
-  SegmentedTabBar,
-} from '../components/SegmentedTabBar';
+import {SegmentedTabBar} from '../components/SegmentedTabBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
 import {useLibrarySegments} from '../logic/useLibrarySegments';
 import type {LessonsStackParamList} from './navigationTypes';
@@ -45,7 +41,9 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const {getDueFlashcards} = useFlashcardLibrary();
   const [dueCount, setDueCount] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<LibraryTabId>('lessons');
+  const [activeTab, setActiveTab] = useState<
+    'lessons' | 'vocabulary' | 'grammar'
+  >('lessons');
 
   const {
     packagedLessons,
@@ -57,12 +55,14 @@ export function LessonsHistoryScreen({navigation}: Props) {
     setGrammarFilter,
     refresh,
   } = useLibrarySegments();
+  const {state: catalogState, refresh: refreshCatalog} = useCanonicalCatalog();
 
   useFocusEffect(
     useCallback(() => {
       refresh();
+      refreshCatalog();
       setDueCount(getDueFlashcards().length);
-    }, [refresh, getDueFlashcards]),
+    }, [refresh, refreshCatalog, getDueFlashcards]),
   );
 
   const practiceChips: PracticeChip[] = useMemo(() => {
@@ -141,7 +141,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
       <SegmentedTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {(activeTab === 'vocabulary' || activeTab === 'grammar') && (
+      {activeTab !== 'lessons' && (
         <SearchAndFilterBar
           searchQuery={currentFilter.searchQuery}
           sourceFilter={currentFilter.sourceFilter}
@@ -156,23 +156,13 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
       {activeTab === 'lessons' && (
         <View style={themedStyles.tabContent} testID="lessons-tab-content">
-          <Pressable
-            accessibilityRole="button"
-            testID="library-open-catalog"
-            onPress={() => openLessonCatalog(navigation)}
-            style={({pressed}) => [
-              themedStyles.catalogLink,
-              pressed && themedStyles.pressed,
-            ]}
-          >
-            <AppText variant="label">Duyệt tất cả bài học</AppText>
-          </Pressable>
-          <LessonsTabContent packagedLessons={packagedLessons} />
-        </View>
-      )}
-      {activeTab === 'catalog' && (
-        <View style={themedStyles.tabContent} testID="catalog-tab-content">
-          <CatalogTabContent />
+          <LessonsTabContent
+            packagedLessons={packagedLessons}
+            catalogLessons={
+              catalogState.status === 'ready' ? catalogState.lessons : []
+            }
+            onViewAllCatalog={() => openLessonCatalog(navigation)}
+          />
         </View>
       )}
       {activeTab === 'vocabulary' && (
@@ -220,11 +210,6 @@ function makeStyles(theme: AppTheme) {
     pressed: {opacity: theme.states.pressedOpacity},
     tabContent: {
       flex: 1,
-    },
-    catalogLink: {
-      marginHorizontal: theme.gutter,
-      marginBottom: theme.spacing.sm,
-      paddingVertical: theme.spacing.sm,
     },
   });
 }

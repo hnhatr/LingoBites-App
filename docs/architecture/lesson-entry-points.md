@@ -41,7 +41,7 @@ flowchart LR
 
   subgraph Lessons["Tab Lessons"]
     L1["④ Danh sách bài đã tải<br/>LessonsTabContent"]:::list
-    L0["Nút 'Duyệt tất cả bài học'<br/>library-open-catalog"]
+    L0["Section 'Tất cả bài học' + 'Xem tất cả'<br/>library-catalog-view-all"]
     CAT["⑤ CanonicalCatalog<br/>canonical-catalog-row-*"]:::list
   end
 
@@ -88,9 +88,8 @@ flowchart LR
 | Danh sách | Vào từ đâu | Nguồn dữ liệu |
 | --- | --- | --- |
 | Rail Home | Mở tab Home | Bài đã tải trước, rồi `useCanonicalCatalog` (tối đa 6). |
-| `LessonsHistoryScreen` (segment Bài học) | Mở tab Lessons | Bài đã tải offline (`useLibrarySegments`). |
-| `LessonsHistoryScreen` (segment Tất cả bài) | Mở tab Lessons → chọn segment "Tất cả bài" | `useCanonicalCatalog` → `fetchLessonCatalog` (component `CatalogTabContent`, dùng chung `CanonicalCatalogList` với `CanonicalCatalog`). |
-| `CanonicalCatalog` | Nút "Duyệt tất cả bài học" (tab Lessons, cùng stack), banner Today (cùng stack gọi) | `useCanonicalCatalog` → `fetchLessonCatalog`. |
+| `LessonsHistoryScreen` (segment Bài học) | Mở tab Lessons | Section "Bài học theo lộ trình": bài đã tải offline (`useLibrarySegments`). Section "Tất cả bài học": tối đa 5 bài từ `useCanonicalCatalog` (`CATALOG_PREVIEW_LIMIT`), kèm "Xem tất cả" → `openLessonCatalog`. |
+| `CanonicalCatalog` | Nút "Xem tất cả" ở section "Tất cả bài học" (tab Lessons, cùng stack), banner Today (cùng stack gọi) | `useCanonicalCatalog` → `fetchLessonCatalog`. |
 | Today | Nút `home-starter-pick` (stack Home) | `adaptationEngine` + `todayNavigation`. |
 
 ---
