@@ -217,7 +217,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     navigation.navigate('TtsSpike');
   }, [navigation]);
 
-  const openUnifiedLessonsPreview = useCallback(() => {
+  const openLessonCatalogDev = useCallback(() => {
     navigation.getParent()?.navigate('Lessons', {screen: 'CanonicalCatalog'});
   }, [navigation]);
 
@@ -267,7 +267,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     openPrivacyNote,
     openProgressReport,
     openTtsSpike,
-    openUnifiedLessonsPreview,
+    openLessonCatalogDev,
     setClearDataConfirmText,
     t,
   };

@@ -75,7 +75,7 @@ flowchart LR
 
 | # | Cổng | Code | Ghi chú |
 | --- | --- | --- | --- |
-| ① | Rail Home | `useHomeScreenController.openRecentItem` → `openLesson` · view `HomeScreenView.tsx` (`home-recent-item-*`) | Giữ event `unified_lesson_opened` (`source: home_rail`) đúng một lần. Ưu tiên bài đã tải; khi chưa có bài nào và `unifiedMode` bật, hiện tối đa 6 bài từ catalog (`UNIFIED_RAIL_LIMIT`). |
+| ① | Rail Home | `useHomeScreenController.openRecentItem` → `openLesson` · view `HomeScreenView.tsx` (`home-recent-item-*`) | Giữ event `unified_lesson_opened` (`source: home_rail`) đúng một lần. Ưu tiên bài đã tải; khi chưa có bài nào thì hiện tối đa 6 bài từ catalog (`UNIFIED_RAIL_LIMIT`). Cổng capability `isUnifiedLessonReady` đã bị bỏ. |
 | ② | Tiếp tục bài đang học | `useHomeScreenController.onContinueStartedLesson` → `openLesson` · view `home-continue-action` | Bài đã tải + `in_progress`, hoặc trùng `continueLessonId` từ server. |
 | ③ | Chọn bài (starter) | `useHomeScreenController.onNavigateLessonList` → `navigation.navigate('Today')` · view `home-starter-pick` | Mở `Today` trong stack Home; back quay về Home. Nhãn "Chọn bài để học" giữ nguyên (DQ-007). |
 | ④ | Danh sách bài đã tải | `LessonsTabContent.handleLessonPress` → `openLesson` | Nguồn: `listDownloadedLessonSummaries()` qua `useLibrarySegments().packagedLessons`. Prop `personalLessons` (luôn rỗng) đã bị xoá. |

@@ -144,14 +144,13 @@ override it.
   every reactive value a callback or effect reads in its dependency
   array. Enforcement: ESLint `react-hooks/rules-of-hooks` and
   `react-hooks/exhaustive-deps` (both error, 0 violations).
-- Keep the single justified `void` —
-  `src/features/lesson/player/screens/UnifiedLessonGenerationScreen.tsx:464`
-  (`onRetryPart={(target) => void handleRetryPart(target)}`) — and do
-  not add new ones: in an arrow body, `void p()` returns `undefined`
-  while a bare `p()` returns its Promise (e.g. an effect cleanup must
-  never return a Promise). Enforcement: ESLint `no-void` (warning,
-  budgeted at 1); return-equivalence of any removal is review only.
-- Grandfathered: the one budgeted `no-void` above (EC-005).
+- Do not add `void` expressions: in an arrow body, `void p()` returns
+  `undefined` while a bare `p()` returns its Promise (e.g. an effect
+  cleanup must never return a Promise). The one grandfathered use
+  (EC-005, in the former `UnifiedLessonGenerationScreen.tsx`) left with
+  that file in LING-149; no `void` remains in `src/`. Enforcement:
+  ESLint `no-void` (warning, budget still 1); return-equivalence is
+  review only.
 
 ## 10. Import ordering
 
