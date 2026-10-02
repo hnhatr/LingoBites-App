@@ -204,19 +204,14 @@ describe('HomeScreen video card (LING-176 TASK-008)', () => {
     expect(cell.props.accessibilityState).toEqual({disabled: true});
   });
 
-  it('opens LessonCreation on the Lessons tab when flag and server agree', async () => {
+  it('opens the Create tab when flag and server agree', async () => {
     seedLesson();
     const tabNavigate = jest.fn();
     const tree = await renderHomeYouTubeReady(navigation(tabNavigate));
 
     await pressCell(tree, 'home-explore-video');
 
-    expect(tabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'LessonCreation',
-      params: expect.objectContaining({
-        initialSource: 'youtube',
-        submissionId: expect.stringMatching(/^home-youtube-/),
-      }),
-    });
+    expect(tabNavigate).toHaveBeenCalledWith('Create');
+    expect(tabNavigate).not.toHaveBeenCalledWith('Lessons', expect.anything());
   });
 });

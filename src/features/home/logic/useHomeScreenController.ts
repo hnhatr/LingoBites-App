@@ -96,15 +96,10 @@ export function useHomeScreenController({navigation}: Args) {
     [tabNavigation],
   );
 
-  const openVideoCell = useCallback(() => {
-    tabNavigation?.navigate('Lessons', {
-      screen: 'LessonCreation',
-      params: {
-        submissionId: `home-youtube-${Date.now()}`,
-        initialSource: 'youtube',
-      },
-    });
-  }, [tabNavigation]);
+  const openVideoCell = useCallback(
+    () => tabNavigation?.navigate('Create'),
+    [tabNavigation],
+  );
 
   const exploreCells: ExploreCell[] = useMemo(
     () => [
