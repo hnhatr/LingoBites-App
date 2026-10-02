@@ -112,6 +112,17 @@ describe('YouTubeSentenceCarousel', () => {
     expect(onSeek).toHaveBeenCalledWith(2000);
   });
 
+  it('notifies when an animated prev/next scroll is consumed', async () => {
+    const onScrollAnimationConsumed = jest.fn();
+    const {tree} = await renderCarousel({
+      currentIndex: 1,
+      scrollAnimated: true,
+      onScrollAnimationConsumed,
+    });
+    await layoutCarousel(tree);
+    expect(onScrollAnimationConsumed).toHaveBeenCalled();
+  });
+
   it('hides translation and IPA when toggles are off', async () => {
     const {tree} = await renderCarousel({
       showTranslation: false,

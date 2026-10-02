@@ -8,8 +8,6 @@ import {FeatureFlagProvider} from '@core/release';
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
 
 import {SentenceAnalysisPanel} from '../SentenceAnalysisPanel';
-import {YouTubeTimeline} from '../YouTubeTimeline';
-
 async function renderWithTheme(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
@@ -87,65 +85,5 @@ describe('SentenceAnalysisPanel', () => {
       busy.root.findByProps({testID: 'analysis-retry-s1'}).props.onPress();
     });
     expect(onRetry).toHaveBeenCalled();
-  });
-});
-
-describe('YouTubeTimeline', () => {
-  const sentences = [
-    {
-      id: 's1',
-      position: 0,
-      text_en: 'Hello.',
-      text_vi: 'Xin chào.',
-      ipa: 'x',
-      start_ms: 0,
-      end_ms: 2000,
-    },
-    {
-      id: 's2',
-      position: 1,
-      text_en: 'World.',
-      text_vi: 'Thế giới.',
-      ipa: 'y',
-      start_ms: 2000,
-      end_ms: 5000,
-    },
-  ];
-
-  it('highlights the active cue and seeks on press', async () => {
-    const onSeek = jest.fn();
-    const tree = await renderWithTheme(
-      <YouTubeTimeline
-        sentences={sentences}
-        positionMs={2500}
-        videoAvailable
-        onSeek={onSeek}
-      />,
-    );
-    expect(
-      tree.root.findByProps({testID: 'youtube-cue-s2-active'}),
-    ).toBeDefined();
-    await act(async () => {
-      tree.root.findByProps({testID: 'youtube-cue-s1'}).props.onPress();
-    });
-    expect(onSeek).toHaveBeenCalledWith(0);
-  });
-
-  it('renders the unavailable state when the video cannot load', async () => {
-    const tree = await renderWithTheme(
-      <YouTubeTimeline
-        sentences={sentences}
-        positionMs={0}
-        videoAvailable={false}
-        unavailableReason="Not embeddable."
-      />,
-    );
-    expect(
-      tree.root.findByProps({testID: 'youtube-timeline-unavailable'}),
-    ).toBeDefined();
-    expect(
-      tree.root.findByProps({testID: 'youtube-timeline-unavailable-text'}).props
-        .children,
-    ).toBe('Not embeddable.');
   });
 });

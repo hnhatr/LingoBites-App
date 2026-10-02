@@ -30,6 +30,9 @@ export type YouTubeSentenceCarouselProps = {
   onSeek?: (positionMs: number) => void;
   onSpeakText?: (text: string) => void;
   onOpenAnalysis?: (sentenceId: string) => void;
+  /** When true, the next currentIndex sync scrolls with animation (prev/next). */
+  scrollAnimated?: boolean;
+  onScrollAnimationConsumed?: () => void;
 };
 
 type CardProps = {
@@ -154,8 +157,16 @@ function SentenceCarouselCardBody({
           {onOpenAnalysis ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('youtube.study.view_analysis')}
-              accessibilityHint={t('youtube.study.view_analysis_hint')}
+              accessibilityLabel={
+                analysis
+                  ? t('youtube.study.view_analysis')
+                  : t('lessonPlayer.analyze')
+              }
+              accessibilityHint={
+                analysis
+                  ? t('youtube.study.view_analysis_hint')
+                  : t('lessonPlayer.analyze_hint')
+              }
               onPress={() => onOpenAnalysis(sentence.id)}
               style={({pressed}) => [
                 styles.analysisButton,
@@ -164,7 +175,9 @@ function SentenceCarouselCardBody({
               testID={`youtube-open-analysis-${sentence.id}`}
             >
               <AppText style={styles.analysisButtonText} variant="label">
-                {t('youtube.study.view_analysis')}
+                {analysis
+                  ? t('youtube.study.view_analysis')
+                  : t('lessonPlayer.analyze')}
               </AppText>
             </Pressable>
           ) : null}
@@ -187,6 +200,8 @@ export function YouTubeSentenceCarousel({
   onSeek,
   onSpeakText,
   onOpenAnalysis,
+  scrollAnimated = false,
+  onScrollAnimationConsumed,
 }: YouTubeSentenceCarouselProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -210,8 +225,11 @@ export function YouTubeSentenceCarousel({
   );
 
   React.useEffect(() => {
-    scrollToIndex(currentIndex, false);
-  }, [currentIndex, scrollToIndex]);
+    scrollToIndex(currentIndex, scrollAnimated);
+    if (scrollAnimated) {
+      onScrollAnimationConsumed?.();
+    }
+  }, [currentIndex, onScrollAnimationConsumed, scrollAnimated, scrollToIndex]);
 
   const handlePressCard = useCallback(
     (index: number, sentence: LessonSentence) => {

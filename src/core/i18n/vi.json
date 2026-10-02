@@ -277,7 +277,7 @@
     "transcript_label": "Transcript",
     "translation_show_a11y": "Bật bản dịch",
     "translation_hide_a11y": "Tắt bản dịch",
-    "translation_toggle_hint": "Hiện hoặc ẩn bản dịch tiếng Việt và phiên âm IPA",
+    "translation_toggle_hint": "Hiện hoặc ẩn bản dịch tiếng Việt",
     "repeat_on_a11y": "Lặp câu này",
     "repeat_off_a11y": "Tắt lặp câu",
     "repeat_toggle_hint": "Lặp lại câu đang phát cho đến khi tắt",

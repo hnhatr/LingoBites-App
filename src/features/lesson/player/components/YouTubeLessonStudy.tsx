@@ -29,6 +29,7 @@ export type YouTubeLessonStudyProps = {
   hasUpdate?: boolean;
   playbackPositionMs: number;
   videoAvailable: boolean;
+  videoPlaying: boolean;
   unavailableReason?: string;
   videoSlot?: React.ReactNode;
   onRetryVideo?: () => void;
@@ -52,6 +53,7 @@ export function YouTubeLessonStudy({
   hasUpdate,
   playbackPositionMs,
   videoAvailable,
+  videoPlaying,
   unavailableReason,
   videoSlot,
   onRetryVideo,
@@ -68,6 +70,7 @@ export function YouTubeLessonStudy({
   const [showIpa, setShowIpa] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openSheet, setOpenSheet] = useState<OpenSheet>('none');
+  const [carouselScrollAnimated, setCarouselScrollAnimated] = useState(false);
 
   const orderedSentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const orderedBlocks = useMemo(() => sortedBlocks(snapshot), [snapshot]);
@@ -79,12 +82,18 @@ export function YouTubeLessonStudy({
     () => activeSentenceIndexAt(orderedSentences, playbackPositionMs),
     [orderedSentences, playbackPositionMs],
   );
-  const overlayText =
-    activeIndex !== null ? orderedSentences[activeIndex]?.text_en ?? '' : '';
-
-  const handleOpenAnalysis = useCallback((_sentenceId: string) => {
-    setOpenSheet('analysis');
-  }, []);
+  const handleOpenAnalysis = useCallback(
+    (sentenceId: string) => {
+      const hasStored =
+        mergedAnalyses[sentenceId] !== undefined ||
+        analyses[sentenceId] !== undefined;
+      if (!offline && !hasStored && onRequestAnalysis) {
+        onRequestAnalysis(sentenceId);
+      }
+      setOpenSheet('analysis');
+    },
+    [analyses, mergedAnalyses, offline, onRequestAnalysis],
+  );
 
   const handleOpenTranscript = useCallback(() => {
     setOpenSheet('transcript');
@@ -103,35 +112,43 @@ export function YouTubeLessonStudy({
       if (startMs !== null) {
         onSeek?.(startMs);
       }
+      setOpenSheet('none');
     },
     [onSeek],
   );
 
   const goPrev = useCallback(() => {
+    setCarouselScrollAnimated(true);
     setCurrentIndex(index => Math.max(0, index - 1));
   }, []);
 
   const goNext = useCallback(() => {
+    setCarouselScrollAnimated(true);
     setCurrentIndex(index => Math.min(orderedSentences.length - 1, index + 1));
   }, [orderedSentences.length]);
+
+  const handleCarouselIndexChange = useCallback((index: number) => {
+    setCarouselScrollAnimated(false);
+    setCurrentIndex(index);
+  }, []);
+
+  const handleCarouselScrollAnimationConsumed = useCallback(() => {
+    setCarouselScrollAnimated(false);
+  }, []);
 
   const atFirst = currentIndex <= 0 || orderedSentences.length === 0;
   const atLast =
     orderedSentences.length === 0 ||
     currentIndex >= orderedSentences.length - 1;
 
+  const progressRatio =
+    orderedSentences.length === 0
+      ? 0
+      : (currentIndex + 1) / orderedSentences.length;
+
   return (
     <View testID="canonical-player" style={styles.root}>
-      <View style={styles.titleRow}>
-        <AppText
-          accessibilityLabel={snapshot.title}
-          numberOfLines={1}
-          style={styles.titleText}
-          testID="canonical-player-title"
-          variant="h2"
-        >
-          {snapshot.title}
-        </AppText>
+      <View style={styles.toggleRow}>
         <IconButton
           accessibilityLabel={
             showTranslation
@@ -171,20 +188,7 @@ export function YouTubeLessonStudy({
 
       <View style={styles.videoFrame}>
         {videoAvailable ? (
-          <>
-            {videoSlot}
-            {overlayText ? (
-              <View pointerEvents="none" style={styles.overlay}>
-                <AppText
-                  style={styles.overlayText}
-                  testID="youtube-video-overlay"
-                  variant="bodyLg"
-                >
-                  {overlayText}
-                </AppText>
-              </View>
-            ) : null}
-          </>
+          videoSlot
         ) : (
           <View
             style={styles.unavailableBox}
@@ -210,18 +214,38 @@ export function YouTubeLessonStudy({
         )}
       </View>
 
-      <AppText testID="youtube-sentence-indicator" variant="label">
-        {t('lessonPlayer.sentence_counter', {
-          index: orderedSentences.length === 0 ? 0 : currentIndex + 1,
-          total: orderedSentences.length,
-        })}
-      </AppText>
+      <View style={styles.progressSection}>
+        <AppText testID="youtube-sentence-indicator" variant="label">
+          {t('lessonPlayer.sentence_counter', {
+            index: orderedSentences.length === 0 ? 0 : currentIndex + 1,
+            total: orderedSentences.length,
+          })}
+        </AppText>
+        <View
+          accessibilityRole="progressbar"
+          accessibilityValue={{
+            min: 0,
+            max: orderedSentences.length,
+            now: orderedSentences.length === 0 ? 0 : currentIndex + 1,
+          }}
+          style={styles.progressTrack}
+          testID="youtube-study-progress"
+        >
+          <View
+            style={[styles.progressFill, {flex: progressRatio}]}
+            testID="youtube-study-progress-fill"
+          />
+          <View style={{flex: 1 - progressRatio}} />
+        </View>
+      </View>
 
       <YouTubeSentenceCarousel
         activeIndex={activeIndex}
         analyses={mergedAnalyses}
         currentIndex={currentIndex}
-        onIndexChange={setCurrentIndex}
+        onIndexChange={handleCarouselIndexChange}
+        onScrollAnimationConsumed={handleCarouselScrollAnimationConsumed}
+        scrollAnimated={carouselScrollAnimated}
         onOpenAnalysis={handleOpenAnalysis}
         onSeek={onSeek}
         onSpeakText={onSpeakText}
@@ -239,17 +263,6 @@ export function YouTubeLessonStudy({
           testID="youtube-cards-prev"
           tone="surface"
         />
-        <View style={styles.dotsRow} testID="youtube-cards-position">
-          {orderedSentences.map((sentence, index) => (
-            <View
-              key={sentence.id}
-              style={[
-                styles.dot,
-                index === currentIndex ? styles.dotActive : null,
-              ]}
-            />
-          ))}
-        </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('youtube.study.open_transcript_a11y')}
@@ -297,6 +310,7 @@ export function YouTubeLessonStudy({
         onSelectSentence={handleTranscriptSelect}
         sentences={orderedSentences}
         showTranslation={showTranslation}
+        videoPlaying={videoPlaying}
         visible={openSheet === 'transcript'}
       />
     </View>
@@ -312,20 +326,21 @@ function makeStyles(theme: AppTheme) {
       justifyContent: 'center',
       paddingVertical: theme.spacing.sm,
     },
-    dot: {
-      backgroundColor: theme.colors.outlineVariant,
-      borderRadius: 3,
-      height: 6,
-      width: 6,
-    },
-    dotActive: {
+    progressFill: {
       backgroundColor: theme.colors.primary,
-      width: 20,
+      borderRadius: theme.radius.pill,
+      minWidth: 4,
     },
-    dotsRow: {
-      alignItems: 'center',
+    progressSection: {
+      gap: theme.spacing.xs,
+    },
+    progressTrack: {
+      backgroundColor: theme.colors.surfaceHigh,
+      borderRadius: theme.radius.pill,
       flexDirection: 'row',
-      gap: 5,
+      height: 4,
+      overflow: 'hidden',
+      width: '100%',
     },
     ipaToggle: {
       alignItems: 'center',
@@ -341,34 +356,17 @@ function makeStyles(theme: AppTheme) {
     ipaToggleTextOn: {
       color: theme.colors.primary,
     },
-    overlay: {
-      backgroundColor: theme.colors.overlay,
-      bottom: 0,
-      left: 0,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm,
-      position: 'absolute',
-      right: 0,
-    },
-    overlayText: {
-      color: theme.colors.onOverlay,
-      fontWeight: theme.typography.weight.bold,
-      textAlign: 'center',
-    },
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
     root: {
       gap: theme.spacing.md,
     },
-    titleRow: {
+    toggleRow: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: theme.spacing.xs,
-    },
-    titleText: {
-      flex: 1,
-      minWidth: 0,
+      gap: theme.spacing.sm,
+      justifyContent: 'flex-end',
     },
     transcriptButton: {
       alignItems: 'center',

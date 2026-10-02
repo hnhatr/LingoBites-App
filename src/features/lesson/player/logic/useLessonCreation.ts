@@ -14,6 +14,7 @@ import {
 } from './canonicalLessonClient';
 import {
   clearCreationIdempotencyKey,
+  contentKeyForBody,
   getOrCreateCreationIdempotencyKey,
   rotateCreationIdempotencyKey,
 } from './creationIdempotencyStore';
@@ -140,11 +141,14 @@ export function useLessonCreation(submissionId: string) {
   const aliveRef = useRef(true);
   const pollGenerationRef = useRef(0);
   const youtubeDisclosureBusyRef = useRef(false);
+  const submitInFlightRef = useRef(false);
+  const lastContentKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     aliveRef.current = true;
     return () => {
       aliveRef.current = false;
+      submitInFlightRef.current = false;
       pollGenerationRef.current += 1;
     };
   }, []);
@@ -202,38 +206,53 @@ export function useLessonCreation(submissionId: string) {
 
   const submit = useCallback(
     async (body: LearnerLessonCreationRequestBody) => {
-      if (body.source === 'youtube') {
-        if (youtubeDisclosureBusyRef.current) {
-          return;
-        }
-        youtubeDisclosureBusyRef.current = true;
-        try {
-          const acknowledged = await ensureYouTubeDisclosureAcknowledged(
-            youtubeDisclosureCopy(),
-          );
-          if (!aliveRef.current || !acknowledged) {
-            return;
-          }
-        } finally {
-          youtubeDisclosureBusyRef.current = false;
-        }
-      }
-      safeSetState({status: 'submitting'});
-      const idempotencyKey = await getOrCreateCreationIdempotencyKey(
-        submissionId,
-      );
-      if (!aliveRef.current) return;
-      const accepted = await submitLessonCreation(body, idempotencyKey);
-      if (!aliveRef.current) return;
-      if (!accepted.ok) {
-        safeSetState({status: 'error', error: accepted});
+      if (submitInFlightRef.current) {
         return;
       }
-      const {requestId, status} = accepted.value;
-      safeSetState(
-        uiStateForNonTerminal(requestId, status as LessonCreationStatus, true),
-      );
-      await runPollForRequest(requestId);
+      submitInFlightRef.current = true;
+      try {
+        if (body.source === 'youtube') {
+          if (youtubeDisclosureBusyRef.current) {
+            return;
+          }
+          youtubeDisclosureBusyRef.current = true;
+          try {
+            const acknowledged = await ensureYouTubeDisclosureAcknowledged(
+              youtubeDisclosureCopy(),
+            );
+            if (!aliveRef.current || !acknowledged) {
+              return;
+            }
+          } finally {
+            youtubeDisclosureBusyRef.current = false;
+          }
+        }
+        const contentKey = contentKeyForBody(body);
+        lastContentKeyRef.current = contentKey;
+        safeSetState({status: 'submitting'});
+        const idempotencyKey = await getOrCreateCreationIdempotencyKey(
+          submissionId,
+          contentKey,
+        );
+        if (!aliveRef.current) return;
+        const accepted = await submitLessonCreation(body, idempotencyKey);
+        if (!aliveRef.current) return;
+        if (!accepted.ok) {
+          safeSetState({status: 'error', error: accepted});
+          return;
+        }
+        const {requestId, status} = accepted.value;
+        safeSetState(
+          uiStateForNonTerminal(
+            requestId,
+            status as LessonCreationStatus,
+            true,
+          ),
+        );
+        await runPollForRequest(requestId);
+      } finally {
+        submitInFlightRef.current = false;
+      }
     },
     [runPollForRequest, safeSetState, submissionId],
   );
@@ -254,7 +273,10 @@ export function useLessonCreation(submissionId: string) {
 
   /** Explicit "thử lại" after a terminal failure: rotate the key. */
   const retryWithFreshKey = useCallback(async () => {
-    await rotateCreationIdempotencyKey(submissionId);
+    const contentKey = lastContentKeyRef.current;
+    if (contentKey) {
+      await rotateCreationIdempotencyKey(submissionId, contentKey);
+    }
     safeSetState({status: 'idle'});
   }, [safeSetState, submissionId]);
 

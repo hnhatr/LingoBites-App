@@ -94,6 +94,7 @@ async function renderStudy(
             analyses={{}}
             playbackPositionMs={0}
             videoAvailable
+            videoPlaying={false}
             videoSlot={<React.Fragment />}
             {...props}
           />
@@ -138,16 +139,15 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
     ).toBeDefined();
   });
 
-  it('shows analyze CTA and calls onRequestAnalysis (AC-006 S2)', async () => {
+  it('requests analysis from the card CTA in one tap (AC-009 S1)', async () => {
     const onRequestAnalysis = jest.fn();
     const tree = await renderStudy({onRequestAnalysis});
     pressByTestId(tree.root, `youtube-open-analysis-${S1}`);
-    const analyze = tree.root.findByProps({testID: `canonical-analyze-${S1}`});
-    await act(async () => {
-      analyze.props.onPress();
-    });
     expect(onRequestAnalysis).toHaveBeenCalledTimes(1);
     expect(onRequestAnalysis).toHaveBeenCalledWith(S1);
+    expect(
+      tree.root.findByProps({testID: 'youtube-sheet-analysis'}),
+    ).toBeDefined();
   });
 
   it('renders loading state in the analysis sheet (AC-006 S3)', async () => {
@@ -176,6 +176,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
               analyses={{[S1]: analysisFor(S1)}}
               playbackPositionMs={0}
               videoAvailable
+              videoPlaying={false}
               videoSlot={<React.Fragment />}
             />
           </AppThemeProvider>
@@ -238,6 +239,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
               onSelectSentence={jest.fn()}
               sentences={sentences}
               showTranslation
+              videoPlaying
               visible
             />
           </AppThemeProvider>
@@ -254,8 +256,50 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
     expect(inactiveRow.props.accessibilityState?.selected).toBe(false);
   });
 
-  it('scrolls to the active sentence on open (AC-008 S3)', async () => {
-    const tree = await renderStudy({playbackPositionMs: 9500});
+  it('highlights the study card row when video is paused (AC-002 S2)', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    const sentences = snapshotWithThreeSentences().sentences;
+    await act(async () => {
+      tree = ReactTestRenderer.create(
+        <FeatureFlagProvider
+          releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+        >
+          <AppThemeProvider>
+            <YouTubeTranscriptSheet
+              activeIndex={0}
+              currentIndex={2}
+              onClose={jest.fn()}
+              onSelectSentence={jest.fn()}
+              sentences={sentences}
+              showTranslation
+              videoPlaying={false}
+              visible
+            />
+          </AppThemeProvider>
+        </FeatureFlagProvider>,
+      );
+    });
+    const cardRow = tree.root.findByProps({
+      testID: `youtube-transcript-row-${S3}`,
+    });
+    expect(cardRow.props.accessibilityState?.selected).toBe(true);
+  });
+
+  it('scrolls to the study card on open when paused (AC-008 S3)', async () => {
+    const tree = await renderStudy({
+      playbackPositionMs: 9500,
+      videoPlaying: false,
+    });
+    pressByTestId(tree.root, 'youtube-sheet-transcript');
+    const list = tree.root.findByProps({testID: 'youtube-transcript-list'});
+    expect(list.props.initialScrollIndex).toBe(0);
+  });
+
+  it('scrolls to the active cue on open while playing (AC-008 S3)', async () => {
+    const tree = await renderStudy({
+      playbackPositionMs: 9500,
+      videoPlaying: true,
+    });
     pressByTestId(tree.root, 'youtube-sheet-transcript');
     const list = tree.root.findByProps({testID: 'youtube-transcript-list'});
     expect(list.props.initialScrollIndex).toBe(2);

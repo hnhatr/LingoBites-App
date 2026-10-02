@@ -9,6 +9,7 @@ import {
   fetchLessonCreationStatus,
   submitLessonCreation,
 } from '../canonicalLessonClient';
+import {resetCreationIdempotencyMemoryForTests} from '../creationIdempotencyStore';
 import {
   type LessonCreationState,
   useLessonCreation,
@@ -35,14 +36,16 @@ function makeDriver(submissionId: string) {
     current:
       | (DriverControl & {
           checkAgain: () => Promise<void>;
+          retryWithFreshKey: () => Promise<void>;
         })
       | null;
   } = {current: null};
   let latest: LessonCreationState = {status: 'idle'};
   function Driver() {
-    const {state, submit, checkAgain} = useLessonCreation(submissionId);
+    const {state, submit, checkAgain, retryWithFreshKey} =
+      useLessonCreation(submissionId);
     latest = state;
-    control.current = {trigger: submit, checkAgain};
+    control.current = {trigger: submit, checkAgain, retryWithFreshKey};
     return null;
   }
   return {
@@ -65,6 +68,7 @@ async function flushDisclosureDialog() {
 
 beforeEach(async () => {
   jest.clearAllMocks();
+  resetCreationIdempotencyMemoryForTests();
   await AsyncStorage.clear();
   await AsyncStorage.setItem(YOUTUBE_DISCLOSURE_KEY, '1');
 });
@@ -456,7 +460,7 @@ describe('useLessonCreation YouTube disclosure (LING-191)', () => {
     expect(mockedSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it('does not show the disclosure on checkAgain', async () => {
+  it('does not show the disclosure on checkAgain (INV-002 g)', async () => {
     await AsyncStorage.setItem(YOUTUBE_DISCLOSURE_KEY, '1');
     jest.useFakeTimers();
     mockedSubmit.mockResolvedValue({
@@ -510,5 +514,229 @@ describe('useLessonCreation YouTube disclosure (LING-191)', () => {
     });
     expect(Alert.alert).not.toHaveBeenCalled();
     expect(mockedSubmit).not.toHaveBeenCalled();
+  });
+});
+
+const URL_A = 'https://youtube.com/watch?v=link-a';
+const URL_B = 'https://youtube.com/watch?v=link-b';
+
+function idempotencyKeyFromCall(index: number): string {
+  return (mockedSubmit.mock.calls[index] as [unknown, string])[1];
+}
+
+async function submitYoutube(
+  driver: ReturnType<typeof makeDriver>,
+  url: string,
+) {
+  await act(async () => {
+    await driver.control.current?.trigger({source: 'youtube', url});
+  });
+}
+
+describe('useLessonCreation idempotency (INV-001 / INV-002)', () => {
+  beforeEach(async () => {
+    jest.useRealTimers();
+    await AsyncStorage.setItem(YOUTUBE_DISCLOSURE_KEY, '1');
+  });
+
+  it('(a) mints a new key after failed when the trimmed URL changes', async () => {
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: 'req-a', status: 'queued'},
+    });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'failed',
+        lesson_id: null,
+        error: {code: 'TRANSLATION_FAILED', retryable: true},
+      },
+    });
+    const driver = makeDriver('inv-failed-ab');
+    await act(async () => {
+      ReactTestRenderer.create(<driver.Driver />);
+    });
+    await submitYoutube(driver, URL_A);
+    const keyA = idempotencyKeyFromCall(0);
+    mockedSubmit.mockClear();
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'succeeded',
+        lesson_id: LESSON_ID,
+        error: null,
+      },
+    });
+    await submitYoutube(driver, URL_B);
+    expect(idempotencyKeyFromCall(0)).not.toBe(keyA);
+  });
+
+  it('(b) mints a new key after network error when the URL changes', async () => {
+    mockedSubmit
+      .mockResolvedValueOnce({
+        ok: false,
+        kind: 'network-error',
+        message: 'offline',
+        retryable: true,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        value: {requestId: 'req-b', status: 'queued'},
+      });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'succeeded',
+        lesson_id: LESSON_ID,
+        error: null,
+      },
+    });
+    const driver = makeDriver('inv-error-ab');
+    await act(async () => {
+      ReactTestRenderer.create(<driver.Driver />);
+    });
+    await submitYoutube(driver, URL_A);
+    const keyA = idempotencyKeyFromCall(0);
+    await submitYoutube(driver, URL_B);
+    expect(idempotencyKeyFromCall(1)).not.toBe(keyA);
+  });
+
+  it('(d) mints a new key after remount when the URL changes', async () => {
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: 'req-d', status: 'queued'},
+    });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'failed',
+        lesson_id: null,
+        error: {code: 'TRANSLATION_FAILED', retryable: true},
+      },
+    });
+    const driver = makeDriver('inv-remount');
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await act(async () => {
+      tree = ReactTestRenderer.create(<driver.Driver />);
+    });
+    await submitYoutube(driver, URL_A);
+    const keyA = idempotencyKeyFromCall(0);
+    await act(async () => {
+      tree.unmount();
+    });
+    const driver2 = makeDriver('inv-remount');
+    await act(async () => {
+      ReactTestRenderer.create(<driver2.Driver />);
+    });
+    mockedSubmit.mockClear();
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'succeeded',
+        lesson_id: LESSON_ID,
+        error: null,
+      },
+    });
+    await submitYoutube(driver2, URL_B);
+    expect(idempotencyKeyFromCall(0)).not.toBe(keyA);
+  }, 15000);
+
+  it('(e) reuses the same key when resubmitting the same trimmed URL after failed', async () => {
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: 'req-e', status: 'queued'},
+    });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'failed',
+        lesson_id: null,
+        error: {code: 'TRANSLATION_FAILED', retryable: true},
+      },
+    });
+    const driver = makeDriver('inv-same-url');
+    await act(async () => {
+      ReactTestRenderer.create(<driver.Driver />);
+    });
+    await submitYoutube(driver, URL_A);
+    const keyA = idempotencyKeyFromCall(0);
+    mockedSubmit.mockClear();
+    await submitYoutube(driver, ` ${URL_A} `);
+    expect(idempotencyKeyFromCall(0)).toBe(keyA);
+  });
+
+  it('(f) sends exactly one POST when submit is called twice in a row', async () => {
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: 'req-f', status: 'queued'},
+    });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'succeeded',
+        lesson_id: LESSON_ID,
+        error: null,
+      },
+    });
+    const driver = makeDriver('inv-double');
+    await act(async () => {
+      ReactTestRenderer.create(<driver.Driver />);
+    });
+    await act(async () => {
+      const first = driver.control.current?.trigger({
+        source: 'youtube',
+        url: URL_A,
+      });
+      const second = driver.control.current?.trigger({
+        source: 'youtube',
+        url: URL_A,
+      });
+      await Promise.all([first, second]);
+    });
+    expect(mockedSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('(h) rotates the key after retryWithFreshKey for the same URL', async () => {
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: 'req-h', status: 'queued'},
+    });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'failed',
+        lesson_id: null,
+        error: {code: 'TRANSLATION_FAILED', retryable: true},
+      },
+    });
+    const driver = makeDriver('inv-retry');
+    await act(async () => {
+      ReactTestRenderer.create(<driver.Driver />);
+    });
+    await submitYoutube(driver, URL_A);
+    const keyBefore = idempotencyKeyFromCall(0);
+    await act(async () => {
+      await driver.control.current?.retryWithFreshKey();
+    });
+    mockedSubmit.mockClear();
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'succeeded',
+        lesson_id: LESSON_ID,
+        error: null,
+      },
+    });
+    await submitYoutube(driver, URL_A);
+    expect(idempotencyKeyFromCall(0)).not.toBe(keyBefore);
   });
 });
