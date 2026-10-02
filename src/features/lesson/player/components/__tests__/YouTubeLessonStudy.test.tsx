@@ -66,6 +66,7 @@ async function renderStudy(
             analyses={{}}
             playbackPositionMs={0}
             videoAvailable
+            videoPlaying={false}
             videoSlot={<React.Fragment />}
             {...props}
           />

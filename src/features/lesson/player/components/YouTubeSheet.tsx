@@ -22,6 +22,8 @@ export type YouTubeSheetProps = {
   onClose: () => void;
   children: React.ReactNode;
   testID?: string;
+  /** When false, children manage their own scroll (e.g. FlatList). */
+  scrollable?: boolean;
 };
 
 export function YouTubeSheet({
@@ -31,6 +33,7 @@ export function YouTubeSheet({
   onClose,
   children,
   testID = 'youtube-sheet',
+  scrollable = true,
 }: YouTubeSheetProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -72,14 +75,18 @@ export function YouTubeSheet({
             tone="ghost"
           />
         </View>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator
-          style={styles.body}
-        >
-          {children}
-        </ScrollView>
+        {scrollable ? (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+            style={styles.body}
+          >
+            {children}
+          </ScrollView>
+        ) : (
+          <View style={[styles.body, styles.scrollContent]}>{children}</View>
+        )}
       </View>
     </Modal>
   );

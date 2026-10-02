@@ -30,6 +30,9 @@ export type YouTubeSentenceCarouselProps = {
   onSeek?: (positionMs: number) => void;
   onSpeakText?: (text: string) => void;
   onOpenAnalysis?: (sentenceId: string) => void;
+  /** When true, the next currentIndex sync scrolls with animation (prev/next). */
+  scrollAnimated?: boolean;
+  onScrollAnimationConsumed?: () => void;
 };
 
 type CardProps = {
@@ -197,6 +200,8 @@ export function YouTubeSentenceCarousel({
   onSeek,
   onSpeakText,
   onOpenAnalysis,
+  scrollAnimated = false,
+  onScrollAnimationConsumed,
 }: YouTubeSentenceCarouselProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -220,8 +225,11 @@ export function YouTubeSentenceCarousel({
   );
 
   React.useEffect(() => {
-    scrollToIndex(currentIndex, false);
-  }, [currentIndex, scrollToIndex]);
+    scrollToIndex(currentIndex, scrollAnimated);
+    if (scrollAnimated) {
+      onScrollAnimationConsumed?.();
+    }
+  }, [currentIndex, onScrollAnimationConsumed, scrollAnimated, scrollToIndex]);
 
   const handlePressCard = useCallback(
     (index: number, sentence: LessonSentence) => {

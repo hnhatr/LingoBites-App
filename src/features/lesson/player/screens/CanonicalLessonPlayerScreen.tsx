@@ -91,6 +91,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     useCanonicalLesson(lessonId);
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoMountKey, setVideoMountKey] = useState(0);
   const youtubePlayerRef = useRef<YouTubePlayerRef>(null);
   const seekHoldMsRef = useRef<number | null>(null);
@@ -227,6 +228,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
 
   const handleRetryVideo = useCallback(() => {
     setVideoAvailable(true);
+    setVideoPlaying(false);
     setVideoMountKey(key => key + 1);
   }, []);
 
@@ -243,6 +245,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         hasUpdate={state.status === 'ready' ? state.hasUpdate : false}
         playbackPositionMs={positionMs}
         videoAvailable={videoAvailable}
+        videoPlaying={videoPlaying}
         unavailableReason={t('lessonPlayer.video_unavailable')}
         videoSlot={options?.videoSlot}
         onRetryVideo={options?.onRetryVideo}
@@ -328,9 +331,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               key={videoMountKey}
               ref={youtubePlayerRef}
               videoId={snapshot.youtube!.video_id}
+              onPlayingChange={setVideoPlaying}
               onTimeUpdate={handleTimeUpdate}
               onError={() => {
                 setVideoAvailable(false);
+                setVideoPlaying(false);
               }}
             />
           </Suspense>
@@ -347,6 +352,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           >
             <YouTubePlayer
               videoId={snapshot.youtube!.video_id}
+              onPlayingChange={setVideoPlaying}
               onTimeUpdate={seconds =>
                 setPositionMs(Math.floor(seconds * 1000))
               }
@@ -356,6 +362,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                   code === 'YOUTUBE_NOT_EMBEDDABLE'
                 ) {
                   setVideoAvailable(false);
+                  setVideoPlaying(false);
                 }
               }}
             />

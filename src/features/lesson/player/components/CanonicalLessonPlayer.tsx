@@ -34,6 +34,7 @@ export type CanonicalLessonPlayerProps = {
   /** Current YouTube playback position in ms (YouTube lessons only). */
   playbackPositionMs?: number;
   videoAvailable?: boolean;
+  videoPlaying?: boolean;
   unavailableReason?: string;
   /** Screen-owned YouTube iframe (AD-002); study view only. */
   videoSlot?: React.ReactNode;
@@ -67,6 +68,7 @@ export function CanonicalLessonPlayer({
   archived,
   playbackPositionMs = 0,
   videoAvailable = true,
+  videoPlaying = false,
   unavailableReason,
   videoSlot,
   onRetryVideo,
@@ -103,6 +105,7 @@ export function CanonicalLessonPlayer({
         hasUpdate={hasUpdate}
         playbackPositionMs={playbackPositionMs}
         videoAvailable={videoAvailable}
+        videoPlaying={videoPlaying}
         unavailableReason={unavailableReason}
         videoSlot={videoSlot}
         onRetryVideo={onRetryVideo}

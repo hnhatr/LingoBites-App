@@ -21,7 +21,8 @@ export type YouTubeTranscriptSheetProps = {
   sentences: LessonSentence[];
   activeIndex: number | null;
   currentIndex: number;
-  videoAvailable: boolean;
+  /** When false, highlight follows the study card (AC-002 S2). */
+  videoPlaying: boolean;
   showTranslation: boolean;
   onClose: () => void;
   onSelectSentence: (index: number, startMs: number | null) => void;
@@ -32,12 +33,13 @@ export function YouTubeTranscriptSheet({
   sentences,
   activeIndex,
   currentIndex,
-  videoAvailable,
+  videoPlaying,
   showTranslation,
   onClose,
   onSelectSentence,
 }: YouTubeTranscriptSheetProps) {
-  const highlightIndex = videoAvailable ? activeIndex : currentIndex;
+  const highlightIndex =
+    videoPlaying && activeIndex !== null ? activeIndex : currentIndex;
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -107,6 +109,7 @@ export function YouTubeTranscriptSheet({
       accessibilityLabel={t('youtube.study.sheet_transcript_title')}
       onClose={onClose}
       testID="youtube-sheet-transcript"
+      scrollable={false}
       title={t('youtube.study.sheet_transcript_title')}
       visible={visible}
     >

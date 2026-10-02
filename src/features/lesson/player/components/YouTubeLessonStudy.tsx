@@ -29,6 +29,7 @@ export type YouTubeLessonStudyProps = {
   hasUpdate?: boolean;
   playbackPositionMs: number;
   videoAvailable: boolean;
+  videoPlaying: boolean;
   unavailableReason?: string;
   videoSlot?: React.ReactNode;
   onRetryVideo?: () => void;
@@ -52,6 +53,7 @@ export function YouTubeLessonStudy({
   hasUpdate,
   playbackPositionMs,
   videoAvailable,
+  videoPlaying,
   unavailableReason,
   videoSlot,
   onRetryVideo,
@@ -68,6 +70,7 @@ export function YouTubeLessonStudy({
   const [showIpa, setShowIpa] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openSheet, setOpenSheet] = useState<OpenSheet>('none');
+  const [carouselScrollAnimated, setCarouselScrollAnimated] = useState(false);
 
   const orderedSentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const orderedBlocks = useMemo(() => sortedBlocks(snapshot), [snapshot]);
@@ -115,12 +118,23 @@ export function YouTubeLessonStudy({
   );
 
   const goPrev = useCallback(() => {
+    setCarouselScrollAnimated(true);
     setCurrentIndex(index => Math.max(0, index - 1));
   }, []);
 
   const goNext = useCallback(() => {
+    setCarouselScrollAnimated(true);
     setCurrentIndex(index => Math.min(orderedSentences.length - 1, index + 1));
   }, [orderedSentences.length]);
+
+  const handleCarouselIndexChange = useCallback((index: number) => {
+    setCarouselScrollAnimated(false);
+    setCurrentIndex(index);
+  }, []);
+
+  const handleCarouselScrollAnimationConsumed = useCallback(() => {
+    setCarouselScrollAnimated(false);
+  }, []);
 
   const atFirst = currentIndex <= 0 || orderedSentences.length === 0;
   const atLast =
@@ -229,7 +243,9 @@ export function YouTubeLessonStudy({
         activeIndex={activeIndex}
         analyses={mergedAnalyses}
         currentIndex={currentIndex}
-        onIndexChange={setCurrentIndex}
+        onIndexChange={handleCarouselIndexChange}
+        onScrollAnimationConsumed={handleCarouselScrollAnimationConsumed}
+        scrollAnimated={carouselScrollAnimated}
         onOpenAnalysis={handleOpenAnalysis}
         onSeek={onSeek}
         onSpeakText={onSpeakText}
@@ -294,7 +310,7 @@ export function YouTubeLessonStudy({
         onSelectSentence={handleTranscriptSelect}
         sentences={orderedSentences}
         showTranslation={showTranslation}
-        videoAvailable={videoAvailable}
+        videoPlaying={videoPlaying}
         visible={openSheet === 'transcript'}
       />
     </View>
