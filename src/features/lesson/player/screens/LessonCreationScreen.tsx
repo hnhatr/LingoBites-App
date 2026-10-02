@@ -1,18 +1,21 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useMemo, useState} from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import {useTranslation} from 'react-i18next';
+import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
 
 import type {LessonsStackParamList} from '@features/lesson/library';
 
+import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {BottomActionBar} from '@ui/components/BottomActionBar';
+import {Chip} from '@ui/components/Chip';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LearnerLessonCreationRequestBody} from '@core/schemas/lesson';
@@ -22,33 +25,19 @@ import {useLessonCreation} from '../logic/useLessonCreation';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonCreation'>;
 
-function creationStyles(theme: AppTheme) {
-  return StyleSheet.create({
-    container: {gap: theme.spacing.md, padding: theme.spacing.lg},
-    tabRow: {flexDirection: 'row', gap: theme.spacing.sm},
-    tab: {
-      borderColor: theme.colors.border,
-      borderRadius: theme.radius.md,
-      borderWidth: 1,
-      padding: theme.spacing.sm,
-    },
-    tabSelected: {borderColor: theme.colors.primary, borderWidth: 2},
-    input: {
-      borderColor: theme.colors.border,
-      borderRadius: theme.radius.md,
-      borderWidth: 1,
-      color: theme.colors.text.primary,
-      minHeight: 120,
-      padding: theme.spacing.md,
-    },
-    submit: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.radius.md,
-      minHeight: 44,
-      justifyContent: 'center',
-    },
-  });
+type CreationSource = 'text' | 'ocr' | 'youtube';
+
+const SOURCES: readonly CreationSource[] = ['text', 'ocr', 'youtube'];
+
+const SOURCE_LABEL_KEYS: Record<CreationSource, string> = {
+  text: 'lessonPlayer.create_source_text',
+  ocr: 'lessonPlayer.create_source_ocr',
+  youtube: 'lessonPlayer.create_source_youtube',
+};
+
+function countWords(value: string): number {
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? 0 : trimmed.split(/\s+/).length;
 }
 
 /**
@@ -56,15 +45,17 @@ function creationStyles(theme: AppTheme) {
  * text, OCR-confirmed text and YouTube URL submit through the same async
  * pipeline with the persisted idempotency key. Processing, terminal failure
  * (with explicit retry), and success states all render here; the success
- * state opens the new lesson in the common player.
+ * state opens the new lesson in the common player. Laid out like the
+ * Paste-text / Analyzing screens: source chips, rounded input, a progress
+ * card, and one primary action at the bottom.
  */
 export function LessonCreationScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
-  const styles = creationStyles(theme);
+  const {t} = useTranslation();
+  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const floatingClearance = useFloatingTabBarClearance();
   const {submissionId, initialSource, initialText} = route.params;
-  const [source, setSource] = useState<'text' | 'ocr' | 'youtube'>(
-    initialSource ?? 'text',
-  );
+  const [source, setSource] = useState<CreationSource>(initialSource ?? 'text');
   const [text, setText] = useState(initialText ?? '');
   const [url, setUrl] = useState('');
   const {state, submit, checkAgain, retryWithFreshKey} =
@@ -81,129 +72,306 @@ export function LessonCreationScreen({navigation, route}: Props) {
 
   const processing =
     state.status === 'submitting' || state.status === 'processing';
+  const succeeded = state.status === 'succeeded';
 
   return (
     <AppScreen>
-      <ScreenHeader title="Create lesson" onBack={() => navigation.goBack()} />
-      <View testID="lesson-creation-screen" style={styles.container}>
-        <View testID="lesson-creation-source-tabs" style={styles.tabRow}>
-          {(['text', 'ocr', 'youtube'] as const).map(option => (
-            <Pressable
-              accessibilityRole="button"
+      <ScreenHeader
+        title={t('lessonPlayer.create_title')}
+        onBack={() => navigation.goBack()}
+      />
+      <ScrollView
+        testID="lesson-creation-screen"
+        contentContainerStyle={themedStyles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <AppText color="secondary" variant="body">
+          {t('lessonPlayer.create_intro')}
+        </AppText>
+
+        <View testID="lesson-creation-source-tabs" style={styles.chipRow}>
+          {SOURCES.map(option => (
+            <Chip
+              accessibilityHint={t('lessonPlayer.create_source_hint')}
               key={option}
-              testID={`lesson-creation-source-${option}`}
-              style={[
-                styles.tab,
-                source === option ? styles.tabSelected : null,
-              ]}
+              label={t(SOURCE_LABEL_KEYS[option])}
               onPress={() => setSource(option)}
-            >
-              <AppText>{option}</AppText>
-            </Pressable>
+              selected={source === option}
+              testID={`lesson-creation-source-${option}`}
+              tone={source === option ? 'accent' : 'neutral'}
+            />
           ))}
         </View>
+
         {source === 'youtube' ? (
-          <TextInput
+          <TextField
             testID="lesson-creation-url-input"
-            accessibilityLabel="YouTube URL"
-            accessibilityHint="Video link the lesson is created from"
-            style={styles.input}
-            value={url}
-            onChangeText={setUrl}
-            placeholder="YouTube URL"
+            accessibilityLabel={t('lessonPlayer.create_url_label')}
+            accessibilityHint={t('lessonPlayer.create_url_hint')}
             autoCapitalize="none"
             autoCorrect={false}
+            editable={!processing}
+            keyboardType="url"
+            onChangeText={setUrl}
+            placeholder={t('lessonPlayer.create_url_placeholder')}
+            style={themedStyles.urlInput}
+            value={url}
           />
         ) : (
-          <TextInput
+          <TextField
             testID="lesson-creation-text-input"
-            accessibilityLabel="Lesson text"
-            accessibilityHint="Text the lesson is created from"
-            style={styles.input}
-            value={text}
-            onChangeText={setText}
-            placeholder={source === 'ocr' ? 'Confirmed OCR text' : 'Paste text'}
+            accessibilityLabel={t('lessonPlayer.create_text_label')}
+            accessibilityHint={t('lessonPlayer.create_text_hint')}
+            editable={!processing}
             multiline
+            onChangeText={setText}
+            placeholder={
+              source === 'ocr'
+                ? t('lessonPlayer.create_ocr_placeholder')
+                : t('lessonPlayer.create_text_placeholder')
+            }
+            style={themedStyles.textInput}
+            value={text}
           />
         )}
-        {processing ? (
-          <ActivityIndicator testID="lesson-creation-processing" />
-        ) : (
-          <Pressable
-            accessibilityRole="button"
-            testID="lesson-creation-submit"
-            style={styles.submit}
-            disabled={!body}
-            onPress={() => {
-              if (body) submit(body);
-            }}
-          >
-            <AppText>Create</AppText>
-          </Pressable>
-        )}
-        {state.status === 'processing' ? (
-          <AppText testID="lesson-creation-processing-text">
-            Creating your lesson…
-          </AppText>
+
+        {source !== 'youtube' ? (
+          <View style={styles.chipRow}>
+            <Chip
+              label={t('lessonPlayer.create_word_count', {
+                count: countWords(text),
+              })}
+              tone="neutral"
+            />
+            <Chip
+              label={t('lessonPlayer.create_char_count', {
+                count: text.trim().length,
+              })}
+              tone="neutral"
+            />
+          </View>
         ) : null}
+
+        {processing ? (
+          <AppCard>
+            <View style={styles.cardBody}>
+              <View style={styles.rowCenter}>
+                <ActivityIndicator
+                  color={theme.colors.primary}
+                  testID="lesson-creation-processing"
+                />
+                <AppText
+                  testID={
+                    state.status === 'processing'
+                      ? 'lesson-creation-processing-text'
+                      : undefined
+                  }
+                  variant="h3"
+                >
+                  {t('lessonPlayer.create_progress_title')}
+                </AppText>
+              </View>
+              <ProgressStep
+                done={state.status === 'processing'}
+                active={state.status === 'submitting'}
+                label={t('lessonPlayer.create_step_send')}
+                theme={theme}
+              />
+              <ProgressStep
+                done={false}
+                active={state.status === 'processing'}
+                label={t('lessonPlayer.create_step_generate')}
+                theme={theme}
+              />
+              <ProgressStep
+                done={false}
+                active={false}
+                label={t('lessonPlayer.create_step_ready')}
+                theme={theme}
+              />
+            </View>
+          </AppCard>
+        ) : null}
+
         {state.status === 'timedOut' ? (
-          <View testID="lesson-creation-timeout">
-            <AppText>
-              Creation is taking longer than expected. You can check again or go
-              back and return later.
+          <View testID="lesson-creation-timeout" style={themedStyles.notice}>
+            <AppText color="secondary">
+              {t('lessonPlayer.create_timeout')}
             </AppText>
-            <Pressable
-              accessibilityRole="button"
-              testID="lesson-creation-check-again"
+            <AppButton
+              accessibilityHint={t('lessonPlayer.create_check_again_hint')}
               onPress={() => {
                 checkAgain();
               }}
-            >
-              <AppText>Check again</AppText>
-            </Pressable>
+              testID="lesson-creation-check-again"
+              title={t('lessonPlayer.create_check_again')}
+              variant="secondary"
+            />
           </View>
         ) : null}
+
         {state.status === 'failed' ? (
-          <View testID="lesson-creation-error">
-            <AppText>{`Creation failed (${state.code}).`}</AppText>
+          <View testID="lesson-creation-error" style={themedStyles.errorBox}>
+            <AppText color="danger">
+              {t('lessonPlayer.create_failed', {code: state.code})}
+            </AppText>
             {state.retryable ? (
-              <Pressable
-                accessibilityRole="button"
-                testID="lesson-creation-retry"
+              <AppButton
+                accessibilityHint={t('lessonPlayer.create_submit_hint')}
                 onPress={async () => {
                   await retryWithFreshKey();
                 }}
-              >
-                <AppText>Thử lại</AppText>
-              </Pressable>
+                testID="lesson-creation-retry"
+                title={t('common.retry')}
+                variant="secondary"
+              />
             ) : null}
           </View>
         ) : null}
+
         {state.status === 'error' ? (
-          <View testID="lesson-creation-error">
-            <AppText>{state.error.message}</AppText>
-            <Pressable
-              accessibilityRole="button"
-              testID="lesson-creation-retry"
+          <View testID="lesson-creation-error" style={themedStyles.errorBox}>
+            <AppText color="danger">{state.error.message}</AppText>
+            <AppButton
+              accessibilityHint={t('lessonPlayer.create_submit_hint')}
               onPress={() => body && submit(body)}
-            >
-              <AppText>Retry</AppText>
-            </Pressable>
+              testID="lesson-creation-retry"
+              title={t('common.retry')}
+              variant="secondary"
+            />
           </View>
         ) : null}
+
+        {succeeded ? (
+          <View testID="lesson-creation-success" style={themedStyles.success}>
+            <MaterialIcon
+              color={theme.colors.primary}
+              name="check_circle"
+              size={24}
+            />
+            <AppText style={styles.flex1} variant="h3">
+              {t('lessonPlayer.create_ready')}
+            </AppText>
+          </View>
+        ) : null}
+      </ScrollView>
+
+      <BottomActionBar
+        style={[themedStyles.actionBar, {paddingBottom: floatingClearance}]}
+      >
         {state.status === 'succeeded' ? (
-          <View testID="lesson-creation-success">
-            <AppText>Lesson is ready.</AppText>
-            <Pressable
-              accessibilityRole="button"
-              testID="lesson-creation-open"
-              onPress={() => openLesson(navigation, state.lessonId)}
-            >
-              <AppText>Open lesson</AppText>
-            </Pressable>
-          </View>
-        ) : null}
-      </View>
+          <PrimaryActionButton
+            accessibilityLabel={t('lessonPlayer.create_open')}
+            label={t('lessonPlayer.create_open')}
+            onPress={() => openLesson(navigation, state.lessonId)}
+            testID="lesson-creation-open"
+          />
+        ) : (
+          <PrimaryActionButton
+            accessibilityLabel={t('lessonPlayer.create_submit')}
+            disabled={!body || processing}
+            label={
+              processing
+                ? t('lessonPlayer.create_submitting')
+                : t('lessonPlayer.create_submit')
+            }
+            onPress={() => {
+              if (body) submit(body);
+            }}
+            testID="lesson-creation-submit"
+          />
+        )}
+      </BottomActionBar>
     </AppScreen>
   );
 }
+
+function ProgressStep({
+  done,
+  active,
+  label,
+  theme,
+}: {
+  done: boolean;
+  active: boolean;
+  label: string;
+  theme: AppTheme;
+}) {
+  return (
+    <View style={styles.rowCenter}>
+      <MaterialIcon
+        color={done || active ? theme.colors.primary : theme.colors.text.muted}
+        name={done ? 'check_circle' : 'circle'}
+        size={20}
+      />
+      <AppText color={done || active ? 'primary' : 'muted'}>{label}</AppText>
+    </View>
+  );
+}
+
+function makeStyles(theme: AppTheme) {
+  return StyleSheet.create({
+    actionBar: {
+      backgroundColor: theme.colors.background,
+      borderTopColor: theme.colors.outlineVariant,
+    },
+    content: {
+      gap: theme.spacing.lg,
+      paddingBottom: theme.spacing.lg,
+      paddingHorizontal: theme.gutter,
+      paddingTop: theme.spacing.sm,
+    },
+    errorBox: {
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: theme.radius.lg,
+      gap: theme.spacing.md,
+      padding: theme.spacing.lg,
+    },
+    notice: {
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: theme.radius.lg,
+      gap: theme.spacing.md,
+      padding: theme.spacing.lg,
+    },
+    success: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: theme.radius.lg,
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      padding: theme.spacing.lg,
+    },
+    textInput: {
+      borderColor: theme.colors.accentSoft,
+      borderRadius: theme.radius.xl,
+      borderWidth: 2,
+      minHeight: 150,
+      textAlignVertical: 'top',
+    },
+    urlInput: {
+      borderColor: theme.colors.accentSoft,
+      borderRadius: theme.radius.xl,
+      borderWidth: 2,
+    },
+  });
+}
+
+const styles = StyleSheet.create({
+  cardBody: {
+    gap: 10,
+  },
+  chipRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  flex1: {
+    flex: 1,
+  },
+  rowCenter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+  },
+});
