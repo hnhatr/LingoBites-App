@@ -1,14 +1,7 @@
-import {
-  resolveLessonDestination,
-  startLessonFromConfirmedText,
-} from '../startLessonFromConfirmedText';
+import {startLessonFromConfirmedText} from '../startLessonFromConfirmedText';
 
 describe('startLessonFromConfirmedText', () => {
   beforeEach(() => jest.clearAllMocks());
-
-  it('resolves destination to canonical_creation', () => {
-    expect(resolveLessonDestination()).toBe('canonical_creation');
-  });
 
   it('navigates to LessonCreation with validated text', async () => {
     const navigate = jest.fn();
