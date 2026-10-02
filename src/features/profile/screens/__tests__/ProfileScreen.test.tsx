@@ -184,7 +184,7 @@ describe('ProfileScreen', () => {
     const text = JSON.stringify(tree!.toJSON());
     expect(text).toContain('Tính năng hệ thống');
     expect(text).toContain('Demo native TTS');
-    expect(text).toContain('Unified Lessons (Preview)');
+    expect(text).toContain('Lesson Catalog (dev)');
   });
 
   it('hides developer entries on production builds', async () => {
@@ -200,7 +200,7 @@ describe('ProfileScreen', () => {
       const text = JSON.stringify(tree!.toJSON());
       expect(text).not.toContain('Tính năng hệ thống');
       expect(text).not.toContain('Demo native TTS');
-      expect(text).not.toContain('Unified Lessons (Preview)');
+      expect(text).not.toContain('Lesson Catalog (dev)');
       expect(text).not.toContain('FeatureStatus');
       expect(text).not.toContain('TtsSpike');
       expect(text).not.toContain('UnifiedLessonsPreview');

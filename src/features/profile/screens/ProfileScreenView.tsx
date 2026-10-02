@@ -49,7 +49,7 @@ export function ProfileScreenView({
   openPrivacyNote,
   openProgressReport,
   openTtsSpike,
-  openUnifiedLessonsPreview,
+  openLessonCatalogDev,
   setClearDataConfirmText,
   t,
 }: ProfileScreenViewProps) {
@@ -225,11 +225,11 @@ export function ProfileScreenView({
           ) : null}
           {__DEV__ ? (
             <ProfileSettingsRow
-              accessibilityLabel="Mở bản xem trước Unified Lessons"
+              accessibilityLabel="Mở danh mục bài học (dev)"
               icon="school"
-              label="Unified Lessons (Preview)"
+              label="Lesson Catalog (dev)"
               medallionTone="gold"
-              onPress={openUnifiedLessonsPreview}
+              onPress={openLessonCatalogDev}
               trailing="chevron"
             />
           ) : null}

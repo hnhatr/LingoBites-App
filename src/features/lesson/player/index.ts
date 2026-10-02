@@ -220,15 +220,6 @@ export type {
   LessonJobClientOptions,
   CreateLessonGenerationJobInput,
 } from './logic/lessonJobClient';
-export {
-  fetchLessonServerCapabilities,
-  useLessonServerCapabilities,
-  isUnifiedLessonReady,
-} from './logic/lessonCapabilities';
-export type {
-  LessonServerCapabilities,
-  UnifiedLessonReleaseFlags,
-} from './logic/lessonCapabilities';
 export {useLessonGenerationJob} from './logic/useLessonGenerationJob';
 export type {
   LessonGenerationState,

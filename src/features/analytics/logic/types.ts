@@ -13,11 +13,7 @@ export type AnalyticsEventName =
   | 'result_viewed'
   | 'lesson_saved'
   | 'lesson_reopened'
-  | 'unified_catalog_opened'
-  | 'unified_lesson_opened'
-  | 'unified_generation_started'
-  | 'unified_generation_completed'
-  | 'unified_generation_part_retry';
+  | 'unified_lesson_opened';
 
 export type InputMethod = 'camera' | 'gallery' | 'paste_text';
 

@@ -43,23 +43,6 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
-// Keep the real unified catalog screen, but pin capabilities on so the
-// composition under test is deterministic without a live probe.
-jest.mock('@features/lesson/player', () => {
-  const actual = jest.requireActual('@features/lesson/player');
-  return {
-    ...actual,
-    useLessonServerCapabilities: () => ({
-      catalog: true,
-      canonicalDelivery: true,
-      aiMaterialization: true,
-      packagedImport: true,
-      partialRetry: true,
-      privateLibrary: true,
-    }),
-  };
-});
-
 jest.mock('@features/analytics', () => ({
   trackEvent: jest.fn(),
 }));
