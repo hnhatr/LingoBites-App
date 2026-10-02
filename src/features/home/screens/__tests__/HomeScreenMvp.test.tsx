@@ -15,22 +15,13 @@ import {validFullOutput, validMinimalOutput} from '@core/fixtures';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
-let mockLessonCapabilities = {
-  catalog: false,
-  canonicalDelivery: false,
-  aiMaterialization: false,
-  packagedImport: false,
-  partialRetry: false,
-  privateLibrary: false,
-};
+// The video card shares the Create tab's gate: `youtubeLearning` flag AND
+// the server YouTube capability.
+let mockYouTubeServerEnabled = false;
 
-jest.mock('@features/lesson/player', () => {
-  const actual = jest.requireActual('@features/lesson/player');
-  return {
-    ...actual,
-    useLessonServerCapabilities: () => mockLessonCapabilities,
-  };
-});
+jest.mock('@core/api/youtubeCapabilities', () => ({
+  useYouTubeServerEnabled: () => mockYouTubeServerEnabled,
+}));
 
 function navigation(tabNavigate = jest.fn(), rootNavigate = jest.fn()) {
   return {
@@ -73,15 +64,8 @@ async function renderHome(
   return tree;
 }
 
-function renderHomeUnifiedReady(nav = navigation()) {
-  mockLessonCapabilities = {
-    catalog: true,
-    canonicalDelivery: true,
-    aiMaterialization: true,
-    packagedImport: true,
-    partialRetry: true,
-    privateLibrary: true,
-  };
+function renderHomeYouTubeReady(nav = navigation()) {
+  mockYouTubeServerEnabled = true;
   return renderHome(
     nav,
     makeTestReleaseConfig({...CORE_WITH_REVIEW, youtubeLearning: true}),
@@ -133,14 +117,7 @@ describe('HomeScreen explore grid (SETE-279)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.clearAllMocks();
-    mockLessonCapabilities = {
-      catalog: false,
-      canonicalDelivery: false,
-      aiMaterialization: false,
-      packagedImport: false,
-      partialRetry: false,
-      privateLibrary: false,
-    };
+    mockYouTubeServerEnabled = false;
   });
 
   it('renders the section title and all four cells', async () => {
@@ -194,14 +171,7 @@ describe('HomeScreen video card (LING-176 TASK-008)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.clearAllMocks();
-    mockLessonCapabilities = {
-      catalog: false,
-      canonicalDelivery: false,
-      aiMaterialization: false,
-      packagedImport: false,
-      partialRetry: false,
-      privateLibrary: false,
-    };
+    mockYouTubeServerEnabled = false;
   });
 
   function videoPressable(tree: ReactTestRenderer.ReactTestRenderer) {
@@ -212,8 +182,21 @@ describe('HomeScreen video card (LING-176 TASK-008)', () => {
     return target;
   }
 
-  it('disables the card when unified catalog is not ready', async () => {
+  it('disables the card when the server YouTube capability is off', async () => {
     seedLesson();
+    const tree = await renderHome(
+      navigation(),
+      makeTestReleaseConfig({...CORE_WITH_REVIEW, youtubeLearning: true}),
+    );
+    const cell = videoPressable(tree);
+
+    expect(cell.props.disabled).toBe(true);
+    expect(cell.props.accessibilityState).toEqual({disabled: true});
+  });
+
+  it('disables the card when the youtubeLearning flag is off', async () => {
+    seedLesson();
+    mockYouTubeServerEnabled = true;
     const tree = await renderHome();
     const cell = videoPressable(tree);
 
@@ -221,10 +204,10 @@ describe('HomeScreen video card (LING-176 TASK-008)', () => {
     expect(cell.props.accessibilityState).toEqual({disabled: true});
   });
 
-  it('opens LessonCreation on the Lessons tab when unified mode is ready', async () => {
+  it('opens LessonCreation on the Lessons tab when flag and server agree', async () => {
     seedLesson();
     const tabNavigate = jest.fn();
-    const tree = await renderHomeUnifiedReady(navigation(tabNavigate));
+    const tree = await renderHomeYouTubeReady(navigation(tabNavigate));
 
     await pressCell(tree, 'home-explore-video');
 

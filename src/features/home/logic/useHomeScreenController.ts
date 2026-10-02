@@ -6,13 +6,12 @@ import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
 import {
   fetchContinueLearning,
-  isUnifiedLessonReady,
   listDownloadedLessonSummaries,
   openLesson,
   useCanonicalCatalog,
-  useLessonServerCapabilities,
 } from '@features/lesson/player';
 
+import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useFeatureFlags} from '@core/release';
 import {getLessonProgress} from '@core/sync/lessonProgress';
 
@@ -40,10 +39,10 @@ export function useHomeScreenController({navigation}: Args) {
   const {config} = useFeatureFlags();
   const tabNavigation =
     navigation.getParent<NavigationProp<RootTabParamList>>();
-  const lessonCapabilities = useLessonServerCapabilities(
-    config.features.unifiedLesson !== false,
-  );
-  const unifiedMode = isUnifiedLessonReady(config.features, lessonCapabilities);
+  // Same gate as the Create tab's YouTube tile: app flag AND server.
+  const youtubeServerEnabled = useYouTubeServerEnabled();
+  const youtubeEnabled =
+    config.features.youtubeLearning && youtubeServerEnabled;
   const canonicalCatalog = useCanonicalCatalog();
   const canonicalRefresh = canonicalCatalog.refresh;
   const catalogState = canonicalCatalog.state;
@@ -55,9 +54,7 @@ export function useHomeScreenController({navigation}: Args) {
 
   useFocusEffect(
     useCallback(() => {
-      if (unifiedMode) {
-        canonicalRefresh();
-      }
+      canonicalRefresh();
       fetchContinueLearning()
         .then(res => {
           if (res.ok && res.progress) {
@@ -73,7 +70,7 @@ export function useHomeScreenController({navigation}: Args) {
       } catch {
         setDownloadCount(null);
       }
-    }, [canonicalRefresh, unifiedMode]),
+    }, [canonicalRefresh]),
   );
 
   const startedDownload = useMemo(() => {
@@ -159,15 +156,12 @@ export function useHomeScreenController({navigation}: Args) {
     if (downloaded.length > 0) {
       return downloaded;
     }
-    if (unifiedMode) {
-      const canonicalItems =
-        catalogState.status === 'ready' ? catalogState.lessons : [];
-      return canonicalItems
-        .slice(0, UNIFIED_RAIL_LIMIT)
-        .map(toCanonicalRecentItem);
-    }
-    return [];
-  }, [unifiedMode, catalogState]);
+    const canonicalItems =
+      catalogState.status === 'ready' ? catalogState.lessons : [];
+    return canonicalItems
+      .slice(0, UNIFIED_RAIL_LIMIT)
+      .map(toCanonicalRecentItem);
+  }, [catalogState]);
 
   const openRecentItem = useCallback(
     (item: RecentItem) => {
@@ -216,7 +210,7 @@ export function useHomeScreenController({navigation}: Args) {
       : null,
     exploreCells,
     railItems,
-    youtubeEnabled: unifiedMode,
+    youtubeEnabled,
     goLessonsTab,
     openVideoCell,
     openRecentItem,

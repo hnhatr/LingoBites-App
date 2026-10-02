@@ -16,26 +16,6 @@ import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
-// LING-179 TASK-001: pin the capability probe through a mutable mock so
-// each test selects ready vs degraded Server behavior while the real
-// `useCanonicalCatalog` exercises the canonical catalog client.
-let mockLessonCapabilities = {
-  catalog: true,
-  canonicalDelivery: true,
-  aiMaterialization: true,
-  packagedImport: true,
-  partialRetry: true,
-  privateLibrary: true,
-};
-
-jest.mock('@features/lesson/player', () => {
-  const actual = jest.requireActual('@features/lesson/player');
-  return {
-    ...actual,
-    useLessonServerCapabilities: () => mockLessonCapabilities,
-  };
-});
-
 jest.mock('@features/analytics', () => ({
   trackEvent: jest.fn(),
 }));
@@ -163,14 +143,6 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.clearAllMocks();
-    mockLessonCapabilities = {
-      catalog: true,
-      canonicalDelivery: true,
-      aiMaterialization: true,
-      packagedImport: true,
-      partialRetry: true,
-      privateLibrary: true,
-    };
     jest
       .spyOn(AuthSession, 'ensureValidSession')
       .mockResolvedValue(validSession);
@@ -303,27 +275,5 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
       target.props.onPress();
     });
     expect(nav.navigate).toHaveBeenCalledWith('Today');
-  });
-
-  it('disables canonical catalog when a capability is missing (fail-closed fallback)', async () => {
-    mockLessonCapabilities = {
-      catalog: true,
-      canonicalDelivery: true,
-      aiMaterialization: true,
-      packagedImport: true,
-      partialRetry: false,
-      privateLibrary: true,
-    };
-    const {tree, nav} = await renderHome();
-    const canonicalItems = tree.root.findAll(
-      node =>
-        typeof node.props.testID === 'string' &&
-        node.props.testID.startsWith('home-recent-item-33333333-'),
-    );
-    expect(canonicalItems.length).toBe(0);
-    expect(nav.navigate).not.toHaveBeenCalledWith(
-      'CurriculumLesson',
-      expect.anything(),
-    );
   });
 });
