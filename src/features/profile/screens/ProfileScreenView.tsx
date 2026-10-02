@@ -49,7 +49,6 @@ export function ProfileScreenView({
   openPrivacyNote,
   openProgressReport,
   openTtsSpike,
-  openLessonCatalogDev,
   setClearDataConfirmText,
   t,
 }: ProfileScreenViewProps) {
@@ -220,16 +219,6 @@ export function ProfileScreenView({
               label="Demo native TTS"
               medallionTone="coral"
               onPress={openTtsSpike}
-              trailing="chevron"
-            />
-          ) : null}
-          {__DEV__ ? (
-            <ProfileSettingsRow
-              accessibilityLabel="Mở danh mục bài học (dev)"
-              icon="school"
-              label="Lesson Catalog (dev)"
-              medallionTone="gold"
-              onPress={openLessonCatalogDev}
               trailing="chevron"
             />
           ) : null}
