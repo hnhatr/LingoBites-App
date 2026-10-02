@@ -13,6 +13,9 @@ import {
   useLessonCreation,
 } from '../useLessonCreation';
 
+const WAITING_REQUEST_ID = '22222222-2222-4222-8222-222222222201';
+const LESSON_ID = '33333333-3333-4333-8333-333333333301';
+
 jest.mock('../canonicalLessonClient', () => ({
   fetchLessonCreationStatus: jest.fn(),
   submitLessonCreation: jest.fn(),
@@ -26,12 +29,18 @@ type DriverControl = {
 };
 
 function makeDriver(submissionId: string) {
-  const control: {current: DriverControl | null} = {current: null};
+  const control: {
+    current:
+      | (DriverControl & {
+          checkAgain: () => Promise<void>;
+        })
+      | null;
+  } = {current: null};
   let latest: LessonCreationState = {status: 'idle'};
   function Driver() {
-    const {state, submit} = useLessonCreation(submissionId);
+    const {state, submit, checkAgain} = useLessonCreation(submissionId);
     latest = state;
-    control.current = {trigger: submit};
+    control.current = {trigger: submit, checkAgain};
     return null;
   }
   return {
@@ -117,6 +126,149 @@ describe('useLessonCreation (INV-006)', () => {
       requestId: 'req-2',
       code: 'TRANSLATION_FAILED',
       retryable: true,
+    });
+  });
+
+  it('shows waiting_transcript immediately when the server accepts with that status (AC-020 S1)', async () => {
+    jest.useFakeTimers();
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: WAITING_REQUEST_ID, status: 'waiting_transcript'},
+    });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'waiting_transcript',
+        lesson_id: null,
+        error: null,
+      },
+    });
+
+    const driver = makeDriver('draft-wait');
+    const WaitDriver = driver.Driver;
+    await act(async () => {
+      ReactTestRenderer.create(<WaitDriver />);
+    });
+    await act(async () => {
+      void driver.control.current?.trigger({
+        source: 'youtube',
+        url: 'https://youtube.com/watch?v=wait',
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(driver.latest()).toEqual({
+      status: 'waiting_transcript',
+      requestId: WAITING_REQUEST_ID,
+      polling: true,
+    });
+    jest.useRealTimers();
+  });
+
+  it('keeps the same request id after poll exhaustion and checkAgain (AC-020 S2)', async () => {
+    jest.useFakeTimers();
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: WAITING_REQUEST_ID, status: 'waiting_transcript'},
+    });
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'waiting_transcript',
+        lesson_id: null,
+        error: null,
+      },
+    });
+
+    const driver = makeDriver('draft-wait-exhaust');
+    const ExhaustDriver = driver.Driver;
+    await act(async () => {
+      ReactTestRenderer.create(<ExhaustDriver />);
+    });
+    let done = false;
+    await act(async () => {
+      driver.control.current
+        ?.trigger({
+          source: 'youtube',
+          url: 'https://youtube.com/watch?v=wait',
+        })
+        .then(() => {
+          done = true;
+        });
+      for (let i = 0; i < 70 && !done; i += 1) {
+        await Promise.resolve();
+        await Promise.resolve();
+        jest.advanceTimersByTime(2000);
+      }
+    });
+    jest.useRealTimers();
+    expect(driver.latest()).toEqual({
+      status: 'waiting_transcript',
+      requestId: WAITING_REQUEST_ID,
+      polling: false,
+    });
+
+    mockedStatus.mockResolvedValue({
+      ok: true,
+      value: {
+        contract_version: 1,
+        status: 'succeeded',
+        lesson_id: LESSON_ID,
+        error: null,
+      },
+    });
+    await act(async () => {
+      await driver.control.current?.checkAgain();
+    });
+    expect(driver.latest()).toEqual({
+      status: 'succeeded',
+      requestId: WAITING_REQUEST_ID,
+      lessonId: LESSON_ID,
+    });
+  });
+
+  it('opens the lesson id when waiting later succeeds (AC-020 S3)', async () => {
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      value: {requestId: WAITING_REQUEST_ID, status: 'queued'},
+    });
+    mockedStatus
+      .mockResolvedValueOnce({
+        ok: true,
+        value: {
+          contract_version: 1,
+          status: 'waiting_transcript',
+          lesson_id: null,
+          error: null,
+        },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        value: {
+          contract_version: 1,
+          status: 'succeeded',
+          lesson_id: LESSON_ID,
+          error: null,
+        },
+      });
+
+    const driver = makeDriver('draft-wait-success');
+    const SuccessDriver = driver.Driver;
+    await act(async () => {
+      ReactTestRenderer.create(<SuccessDriver />);
+    });
+    await act(async () => {
+      await driver.control.current?.trigger({
+        source: 'youtube',
+        url: 'https://youtube.com/watch?v=ok',
+      });
+    });
+    expect(driver.latest()).toEqual({
+      status: 'succeeded',
+      requestId: WAITING_REQUEST_ID,
+      lessonId: LESSON_ID,
     });
   });
 });

@@ -145,6 +145,8 @@ export function YouTubeCreationView({
   const [pasteNotice, setPasteNotice] = useState(false);
   const [submittedUrl, setSubmittedUrl] = useState('');
 
+  const waiting = state.status === 'waiting_transcript';
+  const waitingPolling = waiting && state.polling;
   const processing =
     state.status === 'submitting' || state.status === 'processing';
   const succeeded = state.status === 'succeeded';
@@ -162,7 +164,7 @@ export function YouTubeCreationView({
   }, [state.status, url]);
 
   const displayUrl = submittedUrl || url.trim();
-  const showIdleInput = !processing && !succeeded && !timedOut;
+  const showIdleInput = !processing && !succeeded && !timedOut && !waiting;
 
   const handlePaste = async () => {
     const text = await readClipboardText();
@@ -282,7 +284,7 @@ export function YouTubeCreationView({
           </>
         ) : null}
 
-        {processing || timedOut ? (
+        {processing || timedOut || waiting ? (
           <AppCard>
             <View style={styles.linkCardRow}>
               <View
@@ -348,6 +350,47 @@ export function YouTubeCreationView({
               onPress={onBack}
               testID="lesson-creation-back-processing"
               title={t('youtube.create.back_while_processing')}
+              variant="secondary"
+            />
+          </View>
+        ) : null}
+
+        {waiting ? (
+          <View
+            testID="lesson-creation-waiting-transcript"
+            style={[styles.timeoutBlock, {gap: theme.spacing.md}]}
+          >
+            <MaterialIcon
+              color={theme.colors.tertiary}
+              name="schedule"
+              size={48}
+            />
+            <AppText testID="lesson-creation-waiting-text" variant="h2">
+              {t('youtube.create.waiting_transcript_title')}
+            </AppText>
+            <AppText color="secondary" style={styles.centerText} variant="body">
+              {t('youtube.create.waiting_transcript_body')}
+            </AppText>
+            {waitingPolling ? (
+              <View style={styles.rowCenter}>
+                <ActivityIndicator color={theme.colors.primary} size="small" />
+                <AppText color="secondary" variant="body">
+                  {t('youtube.create.waiting_transcript_polling')}
+                </AppText>
+              </View>
+            ) : (
+              <AppButton
+                accessibilityHint={t('lessonPlayer.create_check_again_hint')}
+                onPress={checkAgain}
+                testID="lesson-creation-check-again"
+                title={t('lessonPlayer.create_check_again')}
+                variant="primary"
+              />
+            )}
+            <AppButton
+              onPress={onBack}
+              testID="lesson-creation-back-waiting"
+              title={t('youtube.create.waiting_transcript_back')}
               variant="secondary"
             />
           </View>
@@ -481,7 +524,7 @@ export function YouTubeCreationView({
         ) : (
           <PrimaryActionButton
             accessibilityLabel={t('lessonPlayer.create_submit')}
-            disabled={!body || processing || timedOut}
+            disabled={!body || processing || timedOut || waiting}
             label={
               processing
                 ? t('lessonPlayer.create_submitting')
@@ -597,6 +640,11 @@ const styles = StyleSheet.create({
   },
   processingBlock: {
     gap: 16,
+  },
+  rowCenter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
   },
   stepConnector: {
     flex: 1,
