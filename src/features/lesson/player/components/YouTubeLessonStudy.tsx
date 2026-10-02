@@ -17,7 +17,9 @@ import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from './SentenceAnalysisPanel';
+import {YouTubeAnalysisSheet} from './YouTubeAnalysisSheet';
 import {YouTubeSentenceCarousel} from './YouTubeSentenceCarousel';
+import {YouTubeTranscriptSheet} from './YouTubeTranscriptSheet';
 
 export type YouTubeLessonStudyProps = {
   snapshot: LessonSnapshot;
@@ -54,9 +56,9 @@ export function YouTubeLessonStudy({
   videoSlot,
   onRetryVideo,
   onSeek,
-  onRequestAnalysis: _onRequestAnalysis,
-  onRetryAnalysis: _onRetryAnalysis,
-  analysisStates: _analysisStates,
+  onRequestAnalysis,
+  onRetryAnalysis,
+  analysisStates,
   onSpeakText,
 }: YouTubeLessonStudyProps) {
   const {theme} = useAppTheme();
@@ -65,7 +67,7 @@ export function YouTubeLessonStudy({
   const [showTranslation, setShowTranslation] = useState(true);
   const [showIpa, setShowIpa] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [, setOpenSheet] = useState<OpenSheet>('none');
+  const [openSheet, setOpenSheet] = useState<OpenSheet>('none');
 
   const orderedSentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const orderedBlocks = useMemo(() => sortedBlocks(snapshot), [snapshot]);
@@ -87,6 +89,23 @@ export function YouTubeLessonStudy({
   const handleOpenTranscript = useCallback(() => {
     setOpenSheet('transcript');
   }, []);
+
+  const handleCloseSheet = useCallback(() => {
+    setOpenSheet('none');
+  }, []);
+
+  const currentSentence = orderedSentences[currentIndex];
+  const currentSentenceId = currentSentence?.id ?? '';
+
+  const handleTranscriptSelect = useCallback(
+    (index: number, startMs: number | null) => {
+      setCurrentIndex(index);
+      if (startMs !== null) {
+        onSeek?.(startMs);
+      }
+    },
+    [onSeek],
+  );
 
   const goPrev = useCallback(() => {
     setCurrentIndex(index => Math.max(0, index - 1));
@@ -258,6 +277,28 @@ export function YouTubeLessonStudy({
       {orderedBlocks.map(block => (
         <CanonicalBlockView key={block.id} block={block} />
       ))}
+
+      <YouTubeAnalysisSheet
+        analyses={analyses}
+        analysisStates={analysisStates}
+        lateAnalyses={lateAnalyses}
+        offline={offline}
+        onClose={handleCloseSheet}
+        onRequestAnalysis={onRequestAnalysis}
+        onRetryAnalysis={onRetryAnalysis}
+        onSpeakText={onSpeakText}
+        sentenceId={currentSentenceId}
+        visible={openSheet === 'analysis' && currentSentenceId.length > 0}
+      />
+      <YouTubeTranscriptSheet
+        activeIndex={activeIndex}
+        currentIndex={currentIndex}
+        onClose={handleCloseSheet}
+        onSelectSentence={handleTranscriptSelect}
+        sentences={orderedSentences}
+        showTranslation={showTranslation}
+        visible={openSheet === 'transcript'}
+      />
     </View>
   );
 }
