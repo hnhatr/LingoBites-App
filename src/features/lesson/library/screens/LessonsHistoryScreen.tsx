@@ -12,10 +12,14 @@ import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {CatalogTabContent} from '../components/CatalogTabContent';
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {LessonsTabContent} from '../components/LessonsTabContent';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
-import {SegmentedTabBar} from '../components/SegmentedTabBar';
+import {
+  type LibraryTabId,
+  SegmentedTabBar,
+} from '../components/SegmentedTabBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
 import {useLibrarySegments} from '../logic/useLibrarySegments';
 import type {LessonsStackParamList} from './navigationTypes';
@@ -41,9 +45,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const {getDueFlashcards} = useFlashcardLibrary();
   const [dueCount, setDueCount] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<
-    'lessons' | 'vocabulary' | 'grammar'
-  >('lessons');
+  const [activeTab, setActiveTab] = useState<LibraryTabId>('lessons');
 
   const {
     packagedLessons,
@@ -139,7 +141,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
       <SegmentedTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {activeTab !== 'lessons' && (
+      {(activeTab === 'vocabulary' || activeTab === 'grammar') && (
         <SearchAndFilterBar
           searchQuery={currentFilter.searchQuery}
           sourceFilter={currentFilter.sourceFilter}
@@ -166,6 +168,11 @@ export function LessonsHistoryScreen({navigation}: Props) {
             <AppText variant="label">Duyệt tất cả bài học</AppText>
           </Pressable>
           <LessonsTabContent packagedLessons={packagedLessons} />
+        </View>
+      )}
+      {activeTab === 'catalog' && (
+        <View style={themedStyles.tabContent} testID="catalog-tab-content">
+          <CatalogTabContent />
         </View>
       )}
       {activeTab === 'vocabulary' && (

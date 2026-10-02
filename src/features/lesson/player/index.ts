@@ -186,6 +186,8 @@ export {
   formatCueTimestamp,
 } from './logic/canonicalYouTubeCues';
 export {useCanonicalCatalog} from './logic/useCanonicalCatalog';
+export {CanonicalCatalogList} from './components/CanonicalCatalogList';
+export type {CanonicalCatalogListProps} from './components/CanonicalCatalogList';
 export type {CanonicalCatalogState} from './logic/useCanonicalCatalog';
 export {openLesson, openLessonCatalog} from './logic/lessonNavigation';
 export type {

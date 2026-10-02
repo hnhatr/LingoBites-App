@@ -9,6 +9,7 @@ import {FeatureFlagProvider} from '@core/release';
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
+const mockInnerNavigate = jest.fn();
 
 jest.mock('../../logic/useLibrarySegments', () => ({
   useLibrarySegments: () => ({
@@ -38,7 +39,7 @@ jest.mock('@react-navigation/native', () => {
     useFocusEffect: (callback: () => void) =>
       ReactModule.useEffect(callback, [callback]),
     useNavigation: () => ({
-      navigate: jest.fn(),
+      navigate: mockInnerNavigate,
     }),
   };
 });
@@ -81,25 +82,21 @@ const validSession = {
   userId: 'user1',
 };
 
+// Canonical contract shape: contract_version + snake_case.
 const CATALOG_PAGE = {
-  request_id: 'req-cat',
-  status: 'success',
+  contract_version: 1,
   lessons: [
     {
-      id: '00000000-0000-4000-8000-000000000010',
-      title: 'Unified one',
+      id: '00000000-0000-4000-8000-000000000021',
+      title: 'Catalog one',
       description: 'First',
-      estimatedMinutes: 5,
-      contentRevision: 1,
-      updatedAt: '2026-09-25T10:00:00.000Z',
-    },
-    {
-      id: '00000000-0000-4000-8000-000000000011',
-      title: 'Unified two',
-      description: 'Second',
-      estimatedMinutes: null,
-      contentRevision: 1,
-      updatedAt: '2026-09-25T11:00:00.000Z',
+      origin: 'admin',
+      source_type: 'admin_text',
+      content_revision: 1,
+      sentence_count: 4,
+      youtube_video_id: null,
+      unit: null,
+      updated_at: '2026-09-30T04:15:00.000Z',
     },
   ],
   next_cursor: null,
@@ -164,5 +161,30 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
 
     expect(mockRefresh).toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('loads the server catalog in the "Tất cả bài" segment and opens a row', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await act(async () => {
+      ({tree} = renderUnified());
+    });
+    await act(async () => {
+      tree.root.findByProps({testID: 'tab-catalog'}).props.onPress();
+    });
+
+    expect(
+      tree.root.findByProps({testID: 'catalog-tab-content'}),
+    ).toBeDefined();
+    expect(String(mockFetch.mock.calls[0][0])).toContain('/api/v1/lessons');
+    const row = tree.root.findByProps({
+      testID: 'canonical-catalog-row-00000000-0000-4000-8000-000000000021',
+    });
+    await act(async () => {
+      row.props.onPress();
+    });
+    expect(mockInnerNavigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
+      lessonId: '00000000-0000-4000-8000-000000000021',
+    });
   });
 });
