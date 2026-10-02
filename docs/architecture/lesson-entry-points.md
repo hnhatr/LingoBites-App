@@ -136,8 +136,9 @@ flowchart LR
 ## 5. Những thứ cố ý không đổi (ngoài phạm vi LING-179)
 
 - Player internals, logic tải offline, `IMMERSIVE_STACK_ROUTES`.
-- `CurriculumLessonsEntry` + `curriculumLessonSelection`
-  (→ follow-up LING-180).
+- Đã xoá tại LING-180: `CurriculumLessonsEntry` + `curriculumLessonSelection`
+  (`fetchPublishedCurriculumLessons`, `CurriculumLessonSelection*`) cùng barrel
+  export và test của chúng.
 - Schema camelCase phía Server (→ follow-up LING-181).
 - Nhãn/bố cục (DQ-007), analytics mới hay `source` mới (DQ-004).
 - Contract test cho catalog (P-001), event `unified_catalog_opened`
