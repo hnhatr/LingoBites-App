@@ -1,4 +1,5 @@
 import React from 'react';
+import {FlatList} from 'react-native';
 import * as Reanimated from 'react-native-reanimated';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
@@ -112,15 +113,49 @@ describe('YouTubeSentenceCarousel', () => {
     expect(onSeek).toHaveBeenCalledWith(2000);
   });
 
-  it('notifies when an animated prev/next scroll is consumed', async () => {
+  it('does not issue a non-animated scroll right after an animated one (CR-001)', async () => {
+    const scrollToIndexSpy = jest.spyOn(FlatList.prototype, 'scrollToIndex');
     const onScrollAnimationConsumed = jest.fn();
     const {tree} = await renderCarousel({
-      currentIndex: 1,
-      scrollAnimated: true,
+      currentIndex: 0,
+      scrollAnimated: false,
       onScrollAnimationConsumed,
     });
     await layoutCarousel(tree);
-    expect(onScrollAnimationConsumed).toHaveBeenCalled();
+    scrollToIndexSpy.mockClear();
+
+    await act(async () => {
+      tree.update(
+        <FeatureFlagProvider
+          releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+        >
+          <AppThemeProvider>
+            <YouTubeSentenceCarousel
+              sentences={sentences}
+              currentIndex={1}
+              onIndexChange={jest.fn()}
+              activeIndex={0}
+              showTranslation
+              showIpa
+              analyses={{}}
+              scrollAnimated
+              onScrollAnimationConsumed={onScrollAnimationConsumed}
+            />
+          </AppThemeProvider>
+        </FeatureFlagProvider>,
+      );
+    });
+
+    const animatedCalls = scrollToIndexSpy.mock.calls.filter(
+      ([opts]) => opts.animated === true,
+    );
+    const instantCalls = scrollToIndexSpy.mock.calls.filter(
+      ([opts]) => opts.animated === false,
+    );
+    expect(animatedCalls.length).toBe(1);
+    expect(instantCalls.length).toBe(0);
+    expect(onScrollAnimationConsumed).toHaveBeenCalledTimes(1);
+    scrollToIndexSpy.mockRestore();
   });
 
   it('hides translation and IPA when toggles are off', async () => {
