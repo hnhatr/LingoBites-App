@@ -90,6 +90,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     useCanonicalLesson(lessonId);
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
+  const [videoMountKey, setVideoMountKey] = useState(0);
   const [view, setView] = useState<PlayerView>('hub');
   const [lateAnalyses, setLateAnalyses] = useState<
     Record<string, LessonAnalysis>
@@ -111,7 +112,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   );
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
-  const isYouTube = Boolean(snapshot?.youtube);
+  const isYouTubeStudy = snapshot?.source_type === 'youtube';
+  const isYouTubeLegacy =
+    snapshot !== null &&
+    Boolean(snapshot.youtube) &&
+    snapshot.source_type !== 'youtube';
+  const isYouTube = isYouTubeStudy || isYouTubeLegacy;
   const inSection = snapshot !== null && !isYouTube && view !== 'hub';
 
   const openView = useCallback((next: PlayerView) => {
@@ -195,7 +201,15 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     ? t(SECTION_TITLE_KEYS[view as LessonHubSection])
     : t('lessonPlayer.player_title');
 
-  const renderPlayer = () =>
+  const handleRetryVideo = useCallback(() => {
+    setVideoAvailable(true);
+    setVideoMountKey(key => key + 1);
+  }, []);
+
+  const renderPlayer = (options?: {
+    videoSlot?: React.ReactNode;
+    onRetryVideo?: () => void;
+  }) =>
     snapshot ? (
       <CanonicalLessonPlayer
         snapshot={snapshot}
@@ -206,6 +220,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         playbackPositionMs={positionMs}
         videoAvailable={videoAvailable}
         unavailableReason={t('lessonPlayer.video_unavailable')}
+        videoSlot={options?.videoSlot}
+        onRetryVideo={options?.onRetryVideo}
         onSeek={ms => setPositionMs(ms)}
         onRequestAnalysis={handleRequestAnalysis}
         onRetryAnalysis={handleRequestAnalysis}
@@ -275,7 +291,35 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       );
     }
     if (!snapshot) return null;
-    if (isYouTube) {
+    if (isYouTubeStudy) {
+      return renderPlayer({
+        onRetryVideo: handleRetryVideo,
+        videoSlot: (
+          <Suspense
+            fallback={
+              <ActivityIndicator testID="canonical-player-video-loading" />
+            }
+          >
+            <YouTubePlayer
+              key={videoMountKey}
+              videoId={snapshot.youtube!.video_id}
+              onTimeUpdate={seconds =>
+                setPositionMs(Math.floor(seconds * 1000))
+              }
+              onError={code => {
+                if (
+                  code === 'YOUTUBE_VIDEO_NOT_FOUND' ||
+                  code === 'YOUTUBE_NOT_EMBEDDABLE'
+                ) {
+                  setVideoAvailable(false);
+                }
+              }}
+            />
+          </Suspense>
+        ),
+      });
+    }
+    if (isYouTubeLegacy) {
       return (
         <>
           <Suspense
