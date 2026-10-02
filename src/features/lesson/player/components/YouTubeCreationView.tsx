@@ -362,7 +362,7 @@ export function YouTubeCreationView({
           >
             <MaterialIcon
               color={theme.colors.tertiary}
-              name="hourglass_top"
+              name="schedule"
               size={48}
             />
             <AppText testID="lesson-creation-waiting-text" variant="h2">

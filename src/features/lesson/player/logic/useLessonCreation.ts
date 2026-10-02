@@ -202,7 +202,9 @@ export function useLessonCreation(submissionId: string) {
         return;
       }
       const {requestId, status} = accepted.value;
-      safeSetState(uiStateForNonTerminal(requestId, status, true));
+      safeSetState(
+        uiStateForNonTerminal(requestId, status as LessonCreationStatus, true),
+      );
       await runPollForRequest(requestId);
     },
     [runPollForRequest, safeSetState, submissionId],

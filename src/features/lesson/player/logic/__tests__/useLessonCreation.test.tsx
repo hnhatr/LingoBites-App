@@ -30,9 +30,11 @@ type DriverControl = {
 
 function makeDriver(submissionId: string) {
   const control: {
-    current: (DriverControl & {
-      checkAgain: () => Promise<void>;
-    }) | null;
+    current:
+      | (DriverControl & {
+          checkAgain: () => Promise<void>;
+        })
+      | null;
   } = {current: null};
   let latest: LessonCreationState = {status: 'idle'};
   function Driver() {
