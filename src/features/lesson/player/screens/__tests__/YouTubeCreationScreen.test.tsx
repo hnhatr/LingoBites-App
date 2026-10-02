@@ -381,6 +381,43 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
     });
   });
 
+  describe('LING-191 disclosure copy', () => {
+    it('keeps vi/en key parity for youtube.disclosure_*', () => {
+      const disclosureKeys = [
+        'disclosure_title',
+        'disclosure_body',
+        'disclosure_confirm',
+        'disclosure_cancel',
+      ];
+      for (const key of disclosureKeys) {
+        expect(vi.youtube[key as keyof typeof vi.youtube]).toBeTruthy();
+        expect(en.youtube[key as keyof typeof en.youtube]).toBeTruthy();
+      }
+    });
+
+    it('S2 retries network errors through submit (shared screen path)', () => {
+      mockState = {
+        status: 'error',
+        error: {
+          ok: false,
+          kind: 'network-error',
+          errorCode: 'NET_OFFLINE',
+          message: 'offline',
+          retryable: true,
+        },
+      };
+      const navigation = {navigate: jest.fn(), goBack: jest.fn()};
+      const tree = renderScreen('text', navigation);
+      pressByTestId(tree.root, 'lesson-creation-source-youtube');
+      setUrlInput(tree.root, 'https://youtu.be/retry');
+      pressByTestId(tree.root, 'lesson-creation-retry');
+      expect(mockSubmit).toHaveBeenCalledWith({
+        source: 'youtube',
+        url: 'https://youtu.be/retry',
+      });
+    });
+  });
+
   describe('AC-020 waiting_transcript (LING-200)', () => {
     it('S1 shows a distinct waiting message while polling', () => {
       mockState = {

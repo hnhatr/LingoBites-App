@@ -271,7 +271,7 @@
     "save_failed_title": "Bài học chưa được lưu",
     "save_failed_body": "Vẫn mở được bài học, nhưng chưa lưu vào máy nên bài này sẽ không hiện trong danh sách bài đã lưu.",
     "disclosure_title": "Lưu ý về quyền riêng tư",
-    "disclosure_body": "Transcript của video sẽ được gửi tới backend và nhà cung cấp AI để dịch sang tiếng Việt và sinh phiên âm IPA. Chỉ tiếp tục khi bạn đồng ý.",
+    "disclosure_body": "Phụ đề của video sẽ được gửi tới máy chủ và nhà cung cấp AI để dịch sang tiếng Việt và tạo phiên âm IPA. Chỉ tiếp tục khi bạn đồng ý.",
     "disclosure_confirm": "Tôi đã hiểu, tiếp tục",
     "disclosure_cancel": "Để sau",
     "transcript_label": "Transcript",

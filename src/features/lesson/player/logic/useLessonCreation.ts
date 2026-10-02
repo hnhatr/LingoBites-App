@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
+import i18n from '@core/i18n';
 import type {
   LearnerLessonCreationRequestBody,
   LessonCreationStatus,
@@ -16,6 +17,16 @@ import {
   getOrCreateCreationIdempotencyKey,
   rotateCreationIdempotencyKey,
 } from './creationIdempotencyStore';
+import {ensureYouTubeDisclosureAcknowledged} from './youtubeDisclosure';
+
+function youtubeDisclosureCopy() {
+  return {
+    title: i18n.t('youtube.disclosure_title'),
+    body: i18n.t('youtube.disclosure_body'),
+    confirmLabel: i18n.t('youtube.disclosure_confirm'),
+    cancelLabel: i18n.t('youtube.disclosure_cancel'),
+  };
+}
 
 export type LessonCreationState =
   | {status: 'idle'}
@@ -128,6 +139,7 @@ export function useLessonCreation(submissionId: string) {
   const [state, setState] = useState<LessonCreationState>({status: 'idle'});
   const aliveRef = useRef(true);
   const pollGenerationRef = useRef(0);
+  const youtubeDisclosureBusyRef = useRef(false);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -190,6 +202,22 @@ export function useLessonCreation(submissionId: string) {
 
   const submit = useCallback(
     async (body: LearnerLessonCreationRequestBody) => {
+      if (body.source === 'youtube') {
+        if (youtubeDisclosureBusyRef.current) {
+          return;
+        }
+        youtubeDisclosureBusyRef.current = true;
+        try {
+          const acknowledged = await ensureYouTubeDisclosureAcknowledged(
+            youtubeDisclosureCopy(),
+          );
+          if (!aliveRef.current || !acknowledged) {
+            return;
+          }
+        } finally {
+          youtubeDisclosureBusyRef.current = false;
+        }
+      }
       safeSetState({status: 'submitting'});
       const idempotencyKey = await getOrCreateCreationIdempotencyKey(
         submissionId,

@@ -271,7 +271,7 @@
     "save_failed_title": "Lesson not saved",
     "save_failed_body": "You can still view this lesson, but it was not saved to this device and will not appear in your saved list.",
     "disclosure_title": "Privacy notice",
-    "disclosure_body": "The video transcript will be sent to the backend and AI providers to translate it into Vietnamese and generate IPA. Continue only if you agree.",
+    "disclosure_body": "The video's subtitles will be sent to our server and AI providers to translate them into Vietnamese and generate IPA. Continue only if you agree.",
     "disclosure_confirm": "I understand, continue",
     "disclosure_cancel": "Not now",
     "transcript_label": "Transcript",
