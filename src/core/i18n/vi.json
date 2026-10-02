@@ -372,6 +372,25 @@
       "tip_public": "Video phải công khai và cho phép nhúng.",
       "retry_video": "Thử lại video này",
       "retry_video_hint": "Gửi lại yêu cầu tạo bài với link hiện tại"
+    },
+    "study": {
+      "empty_cards": "Bài học chưa có câu nào.",
+      "vocabulary_label": "Từ vựng",
+      "grammar_label": "Ngữ pháp",
+      "view_analysis": "Xem phân tích chi tiết",
+      "view_analysis_hint": "Mở phân tích cho câu này",
+      "transcript": "Transcript",
+      "open_transcript_a11y": "Mở transcript",
+      "cards_prev_a11y": "Câu trước",
+      "cards_next_a11y": "Câu sau",
+      "video_retry": "Thử lại",
+      "video_retry_hint": "Tải lại trình phát video",
+      "sheet_analysis_title": "Phân tích câu",
+      "sheet_transcript_title": "Transcript",
+      "sheet_transcript_meta": "· {{count}} câu",
+      "sheet_transcript_empty": "Bài học không có câu nào.",
+      "sheet_close_a11y": "Đóng",
+      "sheet_analysis_a11y": "Sheet phân tích"
     }
   },
   "gamification": {

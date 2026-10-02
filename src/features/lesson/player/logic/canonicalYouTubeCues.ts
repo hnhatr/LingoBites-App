@@ -32,6 +32,12 @@ export function formatCueTimestamp(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+/** Cue timestamp for cards; null bounds render as `--:--` (BR-002). */
+export function formatCueLabel(ms: number | null): string {
+  if (ms === null) return '--:--';
+  return formatCueTimestamp(ms);
+}
+
 /**
  * True when every cued sentence satisfies `0 <= start_ms < end_ms` and stays
  * within the video duration. Uncued (non-YouTube) sentences are ignored.
