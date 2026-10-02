@@ -1,12 +1,6 @@
 import type {AnalyzeSourceType} from '@core/api/types';
 import {validateLessonV2InputText} from '@core/utils/textValidation';
 
-export type LessonDestination = 'canonical_creation';
-
-export type LessonFeatureFlags = Record<string, boolean>;
-
-export type UnifiedLessonReadiness = {unifiedReady?: boolean};
-
 export type NavigateFn = (
   screen: 'LessonCreation',
   params: {
@@ -16,17 +10,9 @@ export type NavigateFn = (
   },
 ) => void;
 
-export function resolveLessonDestination(
-  _flags?: LessonFeatureFlags,
-  _readiness?: UnifiedLessonReadiness,
-): LessonDestination {
-  return 'canonical_creation';
-}
-
 export async function startLessonFromConfirmedText(args: {
   confirmedText: string;
   sourceType: AnalyzeSourceType;
-  destination?: LessonDestination;
   origin?: 'PasteText' | 'OCRReview';
   navigate: NavigateFn;
 }): Promise<{ok: true} | {ok: false; message: string; retryable: boolean}> {
