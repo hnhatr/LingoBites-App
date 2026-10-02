@@ -146,6 +146,42 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     expect(navigation.goBack).not.toHaveBeenCalled();
   });
 
+  it('intercepts back/swipe from a section but not a tab pop-to-top', () => {
+    const {tree, navigation} = renderScreen();
+    act(() => {
+      pressable(tree, 'canonical-hub-start').props.onPress();
+    });
+    const listener = (
+      navigation.addListener.mock.calls as unknown as [
+        string,
+        (event: {
+          data: {action: {type: string}};
+          preventDefault: () => void;
+        }) => void,
+      ][]
+    ).find(([name]) => name === 'beforeRemove')![1];
+
+    const popToTop = {
+      data: {action: {type: 'POP_TO_TOP'}},
+      preventDefault: jest.fn(),
+    };
+    act(() => {
+      listener(popToTop);
+    });
+    expect(popToTop.preventDefault).not.toHaveBeenCalled();
+    expect(has(tree, 'canonical-player')).toBe(true);
+
+    const goBack = {
+      data: {action: {type: 'GO_BACK'}},
+      preventDefault: jest.fn(),
+    };
+    act(() => {
+      listener(goBack);
+    });
+    expect(goBack.preventDefault).toHaveBeenCalled();
+    expect(has(tree, 'canonical-lesson-hub')).toBe(true);
+  });
+
   it('speaks a sentence with the en-US voice', () => {
     const {tree} = renderScreen();
     act(() => {

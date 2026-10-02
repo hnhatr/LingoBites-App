@@ -450,7 +450,6 @@
     "explore_grammar_empty": "Phân tích một câu để xem ngữ pháp",
     "start_learning": "Bắt đầu học",
     "start_learning_hint": "Mở phần học từng câu",
-    "back_to_hub_hint": "Quay lại tổng quan bài học",
     "sentence_counter": "Câu {{index}}/{{total}}",
     "sentence_hint": "Chạm để chọn câu này",
     "speak_sentence": "Nghe câu {{index}}",

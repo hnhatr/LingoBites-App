@@ -450,7 +450,6 @@
     "explore_grammar_empty": "Analyze a sentence to see grammar",
     "start_learning": "Start learning",
     "start_learning_hint": "Open sentence study",
-    "back_to_hub_hint": "Back to the lesson overview",
     "sentence_counter": "Sentence {{index}}/{{total}}",
     "sentence_hint": "Tap to select this sentence",
     "speak_sentence": "Play sentence {{index}}",

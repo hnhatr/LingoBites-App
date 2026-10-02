@@ -7,10 +7,12 @@ import {MaterialIcon} from './MaterialIcon';
 
 type Props = Pick<PressableProps, 'disabled' | 'onPress' | 'testID'> & {
   accessibilityLabel: string;
+  accessibilityHint?: string;
   label: string;
 };
 
 export function PrimaryActionButton({
+  accessibilityHint,
   accessibilityLabel,
   disabled = false,
   label,
@@ -21,6 +23,7 @@ export function PrimaryActionButton({
 
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{disabled: disabled ?? false}}

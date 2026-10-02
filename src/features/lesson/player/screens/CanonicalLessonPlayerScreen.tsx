@@ -120,9 +120,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   }, []);
 
   // Hardware back / swipe from a section returns to the overview first.
+  // Other removals (tab re-press popToTop, resets) are left alone.
   useEffect(() => {
     if (!inSection) return undefined;
     return navigation.addListener?.('beforeRemove', event => {
+      const type = event.data.action.type;
+      if (type !== 'GO_BACK' && type !== 'POP') return;
       event.preventDefault();
       openView('hub');
     });
@@ -349,6 +352,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           style={[themedStyles.actionBar, {paddingBottom: floatingClearance}]}
         >
           <PrimaryActionButton
+            accessibilityHint={t('lessonPlayer.start_learning_hint')}
             accessibilityLabel={t('lessonPlayer.start_learning')}
             label={t('lessonPlayer.start_learning')}
             onPress={() => openView('sentences')}

@@ -261,6 +261,7 @@ export function LessonCreationScreen({navigation, route}: Props) {
       >
         {state.status === 'succeeded' ? (
           <PrimaryActionButton
+            accessibilityHint={t('lessonPlayer.create_open_hint')}
             accessibilityLabel={t('lessonPlayer.create_open')}
             label={t('lessonPlayer.create_open')}
             onPress={() => openLesson(navigation, state.lessonId)}
@@ -268,6 +269,7 @@ export function LessonCreationScreen({navigation, route}: Props) {
           />
         ) : (
           <PrimaryActionButton
+            accessibilityHint={t('lessonPlayer.create_submit_hint')}
             accessibilityLabel={t('lessonPlayer.create_submit')}
             disabled={!body || processing}
             label={
