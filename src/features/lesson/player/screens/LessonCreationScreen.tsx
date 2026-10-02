@@ -20,6 +20,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LearnerLessonCreationRequestBody} from '@core/schemas/lesson';
 
+import {YouTubeCreationView} from '../components/YouTubeCreationView';
 import {openLesson} from '../logic/lessonNavigation';
 import {useLessonCreation} from '../logic/useLessonCreation';
 
@@ -73,6 +74,22 @@ export function LessonCreationScreen({navigation, route}: Props) {
   const processing =
     state.status === 'submitting' || state.status === 'processing';
   const succeeded = state.status === 'succeeded';
+
+  if (initialSource === 'youtube') {
+    return (
+      <YouTubeCreationView
+        body={body}
+        checkAgain={checkAgain}
+        onBack={() => navigation.goBack()}
+        onOpenLesson={lessonId => openLesson(navigation, lessonId)}
+        retryWithFreshKey={retryWithFreshKey}
+        setUrl={setUrl}
+        state={state}
+        submit={submit}
+        url={url}
+      />
+    );
+  }
 
   return (
     <AppScreen>
