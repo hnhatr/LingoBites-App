@@ -22,16 +22,18 @@ function render(ui: React.ReactElement) {
 }
 
 describe('SegmentedTabBar', () => {
-  it('renders three tabs with correct labels', () => {
+  it('renders four tabs with correct labels', () => {
     const tree = render(
       <SegmentedTabBar activeTab="lessons" onTabChange={jest.fn()} />,
     );
 
     const lessonsTab = tree.root.findByProps({testID: 'tab-lessons'});
+    const catalogTab = tree.root.findByProps({testID: 'tab-catalog'});
     const vocabTab = tree.root.findByProps({testID: 'tab-vocabulary'});
     const grammarTab = tree.root.findByProps({testID: 'tab-grammar'});
 
     expect(lessonsTab).toBeDefined();
+    expect(catalogTab).toBeDefined();
     expect(vocabTab).toBeDefined();
     expect(grammarTab).toBeDefined();
 
@@ -39,6 +41,7 @@ describe('SegmentedTabBar', () => {
     const textInstances = tree.root.findAllByType(Text);
     const labels = textInstances.map(node => node.props.children);
     expect(labels).toContain('Bài học');
+    expect(labels).toContain('Tất cả bài');
     expect(labels).toContain('Từ vựng');
     expect(labels).toContain('Ngữ pháp');
   });

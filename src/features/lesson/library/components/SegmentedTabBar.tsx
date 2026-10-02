@@ -17,7 +17,7 @@ import {AppText} from '@ui/components/AppText';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
-export type LibraryTabId = 'lessons' | 'vocabulary' | 'grammar';
+export type LibraryTabId = 'lessons' | 'catalog' | 'vocabulary' | 'grammar';
 
 export interface SegmentedTabBarProps {
   activeTab: LibraryTabId;
@@ -26,6 +26,7 @@ export interface SegmentedTabBarProps {
 
 const TABS = [
   {id: 'lessons' as const, label: 'Bài học'},
+  {id: 'catalog' as const, label: 'Tất cả bài'},
   {id: 'vocabulary' as const, label: 'Từ vựng'},
   {id: 'grammar' as const, label: 'Ngữ pháp'},
 ];
@@ -124,7 +125,7 @@ export function SegmentedTabBar({
       style={styles.container}
       accessibilityRole="tablist"
       accessibilityLabel="Danh mục thư viện"
-      accessibilityHint="Chứa các tab Bài học, Từ vựng và Ngữ pháp"
+      accessibilityHint="Chứa các tab Bài học, Tất cả bài, Từ vựng và Ngữ pháp"
     >
       {activeLayout ? (
         <Animated.View

@@ -89,6 +89,7 @@ flowchart LR
 | --- | --- | --- |
 | Rail Home | Mở tab Home | Bài đã tải trước, rồi `useCanonicalCatalog` (tối đa 6). |
 | `LessonsHistoryScreen` (segment Bài học) | Mở tab Lessons | Bài đã tải offline (`useLibrarySegments`). |
+| `LessonsHistoryScreen` (segment Tất cả bài) | Mở tab Lessons → chọn segment "Tất cả bài" | `useCanonicalCatalog` → `fetchLessonCatalog` (component `CatalogTabContent`, dùng chung `CanonicalCatalogList` với `CanonicalCatalog`). |
 | `CanonicalCatalog` | Nút "Duyệt tất cả bài học" (tab Lessons, cùng stack), banner Today (cùng stack gọi) | `useCanonicalCatalog` → `fetchLessonCatalog`. |
 | Today | Nút `home-starter-pick` (stack Home) | `adaptationEngine` + `todayNavigation`. |
 

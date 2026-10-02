@@ -217,10 +217,6 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     navigation.navigate('TtsSpike');
   }, [navigation]);
 
-  const openLessonCatalogDev = useCallback(() => {
-    navigation.getParent()?.navigate('Lessons', {screen: 'CanonicalCatalog'});
-  }, [navigation]);
-
   const hideClearDataModal = useCallback(() => {
     setIsClearDataModalVisible(false);
   }, []);
@@ -267,7 +263,6 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     openPrivacyNote,
     openProgressReport,
     openTtsSpike,
-    openLessonCatalogDev,
     setClearDataConfirmText,
     t,
   };
