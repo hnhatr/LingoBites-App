@@ -277,7 +277,7 @@
     "transcript_label": "Transcript",
     "translation_show_a11y": "Show translation",
     "translation_hide_a11y": "Hide translation",
-    "translation_toggle_hint": "Show or hide the Vietnamese translation and IPA",
+    "translation_toggle_hint": "Show or hide the Vietnamese translation",
     "repeat_on_a11y": "Repeat this sentence",
     "repeat_off_a11y": "Turn off repeat",
     "repeat_toggle_hint": "Loop the currently playing sentence until turned off",

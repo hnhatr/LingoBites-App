@@ -15,8 +15,6 @@ export type {
   SentenceAnalysisPanelProps,
   SentenceAnalysisPanelState,
 } from './components/SentenceAnalysisPanel';
-export {YouTubeTimeline} from './components/YouTubeTimeline';
-export type {YouTubeTimelineProps} from './components/YouTubeTimeline';
 export {YouTubePlayer} from './components/YouTubePlayer';
 export type {
   YouTubePlayerErrorCode,

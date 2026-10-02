@@ -133,24 +133,20 @@ describe('YouTubeLessonStudy', () => {
     ).toBe(true);
   });
 
-  it('shows overlay for active cue and clears outside cues (AC-005 S4)', async () => {
-    const snapshot = snapshotWithSentenceCount(2);
-    const inside = await renderStudy({
-      snapshot,
-      playbackPositionMs: 2500,
-    });
+  it('does not render a subtitle overlay on the video frame (AC-008 S1)', async () => {
+    const tree = await renderStudy({playbackPositionMs: 2500});
     expect(
-      inside.root.findByProps({testID: 'youtube-video-overlay'}).props.children,
-    ).toBe('Sentence 1 en.');
+      tree.root.findAll(node => node.props.testID === 'youtube-video-overlay'),
+    ).toHaveLength(0);
+  });
 
-    const outside = await renderStudy({
-      snapshot,
-      playbackPositionMs: 99999,
-    });
+  it('renders sentence progress for the current card (AC-006 S2)', async () => {
+    const tree = await renderStudy();
     expect(
-      outside.root.findAll(
-        node => node.props.testID === 'youtube-video-overlay',
-      ),
+      tree.root.findByProps({testID: 'youtube-study-progress'}),
+    ).toBeDefined();
+    expect(
+      tree.root.findAll(node => node.props.testID === 'youtube-cards-position'),
     ).toHaveLength(0);
   });
 
