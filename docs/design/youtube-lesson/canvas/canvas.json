@@ -1,0 +1,164 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Complete.dc.html": {
+      "h": 844,
+      "title": "09 · Học xong bài",
+      "w": 390,
+      "x": 0,
+      "y": 2528
+    },
+    "CreateFailed.dc.html": {
+      "h": 844,
+      "title": "04 · Tạo bài thất bại",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "CreateProcessing.dc.html": {
+      "h": 844,
+      "title": "02 · Đang tạo bài",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "CreateTimeout.dc.html": {
+      "h": 844,
+      "title": "03 · Mất lâu hơn dự kiến",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "title": "01 · Nhập link YouTube",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Player.dc.html": {
+      "h": 844,
+      "title": "05 · Học bài YouTube",
+      "w": 390,
+      "x": 0,
+      "y": 1264
+    },
+    "PlayerAnalysis.dc.html": {
+      "h": 844,
+      "title": "06 · Phân tích câu",
+      "w": 390,
+      "x": 470,
+      "y": 1264
+    },
+    "PlayerDark.dc.html": {
+      "h": 844,
+      "title": "12 · Học bài (theme Tối)",
+      "w": 390,
+      "x": 1410,
+      "y": 2528
+    },
+    "PlayerOffline.dc.html": {
+      "h": 844,
+      "title": "11 · Ngoại tuyến và bản mới",
+      "w": 390,
+      "x": 940,
+      "y": 2528
+    },
+    "PlayerTools.dc.html": {
+      "h": 844,
+      "title": "07 · Công cụ luyện nghe",
+      "w": 390,
+      "x": 940,
+      "y": 1264
+    },
+    "PlayerTranscript.dc.html": {
+      "h": 844,
+      "title": "08 · Transcript",
+      "w": 390,
+      "x": 1410,
+      "y": 1264
+    },
+    "Saved.dc.html": {
+      "h": 844,
+      "title": "10 · Bài YouTube đã lưu",
+      "w": 390,
+      "x": 470,
+      "y": 2528
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-02T09:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "data1": {
+      "fill": "teal",
+      "maxH": 520,
+      "text": "Route: LessonCreation (initialSource = youtube). Ẩn hàng tab text/ocr/youtube khi vào từ ô YouTube.\n\nTrạng thái lấy từ useLessonCreation: idle → 01, submitting/processing → 02, timedOut → 03, failed/error → 04, succeeded → tự mở CanonicalLessonPlayer.\n\nBody gửi đi giữ nguyên: {source: 'youtube', url}. Không có transcript tay, không có % tiến trình vì contract không có.",
+      "w": 320,
+      "x": 1880,
+      "y": 0
+    },
+    "data2": {
+      "fill": "teal",
+      "maxH": 560,
+      "text": "Route: CanonicalLessonPlayer, chỉ dùng layout này khi snapshot.source_type = 'youtube'.\n\nCâu: sentences[].text_en / text_vi / ipa / start_ms / end_ms (end_ms trống → lấy start_ms câu sau, hoặc youtube.duration_ms).\n\nPhân tích: analyses[sentence_id] (vocabulary: word, pos, ipa, meaning; grammar: name, formula, description, analysis). Thẻ đang xem tự gọi handleRequestAnalysis nếu chưa có.\n\nTua, lặp, A–B, tốc độ: gắn ref vào YouTubePlayer để gọi seekTo; playbackRate là prop sẵn có.\n\nLưu từ/câu: useBookmarkOptimistic (review).",
+      "w": 320,
+      "x": 1880,
+      "y": 1264
+    },
+    "data3": {
+      "fill": "teal",
+      "maxH": 560,
+      "text": "09: gọi recordLessonEvent khi tới câu cuối hoặc video kết thúc (hiện player chưa ghi tiến độ). 'Ôn từ đã lưu' mở DailyReview có sẵn, thay cho quiz Luyện tập đã bị xoá.\n\n10: CanonicalCatalog lọc youtube_video_id khác null. Tiến độ từ getLessonProgress, nhãn 'Có trên máy' từ lesson_downloads. 'Xoá khỏi máy' = removeLessonDownload (bài vẫn còn trên server).\n\n11: state.offline, hasUpdate, videoAvailable = false và analysis status offline-missing đều đã có trong useCanonicalLesson.",
+      "w": 320,
+      "x": 1880,
+      "y": 2528
+    },
+    "row1": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "Tạo bài từ link YouTube",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "row2": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "Học trong bài YouTube",
+      "w": 240,
+      "x": 0,
+      "y": 964
+    },
+    "row3": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "Kết thúc, thư viện và trạng thái",
+      "w": 240,
+      "x": 0,
+      "y": 2228
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "CreateProcessing.dc.html",
+    "CreateTimeout.dc.html",
+    "CreateFailed.dc.html",
+    "Player.dc.html",
+    "PlayerAnalysis.dc.html",
+    "PlayerTools.dc.html",
+    "PlayerTranscript.dc.html",
+    "Complete.dc.html",
+    "Saved.dc.html",
+    "PlayerOffline.dc.html",
+    "PlayerDark.dc.html"
+  ],
+  "pages": [],
+  "title": "LingoBites YouTube Lesson"
+}

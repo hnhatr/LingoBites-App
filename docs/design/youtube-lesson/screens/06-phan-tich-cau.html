@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<!--
+  LingoBites · Bài học YouTube · 06 · Phân tích câu
+  Nguồn: canvas/PlayerAnalysis.dc.html (bản xuất HTML độc lập, 390×844).
+  Biến CSS trùng tên key trong theme: var(--accentSoft) = theme.colors.accentSoft,
+  var(--text-muted) = theme.colors.text.muted. Bảng đầy đủ: ../tokens.json
+  Nội dung (tên video, câu, số liệu) là dữ liệu mẫu.
+-->
+<meta charset="utf-8">
+<title>Phân tích câu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=block">
+<style>
+body{margin:0}
+.lb{--background:#fcfae6;--surface:#ffffff;--surfaceLow:#f6f4e1;--surfaceContainer:#f0efdb;--surfaceHigh:#ebe9d5;--outlineVariant:#bacac5;--outline:#6b7a76;--primary:#006b5f;--primaryContainer:#2dd4bf;--onPrimaryContainer:#00574d;--accentSoft:#ddf8f5;--favorite:#a93349;--secondarySoft:rgba(254,116,136,.16);--tertiary:#6d5e00;--tertiarySoft:rgba(255,226,76,.22);--danger:#ba1a1a;--text-primary:#1c1c10;--text-secondary:#3c4a46;--text-muted:#5f6e6a;--onPrimary:#ffffff;--shadow:0 4px 20px rgba(20,28,50,.06);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;color:var(--text-primary)}
+.lb.dark{--background:#0b1120;--surface:#1e293b;--surfaceLow:#0f172a;--surfaceContainer:#1e293b;--surfaceHigh:#334155;--outlineVariant:#94a3b8;--outline:#94a3b8;--primary:#93c5fd;--primaryContainer:#2563eb;--onPrimaryContainer:#dbeafe;--accentSoft:#1f4458;--favorite:#fca5a5;--secondarySoft:rgba(248,113,113,.18);--tertiary:#fcd34d;--tertiarySoft:rgba(252,211,77,.18);--danger:#f87171;--text-primary:#f8fafc;--text-secondary:#cbd5e1;--text-muted:#94a3b8;--onPrimary:#0b1120;--shadow:none}
+.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;white-space:nowrap;font-feature-settings:"liga";-webkit-font-smoothing:antialiased;font-variation-settings:"FILL" 0}
+.ms.f{font-variation-settings:"FILL" 1}
+button,input{font:inherit}
+button{cursor:pointer}
+a{color:#006b5f}a:hover{color:#00574d}
+</style>
+</head>
+<body>
+
+<div class="lb" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--background)">
+
+<div class="lb" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--background); display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 2px; padding: 8px 4px; min-height: 56px; box-sizing: border-box">
+    <button aria-label="Quay lại" style="width: 44px; height: 44px; border: 0; background: transparent; border-radius: 22px; color: var(--text-primary); display: grid; place-items: center"><span class="ms">arrow_back</span></button>
+    <h1 style="flex-grow: 1; min-width: 0; margin: 0; font-size: 17px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">How to order coffee in English</h1>
+    <button aria-label="Ẩn bản dịch" aria-pressed="true" style="width: 44px; height: 44px; border: 0; background: var(--accentSoft); border-radius: 22px; color: var(--primary); display: grid; place-items: center"><span class="ms" style="font-size: 22px">translate</span></button>
+    <button aria-label="Ẩn IPA" aria-pressed="true" style="height: 44px; min-width: 44px; padding: 0 8px; border: 0; background: var(--accentSoft); border-radius: 22px; color: var(--primary); font-size: 13px; font-weight: 700">IPA</button>
+    <button aria-label="Thêm" style="width: 44px; height: 44px; border: 0; background: transparent; border-radius: 22px; color: var(--text-primary); display: grid; place-items: center"><span class="ms">more_vert</span></button>
+  </div>
+
+  <div style="height: 219px; background: #000000; display: grid; place-items: center; position: relative; flex-shrink: 0">
+    <span style="position: absolute; left: 12px; top: 10px; font-size: 12px; color: #ffffff; opacity: .6">[YouTubePlayer]</span>
+    <span style="position: absolute; left: 12px; right: 12px; bottom: 12px; text-align: center; color: #ffffff; font-size: 15px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.8)">Could I get a large latte, please?</span>
+  </div>
+
+  <div style="background: var(--surface); padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--surfaceHigh)">
+    <div style="position: relative; height: 16px; display: flex; align-items: center">
+      <div style="position: absolute; left: 0; right: 0; height: 4px; border-radius: 2px; background: var(--surfaceHigh)"></div>
+      <div style="position: absolute; left: 24%; width: 14%; height: 8px; border-radius: 4px; background: var(--tertiarySoft); border: 1px solid var(--tertiary); box-sizing: border-box"></div>
+      <div style="position: absolute; left: 0; width: 31%; height: 4px; border-radius: 2px; background: var(--primary)"></div>
+      <div style="position: absolute; left: calc(31% - 7px); width: 14px; height: 14px; border-radius: 7px; background: var(--primary); box-shadow: 0 0 0 3px var(--surface)"></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 4px">
+      <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); width: 64px; font-variant-numeric: tabular-nums">Câu 4/18</span>
+      <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; gap: 6px">
+        <button aria-label="Câu trước" style="width: 44px; height: 44px; border: 0; background: transparent; border-radius: 22px; color: var(--text-primary); display: grid; place-items: center"><span class="ms">skip_previous</span></button>
+        <button aria-label="Tạm dừng" style="width: 52px; height: 52px; border: 0; background: var(--primary); border-radius: 26px; color: var(--onPrimary); display: grid; place-items: center"><span class="ms f" style="font-size: 30px">pause</span></button>
+        <button aria-label="Phát lại câu này" style="width: 44px; height: 44px; border: 0; background: transparent; border-radius: 22px; color: var(--text-primary); display: grid; place-items: center"><span class="ms">replay</span></button>
+      </div>
+      <button aria-label="Công cụ luyện nghe" style="height: 36px; padding: 0 10px; border: 0; background: var(--tertiarySoft); border-radius: 18px; color: var(--text-primary); display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700"><span class="ms" style="font-size: 18px">repeat_one</span>3×<span style="opacity:.5">·</span>0.75×</button>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 14px 0 0 16px; display: flex; gap: 10px; overflow: hidden">
+    <article style="width: 330px; flex-shrink: 0; background: var(--surface); border-radius: 24px; box-shadow: var(--shadow); padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; border: 2px solid var(--primary)">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <span style="font-size: 12px; font-weight: 700; color: var(--primary); background: var(--accentSoft); padding: 4px 10px; border-radius: 999px">Đang phát · 0:12</span>
+        <span style="flex-grow: 1"></span>
+        <button aria-label="Nghe câu" style="width: 40px; height: 40px; border: 0; background: var(--surfaceLow); border-radius: 20px; color: var(--primary); display: grid; place-items: center"><span class="ms" style="font-size: 22px">volume_up</span></button>
+        <button aria-label="Bỏ lưu câu" aria-pressed="true" style="width: 40px; height: 40px; border: 0; background: var(--secondarySoft); border-radius: 20px; color: var(--favorite); display: grid; place-items: center"><span class="ms f" style="font-size: 22px">favorite</span></button>
+      </div>
+      <p style="margin: 0; font-size: 21px; line-height: 29px; font-weight: 600">Could I get a <span style="border-bottom: 2px dotted var(--primary)">large</span> <span style="background: var(--accentSoft); color: var(--primary); border-radius: 6px; padding: 0 3px">latte</span>, please?</p>
+      <p style="margin: 0; font-size: 15px; line-height: 20px; color: var(--text-muted); font-style: italic">/kʊd aɪ ɡɛt ə lɑːrdʒ ˈlɑːteɪ pliːz/</p>
+      <p style="margin: 0; font-size: 16px; line-height: 23px; color: var(--text-secondary); padding-top: 8px; border-top: 1px solid var(--surfaceHigh)">Cho tôi một ly latte lớn được không?</p>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); width: 64px">Từ vựng</span>
+          <span style="font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--surfaceLow); border: 1px solid var(--surfaceHigh)">latte</span>
+          <span style="font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--surfaceLow); border: 1px solid var(--surfaceHigh)">large</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); width: 64px">Ngữ pháp</span>
+          <span style="font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--tertiarySoft)">Could I + V…?</span>
+        </div>
+      </div>
+      <span style="flex-grow: 1"></span>
+      <button style="height: 44px; border: 0; border-radius: 22px; background: var(--surfaceHigh); color: var(--primary); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px">Xem phân tích chi tiết<span class="ms" style="font-size: 20px">expand_less</span></button>
+    </article>
+    <article aria-hidden="true" style="width: 330px; flex-shrink: 0; background: var(--surface); border-radius: 24px; box-shadow: var(--shadow); padding: 16px; box-sizing: border-box; opacity: .6">
+      <p style="margin: 34px 0 0; font-size: 21px; line-height: 29px; font-weight: 600">Sure. Anything else?</p>
+    </article>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px 24px">
+    <button aria-label="Câu trước" style="width: 44px; height: 44px; border: 1px solid var(--outlineVariant); background: var(--surface); border-radius: 22px; color: var(--text-primary); display: grid; place-items: center"><span class="ms">chevron_left</span></button>
+    <div style="display: flex; gap: 5px; align-items: center">
+      <span style="width: 6px; height: 6px; border-radius: 3px; background: var(--outlineVariant)"></span>
+      <span style="width: 6px; height: 6px; border-radius: 3px; background: var(--outlineVariant)"></span>
+      <span style="width: 20px; height: 6px; border-radius: 3px; background: var(--primary)"></span>
+      <span style="width: 6px; height: 6px; border-radius: 3px; background: var(--outlineVariant)"></span>
+      <span style="width: 6px; height: 6px; border-radius: 3px; background: var(--outlineVariant)"></span>
+    </div>
+    <button aria-label="Mở transcript" style="height: 44px; padding: 0 14px; border: 1px solid var(--outlineVariant); background: var(--surface); border-radius: 22px; color: var(--primary); display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600"><span class="ms" style="font-size: 20px">notes</span>Transcript</button>
+    <button aria-label="Câu sau" style="width: 44px; height: 44px; border: 1px solid var(--outlineVariant); background: var(--surface); border-radius: 22px; color: var(--text-primary); display: grid; place-items: center"><span class="ms">chevron_right</span></button>
+  </div>
+</div>
+  <div style="position: absolute; left: 0; right: 0; top: 275px; bottom: 0; background: rgba(0,0,0,.4)"></div>
+  <section role="dialog" aria-label="Phân tích câu 4" style="position: absolute; left: 0; right: 0; top: 283px; bottom: 0; background: var(--surface); border-radius: 32px 32px 0 0; display: flex; flex-direction: column; overflow: hidden">
+    <div style="display: flex; justify-content: center; padding-top: 8px"><span style="width: 36px; height: 4px; border-radius: 2px; background: var(--outlineVariant)"></span></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 20px">
+      <h2 style="flex-grow: 1; margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Phân tích câu 4</h2>
+      <button aria-label="Đóng" style="width: 44px; height: 44px; border: 0; background: transparent; border-radius: 22px; color: var(--text-primary); display: grid; place-items: center"><span class="ms">close</span></button>
+    </div>
+    <div style="padding: 0 20px 12px; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--surfaceHigh)">
+      <p style="margin: 0; font-size: 16px; line-height: 22px; font-weight: 600">Could I get a large latte, please?</p>
+      <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-secondary)">Cho tôi một ly latte lớn được không?</p>
+    </div>
+
+    <div style="flex-grow: 1; padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted)">Từ vựng · 2</span>
+      <div style="display: flex; gap: 12px; align-items: flex-start">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+          <div style="display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap"><span style="font-size: 17px; font-weight: 700">latte</span><span style="font-size: 13px; color: var(--text-muted)">noun</span><span style="font-size: 13px; color: var(--text-muted); font-style: italic">/ˈlɑːteɪ/</span></div>
+          <span style="font-size: 14px; color: var(--text-secondary)">cà phê sữa kiểu Ý</span>
+        </div>
+        <button aria-label="Nghe từ latte" style="width: 40px; height: 40px; border: 0; background: var(--surfaceLow); border-radius: 20px; color: var(--primary); display: grid; place-items: center"><span class="ms" style="font-size: 20px">volume_up</span></button>
+        <button aria-label="Lưu từ latte" style="width: 40px; height: 40px; border: 0; background: var(--accentSoft); border-radius: 20px; color: var(--primary); display: grid; place-items: center"><span class="ms f" style="font-size: 20px">bookmark</span></button>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: flex-start">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+          <div style="display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap"><span style="font-size: 17px; font-weight: 700">large</span><span style="font-size: 13px; color: var(--text-muted)">adjective</span><span style="font-size: 13px; color: var(--text-muted); font-style: italic">/lɑːrdʒ/</span></div>
+          <span style="font-size: 14px; color: var(--text-secondary)">lớn, cỡ to</span>
+        </div>
+        <button aria-label="Nghe từ large" style="width: 40px; height: 40px; border: 0; background: var(--surfaceLow); border-radius: 20px; color: var(--primary); display: grid; place-items: center"><span class="ms" style="font-size: 20px">volume_up</span></button>
+        <button aria-label="Lưu từ large" style="width: 40px; height: 40px; border: 0; background: var(--surfaceLow); border-radius: 20px; color: var(--primary); display: grid; place-items: center"><span class="ms" style="font-size: 20px">bookmark_add</span></button>
+      </div>
+
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); padding-top: 6px">Ngữ pháp · 1</span>
+      <div style="background: var(--surfaceLow); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="flex-grow: 1; font-size: 16px; font-weight: 700">Lời đề nghị lịch sự với Could I</span>
+          <button aria-label="Lưu ngữ pháp" style="width: 40px; height: 40px; border: 0; background: var(--surface); border-radius: 20px; color: var(--primary); display: grid; place-items: center"><span class="ms" style="font-size: 20px">bookmark_add</span></button>
+        </div>
+        <span style="align-self: flex-start; font-size: 14px; font-weight: 600; background: var(--tertiarySoft); padding: 4px 10px; border-radius: 10px">Could I + V (nguyên mẫu) …, please?</span>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-secondary)">Dùng để xin hoặc gọi món một cách lịch sự, nhẹ hơn "Can I".</p>
+        <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--text-secondary)"><b style="color: var(--text-primary)">Trong câu này:</b> "Could I get" = "cho tôi xin", "please" ở cuối làm câu mềm hơn.</p>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
