@@ -10,10 +10,8 @@ const DISCLOSURE_KEYS = [
 ] as const;
 
 const EXPECTED_DISCLOSURE_BODY = {
-  vi:
-    'Phụ đề của video sẽ được gửi tới máy chủ và nhà cung cấp AI để dịch sang tiếng Việt và tạo phiên âm IPA. Chỉ tiếp tục khi bạn đồng ý.',
-  en:
-    "The video's subtitles will be sent to our server and AI providers to translate them into Vietnamese and generate IPA. Continue only if you agree.",
+  vi: 'Phụ đề của video sẽ được gửi tới máy chủ và nhà cung cấp AI để dịch sang tiếng Việt và tạo phiên âm IPA. Chỉ tiếp tục khi bạn đồng ý.',
+  en: "The video's subtitles will be sent to our server and AI providers to translate them into Vietnamese and generate IPA. Continue only if you agree.",
 } as const;
 
 describe('i18n', () => {

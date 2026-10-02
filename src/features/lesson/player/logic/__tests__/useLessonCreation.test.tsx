@@ -165,10 +165,12 @@ describe('useLessonCreation (INV-006)', () => {
       ReactTestRenderer.create(<WaitDriver />);
     });
     await act(async () => {
-      void driver.control.current?.trigger({
-        source: 'youtube',
-        url: 'https://youtube.com/watch?v=wait',
-      });
+      driver.control.current
+        ?.trigger({
+          source: 'youtube',
+          url: 'https://youtube.com/watch?v=wait',
+        })
+        .catch(() => undefined);
       await Promise.resolve();
       await Promise.resolve();
     });
@@ -381,10 +383,12 @@ describe('useLessonCreation YouTube disclosure (LING-191)', () => {
         source: 'youtube',
         url: 'https://youtube.com/watch?v=double',
       });
-      void driver.control.current?.trigger({
-        source: 'youtube',
-        url: 'https://youtube.com/watch?v=double',
-      });
+      driver.control.current
+        ?.trigger({
+          source: 'youtube',
+          url: 'https://youtube.com/watch?v=double',
+        })
+        .catch(() => undefined);
       await flushDisclosureDialog();
       pressAlertButton(1);
       await first;
@@ -405,10 +409,12 @@ describe('useLessonCreation YouTube disclosure (LING-191)', () => {
       tree = ReactTestRenderer.create(<UnmountDriver />);
     });
     await act(async () => {
-      void driver.control.current?.trigger({
-        source: 'youtube',
-        url: 'https://youtube.com/watch?v=unmount',
-      });
+      driver.control.current
+        ?.trigger({
+          source: 'youtube',
+          url: 'https://youtube.com/watch?v=unmount',
+        })
+        .catch(() => undefined);
       await flushDisclosureDialog();
     });
     await act(async () => {
@@ -505,5 +511,4 @@ describe('useLessonCreation YouTube disclosure (LING-191)', () => {
     expect(Alert.alert).not.toHaveBeenCalled();
     expect(mockedSubmit).not.toHaveBeenCalled();
   });
-
 });

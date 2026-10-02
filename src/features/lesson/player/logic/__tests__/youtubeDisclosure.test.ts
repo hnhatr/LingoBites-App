@@ -94,12 +94,14 @@ describe('youtubeDisclosure (LING-191)', () => {
 
   it('returns true after confirm when persistence fails, leaving the key unset', async () => {
     const realSetItem = AsyncStorage.setItem.bind(AsyncStorage);
-    jest.spyOn(AsyncStorage, 'setItem').mockImplementation(async (key, value) => {
-      if (key === YOUTUBE_DISCLOSURE_KEY) {
-        throw new Error('write failed');
-      }
-      return realSetItem(key, value);
-    });
+    jest
+      .spyOn(AsyncStorage, 'setItem')
+      .mockImplementation(async (key, value) => {
+        if (key === YOUTUBE_DISCLOSURE_KEY) {
+          throw new Error('write failed');
+        }
+        return realSetItem(key, value);
+      });
 
     const pending = ensureYouTubeDisclosureAcknowledged(copy);
     await flushStorageRead();
