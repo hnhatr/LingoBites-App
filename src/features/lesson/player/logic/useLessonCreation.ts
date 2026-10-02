@@ -2,6 +2,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 
 import type {
   LearnerLessonCreationRequestBody,
+  LessonCreationStatus,
   LessonCreationStatusResponse,
 } from '@core/schemas/lesson';
 
@@ -20,6 +21,11 @@ export type LessonCreationState =
   | {status: 'idle'}
   | {status: 'submitting'}
   | {status: 'processing'; requestId: string}
+  | {
+      status: 'waiting_transcript';
+      requestId: string;
+      polling: boolean;
+    }
   | {status: 'succeeded'; requestId: string; lessonId: string}
   | {
       status: 'failed';
@@ -40,30 +46,40 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function isTerminalStatus(status: LessonCreationStatus): boolean {
+  return status === 'succeeded' || status === 'failed';
+}
+
 type PollOutcome =
   | {kind: 'terminal'; value: LessonCreationStatusResponse}
-  | {kind: 'timeout'}
+  | {kind: 'timeout'; endedWhileWaiting: boolean}
   | {kind: 'error'; error: CanonicalLessonError}
   | {kind: 'cancelled'};
 
 async function pollUntilTerminal(
   requestId: string,
   shouldContinue: () => boolean,
+  onNonTerminal: (status: LessonCreationStatus) => void,
 ): Promise<PollOutcome> {
+  let endedWhileWaiting = false;
   for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt += 1) {
     if (!shouldContinue()) return {kind: 'cancelled'};
     const polled = await fetchLessonCreationStatus(requestId);
     if (!shouldContinue()) return {kind: 'cancelled'};
     if (!polled.ok) return {kind: 'error', error: polled};
-    if (
-      polled.value.status === 'succeeded' ||
-      polled.value.status === 'failed'
-    ) {
+    const {status} = polled.value;
+    if (isTerminalStatus(status)) {
       return {kind: 'terminal', value: polled.value};
     }
+    if (status === 'waiting_transcript') {
+      endedWhileWaiting = true;
+    } else {
+      endedWhileWaiting = false;
+    }
+    onNonTerminal(status);
     await sleep(POLL_INTERVAL_MS);
   }
-  return {kind: 'timeout'};
+  return {kind: 'timeout', endedWhileWaiting};
 }
 
 async function applyTerminalOutcome(
@@ -89,6 +105,17 @@ async function applyTerminalOutcome(
     code: terminal.error?.code ?? 'CREATION_FAILED',
     retryable: terminal.error?.retryable ?? true,
   });
+}
+
+function uiStateForNonTerminal(
+  requestId: string,
+  status: LessonCreationStatus,
+  polling: boolean,
+): LessonCreationState {
+  if (status === 'waiting_transcript') {
+    return {status: 'waiting_transcript', requestId, polling};
+  }
+  return {status: 'processing', requestId};
 }
 
 /**
@@ -121,12 +148,27 @@ export function useLessonCreation(submissionId: string) {
       const shouldContinue = () =>
         aliveRef.current && pollGenerationRef.current === generation;
 
-      safeSetState({status: 'processing', requestId});
-      const outcome = await pollUntilTerminal(requestId, shouldContinue);
+      const onNonTerminal = (status: LessonCreationStatus) => {
+        safeSetState(uiStateForNonTerminal(requestId, status, true));
+      };
+
+      const outcome = await pollUntilTerminal(
+        requestId,
+        shouldContinue,
+        onNonTerminal,
+      );
       if (!shouldContinue()) return;
 
       if (outcome.kind === 'timeout') {
-        safeSetState({status: 'timedOut', requestId});
+        if (outcome.endedWhileWaiting) {
+          safeSetState({
+            status: 'waiting_transcript',
+            requestId,
+            polling: false,
+          });
+        } else {
+          safeSetState({status: 'timedOut', requestId});
+        }
         return;
       }
       if (outcome.kind === 'error') {
@@ -159,16 +201,26 @@ export function useLessonCreation(submissionId: string) {
         safeSetState({status: 'error', error: accepted});
         return;
       }
-      await runPollForRequest(accepted.value.requestId);
+      const {requestId, status} = accepted.value;
+      safeSetState(uiStateForNonTerminal(requestId, status, true));
+      await runPollForRequest(requestId);
     },
     [runPollForRequest, safeSetState, submissionId],
   );
 
   /** Resume polling the same creation request after a client-side timeout. */
   const checkAgain = useCallback(async () => {
-    if (state.status !== 'timedOut') return;
-    await runPollForRequest(state.requestId);
-  }, [runPollForRequest, state]);
+    if (state.status !== 'timedOut' && state.status !== 'waiting_transcript') {
+      return;
+    }
+    const requestId = state.requestId;
+    if (state.status === 'waiting_transcript') {
+      safeSetState({status: 'waiting_transcript', requestId, polling: true});
+    } else {
+      safeSetState({status: 'processing', requestId});
+    }
+    await runPollForRequest(requestId);
+  }, [runPollForRequest, safeSetState, state]);
 
   /** Explicit "thử lại" after a terminal failure: rotate the key. */
   const retryWithFreshKey = useCallback(async () => {

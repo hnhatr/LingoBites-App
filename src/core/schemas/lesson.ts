@@ -254,6 +254,7 @@ export type LessonRevisionsResponse = z.infer<
 export const LessonCreationStatusValues = [
   'queued',
   'processing',
+  'waiting_transcript',
   'succeeded',
   'failed',
 ] as const;
