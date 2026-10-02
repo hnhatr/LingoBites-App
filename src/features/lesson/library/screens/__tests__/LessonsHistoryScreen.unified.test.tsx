@@ -161,24 +161,23 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
 
     expect(mockRefresh).toHaveBeenCalled();
     expect(navigation.navigate).not.toHaveBeenCalled();
-    expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it('loads the server catalog in the "Tất cả bài" segment and opens a row', async () => {
+  it('shows a catalog section under the downloaded lessons in the same tab', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
+    let navigation!: {navigate: jest.Mock};
     await act(async () => {
-      ({tree} = renderUnified());
-    });
-    await act(async () => {
-      tree.root.findByProps({testID: 'tab-catalog'}).props.onPress();
+      ({tree, navigation} = renderUnified());
     });
 
-    expect(
-      tree.root.findByProps({testID: 'catalog-tab-content'}),
-    ).toBeDefined();
     expect(String(mockFetch.mock.calls[0][0])).toContain('/api/v1/lessons');
+    expect(() => tree.root.findByProps({testID: 'tab-catalog'})).toThrow();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Bài học theo lộ trình');
+    expect(text).toContain('Tất cả bài học');
+
     const row = tree.root.findByProps({
-      testID: 'canonical-catalog-row-00000000-0000-4000-8000-000000000021',
+      testID: 'lesson-item-00000000-0000-4000-8000-000000000021',
     });
     await act(async () => {
       row.props.onPress();
@@ -186,5 +185,12 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
     expect(mockInnerNavigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
       lessonId: '00000000-0000-4000-8000-000000000021',
     });
+
+    await act(async () => {
+      tree.root
+        .findByProps({testID: 'library-catalog-view-all'})
+        .props.onPress();
+    });
+    expect(navigation.navigate).toHaveBeenCalledWith('CanonicalCatalog');
   });
 });

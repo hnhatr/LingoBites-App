@@ -40,6 +40,28 @@ jest.mock('@features/lesson/player', () => {
   return {
     ...actual,
     UnifiedLessonsScreen: () => null,
+    useCanonicalCatalog: () => ({
+      state: {
+        status: 'ready',
+        lessons: [
+          {
+            id: 'catalog-1',
+            title: 'Catalog one',
+            description: 'First',
+            origin: 'admin',
+            source_type: 'admin_text',
+            content_revision: 1,
+            sentence_count: 3,
+            youtube_video_id: null,
+            unit: null,
+            updated_at: '2026-09-30T04:15:00.000Z',
+          },
+        ],
+        nextCursor: null,
+      },
+      refresh: jest.fn(),
+      loadMore: jest.fn(),
+    }),
   };
 });
 
@@ -174,15 +196,17 @@ describe('LessonsHistoryScreen', () => {
     ).toBeDefined();
   });
 
-  it('opens the catalog in the current stack from the library action', () => {
+  it('opens the full catalog from the "Xem tất cả" section action', () => {
     const tree = render(
       <LessonsHistoryScreen navigation={navigation} route={route} />,
     );
 
     const target = tree.root
-      .findAll(node => node.props.testID === 'library-open-catalog')
+      .findAll(node => node.props.testID === 'library-catalog-view-all')
       .find(node => typeof node.props.onPress === 'function');
-    if (!target) throw new Error('No pressable found for library-open-catalog');
+    if (!target) {
+      throw new Error('No pressable found for library-catalog-view-all');
+    }
     act(() => target.props.onPress());
 
     expect(navigation.navigate).toHaveBeenCalledWith('CanonicalCatalog');

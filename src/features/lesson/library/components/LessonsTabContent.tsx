@@ -12,25 +12,40 @@ import {SectionHeader} from '@ui/components/SectionHeader';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
+import type {LessonCatalogItem} from '@core/schemas/lesson';
+
 import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface LessonsTabContentProps {
   packagedLessons: any[];
+  /** First page of the canonical catalog, shown as a capped preview. */
+  catalogLessons?: LessonCatalogItem[];
+  onViewAllCatalog?: () => void;
 }
+
+/** How many catalog lessons the "Tất cả bài học" section previews. */
+export const CATALOG_PREVIEW_LIMIT = 5;
+
+type LessonType = 'packaged' | 'catalog';
 
 interface LessonItem {
   id: string;
   title: string;
   summary: string | null;
-  type: 'packaged';
+  type: LessonType;
 }
 
 interface LessonSection {
   title: string;
   data: LessonItem[];
-  type: 'packaged';
+  type: LessonType;
 }
+
+const LESSON_HINTS: Record<LessonType, string> = {
+  packaged: 'Bài học theo lộ trình. Chạm để xem chi tiết.',
+  catalog: 'Bài học trong danh mục. Chạm để mở bài.',
+};
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -50,6 +65,9 @@ function createStyles(theme: AppTheme) {
     lessonTitle: {
       marginBottom: theme.spacing.xs,
     },
+    viewAll: {
+      paddingVertical: theme.spacing.xs,
+    },
     sectionHeader: {
       paddingHorizontal: 0,
       marginTop: theme.spacing.md,
@@ -60,7 +78,11 @@ function createStyles(theme: AppTheme) {
   });
 }
 
-export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
+export function LessonsTabContent({
+  packagedLessons,
+  catalogLessons,
+  onViewAllCatalog,
+}: LessonsTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const navigation =
@@ -85,8 +107,21 @@ export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
       });
     }
 
+    if (catalogLessons && catalogLessons.length > 0) {
+      result.push({
+        title: 'Tất cả bài học',
+        data: catalogLessons.slice(0, CATALOG_PREVIEW_LIMIT).map(lesson => ({
+          id: lesson.id,
+          title: lesson.title,
+          summary: lesson.description || `${lesson.sentence_count} câu`,
+          type: 'catalog' as const,
+        })),
+        type: 'catalog',
+      });
+    }
+
     return result;
-  }, [packagedLessons]);
+  }, [packagedLessons, catalogLessons]);
 
   const handleLessonPress = (item: LessonItem) => {
     openLesson(navigation, item.id);
@@ -96,7 +131,7 @@ export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={item.title}
-      accessibilityHint="Bài học theo lộ trình. Chạm để xem chi tiết."
+      accessibilityHint={LESSON_HINTS[item.type]}
       onPress={() => handleLessonPress(item)}
       testID={`lesson-item-${item.id}`}
       style={styles.pressable}
@@ -128,7 +163,25 @@ export function LessonsTabContent({packagedLessons}: LessonsTabContentProps) {
 
   const renderSectionHeader = ({section}: {section: LessonSection}) => (
     <View style={styles.sectionHeader}>
-      <SectionHeader title={section.title} />
+      <SectionHeader
+        title={section.title}
+        action={
+          section.type === 'catalog' && onViewAllCatalog ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Xem tất cả bài học"
+              accessibilityHint="Mở danh mục đầy đủ"
+              onPress={onViewAllCatalog}
+              style={styles.viewAll}
+              testID="library-catalog-view-all"
+            >
+              <AppText variant="label" color="primary">
+                Xem tất cả
+              </AppText>
+            </Pressable>
+          ) : undefined
+        }
+      />
     </View>
   );
 
