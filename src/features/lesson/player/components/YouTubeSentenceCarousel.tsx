@@ -48,7 +48,7 @@ type CardProps = {
   t: (key: string, options?: Record<string, unknown>) => string;
 };
 
-const SentenceCarouselCard = memo(function SentenceCarouselCard({
+function SentenceCarouselCardBody({
   sentence,
   index,
   cardWidth,
@@ -172,7 +172,9 @@ const SentenceCarouselCard = memo(function SentenceCarouselCard({
       </Pressable>
     </View>
   );
-});
+}
+
+const SentenceCarouselCard = memo(SentenceCarouselCardBody);
 
 export function YouTubeSentenceCarousel({
   sentences,

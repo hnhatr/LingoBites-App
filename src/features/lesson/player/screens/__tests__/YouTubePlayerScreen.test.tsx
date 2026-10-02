@@ -12,7 +12,6 @@ let playerMountCount = 0;
 let lastPlayerOnError: ((code: string) => void) | undefined;
 
 jest.mock('../../components/YouTubePlayer', () => {
-  const React = require('react');
   const {View} = require('react-native');
   const MockPlayer = ({onError}: {onError?: (code: string) => void}) => {
     playerMountCount += 1;
@@ -34,7 +33,6 @@ jest.spyOn(React, 'lazy').mockImplementation(() => {
   return YouTubePlayer;
 });
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const {CanonicalLessonPlayerScreen} = require('../CanonicalLessonPlayerScreen');
 
 const LESSON_ID = '33333333-3333-4333-8333-333333333301';
