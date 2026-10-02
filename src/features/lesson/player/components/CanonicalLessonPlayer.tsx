@@ -17,7 +17,7 @@ import {
   type SentenceAnalysisPanelError,
   type SentenceAnalysisPanelState,
 } from './SentenceAnalysisPanel';
-import {YouTubeTimeline} from './YouTubeTimeline';
+import {YouTubeLessonStudy} from './YouTubeLessonStudy';
 
 export type CanonicalLessonPlayerProps = {
   snapshot: LessonSnapshot;
@@ -35,6 +35,9 @@ export type CanonicalLessonPlayerProps = {
   playbackPositionMs?: number;
   videoAvailable?: boolean;
   unavailableReason?: string;
+  /** Screen-owned YouTube iframe (AD-002); study view only. */
+  videoSlot?: React.ReactNode;
+  onRetryVideo?: () => void;
   onSeek?: (positionMs: number) => void;
   onRequestAnalysis?: (sentenceId: string) => void;
   onRetryAnalysis?: (sentenceId: string) => void;
@@ -65,6 +68,8 @@ export function CanonicalLessonPlayer({
   playbackPositionMs = 0,
   videoAvailable = true,
   unavailableReason,
+  videoSlot,
+  onRetryVideo,
   onSeek,
   onRequestAnalysis,
   onRetryAnalysis,
@@ -88,22 +93,33 @@ export function CanonicalLessonPlayer({
       </View>
     );
   }
-  const isYouTube = snapshot.source_type === 'youtube';
+  if (snapshot.source_type === 'youtube') {
+    return (
+      <YouTubeLessonStudy
+        snapshot={snapshot}
+        analyses={analyses}
+        lateAnalyses={lateAnalyses}
+        offline={offline}
+        hasUpdate={hasUpdate}
+        playbackPositionMs={playbackPositionMs}
+        videoAvailable={videoAvailable}
+        unavailableReason={unavailableReason}
+        videoSlot={videoSlot}
+        onRetryVideo={onRetryVideo}
+        onSeek={onSeek}
+        onRequestAnalysis={onRequestAnalysis}
+        onRetryAnalysis={onRetryAnalysis}
+        analysisStates={analysisStates}
+        onSpeakText={onSpeakText}
+      />
+    );
+  }
   return (
     <View testID="canonical-player" style={styles.container}>
       <AppText testID="canonical-player-title" variant="h2">
         {snapshot.title}
       </AppText>
       <LessonStatusBanners offline={offline} hasUpdate={hasUpdate} />
-      {isYouTube ? (
-        <YouTubeTimeline
-          sentences={orderedSentences}
-          positionMs={playbackPositionMs}
-          videoAvailable={videoAvailable}
-          unavailableReason={unavailableReason}
-          onSeek={onSeek}
-        />
-      ) : null}
       {orderedSentences.map((sentence, index) => {
         const selected = selectedSentenceId === sentence.id;
         const stored = analyses[sentence.id] ?? lateAnalyses?.[sentence.id];
@@ -122,9 +138,6 @@ export function CanonicalLessonPlayer({
               testID={`canonical-sentence-${sentence.id}`}
               onPress={() => {
                 setSelectedSentenceId(sentence.id);
-                if (isYouTube && sentence.start_ms !== null) {
-                  onSeek?.(sentence.start_ms);
-                }
               }}
             >
               <View
