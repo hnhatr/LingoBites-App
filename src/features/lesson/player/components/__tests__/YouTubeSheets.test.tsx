@@ -211,7 +211,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
 
   it('lists transcript rows with timestamps and optional VI (AC-008 S1)', async () => {
     const tree = await renderStudy();
-    pressByTestId(tree.root, 'youtube-sheet-transcript');
+    pressByTestId(tree.root, 'youtube-open-transcript');
     expect(
       tree.root.findByProps({testID: `youtube-transcript-row-${S1}`}),
     ).toBeDefined();
@@ -290,7 +290,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
       playbackPositionMs: 9500,
       videoPlaying: false,
     });
-    pressByTestId(tree.root, 'youtube-sheet-transcript');
+    pressByTestId(tree.root, 'youtube-open-transcript');
     const list = tree.root.findByProps({testID: 'youtube-transcript-list'});
     expect(list.props.initialScrollIndex).toBe(0);
   });
@@ -300,7 +300,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
       playbackPositionMs: 9500,
       videoPlaying: true,
     });
-    pressByTestId(tree.root, 'youtube-sheet-transcript');
+    pressByTestId(tree.root, 'youtube-open-transcript');
     const list = tree.root.findByProps({testID: 'youtube-transcript-list'});
     expect(list.props.initialScrollIndex).toBe(2);
   });
@@ -308,7 +308,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
   it('selects card and seeks from a transcript row (AC-008 S4)', async () => {
     const onSeek = jest.fn();
     const tree = await renderStudy({onSeek});
-    pressByTestId(tree.root, 'youtube-sheet-transcript');
+    pressByTestId(tree.root, 'youtube-open-transcript');
     const row = tree.root.findByProps({testID: `youtube-transcript-row-${S3}`});
     await act(async () => {
       row.props.onPress();
@@ -323,7 +323,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
   it('does not log nested VirtualizedList errors when transcript opens in Modal', async () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const tree = await renderStudy();
-    pressByTestId(tree.root, 'youtube-sheet-transcript');
+    pressByTestId(tree.root, 'youtube-open-transcript');
     expect(tree.root.findAllByType(FlatList).length).toBeGreaterThan(0);
     const nestedListErrors = errorSpy.mock.calls.filter(args =>
       String(args[0]).includes('VirtualizedLists should never be nested'),
