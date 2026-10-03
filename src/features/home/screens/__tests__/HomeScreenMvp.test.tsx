@@ -23,6 +23,14 @@ jest.mock('@core/api/youtubeCapabilities', () => ({
   useYouTubeServerEnabled: () => mockYouTubeServerEnabled,
 }));
 
+jest.mock('@features/engagement', () => ({
+  getGamificationSnapshot: jest.fn(() => ({
+    currentStreak: 0,
+    weeklyGoal: {completedThisWeek: 0, target: 6},
+    badges: [],
+  })),
+}));
+
 function navigation(tabNavigate = jest.fn(), rootNavigate = jest.fn()) {
   return {
     navigate: jest.fn(),
@@ -213,5 +221,43 @@ describe('HomeScreen video card (LING-176 TASK-008)', () => {
 
     expect(tabNavigate).toHaveBeenCalledWith('Create');
     expect(tabNavigate).not.toHaveBeenCalledWith('Lessons', expect.anything());
+  });
+});
+
+describe('HomeScreen weekly goal card (TC-4B / LING-232)', () => {
+  beforeEach(() => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.clearAllMocks();
+    mockYouTubeServerEnabled = false;
+  });
+
+  function orderedTestIds(tree: ReactTestRenderer.ReactTestRenderer): string[] {
+    return tree.root
+      .findAll(node => typeof node.props.testID === 'string')
+      .map(node => String(node.props.testID));
+  }
+
+  it('renders the card between explore and the lessons rail (FR-001)', async () => {
+    seedLesson();
+    const tree = await renderHome();
+    const ids = orderedTestIds(tree);
+    const explore = ids.indexOf('home-explore-section');
+    const card = ids.indexOf('home-weekly-goal-card');
+    const lessons = ids.indexOf('home-lessons-section');
+    expect(explore).toBeGreaterThanOrEqual(0);
+    expect(card).toBeGreaterThan(explore);
+    expect(lessons).toBeGreaterThan(card);
+  });
+
+  it('shows the empty-week copy and is not tappable (AC-001 S2 / A-005)', async () => {
+    seedLesson();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('0 trên 6 bài đã xong');
+    expect(text).toContain('Thêm 6 bài để nhận huy hiệu Chăm chỉ.');
+    const card = tree.root.findByProps({testID: 'home-weekly-goal-card'});
+    expect(card.props.onPress).toBeUndefined();
+    expect(card.props.accessibilityRole).toBe('summary');
   });
 });

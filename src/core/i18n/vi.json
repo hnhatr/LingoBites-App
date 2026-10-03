@@ -67,7 +67,13 @@
     "shortcut_review": "Ôn tập",
     "shortcut_review_meta": "{{count}} thẻ",
     "shortcut_speaking": "Luyện nói",
-    "shortcut_speaking_meta": "Phòng nói"
+    "shortcut_speaking_meta": "Phòng nói",
+    "weekly_goal_label": "Mục tiêu tuần",
+    "weekly_goal_line": "{{n}} trên {{target}} bài đã xong",
+    "weekly_goal_hint_badge": "Thêm {{k}} bài để nhận huy hiệu Chăm chỉ.",
+    "weekly_goal_hint_met": "Bạn đã đạt mục tiêu tuần!",
+    "weekly_goal_hint_kept": "Thêm {{k}} bài để đạt mục tiêu tuần.",
+    "weekly_goal_a11y": "{{line}}. Tiến độ {{ring}} phần trăm. {{hint}}"
   },
   "practice": {
     "quick_empty_cause": "Chưa có bài học nào để luyện nhanh.",
