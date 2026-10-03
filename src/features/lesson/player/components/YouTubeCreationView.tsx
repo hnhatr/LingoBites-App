@@ -115,7 +115,7 @@ function CreationStepRow({
           color={active || done ? 'primary' : 'muted'}
           testID={`lesson-creation-step-${step}`}
           variant="body"
-          style={active ? styles.stepTitleActive : styles.stepTitle}
+          style={styles.stepTitle}
         >
           {t(titleKey)}
         </AppText>
@@ -672,9 +672,6 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   stepTitle: {
-    fontWeight: '600',
-  },
-  stepTitleActive: {
     fontWeight: '600',
   },
   stepsBlock: {

@@ -271,7 +271,7 @@ export function YouTubeLessonStudy({
             styles.transcriptButton,
             pressed ? styles.pressed : null,
           ]}
-          testID="youtube-sheet-transcript"
+          testID="youtube-open-transcript"
         >
           <AppText style={styles.transcriptLabel} variant="label">
             {t('youtube.study.transcript')}
