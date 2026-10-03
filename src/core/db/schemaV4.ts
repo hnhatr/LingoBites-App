@@ -60,10 +60,11 @@ function ignoreBenignSchemaError(error: unknown): boolean {
 
 /**
  * LING-224 / FR-016: sentence-linked recordings and `speaking_attempts`.
- * Runs at most once; a database already at version 4 is untouched.
+ * Runs only when `user_version` is exactly 3; v4+ and pre-v3 databases are untouched.
  */
 export function ensureSchemaV4Upgrade(db: QuickSQLiteConnection): void {
-  if (readLocalSchemaVersion(db) >= APP_SCHEMA_VERSION_V4) {
+  const version = readLocalSchemaVersion(db);
+  if (version !== APP_SCHEMA_VERSION_V3) {
     return;
   }
   db.execute('BEGIN');
