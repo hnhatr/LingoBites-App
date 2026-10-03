@@ -3,6 +3,7 @@ import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {trackEvent} from '@features/analytics';
+import {getGamificationSnapshot} from '@features/engagement';
 
 import {AppThemeProvider} from '@ui/theme';
 
@@ -15,6 +16,14 @@ import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
+
+jest.mock('@features/engagement', () => ({
+  getGamificationSnapshot: jest.fn(() => ({
+    currentStreak: 0,
+    weeklyGoal: {completedThisWeek: 0, target: 6},
+    badges: [],
+  })),
+}));
 
 jest.mock('@features/analytics', () => ({
   trackEvent: jest.fn(),
@@ -270,5 +279,18 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
       target.props.onPress();
     });
     expect(nav.navigate).toHaveBeenCalledWith('Today');
+  });
+
+  it('shows in-progress weekly goal copy from the snapshot (AC-001 S1)', async () => {
+    (getGamificationSnapshot as jest.Mock).mockReturnValue({
+      currentStreak: 0,
+      weeklyGoal: {completedThisWeek: 4, target: 6},
+      badges: [],
+    });
+    const {tree} = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('4 trên 6 bài đã xong');
+    expect(text).toContain('67%');
+    expect(text).toContain('Thêm 2 bài để nhận huy hiệu Chăm chỉ.');
   });
 });
