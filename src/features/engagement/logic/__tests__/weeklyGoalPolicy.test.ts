@@ -172,7 +172,7 @@ describe('weeklyGoalPolicy (TC-2A / INV-001)', () => {
           rows,
           new Date('2026-10-07T05:00:00.000Z'),
         );
-         
+
         console.log(`AC002_S3_COUNT=${count}`);
       });
     },
