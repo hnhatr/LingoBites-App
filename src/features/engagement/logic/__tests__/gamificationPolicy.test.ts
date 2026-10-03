@@ -211,6 +211,7 @@ describe('gamificationPolicy', () => {
         bestStreak: 0,
         waterUnits: 0,
         badges: [],
+        weeklyGoal: {completedThisWeek: 0, target: 6},
       });
       expect(snapshot.pet.stageId).toBe('seed');
     });
