@@ -91,42 +91,40 @@ describe('weeklyGoalPolicy (TC-2A / INV-001)', () => {
     expect(countCompletionsInWeek(rows, now)).toBe(3);
   });
 
-  describe('AC-002 S3 timezone rebucketing', () => {
-    const originalTz = process.env.TZ;
+  (process.env.AC002_S3_PROBE === '1' ? describe.skip : describe)(
+    'AC-002 S3 timezone rebucketing',
+    () => {
+      const originalTz = process.env.TZ;
 
-    afterEach(() => {
-      process.env.TZ = originalTz;
-    });
+      afterEach(() => {
+        process.env.TZ = originalTz;
+      });
 
-    it('rebucks N when TZ changes (Asia/Ho_Chi_Minh → America/Bogota)', () => {
-      const appRoot = path.join(__dirname, '../../../../..');
-      const countInFreshProcess = (tz: string): number => {
-        const result = spawnSync(
-          'yarn',
-          [
-            'test',
-            'src/features/engagement/logic/__tests__/weeklyGoalPolicy.test.ts',
-            '--runInBand',
-            '-t',
-            'AC-002 S3 timezone probe',
-          ],
-          {
-            cwd: appRoot,
-            env: {...process.env, TZ: tz, AC002_S3_PROBE: '1'},
-            encoding: 'utf8',
-          },
-        );
-        expect(result.status).toBe(0);
-        const output = `${result.stdout}\n${result.stderr}`;
-        const match = output.match(/AC002_S3_COUNT=(\d+)/);
-        expect(match).not.toBeNull();
-        return Number(match![1]);
-      };
+      it('rebucks N when TZ changes (Asia/Ho_Chi_Minh → America/Bogota)', () => {
+        const appRoot = path.join(__dirname, '../../../../..');
+        const countInFreshProcess = (tz: string): number => {
+          const probePattern = 'AC-002 S3 timezone probe';
+          const result = spawnSync(
+            `yarn test src/features/engagement/logic/__tests__/weeklyGoalPolicy.test.ts --runInBand -t "${probePattern}"`,
+            {
+              cwd: appRoot,
+              env: {...process.env, TZ: tz, AC002_S3_PROBE: '1'},
+              encoding: 'utf8',
+              shell: true,
+            },
+          );
+          expect(result.status).toBe(0);
+          const output = `${result.stdout}\n${result.stderr}`;
+          const match = output.match(/AC002_S3_COUNT=(\d+)/);
+          expect(match).not.toBeNull();
+          return Number(match![1]);
+        };
 
-      expect(countInFreshProcess('Asia/Ho_Chi_Minh')).toBe(2);
-      expect(countInFreshProcess('America/Bogota')).toBe(1);
-    });
-  });
+        expect(countInFreshProcess('Asia/Ho_Chi_Minh')).toBe(2);
+        expect(countInFreshProcess('America/Bogota')).toBe(1);
+      });
+    },
+  );
 
   describe('DST week (Europe/Berlin)', () => {
     const originalTz = process.env.TZ;

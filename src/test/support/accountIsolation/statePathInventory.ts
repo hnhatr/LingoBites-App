@@ -49,6 +49,15 @@ export const ACCOUNT_ISOLATION_STATE_PATHS: readonly AccountIsolationStatePath[]
         'Written once via INSERT OR IGNORE when diligent is first derived; cleared by local-data wipe and account-replacement delete-all-rows.',
     },
     {
+      id: 'SP-SQLITE-WEEKLY-GOAL-BADGE-PENDING',
+      location:
+        "sqlite app_settings key 'engagement.badge_diligent_pending_at'",
+      scope: 'sqlite',
+      covers: ['INV-002', 'LING-228', 'ADV-002'],
+      interleavingNotes:
+        'Durable queue when latch INSERT fails; promoted to latch key on next read; cleared on successful latch or with app_settings wipe.',
+    },
+    {
       id: 'SP-SQLITE-LEARNER-TABLES',
       location:
         'sqlite learner tables (youtube_progress, flashcards, content_lesson_state, audio_assets, …)',

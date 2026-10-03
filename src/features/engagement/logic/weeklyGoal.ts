@@ -1,8 +1,11 @@
 import {listCompletedLessons} from '@core/sync/lessonProgress';
 
 import {
+  clearPendingDiligentObservation,
   latchDiligentBadgeEarnedAt,
   readDiligentBadgeLatch,
+  readPendingDiligentObservation,
+  writePendingDiligentObservation,
 } from './data/WeeklyGoalBadgeRepository';
 import {
   anyWeekReachesTarget,
@@ -17,9 +20,6 @@ export type WeeklyGoalState = {
   badgeEarned: boolean;
 };
 
-/** Earn time queued when a latch write fails; retried on the next read (ADV-001). */
-let pendingDiligentObservationAt: string | null = null;
-
 function loadCompletedRows(): WeeklyGoalLessonRow[] {
   try {
     return listCompletedLessons();
@@ -32,11 +32,23 @@ function loadCompletedRows(): WeeklyGoalLessonRow[] {
 function tryPersistDiligentLatch(earnedAtIso: string): boolean {
   try {
     latchDiligentBadgeEarnedAt(earnedAtIso);
-    return readDiligentBadgeLatch() !== null;
+    if (readDiligentBadgeLatch() !== null) {
+      clearPendingDiligentObservation();
+      return true;
+    }
+    return false;
   } catch (error) {
     console.log('[weeklyGoal] latch write failed', error);
     return false;
   }
+}
+
+function promotePendingObservation(): void {
+  const pending = readPendingDiligentObservation();
+  if (pending === null || readDiligentBadgeLatch() !== null) {
+    return;
+  }
+  tryPersistDiligentLatch(pending);
 }
 
 /**
@@ -44,30 +56,21 @@ function tryPersistDiligentLatch(earnedAtIso: string): boolean {
  * Latches the badge in the same synchronous call when first derived true.
  */
 export function getWeeklyGoalState(now = new Date()): WeeklyGoalState {
-  const earnedAtIso = now.toISOString();
-
-  if (
-    pendingDiligentObservationAt !== null &&
-    readDiligentBadgeLatch() === null
-  ) {
-    if (tryPersistDiligentLatch(pendingDiligentObservationAt)) {
-      pendingDiligentObservationAt = null;
-    }
-  }
+  promotePendingObservation();
 
   const rows = loadCompletedRows();
-  const latched = readDiligentBadgeLatch() !== null;
   const derivedEarned = anyWeekReachesTarget(rows);
+  const earnedAtIso = now.toISOString();
 
-  if (derivedEarned && !latched) {
+  if (derivedEarned && readDiligentBadgeLatch() === null) {
     if (!tryPersistDiligentLatch(earnedAtIso)) {
-      pendingDiligentObservationAt = earnedAtIso;
+      writePendingDiligentObservation(earnedAtIso);
     }
   }
 
   const badgeEarned =
     readDiligentBadgeLatch() !== null ||
-    (derivedEarned && pendingDiligentObservationAt !== null);
+    readPendingDiligentObservation() !== null;
 
   return {
     completedThisWeek: countCompletionsInWeek(rows, now),

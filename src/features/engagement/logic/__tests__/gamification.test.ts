@@ -5,6 +5,7 @@ import {resetDatabaseForTests} from '@core/db/database';
 import * as lessonProgress from '@core/sync/lessonProgress';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import * as weeklyGoalBadgeRepository from '../data/WeeklyGoalBadgeRepository';
 import {getGamificationSnapshot} from '../gamification';
 import {addLocalDays, toLocalDayKey} from '../gamificationPolicy';
 import {startReviewSession} from '../reviewSession';
@@ -72,6 +73,21 @@ describe('gamification snapshot service (VC-6)', () => {
   });
 
   it('TC-2C: exposes diligent badge and weekly count from lesson progress', () => {
+    let latchedAt: string | null = null;
+    jest
+      .spyOn(weeklyGoalBadgeRepository, 'readDiligentBadgeLatch')
+      .mockImplementation(() => latchedAt);
+    jest
+      .spyOn(weeklyGoalBadgeRepository, 'readPendingDiligentObservation')
+      .mockImplementation(() => null);
+    jest
+      .spyOn(weeklyGoalBadgeRepository, 'latchDiligentBadgeEarnedAt')
+      .mockImplementation(iso => {
+        if (latchedAt === null) {
+          latchedAt = iso;
+        }
+      });
+
     const weekOneRows = Array.from({length: 6}, (_, i) => ({
       lessonId: `lesson-gam-${i}`,
       completedAt: new Date(2026, 9, 6 + i, 10, 0, 0, 0).toISOString(),
