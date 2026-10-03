@@ -21,6 +21,7 @@ import {
   HERO_TITLE,
   LINK_HIT_SLOP,
   type RecentItem,
+  type WeeklyGoalCardModel,
 } from '../logic/homeScreenModel';
 import type {HomeScreenViewModel} from '../logic/useHomeScreenController';
 
@@ -38,6 +39,7 @@ function railMetaLine(
 export function HomeScreenView(props: HomeScreenViewModel) {
   const {
     streak,
+    weeklyGoalCard,
     trimmedDisplayName,
     showStarter,
     starterBare,
@@ -264,6 +266,12 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             })}
           </View>
         </View>
+        <WeeklyGoalCard
+          card={weeklyGoalCard}
+          styles={styles}
+          theme={theme}
+          t={t}
+        />
         <View style={styles.section} testID="home-lessons-section">
           <View style={styles.sectionHeader}>
             <AppText variant="h3" style={styles.sectionTitle}>
@@ -423,6 +431,88 @@ function HeroMascot() {
   );
 }
 
+function WeeklyGoalCard({
+  card,
+  styles,
+  theme,
+  t,
+}: {
+  card: WeeklyGoalCardModel;
+  styles: ReturnType<typeof makeStyles>;
+  theme: AppTheme;
+  t: (key: string, opts?: Record<string, string | number>) => string;
+}) {
+  const countLine = t(card.countLineKey, card.countLineParams);
+  const hint = card.hintParams
+    ? t(card.hintKey, card.hintParams)
+    : t(card.hintKey);
+  const accessibilityLabel = t('home.weekly_goal_a11y', {
+    line: countLine,
+    ring: card.ringPercent,
+    hint,
+  });
+  const ringFill = theme.colors.secondary;
+  const ringTrack = theme.colors.surfaceContainer;
+
+  return (
+    <View
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="summary"
+      importantForAccessibility="yes"
+      style={styles.weeklyGoalCard}
+      testID="home-weekly-goal-card"
+    >
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={[
+          styles.weeklyGoalRing,
+          {
+            borderColor: ringTrack,
+            backgroundColor: ringTrack,
+          },
+        ]}
+        testID="home-weekly-goal-ring"
+      >
+        <View
+          style={[
+            styles.weeklyGoalRingProgress,
+            {
+              backgroundColor: ringFill,
+              opacity: Math.max(card.ringPercent / 100, 0.08),
+            },
+          ]}
+        />
+        <View style={styles.weeklyGoalRingInner}>
+          <AppText variant="label" style={styles.weeklyGoalRingLabel}>
+            {`${card.ringPercent}%`}
+          </AppText>
+        </View>
+      </View>
+      <View style={styles.weeklyGoalCopy}>
+        <AppText color="secondary" variant="caption">
+          {t('home.weekly_goal_label')}
+        </AppText>
+        <AppText variant="label">{countLine}</AppText>
+        <AppText color="muted" variant="caption">
+          {hint}
+        </AppText>
+      </View>
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+        style={styles.weeklyGoalIconWrap}
+      >
+        <MaterialIcon
+          color={theme.colors.accentInk}
+          name="local_fire_department"
+          size={22}
+        />
+      </View>
+    </View>
+  );
+}
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     header: {
@@ -568,6 +658,50 @@ function makeStyles(theme: AppTheme) {
     },
     exploreTitle: {},
     exploreMeta: {},
+    weeklyGoalCard: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      flexDirection: 'row',
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
+      ...theme.shadow.soft,
+    },
+    weeklyGoalRing: {
+      alignItems: 'center',
+      borderRadius: 30,
+      height: 60,
+      justifyContent: 'center',
+      overflow: 'hidden',
+      width: 60,
+    },
+    weeklyGoalRingProgress: {
+      ...StyleSheet.absoluteFill,
+    },
+    weeklyGoalRingInner: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 23,
+      height: 46,
+      justifyContent: 'center',
+      width: 46,
+    },
+    weeklyGoalRingLabel: {
+      fontWeight: '700',
+    },
+    weeklyGoalCopy: {
+      flex: 1,
+      gap: 4,
+      minWidth: 0,
+    },
+    weeklyGoalIconWrap: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accent,
+      borderRadius: 10,
+      height: 36,
+      justifyContent: 'center',
+      width: 36,
+    },
     railContent: {
       gap: theme.spacing.sm,
       paddingRight: theme.gutter,

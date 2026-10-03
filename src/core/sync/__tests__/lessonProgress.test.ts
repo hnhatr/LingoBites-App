@@ -17,6 +17,7 @@ import {
   getLessonProgress,
   lessonEventStatus,
   lessonProgressRank,
+  listCompletedLessons,
   recordLessonEvent,
 } from '../lessonProgress';
 
@@ -237,6 +238,43 @@ describe('recordLessonEvent', () => {
       startedAt: T1,
     });
     expect(listPendingSyncEvents().map(e => e.id)).toEqual([START_ID]);
+  });
+
+  it('TC-1B: listCompletedLessons returns completed rows with times, excluding tombstones', () => {
+    recordLessonEvent({
+      lessonId: 'lesson-done-a',
+      event: 'complete',
+      occurredAt: T1,
+      eventId: START_ID,
+    });
+    recordLessonEvent({
+      lessonId: 'lesson-done-b',
+      event: 'complete',
+      occurredAt: T2,
+      eventId: COMPLETE_ID,
+    });
+    recordLessonEvent({
+      lessonId: 'lesson-started-only',
+      event: 'start',
+      occurredAt: T1,
+    });
+    db.execute(
+      `INSERT INTO lesson_progress (
+        lesson_id, status, started_at, completed_at, revision, tombstone, updated_at
+      ) VALUES (?, 'completed', ?, ?, 1, 1, ?);`,
+      ['lesson-tombstoned', T1, T1, T1],
+    );
+    db.execute(
+      `INSERT INTO lesson_progress (
+        lesson_id, status, started_at, completed_at, revision, tombstone, updated_at
+      ) VALUES (?, 'completed', ?, NULL, 1, 0, ?);`,
+      ['lesson-null-time', T1, T1],
+    );
+
+    expect(listCompletedLessons()).toEqual([
+      {lessonId: 'lesson-done-a', completedAt: T1},
+      {lessonId: 'lesson-done-b', completedAt: T2},
+    ]);
   });
 
   it('keeps one row per lesson across statuses', () => {

@@ -53,3 +53,55 @@ export function trimDisplayName(raw: string | undefined | null): string | null {
   const trimmed = raw?.trim() ?? '';
   return trimmed.length > 0 ? trimmed : null;
 }
+
+export type WeeklyGoalCardInput = {
+  completedThisWeek: number;
+  target: number;
+  badgeEarned: boolean;
+};
+
+export type WeeklyGoalCardModel = {
+  completedThisWeek: number;
+  target: number;
+  ringPercent: number;
+  countLineKey: 'home.weekly_goal_line';
+  countLineParams: {n: number; target: number};
+  hintKey:
+    | 'home.weekly_goal_hint_badge'
+    | 'home.weekly_goal_hint_met'
+    | 'home.weekly_goal_hint_kept';
+  hintParams?: {k: number};
+};
+
+/** Pure weekly-goal card presentation (LING-222 AD-003 / FR-002…FR-004). */
+export function buildWeeklyGoalCard(
+  input: WeeklyGoalCardInput,
+): WeeklyGoalCardModel {
+  const {completedThisWeek, target, badgeEarned} = input;
+  const ringPercent = Math.round(
+    (Math.min(completedThisWeek, target) / target) * 100,
+  );
+  const remaining = Math.max(0, target - completedThisWeek);
+
+  let hintKey: WeeklyGoalCardModel['hintKey'];
+  let hintParams: WeeklyGoalCardModel['hintParams'];
+  if (completedThisWeek >= target) {
+    hintKey = 'home.weekly_goal_hint_met';
+  } else if (badgeEarned) {
+    hintKey = 'home.weekly_goal_hint_kept';
+    hintParams = {k: remaining};
+  } else {
+    hintKey = 'home.weekly_goal_hint_badge';
+    hintParams = {k: remaining};
+  }
+
+  return {
+    completedThisWeek,
+    target,
+    ringPercent,
+    countLineKey: 'home.weekly_goal_line',
+    countLineParams: {n: completedThisWeek, target},
+    hintKey,
+    hintParams,
+  };
+}

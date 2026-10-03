@@ -67,7 +67,13 @@
     "shortcut_review": "Ôn tập",
     "shortcut_review_meta": "{{count}} thẻ",
     "shortcut_speaking": "Luyện nói",
-    "shortcut_speaking_meta": "Phòng nói"
+    "shortcut_speaking_meta": "Phòng nói",
+    "weekly_goal_label": "Mục tiêu tuần",
+    "weekly_goal_line": "{{n}} trên {{target}} bài đã xong",
+    "weekly_goal_hint_badge": "Thêm {{k}} bài để nhận huy hiệu Chăm chỉ.",
+    "weekly_goal_hint_met": "Bạn đã đạt mục tiêu tuần!",
+    "weekly_goal_hint_kept": "Thêm {{k}} bài để đạt mục tiêu tuần.",
+    "weekly_goal_a11y": "{{line}}. Tiến độ {{ring}} phần trăm. {{hint}}"
   },
   "practice": {
     "quick_empty_cause": "Chưa có bài học nào để luyện nhanh.",
@@ -460,6 +466,10 @@
     "explore_grammar_empty": "Phân tích một câu để xem ngữ pháp",
     "start_learning": "Bắt đầu học",
     "start_learning_hint": "Mở phần học từng câu",
+    "complete_lesson": "Hoàn thành bài",
+    "complete_lesson_hint": "Đánh dấu bài học đã xong trên máy",
+    "completed_label": "Đã hoàn thành",
+    "complete_error": "Chưa lưu được, thử lại nhé.",
     "back_to_hub_hint": "Quay lại tổng quan bài học",
     "sentence_counter": "Câu {{index}}/{{total}}",
     "sentence_hint": "Chạm để chọn câu này",

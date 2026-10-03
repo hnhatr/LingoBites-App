@@ -1,6 +1,7 @@
 import {listGamificationEvents} from './data/GamificationRepository';
 import type {GamificationSnapshot} from './gamificationPolicy';
 import {deriveGamificationSnapshot} from './gamificationPolicy';
+import {getWeeklyGoalState} from './weeklyGoal';
 
 /**
  * Loads the current gamification snapshot by recomputing it from the persisted
@@ -11,5 +12,18 @@ import {deriveGamificationSnapshot} from './gamificationPolicy';
 export function getGamificationSnapshot(
   today = new Date(),
 ): GamificationSnapshot {
-  return deriveGamificationSnapshot(listGamificationEvents(), today);
+  const base = deriveGamificationSnapshot(listGamificationEvents(), today);
+  const weekly = getWeeklyGoalState(today);
+  const badges = [...base.badges];
+  if (weekly.badgeEarned && !badges.some(badge => badge.id === 'diligent')) {
+    badges.push({id: 'diligent'});
+  }
+  return {
+    ...base,
+    weeklyGoal: {
+      completedThisWeek: weekly.completedThisWeek,
+      target: weekly.target,
+    },
+    badges,
+  };
 }

@@ -73,6 +73,16 @@ jest.mock('../../logic/useCanonicalLesson', () => ({
   }),
 }));
 
+let mockCompletionState: 'unfinished' | 'finished' | 'error' = 'unfinished';
+const mockCompleteLesson = jest.fn();
+
+jest.mock('../../logic/useLessonCompletion', () => ({
+  useLessonCompletion: () => ({
+    state: mockCompletionState,
+    complete: mockCompleteLesson,
+  }),
+}));
+
 function renderScreen() {
   const navigation = {
     navigate: jest.fn(),
@@ -112,8 +122,10 @@ function has(tree: ReactTestRenderer.ReactTestRenderer, testID: string) {
 describe('CanonicalLessonPlayerScreen lesson hub', () => {
   beforeEach(() => {
     mockState = {status: 'ready', snapshot, offline: false, hasUpdate: false};
+    mockCompletionState = 'unfinished';
     mockSpeak.mockClear();
     mockOpen.mockClear();
+    mockCompleteLesson.mockClear();
   });
 
   it('opens a text lesson on the hub without the retry action', () => {
@@ -177,5 +189,28 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
       pressable(tree, 'canonical-player-retry').props.onPress();
     });
     expect(mockOpen).toHaveBeenCalled();
+  });
+
+  it('shows "Hoàn thành bài" on the hub and wires the completion action', () => {
+    const {tree} = renderScreen();
+    expect(has(tree, 'canonical-hub-complete')).toBe(true);
+    act(() => {
+      pressable(tree, 'canonical-hub-complete').props.onPress();
+    });
+    expect(mockCompleteLesson).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows "Đã hoàn thành" instead of the action when finished (AC-003 S3)', () => {
+    mockCompletionState = 'finished';
+    const {tree} = renderScreen();
+    expect(has(tree, 'canonical-hub-completed')).toBe(true);
+    expect(has(tree, 'canonical-hub-complete')).toBe(false);
+  });
+
+  it('shows the error copy and keeps the action after a failed write (AC-004 S1)', () => {
+    mockCompletionState = 'error';
+    const {tree} = renderScreen();
+    expect(has(tree, 'canonical-hub-complete-error')).toBe(true);
+    expect(has(tree, 'canonical-hub-complete')).toBe(true);
   });
 });

@@ -54,6 +54,7 @@ import {
   mergeAnalyses,
 } from '../logic/lessonHubContent';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
+import {useLessonCompletion} from '../logic/useLessonCompletion';
 
 type Props = NativeStackScreenProps<
   LessonsStackParamList,
@@ -89,6 +90,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {state, open, checkForUpdate, requestAnalysis} =
     useCanonicalLesson(lessonId);
+  const {state: completionState, complete: completeLesson} =
+    useLessonCompletion(lessonId);
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -417,6 +420,35 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         <BottomActionBar
           style={[themedStyles.actionBar, {paddingBottom: floatingClearance}]}
         >
+          {completionState === 'finished' ? (
+            <AppText
+              color="secondary"
+              testID="canonical-hub-completed"
+              variant="label"
+            >
+              {t('lessonPlayer.completed_label')}
+            </AppText>
+          ) : (
+            <>
+              {completionState === 'error' ? (
+                <AppText
+                  color="danger"
+                  testID="canonical-hub-complete-error"
+                  variant="body"
+                >
+                  {t('lessonPlayer.complete_error')}
+                </AppText>
+              ) : null}
+              <AppButton
+                accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
+                accessibilityLabel={t('lessonPlayer.complete_lesson')}
+                onPress={completeLesson}
+                testID="canonical-hub-complete"
+                title={t('lessonPlayer.complete_lesson')}
+                variant="secondary"
+              />
+            </>
+          )}
           <PrimaryActionButton
             accessibilityLabel={t('lessonPlayer.start_learning')}
             label={t('lessonPlayer.start_learning')}

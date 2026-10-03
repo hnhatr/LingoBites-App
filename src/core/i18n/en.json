@@ -67,7 +67,13 @@
     "shortcut_review": "Review",
     "shortcut_review_meta": "{{count}} cards",
     "shortcut_speaking": "Speaking",
-    "shortcut_speaking_meta": "Speaking room"
+    "shortcut_speaking_meta": "Speaking room",
+    "weekly_goal_label": "Weekly goal",
+    "weekly_goal_line": "{{n}} of {{target}} lessons done",
+    "weekly_goal_hint_badge": "Complete {{k}} more lessons to earn the Diligent badge.",
+    "weekly_goal_hint_met": "You hit this week's goal!",
+    "weekly_goal_hint_kept": "Complete {{k}} more lessons to hit this week's goal.",
+    "weekly_goal_a11y": "{{line}}. Progress {{ring}} percent. {{hint}}"
   },
   "practice": {
     "quick_empty_cause": "No lessons are ready for quick practice yet.",
@@ -460,6 +466,10 @@
     "explore_grammar_empty": "Analyze a sentence to see grammar",
     "start_learning": "Start learning",
     "start_learning_hint": "Open sentence study",
+    "complete_lesson": "Mark lesson complete",
+    "complete_lesson_hint": "Save this lesson as finished on your device",
+    "completed_label": "Completed",
+    "complete_error": "Could not save. Please try again.",
     "back_to_hub_hint": "Back to the lesson overview",
     "sentence_counter": "Sentence {{index}}/{{total}}",
     "sentence_hint": "Tap to select this sentence",

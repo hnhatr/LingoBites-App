@@ -2,8 +2,10 @@ import {open} from 'react-native-quick-sqlite';
 
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
+import * as lessonProgress from '@core/sync/lessonProgress';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import * as weeklyGoalBadgeRepository from '../data/WeeklyGoalBadgeRepository';
 import {getGamificationSnapshot} from '../gamification';
 import {addLocalDays, toLocalDayKey} from '../gamificationPolicy';
 import {startReviewSession} from '../reviewSession';
@@ -65,7 +67,52 @@ describe('gamification snapshot service (VC-6)', () => {
       bestStreak: 0,
       waterUnits: 0,
       badges: [],
+      weeklyGoal: {completedThisWeek: 0, target: 6},
     });
     expect(snapshot.pet.stageId).toBe('seed');
+  });
+
+  it('TC-2C: exposes diligent badge and weekly count from lesson progress', () => {
+    let latchedAt: string | null = null;
+    jest
+      .spyOn(weeklyGoalBadgeRepository, 'readDiligentBadgeLatch')
+      .mockImplementation(() => latchedAt);
+    jest
+      .spyOn(weeklyGoalBadgeRepository, 'readPendingDiligentObservation')
+      .mockImplementation(() => null);
+    jest
+      .spyOn(weeklyGoalBadgeRepository, 'latchDiligentBadgeEarnedAt')
+      .mockImplementation(iso => {
+        if (latchedAt === null) {
+          latchedAt = iso;
+        }
+      });
+
+    const weekOneRows = Array.from({length: 6}, (_, i) => ({
+      lessonId: `lesson-gam-${i}`,
+      completedAt: new Date(2026, 9, 6 + i, 10, 0, 0, 0).toISOString(),
+    }));
+    jest
+      .spyOn(lessonProgress, 'listCompletedLessons')
+      .mockReturnValue(weekOneRows);
+
+    const snapshot = getGamificationSnapshot(new Date(2026, 9, 8, 12, 0, 0, 0));
+    expect(snapshot.weeklyGoal.completedThisWeek).toBe(6);
+    expect(snapshot.badges.map(b => b.id)).toContain('diligent');
+
+    const weekTwoRows = [
+      ...weekOneRows,
+      ...Array.from({length: 6}, (_, i) => ({
+        lessonId: `lesson-later-${i}`,
+        completedAt: new Date(2026, 9, 20 + i, 10, 0, 0, 0).toISOString(),
+      })),
+    ];
+    jest
+      .spyOn(lessonProgress, 'listCompletedLessons')
+      .mockReturnValue(weekTwoRows);
+
+    const later = getGamificationSnapshot(new Date(2026, 9, 22, 12, 0, 0, 0));
+    expect(later.badges.filter(b => b.id === 'diligent')).toHaveLength(1);
+    expect(later.weeklyGoal.completedThisWeek).toBe(6);
   });
 });
