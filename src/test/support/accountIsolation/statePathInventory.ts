@@ -41,6 +41,14 @@ export const ACCOUNT_ISOLATION_STATE_PATHS: readonly AccountIsolationStatePath[]
         'Set on first successful bootstrap; gates fresh-install Keychain cleanup ordering in boot recovery.',
     },
     {
+      id: 'SP-SQLITE-WEEKLY-GOAL-BADGE-LATCH',
+      location: "sqlite app_settings key 'engagement.badge_diligent_earned_at'",
+      scope: 'sqlite',
+      covers: ['INV-T1', 'INV-002', 'LING-222', 'IMP-003'],
+      interleavingNotes:
+        'Written once via INSERT OR IGNORE when diligent is first derived; cleared by local-data wipe and account-replacement delete-all-rows.',
+    },
+    {
       id: 'SP-SQLITE-LEARNER-TABLES',
       location:
         'sqlite learner tables (youtube_progress, flashcards, content_lesson_state, audio_assets, …)',
