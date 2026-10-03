@@ -15,10 +15,7 @@ export function getGamificationSnapshot(
   const base = deriveGamificationSnapshot(listGamificationEvents(), today);
   const weekly = getWeeklyGoalState(today);
   const badges = [...base.badges];
-  if (
-    weekly.badgeEarned &&
-    !badges.some(badge => badge.id === 'diligent')
-  ) {
+  if (weekly.badgeEarned && !badges.some(badge => badge.id === 'diligent')) {
     badges.push({id: 'diligent'});
   }
   return {

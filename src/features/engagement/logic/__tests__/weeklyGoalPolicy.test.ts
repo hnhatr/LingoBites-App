@@ -40,7 +40,9 @@ describe('weeklyGoalPolicy (TC-2A / INV-001)', () => {
     const start = startOfLocalWeek(monday);
     expect(start).toEqual(localDate(2026, 10, 5, 0, 0, 0, 0));
     const sunday = localDate(2026, 10, 11, 23, 59, 59, 999);
-    expect(startOfLocalWeek(sunday)).toEqual(localDate(2026, 10, 5, 0, 0, 0, 0));
+    expect(startOfLocalWeek(sunday)).toEqual(
+      localDate(2026, 10, 5, 0, 0, 0, 0),
+    );
   });
 
   describe('AC-002 S1 week boundary', () => {

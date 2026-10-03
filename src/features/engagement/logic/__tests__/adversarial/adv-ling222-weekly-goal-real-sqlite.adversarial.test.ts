@@ -98,8 +98,7 @@ describe('ADV / LING-222 weekly goal (TC-2B)', () => {
       occurredAt: '2026-10-07T10:00:00.000Z',
     });
     expect(first.ok).toBe(true);
-    expect(second.ok).toBe(true);
-    expect(second.advanced).toBe(false);
+    expect(second).toMatchObject({ok: true, advanced: false});
 
     const now = new Date('2026-10-08T12:00:00.000Z');
     expect(getWeeklyGoalState(now).completedThisWeek).toBe(1);
@@ -130,7 +129,9 @@ describe('ADV / LING-222 weekly goal (TC-2B)', () => {
   it('INV-002: six more completions in a later week do not add duplicate diligent badge (AC-006 S3)', () => {
     coldStart();
     seedSixInWeek(T_WEEK);
-    const weekOne = getGamificationSnapshot(new Date('2026-10-08T12:00:00.000Z'));
+    const weekOne = getGamificationSnapshot(
+      new Date('2026-10-08T12:00:00.000Z'),
+    );
     expect(weekOne.badges.filter(b => b.id === 'diligent')).toHaveLength(1);
 
     seedSixInWeek(T_LATER_WEEK);
