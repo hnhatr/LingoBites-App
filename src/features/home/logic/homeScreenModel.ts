@@ -1,10 +1,8 @@
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
-import type {LessonCatalogItem} from '@core/schemas/lesson';
+import type {LessonSourceType} from '@core/schemas/lesson';
 
-export const RECENT_LIMIT = 3;
-export const SUGGESTION_LIMIT = 3;
-export const UNIFIED_RAIL_LIMIT = RECENT_LIMIT + SUGGESTION_LIMIT;
+export const RAIL_LIMIT = 3;
 export const LINK_HIT_SLOP = {top: 10, bottom: 10, left: 10, right: 10};
 
 export const HERO_BLUE = '#226FAB';
@@ -27,51 +25,31 @@ export type ExploreCell = {
   titleKey: string;
   metaKey: string;
   testID: string;
-  badgeKey?: string;
-  badgeParams?: Record<string, string | number>;
-  tagKey?: string;
 };
 
 export type RecentItem = {
-  kind: 'personal' | 'packaged' | 'canonical';
   id: string;
   title: string;
-  meta: string;
-  level?: string;
+  levelTitle?: string;
+  typeLabelKey: string;
+  minutes?: number;
+  isDownloaded: boolean;
+  icon: HandoffIconName;
 };
 
-export type RelearnTarget = {
-  kind: 'personal' | 'packaged';
-  id: string;
-  title: string;
-  level: string;
-};
-
-export function toCanonicalRecentItem(item: LessonCatalogItem): RecentItem {
-  return {
-    kind: 'canonical',
-    id: item.id,
-    title: item.title,
-    meta:
-      item.description.trim().length > 0
-        ? item.description
-        : `${item.sentence_count} câu`,
-  };
+export function typeLabelKeyForSource(sourceType: LessonSourceType): string {
+  return sourceType === 'youtube'
+    ? 'home.rail_type_video'
+    : 'home.rail_type_reading';
 }
 
-export type HomeScreenStarterState = {
-  showStarter: boolean;
-  starterBare: boolean;
-  heroPick: boolean;
-  libraryCount: number | null;
-  relearnTarget: RelearnTarget | null;
-};
+export function railIconForSource(
+  sourceType: LessonSourceType,
+): HandoffIconName {
+  return sourceType === 'youtube' ? 'play_circle' : 'article';
+}
 
-export type HomeScreenHeroState = {
-  startedLesson: {
-    id: string;
-    titleVi: string;
-    estimatedDurationMinutes: number;
-    level: string;
-  } | null;
-};
+export function trimDisplayName(raw: string | undefined | null): string | null {
+  const trimmed = raw?.trim() ?? '';
+  return trimmed.length > 0 ? trimmed : null;
+}

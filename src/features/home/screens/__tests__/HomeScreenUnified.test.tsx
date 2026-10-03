@@ -54,7 +54,7 @@ function catalogLesson(index: number) {
 }
 
 // Canonical contract shape: contract_version + snake_case (AC-003). Eight
-// lessons so the six-item rail cap is observable.
+// lessons so the three-item rail cap is observable.
 const CATALOG_PAGE = {
   contract_version: 1,
   lessons: [31, 32, 33, 34, 35, 36, 37, 38].map(catalogLesson),
@@ -171,25 +171,20 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     ).toBeDefined();
   });
 
-  it('caps the rail at six lessons', async () => {
+  it('caps the rail at three lessons', async () => {
     const {tree} = await renderHome();
-    expect(railPressables(tree)).toHaveLength(6);
+    expect(railPressables(tree)).toHaveLength(3);
     expect(() =>
       tree.root.findByProps({
-        testID: 'home-recent-item-33333333-3333-4333-8333-333333333337',
-      }),
-    ).toThrow();
-    expect(() =>
-      tree.root.findByProps({
-        testID: 'home-recent-item-33333333-3333-4333-8333-333333333338',
+        testID: 'home-recent-item-33333333-3333-4333-8333-333333333334',
       }),
     ).toThrow();
   });
 
-  it('falls back to the sentence count when the description is empty', async () => {
+  it('shows the reading type label for catalog items without minutes', async () => {
     const {tree} = await renderHome();
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('32 câu');
+    expect(text).toContain('Đọc');
   });
 
   it('opens the canonical player and tracks the open', async () => {

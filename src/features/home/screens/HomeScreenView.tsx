@@ -5,7 +5,6 @@ import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
@@ -21,12 +20,25 @@ import {
   HERO_MINT,
   HERO_TITLE,
   LINK_HIT_SLOP,
+  type RecentItem,
 } from '../logic/homeScreenModel';
 import type {HomeScreenViewModel} from '../logic/useHomeScreenController';
+
+function railMetaLine(
+  t: (key: string, opts?: Record<string, string | number>) => string,
+  item: RecentItem,
+): string {
+  const typeLabel = t(item.typeLabelKey);
+  if (item.minutes == null) {
+    return typeLabel;
+  }
+  return t('home.rail_meta', {type: typeLabel, minutes: item.minutes});
+}
 
 export function HomeScreenView(props: HomeScreenViewModel) {
   const {
     streak,
+    trimmedDisplayName,
     showStarter,
     starterBare,
     heroPick,
@@ -38,7 +50,6 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     goLessonsTab,
     openVideoCell,
     openRecentItem,
-    onOpenSettings,
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
@@ -47,22 +58,24 @@ export function HomeScreenView(props: HomeScreenViewModel) {
   const feedClearance = useFloatingTabBarClearance();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
+
   return (
     <AppScreen>
-      <View style={styles.header}>
-        <View style={styles.greeting} testID="home-greeting">
+      <View style={styles.header} testID="home-header">
+        <Image
+          source={require('@ui/assets/home-hero-cat.png')}
+          style={styles.headerLogo}
+          resizeMode="contain"
+          accessibilityIgnoresInvertColors
+        />
+        <View style={styles.headerCopy}>
+          <AppText variant="caption" color="secondary" numberOfLines={1}>
+            {t('home.header_subtitle')}
+          </AppText>
           <AppText variant="h3" numberOfLines={1}>
-            {t('home.greeting_top')}
+            {t('home.header_brand')}
           </AppText>
         </View>
-        <StreakPill count={streak} />
-        <IconButton
-          accessibilityLabel={t('home.settings_a11y')}
-          icon="settings"
-          onPress={onOpenSettings}
-          testID="home-settings"
-          tone="surface"
-        />
       </View>
       <ScrollView
         contentContainerStyle={[
@@ -78,12 +91,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             accessibilityRole="none"
           >
             <HeroDecor />
-            <View style={styles.heroCopy} testID="home-hero-section">
-              <View style={styles.heroBadge}>
-                <AppText variant="label" style={styles.heroBadgeLabel}>
-                  {t('home.greeting_top')}
-                </AppText>
-              </View>
+            <View style={styles.heroCopy} testID="home-starter-hero">
               <AppText variant="h3" style={styles.heroTitle} numberOfLines={2}>
                 {starterBare
                   ? t('home.empty_title')
@@ -129,23 +137,29 @@ export function HomeScreenView(props: HomeScreenViewModel) {
         {startedLesson ? (
           <View style={styles.heroCard} testID="home-continue-section">
             <HeroDecor />
-            <View style={styles.heroCopy} testID="home-hero-section">
-              <View style={styles.heroBadge}>
-                <AppText variant="label" style={styles.heroBadgeLabel}>
-                  {t('home.continue_label')}
-                </AppText>
-              </View>
+            <View style={styles.heroCopy} testID="home-continue-hero">
+              {streak > 0 ? (
+                <View style={styles.heroBadge}>
+                  <AppText variant="label" style={styles.heroBadgeLabel}>
+                    {t('home.hero_streak', {count: streak})}
+                  </AppText>
+                </View>
+              ) : null}
               <AppText variant="h3" style={styles.heroTitle} numberOfLines={2}>
-                {startedLesson.titleVi}
+                {trimmedDisplayName
+                  ? t('home.hero_greeting_named', {name: trimmedDisplayName})
+                  : t('home.hero_greeting_fallback')}
               </AppText>
               <AppText variant="caption" style={styles.heroBody}>
-                {t('home.continue_meta', {
-                  duration: startedLesson.estimatedDurationMinutes,
-                })}
+                {t('home.hero_continue_body')}
               </AppText>
               <HeroCta
-                accessibilityLabel={t('home.continue_learning_a11y')}
-                label={t('home.continue_learning')}
+                accessibilityLabel={t('home.hero_continue_cta_a11y', {
+                  minutes: startedLesson.estimatedDurationMinutes,
+                })}
+                label={t('home.hero_continue_cta', {
+                  minutes: startedLesson.estimatedDurationMinutes,
+                })}
                 onPress={onContinueStartedLesson}
                 testID="home-continue-action"
               />
@@ -182,24 +196,11 @@ export function HomeScreenView(props: HomeScreenViewModel) {
                 cell.inkKey === 'text.primary'
                   ? theme.colors.text.primary
                   : theme.colors[cell.inkKey];
-              // SETE-283 (HVB-03): with the flag off the video cell is
-              // disabled with an explanation — never a dead-end route.
               const isVideoCell = cell.testID === 'home-explore-video';
               const isDisabled = isVideoCell && !youtubeEnabled;
-              // SETE-311 Option B: badge/tag render only when a real metric
-              // exists (today none do) — the rows collapse otherwise.
-              const badgeLabel = cell.badgeKey
-                ? t(cell.badgeKey, cell.badgeParams)
-                : null;
-              const tagLabel = cell.tagKey ? t(cell.tagKey) : null;
               const a11yLabel = isDisabled
                 ? `${t(cell.titleKey)}. ${t('home.explore_video_unavailable')}`
-                : `${t(cell.titleKey)}. ${t(cell.metaKey)}${
-                    badgeLabel ? `. ${badgeLabel}` : ''
-                  }${tagLabel ? `. ${tagLabel}` : ''}`;
-              // Clay depth via the shared ShelfSurface (same pattern as
-              // LessonExploreRow): themes without a shelf get height 0 →
-              // flat, with the legacy pressed fade.
+                : `${t(cell.titleKey)}. ${t(cell.metaKey)}`;
               const shelf = theme.shelf?.surface;
               const tileShelf = theme.shelf?.iconButton;
               return (
@@ -227,39 +228,19 @@ export function HomeScreenView(props: HomeScreenViewModel) {
                         !shelf && pressed && !isDisabled && styles.pressed,
                       ]}
                     >
-                      <View style={styles.exploreTopRow}>
-                        <ShelfSurface
-                          shelfHeight={tileShelf?.height}
-                          shelfColor={tileShelf?.color}
-                          borderRadius={16}
-                          isPressed={pressed}
-                          isDisabled={isDisabled}
-                          faceStyle={[
-                            styles.exploreIconTile,
-                            {backgroundColor: theme.colors.surface},
-                          ]}
-                        >
-                          <MaterialIcon
-                            color={ink}
-                            name={cell.icon}
-                            size={24}
-                          />
-                        </ShelfSurface>
-                        {badgeLabel ? (
-                          <View
-                            style={styles.exploreBadge}
-                            testID={`${cell.testID}-badge`}
-                          >
-                            <AppText
-                              variant="caption"
-                              style={[styles.exploreBadgeLabel, {color: ink}]}
-                              numberOfLines={1}
-                            >
-                              {badgeLabel}
-                            </AppText>
-                          </View>
-                        ) : null}
-                      </View>
+                      <ShelfSurface
+                        shelfHeight={tileShelf?.height}
+                        shelfColor={tileShelf?.color}
+                        borderRadius={16}
+                        isPressed={pressed}
+                        isDisabled={isDisabled}
+                        faceStyle={[
+                          styles.exploreIconTile,
+                          {backgroundColor: theme.colors.surface},
+                        ]}
+                      >
+                        <MaterialIcon color={ink} name={cell.icon} size={24} />
+                      </ShelfSurface>
                       <AppText
                         variant="label"
                         style={[styles.exploreTitle, {color: ink}]}
@@ -276,39 +257,6 @@ export function HomeScreenView(props: HomeScreenViewModel) {
                           ? t('home.explore_video_unavailable')
                           : t(cell.metaKey)}
                       </AppText>
-                      <View
-                        style={[styles.exploreDivider, {backgroundColor: ink}]}
-                      />
-                      <View style={styles.exploreFooter}>
-                        {tagLabel ? (
-                          <View
-                            style={styles.exploreTag}
-                            testID={`${cell.testID}-tag`}
-                          >
-                            <AppText
-                              variant="caption"
-                              style={[styles.exploreTagLabel, {color: ink}]}
-                              numberOfLines={1}
-                            >
-                              {tagLabel}
-                            </AppText>
-                          </View>
-                        ) : (
-                          <View style={styles.exploreFooterSpacer} />
-                        )}
-                        <View
-                          accessible={false}
-                          importantForAccessibility="no-hide-descendants"
-                          style={[styles.exploreArrow, {borderColor: ink}]}
-                          testID={`${cell.testID}-arrow`}
-                        >
-                          <MaterialIcon
-                            color={ink}
-                            name="chevron_right"
-                            size={16}
-                          />
-                        </View>
-                      </View>
                     </ShelfSurface>
                   )}
                 </Pressable>
@@ -321,24 +269,6 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             <AppText variant="h3" style={styles.sectionTitle}>
               {t('home.continue_rail_title')}
             </AppText>
-            {railItems.length > 0 ? (
-              <Pressable
-                accessibilityLabel={t('home.view_all_a11y')}
-                accessibilityRole="button"
-                hitSlop={LINK_HIT_SLOP}
-                onPress={goLessonsTab}
-                style={styles.textLink}
-                testID="home-recent-view-all"
-              >
-                <AppText
-                  variant="label"
-                  style={styles.textLinkLabel}
-                  numberOfLines={1}
-                >
-                  {t('home.view_all')}
-                </AppText>
-              </Pressable>
-            ) : null}
           </View>
           {railItems.length > 0 ? (
             <ScrollView
@@ -349,7 +279,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             >
               {railItems.map(item => (
                 <Pressable
-                  accessibilityLabel={`${item.title}, ${item.meta}`}
+                  accessibilityLabel={`${item.title}, ${railMetaLine(t, item)}`}
                   accessibilityRole="button"
                   key={item.id}
                   onPress={() => openRecentItem(item)}
@@ -361,23 +291,33 @@ export function HomeScreenView(props: HomeScreenViewModel) {
                       <View style={styles.railThumb}>
                         <MaterialIcon
                           color={theme.colors.primary}
-                          name={
-                            item.kind === 'personal' ? 'menu_book' : 'article'
-                          }
+                          name={item.icon}
                           size={24}
                         />
                       </View>
                       <View style={styles.railCopy}>
-                        {item.level ? (
-                          <View style={styles.railTag}>
-                            <AppText
-                              variant="caption"
-                              style={styles.railTagLabel}
-                            >
-                              {item.level}
-                            </AppText>
-                          </View>
-                        ) : null}
+                        <View style={styles.railTopRow}>
+                          {item.levelTitle ? (
+                            <View style={styles.railTag}>
+                              <AppText
+                                variant="caption"
+                                style={styles.railTagLabel}
+                              >
+                                {item.levelTitle}
+                              </AppText>
+                            </View>
+                          ) : null}
+                          {item.isDownloaded ? (
+                            <View style={styles.railSavedTag}>
+                              <AppText
+                                variant="caption"
+                                style={styles.railSavedLabel}
+                              >
+                                {t('home.rail_saved')}
+                              </AppText>
+                            </View>
+                          ) : null}
+                        </View>
                         <AppText variant="label" numberOfLines={2}>
                           {item.title}
                         </AppText>
@@ -386,14 +326,9 @@ export function HomeScreenView(props: HomeScreenViewModel) {
                           variant="caption"
                           numberOfLines={1}
                         >
-                          {item.meta}
+                          {railMetaLine(t, item)}
                         </AppText>
                       </View>
-                      <MaterialIcon
-                        color={theme.colors.text.secondary}
-                        name="chevron_right"
-                        size={22}
-                      />
                     </View>
                   )}
                 </Pressable>
@@ -422,40 +357,6 @@ export function HomeScreenView(props: HomeScreenViewModel) {
   );
 }
 
-/**
- * SETE-311 Option B: real-data streak indicator in the Home header. Status
- * only — not pressable in v1 — and hidden entirely when the streak is 0
- * (a "0 day" pill would turn the greeting into a failure reminder).
- */
-function StreakPill({count}: {count: number}) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  const {t} = useTranslation();
-  if (count <= 0) return null;
-  return (
-    <View
-      accessibilityLabel={t('home.streak_pill_a11y', {count})}
-      accessibilityRole="text"
-      style={styles.streakPill}
-      testID="home-streak-pill"
-    >
-      <MaterialIcon
-        color={theme.colors.onTertiaryContainer}
-        name="local_fire_department"
-        size={16}
-      />
-      <AppText variant="label" style={styles.streakPillLabel} numberOfLines={1}>
-        {count}
-      </AppText>
-    </View>
-  );
-}
-
-/**
- * CTA drawn on the fixed deep-blue hero surface: yellow background with dark
- * ink (SETE-281 design reference). Fixed colors in every theme — the pairing
- * is contrast-locked in HomeScreenChipContrast.test.tsx.
- */
 function HeroCta({
   accessibilityLabel,
   label,
@@ -487,10 +388,6 @@ function HeroCta({
   );
 }
 
-/**
- * Corner blobs clipped by the hero card (SETE-281 design reference: coral
- * circle top-right, mint blob bottom-left). Purely decorative.
- */
 function HeroDecor() {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -507,10 +404,6 @@ function HeroDecor() {
   );
 }
 
-/**
- * Cat mascot (SETE-281 design reference): user-supplied artwork bundled as a
- * transparent PNG. Purely decorative.
- */
 function HeroMascot() {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -535,24 +428,19 @@ function makeStyles(theme: AppTheme) {
     header: {
       alignItems: 'center',
       flexDirection: 'row',
-      height: 56,
-      justifyContent: 'space-between',
+      gap: theme.spacing.sm,
+      minHeight: 56,
       paddingHorizontal: theme.gutter,
+      paddingVertical: theme.spacing.sm,
     },
-    greeting: {flex: 1, gap: 0, minWidth: 0, paddingRight: theme.spacing.sm},
-    streakPill: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      flexShrink: 0,
-      gap: 4,
-      height: 32,
-      paddingHorizontal: 10,
+    headerLogo: {
+      height: 40,
+      width: 40,
     },
-    streakPillLabel: {
-      color: theme.colors.onTertiaryContainer,
-      fontWeight: '700',
+    headerCopy: {
+      flex: 1,
+      gap: 2,
+      minWidth: 0,
     },
     scrollContent: {
       flexGrow: 1,
@@ -568,7 +456,6 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.sm,
       justifyContent: 'space-between',
     },
-    // Lets long AX titles wrap instead of pushing the section link off-screen.
     sectionTitle: {flex: 1, minWidth: 0},
     heroCard: {
       alignItems: 'center',
@@ -638,7 +525,6 @@ function makeStyles(theme: AppTheme) {
       borderRadius: 999,
       justifyContent: 'center',
       marginTop: theme.spacing.xs,
-      // Height stays flexible so AX text sizes wrap instead of clipping.
       minHeight: 48,
       minWidth: 160,
       paddingHorizontal: theme.spacing.lg,
@@ -650,7 +536,6 @@ function makeStyles(theme: AppTheme) {
     },
     fullWidthButton: {
       alignSelf: 'stretch',
-      // Height stays flexible so AX text sizes wrap instead of clipping.
       height: 'auto',
       minHeight: 52,
       paddingVertical: theme.spacing.sm,
@@ -671,49 +556,8 @@ function makeStyles(theme: AppTheme) {
     exploreCell: {
       borderRadius: theme.radius.lg,
       gap: theme.spacing.sm,
-      minHeight: 180,
+      minHeight: 160,
       padding: theme.spacing.md,
-    },
-    exploreTopRow: {
-      alignItems: 'flex-start',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    exploreBadge: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.pill,
-      height: 22,
-      justifyContent: 'center',
-      paddingHorizontal: theme.spacing.sm,
-    },
-    exploreBadgeLabel: {},
-    exploreDivider: {
-      height: 1,
-      opacity: 0.1,
-    },
-    exploreFooter: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    exploreTag: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.sm,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: 2,
-    },
-    exploreTagLabel: {},
-    exploreFooterSpacer: {
-      flex: 1,
-    },
-    exploreArrow: {
-      alignItems: 'center',
-      borderRadius: 12,
-      borderWidth: 1,
-      height: 24,
-      justifyContent: 'center',
-      width: 24,
     },
     exploreIconTile: {
       alignItems: 'center',
@@ -732,7 +576,7 @@ function makeStyles(theme: AppTheme) {
       width: 248,
     },
     railCard: {
-      alignItems: 'center',
+      alignItems: 'flex-start',
       backgroundColor: theme.colors.surface,
       borderRadius: theme.radius.lg,
       flexDirection: 'row',
@@ -750,6 +594,12 @@ function makeStyles(theme: AppTheme) {
       width: 52,
     },
     railCopy: {flex: 1, gap: 4, minWidth: 0},
+    railTopRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.xs,
+    },
     railTag: {
       alignSelf: 'flex-start',
       backgroundColor: theme.colors.accentSoft,
@@ -759,6 +609,16 @@ function makeStyles(theme: AppTheme) {
     },
     railTagLabel: {
       color: theme.colors.primary,
+    },
+    railSavedTag: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    },
+    railSavedLabel: {
+      color: theme.colors.onTertiaryContainer,
     },
     textLink: {
       alignItems: 'center',
