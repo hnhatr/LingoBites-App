@@ -21,12 +21,14 @@ import type {
   RootTabParamList,
 } from '../screens/navigationTypes';
 import {
+  buildWeeklyGoalCard,
   type ExploreCell,
   RAIL_LIMIT,
   railIconForSource,
   type RecentItem,
   trimDisplayName,
   typeLabelKeyForSource,
+  type WeeklyGoalCardModel,
 } from './homeScreenModel';
 
 type HomeNavigation = NativeStackScreenProps<
@@ -58,6 +60,16 @@ export function useHomeScreenController({navigation}: Args) {
   const [streak, setStreak] = useState<number>(
     () => getGamificationSnapshot().currentStreak,
   );
+  const [weeklyGoalCard, setWeeklyGoalCard] = useState<WeeklyGoalCardModel>(
+    () => {
+      const snapshot = getGamificationSnapshot();
+      return buildWeeklyGoalCard({
+        completedThisWeek: snapshot.weeklyGoal.completedThisWeek,
+        target: snapshot.weeklyGoal.target,
+        badgeEarned: snapshot.badges.some(badge => badge.id === 'diligent'),
+      });
+    },
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -71,7 +83,15 @@ export function useHomeScreenController({navigation}: Args) {
           }
         })
         .catch(() => undefined);
-      setStreak(getGamificationSnapshot().currentStreak);
+      const snapshot = getGamificationSnapshot();
+      setStreak(snapshot.currentStreak);
+      setWeeklyGoalCard(
+        buildWeeklyGoalCard({
+          completedThisWeek: snapshot.weeklyGoal.completedThisWeek,
+          target: snapshot.weeklyGoal.target,
+          badgeEarned: snapshot.badges.some(badge => badge.id === 'diligent'),
+        }),
+      );
       try {
         setDownloadCount(listDownloadedLessonSummaries().length);
       } catch {
@@ -200,6 +220,7 @@ export function useHomeScreenController({navigation}: Args) {
 
   return {
     streak,
+    weeklyGoalCard,
     trimmedDisplayName,
     showStarter,
     starterBare,
