@@ -97,10 +97,13 @@ export function applyLessonProgressRecord(
     | {status?: unknown}
     | undefined;
   if (typeof existingRow?.status === 'string') {
-    const localRank = lessonProgressRank(
-      existingRow.status as 'in_progress' | 'completed',
-    );
+    const localStatus = existingRow.status as 'in_progress' | 'completed';
+    const localRank = lessonProgressRank(localStatus);
     if (remoteRank < localRank) {
+      return true;
+    }
+    // AD-001 (INV-004): a locally completed row is final; consume without writing.
+    if (localStatus === 'completed') {
       return true;
     }
   }

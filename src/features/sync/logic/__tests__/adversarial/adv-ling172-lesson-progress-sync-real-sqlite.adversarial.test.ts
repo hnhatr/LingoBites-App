@@ -19,7 +19,11 @@ import {
   markSyncEventsFailed,
 } from '../../adapters/SyncOutboxRepository';
 import {drainOutboxOnce} from '../../outboxSync';
-import {applySyncRecord} from '../../pullWorker';
+import {
+  applySyncRecord,
+  startPullWorker,
+  stopPullWorker,
+} from '../../pullWorker';
 
 /**
  * LING-172 (TASK-006): `lesson_progress` sync on real SQLite + real HTTP
@@ -35,6 +39,10 @@ const FLASH_ID = '33333333-3333-4333-8333-333333333333';
 const BAD_PROGRESS_ID = '33333333-3333-4333-8333-333333333334';
 const T1 = '2026-10-01T10:00:00.000Z';
 const T2 = '2026-10-01T10:05:00.000Z';
+const MONDAY = '2026-10-06T10:00:00.000Z';
+const EARLIER = '2026-09-29T10:00:00.000Z';
+const LATER = '2026-10-07T12:00:00.000Z';
+const TUESDAY = '2026-10-07T09:00:00.000Z';
 
 type PushServer = {
   port: number;
@@ -392,5 +400,137 @@ describe('ADV / LING-172 lesson_progress pull rank on real SQLite', () => {
         tombstone: false,
       }),
     ).toThrow(/Invalid lesson_progress payload/);
+  });
+});
+
+describe('ADV / LING-222 INV-004 pull finality on real SQLite (TC-1A)', () => {
+  function completedPull(
+    lessonId: string,
+    completedAt: string,
+    revision = 99,
+  ) {
+    return {
+      collection: 'lesson_progress' as const,
+      entity_id: lessonId,
+      payload: {
+        status: 'completed' as const,
+        started_at: completedAt,
+        completed_at: completedAt,
+      },
+      revision,
+      occurred_at: completedAt,
+      updated_at: completedAt,
+      tombstone: false,
+    };
+  }
+
+  it('AC-005 S1: a completed pull with an earlier server time does not move completion (INV-004)', () => {
+    recordLessonEvent({
+      lessonId: 'lesson-inv4-s1',
+      event: 'complete',
+      occurredAt: MONDAY,
+      eventId: COMPLETE_ID,
+    });
+
+    applySyncRecord(completedPull('lesson-inv4-s1', EARLIER));
+
+    expect(getLessonProgress('lesson-inv4-s1')).toMatchObject({
+      status: 'completed',
+      completedAt: MONDAY,
+    });
+  });
+
+  it('AC-005 S2: a completed pull with a later or clamped time does not move completion (INV-004)', () => {
+    recordLessonEvent({
+      lessonId: 'lesson-inv4-s2',
+      event: 'complete',
+      occurredAt: T1,
+      eventId: COMPLETE_ID,
+    });
+
+    applySyncRecord(completedPull('lesson-inv4-s2', LATER));
+
+    expect(getLessonProgress('lesson-inv4-s2')).toMatchObject({
+      status: 'completed',
+      completedAt: T1,
+    });
+  });
+
+  it('AC-005 S3: an in_progress pull with higher revision does not regress completion (INV-004)', () => {
+    recordLessonEvent({
+      lessonId: 'lesson-inv4-s3',
+      event: 'complete',
+      occurredAt: T1,
+      eventId: COMPLETE_ID,
+    });
+
+    applySyncRecord({
+      collection: 'lesson_progress',
+      entity_id: 'lesson-inv4-s3',
+      payload: {
+        status: 'in_progress',
+        started_at: T1,
+        completed_at: null,
+      },
+      revision: 100,
+      occurred_at: T2,
+      updated_at: T2,
+      tombstone: false,
+    });
+
+    expect(getLessonProgress('lesson-inv4-s3')).toMatchObject({
+      status: 'completed',
+      completedAt: T1,
+    });
+  });
+
+  it('AC-005 S4: a missing local row accepts a completed pull (BR-004)', () => {
+    applySyncRecord(completedPull('lesson-inv4-s4', TUESDAY, 3));
+
+    expect(getLessonProgress('lesson-inv4-s4')).toMatchObject({
+      status: 'completed',
+      completedAt: TUESDAY,
+      revision: 3,
+    });
+  });
+
+  it('INV-004: runPullWorker applies the same finality through the paging path', async () => {
+    recordLessonEvent({
+      lessonId: 'lesson-inv4-worker',
+      event: 'complete',
+      occurredAt: MONDAY,
+      eventId: COMPLETE_ID,
+    });
+
+    const pullFetch = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        request_id: '44444444-4444-4444-8444-444444444444',
+        status: 'success',
+        contract_version: 2,
+        has_more: false,
+        next_cursor: 'cursor-after-inv4',
+        records: [completedPull('lesson-inv4-worker', EARLIER)],
+      }),
+    });
+    const previousFetch = global.fetch;
+    global.fetch = pullFetch as unknown as typeof fetch;
+
+    stopPullWorker();
+    startPullWorker();
+    await new Promise(resolve => setTimeout(resolve, 50));
+    stopPullWorker();
+    global.fetch = previousFetch;
+
+    expect(getLessonProgress('lesson-inv4-worker')).toMatchObject({
+      status: 'completed',
+      completedAt: MONDAY,
+    });
+    const cursor = db.execute(
+      'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
+      ['sync_cursor'],
+    );
+    expect(cursor.rows?.item(0).value).toBe('cursor-after-inv4');
   });
 });
