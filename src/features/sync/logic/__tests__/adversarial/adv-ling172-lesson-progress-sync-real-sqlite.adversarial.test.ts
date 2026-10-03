@@ -404,11 +404,7 @@ describe('ADV / LING-172 lesson_progress pull rank on real SQLite', () => {
 });
 
 describe('ADV / LING-222 INV-004 pull finality on real SQLite (TC-1A)', () => {
-  function completedPull(
-    lessonId: string,
-    completedAt: string,
-    revision = 99,
-  ) {
+  function completedPull(lessonId: string, completedAt: string, revision = 99) {
     return {
       collection: 'lesson_progress' as const,
       entity_id: lessonId,
