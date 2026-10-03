@@ -1,5 +1,7 @@
 import type {GamificationEventRecord, ReviewRating} from '@core/db/types';
 
+import {WEEKLY_LESSON_TARGET} from './weeklyGoalPolicy';
+
 /**
  * Event-driven engagement derivation (REQ-11 / ADR-4, SETE-89).
  *
@@ -228,7 +230,8 @@ export type BadgeId =
   | 'xp_100'
   | 'xp_500'
   | 'water_10'
-  | 'water_50';
+  | 'water_50'
+  | 'diligent';
 
 export type BadgeDefinition = {
   id: BadgeId;
@@ -260,6 +263,11 @@ export type EarnedBadge = {
   id: BadgeId;
 };
 
+export type WeeklyGoalProgress = {
+  completedThisWeek: number;
+  target: number;
+};
+
 export type GamificationSnapshot = {
   totalSessions: number;
   totalXp: number;
@@ -268,6 +276,7 @@ export type GamificationSnapshot = {
   waterUnits: number;
   badges: EarnedBadge[];
   pet: PetState;
+  weeklyGoal: WeeklyGoalProgress;
 };
 
 /**
@@ -306,5 +315,9 @@ export function deriveGamificationSnapshot(
     waterUnits,
     badges,
     pet: derivePetState(waterUnits),
+    weeklyGoal: {
+      completedThisWeek: 0,
+      target: WEEKLY_LESSON_TARGET,
+    },
   };
 }
