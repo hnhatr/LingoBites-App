@@ -98,7 +98,7 @@ describe('ADV / LING-176 schema v3 cutover on real SQLite', () => {
   it('ADV-001 / INV-003: re-running runMigrations on schema v3 resurrects dropped legacy tables', () => {
     // First run (e.g. app upgrade or initial install to v3)
     runMigrations(db);
-    expect(readAppSchemaVersion(db)).toBe(3);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
 
     // After first run, legacy tables are dropped by ensureSchemaV3Upgrade
     const tablesAfterRun1 = tableNames();
@@ -110,7 +110,7 @@ describe('ADV / LING-176 schema v3 cutover on real SQLite', () => {
     // Second run (simulating next app launch / restart)
     // The database is already at schema version 3.
     runMigrations(db);
-    expect(readAppSchemaVersion(db)).toBe(3);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
 
     // INV-003 / TASK-008: Retired tables must remain absent.
     // BUG: runMigrations unconditionally executes MIGRATIONS (which contains
@@ -125,7 +125,7 @@ describe('ADV / LING-176 schema v3 cutover on real SQLite', () => {
   it('ADV-002 / INV-003: schema v3 upgrade preserves lesson_progress rows and live outbox records while purging retired event types', () => {
     // Perform initial migration to set up tables
     runMigrations(db);
-    expect(readAppSchemaVersion(db)).toBe(3);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
 
     const at = '2026-10-01T10:00:00.000Z';
 
@@ -202,7 +202,7 @@ describe('ADV / LING-176 schema v3 cutover on real SQLite', () => {
 
     runMigrations(db);
 
-    expect(readAppSchemaVersion(db)).toBe(3);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
 
     // 1. lesson_progress rows are preserved intact
     const progressRows = db.execute(

@@ -1,5 +1,11 @@
 import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
 
+import {
+  APP_SCHEMA_VERSION_V3,
+  APP_SCHEMA_VERSION_V4,
+  ensureSchemaV4Upgrade,
+} from './schemaV4';
+
 const MIGRATIONS = [
   `CREATE TABLE IF NOT EXISTS app_settings (
     key TEXT PRIMARY KEY NOT NULL,
@@ -529,7 +535,19 @@ export function runMigrations(db: QuickSQLiteConnection): void {
   // that schema v3 drops. A database already at v3 must skip it, otherwise
   // every launch would recreate the retired tables (ADV-001 / INV-003).
   // Schema changes after v3 belong in a new versioned upgrade step.
-  if (readAppSchemaVersion(db) < APP_SCHEMA_VERSION) {
+  if (readAppSchemaVersion(db) < APP_SCHEMA_VERSION_V3) {
+    runLegacyBaselineMigrations(db);
+  }
+  ensureSchemaV2Upgrade(db);
+  ensureSchemaV3Upgrade(db);
+  ensureSchemaV4Upgrade(db);
+}
+
+/**
+ * Migrate through schema v3 only (no v4). Used by real-SQLite migration tests.
+ */
+export function runMigrationsThroughSchemaV3(db: QuickSQLiteConnection): void {
+  if (readAppSchemaVersion(db) < APP_SCHEMA_VERSION_V3) {
     runLegacyBaselineMigrations(db);
   }
   ensureSchemaV2Upgrade(db);
@@ -568,7 +586,9 @@ function runLegacyBaselineMigrations(db: QuickSQLiteConnection): void {
  * every `lesson_progress` row and every live transport row (`review`,
  * `practice`): only retired-collection rows are deleted.
  */
-export const APP_SCHEMA_VERSION = 3;
+export const APP_SCHEMA_VERSION = APP_SCHEMA_VERSION_V4;
+
+export {APP_SCHEMA_VERSION_V3} from './schemaV4';
 
 /** Outbox event types for collections retired by LING-149. Purged at cutover. */
 const RETIRED_SYNC_OUTBOX_EVENT_TYPES = [
@@ -722,7 +742,7 @@ const RETIRED_V3_SYNC_OUTBOX_EVENT_TYPES = [
 ];
 
 export function ensureSchemaV3Upgrade(db: QuickSQLiteConnection): void {
-  if (readAppSchemaVersion(db) >= APP_SCHEMA_VERSION) {
+  if (readAppSchemaVersion(db) >= APP_SCHEMA_VERSION_V3) {
     return;
   }
   db.execute('BEGIN');
@@ -748,7 +768,7 @@ export function ensureSchemaV3Upgrade(db: QuickSQLiteConnection): void {
         db.execute('DELETE FROM sync_outbox WHERE id = ?;', [row.id]);
       }
     }
-    db.execute(`PRAGMA user_version = ${APP_SCHEMA_VERSION};`);
+    db.execute(`PRAGMA user_version = ${APP_SCHEMA_VERSION_V3};`);
     db.execute('COMMIT');
   } catch (error) {
     try {

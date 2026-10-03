@@ -289,6 +289,13 @@ export type SpeakingMode =
   | 'bug_report'
   | 'mock_interview';
 
+/** Local upload lifecycle for a speaking recording (LING-224 / schema v4). */
+export type RecordingUploadState =
+  | 'local_only'
+  | 'pending'
+  | 'uploaded'
+  | 'failed';
+
 /** A row of the `speaking_recordings` table (SETE-110 / M5, REQ-20/21). */
 export type SpeakingRecordingRecord = {
   id: string;
@@ -298,6 +305,37 @@ export type SpeakingRecordingRecord = {
   filePath: string;
   durationMs: number;
   createdAt: string;
+};
+
+/** Schema v4 columns on `speaking_recordings` (LING-224). */
+export type SpeakingRecordingUploadColumns = {
+  sentenceId: string | null;
+  ownerUserId: string | null;
+  uploadState: RecordingUploadState;
+  uploadAttempts: number;
+  uploadNextAt: string | null;
+  uploadError: string | null;
+  serverRecordingId: string | null;
+};
+
+/** Full `speaking_recordings` row after schema v4 (LING-224). */
+export type SpeakingRecordingRecordV4 = SpeakingRecordingRecord &
+  SpeakingRecordingUploadColumns;
+
+/** A row of the `speaking_attempts` table (LING-224 / schema v4). */
+export type SpeakingAttemptRecord = {
+  id: string;
+  lessonId: string;
+  sentenceId: string;
+  mode: SpeakingMode;
+  practicedAt: string;
+  checkFullSentence: boolean;
+  checkKeyWords: boolean;
+  checkRhythm: boolean;
+  durationMs: number;
+  recordingId: string | null;
+  revision: number;
+  updatedAt: string;
 };
 
 export type InsertSpeakingRecordingInput = {
