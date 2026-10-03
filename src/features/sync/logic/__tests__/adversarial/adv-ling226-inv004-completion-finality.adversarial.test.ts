@@ -118,6 +118,7 @@ beforeEach(() => {
 afterEach(() => {
   stopPullWorker();
   global.fetch = previousFetch;
+  jest.restoreAllMocks();
   db.close();
   resetDatabaseForTests(null);
 });
@@ -236,6 +237,47 @@ describe('LING-226 / INV-004 completion finality on real SQLite', () => {
     });
     expect(listCompletedLessons()).toEqual([
       {lessonId: 'lesson-race', completedAt: LOCAL_TIME},
+    ]);
+  });
+
+  it('HELD: a later malformed record rolls back the page and cannot disturb a completed row', async () => {
+    recordLessonEvent({
+      lessonId: 'lesson-rollback',
+      event: 'complete',
+      occurredAt: LOCAL_TIME,
+      eventId: COMPLETE_EVENT_ID,
+    });
+    const before = getLessonProgress('lesson-rollback');
+    const timeoutSpy = jest.spyOn(global, 'setTimeout');
+    const malformedRecord = {
+      ...inProgressRecord('malformed', LATER_TIME, 100),
+      payload: {status: 'bogus'},
+    } as unknown as SyncPullRecord;
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(
+        pullResponse(
+          [
+            completedRecord('lesson-rollback', EARLIER_TIME, 99),
+            malformedRecord,
+          ],
+          'must-not-commit',
+          false,
+        ),
+      );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    startPullWorker();
+    await waitUntil(
+      () => timeoutSpy.mock.calls.some((call: unknown[]) => call[1] === 5000),
+      'pull worker did not schedule its rollback retry',
+    );
+    stopPullWorker();
+
+    expect(cursor()).toBeNull();
+    expect(getLessonProgress('lesson-rollback')).toEqual(before);
+    expect(listCompletedLessons()).toEqual([
+      {lessonId: 'lesson-rollback', completedAt: LOCAL_TIME},
     ]);
   });
 });
