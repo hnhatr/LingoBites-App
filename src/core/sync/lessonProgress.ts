@@ -68,6 +68,38 @@ function mapRowToRecord(row: LessonProgressRow): LessonProgressRecord {
   };
 }
 
+export type CompletedLessonRow = {
+  lessonId: string;
+  completedAt: string;
+};
+
+/**
+ * Completed lessons on device (BR-001, BR-003): `status = completed`, a stored
+ * completion time, and not tombstoned.
+ */
+export function listCompletedLessons(): CompletedLessonRow[] {
+  const db = getDatabase();
+  const result = db.execute(
+    `SELECT lesson_id, completed_at FROM lesson_progress
+     WHERE status = 'completed'
+       AND completed_at IS NOT NULL
+       AND tombstone = 0
+     ORDER BY completed_at ASC;`,
+  );
+  const rows: CompletedLessonRow[] = [];
+  if (!result.rows) {
+    return rows;
+  }
+  for (let i = 0; i < result.rows.length; i += 1) {
+    const row = result.rows.item(i) as {
+      lesson_id: string;
+      completed_at: string;
+    };
+    rows.push({lessonId: row.lesson_id, completedAt: row.completed_at});
+  }
+  return rows;
+}
+
 /** Locally stored progress for one lesson, or null when never started. */
 export function getLessonProgress(
   lessonId: string,
