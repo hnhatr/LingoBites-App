@@ -2,6 +2,7 @@ import {type NavigationProp, useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useCallback, useMemo, useState} from 'react';
 
+import {useAccountStore} from '@features/account';
 import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
 import {
@@ -21,9 +22,11 @@ import type {
 } from '../screens/navigationTypes';
 import {
   type ExploreCell,
+  RAIL_LIMIT,
+  railIconForSource,
   type RecentItem,
-  toCanonicalRecentItem,
-  UNIFIED_RAIL_LIMIT,
+  trimDisplayName,
+  typeLabelKeyForSource,
 } from './homeScreenModel';
 
 type HomeNavigation = NativeStackScreenProps<
@@ -39,13 +42,17 @@ export function useHomeScreenController({navigation}: Args) {
   const {config} = useFeatureFlags();
   const tabNavigation =
     navigation.getParent<NavigationProp<RootTabParamList>>();
-  // Same gate as the Create tab's YouTube tile: app flag AND server.
   const youtubeServerEnabled = useYouTubeServerEnabled();
   const youtubeEnabled =
     config.features.youtubeLearning && youtubeServerEnabled;
   const canonicalCatalog = useCanonicalCatalog();
   const canonicalRefresh = canonicalCatalog.refresh;
   const catalogState = canonicalCatalog.state;
+  const displayName = useAccountStore(state => state.user?.display_name);
+  const trimmedDisplayName = useMemo(
+    () => trimDisplayName(displayName),
+    [displayName],
+  );
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
   const [continueLessonId, setContinueLessonId] = useState<string | null>(null);
   const [streak, setStreak] = useState<number>(
@@ -140,22 +147,29 @@ export function useHomeScreenController({navigation}: Args) {
   );
 
   const railItems: RecentItem[] = useMemo(() => {
-    const downloaded = listDownloadedLessonSummaries()
-      .slice(0, UNIFIED_RAIL_LIMIT)
-      .map(item => ({
-        kind: 'canonical' as const,
+    const downloaded = listDownloadedLessonSummaries().slice(0, RAIL_LIMIT);
+    if (downloaded.length > 0) {
+      return downloaded.map(item => ({
         id: item.lessonId,
         title: item.title,
-        meta: `${item.estimatedDurationMinutes} phút`,
+        levelTitle: item.snapshot.unit?.level_title,
+        typeLabelKey: typeLabelKeyForSource(item.snapshot.source_type),
+        minutes: item.estimatedDurationMinutes,
+        isDownloaded: true,
+        icon: railIconForSource(item.snapshot.source_type),
       }));
-    if (downloaded.length > 0) {
-      return downloaded;
     }
     const canonicalItems =
       catalogState.status === 'ready' ? catalogState.lessons : [];
-    return canonicalItems
-      .slice(0, UNIFIED_RAIL_LIMIT)
-      .map(toCanonicalRecentItem);
+    return canonicalItems.slice(0, RAIL_LIMIT).map(item => ({
+      id: item.id,
+      title: item.title,
+      levelTitle: item.unit?.level_title ?? undefined,
+      typeLabelKey: typeLabelKeyForSource(item.source_type),
+      minutes: undefined,
+      isDownloaded: false,
+      icon: railIconForSource(item.source_type),
+    }));
   }, [catalogState]);
 
   const openRecentItem = useCallback(
@@ -167,11 +181,6 @@ export function useHomeScreenController({navigation}: Args) {
       openLesson(navigation, item.id);
     },
     [navigation],
-  );
-
-  const onOpenSettings = useCallback(
-    () => tabNavigation?.navigate('Profile'),
-    [tabNavigation],
   );
 
   const onNavigateCreate = useCallback(
@@ -191,6 +200,7 @@ export function useHomeScreenController({navigation}: Args) {
 
   return {
     streak,
+    trimmedDisplayName,
     showStarter,
     starterBare,
     heroPick,
@@ -200,7 +210,6 @@ export function useHomeScreenController({navigation}: Args) {
           id: startedDownload.lessonId,
           titleVi: startedDownload.title,
           estimatedDurationMinutes: startedDownload.estimatedDurationMinutes,
-          level: 'A2',
         }
       : null,
     exploreCells,
@@ -209,7 +218,6 @@ export function useHomeScreenController({navigation}: Args) {
     goLessonsTab,
     openVideoCell,
     openRecentItem,
-    onOpenSettings,
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
