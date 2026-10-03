@@ -61,14 +61,12 @@ export function useHomeScreenController({navigation}: Args) {
     () => getGamificationSnapshot().currentStreak,
   );
   const [weeklyGoalCard, setWeeklyGoalCard] = useState<WeeklyGoalCardModel>(
-    () => {
-      const snapshot = getGamificationSnapshot();
-      return buildWeeklyGoalCard({
-        completedThisWeek: snapshot.weeklyGoal.completedThisWeek,
-        target: snapshot.weeklyGoal.target,
-        badgeEarned: snapshot.badges.some(badge => badge.id === 'diligent'),
-      });
-    },
+    () =>
+      buildWeeklyGoalCard({
+        completedThisWeek: 0,
+        target: 6,
+        badgeEarned: false,
+      }),
   );
 
   useFocusEffect(
