@@ -2,12 +2,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
 import {
   DILIGENT_BADGE_LATCH_KEY,
   latchDiligentBadgeEarnedAt,
   readDiligentBadgeLatch,
 } from '@features/engagement/logic/data/WeeklyGoalBadgeRepository';
+import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
 import {getWeeklyGoalState} from '@features/engagement/logic/weeklyGoal';
 
 import {
