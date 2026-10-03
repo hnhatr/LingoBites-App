@@ -1,6 +1,7 @@
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {getDatabase, withTransaction} from '@core/db/database';
+import {deleteLocalFiles} from '@core/localData/localFileCleanup';
 import {
   LessonProgressStatePayloadSchema,
   SyncCollectionSchema,
@@ -298,7 +299,9 @@ export async function runPullWorker() {
           saveCursor(cursor);
         });
         pageApplied = true;
-        // Tombstone paths are collected for post-commit unlink (AD-004).
+        if (pendingUnlinks.length > 0) {
+          await deleteLocalFiles(pendingUnlinks);
+        }
       } catch (_err) {
         // Rollback occurred. Do not advance cursor, schedule retry.
         if (isEnabled) {

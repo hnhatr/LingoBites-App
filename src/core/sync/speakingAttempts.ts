@@ -208,6 +208,10 @@ export function applySpeakingAttemptRecord(
   const db = getDatabase();
   const {mode, sentenceId} = parseSpeakingAttemptEntityId(record.entity_id);
   if (record.tombstone) {
+    const localWriteTime = getLocalSpeakingAttemptWriteTime(record.entity_id);
+    if (!shouldApplyRemoteSpeakingAttempt(localWriteTime, record.occurred_at)) {
+      return true;
+    }
     const paths = deleteSpeakingRowsForSentence(db, mode, sentenceId);
     pendingUnlinks?.push(...paths);
     return true;
