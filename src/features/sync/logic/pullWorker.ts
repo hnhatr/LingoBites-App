@@ -24,6 +24,77 @@ let isEnabled = false;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let subscription: {remove: () => void} | null = null;
 
+/** Durable queue of recording files to unlink after a successful pull tombstone (ADV-003). */
+const PENDING_RECORDING_UNLINKS_KEY = 'speaking.pending_recording_unlinks';
+
+function readPendingRecordingUnlinks(): string[] {
+  const db = getDatabase();
+  const row = db
+    .execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [
+      PENDING_RECORDING_UNLINKS_KEY,
+    ])
+    .rows?.item(0) as {value?: string} | undefined;
+  if (!row?.value) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(row.value) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((item): item is string => typeof item === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function writePendingRecordingUnlinks(paths: string[]): void {
+  const db = getDatabase();
+  if (paths.length === 0) {
+    db.execute('DELETE FROM app_settings WHERE key = ?;', [
+      PENDING_RECORDING_UNLINKS_KEY,
+    ]);
+    return;
+  }
+  db.execute(
+    'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+    [
+      PENDING_RECORDING_UNLINKS_KEY,
+      JSON.stringify(paths),
+      new Date().toISOString(),
+    ],
+  );
+}
+
+function mergePendingRecordingUnlinks(paths: string[]): void {
+  if (paths.length === 0) {
+    return;
+  }
+  const merged = [...new Set([...readPendingRecordingUnlinks(), ...paths])];
+  writePendingRecordingUnlinks(merged);
+}
+
+async function retryPendingRecordingUnlinks(): Promise<void> {
+  const pending = readPendingRecordingUnlinks();
+  if (pending.length === 0) {
+    return;
+  }
+  const failed = await deleteLocalFiles(pending);
+  writePendingRecordingUnlinks(failed);
+}
+
+async function unlinkRecordingFilesAfterPull(
+  filePaths: string[],
+): Promise<void> {
+  if (filePaths.length === 0) {
+    return;
+  }
+  const failed = await deleteLocalFiles(filePaths);
+  if (failed.length > 0) {
+    mergePendingRecordingUnlinks(failed);
+  }
+}
+
 function getCursor(): string {
   const db = getDatabase();
   const res = db.execute(
@@ -272,6 +343,7 @@ export async function runPullWorker() {
   isRunning = true;
 
   try {
+    await retryPendingRecordingUnlinks();
     let cursor = getCursor();
     let hasMore = true;
 
@@ -299,9 +371,7 @@ export async function runPullWorker() {
           saveCursor(cursor);
         });
         pageApplied = true;
-        if (pendingUnlinks.length > 0) {
-          await deleteLocalFiles(pendingUnlinks);
-        }
+        await unlinkRecordingFilesAfterPull(pendingUnlinks);
       } catch (_err) {
         // Rollback occurred. Do not advance cursor, schedule retry.
         if (isEnabled) {
