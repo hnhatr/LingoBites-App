@@ -11,6 +11,10 @@ import {
   LESSON_PROGRESS_EVENT_TYPE,
   lessonProgressRank,
 } from '@core/sync/lessonProgress';
+import {
+  applySpeakingAttemptRecord,
+  SPEAKING_ATTEMPTS_EVENT_TYPE,
+} from '@core/sync/speakingAttempts';
 
 import {syncPull} from './syncClient';
 
@@ -124,9 +128,16 @@ export function applyLessonProgressRecord(
   return true;
 }
 
-export function applySyncRecord(record: SyncRecord | SyncPullRecord) {
+export function applySyncRecord(
+  record: SyncRecord | SyncPullRecord,
+  pendingUnlinks?: string[],
+) {
   if (record.collection === LESSON_PROGRESS_EVENT_TYPE) {
     applyLessonProgressRecord(record);
+    return;
+  }
+  if (record.collection === SPEAKING_ATTEMPTS_EVENT_TYPE) {
+    applySpeakingAttemptRecord(record, pendingUnlinks);
     return;
   }
   if (!SyncCollectionSchema.safeParse(record.collection).success) {
@@ -277,15 +288,17 @@ export async function runPullWorker() {
 
       const db = getDatabase();
       let pageApplied = false;
+      const pendingUnlinks: string[] = [];
       try {
         withTransaction(db, () => {
           for (const record of res.data.records) {
-            applySyncRecord(record);
+            applySyncRecord(record, pendingUnlinks);
           }
           cursor = res.data.next_cursor;
           saveCursor(cursor);
         });
         pageApplied = true;
+        // Tombstone paths are collected for post-commit unlink (AD-004).
       } catch (_err) {
         // Rollback occurred. Do not advance cursor, schedule retry.
         if (isEnabled) {
