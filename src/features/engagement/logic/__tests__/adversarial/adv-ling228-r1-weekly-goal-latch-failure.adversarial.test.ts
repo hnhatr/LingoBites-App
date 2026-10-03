@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import {DILIGENT_BADGE_LATCH_KEY} from '@features/engagement/logic/data/WeeklyGoalBadgeRepository';
 import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
+import {getWeeklyGoalState} from '@features/engagement/logic/weeklyGoal';
 
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
@@ -30,13 +31,17 @@ function seedEarnedWeek(): void {
       2,
       '0',
     )}T10:00:00.000Z`;
-    getDatabase().execute(
-      `INSERT INTO lesson_progress (
-        lesson_id, status, started_at, completed_at, revision, tombstone, updated_at
-      ) VALUES (?, 'completed', ?, ?, 0, 0, ?);`,
-      [`lesson-${index}`, completedAt, completedAt, completedAt],
-    );
+    insertCompleted(`lesson-${index}`, completedAt);
   }
+}
+
+function insertCompleted(lessonId: string, completedAt: string): void {
+  getDatabase().execute(
+    `INSERT INTO lesson_progress (
+      lesson_id, status, started_at, completed_at, revision, tombstone, updated_at
+    ) VALUES (?, 'completed', ?, ?, 0, 0, ?);`,
+    [lessonId, completedAt, completedAt, completedAt],
+  );
 }
 
 function failDiligentLatchWrites(): void {
@@ -78,6 +83,20 @@ afterEach(() => {
 });
 
 describe('LING-228 adversarial review r1', () => {
+  it('HELD / INV-001: fixed instants rebucket exactly once across process timezones', () => {
+    const firstCompletion = '2026-10-05T03:00:00.000Z';
+    insertCompleted('timezone-first', firstCompletion);
+    insertCompleted('timezone-second', '2026-10-06T03:00:00.000Z');
+
+    // In UTC+7 the first instant is Monday (both rows count); in UTC-5 it is
+    // Sunday (only the second row belongs to the current Monday-start week).
+    const expectedCount = new Date(firstCompletion).getDay() === 0 ? 1 : 2;
+    expect(
+      getWeeklyGoalState(new Date('2026-10-07T05:00:00.000Z'))
+        .completedThisWeek,
+    ).toBe(expectedCount);
+  });
+
   it('ADV-001 / INV-002: an observed badge survives a failed latch write, restart, and row loss', () => {
     seedEarnedWeek();
     failDiligentLatchWrites();
