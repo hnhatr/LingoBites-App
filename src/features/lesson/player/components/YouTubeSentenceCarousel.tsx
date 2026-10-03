@@ -211,6 +211,7 @@ export function YouTubeSentenceCarousel({
   const cardWidth = Math.max(listWidth - theme.spacing.lg, 280);
 
   const listRef = React.useRef<FlatList<LessonSentence>>(null);
+  const pendingAnimatedScrollRef = React.useRef(false);
 
   const scrollToIndex = useCallback(
     (index: number, animated: boolean) => {
@@ -225,11 +226,19 @@ export function YouTubeSentenceCarousel({
   );
 
   React.useEffect(() => {
-    scrollToIndex(currentIndex, scrollAnimated);
     if (scrollAnimated) {
+      pendingAnimatedScrollRef.current = true;
+    }
+  }, [scrollAnimated]);
+
+  React.useEffect(() => {
+    const animated = pendingAnimatedScrollRef.current;
+    pendingAnimatedScrollRef.current = false;
+    scrollToIndex(currentIndex, animated);
+    if (animated) {
       onScrollAnimationConsumed?.();
     }
-  }, [currentIndex, onScrollAnimationConsumed, scrollAnimated, scrollToIndex]);
+  }, [currentIndex, onScrollAnimationConsumed, scrollToIndex]);
 
   const handlePressCard = useCallback(
     (index: number, sentence: LessonSentence) => {
