@@ -1,3 +1,6 @@
+import {spawnSync} from 'node:child_process';
+import path from 'node:path';
+
 import {
   anyWeekReachesTarget,
   countCompletionsInWeek,
@@ -95,24 +98,33 @@ describe('weeklyGoalPolicy (TC-2A / INV-001)', () => {
       process.env.TZ = originalTz;
     });
 
-    it('recomputes N when TZ changes (Asia/Ho_Chi_Minh → America/Bogota)', () => {
-      process.env.TZ = 'Asia/Ho_Chi_Minh';
-      const rows: WeeklyGoalLessonRow[] = [
-        {
-          lessonId: 'hcm-1',
-          completedAt: new Date('2026-10-05T10:00:00').toISOString(),
-        },
-        {
-          lessonId: 'hcm-2',
-          completedAt: new Date('2026-10-06T10:00:00').toISOString(),
-        },
-      ];
-      const nowHcm = new Date('2026-10-07T12:00:00');
-      expect(countCompletionsInWeek(rows, nowHcm)).toBe(2);
+    it('rebucks N when TZ changes (Asia/Ho_Chi_Minh → America/Bogota)', () => {
+      const appRoot = path.join(__dirname, '../../../../..');
+      const countInFreshProcess = (tz: string): number => {
+        const result = spawnSync(
+          'yarn',
+          [
+            'test',
+            'src/features/engagement/logic/__tests__/weeklyGoalPolicy.test.ts',
+            '--runInBand',
+            '-t',
+            'AC-002 S3 timezone probe',
+          ],
+          {
+            cwd: appRoot,
+            env: {...process.env, TZ: tz, AC002_S3_PROBE: '1'},
+            encoding: 'utf8',
+          },
+        );
+        expect(result.status).toBe(0);
+        const output = `${result.stdout}\n${result.stderr}`;
+        const match = output.match(/AC002_S3_COUNT=(\d+)/);
+        expect(match).not.toBeNull();
+        return Number(match![1]);
+      };
 
-      process.env.TZ = 'America/Bogota';
-      const nowBogota = new Date('2026-10-07T12:00:00');
-      expect(countCompletionsInWeek(rows, nowBogota)).toBe(2);
+      expect(countInFreshProcess('Asia/Ho_Chi_Minh')).toBe(2);
+      expect(countInFreshProcess('America/Bogota')).toBe(1);
     });
   });
 
@@ -141,6 +153,30 @@ describe('weeklyGoalPolicy (TC-2A / INV-001)', () => {
       expect(countCompletionsInWeek(rows, now)).toBe(2);
     });
   });
+
+  (process.env.AC002_S3_PROBE === '1' ? describe : describe.skip)(
+    'AC-002 S3 timezone probe',
+    () => {
+      it('prints the weekly count for fixed UTC instants', () => {
+        const rows: WeeklyGoalLessonRow[] = [
+          {
+            lessonId: 'tz-first',
+            completedAt: '2026-10-05T03:00:00.000Z',
+          },
+          {
+            lessonId: 'tz-second',
+            completedAt: '2026-10-06T03:00:00.000Z',
+          },
+        ];
+        const count = countCompletionsInWeek(
+          rows,
+          new Date('2026-10-07T05:00:00.000Z'),
+        );
+         
+        console.log(`AC002_S3_COUNT=${count}`);
+      });
+    },
+  );
 
   describe('anyWeekReachesTarget', () => {
     it('is false until a week has six completions', () => {

@@ -16,9 +16,10 @@ The Home weekly-goal card and Profile badge count read engagement state from
 
 ## Badge rule (AD-002)
 
-`badgeEarned = latch ∨ anyWeekReachesTarget(rows)`. The first read that derives
-true writes the latch in the same synchronous call so time-zone re-bucketing
-cannot remove an observed badge (INV-002).
+`badgeEarned = latch ∨ (derived while a pending observation is queued)`. The first
+read that derives true writes the latch in the same synchronous call; if the
+write fails, the earn time is queued and retried on the next read so a previously
+observed badge survives restart once persistence succeeds (ADV-001 / INV-002).
 
 ## Reset paths (AD-005)
 
