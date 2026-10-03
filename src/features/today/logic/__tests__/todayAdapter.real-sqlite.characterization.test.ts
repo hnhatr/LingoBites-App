@@ -12,6 +12,7 @@ import {
 import {recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {
+  DEFAULT_CANONICAL_LESSON_ID,
   readSeededLessonDownload,
   seedCanonicalLessonDownload,
 } from '@test/support/canonicalDownloadSeed';
@@ -41,16 +42,30 @@ describe('todayAdapter real SQLite (TASK-008)', () => {
   it('builds progression from lesson_downloads and lesson_progress', () => {
     seedCanonicalLessonDownload();
     recordLessonEvent({
-      lessonId: '33333333-3333-4333-8333-333333333301',
+      lessonId: DEFAULT_CANONICAL_LESSON_ID,
       event: 'start',
       occurredAt: NOW,
     });
     const snapshot = getLearnerStateSnapshot(NOW);
     expect(snapshot.hasDownloadedLessons).toBe(true);
     expect(snapshot.lessonProgression.nextLessonId).toBe(
-      '33333333-3333-4333-8333-333333333301',
+      DEFAULT_CANONICAL_LESSON_ID,
     );
     expect(readSeededLessonDownload()).not.toBeNull();
+  });
+
+  it('skips completed downloads when picking the next lesson (LING-222 R-004)', () => {
+    seedCanonicalLessonDownload();
+    recordLessonEvent({
+      lessonId: DEFAULT_CANONICAL_LESSON_ID,
+      event: 'complete',
+      occurredAt: NOW,
+    });
+    const snapshot = getLearnerStateSnapshot(NOW);
+    expect(snapshot.lessonProgression.completedLessonIds).toEqual([
+      DEFAULT_CANONICAL_LESSON_ID,
+    ]);
+    expect(snapshot.lessonProgression.nextLessonId).toBeNull();
   });
 
   it('schema v3 drops retired package tables after migrations', () => {

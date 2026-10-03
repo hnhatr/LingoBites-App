@@ -68,8 +68,12 @@ describe('i18n', () => {
         'completed_label',
         'complete_error',
       ] as const) {
-        expect(vi.lessonPlayer[key]).toBe(EXPECTED_LESSON_COMPLETION_COPY.vi[key]);
-        expect(en.lessonPlayer[key]).toBe(EXPECTED_LESSON_COMPLETION_COPY.en[key]);
+        expect(vi.lessonPlayer[key]).toBe(
+          EXPECTED_LESSON_COMPLETION_COPY.vi[key],
+        );
+        expect(en.lessonPlayer[key]).toBe(
+          EXPECTED_LESSON_COMPLETION_COPY.en[key],
+        );
       }
     });
   });
