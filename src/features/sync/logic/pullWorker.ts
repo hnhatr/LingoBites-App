@@ -74,12 +74,38 @@ function mergePendingRecordingUnlinks(paths: string[]): void {
   writePendingRecordingUnlinks(merged);
 }
 
+/** Paths still referenced by `speaking_recordings` must not be unlinked (ADV-004). */
+function partitionRecordingPathsForUnlink(filePaths: string[]): {
+  orphanPaths: string[];
+  liveOwnedPaths: string[];
+} {
+  if (filePaths.length === 0) {
+    return {orphanPaths: [], liveOwnedPaths: []};
+  }
+  const db = getDatabase();
+  const orphanPaths: string[] = [];
+  const liveOwnedPaths: string[] = [];
+  for (const filePath of filePaths) {
+    const res = db.execute(
+      'SELECT 1 FROM speaking_recordings WHERE file_path = ? LIMIT 1;',
+      [filePath],
+    );
+    if (res.rows && res.rows.length > 0) {
+      liveOwnedPaths.push(filePath);
+    } else {
+      orphanPaths.push(filePath);
+    }
+  }
+  return {orphanPaths, liveOwnedPaths};
+}
+
 async function retryPendingRecordingUnlinks(): Promise<void> {
   const pending = readPendingRecordingUnlinks();
   if (pending.length === 0) {
     return;
   }
-  const failed = await deleteLocalFiles(pending);
+  const {orphanPaths} = partitionRecordingPathsForUnlink(pending);
+  const failed = await deleteLocalFiles(orphanPaths);
   writePendingRecordingUnlinks(failed);
 }
 
@@ -89,7 +115,8 @@ async function unlinkRecordingFilesAfterPull(
   if (filePaths.length === 0) {
     return;
   }
-  const failed = await deleteLocalFiles(filePaths);
+  const {orphanPaths} = partitionRecordingPathsForUnlink(filePaths);
+  const failed = await deleteLocalFiles(orphanPaths);
   if (failed.length > 0) {
     mergePendingRecordingUnlinks(failed);
   }
