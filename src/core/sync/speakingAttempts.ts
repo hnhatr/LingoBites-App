@@ -104,7 +104,30 @@ function readPendingOutboxOccurredAt(
   return row?.created_at ?? null;
 }
 
-/** Local LWW key: row `practiced_at` or newest unsynced outbox time (AD-004). */
+/** Newest delete tombstone for the entity, including after sync (INV-004 / AC-3). */
+function readLatestTombstoneOccurredAt(
+  db: QuickSQLiteConnection,
+  entityId: string,
+): string | null {
+  const row = db
+    .execute(
+      `SELECT created_at FROM sync_outbox
+       WHERE entity_id = ? AND event_type = ?
+         AND payload_json LIKE '%"tombstone":true%'
+       ORDER BY datetime(created_at) DESC LIMIT 1;`,
+      [entityId, SPEAKING_ATTEMPTS_EVENT_TYPE],
+    )
+    .rows?.item(0) as {created_at?: string} | undefined;
+  return row?.created_at ?? null;
+}
+
+function maxIsoTimestamp(a: string | null, b: string | null): string | null {
+  if (!a) return b;
+  if (!b) return a;
+  return Date.parse(a) >= Date.parse(b) ? a : b;
+}
+
+/** Local LWW key: row `practiced_at`, unsynced outbox, or delete tombstone (AD-004). */
 export function getLocalSpeakingAttemptWriteTime(
   entityId: string,
 ): string | null {
@@ -112,12 +135,11 @@ export function getLocalSpeakingAttemptWriteTime(
   const {mode, sentenceId} = parseSpeakingAttemptEntityId(entityId);
   const practicedAt = readLocalPracticedAt(db, mode, sentenceId);
   const pendingOutboxAt = readPendingOutboxOccurredAt(db, entityId);
-  if (practicedAt && pendingOutboxAt) {
-    return Date.parse(practicedAt) >= Date.parse(pendingOutboxAt)
-      ? practicedAt
-      : pendingOutboxAt;
-  }
-  return practicedAt ?? pendingOutboxAt;
+  const tombstoneAt = readLatestTombstoneOccurredAt(db, entityId);
+  return maxIsoTimestamp(
+    maxIsoTimestamp(practicedAt, pendingOutboxAt),
+    tombstoneAt,
+  );
 }
 
 export function shouldApplyRemoteSpeakingAttempt(

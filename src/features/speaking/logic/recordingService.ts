@@ -24,7 +24,8 @@ import type {SpeakingMode} from '@core/db/types';
 function nativeFsAvailable(): boolean {
   return (
     typeof RNFS.DocumentDirectoryPath === 'string' &&
-    RNFS.DocumentDirectoryPath.length > 0
+    RNFS.DocumentDirectoryPath.length > 0 &&
+    typeof RNFS.readDir === 'function'
   );
 }
 
@@ -261,14 +262,67 @@ export async function readRecordingFileForUpload(
   }
 }
 
-/** Best-effort deletion of a recording file from local disk. */
+function isMissingFileError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /enoent|not found|does not exist/i.test(message);
+}
+
+/** Deletes a recording file; only a missing path is treated as success (AC-5). */
 export async function deleteRecordingFile(filePath: string): Promise<void> {
   if (!nativeFsAvailable()) {
     return;
   }
   try {
     await RNFS.unlink(filePath);
-  } catch {
-    // A missing file is already the desired state.
+  } catch (error) {
+    if (isMissingFileError(error)) {
+      return;
+    }
+    throw error;
+  }
+}
+
+export function getRecordingsDirectoryRoot(): string {
+  return recordingsRoot();
+}
+
+function isMissingDirectoryError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /enoent|not found|does not exist/i.test(message);
+}
+
+async function listFilesRecursive(directory: string): Promise<string[]> {
+  const paths: string[] = [];
+  try {
+    const entries = await RNFS.readDir(directory);
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        paths.push(...(await listFilesRecursive(entry.path)));
+      } else if (entry.isFile()) {
+        paths.push(entry.path);
+      }
+    }
+  } catch (error) {
+    if (isMissingDirectoryError(error)) {
+      return [];
+    }
+    throw error;
+  }
+  return paths;
+}
+
+/** Every file under `LingoBitesRecordings`, including untracked orphans (FR-018). */
+export async function listRecordingsDirectoryFilePaths(): Promise<string[]> {
+  if (!nativeFsAvailable()) {
+    return [];
+  }
+  return listFilesRecursive(recordingsRoot());
+}
+
+/** Removes all files under the recordings directory (after DB commit — AC-018). */
+export async function sweepRecordingsDirectory(): Promise<void> {
+  const paths = await listRecordingsDirectoryFilePaths();
+  for (const filePath of paths) {
+    await deleteRecordingFile(filePath);
   }
 }

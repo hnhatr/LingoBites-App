@@ -321,6 +321,7 @@ export function clearSpeakingData(): {deletedFilePaths: string[]} {
   const deletedFilePaths = listSpeakingRecordingFilePaths();
   const db = getDatabase();
   db.execute('DELETE FROM speaking_recordings;');
+  db.execute('DELETE FROM speaking_attempts;');
   db.execute('DELETE FROM error_events;');
   return {deletedFilePaths};
 }

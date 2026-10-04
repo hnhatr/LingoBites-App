@@ -66,6 +66,20 @@ export function countSpeakingAttempts(): number {
   return Number(row?.c ?? 0);
 }
 
+export function listAllSpeakingAttempts(): SpeakingAttemptRecord[] {
+  const db = getDatabase();
+  const result = db.execute('SELECT * FROM speaking_attempts;');
+  const items: SpeakingAttemptRecord[] = [];
+  const rows = result.rows;
+  if (!rows) {
+    return items;
+  }
+  for (let i = 0; i < rows.length; i += 1) {
+    items.push(mapRow(rows.item(i) as SpeakingAttemptRow));
+  }
+  return items;
+}
+
 export type UpsertSpeakingAttemptInput = {
   id: string;
   lessonId: string;
