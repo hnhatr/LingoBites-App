@@ -38,6 +38,18 @@ async function defaultFileExists(path: string): Promise<boolean> {
   }
 }
 
+function localPathExistsSync(filePath: string): boolean {
+  if (typeof process.env.JEST_WORKER_ID === 'string') {
+    const fs = require('node:fs') as typeof import('node:fs');
+    try {
+      return fs.existsSync(filePath);
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
 function remoteCachePath(serverRecordingId: string): string {
   const root = `${RNFS.DocumentDirectoryPath}/LingoBitesRecordings/_remote`;
   return `${root}/${serverRecordingId}.m4a`;
@@ -52,11 +64,32 @@ async function ensureRemoteCacheDir(): Promise<void> {
   }
 }
 
+async function defaultWriteFile(path: string, data: string): Promise<void> {
+  await ensureRemoteCacheDir();
+  await RNFS.writeFile(path, data, 'utf8');
+}
+
 export function shouldShowSummaryPlayButton(row: SummaryPlaybackRow): boolean {
-  if (row.localFilePath) {
+  if (row.serverRecordingId) {
     return true;
   }
-  return Boolean(row.serverRecordingId);
+  if (!row.localFilePath) {
+    return false;
+  }
+  return localPathExistsSync(row.localFilePath);
+}
+
+export async function resolveSummaryPlayVisible(
+  row: SummaryPlaybackRow,
+): Promise<boolean> {
+  if (row.serverRecordingId) {
+    return true;
+  }
+  if (!row.localFilePath) {
+    return false;
+  }
+  const fileExists = deps.fileExists ?? defaultFileExists;
+  return await fileExists(row.localFilePath);
 }
 
 export async function requestServerRecordingContent(
@@ -74,12 +107,9 @@ export async function requestServerRecordingContent(
     if (!response.ok) {
       return {ok: false, errorCode: `HTTP_${response.status}`};
     }
-    const writeFile = options.writeFile ?? deps.writeFile;
-    if (writeFile) {
-      const body = await response.text();
-      await ensureRemoteCacheDir();
-      await writeFile(remoteCachePath(serverRecordingId), body);
-    }
+    const writeFile = options.writeFile ?? deps.writeFile ?? defaultWriteFile;
+    const body = await response.text();
+    await writeFile(remoteCachePath(serverRecordingId), body);
     return {ok: true};
   } catch {
     return {ok: false, errorCode: 'NETWORK_ERROR'};

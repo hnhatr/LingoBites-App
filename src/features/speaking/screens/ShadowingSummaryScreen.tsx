@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -12,6 +12,7 @@ import {useAppTheme} from '@ui/theme';
 import {formatShadowingElapsed} from '../logic/shadowing/useShadowingSession';
 import {
   playSummarySentenceRecording,
+  resolveSummaryPlayVisible,
   shouldShowSummaryPlayButton,
 } from '../logic/upload/remoteRecordingPlayback';
 import type {ShadowingSummaryRouteParams} from './navigationTypes';
@@ -44,6 +45,42 @@ export function ShadowingSummaryScreen({
   }, [navigation]);
 
   const showFailedList = failedSentences.length > 0;
+
+  const initialPlayVisible = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    for (const row of failedSentences) {
+      map[row.sentenceId] = shouldShowSummaryPlayButton({
+        recordingId: row.recordingId,
+        localFilePath: row.localFilePath,
+        serverRecordingId: row.serverRecordingId,
+      });
+    }
+    return map;
+  }, [failedSentences]);
+
+  const [playVisibleBySentenceId, setPlayVisibleBySentenceId] =
+    useState(initialPlayVisible);
+
+  useEffect(() => {
+    setPlayVisibleBySentenceId(initialPlayVisible);
+    let cancelled = false;
+    void (async () => {
+      const next: Record<string, boolean> = {};
+      for (const row of failedSentences) {
+        next[row.sentenceId] = await resolveSummaryPlayVisible({
+          recordingId: row.recordingId,
+          localFilePath: row.localFilePath,
+          serverRecordingId: row.serverRecordingId,
+        });
+      }
+      if (!cancelled) {
+        setPlayVisibleBySentenceId(next);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [failedSentences, initialPlayVisible]);
 
   return (
     <AppScreen testID="shadowing-summary-screen">
@@ -97,11 +134,7 @@ export function ShadowingSummaryScreen({
           <View testID="shadowing-summary-failed-list">
             <AppText variant="h3">Câu cần ôn</AppText>
             {failedSentences.map(row => {
-              const showPlay = shouldShowSummaryPlayButton({
-                recordingId: row.recordingId,
-                localFilePath: row.localFilePath,
-                serverRecordingId: row.serverRecordingId,
-              });
+              const showPlay = playVisibleBySentenceId[row.sentenceId] ?? false;
               return (
                 <View
                   key={row.sentenceId}

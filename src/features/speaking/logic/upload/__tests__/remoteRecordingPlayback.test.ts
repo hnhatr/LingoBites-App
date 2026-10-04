@@ -1,3 +1,5 @@
+import * as RNFS from '@dr.pogodin/react-native-fs';
+
 import {
   configureRemoteRecordingPlayback,
   playSummarySentenceRecording,
@@ -52,6 +54,20 @@ describe('remoteRecordingPlayback', () => {
       {method: 'GET'},
       fetch,
     );
+  });
+
+  it('CR-001-red: writes cache file without explicit writeFile dep', async () => {
+    resetRemoteRecordingPlaybackForTests();
+    mockAuthenticatedFetch.mockResolvedValue({ok: true, text: async () => 'a'});
+    const writeFile = jest
+      .spyOn(RNFS, 'writeFile')
+      .mockResolvedValue(undefined as never);
+    configureRemoteRecordingPlayback({
+      fileExists: jest.fn().mockResolvedValue(false),
+    });
+    await requestServerRecordingContent('55555555-5555-4555-8555-555555555555');
+    expect(writeFile).toHaveBeenCalled();
+    writeFile.mockRestore();
   });
 
   it('requestServerRecordingContent returns ok on HTTP 200', async () => {
