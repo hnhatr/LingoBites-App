@@ -333,6 +333,31 @@ describe('LING-242 adversarial shadowing session', () => {
     expect(mockStopRecording.mock.calls.length).toBeLessThanOrEqual(1);
   });
 
+  it('ADV-004 / BR-002: a second session mount cannot disarm the active 30s stop', async () => {
+    takeSequence = ['/files/first-session.m4a'];
+    const first = makeDriver(() => TAKE_NEW);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(first.Driver));
+    });
+    await act(async () => {
+      await first.latest.current?.startRecordingTake();
+    });
+
+    const second = makeDriver(() => TAKE_OTHER);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(second.Driver));
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(SHADOWING_MAX_RECORDING_MS);
+    });
+
+    expect(first.latest.current?.sessionState).toBe('recorded');
+    expect(first.latest.current?.take?.filePath).toBe(
+      '/files/first-session.m4a',
+    );
+    expect(mockStopRecording.mock.calls.length).toBeLessThanOrEqual(1);
+  });
+
   it.each(['reRecord', 'skipSentence', 'discardUnsavedTake'] as const)(
     'H1 / INV-001 HELD: %s does not delete a take protected by a recording row',
     async action => {
