@@ -7,6 +7,7 @@ import {saveLessonSnapshotBody} from '@features/lesson/player/logic/canonicalDow
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import type {LessonSentence} from '@core/schemas/lesson';
+import {applySpeakingAttemptRecord} from '@core/sync/speakingAttempts';
 
 import {
   openRealSqlite,
@@ -85,6 +86,27 @@ function insertAttempt(input: {
   );
 }
 
+function replaySyncedAttempt(sentenceId: string) {
+  applySpeakingAttemptRecord({
+    collection: 'speaking_attempts',
+    entity_id: `shadowing:${sentenceId}`,
+    payload: {
+      lesson_id: LESSON_ID,
+      sentence_id: sentenceId,
+      mode: 'shadowing',
+      check_full_sentence: true,
+      check_key_words: true,
+      check_rhythm: true,
+      duration_ms: 1000,
+      recording_id: null,
+    },
+    revision: 1,
+    occurred_at: NEWER,
+    updated_at: NEWER,
+    tombstone: false,
+  });
+}
+
 beforeEach(() => {
   dbPath = path.join(
     os.tmpdir(),
@@ -128,33 +150,12 @@ describe('LING-244 adversarial BR-008 coverage', () => {
   });
 
   it('ADV-002 / INV-BR-008: tied attempt times resolve to the same resume index across row replay order', () => {
-    insertAttempt({
-      id: 'sentence-1',
-      practicedAt: NEWER,
-      passed: true,
-      sentenceId: SENTENCE_1,
-    });
-    insertAttempt({
-      id: 'sentence-2',
-      practicedAt: NEWER,
-      passed: true,
-      sentenceId: SENTENCE_2,
-    });
+    replaySyncedAttempt(SENTENCE_1);
+    replaySyncedAttempt(SENTENCE_2);
     const beforeReplay = summarizeShadowingLessonProgress(LESSON_ID);
 
-    db.execute('DELETE FROM speaking_attempts;');
-    insertAttempt({
-      id: 'sentence-2',
-      practicedAt: NEWER,
-      passed: true,
-      sentenceId: SENTENCE_2,
-    });
-    insertAttempt({
-      id: 'sentence-1',
-      practicedAt: NEWER,
-      passed: true,
-      sentenceId: SENTENCE_1,
-    });
+    replaySyncedAttempt(SENTENCE_2);
+    replaySyncedAttempt(SENTENCE_1);
     const afterReplay = summarizeShadowingLessonProgress(LESSON_ID);
 
     expect(afterReplay?.resumeSentenceIndex).toBe(
