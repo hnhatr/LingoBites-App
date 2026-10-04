@@ -40,8 +40,9 @@ async function defaultFileExists(path: string): Promise<boolean> {
 
 function localPathExistsSync(filePath: string): boolean {
   if (typeof process.env.JEST_WORKER_ID === 'string') {
-    const fs = require('node:fs') as typeof import('node:fs');
     try {
+      // Dynamic require avoids Metro static analyzer resolution error in React Native build
+      const fs = (0, eval)('require')('fs');
       return fs.existsSync(filePath);
     } catch {
       return false;
