@@ -6,6 +6,7 @@ import {isAccountStillOwner} from '@core/sync/syncDrainOwnership';
 
 import {
   createRecordingMetadata,
+  RECORDING_UPLOAD_CONSENT_WITHDRAWN,
   RECORDING_UPLOAD_MIME,
   uploadRecordingBinary,
 } from '../api/recordingClient';
@@ -225,6 +226,28 @@ function markFailed(id: string, errorCode: string): void {
 
 const PERMANENT_FILE_READ_ERROR_CODES = new Set(['NOT_FOUND']);
 
+function handleUploadClientFailure(
+  id: string,
+  errorCode: string,
+  retryable: boolean,
+  attempts: number,
+): void {
+  if (errorCode === RECORDING_UPLOAD_CONSENT_WITHDRAWN) {
+    flipPendingToLocalOnly(id);
+    return;
+  }
+  if (!retryable) {
+    markFailed(id, errorCode);
+    return;
+  }
+  const delayMs = uploadRetryDelayMsWithJitter(
+    attempts,
+    deps.randomFn ?? Math.random,
+  );
+  scheduleRetry(id, attempts, errorCode, delayMs);
+  armRetryTimer(delayMs);
+}
+
 function consentAllowsUpload(id: string): boolean {
   const isConsentOn = (deps.isConsentOn ?? isRecordingUploadConsentOn)();
   if (!isConsentOn) {
@@ -313,17 +336,12 @@ async function processRecordingJob(id: string): Promise<void> {
   );
 
   if (!createResult.ok) {
-    if (!createResult.retryable) {
-      markFailed(id, createResult.errorCode);
-      return;
-    }
-    const attempts = refreshed.uploadAttempts + 1;
-    const delayMs = uploadRetryDelayMsWithJitter(
-      attempts,
-      deps.randomFn ?? Math.random,
+    handleUploadClientFailure(
+      id,
+      createResult.errorCode,
+      createResult.retryable,
+      refreshed.uploadAttempts + 1,
     );
-    scheduleRetry(id, attempts, createResult.errorCode, delayMs);
-    armRetryTimer(delayMs);
     return;
   }
 
@@ -344,17 +362,12 @@ async function processRecordingJob(id: string): Promise<void> {
   );
 
   if (!uploadResult.ok) {
-    if (!uploadResult.retryable) {
-      markFailed(id, uploadResult.errorCode);
-      return;
-    }
-    const attempts = refreshed.uploadAttempts + 1;
-    const delayMs = uploadRetryDelayMsWithJitter(
-      attempts,
-      deps.randomFn ?? Math.random,
+    handleUploadClientFailure(
+      id,
+      uploadResult.errorCode,
+      uploadResult.retryable,
+      refreshed.uploadAttempts + 1,
     );
-    scheduleRetry(id, attempts, uploadResult.errorCode, delayMs);
-    armRetryTimer(delayMs);
     return;
   }
 

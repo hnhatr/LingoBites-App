@@ -1,11 +1,20 @@
 import {getAppConfig} from '@core/api/appConfig';
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {
+  authenticatedFetch,
+  type AuthenticatedFetchOptions,
+  UploadSendPreconditionError,
+} from '@core/api/authenticatedFetch';
 import type {
   CreateRecordingRequest,
   CreateRecordingSuccessResponse,
 } from '@core/schemas/recordings';
 
+import {isRecordingUploadConsentOn} from '../upload/recordingConsent';
+
 export const RECORDING_UPLOAD_MIME = 'audio/mp4';
+
+export const RECORDING_UPLOAD_CONSENT_WITHDRAWN =
+  'RECORDING_UPLOAD_CONSENT_WITHDRAWN';
 
 export type CreateRecordingResult =
   | {ok: true; data: CreateRecordingSuccessResponse; status: number}
@@ -111,6 +120,32 @@ function isRetryableHttpStatus(status: number): boolean {
   return status >= 500 || status === 429 || status === 404;
 }
 
+function recordingAuthenticatedFetchOptions(
+  options: RecordingClientOptions,
+): AuthenticatedFetchOptions {
+  const auth: AuthenticatedFetchOptions = {
+    beforeSend: () => isRecordingUploadConsentOn(),
+  };
+  if (options.expectedUserId !== undefined) {
+    auth.expectedUserId = options.expectedUserId;
+  }
+  return auth;
+}
+
+function consentWithdrawnResult(): {
+  ok: false;
+  errorCode: string;
+  message: string;
+  retryable: false;
+} {
+  return {
+    ok: false,
+    errorCode: RECORDING_UPLOAD_CONSENT_WITHDRAWN,
+    message: 'Recording upload consent is not on',
+    retryable: false,
+  };
+}
+
 export async function createRecordingMetadata(
   request: CreateRecordingRequest,
   options: RecordingClientOptions = {},
@@ -137,9 +172,7 @@ export async function createRecordingMetadata(
         signal,
       },
       options.fetchImpl,
-      options.expectedUserId !== undefined
-        ? {expectedUserId: options.expectedUserId}
-        : undefined,
+      recordingAuthenticatedFetchOptions(options),
     );
     clearTimeout(timeoutId);
     const apiCode = response.ok ? null : await readApiErrorCode(response);
@@ -157,6 +190,9 @@ export async function createRecordingMetadata(
     return {ok: true, data, status: response.status};
   } catch (error) {
     clearTimeout(timeoutId);
+    if (error instanceof UploadSendPreconditionError) {
+      return consentWithdrawnResult();
+    }
     if (error instanceof RecordingUploadUrlError) {
       return {
         ok: false,
@@ -216,9 +252,7 @@ export async function uploadRecordingBinary(
         signal,
       },
       options.fetchImpl,
-      options.expectedUserId !== undefined
-        ? {expectedUserId: options.expectedUserId}
-        : undefined,
+      recordingAuthenticatedFetchOptions(options),
     );
     clearTimeout(timeoutId);
     const apiCode = response.ok ? null : await readApiErrorCode(response);
@@ -238,6 +272,9 @@ export async function uploadRecordingBinary(
     };
   } catch (error) {
     clearTimeout(timeoutId);
+    if (error instanceof UploadSendPreconditionError) {
+      return consentWithdrawnResult();
+    }
     return {
       ok: false,
       errorCode: 'NETWORK_ERROR',
