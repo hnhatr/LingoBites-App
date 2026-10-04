@@ -230,40 +230,6 @@ export type SyncOutboxRecord = {
   syncedAt: string | null;
 };
 
-/**
- * A row of the `content_review_items` table (SETE-108 / M3, scheduled by
- * SETE-109 / M4). Created when the lesson runtime exits and a declared SRS
- * item (M1 `content_units` where `unit_type = 'srs'`) was backed by content
- * the learner actually completed. `mastery_state` and `next_review_at` are
- * owned by the fixed-interval scheduler in `features/lesson/packages/logic/srs/contentScheduler`.
- */
-export type ContentReviewItemMasteryState = ContentMasteryState;
-
-export type ContentReviewItemRecord = {
-  revision: number;
-  tombstone: boolean;
-  id: string;
-  srsItemId: string;
-  lessonId: string;
-  packageId: string;
-  itemType: string;
-  sourceRefId: string;
-  front: string;
-  back: string;
-  hintVi: string | null;
-  masteryState: ContentReviewItemMasteryState;
-  nextReviewAt: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-/**
- * `item_type` tag used on `content_review_items` rows created by the Error
- * Notebook (SETE-110 / M5), so delete-my-data and other M5-scoped queries
- * can select just this milestone's contribution without touching M3/M4 rows.
- */
-export const SPEAKING_ERROR_REVIEW_ITEM_TYPE = 'speaking_error' as const;
-
 /** Speaking Room mode that produced a recording or a captured error event. */
 export type SpeakingMode =
   | 'shadowing'

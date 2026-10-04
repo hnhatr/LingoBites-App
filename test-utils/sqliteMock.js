@@ -27,8 +27,6 @@ function createMockDatabase() {
   const contentUnits = [];
   const contentActivities = [];
   const contentAudioAssets = [];
-  // SETE-108 / M3: lesson runtime review items
-  const contentReviewItems = [];
   // SETE-110 / M5: Speaking Room recordings + Error Notebook
   const speakingRecordings = [];
   const errorEvents = [];
@@ -172,15 +170,6 @@ function createMockDatabase() {
           {name: 'id', pk: 1},
           {name: 'event_type', pk: 0},
           {name: 'points', pk: 0},
-          {name: 'created_at', pk: 0},
-          {name: 'revision', pk: 0},
-          {name: 'tombstone', pk: 0},
-        ],
-        content_review_items: [
-          {name: 'id', pk: 1},
-          {name: 'srs_item_id', pk: 0},
-          {name: 'lesson_id', pk: 0},
-          {name: 'next_review_at', pk: 0},
           {name: 'created_at', pk: 0},
           {name: 'revision', pk: 0},
           {name: 'tombstone', pk: 0},
@@ -1860,40 +1849,6 @@ function createMockDatabase() {
       return toRows(rows);
     }
 
-    // ---- SETE-110 / M5 error notebook review item creation ----
-    if (normalized.startsWith('insert into content_review_items')) {
-      contentReviewItems.push({
-        id: params[0],
-        srs_item_id: params[1],
-        lesson_id: params[2],
-        package_id: params[3],
-        item_type: params[4],
-        source_ref_id: params[5],
-        front: params[6],
-        back: params[7],
-        hint_vi: params[8],
-        mastery_state: 'new',
-        next_review_at: params[9],
-        created_at: params[10],
-        updated_at: params[11],
-      });
-      return {rowsAffected: 1, insertId: contentReviewItems.length};
-    }
-
-    if (
-      normalized.startsWith(
-        'delete from content_review_items where item_type = ?',
-      )
-    ) {
-      const itemType = params[0];
-      for (let i = contentReviewItems.length - 1; i >= 0; i -= 1) {
-        if (contentReviewItems[i].item_type === itemType) {
-          contentReviewItems.splice(i, 1);
-        }
-      }
-      return {rowsAffected: 1};
-    }
-
     // ---- SETE-110 / M5 speaking recordings ----
     if (normalized.startsWith('insert into speaking_recordings')) {
       speakingRecordings.push({
@@ -1968,61 +1923,6 @@ function createMockDatabase() {
       const count = errorEvents.length;
       errorEvents.length = 0;
       return {rowsAffected: count};
-    }
-
-    // ---- SETE-108 / M3 lesson runtime review items ----
-    if (normalized.startsWith('insert or ignore into content_review_items')) {
-      const srsItemId = params[1];
-      if (contentReviewItems.some(r => r.srs_item_id === srsItemId)) {
-        return {rowsAffected: 0};
-      }
-      contentReviewItems.push({
-        id: params[0],
-        srs_item_id: params[1],
-        lesson_id: params[2],
-        package_id: params[3],
-        item_type: params[4],
-        source_ref_id: params[5],
-        front: params[6],
-        back: params[7],
-        hint_vi: params[8],
-        mastery_state: 'new',
-        next_review_at: params[9],
-        created_at: params[10],
-        updated_at: params[11],
-      });
-      return {rowsAffected: 1, insertId: contentReviewItems.length};
-    }
-
-    if (
-      normalized.startsWith('select') &&
-      normalized.includes('from content_review_items')
-    ) {
-      if (normalized.includes('where lesson_id = ?')) {
-        const lessonId = params[0];
-        return toRows(contentReviewItems.filter(r => r.lesson_id === lessonId));
-      }
-      if (normalized.includes('where id = ?')) {
-        const id = params[0];
-        return toRows(contentReviewItems.filter(r => r.id === id));
-      }
-      return toRows([...contentReviewItems]);
-    }
-
-    // ---- SETE-109 / M4 content review scheduling ----
-    if (normalized.startsWith('update content_review_items')) {
-      const masteryState = params[0];
-      const nextReviewAt = params[1];
-      const updatedAt = params[2];
-      const id = params[3];
-      const row = contentReviewItems.find(r => r.id === id);
-      if (!row) {
-        return {rowsAffected: 0};
-      }
-      row.mastery_state = masteryState;
-      row.next_review_at = nextReviewAt;
-      row.updated_at = updatedAt;
-      return {rowsAffected: 1};
     }
 
     // ---- SETE-145 / M6 Library persistence ----
@@ -2257,7 +2157,6 @@ function createMockDatabase() {
         content_units: contentUnits,
         content_activities: contentActivities,
         content_audio_assets: contentAudioAssets,
-        content_review_items: contentReviewItems,
         speaking_recordings: speakingRecordings,
         error_events: errorEvents,
         content_lesson_state: contentLessonState,
@@ -2303,7 +2202,6 @@ function createMockDatabase() {
         content_units: contentUnits,
         content_activities: contentActivities,
         content_audio_assets: contentAudioAssets,
-        content_review_items: contentReviewItems,
         speaking_recordings: speakingRecordings,
         error_events: errorEvents,
         content_lesson_state: contentLessonState,

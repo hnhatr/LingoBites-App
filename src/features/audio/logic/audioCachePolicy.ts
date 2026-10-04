@@ -1,9 +1,8 @@
 /**
  * Audio cache utilities (REQ-9, SETE-88).
  *
- * The download-side eviction logic (summarizeReadyAssets, selectChaptersToEvict,
- * selectStaleChapters, isChapterStale and their supporting constants) has been
- * retired with the chapter-audio download chain (LING-249). Only the UI
+ * The download-side eviction logic (summarize, evict, stale-chapter functions
+ * and their supporting constants) has been retired with the chapter-audio download chain (LING-249). Only the UI
  * formatting helper is kept here because it is used by the Profile row and
  * exported from the barrel.
  */

@@ -5,8 +5,8 @@ import {getReadyAudioAsset} from './data/AudioAssetRepository';
 /**
  * Offline chapter-audio playback (REQ-9 / VC-4 / SETE-90).
  *
- * The download chain (deviceChapterAudioDownloader, deviceChapterAudioFileStore,
- * ensureChapterAudioOnDevice) has been retired (LING-249). This module now owns
+ * The download chain (the downloader, file store, and ensure-on-device function)
+ * has been retired (LING-249). This module now owns
  * only the offline player that resolves a cached file and plays it via the
  * native audio player — no network involved — so a downloaded chapter plays in
  * airplane mode.
