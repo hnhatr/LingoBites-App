@@ -6,4 +6,5 @@
 export {ShadowingLessonPickerScreen} from './ShadowingLessonPickerScreen';
 export {SpeakingRoomScreen} from './SpeakingRoomScreen';
 export {ShadowingSessionScreen} from './ShadowingSessionScreen';
+export {ShadowingSummaryScreen} from './ShadowingSummaryScreen';
 export {deleteRecordingFile} from '../logic/recordingService';

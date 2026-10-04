@@ -56,6 +56,10 @@ export {
   isRecordingUploadConsentOn,
   readRecordingUploadConsent,
 } from './logic/upload/recordingConsent';
+export {
+  applyRecordingUploadConsent,
+  SpeakingRecordingsSettingsRow,
+} from './components/SpeakingRecordingsSettingsRow';
 export type {
   SaveShadowingAttemptInput,
   SaveShadowingAttemptResult,
@@ -74,6 +78,7 @@ export type {
 export type {
   ShadowingLessonPickerRouteParams,
   ShadowingSessionRouteParams,
+  ShadowingSummaryRouteParams,
   SpeakingRoomRouteParams,
   SpeakingShadowingRouteParams,
 } from './screens/navigationTypes';

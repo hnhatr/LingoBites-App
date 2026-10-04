@@ -16,6 +16,7 @@ import type {DailyReviewRouteParams} from '@features/review';
 import type {
   ShadowingLessonPickerRouteParams,
   ShadowingSessionRouteParams,
+  ShadowingSummaryRouteParams,
   SpeakingRoomRouteParams,
 } from '@features/speaking';
 import type {TodayRouteParams} from '@features/today';
@@ -31,6 +32,7 @@ export type HomeStackParamList = {
   SpeakingRoom: SpeakingRoomRouteParams;
   ShadowingLessonPicker: ShadowingLessonPickerRouteParams;
   ShadowingSession: ShadowingSessionRouteParams;
+  ShadowingSummary: ShadowingSummaryRouteParams;
 };
 
 export type RootTabParamList = {
