@@ -18,7 +18,6 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
-import {captureSpeakingErrorIfNeeded} from '../../logic/errorNotebookService';
 import {
   playRecording,
   requestMicrophonePermission,
@@ -189,16 +188,6 @@ export function SpeakingShadowingActivity({
       })
       .catch(() => {});
 
-    captureSpeakingErrorIfNeeded({
-      id: `${recordingId}-check`,
-      source: 'speaking_room',
-      lessonId: lesson.lessonId,
-      outcome: {
-        taskCompleted,
-        keyPhraseUsed,
-        responseTimeMs: respondedQuickly ? 0 : durationMs,
-      },
-    });
     setSubmitted(true);
   }
 

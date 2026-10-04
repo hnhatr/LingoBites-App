@@ -17,6 +17,11 @@ export {
   clearSpeakingData,
   listSpeakingRecordingFilePaths,
 } from './logic/data/SpeakingRepository';
+export {saveShadowingAttempt} from './logic/shadowing/saveShadowingAttempt';
+export type {
+  SaveShadowingAttemptInput,
+  SaveShadowingAttemptResult,
+} from './logic/shadowing/saveShadowingAttempt';
 export type {
   SpeakingRoomRouteParams,
   SpeakingShadowingRouteParams,

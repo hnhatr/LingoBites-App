@@ -58,6 +58,7 @@ export const SyncCollectionSchema = z.enum([
   'learner_profile',
   'first_listen_attempts',
   'passed_situations',
+  'speaking_attempts',
 ]);
 
 export type SyncCollection = z.infer<typeof SyncCollectionSchema>;
@@ -200,4 +201,37 @@ export const LessonProgressStatePayloadSchema = z
 
 export type LessonProgressStatePayload = z.infer<
   typeof LessonProgressStatePayloadSchema
+>;
+
+/** Speaking modes allowed in sync payloads (LING-224 contract r1). */
+export const SpeakingModeSyncSchema = z.enum([
+  'shadowing',
+  'quick_answer',
+  'standup',
+  'app_description',
+  'bug_report',
+  'mock_interview',
+]);
+
+export type SpeakingModeSync = z.infer<typeof SpeakingModeSyncSchema>;
+
+/**
+ * Push/pull payload for `speaking_attempts` (LING-224 FR-026, INV-006).
+ * Metadata only — no audio, paths, or base64.
+ */
+export const SpeakingAttemptPayloadSchema = z
+  .object({
+    lesson_id: z.string().uuid(),
+    sentence_id: z.string().uuid(),
+    mode: SpeakingModeSyncSchema,
+    check_full_sentence: z.boolean(),
+    check_key_words: z.boolean(),
+    check_rhythm: z.boolean(),
+    duration_ms: z.number().int().min(1).max(35000),
+    recording_id: z.string().uuid().nullable(),
+  })
+  .strict();
+
+export type SpeakingAttemptPayload = z.infer<
+  typeof SpeakingAttemptPayloadSchema
 >;
