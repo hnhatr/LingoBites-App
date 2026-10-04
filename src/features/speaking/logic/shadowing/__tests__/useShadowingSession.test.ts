@@ -2,8 +2,6 @@ import React from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
-import {DEFAULT_TTS_RATE} from '@features/audio/logic/ttsService';
-
 import {
   formatShadowingElapsed,
   isShadowingTakeFileProtected,
@@ -26,7 +24,6 @@ const mockSaveShadowingAttempt = jest.fn();
 const mockRequestDrain = jest.fn();
 
 jest.mock('@features/audio', () => ({
-  DEFAULT_TTS_RATE: 0.5,
   speak: (...args: unknown[]) => mockSpeak(...args),
 }));
 
@@ -157,19 +154,16 @@ describe('useShadowingSession', () => {
       await latest.current?.playNormalSample();
       await latest.current?.playSlowSample();
     });
-    expect(mockSpeak).toHaveBeenNthCalledWith(
-      1,
-      'First line',
-      undefined,
-      DEFAULT_TTS_RATE,
-    );
+    const normalRate = mockSpeak.mock.calls[0]?.[2] as number | undefined;
+    const slowRate = mockSpeak.mock.calls[1]?.[2] as number;
+    expect(mockSpeak).toHaveBeenNthCalledWith(1, 'First line');
     expect(mockSpeak).toHaveBeenNthCalledWith(
       2,
       'First line',
       undefined,
       SHADOWING_SLOW_TTS_RATE,
     );
-    expect(SHADOWING_SLOW_TTS_RATE).toBeLessThan(DEFAULT_TTS_RATE);
+    expect(slowRate).toBeLessThan(normalRate ?? 0.5);
   });
 
   it('AC-007 S1: auto-stops once at 30s and keeps the take in recorded state', async () => {

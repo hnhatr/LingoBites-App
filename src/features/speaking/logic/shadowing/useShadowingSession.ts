@@ -2,7 +2,6 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {speak} from '@features/audio';
-import {DEFAULT_TTS_RATE} from '@features/audio/logic/ttsService';
 
 import {getDatabase} from '@core/db/database';
 
@@ -226,7 +225,7 @@ export function useShadowingSession(
       if (base === null) {
         return;
       }
-      void finishRecording(path, base);
+      finishRecording(path, base).catch(() => undefined);
     }, SHADOWING_MAX_RECORDING_MS);
   }, [finishRecording, generateTakeId, sentence]);
 
@@ -260,7 +259,9 @@ export function useShadowingSession(
       ) {
         return;
       }
-      void finishRecording(take.filePath, recordingStartedAtMs.current);
+      finishRecording(take.filePath, recordingStartedAtMs.current).catch(
+        () => undefined,
+      );
     };
     const sub = AppState.addEventListener('change', onAppStateChange);
     return () => sub.remove();
@@ -272,7 +273,7 @@ export function useShadowingSession(
     if (!sentence?.textEn) {
       return;
     }
-    await speak(sentence.textEn, undefined, DEFAULT_TTS_RATE);
+    await speak(sentence.textEn);
   }, [sentence]);
 
   const playSlowSample = useCallback(async () => {
@@ -308,12 +309,12 @@ export function useShadowingSession(
     if (sessionState === 'saving') {
       return;
     }
-    void (async () => {
+    (async () => {
       if (take?.filePath && sessionState === 'recorded') {
         await safeDeleteUnsavedTakeFile(take.filePath);
       }
       advanceSentence();
-    })();
+    })().catch(() => undefined);
   }, [advanceSentence, sessionState, take]);
 
   const saveAndContinue = useCallback(async () => {

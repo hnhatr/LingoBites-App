@@ -68,7 +68,10 @@ export function ShadowingSessionScreen({
           text: 'Thoát',
           style: 'destructive',
           onPress: () => {
-            void session.discardUnsavedTake().finally(exitWithoutConfirm);
+            session
+              .discardUnsavedTake()
+              .finally(exitWithoutConfirm)
+              .catch(() => undefined);
           },
         },
       ],
@@ -123,12 +126,12 @@ export function ShadowingSessionScreen({
         <SentenceCard
           compact={showReview}
           onPlayNormal={() => {
-            void session.playNormalSample().catch(() => {
+            session.playNormalSample().catch(() => {
               Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
             });
           }}
           onPlaySlow={() => {
-            void session.playSlowSample().catch(() => {
+            session.playSlowSample().catch(() => {
               Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
             });
           }}
@@ -144,10 +147,10 @@ export function ShadowingSessionScreen({
             <RecorderPanel
               elapsedMs={session.elapsedMs}
               onStart={() => {
-                void session.startRecordingTake();
+                session.startRecordingTake().catch(() => undefined);
               }}
               onStop={() => {
-                void session.stopRecordingTake();
+                session.stopRecordingTake().catch(() => undefined);
               }}
               sessionState={session.sessionState}
             />
@@ -176,16 +179,16 @@ export function ShadowingSessionScreen({
             isLastSentence={session.sentenceIndex >= session.sentenceCount - 1}
             myTakeLabel={myTakeLabel}
             onPlayMyTake={() => {
-              void session.playMyTake();
+              session.playMyTake().catch(() => undefined);
             }}
             onPlaySample={() => {
-              void session.playNormalSample();
+              session.playNormalSample().catch(() => undefined);
             }}
             onReRecord={() => {
-              void session.reRecord();
+              session.reRecord().catch(() => undefined);
             }}
             onSave={() => {
-              void session.saveAndContinue();
+              session.saveAndContinue().catch(() => undefined);
             }}
             onToggle={key => {
               session.setSelfCheckItem(key, !session.selfCheck[key]);
