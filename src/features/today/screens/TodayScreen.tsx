@@ -79,6 +79,13 @@ export function TodayScreen() {
       openLessonCatalog(navigation);
     } else if (resolved.screen === 'SpeakingRoom') {
       navigation.navigate('SpeakingRoom');
+    } else if (resolved.screen === 'ShadowingLessonPicker') {
+      navigation.navigate('ShadowingLessonPicker');
+    } else if (resolved.screen === 'ShadowingSession') {
+      navigation.navigate('ShadowingSession', {
+        lessonId: resolved.lessonId,
+        sentenceIndex: resolved.sentenceIndex,
+      });
     } else {
       navigation.navigate('DailyReview');
     }

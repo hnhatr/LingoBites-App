@@ -176,6 +176,10 @@ describe('adaptationEngine', () => {
       expect(plan.activities.some(a => a.type === 'speaking_practice')).toBe(
         true,
       );
+      const gapActivity = plan.activities.find(
+        a => a.id === 'activity-speaking-gap',
+      );
+      expect(gapActivity?.navigationTarget.screen).toBe('SpeakingShadowing');
       expect(plan.explanationVi).toContain('luyện phát âm');
     });
 
