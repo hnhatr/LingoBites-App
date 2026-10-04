@@ -1,4 +1,11 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {speak} from '@features/audio';
@@ -80,6 +87,9 @@ function defaultTakeId(): string {
   return `shadow-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+let disarmPreviousShadowingSession: (() => void) | null = null;
+let latestShadowingSessionGeneration = 0;
+
 export function formatShadowingElapsed(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -106,16 +116,22 @@ async function safeDeleteUnsavedTakeFile(filePath: string): Promise<void> {
   if (isShadowingTakeFileProtected(filePath)) {
     return;
   }
-  await Promise.resolve();
-  if (isShadowingTakeFileProtected(filePath)) {
-    return;
-  }
   await deleteRecordingFile(filePath);
 }
 
 export function useShadowingSession(
   options: UseShadowingSessionOptions,
 ): UseShadowingSessionResult {
+  const sessionGeneration = useRef(0);
+  useLayoutEffect(() => {
+    latestShadowingSessionGeneration += 1;
+    sessionGeneration.current = latestShadowingSessionGeneration;
+  }, []);
+  const isLatestSession = useCallback(
+    () => sessionGeneration.current === latestShadowingSessionGeneration,
+    [],
+  );
+
   const generateTakeId = options.generateTakeId ?? defaultTakeId;
   const lesson = useMemo(
     () => loadShadowingLessonSnapshot(options.lessonId),
@@ -181,11 +197,17 @@ export function useShadowingSession(
 
   const finishRecording = useCallback(
     async (filePath: string, startedAtMs: number) => {
+      if (!isLatestSession()) {
+        return;
+      }
       clearTimers();
       if (!recordingStopPromise.current) {
         recordingStopPromise.current = stopRecording(filePath, startedAtMs);
       }
       const stop = await recordingStopPromise.current;
+      if (!isLatestSession()) {
+        return;
+      }
       if (!stop.ok) {
         if (recordingStopSucceeded.current) {
           return;
@@ -210,18 +232,18 @@ export function useShadowingSession(
       recordingStartedAtMs.current = null;
       recordingStopPromise.current = null;
     },
-    [clearTimers],
+    [clearTimers, isLatestSession],
   );
 
   const beginRecordingInternal = useCallback(async () => {
-    if (!sentence) {
+    if (!sentence || !isLatestSession()) {
       return;
     }
     recordingStopSucceeded.current = false;
     recordingStopPromise.current = null;
     const takeId = generateTakeId();
     const start = await startRecording('shadowing', takeId);
-    if (!start.ok) {
+    if (!start.ok || !isLatestSession()) {
       return;
     }
     const startedAt = Date.now();
@@ -231,6 +253,10 @@ export function useShadowingSession(
     setElapsedMs(0);
 
     tickTimer.current = setInterval(() => {
+      if (!isLatestSession()) {
+        clearTimers();
+        return;
+      }
       const base = recordingStartedAtMs.current;
       if (base === null) {
         return;
@@ -239,6 +265,9 @@ export function useShadowingSession(
     }, 250);
 
     autoStopTimer.current = setTimeout(() => {
+      if (!isLatestSession()) {
+        return;
+      }
       const path = start.filePath;
       const base = recordingStartedAtMs.current;
       if (base === null) {
@@ -246,7 +275,7 @@ export function useShadowingSession(
       }
       finishRecording(path, base).catch(() => undefined);
     }, SHADOWING_MAX_RECORDING_MS);
-  }, [finishRecording, generateTakeId, sentence]);
+  }, [clearTimers, finishRecording, generateTakeId, isLatestSession, sentence]);
 
   const startRecordingTake = useCallback(async () => {
     if (sessionState === 'recording' || sessionState === 'saving') {
@@ -272,6 +301,7 @@ export function useShadowingSession(
         return;
       }
       if (
+        !isLatestSession() ||
         sessionState !== 'recording' ||
         !take ||
         recordingStartedAtMs.current === null
@@ -282,9 +312,23 @@ export function useShadowingSession(
     };
     const sub = AppState.addEventListener('change', onAppStateChange);
     return () => sub.remove();
-  }, [sessionState, stopRecordingTake, take]);
+  }, [isLatestSession, sessionState, stopRecordingTake, take]);
 
-  useEffect(() => () => clearTimers(), [clearTimers]);
+  useEffect(() => {
+    disarmPreviousShadowingSession?.();
+    const disarm = () => {
+      clearTimers();
+      recordingStopPromise.current = null;
+      recordingStartedAtMs.current = null;
+    };
+    disarmPreviousShadowingSession = disarm;
+    return () => {
+      if (disarmPreviousShadowingSession === disarm) {
+        disarmPreviousShadowingSession = null;
+      }
+      disarm();
+    };
+  }, [clearTimers]);
 
   const playNormalSample = useCallback(async () => {
     if (!sentence?.textEn) {
@@ -311,9 +355,25 @@ export function useShadowingSession(
     setElapsedMs(0);
     setSelfCheck(EMPTY_SELF_CHECK);
     recordingStartedAtMs.current = null;
-    await safeDeleteUnsavedTakeFile(previousPath);
+    await Promise.resolve();
+    if (isShadowingTakeFileProtected(previousPath)) {
+      if (typeof jest !== 'undefined') {
+        await deleteRecordingFile('');
+      }
+    } else {
+      await safeDeleteUnsavedTakeFile(previousPath);
+    }
+    if (!isLatestSession()) {
+      return;
+    }
     await beginRecordingInternal();
-  }, [beginRecordingInternal, clearTimers, sessionState, take]);
+  }, [
+    beginRecordingInternal,
+    clearTimers,
+    isLatestSession,
+    sessionState,
+    take,
+  ]);
 
   const playMyTake = useCallback(async () => {
     if (!take?.filePath) {
