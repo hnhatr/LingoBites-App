@@ -31,8 +31,8 @@ import {
 } from '@features/profile';
 import {DailyReviewScreen} from '@features/review';
 import {
+  ShadowingSessionScreen,
   SpeakingRoomScreen,
-  SpeakingShadowingActivity,
 } from '@features/speaking/screens/speakingUiPort';
 import {TodayScreen} from '@features/today';
 
@@ -161,8 +161,8 @@ function LessonsStackNavigator() {
         options={{headerShown: false}}
       />
       <LessonsStack.Screen
-        component={SpeakingShadowingActivity}
-        name="SpeakingShadowing"
+        component={ShadowingSessionScreen}
+        name="ShadowingSession"
         options={{headerShown: false}}
       />
       <LessonsStack.Screen

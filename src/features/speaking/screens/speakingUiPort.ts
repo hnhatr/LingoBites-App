@@ -4,5 +4,5 @@
  * this surface from modules that only need SQLite query reads.
  */
 export {SpeakingRoomScreen} from './SpeakingRoomScreen';
-export {SpeakingShadowingActivity} from '../components/activities/SpeakingShadowingActivity';
+export {ShadowingSessionScreen} from './ShadowingSessionScreen';
 export {deleteRecordingFile} from '../logic/recordingService';
