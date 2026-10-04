@@ -176,18 +176,6 @@ export function SpeakingShadowingActivity({
       durationMs,
     });
 
-    // Background upload (T5)
-    import('../../logic/recordingUploadWorker')
-      .then(({uploadRecordingBackground}) => {
-        uploadRecordingBackground(
-          filePath,
-          lesson.lessonId,
-          'shadowing',
-          durationMs,
-        );
-      })
-      .catch(() => {});
-
     setSubmitted(true);
   }
 
