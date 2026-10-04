@@ -21,6 +21,7 @@ jest.mock('react-native-permissions', () => ({
 import {
   deleteRecordingFile,
   playRecording,
+  readRecordingFileForUpload,
   startRecording,
   stopPlayback,
   stopRecording,
@@ -87,6 +88,30 @@ describe('recordingService', () => {
     });
     // @ts-expect-error restoring the mocked module field
     RNFS.DocumentDirectoryPath = original;
+  });
+
+  it('reads a local file for upload with size and sha256', async () => {
+    (RNFS.exists as jest.Mock).mockResolvedValue(true);
+    const rnfs = RNFS as typeof RNFS & {
+      stat: jest.Mock;
+      hash: jest.Mock;
+    };
+    rnfs.stat = jest.fn().mockResolvedValue({size: 512});
+    rnfs.hash = jest.fn().mockResolvedValue('ABC123');
+    const mockBlob = {size: 512};
+    global.fetch = jest.fn().mockResolvedValue({
+      blob: async () => mockBlob,
+    }) as typeof fetch;
+
+    const result = await readRecordingFileForUpload(
+      '/mock/Documents/LingoBitesRecordings/shadowing/rec-1.m4a',
+    );
+    expect(result).toEqual({
+      ok: true,
+      byteSize: 512,
+      sha256: 'abc123',
+      binary: mockBlob,
+    });
   });
 
   it('stopPlayback and deleteRecordingFile never throw', async () => {

@@ -10,10 +10,24 @@ import {z} from 'zod';
 
 export const RecordingStatusSchema = z.enum(['pending_upload', 'completed']);
 
+export const SpeakingModeRecordingSchema = z.enum([
+  'shadowing',
+  'quick_answer',
+  'standup',
+  'app_description',
+  'bug_report',
+  'mock_interview',
+]);
+
 export const CreateRecordingRequestSchema = z.object({
   mime_type: z.string().min(1).max(127),
   byte_size: z.number().int(),
   sha256: z.string().length(64),
+  client_recording_id: z.string().uuid(),
+  lesson_id: z.string().uuid(),
+  sentence_id: z.string().uuid(),
+  mode: SpeakingModeRecordingSchema,
+  duration_ms: z.number().int().min(1).max(35000),
 });
 
 export const RecordingViewSchema = z.object({
@@ -25,6 +39,11 @@ export const RecordingViewSchema = z.object({
   upload_expires_at: z.string(),
   created_at: z.string(),
   completed_at: z.string().nullable(),
+  client_recording_id: z.string().uuid().optional(),
+  lesson_id: z.string().uuid().optional(),
+  sentence_id: z.string().uuid().optional(),
+  mode: SpeakingModeRecordingSchema.optional(),
+  duration_ms: z.number().int().optional(),
 });
 
 export const CreateRecordingSuccessResponseSchema = z.object({

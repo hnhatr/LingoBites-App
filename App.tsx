@@ -4,6 +4,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {AppNavigator} from './src/app/navigation/AppNavigator';
 import {trackAppOpened} from './src/features/analytics';
 import {EngagementBootstrap} from './src/features/engagement';
+import {initRecordingUploadQueue} from './src/features/speaking/logic/upload/recordingUploadQueue';
 import {startAppSync, stopAppSync} from './src/features/sync';
 import {installGlobalErrorHandler} from './src/core/errors';
 import {FeatureFlagProvider} from './src/core/release';
@@ -14,6 +15,7 @@ function App() {
     installGlobalErrorHandler();
     trackAppOpened();
     startAppSync();
+    initRecordingUploadQueue();
     return () => {
       stopAppSync();
     };
