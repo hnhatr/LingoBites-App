@@ -49,11 +49,6 @@ function readCurrentAccountId(): string | null {
 
 const RECORDINGS_DIRECTORY_SWEEP_FAILED = 'RECORDINGS_DIRECTORY_UNREADABLE';
 
-function isRecordingsDirectoryPermissionError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return /eacces|permission denied|not permitted/i.test(message);
-}
-
 /**
  * Removes speaking-room recordings, error events, and linked review items,
  * then deletes the referenced audio files from disk.
@@ -82,10 +77,7 @@ export async function clearSpeakingLocalData(
   requestRecordingUploadDrain();
   try {
     await sweepSpeakingRecordingsDirectory();
-  } catch (error) {
-    if (!isRecordingsDirectoryPermissionError(error)) {
-      throw error;
-    }
+  } catch {
     return buildResult({
       dbCleared: true,
       failedFilePaths: [RECORDINGS_DIRECTORY_SWEEP_FAILED],
@@ -134,10 +126,7 @@ export async function clearAllLocalDataWithFiles(
   requestRecordingUploadDrain();
   try {
     await sweepSpeakingRecordingsDirectory();
-  } catch (error) {
-    if (!isRecordingsDirectoryPermissionError(error)) {
-      throw error;
-    }
+  } catch {
     return buildResult({
       dbCleared: true,
       failedFilePaths: [RECORDINGS_DIRECTORY_SWEEP_FAILED],

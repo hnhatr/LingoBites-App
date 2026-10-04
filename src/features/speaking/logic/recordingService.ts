@@ -262,15 +262,23 @@ export async function readRecordingFileForUpload(
   }
 }
 
-/** Best-effort deletion of a recording file from local disk. */
+function isMissingFileError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /enoent|not found|does not exist/i.test(message);
+}
+
+/** Deletes a recording file; only a missing path is treated as success (AC-5). */
 export async function deleteRecordingFile(filePath: string): Promise<void> {
   if (!nativeFsAvailable()) {
     return;
   }
   try {
     await RNFS.unlink(filePath);
-  } catch {
-    // A missing file is already the desired state.
+  } catch (error) {
+    if (isMissingFileError(error)) {
+      return;
+    }
+    throw error;
   }
 }
 
