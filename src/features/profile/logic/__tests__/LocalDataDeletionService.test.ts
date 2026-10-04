@@ -23,9 +23,9 @@ import {runMigrations} from '@core/db/migrations';
 import {SPEAKING_ATTEMPTS_EVENT_TYPE} from '@core/sync/speakingAttempts';
 
 import {openRealSqlite} from '@test/support/adversarial/realSqlite';
+import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 import * as SpeakingRepository from '../../../speaking/logic/data/SpeakingRepository';
 import {
   clearAllLocalDataWithFiles,

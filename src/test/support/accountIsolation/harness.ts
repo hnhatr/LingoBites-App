@@ -2,6 +2,7 @@ import type {AuthSession} from '@core/auth/authTypes';
 import {getActiveSessionId, setActiveSessionId} from '@core/auth/sessionStore';
 import {getDatabase} from '@core/db/database';
 
+import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 import {
   DEFAULT_CANONICAL_LESSON_ID,
   readSeededLessonDownload,
@@ -15,7 +16,6 @@ import {
   teardownP2RealInfraHarness,
   writeP2LearnerData,
 } from '@test/support/realInfra/harness';
-import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 
 const M4_AUDIO_NOW = '2026-09-28T08:00:00.000Z';
 

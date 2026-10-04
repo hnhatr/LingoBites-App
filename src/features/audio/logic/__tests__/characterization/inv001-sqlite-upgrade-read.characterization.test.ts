@@ -4,13 +4,13 @@ import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 
+import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 import {
   CHARACTERIZATION_INVARIANTS,
   simulateDatabaseProcessRestart,
 } from '@test/support/characterization';
 
 import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
-import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 import {getReadyAudioAsset} from '../../data/AudioAssetRepository';
 
 const NOW = '2026-09-27T12:00:00.000Z';

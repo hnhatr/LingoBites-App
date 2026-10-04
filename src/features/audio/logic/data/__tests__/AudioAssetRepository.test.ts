@@ -3,8 +3,9 @@ import {open} from 'react-native-quick-sqlite';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 
-import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
+
+import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {AUDIO_STATUS} from '../AudioAssetRepository';
 import {
   getAudioCacheStats,

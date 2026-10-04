@@ -10,8 +10,8 @@ import {
   openRealSqlite,
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
-import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
+import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
 import {getReadyAudioAsset} from '../../data/AudioAssetRepository';
 

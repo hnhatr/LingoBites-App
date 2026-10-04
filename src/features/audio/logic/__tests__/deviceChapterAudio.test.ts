@@ -5,8 +5,9 @@ import {getReadyAudioAsset} from '@features/audio/logic/data/AudioAssetRepositor
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 
-import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
+
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {playReadyChapterAudio} from '../deviceChapterAudio';
 
 jest.mock('@dr.pogodin/react-native-fs', () => ({
