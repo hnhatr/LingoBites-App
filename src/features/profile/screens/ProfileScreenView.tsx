@@ -20,7 +20,9 @@ import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
 /** Settings without a backing store yet — show an honest "not set" value. */
 const UNSET_TRAILING = {chip: 'Chưa đặt', chipTone: 'neutral' as const};
 
-export type ProfileScreenViewProps = ProfileScreenViewModel;
+export type ProfileScreenViewProps = ProfileScreenViewModel & {
+  speakingRecordingsSection?: React.ReactNode;
+};
 
 export function ProfileScreenView({
   accountPhase,
@@ -51,6 +53,7 @@ export function ProfileScreenView({
   openTtsSpike,
   setClearDataConfirmText,
   t,
+  speakingRecordingsSection,
 }: ProfileScreenViewProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
@@ -178,6 +181,7 @@ export function ProfileScreenView({
             onPress={handlePlayCachedAudio}
             trailing={{text: audioCacheTrailingLabel}}
           />
+          {speakingRecordingsSection}
           <ProfileSettingsRow
             accessibilityLabel="Báo cáo tiến độ và năng lực"
             icon="analytics"

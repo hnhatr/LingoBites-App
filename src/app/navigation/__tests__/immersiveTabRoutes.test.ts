@@ -16,6 +16,7 @@ describe('immersiveTabRoutes', () => {
       'SpeakingRoom',
       'ShadowingLessonPicker',
       'ShadowingSession',
+      'ShadowingSummary',
     ]) {
       expect(shouldHideTabBarForRouteName(name)).toBe(true);
     }

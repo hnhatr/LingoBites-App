@@ -33,6 +33,7 @@ import {DailyReviewScreen} from '@features/review';
 import {
   ShadowingLessonPickerScreen,
   ShadowingSessionScreen,
+  ShadowingSummaryScreen,
   SpeakingRoomScreen,
 } from '@features/speaking/screens/speakingUiPort';
 import {TodayScreen} from '@features/today';
@@ -100,6 +101,11 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         component={ShadowingSessionScreen}
         name="ShadowingSession"
+        options={{headerShown: false}}
+      />
+      <HomeStack.Screen
+        component={ShadowingSummaryScreen}
+        name="ShadowingSummary"
         options={{headerShown: false}}
       />
     </HomeStack.Navigator>
@@ -179,6 +185,11 @@ function LessonsStackNavigator() {
       <LessonsStack.Screen
         component={ShadowingSessionScreen}
         name="ShadowingSession"
+        options={{headerShown: false}}
+      />
+      <LessonsStack.Screen
+        component={ShadowingSummaryScreen}
+        name="ShadowingSummary"
         options={{headerShown: false}}
       />
       <LessonsStack.Screen

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -8,21 +8,32 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
+import {ConsentSheet} from '../components/shadowing/ConsentSheet';
 import {RecorderPanel} from '../components/shadowing/RecorderPanel';
 import {SelfCheckList} from '../components/shadowing/SelfCheckList';
 import {SentenceCard} from '../components/shadowing/SentenceCard';
+import {applyRecordingUploadConsent} from '../components/SpeakingRecordingsSettingsRow';
 import {requestMicrophonePermission} from '../logic/recordingService';
 import {
   formatShadowingElapsed,
   useShadowingSession,
 } from '../logic/shadowing/useShadowingSession';
-import {isRecordingUploadConsentOn} from '../logic/upload/recordingConsent';
-import type {ShadowingSessionRouteParams} from './navigationTypes';
+import {
+  isRecordingUploadConsentOn,
+  readRecordingUploadConsent,
+} from '../logic/upload/recordingConsent';
+import type {
+  ShadowingSessionRouteParams,
+  ShadowingSummaryRouteParams,
+} from './navigationTypes';
 
 export type ShadowingSessionScreenProps = {
   navigation: {
     goBack: () => void;
-    navigate: (screen: 'ShadowingSummary', params: {lessonId: string}) => void;
+    navigate: (
+      screen: 'ShadowingSummary',
+      params: ShadowingSummaryRouteParams,
+    ) => void;
   };
   route: {
     params: ShadowingSessionRouteParams;
@@ -38,13 +49,39 @@ export function ShadowingSessionScreen({
   const lessonId = route.params.lessonId;
   const initialSentenceIndex = route.params.sentenceIndex ?? 0;
 
+  const [consentVisible, setConsentVisible] = useState(false);
+
   const session = useShadowingSession({
     lessonId,
     initialSentenceIndex,
-    onSessionComplete: () => {
-      navigation.navigate('ShadowingSummary', {lessonId});
+    onSessionComplete: summary => {
+      navigation.navigate('ShadowingSummary', summary);
     },
   });
+
+  const runSave = useCallback(() => {
+    session.saveAndContinue().catch(() => undefined);
+  }, [session]);
+
+  const handleSavePress = useCallback(() => {
+    if (readRecordingUploadConsent() === 'undecided') {
+      setConsentVisible(true);
+      return;
+    }
+    runSave();
+  }, [runSave]);
+
+  const handleConsentUploadOn = useCallback(() => {
+    applyRecordingUploadConsent('on');
+    setConsentVisible(false);
+    runSave();
+  }, [runSave]);
+
+  const handleConsentLocalOnly = useCallback(() => {
+    applyRecordingUploadConsent('off');
+    setConsentVisible(false);
+    runSave();
+  }, [runSave]);
 
   useEffect(() => {
     requestMicrophonePermission();
@@ -187,9 +224,7 @@ export function ShadowingSessionScreen({
             onReRecord={() => {
               session.reRecord().catch(() => undefined);
             }}
-            onSave={() => {
-              session.saveAndContinue().catch(() => undefined);
-            }}
+            onSave={handleSavePress}
             onToggle={key => {
               session.setSelfCheckItem(key, !session.selfCheck[key]);
             }}
@@ -199,6 +234,12 @@ export function ShadowingSessionScreen({
           />
         ) : null}
       </ScrollView>
+      <ConsentSheet
+        onChooseLocalOnly={handleConsentLocalOnly}
+        onChooseUploadOn={handleConsentUploadOn}
+        onDismiss={() => setConsentVisible(false)}
+        visible={consentVisible}
+      />
     </AppScreen>
   );
 }

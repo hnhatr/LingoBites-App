@@ -19,11 +19,14 @@ describe('Shadowing navigation (TASK-008)', () => {
     expect(homeStack).toContain('name="ShadowingLessonPicker"');
     expect(homeStack).toContain('ShadowingLessonPickerScreen');
     expect(homeStack).toContain('name="ShadowingSession"');
+    expect(homeStack).toContain('name="ShadowingSummary"');
+    expect(homeStack).toContain('ShadowingSummaryScreen');
   });
 
   it('AC-001 S2: registers ShadowingLessonPicker in the Lessons stack', () => {
     expect(lessonsStack).toContain('name="ShadowingLessonPicker"');
     expect(lessonsStack).toContain('name="ShadowingSession"');
+    expect(lessonsStack).toContain('name="ShadowingSummary"');
     expect(lessonsStack).not.toContain('SpeakingShadowing');
   });
 
@@ -57,7 +60,9 @@ describe('Shadowing navigation (TASK-008)', () => {
     );
     expect(homeTypes).toContain('ShadowingLessonPicker');
     expect(homeTypes).toContain('ShadowingSession');
+    expect(homeTypes).toContain('ShadowingSummary');
     expect(lessonsTypes).toContain('ShadowingLessonPicker:');
+    expect(lessonsTypes).toContain('ShadowingSummary:');
     expect(lessonsTypes).not.toContain('SpeakingShadowing:');
   });
 
