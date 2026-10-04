@@ -30,14 +30,29 @@ function mergeHeaders(
   return result;
 }
 
+export type AuthenticatedFetchOptions = {
+  /** When set, aborts before sending unless the active session matches this user. */
+  expectedUserId?: string;
+};
+
 export async function authenticatedFetch(
   url: string,
   init?: RequestInit,
   fetchImpl: typeof fetch = fetch,
+  options?: AuthenticatedFetchOptions,
 ): Promise<Response> {
   const authClient = createAuthClient({fetchImpl});
 
   let sessionResult = await ensureValidSession({client: authClient});
+
+  if (options?.expectedUserId !== undefined) {
+    if (
+      sessionResult.status !== 'valid' ||
+      sessionResult.userId !== options.expectedUserId
+    ) {
+      throw new SyncOwnershipChangedError();
+    }
+  }
 
   if (!(await assertSyncDrainOwnershipUnchanged())) {
     throw new SyncOwnershipChangedError();
@@ -60,6 +75,14 @@ export async function authenticatedFetch(
       client: authClient,
       forceRefresh: true,
     });
+    if (options?.expectedUserId !== undefined) {
+      if (
+        sessionResult.status !== 'valid' ||
+        sessionResult.userId !== options.expectedUserId
+      ) {
+        throw new SyncOwnershipChangedError();
+      }
+    }
     if (!(await assertSyncDrainOwnershipUnchanged())) {
       throw new SyncOwnershipChangedError();
     }

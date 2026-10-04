@@ -1,32 +1,121 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
-import {createRequestId} from '@core/api/requestId';
 import type {
   CreateRecordingRequest,
   CreateRecordingSuccessResponse,
-  RecordingSuccessResponse,
 } from '@core/schemas/recordings';
 
+export const RECORDING_UPLOAD_MIME = 'audio/mp4';
+
 export type CreateRecordingResult =
-  | {ok: true; data: CreateRecordingSuccessResponse}
-  | {ok: false; errorCode: string; message: string; retryable: boolean};
+  | {ok: true; data: CreateRecordingSuccessResponse; status: number}
+  | {
+      ok: false;
+      errorCode: string;
+      message: string;
+      retryable: boolean;
+      httpStatus?: number;
+    };
 
 export type UploadBinaryResult =
-  | {ok: true}
-  | {ok: false; errorCode: string; message: string; retryable: boolean};
+  | {ok: true; status: number}
+  | {
+      ok: false;
+      errorCode: string;
+      message: string;
+      retryable: boolean;
+      httpStatus?: number;
+    };
 
 export type RecordingClientOptions = {
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
+  expectedUserId?: string;
 };
+
+export class RecordingUploadUrlError extends Error {
+  readonly code = 'UPLOAD_URL_ORIGIN_MISMATCH';
+
+  constructor(message = 'Upload URL origin does not match API base URL') {
+    super(message);
+    this.name = 'RecordingUploadUrlError';
+  }
+}
+
+/** Joins a relative upload path with `apiBaseUrl`; rejects cross-origin absolute URLs. */
+export function joinRecordingUploadUrl(
+  apiBaseUrl: string,
+  uploadUrl: string,
+): string {
+  const trimmedBase = apiBaseUrl.replace(/\/+$/, '');
+  if (/^https?:\/\//i.test(uploadUrl)) {
+    const baseOrigin = new URL(trimmedBase).origin;
+    const uploadOrigin = new URL(uploadUrl).origin;
+    if (uploadOrigin !== baseOrigin) {
+      throw new RecordingUploadUrlError();
+    }
+    return uploadUrl;
+  }
+  const path = uploadUrl.startsWith('/') ? uploadUrl : `/${uploadUrl}`;
+  return `${trimmedBase}${path}`;
+}
+
+type ApiErrorBody = {
+  error?: {code?: string; message?: string};
+};
+
+async function readApiErrorCode(response: Response): Promise<string | null> {
+  try {
+    const body = (await response.clone().json()) as ApiErrorBody;
+    const code = body.error?.code;
+    return typeof code === 'string' && code.length > 0 ? code : null;
+  } catch {
+    return null;
+  }
+}
+
+function isPermanentCreateFailure(
+  status: number,
+  apiCode: string | null,
+): boolean {
+  if (status === 400 || status === 413 || status === 422) {
+    return true;
+  }
+  if (status === 409 && apiCode === 'RECORDING_IDEMPOTENCY_CONFLICT') {
+    return true;
+  }
+  return false;
+}
+
+function isPermanentUploadFailure(
+  status: number,
+  apiCode: string | null,
+): boolean {
+  if (status === 400 || status === 413 || status === 422) {
+    return true;
+  }
+  if (
+    status === 409 &&
+    (apiCode === 'RECORDING_IDEMPOTENCY_CONFLICT' ||
+      apiCode === 'RECORDING_PURGED')
+  ) {
+    return true;
+  }
+  if (status === 409 && apiCode === 'RECORDING_ALREADY_COMPLETED') {
+    return false;
+  }
+  return false;
+}
+
+function isRetryableHttpStatus(status: number): boolean {
+  return status >= 500 || status === 429 || status === 404;
+}
 
 export async function createRecordingMetadata(
   request: CreateRecordingRequest,
   options: RecordingClientOptions = {},
 ): Promise<CreateRecordingResult> {
   const {apiBaseUrl} = getAppConfig();
-  // ...
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
   if (options.signal) {
@@ -37,7 +126,7 @@ export async function createRecordingMetadata(
 
   try {
     const response = await authenticatedFetch(
-      `${apiBaseUrl}/v1/recordings`,
+      `${apiBaseUrl.replace(/\/+$/, '')}/v1/recordings`,
       {
         method: 'POST',
         headers: {
@@ -48,20 +137,34 @@ export async function createRecordingMetadata(
         signal,
       },
       options.fetchImpl,
+      options.expectedUserId !== undefined
+        ? {expectedUserId: options.expectedUserId}
+        : undefined,
     );
     clearTimeout(timeoutId);
+    const apiCode = response.ok ? null : await readApiErrorCode(response);
     if (!response.ok) {
+      const permanent = isPermanentCreateFailure(response.status, apiCode);
       return {
         ok: false,
-        errorCode: `HTTP_${response.status}`,
+        errorCode: apiCode ?? `HTTP_${response.status}`,
         message: `Create metadata failed: ${response.status}`,
-        retryable: response.status >= 500 || response.status === 429,
+        retryable: !permanent && isRetryableHttpStatus(response.status),
+        httpStatus: response.status,
       };
     }
     const data = (await response.json()) as CreateRecordingSuccessResponse;
-    return {ok: true, data};
+    return {ok: true, data, status: response.status};
   } catch (error) {
     clearTimeout(timeoutId);
+    if (error instanceof RecordingUploadUrlError) {
+      return {
+        ok: false,
+        errorCode: error.code,
+        message: error.message,
+        retryable: false,
+      };
+    }
     return {
       ok: false,
       errorCode: 'NETWORK_ERROR',
@@ -71,15 +174,29 @@ export async function createRecordingMetadata(
   }
 }
 
-// Upload binary requires passing the file bytes. React Native `fetch` can handle FormData or raw blobs/arrays.
 export async function uploadRecordingBinary(
   uploadUrl: string,
   contentType: string,
   binaryData: Blob | ArrayBuffer,
   options: RecordingClientOptions = {},
 ): Promise<UploadBinaryResult> {
+  const {apiBaseUrl} = getAppConfig();
+  let resolvedUrl: string;
+  try {
+    resolvedUrl = joinRecordingUploadUrl(apiBaseUrl, uploadUrl);
+  } catch (error) {
+    if (error instanceof RecordingUploadUrlError) {
+      return {
+        ok: false,
+        errorCode: error.code,
+        message: error.message,
+        retryable: false,
+      };
+    }
+    throw error;
+  }
+
   const controller = new AbortController();
-  // generous timeout for uploads (60s)
   const timeoutId = setTimeout(() => controller.abort(), 60000);
   if (options.signal) {
     if (options.signal.aborted) controller.abort();
@@ -88,11 +205,8 @@ export async function uploadRecordingBinary(
   const signal = controller.signal;
 
   try {
-    // For PUT to a signed/app URL, we don't necessarily need authenticatedFetch
-    // unless the URL is on our API server. The T5 spec says "same-API PUT upload URL",
-    // so it probably requires auth. We'll use authenticatedFetch.
     const response = await authenticatedFetch(
-      uploadUrl,
+      resolvedUrl,
       {
         method: 'PUT',
         headers: {
@@ -102,17 +216,26 @@ export async function uploadRecordingBinary(
         signal,
       },
       options.fetchImpl,
+      options.expectedUserId !== undefined
+        ? {expectedUserId: options.expectedUserId}
+        : undefined,
     );
     clearTimeout(timeoutId);
-    if (!response.ok) {
-      return {
-        ok: false,
-        errorCode: `HTTP_${response.status}`,
-        message: `Upload failed: ${response.status}`,
-        retryable: response.status >= 500 || response.status === 429,
-      };
+    const apiCode = response.ok ? null : await readApiErrorCode(response);
+    if (response.ok) {
+      return {ok: true, status: response.status};
     }
-    return {ok: true};
+    if (response.status === 409 && apiCode === 'RECORDING_ALREADY_COMPLETED') {
+      return {ok: true, status: response.status};
+    }
+    const permanent = isPermanentUploadFailure(response.status, apiCode);
+    return {
+      ok: false,
+      errorCode: apiCode ?? `HTTP_${response.status}`,
+      message: `Upload failed: ${response.status}`,
+      retryable: !permanent && isRetryableHttpStatus(response.status),
+      httpStatus: response.status,
+    };
   } catch (error) {
     clearTimeout(timeoutId);
     return {
