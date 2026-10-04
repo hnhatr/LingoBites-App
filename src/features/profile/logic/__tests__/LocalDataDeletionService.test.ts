@@ -1,3 +1,12 @@
+jest.mock('@features/speaking/logic/recordingService', () => ({
+  listRecordingsDirectoryFilePaths: jest.fn().mockResolvedValue([]),
+  sweepRecordingsDirectory: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('@features/speaking/logic/upload/recordingUploadQueue', () => ({
+  requestRecordingUploadDrain: jest.fn(),
+}));
+
 import {open} from 'react-native-quick-sqlite';
 
 import {
@@ -9,10 +18,15 @@ import {
   insertSpeakingRecording,
   listSpeakingRecordings,
 } from '@features/speaking/logic/data/SpeakingRepository';
+import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
 
 import {DB_NAME} from '@core/db/constants';
-import {resetDatabaseForTests} from '@core/db/database';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import * as LocalDataWipe from '@core/db/localDataWipe';
+import {runMigrations} from '@core/db/migrations';
+import {SPEAKING_ATTEMPTS_EVENT_TYPE} from '@core/sync/speakingAttempts';
+
+import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import * as SpeakingRepository from '../../../speaking/logic/data/SpeakingRepository';
@@ -28,6 +42,14 @@ describe('LocalDataDeletionService', () => {
   });
 
   it('clears speaking metadata and deletes managed recording files', async () => {
+    getDatabase().execute(
+      'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      [
+        'current_account_id',
+        '44444444-4444-4444-8444-444444444444',
+        '2026-10-04T10:00:00.000Z',
+      ],
+    );
     const deletedPaths: string[] = [];
     insertSpeakingRecording({
       id: 'rec-1',
@@ -164,6 +186,42 @@ describe('LocalDataDeletionService', () => {
     expect(result.dbCleared).toBe(true);
     expect(result.failedFilePaths).toEqual(['/tmp/chapter-audio.mp3']);
     expect(listReadyAudioAssets()).toHaveLength(0);
+  });
+
+  it('full wipe keeps current_account_id and enqueues tombstones via afterWipe', async () => {
+    __resetMockDatabases();
+    const realDb = openRealSqlite(':memory:');
+    runMigrations(realDb);
+    resetDatabaseForTests(realDb);
+
+    const accountId = '44444444-4444-4444-8444-444444444444';
+    getDatabase().execute(
+      'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      ['current_account_id', accountId, '2026-10-04T10:00:00.000Z'],
+    );
+    getDatabase().execute(
+      `INSERT INTO speaking_attempts (
+        id, lesson_id, sentence_id, mode, practiced_at,
+        check_full_sentence, check_key_words, check_rhythm,
+        duration_ms, recording_id, revision, updated_at
+      ) VALUES ('a1', '11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222', 'shadowing', '2026-10-04T10:00:00.000Z', 1, 1, 1, 1000, 'a1', 0, '2026-10-04T10:00:00.000Z');`,
+    );
+
+    const result = await clearAllLocalDataWithFiles({
+      fileDeleter: async () => true,
+    });
+
+    expect(result.dbCleared).toBe(true);
+    const row = getDatabase()
+      .execute('SELECT value FROM app_settings WHERE key = ?;', [
+        'current_account_id',
+      ])
+      .rows?.item(0) as {value?: string};
+    expect(row?.value).toBe(accountId);
+    const tombstones = listPendingSyncEvents().filter(
+      e => e.eventType === SPEAKING_ATTEMPTS_EVENT_TYPE,
+    );
+    expect(tombstones).toHaveLength(1);
   });
 
   it('returns dbCleared: false if database clearing throws', async () => {

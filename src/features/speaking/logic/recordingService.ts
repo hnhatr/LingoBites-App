@@ -272,3 +272,40 @@ export async function deleteRecordingFile(filePath: string): Promise<void> {
     // A missing file is already the desired state.
   }
 }
+
+export function getRecordingsDirectoryRoot(): string {
+  return recordingsRoot();
+}
+
+async function listFilesRecursive(directory: string): Promise<string[]> {
+  const paths: string[] = [];
+  try {
+    const entries = await RNFS.readDir(directory);
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        paths.push(...(await listFilesRecursive(entry.path)));
+      } else if (entry.isFile()) {
+        paths.push(entry.path);
+      }
+    }
+  } catch {
+    // Missing directory is already empty.
+  }
+  return paths;
+}
+
+/** Every file under `LingoBitesRecordings`, including untracked orphans (FR-018). */
+export async function listRecordingsDirectoryFilePaths(): Promise<string[]> {
+  if (!nativeFsAvailable()) {
+    return [];
+  }
+  return listFilesRecursive(recordingsRoot());
+}
+
+/** Removes all files under the recordings directory (after DB commit — AC-018). */
+export async function sweepRecordingsDirectory(): Promise<void> {
+  const paths = await listRecordingsDirectoryFilePaths();
+  for (const filePath of paths) {
+    await deleteRecordingFile(filePath);
+  }
+}

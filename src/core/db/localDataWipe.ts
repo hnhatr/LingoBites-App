@@ -1,42 +1,28 @@
-import {clearLessonTokens} from '../security/lessonTokenStore';
-import {getDatabase} from './database';
+import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
 
-/**
- * Generic learner-data wipe, owned here (LING-48 / TASK-007) instead of
- * `LessonRepository` so `LocalDataDeletionService` ("delete my local data")
- * keeps working after the v1/v2 lesson repositories are removed (TASK-010).
- *
- * Behavior is unchanged: clears lesson rows (v1 + v2), lesson security
- * tokens, and all unrelated learner-owned rows (flashcards, review,
- * content-package, YouTube, speaking, and supporting tables) listed below.
- * Flashcard/review/content-package/YouTube/speaking tables are wiped as
- * part of this explicit user-invoked deletion only — no table is dropped
- * and no other flow calls this function.
- *
- * LING-149 (EC-015/AC-015): canonical downloads (`lesson_downloads`) and
- * local progress (`lesson_progress`) are wiped here too. Media-file sweeping
- * for staged download files lands with TASK-007's media staging helper;
- * until then there is no on-disk media registry to clear.
- */
-export async function clearAllLocalDatabaseRows(): Promise<void> {
-  const db = getDatabase();
-  const lessonIds = new Set<string>();
-  for (const table of ['lessons', 'lesson_v2']) {
-    try {
-      const rows = db.execute(
-        `SELECT ${
-          table === 'lessons' ? 'id' : 'lesson_id'
-        } AS lesson_id FROM ${table};`,
-      ).rows;
-      for (let index = 0; index < (rows?.length ?? 0); index += 1) {
-        const row = rows?.item(index) as {lesson_id?: string} | undefined;
-        if (row?.lesson_id) lessonIds.add(row.lesson_id);
-      }
-    } catch {
-      // Older databases may not have the v2 table yet.
-    }
-  }
-  const tokenCleanup = clearLessonTokens([...lessonIds]);
+import {clearLessonTokens} from '../security/lessonTokenStore';
+import {getDatabase, withTransaction} from './database';
+
+const CURRENT_ACCOUNT_ID_KEY = 'current_account_id';
+
+export type ClearAllLocalDatabaseRowsOptions = {
+  /**
+   * Runs inside the wipe transaction after learner tables are cleared and
+   * before `current_account_id` is restored (AD-007).
+   */
+  afterWipe?: (db: QuickSQLiteConnection) => void;
+};
+
+function readCurrentAccountId(db: QuickSQLiteConnection): string | null {
+  const row = db
+    .execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [
+      CURRENT_ACCOUNT_ID_KEY,
+    ])
+    .rows?.item(0) as {value?: string} | undefined;
+  return row?.value ?? null;
+}
+
+function deleteLearnerOwnedRows(db: QuickSQLiteConnection): void {
   db.execute('DELETE FROM review_sessions;');
   db.execute('DELETE FROM review_schedule;');
   db.execute('DELETE FROM flashcards;');
@@ -45,9 +31,9 @@ export async function clearAllLocalDatabaseRows(): Promise<void> {
   } catch {
     // Table may be dropped after canonical legacy clear
   }
-  db.execute('DELETE FROM app_settings;');
   db.execute('DELETE FROM gamification_events;');
   db.execute('DELETE FROM speaking_recordings;');
+  db.execute('DELETE FROM speaking_attempts;');
   db.execute('DELETE FROM error_events;');
   db.execute('DELETE FROM sync_outbox;');
   db.execute('DELETE FROM audio_assets;');
@@ -74,7 +60,6 @@ export async function clearAllLocalDatabaseRows(): Promise<void> {
       // Retired tables (schema v3) may already be dropped.
     }
   }
-  // LING-149 canonical state (tables may predate v2 on old databases).
   try {
     db.execute('DELETE FROM lesson_downloads;');
   } catch {
@@ -85,5 +70,51 @@ export async function clearAllLocalDatabaseRows(): Promise<void> {
   } catch {
     // Table does not exist before the v2 cutover.
   }
+  db.execute('DELETE FROM app_settings;');
+}
+
+/**
+ * Generic learner-data wipe, owned here (LING-48 / TASK-007) instead of
+ * `LessonRepository` so `LocalDataDeletionService` ("delete my local data")
+ * keeps working after the v1/v2 lesson repositories are removed (TASK-010).
+ *
+ * LING-224 AD-007: one transaction, optional `afterWipe`, keeps
+ * `current_account_id` so sync drain ownership and tombstone push still work.
+ */
+export async function clearAllLocalDatabaseRows(
+  options: ClearAllLocalDatabaseRowsOptions = {},
+): Promise<void> {
+  const db = getDatabase();
+  const lessonIds = new Set<string>();
+  for (const table of ['lessons', 'lesson_v2']) {
+    try {
+      const rows = db.execute(
+        `SELECT ${
+          table === 'lessons' ? 'id' : 'lesson_id'
+        } AS lesson_id FROM ${table};`,
+      ).rows;
+      for (let index = 0; index < (rows?.length ?? 0); index += 1) {
+        const row = rows?.item(index) as {lesson_id?: string} | undefined;
+        if (row?.lesson_id) lessonIds.add(row.lesson_id);
+      }
+    } catch {
+      // Older databases may not have the v2 table yet.
+    }
+  }
+  const tokenCleanup = clearLessonTokens([...lessonIds]);
+
+  withTransaction(db, () => {
+    const preservedAccountId = readCurrentAccountId(db);
+    deleteLearnerOwnedRows(db);
+    options.afterWipe?.(db);
+    if (preservedAccountId) {
+      const now = new Date().toISOString();
+      db.execute(
+        'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+        [CURRENT_ACCOUNT_ID_KEY, preservedAccountId, now],
+      );
+    }
+  });
+
   return tokenCleanup;
 }
