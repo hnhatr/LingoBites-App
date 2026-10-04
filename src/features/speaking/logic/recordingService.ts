@@ -225,6 +225,42 @@ export async function stopPlayback(): Promise<void> {
   }
 }
 
+export type ReadRecordingFileForUploadResult =
+  | {ok: true; byteSize: number; sha256: string; binary: Blob | ArrayBuffer}
+  | {ok: false; errorCode: string};
+
+/**
+ * Reads a saved recording from disk for the upload queue (FR-020 / audio/mp4).
+ */
+export async function readRecordingFileForUpload(
+  filePath: string,
+): Promise<ReadRecordingFileForUploadResult> {
+  if (!nativeFsAvailable()) {
+    return {ok: false, errorCode: 'UNAVAILABLE'};
+  }
+  try {
+    const exists = await RNFS.exists(filePath);
+    if (!exists) {
+      return {ok: false, errorCode: 'NOT_FOUND'};
+    }
+    const stat = await RNFS.stat(filePath);
+    const sha256 = (await RNFS.hash(filePath, 'sha256')).toLowerCase();
+    const fileUri = filePath.startsWith('file://')
+      ? filePath
+      : `file://${filePath}`;
+    const fileRes = await fetch(fileUri);
+    const binary = await fileRes.blob();
+    return {
+      ok: true,
+      byteSize: Number(stat.size),
+      sha256,
+      binary,
+    };
+  } catch {
+    return {ok: false, errorCode: 'READ_FAILED'};
+  }
+}
+
 /** Best-effort deletion of a recording file from local disk. */
 export async function deleteRecordingFile(filePath: string): Promise<void> {
   if (!nativeFsAvailable()) {
