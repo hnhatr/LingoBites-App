@@ -1,0 +1,207 @@
+import React, {useCallback, useEffect} from 'react';
+import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+
+import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {useAppTheme} from '@ui/theme';
+
+import {RecorderPanel} from '../components/shadowing/RecorderPanel';
+import {SelfCheckList} from '../components/shadowing/SelfCheckList';
+import {SentenceCard} from '../components/shadowing/SentenceCard';
+import {requestMicrophonePermission} from '../logic/recordingService';
+import {
+  formatShadowingElapsed,
+  useShadowingSession,
+} from '../logic/shadowing/useShadowingSession';
+import {isRecordingUploadConsentOn} from '../logic/upload/recordingConsent';
+import type {ShadowingSessionRouteParams} from './navigationTypes';
+
+export type ShadowingSessionScreenProps = {
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: 'ShadowingSummary', params: {lessonId: string}) => void;
+  };
+  route: {
+    params: ShadowingSessionRouteParams;
+  };
+};
+
+export function ShadowingSessionScreen({
+  navigation,
+  route,
+}: ShadowingSessionScreenProps) {
+  const {theme} = useAppTheme();
+  const floatingClearance = useFloatingTabBarClearance();
+  const lessonId = route.params.lessonId;
+  const initialSentenceIndex = route.params.sentenceIndex ?? 0;
+
+  const session = useShadowingSession({
+    lessonId,
+    initialSentenceIndex,
+    onSessionComplete: () => {
+      navigation.navigate('ShadowingSummary', {lessonId});
+    },
+  });
+
+  useEffect(() => {
+    requestMicrophonePermission();
+  }, []);
+
+  const exitWithoutConfirm = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+
+  const handleClose = useCallback(() => {
+    if (!session.hasUnsavedProgress) {
+      exitWithoutConfirm();
+      return;
+    }
+    Alert.alert(
+      'Thoát buổi luyện nói?',
+      'Bản ghi chưa lưu sẽ bị xóa. Các câu đã lưu vẫn được giữ.',
+      [
+        {text: 'Huỷ', style: 'cancel'},
+        {
+          text: 'Thoát',
+          style: 'destructive',
+          onPress: () => {
+            void session.discardUnsavedTake().finally(exitWithoutConfirm);
+          },
+        },
+      ],
+    );
+  }, [exitWithoutConfirm, session]);
+
+  const closeAction = (
+    <IconButton
+      accessibilityLabel="Đóng buổi luyện nói"
+      icon="close"
+      onPress={handleClose}
+      testID="shadowing-close"
+      tone="bare"
+    />
+  );
+
+  if (!session.lesson || !session.sentence) {
+    return (
+      <AppScreen>
+        <ScreenHeader rightAction={closeAction} title="Lặp lại theo mẫu" />
+        <View style={{padding: theme.gutter}}>
+          <AppText color="secondary">
+            Chưa có nội dung lặp lại theo mẫu cho bài này.
+          </AppText>
+        </View>
+      </AppScreen>
+    );
+  }
+
+  const showRecorder =
+    session.sessionState === 'idle' || session.sessionState === 'recording';
+  const showReview =
+    session.sessionState === 'recorded' || session.sessionState === 'saving';
+  const myTakeLabel = session.take
+    ? formatShadowingElapsed(session.take.durationMs)
+    : '0:00';
+
+  return (
+    <AppScreen>
+      <ScreenHeader rightAction={closeAction} title="Lặp lại theo mẫu" />
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          gap: theme.spacing.lg,
+          paddingBottom: floatingClearance,
+          paddingHorizontal: theme.gutter,
+          paddingTop: theme.spacing.sm,
+        }}
+        showsVerticalScrollIndicator={false}
+        style={styles.flex1}
+      >
+        <SentenceCard
+          compact={showReview}
+          onPlayNormal={() => {
+            void session.playNormalSample().catch(() => {
+              Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
+            });
+          }}
+          onPlaySlow={() => {
+            void session.playSlowSample().catch(() => {
+              Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
+            });
+          }}
+          sentence={session.sentence}
+          sentenceCount={session.sentenceCount}
+          sentenceIndex={session.sentenceIndex}
+          showSampleButtons={session.sessionState !== 'recording'}
+        />
+
+        {showRecorder ? (
+          <>
+            <View style={{flex: 1, minHeight: theme.spacing.xxl}} />
+            <RecorderPanel
+              elapsedMs={session.elapsedMs}
+              onStart={() => {
+                void session.startRecordingTake();
+              }}
+              onStop={() => {
+                void session.stopRecordingTake();
+              }}
+              sessionState={session.sessionState}
+            />
+            {session.sessionState === 'idle' ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={session.skipSentence}
+                testID="shadowing-skip-sentence"
+              >
+                <AppText
+                  style={{
+                    color: theme.colors.accent,
+                    textAlign: 'center',
+                    textDecorationLine: 'underline',
+                  }}
+                >
+                  Bỏ qua câu này
+                </AppText>
+              </Pressable>
+            ) : null}
+          </>
+        ) : null}
+
+        {showReview ? (
+          <SelfCheckList
+            isLastSentence={session.sentenceIndex >= session.sentenceCount - 1}
+            myTakeLabel={myTakeLabel}
+            onPlayMyTake={() => {
+              void session.playMyTake();
+            }}
+            onPlaySample={() => {
+              void session.playNormalSample();
+            }}
+            onReRecord={() => {
+              void session.reRecord();
+            }}
+            onSave={() => {
+              void session.saveAndContinue();
+            }}
+            onToggle={key => {
+              session.setSelfCheckItem(key, !session.selfCheck[key]);
+            }}
+            saving={session.sessionState === 'saving'}
+            showUploadHint={isRecordingUploadConsentOn()}
+            values={session.selfCheck}
+          />
+        ) : null}
+      </ScrollView>
+    </AppScreen>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex1: {
+    flex: 1,
+  },
+});
