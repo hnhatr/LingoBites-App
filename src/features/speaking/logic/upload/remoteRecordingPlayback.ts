@@ -121,37 +121,72 @@ export async function requestServerRecordingContent(
 
 export type PlaySummarySentenceResult = {ok: true} | {ok: false};
 
-export async function playSummarySentenceRecording(
-  row: SummaryPlaybackRow,
-  options: RemoteRecordingPlaybackDeps = {},
+async function fetchAndPlayServerRecording(
+  serverRecordingId: string,
+  options: RemoteRecordingPlaybackDeps,
+  fileExists: (path: string) => Promise<boolean>,
+  playLocal: (path: string) => Promise<unknown>,
 ): Promise<PlaySummarySentenceResult> {
-  const fileExists = options.fileExists ?? deps.fileExists ?? defaultFileExists;
-  const playLocal = options.playLocal ?? deps.playLocal ?? playRecording;
-
+  const fetched = await requestServerRecordingContent(
+    serverRecordingId,
+    options,
+  );
+  if (!fetched.ok) {
+    return {ok: false};
+  }
+  const cached = remoteCachePath(serverRecordingId);
+  if (!(await fileExists(cached))) {
+    return {ok: false};
+  }
   try {
-    if (row.localFilePath && (await fileExists(row.localFilePath))) {
-      await playLocal(row.localFilePath);
-      return {ok: true};
-    }
-    if (!row.serverRecordingId) {
-      return {ok: false};
-    }
-    const cached = remoteCachePath(row.serverRecordingId);
-    if (!(await fileExists(cached))) {
-      const fetched = await requestServerRecordingContent(
-        row.serverRecordingId,
-        options,
-      );
-      if (!fetched.ok) {
-        return {ok: false};
-      }
-    }
-    if (!(await fileExists(cached))) {
-      return {ok: false};
-    }
     await playLocal(cached);
     return {ok: true};
   } catch {
     return {ok: false};
   }
+}
+
+export async function playSummarySentenceRecording(
+  row: SummaryPlaybackRow,
+  options: RemoteRecordingPlaybackDeps = {},
+): Promise<PlaySummarySentenceResult> {
+  const fileExists = options.fileExists ?? deps.fileExists ?? defaultFileExists;
+  const playLocal: (path: string) => Promise<unknown> =
+    options.playLocal ?? deps.playLocal ?? playRecording;
+
+  // Try local file first. If it exists but play fails and there is a server
+  // recording, fall through to the server path (ADV-007).
+  if (row.localFilePath) {
+    try {
+      const exists = await fileExists(row.localFilePath);
+      if (exists) {
+        await playLocal(row.localFilePath);
+        return {ok: true};
+      }
+    } catch {
+      // Local play failed; fall through to server fallback if available.
+    }
+  }
+
+  if (!row.serverRecordingId) {
+    return {ok: false};
+  }
+
+  const cached = remoteCachePath(row.serverRecordingId);
+  if (await fileExists(cached)) {
+    // Try playing cached file; if it fails (corrupt), re-fetch and retry (ADV-008).
+    try {
+      await playLocal(cached);
+      return {ok: true};
+    } catch {
+      // Cache corrupt — fall through to re-fetch.
+    }
+  }
+
+  return fetchAndPlayServerRecording(
+    row.serverRecordingId,
+    options,
+    fileExists,
+    playLocal,
+  );
 }
