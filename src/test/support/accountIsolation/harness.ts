@@ -1,5 +1,3 @@
-import {insertPendingChapterAudioAsset} from '@features/audio/logic/data/AudioAssetRepository';
-
 import type {AuthSession} from '@core/auth/authTypes';
 import {getActiveSessionId, setActiveSessionId} from '@core/auth/sessionStore';
 import {getDatabase} from '@core/db/database';
@@ -17,6 +15,7 @@ import {
   teardownP2RealInfraHarness,
   writeP2LearnerData,
 } from '@test/support/realInfra/harness';
+import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 
 const M4_AUDIO_NOW = '2026-09-28T08:00:00.000Z';
 
@@ -32,15 +31,13 @@ export function teardownM4AccountIsolationHarness(): void {
 
 export function writeM4RelocatedDomainLearnerData(): void {
   writeP2LearnerData();
-  insertPendingChapterAudioAsset({
+  insertAudioAssetRow({
+    id: 'audio-m4-a',
     chapterId: 'chapter-m4-a',
-    now: M4_AUDIO_NOW,
-    asset: {
-      id: 'audio-m4-a',
-      url: 'https://example.test/audio-m4-a.mp3',
-      bytes: 4096,
-      checksum: 'sha256:m4-a',
-    },
+    url: 'https://example.test/audio-m4-a.mp3',
+    bytes: 4096,
+    checksum: 'sha256:m4-a',
+    updatedAt: M4_AUDIO_NOW,
   });
 }
 

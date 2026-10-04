@@ -107,14 +107,6 @@ export type AudioDownloadStatus =
   | 'ready'
   | 'failed';
 
-/** One entry from the server-delivered per-chapter audio manifest (ADR-3). */
-export type ChapterAudioAsset = {
-  id: string;
-  url: string;
-  bytes: number;
-  checksum: string;
-};
-
 export type AudioAssetRecord = {
   id: string;
   chapterId: string;
@@ -130,14 +122,6 @@ export type AudioCacheStats = {
   chapterCount: number;
   assetCount: number;
   readyBytes: number;
-};
-
-/** Per-chapter rollup of downloaded (ready) audio used for eviction decisions. */
-export type ChapterAudioSummary = {
-  chapterId: string;
-  readyBytes: number;
-  assetCount: number;
-  lastOpenedAt: string | null;
 };
 
 /**

@@ -11,11 +11,10 @@ import {
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
+import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 
 import {
   getReadyAudioAsset,
-  insertPendingChapterAudioAsset,
-  markChapterAudioAssetReady,
 } from '../../data/AudioAssetRepository';
 
 const T0 = '2026-09-10T08:00:00.000Z';
@@ -90,22 +89,16 @@ describe('audio chapter cache (real SQLite / node:sqlite)', () => {
     const audioPath = writeAudioFile('chapter-audio/asset-live.mp3', payload);
     let db = coldStart();
 
-    insertPendingChapterAudioAsset({
+    insertAudioAssetRow({
+      id: 'asset-live',
       chapterId: 'ch-live',
-      asset: {
-        id: 'asset-live',
-        url: 'https://cdn.example.com/live.mp3',
-        bytes: 0,
-        checksum: 'sha-live',
-      },
-      now: NOW,
+      url: 'https://cdn.example.com/live.mp3',
+      localPath: audioPath,
+      bytes: Buffer.byteLength(payload),
+      checksum: 'sha-live',
+      downloadStatus: 'ready',
+      updatedAt: NOW,
     });
-    markChapterAudioAssetReady(
-      'asset-live',
-      audioPath,
-      Buffer.byteLength(payload),
-      NOW,
-    );
 
     db.close();
     db = coldStart();
@@ -158,36 +151,28 @@ describe('audio chapter cache (real SQLite / node:sqlite)', () => {
 
   it(`${CHARACTERIZATION_INVARIANTS.INV_005}: duplicate pending insert does not create a second ready row for the same asset id`, () => {
     const db = coldStart();
-
-    insertPendingChapterAudioAsset({
-      chapterId: 'ch-dup',
-      asset: {
-        id: 'asset-dup',
-        url: 'https://cdn.example.com/dup.mp3',
-        bytes: 0,
-        checksum: 'sha-dup',
-      },
-      now: NOW,
-    });
     const dupPayload = 'AUDIO-DUP';
     const dupPath = writeAudioFile('chapter-audio/asset-dup.mp3', dupPayload);
-    markChapterAudioAssetReady(
-      'asset-dup',
-      dupPath,
-      Buffer.byteLength(dupPayload),
-      NOW,
-    );
+
+    insertAudioAssetRow({
+      id: 'asset-dup',
+      chapterId: 'ch-dup',
+      url: 'https://cdn.example.com/dup.mp3',
+      localPath: dupPath,
+      bytes: Buffer.byteLength(dupPayload),
+      checksum: 'sha-dup',
+      downloadStatus: 'ready',
+      updatedAt: NOW,
+    });
 
     try {
-      insertPendingChapterAudioAsset({
+      insertAudioAssetRow({
+        id: 'asset-dup',
         chapterId: 'ch-dup',
-        asset: {
-          id: 'asset-dup',
-          url: 'https://cdn.example.com/dup-v2.mp3',
-          bytes: 0,
-          checksum: 'sha-dup-v2',
-        },
-        now: NOW,
+        url: 'https://cdn.example.com/dup-v2.mp3',
+        bytes: 0,
+        checksum: 'sha-dup-v2',
+        updatedAt: NOW,
       });
     } catch {
       // SQLite primary-key violation is acceptable; row count must stay 1.

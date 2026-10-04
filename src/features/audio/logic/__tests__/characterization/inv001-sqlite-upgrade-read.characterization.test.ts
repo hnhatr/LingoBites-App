@@ -10,10 +10,9 @@ import {
 } from '@test/support/characterization';
 
 import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
+import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 import {
   getReadyAudioAsset,
-  insertPendingChapterAudioAsset,
-  markChapterAudioAssetReady,
 } from '../../data/AudioAssetRepository';
 
 const NOW = '2026-09-27T12:00:00.000Z';
@@ -27,22 +26,16 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_001} SQLite upgrade-read (audio cach
   });
 
   it('keeps ready chapter audio metadata readable after restart and idempotent migrations', () => {
-    insertPendingChapterAudioAsset({
+    insertAudioAssetRow({
+      id: 'asset-char',
       chapterId: 'ch-char',
-      asset: {
-        id: 'asset-char',
-        url: 'https://cdn.example.com/asset-char.mp3',
-        bytes: 0,
-        checksum: 'sha-char',
-      },
-      now: NOW,
+      url: 'https://cdn.example.com/asset-char.mp3',
+      localPath: '/data/chapter-audio/asset-char.mp3',
+      bytes: 4096,
+      checksum: 'sha-char',
+      downloadStatus: 'ready',
+      updatedAt: NOW,
     });
-    markChapterAudioAssetReady(
-      'asset-char',
-      '/data/chapter-audio/asset-char.mp3',
-      4096,
-      NOW,
-    );
 
     simulateDatabaseProcessRestart();
     expect(getReadyAudioAsset('asset-char')?.localPath).toBe(
