@@ -453,6 +453,72 @@ describe('LING-242 adversarial shadowing session', () => {
     );
   });
 
+  it('ADV-007 / AC-007: a third session start cannot inherit the first session native path', async () => {
+    takeSequence = ['/files/first-native.m4a', '/files/third-native.m4a'];
+    installSingletonRecorderModel();
+
+    const first = makeDriver(() => TAKE_NEW);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(first.Driver));
+    });
+    await act(async () => {
+      await first.latest.current?.startRecordingTake();
+    });
+
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(makeDriver().Driver));
+    });
+
+    const third = makeDriver(() => TAKE_OTHER);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(third.Driver));
+    });
+    await act(async () => {
+      await third.latest.current?.startRecordingTake();
+      jest.advanceTimersByTime(SHADOWING_MAX_RECORDING_MS);
+    });
+
+    expect(first.latest.current?.take?.filePath).toBe(
+      '/files/first-native.m4a',
+    );
+    expect(third.latest.current?.sessionState).toBe('recorded');
+    expect(third.latest.current?.take?.filePath).toBe(
+      '/files/third-native.m4a',
+    );
+  });
+
+  it('ADV-008 / AC-007: background stops the active recorder behind a newer idle session', async () => {
+    const handlers: Array<(state: AppStateStatus) => void> = [];
+    (AppState.addEventListener as jest.Mock).mockImplementation(
+      (_type, handler) => {
+        handlers.push(handler);
+        return {remove: jest.fn()};
+      },
+    );
+    takeSequence = ['/files/background-active.m4a'];
+
+    const active = makeDriver(() => TAKE_NEW);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(active.Driver));
+    });
+    await act(async () => {
+      await active.latest.current?.startRecordingTake();
+    });
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(makeDriver().Driver));
+    });
+    await act(async () => {
+      handlers.forEach(handler => handler('background'));
+      await Promise.resolve();
+    });
+
+    expect(active.latest.current?.sessionState).toBe('recorded');
+    expect(active.latest.current?.take?.filePath).toBe(
+      '/files/background-active.m4a',
+    );
+    expect(mockStopRecording.mock.calls.length).toBeLessThanOrEqual(1);
+  });
+
   it('H1 / BR-002 HELD: a third mount leaves the active session auto-stop armed', async () => {
     takeSequence = ['/files/three-mounts.m4a'];
     const first = makeDriver(() => TAKE_NEW);
