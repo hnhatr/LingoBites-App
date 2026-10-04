@@ -8,11 +8,11 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
-import {applyRecordingUploadConsent} from '../components/SpeakingRecordingsSettingsRow';
 import {ConsentSheet} from '../components/shadowing/ConsentSheet';
 import {RecorderPanel} from '../components/shadowing/RecorderPanel';
 import {SelfCheckList} from '../components/shadowing/SelfCheckList';
 import {SentenceCard} from '../components/shadowing/SentenceCard';
+import {applyRecordingUploadConsent} from '../components/SpeakingRecordingsSettingsRow';
 import {requestMicrophonePermission} from '../logic/recordingService';
 import {
   formatShadowingElapsed,

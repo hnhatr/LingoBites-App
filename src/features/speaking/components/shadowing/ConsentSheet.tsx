@@ -19,6 +19,7 @@ export function ConsentSheet({
   onChooseLocalOnly,
 }: ConsentSheetProps) {
   const {theme} = useAppTheme();
+  const themedStyles = React.useMemo(() => makeStyles(theme), [theme]);
 
   return (
     <Modal
@@ -30,12 +31,12 @@ export function ConsentSheet({
       <Pressable
         accessibilityLabel="Đóng"
         onPress={onDismiss}
-        style={styles.backdrop}
+        style={themedStyles.backdrop}
         testID="shadowing-consent-backdrop"
       />
       <View
         style={[
-          styles.sheet,
+          themedStyles.sheet,
           {
             backgroundColor: theme.colors.surface,
             borderTopLeftRadius: theme.radius.xl,
@@ -68,12 +69,14 @@ export function ConsentSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  sheet: {
-    marginTop: 'auto',
-  },
-});
+function makeStyles(theme: ReturnType<typeof useAppTheme>['theme']) {
+  return StyleSheet.create({
+    backdrop: {
+      backgroundColor: theme.colors.overlay,
+      flex: 1,
+    },
+    sheet: {
+      marginTop: 'auto',
+    },
+  });
+}

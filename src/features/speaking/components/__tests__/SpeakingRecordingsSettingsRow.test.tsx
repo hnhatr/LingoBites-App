@@ -4,18 +4,18 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
 
-import {FeatureFlagProvider} from '@core/release';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+import {FeatureFlagProvider} from '@core/release';
 
 import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 
+import {RECORDING_UPLOAD_CONSENT_KEY} from '../../logic/upload/recordingConsent';
+import {resetRecordingUploadQueueForTests} from '../../logic/upload/recordingUploadQueue';
 import {
   applyRecordingUploadConsent,
   SpeakingRecordingsSettingsRow,
 } from '../SpeakingRecordingsSettingsRow';
-import {RECORDING_UPLOAD_CONSENT_KEY} from '../../logic/upload/recordingConsent';
-import {resetRecordingUploadQueueForTests} from '../../logic/upload/recordingUploadQueue';
 
 describe('SpeakingRecordingsSettingsRow', () => {
   beforeEach(() => {
