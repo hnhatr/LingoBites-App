@@ -24,7 +24,8 @@ import type {SpeakingMode} from '@core/db/types';
 function nativeFsAvailable(): boolean {
   return (
     typeof RNFS.DocumentDirectoryPath === 'string' &&
-    RNFS.DocumentDirectoryPath.length > 0
+    RNFS.DocumentDirectoryPath.length > 0 &&
+    typeof RNFS.readDir === 'function'
   );
 }
 
@@ -277,6 +278,11 @@ export function getRecordingsDirectoryRoot(): string {
   return recordingsRoot();
 }
 
+function isMissingDirectoryError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /enoent|not found|does not exist/i.test(message);
+}
+
 async function listFilesRecursive(directory: string): Promise<string[]> {
   const paths: string[] = [];
   try {
@@ -288,8 +294,11 @@ async function listFilesRecursive(directory: string): Promise<string[]> {
         paths.push(entry.path);
       }
     }
-  } catch {
-    // Missing directory is already empty.
+  } catch (error) {
+    if (isMissingDirectoryError(error)) {
+      return [];
+    }
+    throw error;
   }
   return paths;
 }

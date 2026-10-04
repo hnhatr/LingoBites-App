@@ -4,7 +4,6 @@ import {
   enqueueSpeakingAttemptTombstones,
   listAllSpeakingAttempts,
   listSpeakingRecordingFilePaths,
-  listSpeakingRecordingsDirectoryFilePaths,
   queueDurableServerRecordingDelete,
   requestRecordingUploadDrain,
   sweepSpeakingRecordingsDirectory,
@@ -48,10 +47,11 @@ function readCurrentAccountId(): string | null {
   return row?.value ?? null;
 }
 
-async function uniqueRecordingFilePaths(): Promise<string[]> {
-  const fromRows = listSpeakingRecordingFilePaths();
-  const fromDirectory = await listSpeakingRecordingsDirectoryFilePaths();
-  return [...new Set([...fromRows, ...fromDirectory])];
+const RECORDINGS_DIRECTORY_SWEEP_FAILED = 'RECORDINGS_DIRECTORY_UNREADABLE';
+
+function isRecordingsDirectoryPermissionError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /eacces|permission denied|not permitted/i.test(message);
 }
 
 /**
@@ -63,7 +63,7 @@ export async function clearSpeakingLocalData(
 ): Promise<LocalDataDeletionResult> {
   const fileDeleter = options.fileDeleter ?? defaultFileDeleter;
   const ownerUserId = readCurrentAccountId();
-  const filePaths = await uniqueRecordingFilePaths();
+  const filePaths = listSpeakingRecordingFilePaths();
 
   try {
     withTransaction(getDatabase(), () => {
@@ -80,7 +80,17 @@ export async function clearSpeakingLocalData(
   }
 
   requestRecordingUploadDrain();
-  await sweepSpeakingRecordingsDirectory();
+  try {
+    await sweepSpeakingRecordingsDirectory();
+  } catch (error) {
+    if (!isRecordingsDirectoryPermissionError(error)) {
+      throw error;
+    }
+    return buildResult({
+      dbCleared: true,
+      failedFilePaths: [RECORDINGS_DIRECTORY_SWEEP_FAILED],
+    });
+  }
   const failedFilePaths = await deleteLocalFiles(filePaths, fileDeleter);
   return buildResult({dbCleared: true, failedFilePaths});
 }
@@ -93,7 +103,7 @@ export async function clearAllLocalDataWithFiles(
   options: LocalDataDeletionOptions = {},
 ): Promise<LocalDataDeletionResult> {
   const fileDeleter = options.fileDeleter ?? defaultFileDeleter;
-  const recordingFilePaths = await uniqueRecordingFilePaths();
+  const recordingFilePaths = listSpeakingRecordingFilePaths();
   const audioFilePaths = listAudioAssetLocalPaths();
   const filePaths = [...recordingFilePaths, ...audioFilePaths];
   const ownerUserId = readCurrentAccountId();
@@ -122,7 +132,17 @@ export async function clearAllLocalDataWithFiles(
   }
 
   requestRecordingUploadDrain();
-  await sweepSpeakingRecordingsDirectory();
+  try {
+    await sweepSpeakingRecordingsDirectory();
+  } catch (error) {
+    if (!isRecordingsDirectoryPermissionError(error)) {
+      throw error;
+    }
+    return buildResult({
+      dbCleared: true,
+      failedFilePaths: [RECORDINGS_DIRECTORY_SWEEP_FAILED],
+    });
+  }
   const failedFilePaths = await deleteLocalFiles(filePaths, fileDeleter);
   return buildResult({dbCleared: true, failedFilePaths});
 }

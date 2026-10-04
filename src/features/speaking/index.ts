@@ -22,23 +22,25 @@ export {
 export async function listSpeakingRecordingsDirectoryFilePaths(): Promise<
   string[]
 > {
+  let listRecordingsDirectoryFilePaths: () => Promise<string[]>;
   try {
-    const {listRecordingsDirectoryFilePaths} =
-      require('./logic/recordingService') as typeof import('./logic/recordingService');
-    return listRecordingsDirectoryFilePaths();
+    ({listRecordingsDirectoryFilePaths} =
+      require('./logic/recordingService') as typeof import('./logic/recordingService'));
   } catch {
     return [];
   }
+  return listRecordingsDirectoryFilePaths();
 }
 
 export async function sweepSpeakingRecordingsDirectory(): Promise<void> {
+  let sweepRecordingsDirectory: () => Promise<void>;
   try {
-    const {sweepRecordingsDirectory} =
-      require('./logic/recordingService') as typeof import('./logic/recordingService');
-    await sweepRecordingsDirectory();
+    ({sweepRecordingsDirectory} =
+      require('./logic/recordingService') as typeof import('./logic/recordingService'));
   } catch {
-    // Native FS module unavailable (e.g. Jest without mocks).
+    return;
   }
+  await sweepRecordingsDirectory();
 }
 export {saveShadowingAttempt} from './logic/shadowing/saveShadowingAttempt';
 export {

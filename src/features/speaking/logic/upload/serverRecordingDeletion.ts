@@ -119,8 +119,10 @@ function clearPendingServerDeleteMarker(): void {
   ]);
 }
 
-/** Marks every non-`local_only` row as local-only and clears server ids (AD-006). */
-export function flipNonLocalOnlyRecordingsToLocalOnly(): void {
+/** Marks the owner's non-`local_only` rows as local-only (AD-006 / H4). */
+export function flipNonLocalOnlyRecordingsToLocalOnly(
+  ownerUserId: string,
+): void {
   const db = getDatabase();
   db.execute(
     `UPDATE speaking_recordings
@@ -128,7 +130,8 @@ export function flipNonLocalOnlyRecordingsToLocalOnly(): void {
          upload_next_at = NULL,
          upload_error = NULL,
          server_recording_id = NULL
-     WHERE upload_state != 'local_only';`,
+     WHERE upload_state != 'local_only' AND owner_user_id = ?;`,
+    [ownerUserId],
   );
 }
 
@@ -177,7 +180,7 @@ export function queueDurableServerRecordingDelete(
     enqueueSpeakingAttemptTombstones(attempts, requestedAt);
   }
   writePendingServerDeleteMarker(marker);
-  flipNonLocalOnlyRecordingsToLocalOnly();
+  flipNonLocalOnlyRecordingsToLocalOnly(input.ownerUserId);
   signalUploadDrainRequested();
   return marker;
 }
