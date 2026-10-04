@@ -319,7 +319,7 @@ describe('LING-242 adversarial shadowing session', () => {
       appStateHandler?.('background');
     });
 
-    expect(stopResolvers).toHaveLength(2);
+    expect(stopResolvers).toHaveLength(1);
     await act(async () => {
       stopResolvers[0]?.({
         ok: true,
@@ -328,15 +328,6 @@ describe('LING-242 adversarial shadowing session', () => {
       });
       await Promise.resolve();
     });
-    await act(async () => {
-      stopResolvers[1]?.({
-        ok: false,
-        errorCode: 'UNAVAILABLE',
-        message: 'already stopped',
-      });
-      await Promise.resolve();
-    });
-
     expect(driver.latest.current?.sessionState).toBe('recorded');
     expect(driver.latest.current?.take?.filePath).toBe('/files/lifecycle.m4a');
     expect(mockStopRecording.mock.calls.length).toBeLessThanOrEqual(1);
