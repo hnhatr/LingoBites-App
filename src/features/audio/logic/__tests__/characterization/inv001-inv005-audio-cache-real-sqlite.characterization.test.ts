@@ -13,9 +13,7 @@ import {
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 
-import {
-  getReadyAudioAsset,
-} from '../../data/AudioAssetRepository';
+import {getReadyAudioAsset} from '../../data/AudioAssetRepository';
 
 const T0 = '2026-09-10T08:00:00.000Z';
 const NOW = '2026-09-27T12:00:00.000Z';

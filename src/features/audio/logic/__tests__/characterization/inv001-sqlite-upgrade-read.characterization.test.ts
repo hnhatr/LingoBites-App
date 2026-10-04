@@ -11,9 +11,7 @@ import {
 
 import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';
 import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
-import {
-  getReadyAudioAsset,
-} from '../../data/AudioAssetRepository';
+import {getReadyAudioAsset} from '../../data/AudioAssetRepository';
 
 const NOW = '2026-09-27T12:00:00.000Z';
 
