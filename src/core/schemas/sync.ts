@@ -47,6 +47,7 @@ export const SYNC_MAX_FUTURE_SKEW_MS = 5 * 60 * 1000;
  * (`content_review_items`, `content_review_state`, `content_lesson_state`,
  * `youtube_lessons`, `youtube_sentences`, `youtube_progress`) with the single
  * `lesson_progress` collection (AD-002, AD-008).
+ * `content_review_items` and related types were retired in LING-249.
  */
 export const SyncCollectionSchema = z.enum([
   'flashcards',

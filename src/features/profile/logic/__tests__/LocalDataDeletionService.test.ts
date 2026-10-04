@@ -9,11 +9,7 @@ jest.mock('@features/speaking/logic/upload/recordingUploadQueue', () => ({
 
 import {open} from 'react-native-quick-sqlite';
 
-import {
-  insertPendingChapterAudioAsset,
-  listReadyAudioAssets,
-  markChapterAudioAssetReady,
-} from '@features/audio/logic/data/AudioAssetRepository';
+import {listReadyAudioAssets} from '@features/audio/logic/data/AudioAssetRepository';
 import {
   insertSpeakingRecording,
   listSpeakingRecordings,
@@ -27,6 +23,7 @@ import {runMigrations} from '@core/db/migrations';
 import {SPEAKING_ATTEMPTS_EVENT_TYPE} from '@core/sync/speakingAttempts';
 
 import {openRealSqlite} from '@test/support/adversarial/realSqlite';
+import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import * as SpeakingRepository from '../../../speaking/logic/data/SpeakingRepository';
@@ -134,17 +131,16 @@ describe('LocalDataDeletionService', () => {
     });
 
     const now = '2026-09-08T10:00:00.000Z';
-    insertPendingChapterAudioAsset({
+    insertAudioAssetRow({
+      id: 'asset-1',
       chapterId: 'ch1',
-      asset: {
-        id: 'asset-1',
-        url: 'https://cdn.example.com/asset-1.mp3',
-        bytes: 1024,
-        checksum: 'sha256-asset-1',
-      },
-      now,
+      url: 'https://cdn.example.com/asset-1.mp3',
+      localPath: '/tmp/chapter-audio.mp3',
+      bytes: 1024,
+      checksum: 'sha256-asset-1',
+      downloadStatus: 'ready',
+      updatedAt: now,
     });
-    markChapterAudioAssetReady('asset-1', '/tmp/chapter-audio.mp3', 1024, now);
 
     const deletedPaths: string[] = [];
     const result = await clearAllLocalDataWithFiles({
@@ -166,17 +162,16 @@ describe('LocalDataDeletionService', () => {
 
   it('reports partial failure when cached audio files cannot be removed', async () => {
     const now = '2026-09-08T10:00:00.000Z';
-    insertPendingChapterAudioAsset({
+    insertAudioAssetRow({
+      id: 'asset-1',
       chapterId: 'ch1',
-      asset: {
-        id: 'asset-1',
-        url: 'https://cdn.example.com/asset-1.mp3',
-        bytes: 1024,
-        checksum: 'sha256-asset-1',
-      },
-      now,
+      url: 'https://cdn.example.com/asset-1.mp3',
+      localPath: '/tmp/chapter-audio.mp3',
+      bytes: 1024,
+      checksum: 'sha256-asset-1',
+      downloadStatus: 'ready',
+      updatedAt: now,
     });
-    markChapterAudioAssetReady('asset-1', '/tmp/chapter-audio.mp3', 1024, now);
 
     const result = await clearAllLocalDataWithFiles({
       fileDeleter: async () => false,

@@ -256,9 +256,8 @@ const MIGRATIONS = [
   // Automatic Error Notebook capture (REQ-28/29). `category` is one of the six
   // required error categories; CON-6 requires this table to carry only
   // category/timing/outcome data, never the raw sentence spoken/typed or
-  // audio bytes. `review_item_id` links to the `content_review_items` row
-  // (M4) the error created or updated, tagged `item_type = 'speaking_error'`
-  // there so delete-my-data can scope to just this milestone's contribution.
+  // audio bytes. `review_item_id` is a legacy column left for schema
+  // compatibility; the `content_review_items` table was retired in LING-249.
   `CREATE TABLE IF NOT EXISTS error_events (
     id TEXT PRIMARY KEY NOT NULL,
     source TEXT NOT NULL,
@@ -790,18 +789,6 @@ export function downgradeContentPackageMigrations(
   db: QuickSQLiteConnection,
 ): void {
   for (const sql of DOWN_MIGRATIONS_M2) {
-    db.execute(sql);
-  }
-}
-
-/**
- * Reverse the M3 lesson-runtime schema migration (SETE-108). Used in tests;
- * production code should call this only via an explicit operator action.
- */
-export function downgradeLessonRuntimeMigrations(
-  db: QuickSQLiteConnection,
-): void {
-  for (const sql of DOWN_MIGRATIONS_M3) {
     db.execute(sql);
   }
 }

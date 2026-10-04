@@ -44,7 +44,6 @@ function deleteLearnerOwnedRows(db: QuickSQLiteConnection): void {
     // Table may be dropped after canonical legacy clear
   }
   for (const sql of [
-    'DELETE FROM content_review_items;',
     'DELETE FROM content_lesson_state;',
     'DELETE FROM youtube_sentences;',
     'DELETE FROM youtube_lessons;',
