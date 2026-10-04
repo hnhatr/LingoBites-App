@@ -234,6 +234,32 @@ describe('shadowingProgress (BR-008)', () => {
     expect(direct?.resumeSentenceIndex).toBe(pickerResume);
   });
 
+  it('uses the latest attempt per sentence when duplicate rows exist', () => {
+    const sentenceId = sentenceIdFor(LESSON_A, 0);
+    seedAttempt(LESSON_A, sentenceId, '2026-10-04T09:00:00.000Z', {
+      full: false,
+      keys: true,
+      rhythm: true,
+    });
+    db.execute(
+      `INSERT INTO speaking_attempts (
+        id, lesson_id, sentence_id, mode, practiced_at,
+        check_full_sentence, check_key_words, check_rhythm,
+        duration_ms, recording_id, revision, updated_at
+      ) VALUES (?, ?, ?, 'shadowing', ?, 1, 1, 1, 1000, NULL, 0, ?);`,
+      [
+        'newer-passed-duplicate',
+        LESSON_A,
+        sentenceId,
+        '2026-10-04T10:05:00.000Z',
+        '2026-10-04T10:05:00.000Z',
+      ],
+    );
+    const summary = summarizeShadowingLessonProgress(LESSON_A);
+    expect(summary?.practicedSentenceCount).toBe(1);
+    expect(summary?.reviewSentenceCount).toBe(0);
+  });
+
   it('resolveShadowingEntry opens in-progress session at resume sentence', () => {
     const entry = resolveShadowingEntry();
     expect(entry).toEqual({

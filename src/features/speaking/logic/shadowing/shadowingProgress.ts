@@ -36,6 +36,7 @@ export type ShadowingEntryTarget =
     };
 
 type AttemptRow = {
+  id: string;
   sentence_id: string;
   practiced_at: string;
   check_full_sentence: number;
@@ -43,10 +44,13 @@ type AttemptRow = {
   check_rhythm: number;
 };
 
-function mapAttemptRow(row: AttemptRow): SpeakingAttemptRecord {
+function mapAttemptRow(
+  row: AttemptRow,
+  lessonId: string,
+): SpeakingAttemptRecord {
   return {
-    id: '',
-    lessonId: '',
+    id: row.id,
+    lessonId,
     sentenceId: row.sentence_id,
     mode: SHADOWING_MODE,
     practicedAt: row.practiced_at,
@@ -60,14 +64,26 @@ function mapAttemptRow(row: AttemptRow): SpeakingAttemptRecord {
   };
 }
 
+/** Newest row per sentence: `practiced_at` desc, then `id` desc (sync replay stability). */
+function compareAttemptsByRecency(
+  a: SpeakingAttemptRecord,
+  b: SpeakingAttemptRecord,
+): number {
+  if (a.practicedAt !== b.practicedAt) {
+    return a.practicedAt > b.practicedAt ? 1 : -1;
+  }
+  return a.id > b.id ? 1 : a.id < b.id ? -1 : 0;
+}
+
 function listShadowingAttemptsForLesson(
   lessonId: string,
 ): SpeakingAttemptRecord[] {
   const db = getDatabase();
   const result = db.execute(
-    `SELECT sentence_id, practiced_at, check_full_sentence, check_key_words, check_rhythm
+    `SELECT id, sentence_id, practiced_at, check_full_sentence, check_key_words, check_rhythm
      FROM speaking_attempts
-     WHERE mode = ? AND lesson_id = ?;`,
+     WHERE mode = ? AND lesson_id = ?
+     ORDER BY practiced_at DESC, id DESC;`,
     [SHADOWING_MODE, lessonId],
   );
   const items: SpeakingAttemptRecord[] = [];
@@ -76,9 +92,43 @@ function listShadowingAttemptsForLesson(
     return items;
   }
   for (let i = 0; i < rows.length; i += 1) {
-    items.push(mapAttemptRow(rows.item(i) as AttemptRow));
+    items.push(mapAttemptRow(rows.item(i) as AttemptRow, lessonId));
   }
   return items;
+}
+
+function canonicalLatestAttemptsBySentence(
+  attempts: readonly SpeakingAttemptRecord[],
+  sentenceIds: ReadonlySet<string>,
+): Map<string, SpeakingAttemptRecord> {
+  const attemptBySentence = new Map<string, SpeakingAttemptRecord>();
+  for (const attempt of attempts) {
+    if (!sentenceIds.has(attempt.sentenceId)) {
+      continue;
+    }
+    const existing = attemptBySentence.get(attempt.sentenceId);
+    if (!existing || compareAttemptsByRecency(attempt, existing) > 0) {
+      attemptBySentence.set(attempt.sentenceId, attempt);
+    }
+  }
+  return attemptBySentence;
+}
+
+function pickMostRecentLessonAttempt(
+  attempts: readonly SpeakingAttemptRecord[],
+  sentencePositionById: ReadonlyMap<string, number>,
+): SpeakingAttemptRecord {
+  return attempts.reduce((best, current) => {
+    if (current.practicedAt !== best.practicedAt) {
+      return current.practicedAt > best.practicedAt ? current : best;
+    }
+    const posCurrent = sentencePositionById.get(current.sentenceId) ?? -1;
+    const posBest = sentencePositionById.get(best.sentenceId) ?? -1;
+    if (posCurrent !== posBest) {
+      return posCurrent > posBest ? current : best;
+    }
+    return compareAttemptsByRecency(current, best) > 0 ? current : best;
+  });
 }
 
 function isAttemptFailed(attempt: SpeakingAttemptRecord): boolean {
@@ -100,12 +150,14 @@ export function computeShadowingLessonProgress(
   }
 
   const sentenceIds = new Set(sentences.map(s => s.id));
-  const attemptsForLesson = attempts.filter(a => sentenceIds.has(a.sentenceId));
-
-  const attemptBySentence = new Map<string, SpeakingAttemptRecord>();
-  for (const attempt of attemptsForLesson) {
-    attemptBySentence.set(attempt.sentenceId, attempt);
-  }
+  const sentencePositionById = new Map(
+    sentences.map(s => [s.id, s.position] as const),
+  );
+  const attemptBySentence = canonicalLatestAttemptsBySentence(
+    attempts,
+    sentenceIds,
+  );
+  const canonicalAttempts = [...attemptBySentence.values()];
 
   const practicedSentenceCount = attemptBySentence.size;
   let reviewSentenceCount = 0;
@@ -120,8 +172,9 @@ export function computeShadowingLessonProgress(
 
   if (practicedSentenceCount > 0) {
     const lastSentence = sentences[sentences.length - 1]!;
-    const mostRecent = attemptsForLesson.reduce((latest, current) =>
-      current.practicedAt > latest.practicedAt ? current : latest,
+    const mostRecent = pickMostRecentLessonAttempt(
+      canonicalAttempts,
+      sentencePositionById,
     );
     const mostRecentIndex = sentences.findIndex(
       s => s.id === mostRecent.sentenceId,
@@ -141,9 +194,8 @@ export function computeShadowingLessonProgress(
 
   const lastPracticedAt =
     practicedSentenceCount > 0
-      ? attemptsForLesson.reduce((latest, current) =>
-          current.practicedAt > latest.practicedAt ? current : latest,
-        ).practicedAt
+      ? pickMostRecentLessonAttempt(canonicalAttempts, sentencePositionById)
+          .practicedAt
       : null;
 
   return {
@@ -206,7 +258,12 @@ export function findMostRecentInProgressShadowingLesson(): ShadowingLessonProgre
     if (!latest.lastPracticedAt || !current.lastPracticedAt) {
       return current;
     }
-    return current.lastPracticedAt > latest.lastPracticedAt ? current : latest;
+    if (current.lastPracticedAt !== latest.lastPracticedAt) {
+      return current.lastPracticedAt > latest.lastPracticedAt
+        ? current
+        : latest;
+    }
+    return current.lessonId > latest.lessonId ? current : latest;
   });
 }
 
