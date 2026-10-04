@@ -223,6 +223,17 @@ function markFailed(id: string, errorCode: string): void {
   );
 }
 
+const PERMANENT_FILE_READ_ERROR_CODES = new Set(['NOT_FOUND']);
+
+function consentAllowsUpload(id: string): boolean {
+  const isConsentOn = (deps.isConsentOn ?? isRecordingUploadConsentOn)();
+  if (!isConsentOn) {
+    flipPendingToLocalOnly(id);
+    return false;
+  }
+  return true;
+}
+
 function armRetryTimer(delayMs: number): void {
   const setTimeoutFn = deps.setTimeoutFn ?? setTimeout;
   const clearTimeoutFn = deps.clearTimeoutFn ?? clearTimeout;
@@ -269,6 +280,10 @@ async function processRecordingJob(id: string): Promise<void> {
     refreshed.filePath,
   );
   if (!fileResult.ok) {
+    if (PERMANENT_FILE_READ_ERROR_CODES.has(fileResult.errorCode)) {
+      markFailed(id, fileResult.errorCode);
+      return;
+    }
     const attempts = refreshed.uploadAttempts + 1;
     const delayMs = uploadRetryDelayMsWithJitter(
       attempts,
@@ -276,6 +291,10 @@ async function processRecordingJob(id: string): Promise<void> {
     );
     scheduleRetry(id, attempts, fileResult.errorCode, delayMs);
     armRetryTimer(delayMs);
+    return;
+  }
+
+  if (!consentAllowsUpload(id)) {
     return;
   }
 
@@ -312,6 +331,10 @@ async function processRecordingJob(id: string): Promise<void> {
     createResult.data.recording?.recording_id ??
     refreshed.serverRecordingId ??
     null;
+
+  if (!consentAllowsUpload(id)) {
+    return;
+  }
 
   const uploadResult = await (deps.uploadBinary ?? uploadRecordingBinary)(
     createResult.data.upload.url,

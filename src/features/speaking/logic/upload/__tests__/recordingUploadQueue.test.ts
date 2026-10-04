@@ -144,6 +144,23 @@ describe('recordingUploadQueue', () => {
     expect(uploadState()).toBe('local_only');
   });
 
+  it('marks NOT_FOUND file reads as failed instead of retrying forever', async () => {
+    seedPendingRow();
+    const createMetadata = jest.fn();
+    configureRecordingUploadQueue({
+      createMetadata,
+      isOwner: jest.fn().mockResolvedValue(true),
+      readFile: jest.fn().mockResolvedValue({
+        ok: false,
+        errorCode: 'NOT_FOUND',
+      }),
+    });
+    requestRecordingUploadDrain();
+    await flushRecordingUploadQueueForTests();
+    expect(createMetadata).not.toHaveBeenCalled();
+    expect(uploadState()).toBe('failed');
+  });
+
   it('marks permanent failures as failed without deleting the row', async () => {
     seedPendingRow();
     configureRecordingUploadQueue({
