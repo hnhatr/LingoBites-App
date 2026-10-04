@@ -125,7 +125,22 @@ export function insertSpeakingRecordingV4(
   return findSpeakingRecordingById(input.id)!;
 }
 
-/** Deletes competing takes for the sentence; returns removed file paths. */
+function countSpeakingRecordingsWithFilePath(
+  filePath: string,
+  excludeRecordingId: string,
+): number {
+  const db = getDatabase();
+  const row = db
+    .execute(
+      `SELECT COUNT(*) AS c FROM speaking_recordings
+       WHERE file_path = ? AND id != ?;`,
+      [filePath, excludeRecordingId],
+    )
+    .rows?.item(0) as {c?: number} | undefined;
+  return Number(row?.c ?? 0);
+}
+
+/** Deletes competing takes for the sentence; returns file paths safe to unlink. */
 export function deleteOtherSpeakingRecordingsForSentence(
   mode: SpeakingMode,
   sentenceId: string,
@@ -142,7 +157,9 @@ export function deleteOtherSpeakingRecordingsForSentence(
   if (rows) {
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows.item(i) as {id: string; file_path: string};
-      paths.push(row.file_path);
+      if (countSpeakingRecordingsWithFilePath(row.file_path, row.id) === 0) {
+        paths.push(row.file_path);
+      }
       db.execute('DELETE FROM speaking_recordings WHERE id = ?;', [row.id]);
     }
   }

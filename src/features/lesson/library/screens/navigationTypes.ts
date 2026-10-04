@@ -5,8 +5,8 @@ import type {
 } from '@features/lesson/player';
 import type {DailyReviewRouteParams} from '@features/review';
 import type {
+  ShadowingSessionRouteParams,
   SpeakingRoomRouteParams,
-  SpeakingShadowingRouteParams,
 } from '@features/speaking';
 import type {TodayRouteParams} from '@features/today';
 
@@ -18,7 +18,7 @@ export type LessonsStackParamList = {
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
   LessonCreation: LessonCreationRouteParams;
   SpeakingRoom: SpeakingRoomRouteParams;
-  SpeakingShadowing: SpeakingShadowingRouteParams;
+  ShadowingSession: ShadowingSessionRouteParams;
   Today: TodayRouteParams;
   DailyReview: DailyReviewRouteParams;
 };

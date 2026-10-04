@@ -61,6 +61,7 @@ export type {
   SaveShadowingAttemptResult,
 } from './logic/shadowing/saveShadowingAttempt';
 export type {
+  ShadowingSessionRouteParams,
   SpeakingRoomRouteParams,
   SpeakingShadowingRouteParams,
 } from './screens/navigationTypes';
