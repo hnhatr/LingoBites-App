@@ -1,24 +1,47 @@
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 
-describe('Shadowing session navigation (TASK-007)', () => {
-  it('registers ShadowingSession in the Lessons stack and removes the old activity', () => {
-    const navigator = readFileSync(
-      join(__dirname, '..', 'AppNavigator.tsx'),
-      'utf8',
-    );
-    const lessonsStack = navigator.slice(
-      navigator.indexOf('function LessonsStackNavigator'),
-      navigator.indexOf('function ProfileStackNavigator'),
-    );
+describe('Shadowing navigation (TASK-008)', () => {
+  const navigator = readFileSync(
+    join(__dirname, '..', 'AppNavigator.tsx'),
+    'utf8',
+  );
+  const homeStack = navigator.slice(
+    navigator.indexOf('function HomeStackNavigator'),
+    navigator.indexOf('function CreateStackNavigator'),
+  );
+  const lessonsStack = navigator.slice(
+    navigator.indexOf('function LessonsStackNavigator'),
+    navigator.indexOf('function ProfileStackNavigator'),
+  );
+
+  it('AC-001 S1: registers ShadowingLessonPicker in the Home stack', () => {
+    expect(homeStack).toContain('name="ShadowingLessonPicker"');
+    expect(homeStack).toContain('ShadowingLessonPickerScreen');
+    expect(homeStack).toContain('name="ShadowingSession"');
+  });
+
+  it('AC-001 S2: registers ShadowingLessonPicker in the Lessons stack', () => {
+    expect(lessonsStack).toContain('name="ShadowingLessonPicker"');
     expect(lessonsStack).toContain('name="ShadowingSession"');
-    expect(lessonsStack).toContain('ShadowingSessionScreen');
-    expect(navigator).not.toContain('SpeakingShadowingActivity');
     expect(lessonsStack).not.toContain('SpeakingShadowing');
   });
 
-  it('exports ShadowingSession route params from lesson library types', () => {
-    const types = readFileSync(
+  it('exports Shadowing routes from home and library navigation types', () => {
+    const homeTypes = readFileSync(
+      join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'features',
+        'home',
+        'screens',
+        'navigationTypes.ts',
+      ),
+      'utf8',
+    );
+    const lessonsTypes = readFileSync(
       join(
         __dirname,
         '..',
@@ -32,7 +55,13 @@ describe('Shadowing session navigation (TASK-007)', () => {
       ),
       'utf8',
     );
-    expect(types).toContain('ShadowingSession: ShadowingSessionRouteParams');
-    expect(types).not.toContain('SpeakingShadowing:');
+    expect(homeTypes).toContain('ShadowingLessonPicker');
+    expect(homeTypes).toContain('ShadowingSession');
+    expect(lessonsTypes).toContain('ShadowingLessonPicker:');
+    expect(lessonsTypes).not.toContain('SpeakingShadowing:');
+  });
+
+  it('TASK-007 regression: removes the old SpeakingShadowing activity route', () => {
+    expect(navigator).not.toContain('SpeakingShadowingActivity');
   });
 });

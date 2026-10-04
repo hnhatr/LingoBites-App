@@ -60,7 +60,19 @@ export type {
   SaveShadowingAttemptInput,
   SaveShadowingAttemptResult,
 } from './logic/shadowing/saveShadowingAttempt';
+export {
+  findMostRecentInProgressShadowingLesson,
+  listShadowingLessonProgressSummaries,
+  resolveShadowingEntry,
+  summarizeShadowingLessonProgress,
+} from './logic/shadowing/shadowingProgress';
 export type {
+  ShadowingEntryTarget,
+  ShadowingLessonProgressSummary,
+  ShadowingLessonStatusChip,
+} from './logic/shadowing/shadowingProgress';
+export type {
+  ShadowingLessonPickerRouteParams,
   ShadowingSessionRouteParams,
   SpeakingRoomRouteParams,
   SpeakingShadowingRouteParams,

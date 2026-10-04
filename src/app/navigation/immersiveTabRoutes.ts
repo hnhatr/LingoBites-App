@@ -5,7 +5,8 @@ export const IMMERSIVE_STACK_ROUTES = new Set([
   'CanonicalLessonPlayer',
   'DailyReview',
   'SpeakingRoom',
-  'SpeakingShadowing',
+  'ShadowingLessonPicker',
+  'ShadowingSession',
 ]);
 
 export function shouldHideTabBarForRouteName(
