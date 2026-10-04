@@ -143,6 +143,8 @@ export function useShadowingSession(
   );
   const [sessionState, setSessionState] =
     useState<ShadowingSessionState>('idle');
+  const sessionStateRef = useRef(sessionState);
+  sessionStateRef.current = sessionState;
   const [take, setTake] = useState<ShadowingTake | null>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [selfCheck, setSelfCheck] =
@@ -197,7 +199,7 @@ export function useShadowingSession(
 
   const finishRecording = useCallback(
     async (filePath: string, startedAtMs: number) => {
-      if (!isLatestSession()) {
+      if (!isLatestSession() && sessionStateRef.current !== 'recording') {
         return;
       }
       clearTimers();
@@ -205,7 +207,7 @@ export function useShadowingSession(
         recordingStopPromise.current = stopRecording(filePath, startedAtMs);
       }
       const stop = await recordingStopPromise.current;
-      if (!isLatestSession()) {
+      if (!isLatestSession() && sessionStateRef.current !== 'recording') {
         return;
       }
       if (!stop.ok) {
@@ -254,7 +256,9 @@ export function useShadowingSession(
 
     tickTimer.current = setInterval(() => {
       if (!isLatestSession()) {
-        clearTimers();
+        if (sessionStateRef.current !== 'recording') {
+          clearTimers();
+        }
         return;
       }
       const base = recordingStartedAtMs.current;
@@ -265,7 +269,7 @@ export function useShadowingSession(
     }, 250);
 
     autoStopTimer.current = setTimeout(() => {
-      if (!isLatestSession()) {
+      if (!isLatestSession() && sessionStateRef.current !== 'recording') {
         return;
       }
       const path = start.filePath;
@@ -301,7 +305,6 @@ export function useShadowingSession(
         return;
       }
       if (
-        !isLatestSession() ||
         sessionState !== 'recording' ||
         !take ||
         recordingStartedAtMs.current === null
@@ -317,6 +320,9 @@ export function useShadowingSession(
   useEffect(() => {
     disarmPreviousShadowingSession?.();
     const disarm = () => {
+      if (sessionStateRef.current === 'recording') {
+        return;
+      }
       clearTimers();
       recordingStopPromise.current = null;
       recordingStartedAtMs.current = null;
