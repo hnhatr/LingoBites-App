@@ -106,6 +106,10 @@ async function safeDeleteUnsavedTakeFile(filePath: string): Promise<void> {
   if (isShadowingTakeFileProtected(filePath)) {
     return;
   }
+  await Promise.resolve();
+  if (isShadowingTakeFileProtected(filePath)) {
+    return;
+  }
   await deleteRecordingFile(filePath);
 }
 
@@ -131,6 +135,10 @@ export function useShadowingSession(
   const recordingStartedAtMs = useRef<number | null>(null);
   const autoStopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordingStopSucceeded = useRef(false);
+  const recordingStopPromise = useRef<ReturnType<typeof stopRecording> | null>(
+    null,
+  );
 
   const sentenceCount = lesson?.sentences.length ?? 0;
   const sentence =
@@ -174,12 +182,20 @@ export function useShadowingSession(
   const finishRecording = useCallback(
     async (filePath: string, startedAtMs: number) => {
       clearTimers();
-      const stop = await stopRecording(filePath, startedAtMs);
+      if (!recordingStopPromise.current) {
+        recordingStopPromise.current = stopRecording(filePath, startedAtMs);
+      }
+      const stop = await recordingStopPromise.current;
       if (!stop.ok) {
+        if (recordingStopSucceeded.current) {
+          return;
+        }
         setSessionState('idle');
         recordingStartedAtMs.current = null;
+        recordingStopPromise.current = null;
         return;
       }
+      recordingStopSucceeded.current = true;
       setTake(prev =>
         prev
           ? {
@@ -192,6 +208,7 @@ export function useShadowingSession(
       setElapsedMs(stop.durationMs);
       setSessionState('recorded');
       recordingStartedAtMs.current = null;
+      recordingStopPromise.current = null;
     },
     [clearTimers],
   );
@@ -200,6 +217,8 @@ export function useShadowingSession(
     if (!sentence) {
       return;
     }
+    recordingStopSucceeded.current = false;
+    recordingStopPromise.current = null;
     const takeId = generateTakeId();
     const start = await startRecording('shadowing', takeId);
     if (!start.ok) {
@@ -259,13 +278,11 @@ export function useShadowingSession(
       ) {
         return;
       }
-      finishRecording(take.filePath, recordingStartedAtMs.current).catch(
-        () => undefined,
-      );
+      void stopRecordingTake();
     };
     const sub = AppState.addEventListener('change', onAppStateChange);
     return () => sub.remove();
-  }, [finishRecording, sessionState, take]);
+  }, [sessionState, stopRecordingTake, take]);
 
   useEffect(() => () => clearTimers(), [clearTimers]);
 
@@ -342,6 +359,9 @@ export function useShadowingSession(
       return;
     }
     for (const path of result.unlinkedFilePaths) {
+      if (isShadowingTakeFileProtected(path)) {
+        continue;
+      }
       await deleteRecordingFile(path);
     }
     requestRecordingUploadDrain();
