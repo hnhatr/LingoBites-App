@@ -12,6 +12,11 @@ import {
 } from '../api/recordingClient';
 import type {ReadRecordingFileForUploadResult} from '../recordingService';
 import {isRecordingUploadConsentOn} from './recordingConsent';
+import {
+  processPendingServerRecordingDeletion,
+  readPendingServerDeleteMarker,
+  setServerRecordingDeletionDrainScheduler,
+} from './serverRecordingDeletion';
 
 type ReadRecordingFileForUpload = (
   filePath: string,
@@ -23,8 +28,6 @@ async function defaultReadRecordingFile(
   const {readRecordingFileForUpload} = await import('../recordingService');
   return readRecordingFileForUpload(filePath);
 }
-
-const PENDING_SERVER_DELETE_KEY = 'speaking.pending_server_delete';
 
 const UPLOAD_RETRY_BASE_MS = 5_000;
 const UPLOAD_RETRY_MAX_MS = 5 * 60_000;
@@ -108,6 +111,9 @@ export function resetRecordingUploadQueueForTests(): void {
     appStateSubscription = null;
   }
   initialized = false;
+  setServerRecordingDeletionDrainScheduler(() => {
+    requestRecordingUploadDrain();
+  });
 }
 
 function nowIso(): string {
@@ -139,13 +145,7 @@ function readRow(id: string): UploadQueueRecordingRow | null {
 }
 
 function hasPendingServerDeleteMarker(): boolean {
-  const db = getDatabase();
-  const row = db
-    .execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [
-      PENDING_SERVER_DELETE_KEY,
-    ])
-    .rows?.item(0) as {value?: string} | undefined;
-  return Boolean(row?.value);
+  return readPendingServerDeleteMarker() !== null;
 }
 
 function listDuePendingRecordingIds(at: string): string[] {
@@ -375,6 +375,7 @@ async function processRecordingJob(id: string): Promise<void> {
 }
 
 async function runDrainOnce(): Promise<void> {
+  await processPendingServerRecordingDeletion();
   const at = nowIso();
   const ids = listDuePendingRecordingIds(at);
   for (const id of ids) {
@@ -406,3 +407,7 @@ export function initRecordingUploadQueue(): void {
 export async function flushRecordingUploadQueueForTests(): Promise<void> {
   await drainChain;
 }
+
+setServerRecordingDeletionDrainScheduler(() => {
+  requestRecordingUploadDrain();
+});
