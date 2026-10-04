@@ -14,7 +14,9 @@ describe('immersiveTabRoutes', () => {
       'DailyReview',
       'CanonicalLessonPlayer',
       'SpeakingRoom',
-      'SpeakingShadowing',
+      'ShadowingLessonPicker',
+      'ShadowingSession',
+      'ShadowingSummary',
     ]) {
       expect(shouldHideTabBarForRouteName(name)).toBe(true);
     }

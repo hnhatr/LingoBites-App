@@ -108,6 +108,16 @@ jest.mock('@notifee/react-native', () => {
   };
 });
 
+jest.mock('react-native-permissions', () => ({
+  check: jest.fn().mockResolvedValue('granted'),
+  request: jest.fn().mockResolvedValue('granted'),
+  PERMISSIONS: {
+    IOS: {MICROPHONE: 'ios.permission.MICROPHONE'},
+    ANDROID: {RECORD_AUDIO: 'android.permission.RECORD_AUDIO'},
+  },
+  RESULTS: {UNAVAILABLE: 'unavailable', GRANTED: 'granted', DENIED: 'denied'},
+}));
+
 jest.mock('@dr.pogodin/react-native-fs', () => ({
   __esModule: true,
   DocumentDirectoryPath: '/mock/Documents',
@@ -115,6 +125,7 @@ jest.mock('@dr.pogodin/react-native-fs', () => ({
   mkdir: jest.fn(),
   writeFile: jest.fn(),
   unlink: jest.fn(),
+  readDir: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock('react-native-sound', () => {

@@ -13,13 +13,17 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
+import {findMostRecentInProgressShadowingLesson} from '../logic/shadowing/shadowingProgress';
 import type {SpeakingModeInfo} from '../logic/speakingModes';
 import {listSpeakingRoomModes} from '../logic/speakingModes';
 import type {SpeakingRoomRouteParams} from './navigationTypes';
 
 export interface SpeakingRoomScreenProps {
   navigation: {
-    navigate: (screen: 'SpeakingShadowing') => void;
+    navigate: (
+      screen: 'ShadowingLessonPicker' | 'ShadowingSession',
+      params?: {lessonId: string; sentenceIndex: number},
+    ) => void;
     goBack: () => void;
   };
   route?: {
@@ -41,11 +45,15 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
   const [showDownloadHint, setShowDownloadHint] = React.useState(
     () => !hasDownloadedLessons(),
   );
+  const [shadowingContinue, setShadowingContinue] = React.useState(() =>
+    findMostRecentInProgressShadowingLesson(),
+  );
 
   useFocusEffect(
     React.useCallback(() => {
       setModes(listSpeakingRoomModes());
       setShowDownloadHint(!hasDownloadedLessons());
+      setShadowingContinue(findMostRecentInProgressShadowingLesson());
     }, []),
   );
 
@@ -54,8 +62,18 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
       return;
     }
     if (mode.mode === 'shadowing') {
-      navigation.navigate('SpeakingShadowing');
+      navigation.navigate('ShadowingLessonPicker');
     }
+  }
+
+  function handleShadowingContinue() {
+    if (!shadowingContinue) {
+      return;
+    }
+    navigation.navigate('ShadowingSession', {
+      lessonId: shadowingContinue.lessonId,
+      sentenceIndex: shadowingContinue.resumeSentenceIndex,
+    });
   }
 
   return (
@@ -82,6 +100,31 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
             </AppText>
           </AppCard>
         ) : null}
+        {shadowingContinue ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={handleShadowingContinue}
+            testID="shadowing-continue-row"
+          >
+            <AppCard style={{gap: theme.spacing.xs}}>
+              <View
+                style={{
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  gap: theme.spacing.sm,
+                }}
+              >
+                <Chip label="Đang dở" tone="gold" />
+                <AppText variant="h3">Tiếp tục</AppText>
+              </View>
+              <AppText testID="shadowing-continue-detail" variant="body">
+                {shadowingContinue.titleVi} · câu{' '}
+                {shadowingContinue.resumeSentenceNumber}/
+                {shadowingContinue.sentenceCount}
+              </AppText>
+            </AppCard>
+          </Pressable>
+        ) : null}
         {modes.map(mode => (
           <Pressable
             key={mode.mode}
@@ -93,6 +136,7 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
             accessibilityRole="button"
             disabled={!mode.available}
             onPress={() => handlePressMode(mode)}
+            testID={`speaking-mode-${mode.mode}`}
             style={({pressed}) => ({
               opacity: !mode.available
                 ? 0.6

@@ -205,7 +205,7 @@ export function generateStudyBlock(
       subtitleVi: 'Thực hành nhại giọng (shadowing) và tự kiểm tra phát âm',
       estimatedMinutes: 5,
       targetId: 'speaking_room',
-      navigationTarget: {screen: 'SpeakingRoom'},
+      navigationTarget: {screen: 'SpeakingShadowing'},
     });
   }
 

@@ -30,14 +30,52 @@ function mergeHeaders(
   return result;
 }
 
+export type AuthenticatedFetchOptions = {
+  /** When set, aborts before sending unless the active session matches this user. */
+  expectedUserId?: string;
+  /** Evaluated immediately before each `fetch` (including a 401 retry). */
+  beforeSend?: () => boolean | Promise<boolean>;
+};
+
+export class UploadSendPreconditionError extends Error {
+  readonly code = 'UPLOAD_SEND_PRECONDITION_FAILED';
+
+  constructor() {
+    super('UPLOAD_SEND_PRECONDITION_FAILED');
+    this.name = 'UploadSendPreconditionError';
+  }
+}
+
+async function assertSendPreconditions(
+  options?: AuthenticatedFetchOptions,
+): Promise<void> {
+  if (!options?.beforeSend) {
+    return;
+  }
+  const allowed = await options.beforeSend();
+  if (!allowed) {
+    throw new UploadSendPreconditionError();
+  }
+}
+
 export async function authenticatedFetch(
   url: string,
   init?: RequestInit,
   fetchImpl: typeof fetch = fetch,
+  options?: AuthenticatedFetchOptions,
 ): Promise<Response> {
   const authClient = createAuthClient({fetchImpl});
 
   let sessionResult = await ensureValidSession({client: authClient});
+
+  if (options?.expectedUserId !== undefined) {
+    if (
+      sessionResult.status !== 'valid' ||
+      sessionResult.userId !== options.expectedUserId
+    ) {
+      throw new SyncOwnershipChangedError();
+    }
+  }
 
   if (!(await assertSyncDrainOwnershipUnchanged())) {
     throw new SyncOwnershipChangedError();
@@ -53,6 +91,7 @@ export async function authenticatedFetch(
     accessToken ? {Authorization: `Bearer ${accessToken}`} : undefined,
   );
 
+  await assertSendPreconditions(options);
   let response = await fetchImpl(url, {...init, headers});
 
   if (response?.status === 401 && sessionResult.status === 'valid') {
@@ -60,6 +99,14 @@ export async function authenticatedFetch(
       client: authClient,
       forceRefresh: true,
     });
+    if (options?.expectedUserId !== undefined) {
+      if (
+        sessionResult.status !== 'valid' ||
+        sessionResult.userId !== options.expectedUserId
+      ) {
+        throw new SyncOwnershipChangedError();
+      }
+    }
     if (!(await assertSyncDrainOwnershipUnchanged())) {
       throw new SyncOwnershipChangedError();
     }
@@ -67,6 +114,7 @@ export async function authenticatedFetch(
       const retryHeaders = mergeHeaders(init?.headers, {
         Authorization: `Bearer ${sessionResult.session.access_token}`,
       });
+      await assertSendPreconditions(options);
       response = await fetchImpl(url, {...init, headers: retryHeaders});
     }
   }

@@ -16,7 +16,10 @@ import type {
   CaptureErrorEventInput,
   ErrorEventRecord,
   InsertSpeakingRecordingInput,
+  RecordingUploadState,
+  SpeakingMode,
   SpeakingRecordingRecord,
+  SpeakingRecordingRecordV4,
 } from '@core/db/types';
 
 type SpeakingRecordingDbRow = {
@@ -27,6 +30,13 @@ type SpeakingRecordingDbRow = {
   file_path: string;
   duration_ms: number;
   created_at: string;
+  sentence_id?: string | null;
+  owner_user_id?: string | null;
+  upload_state?: string;
+  upload_attempts?: number;
+  upload_next_at?: string | null;
+  upload_error?: string | null;
+  server_recording_id?: string | null;
 };
 
 type ErrorEventDbRow = {
@@ -49,6 +59,126 @@ function mapRecordingRow(row: SpeakingRecordingDbRow): SpeakingRecordingRecord {
     durationMs: row.duration_ms,
     createdAt: row.created_at,
   };
+}
+
+function mapRecordingRowV4(
+  row: SpeakingRecordingDbRow,
+): SpeakingRecordingRecordV4 {
+  const base = mapRecordingRow(row);
+  return {
+    ...base,
+    sentenceId: row.sentence_id ?? null,
+    ownerUserId: row.owner_user_id ?? null,
+    uploadState: (row.upload_state ?? 'local_only') as RecordingUploadState,
+    uploadAttempts: row.upload_attempts ?? 0,
+    uploadNextAt: row.upload_next_at ?? null,
+    uploadError: row.upload_error ?? null,
+    serverRecordingId: row.server_recording_id ?? null,
+  };
+}
+
+export type InsertSpeakingRecordingV4Input = {
+  id: string;
+  lessonId: string;
+  sentenceId: string;
+  mode: SpeakingMode;
+  filePath: string;
+  durationMs: number;
+  createdAt?: string;
+  ownerUserId: string | null;
+  uploadState: RecordingUploadState;
+};
+
+export function findSpeakingRecordingById(
+  id: string,
+): SpeakingRecordingRecordV4 | null {
+  const db = getDatabase();
+  const row = db
+    .execute('SELECT * FROM speaking_recordings WHERE id = ? LIMIT 1;', [id])
+    .rows?.item(0) as SpeakingRecordingDbRow | undefined;
+  return row ? mapRecordingRowV4(row) : null;
+}
+
+export function insertSpeakingRecordingV4(
+  input: InsertSpeakingRecordingV4Input,
+): SpeakingRecordingRecordV4 {
+  const db = getDatabase();
+  const createdAt = input.createdAt ?? new Date().toISOString();
+  db.execute(
+    `INSERT INTO speaking_recordings (
+      id, activity_id, lesson_id, mode, file_path, duration_ms, created_at,
+      sentence_id, owner_user_id, upload_state, upload_attempts,
+      upload_next_at, upload_error, server_recording_id
+    ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL, NULL);`,
+    [
+      input.id,
+      input.lessonId,
+      input.mode,
+      input.filePath,
+      input.durationMs,
+      createdAt,
+      input.sentenceId,
+      input.ownerUserId,
+      input.uploadState,
+    ],
+  );
+  return findSpeakingRecordingById(input.id)!;
+}
+
+function countSpeakingRecordingsWithFilePath(
+  filePath: string,
+  excludeRecordingId: string,
+): number {
+  const db = getDatabase();
+  const row = db
+    .execute(
+      `SELECT COUNT(*) AS c FROM speaking_recordings
+       WHERE file_path = ? AND id != ?;`,
+      [filePath, excludeRecordingId],
+    )
+    .rows?.item(0) as {c?: number} | undefined;
+  return Number(row?.c ?? 0);
+}
+
+/** Deletes competing takes for the sentence; returns file paths safe to unlink. */
+export function deleteOtherSpeakingRecordingsForSentence(
+  mode: SpeakingMode,
+  sentenceId: string,
+  keepId: string,
+): string[] {
+  const db = getDatabase();
+  const result = db.execute(
+    `SELECT id, file_path FROM speaking_recordings
+     WHERE mode = ? AND sentence_id = ? AND id != ?;`,
+    [mode, sentenceId, keepId],
+  );
+  const paths: string[] = [];
+  const rows = result.rows;
+  if (rows) {
+    for (let i = 0; i < rows.length; i += 1) {
+      const row = rows.item(i) as {id: string; file_path: string};
+      if (countSpeakingRecordingsWithFilePath(row.file_path, row.id) === 0) {
+        paths.push(row.file_path);
+      }
+      db.execute('DELETE FROM speaking_recordings WHERE id = ?;', [row.id]);
+    }
+  }
+  return paths;
+}
+
+export function countSpeakingRecordingsForSentence(
+  mode: SpeakingMode,
+  sentenceId: string,
+): number {
+  const db = getDatabase();
+  const row = db
+    .execute(
+      `SELECT COUNT(*) AS c FROM speaking_recordings
+       WHERE mode = ? AND sentence_id = ?;`,
+      [mode, sentenceId],
+    )
+    .rows?.item(0) as {c?: number} | undefined;
+  return Number(row?.c ?? 0);
 }
 
 function mapErrorEventRow(row: ErrorEventDbRow): ErrorEventRecord {
@@ -208,6 +338,7 @@ export function clearSpeakingData(): {deletedFilePaths: string[]} {
   const deletedFilePaths = listSpeakingRecordingFilePaths();
   const db = getDatabase();
   db.execute('DELETE FROM speaking_recordings;');
+  db.execute('DELETE FROM speaking_attempts;');
   db.execute('DELETE FROM error_events;');
   return {deletedFilePaths};
 }

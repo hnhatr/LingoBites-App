@@ -160,6 +160,20 @@ describe('ProfileScreen', () => {
     expect(text).not.toContain('Chỉnh sửa hồ sơ');
   });
 
+  it('shows speaking recordings settings in Cài đặt', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+
+    await ReactTestRenderer.act(async () => {
+      tree = renderProfileScreen();
+    });
+
+    expect(
+      tree!.root.findAll(
+        node => node.props.testID === 'speaking-recordings-settings',
+      ).length,
+    ).toBeGreaterThanOrEqual(1);
+  });
+
   it('shows Chưa đặt for settings without values instead of fake values or chevrons', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
 

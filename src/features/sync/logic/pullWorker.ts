@@ -1,6 +1,7 @@
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {getDatabase, withTransaction} from '@core/db/database';
+import {deleteLocalFiles} from '@core/localData/localFileCleanup';
 import {
   LessonProgressStatePayloadSchema,
   SyncCollectionSchema,
@@ -11,6 +12,10 @@ import {
   LESSON_PROGRESS_EVENT_TYPE,
   lessonProgressRank,
 } from '@core/sync/lessonProgress';
+import {
+  applySpeakingAttemptRecord,
+  SPEAKING_ATTEMPTS_EVENT_TYPE,
+} from '@core/sync/speakingAttempts';
 
 import {syncPull} from './syncClient';
 
@@ -18,6 +23,104 @@ let isRunning = false;
 let isEnabled = false;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let subscription: {remove: () => void} | null = null;
+
+/** Durable queue of recording files to unlink after a successful pull tombstone (ADV-003). */
+const PENDING_RECORDING_UNLINKS_KEY = 'speaking.pending_recording_unlinks';
+
+function readPendingRecordingUnlinks(): string[] {
+  const db = getDatabase();
+  const row = db
+    .execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [
+      PENDING_RECORDING_UNLINKS_KEY,
+    ])
+    .rows?.item(0) as {value?: string} | undefined;
+  if (!row?.value) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(row.value) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((item): item is string => typeof item === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function writePendingRecordingUnlinks(paths: string[]): void {
+  const db = getDatabase();
+  if (paths.length === 0) {
+    db.execute('DELETE FROM app_settings WHERE key = ?;', [
+      PENDING_RECORDING_UNLINKS_KEY,
+    ]);
+    return;
+  }
+  db.execute(
+    'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+    [
+      PENDING_RECORDING_UNLINKS_KEY,
+      JSON.stringify(paths),
+      new Date().toISOString(),
+    ],
+  );
+}
+
+function mergePendingRecordingUnlinks(paths: string[]): void {
+  if (paths.length === 0) {
+    return;
+  }
+  const merged = [...new Set([...readPendingRecordingUnlinks(), ...paths])];
+  writePendingRecordingUnlinks(merged);
+}
+
+/** Paths still referenced by `speaking_recordings` must not be unlinked (ADV-004). */
+function partitionRecordingPathsForUnlink(filePaths: string[]): {
+  orphanPaths: string[];
+  liveOwnedPaths: string[];
+} {
+  if (filePaths.length === 0) {
+    return {orphanPaths: [], liveOwnedPaths: []};
+  }
+  const db = getDatabase();
+  const orphanPaths: string[] = [];
+  const liveOwnedPaths: string[] = [];
+  for (const filePath of filePaths) {
+    const res = db.execute(
+      'SELECT 1 FROM speaking_recordings WHERE file_path = ? LIMIT 1;',
+      [filePath],
+    );
+    if (res.rows && res.rows.length > 0) {
+      liveOwnedPaths.push(filePath);
+    } else {
+      orphanPaths.push(filePath);
+    }
+  }
+  return {orphanPaths, liveOwnedPaths};
+}
+
+async function retryPendingRecordingUnlinks(): Promise<void> {
+  const pending = readPendingRecordingUnlinks();
+  if (pending.length === 0) {
+    return;
+  }
+  const {orphanPaths} = partitionRecordingPathsForUnlink(pending);
+  const failed = await deleteLocalFiles(orphanPaths);
+  writePendingRecordingUnlinks(failed);
+}
+
+async function unlinkRecordingFilesAfterPull(
+  filePaths: string[],
+): Promise<void> {
+  if (filePaths.length === 0) {
+    return;
+  }
+  const {orphanPaths} = partitionRecordingPathsForUnlink(filePaths);
+  const failed = await deleteLocalFiles(orphanPaths);
+  if (failed.length > 0) {
+    mergePendingRecordingUnlinks(failed);
+  }
+}
 
 function getCursor(): string {
   const db = getDatabase();
@@ -124,9 +227,16 @@ export function applyLessonProgressRecord(
   return true;
 }
 
-export function applySyncRecord(record: SyncRecord | SyncPullRecord) {
+export function applySyncRecord(
+  record: SyncRecord | SyncPullRecord,
+  pendingUnlinks?: string[],
+) {
   if (record.collection === LESSON_PROGRESS_EVENT_TYPE) {
     applyLessonProgressRecord(record);
+    return;
+  }
+  if (record.collection === SPEAKING_ATTEMPTS_EVENT_TYPE) {
+    applySpeakingAttemptRecord(record, pendingUnlinks);
     return;
   }
   if (!SyncCollectionSchema.safeParse(record.collection).success) {
@@ -260,6 +370,7 @@ export async function runPullWorker() {
   isRunning = true;
 
   try {
+    await retryPendingRecordingUnlinks();
     let cursor = getCursor();
     let hasMore = true;
 
@@ -277,15 +388,17 @@ export async function runPullWorker() {
 
       const db = getDatabase();
       let pageApplied = false;
+      const pendingUnlinks: string[] = [];
       try {
         withTransaction(db, () => {
           for (const record of res.data.records) {
-            applySyncRecord(record);
+            applySyncRecord(record, pendingUnlinks);
           }
           cursor = res.data.next_cursor;
           saveCursor(cursor);
         });
         pageApplied = true;
+        await unlinkRecordingFilesAfterPull(pendingUnlinks);
       } catch (_err) {
         // Rollback occurred. Do not advance cursor, schedule retry.
         if (isEnabled) {

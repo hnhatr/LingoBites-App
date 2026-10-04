@@ -39,4 +39,16 @@ describe('resolveTodayNavigation', () => {
       }),
     ).toEqual({screen: 'SpeakingRoom'});
   });
+
+  it('AC-002 S1: maps SpeakingShadowing to the shadowing flow entry', () => {
+    const resolved = resolveTodayNavigation({screen: 'SpeakingShadowing'});
+    expect(
+      resolved.screen === 'ShadowingLessonPicker' ||
+        resolved.screen === 'ShadowingSession',
+    ).toBe(true);
+    if (resolved.screen === 'ShadowingSession') {
+      expect(resolved.lessonId).toBeTruthy();
+      expect(typeof resolved.sentenceIndex).toBe('number');
+    }
+  });
 });

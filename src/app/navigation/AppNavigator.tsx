@@ -31,8 +31,10 @@ import {
 } from '@features/profile';
 import {DailyReviewScreen} from '@features/review';
 import {
+  ShadowingLessonPickerScreen,
+  ShadowingSessionScreen,
+  ShadowingSummaryScreen,
   SpeakingRoomScreen,
-  SpeakingShadowingActivity,
 } from '@features/speaking/screens/speakingUiPort';
 import {TodayScreen} from '@features/today';
 
@@ -89,6 +91,21 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         component={SpeakingRoomScreen}
         name="SpeakingRoom"
+        options={{headerShown: false}}
+      />
+      <HomeStack.Screen
+        component={ShadowingLessonPickerScreen}
+        name="ShadowingLessonPicker"
+        options={{headerShown: false}}
+      />
+      <HomeStack.Screen
+        component={ShadowingSessionScreen}
+        name="ShadowingSession"
+        options={{headerShown: false}}
+      />
+      <HomeStack.Screen
+        component={ShadowingSummaryScreen}
+        name="ShadowingSummary"
         options={{headerShown: false}}
       />
     </HomeStack.Navigator>
@@ -161,8 +178,18 @@ function LessonsStackNavigator() {
         options={{headerShown: false}}
       />
       <LessonsStack.Screen
-        component={SpeakingShadowingActivity}
-        name="SpeakingShadowing"
+        component={ShadowingLessonPickerScreen}
+        name="ShadowingLessonPicker"
+        options={{headerShown: false}}
+      />
+      <LessonsStack.Screen
+        component={ShadowingSessionScreen}
+        name="ShadowingSession"
+        options={{headerShown: false}}
+      />
+      <LessonsStack.Screen
+        component={ShadowingSummaryScreen}
+        name="ShadowingSummary"
         options={{headerShown: false}}
       />
       <LessonsStack.Screen
