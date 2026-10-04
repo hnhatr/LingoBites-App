@@ -47,11 +47,27 @@ export type ShadowingTake = {
   durationMs: number;
 };
 
+export type ShadowingSessionSummary = {
+  lessonId: string;
+  lessonTitle: string;
+  savedCount: number;
+  failedCount: number;
+  elapsedMs: number;
+  failedSentences: Array<{
+    sentenceId: string;
+    textEn: string;
+    recordingId: string;
+    localFilePath: string | null;
+    serverRecordingId: string | null;
+    uploadPending: boolean;
+  }>;
+};
+
 export type UseShadowingSessionOptions = {
   lessonId: string;
   /** 0-based index into the ordered sentence list (resume — TASK-008). */
   initialSentenceIndex?: number;
-  onSessionComplete?: () => void;
+  onSessionComplete?: (summary: ShadowingSessionSummary) => void;
   generateTakeId?: () => string;
 };
 
@@ -202,6 +218,11 @@ export function useShadowingSession(
   const [elapsedMs, setElapsedMs] = useState(0);
   const [selfCheck, setSelfCheck] =
     useState<ShadowingSelfCheck>(EMPTY_SELF_CHECK);
+  const sessionStartedAtMs = useRef(Date.now());
+  const sessionSavedCountRef = useRef(0);
+  const sessionFailedSentencesRef = useRef<
+    ShadowingSessionSummary['failedSentences']
+  >([]);
 
   const recordingStartedAtMs = useRef<number | null>(null);
   const autoStopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -243,7 +264,14 @@ export function useShadowingSession(
     }
     const nextIndex = sentenceIndex + 1;
     if (nextIndex >= lesson.sentences.length) {
-      options.onSessionComplete?.();
+      options.onSessionComplete?.({
+        lessonId: lesson.lessonId,
+        lessonTitle: lesson.titleVi,
+        savedCount: sessionSavedCountRef.current,
+        failedCount: sessionFailedSentencesRef.current.length,
+        elapsedMs: Math.max(0, Date.now() - sessionStartedAtMs.current),
+        failedSentences: sessionFailedSentencesRef.current,
+      });
       return;
     }
     setSentenceIndex(nextIndex);
@@ -589,6 +617,25 @@ export function useShadowingSession(
     if (!result.ok) {
       setSessionState('recorded');
       return;
+    }
+    const attemptFailed = !(
+      selfCheck.fullSentence &&
+      selfCheck.keyWords &&
+      selfCheck.rhythm
+    );
+    sessionSavedCountRef.current += 1;
+    if (attemptFailed) {
+      sessionFailedSentencesRef.current = [
+        ...sessionFailedSentencesRef.current,
+        {
+          sentenceId: sentence.id,
+          textEn: sentence.textEn,
+          recordingId: result.recording.id,
+          localFilePath: take.filePath,
+          serverRecordingId: result.recording.serverRecordingId,
+          uploadPending: result.recording.uploadState === 'pending',
+        },
+      ];
     }
     for (const path of result.unlinkedFilePaths) {
       if (isShadowingTakeFileProtected(path)) {
