@@ -132,6 +132,29 @@ function makeDriver(generateTakeId = () => TAKE_NEW) {
   return {Driver, latest};
 }
 
+function installSingletonRecorderModel() {
+  let activePath: string | null = null;
+  mockStartRecording.mockImplementation(async () => {
+    const filePath = takeSequence.shift() ?? '/files/fallback.m4a';
+    if (activePath === null) {
+      activePath = filePath;
+      virtualFiles.add(filePath);
+    }
+    return {ok: true, filePath};
+  });
+  mockStopRecording.mockImplementation(
+    async (_requestedPath: string, startedAt: number) => {
+      const stoppedPath = activePath;
+      activePath = null;
+      return {
+        ok: true,
+        filePath: stoppedPath ?? 'Already stopped',
+        durationMs: Date.now() - startedAt,
+      };
+    },
+  );
+}
+
 async function mountRecordedTake(filePath = '/files/current.m4a') {
   takeSequence = [filePath];
   const driver = makeDriver();
@@ -355,6 +378,117 @@ describe('LING-242 adversarial shadowing session', () => {
     expect(first.latest.current?.take?.filePath).toBe(
       '/files/first-session.m4a',
     );
+    expect(mockStopRecording.mock.calls.length).toBeLessThanOrEqual(1);
+  });
+
+  it('ADV-005 / AC-007: an older timer cannot consume the newer session recording', async () => {
+    takeSequence = ['/files/first-session.m4a', '/files/second-session.m4a'];
+    installSingletonRecorderModel();
+    const first = makeDriver(() => TAKE_NEW);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(first.Driver));
+    });
+    await act(async () => {
+      await first.latest.current?.startRecordingTake();
+      jest.advanceTimersByTime(20_000);
+    });
+
+    const second = makeDriver(() => TAKE_OTHER);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(second.Driver));
+    });
+    await act(async () => {
+      await second.latest.current?.startRecordingTake();
+      jest.advanceTimersByTime(10_000);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(20_000);
+    });
+
+    expect(first.latest.current?.take?.filePath).toBe(
+      '/files/first-session.m4a',
+    );
+    expect(second.latest.current?.sessionState).toBe('recorded');
+    expect(second.latest.current?.take?.filePath).toBe(
+      '/files/second-session.m4a',
+    );
+  });
+
+  it('ADV-006 / AC-007: background stops the visible session without cross-assigning takes', async () => {
+    const handlers: Array<(state: AppStateStatus) => void> = [];
+    (AppState.addEventListener as jest.Mock).mockImplementation(
+      (_type, handler) => {
+        handlers.push(handler);
+        return {remove: jest.fn()};
+      },
+    );
+    takeSequence = ['/files/background-old.m4a', '/files/background-new.m4a'];
+    installSingletonRecorderModel();
+
+    const first = makeDriver(() => TAKE_NEW);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(first.Driver));
+    });
+    await act(async () => {
+      await first.latest.current?.startRecordingTake();
+    });
+    const second = makeDriver(() => TAKE_OTHER);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(second.Driver));
+    });
+    await act(async () => {
+      await second.latest.current?.startRecordingTake();
+    });
+    await act(async () => {
+      handlers.forEach(handler => handler('background'));
+      await Promise.resolve();
+    });
+
+    expect(first.latest.current?.take?.filePath).toBe(
+      '/files/background-old.m4a',
+    );
+    expect(second.latest.current?.sessionState).toBe('recorded');
+    expect(second.latest.current?.take?.filePath).toBe(
+      '/files/background-new.m4a',
+    );
+  });
+
+  it('H1 / BR-002 HELD: a third mount leaves the active session auto-stop armed', async () => {
+    takeSequence = ['/files/three-mounts.m4a'];
+    const first = makeDriver(() => TAKE_NEW);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(first.Driver));
+    });
+    await act(async () => {
+      await first.latest.current?.startRecordingTake();
+    });
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(makeDriver().Driver));
+      ReactTestRenderer.create(React.createElement(makeDriver().Driver));
+      jest.advanceTimersByTime(SHADOWING_MAX_RECORDING_MS);
+    });
+
+    expect(first.latest.current?.sessionState).toBe('recorded');
+    expect(first.latest.current?.take?.filePath).toBe(
+      '/files/three-mounts.m4a',
+    );
+  });
+
+  it('H3 / AC-012 HELD: discarding while recording stops and removes the unsaved take', async () => {
+    takeSequence = ['/files/discard-recording.m4a'];
+    const driver = makeDriver(() => TAKE_NEW);
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(driver.Driver));
+    });
+    await act(async () => {
+      await driver.latest.current?.startRecordingTake();
+    });
+    await act(async () => {
+      await driver.latest.current?.discardUnsavedTake();
+    });
+
+    expect(driver.latest.current?.sessionState).toBe('idle');
+    expect(virtualFiles.has('/files/discard-recording.m4a')).toBe(false);
     expect(mockStopRecording.mock.calls.length).toBeLessThanOrEqual(1);
   });
 
