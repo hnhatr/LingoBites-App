@@ -109,6 +109,9 @@ export async function requestServerRecordingContent(
     }
     const writeFile = options.writeFile ?? deps.writeFile ?? defaultWriteFile;
     const body = await response.text();
+    if (body.length === 0) {
+      return {ok: false, errorCode: 'EMPTY_CONTENT'};
+    }
     await writeFile(remoteCachePath(serverRecordingId), body);
     return {ok: true};
   } catch {
@@ -116,31 +119,39 @@ export async function requestServerRecordingContent(
   }
 }
 
+export type PlaySummarySentenceResult = {ok: true} | {ok: false};
+
 export async function playSummarySentenceRecording(
   row: SummaryPlaybackRow,
   options: RemoteRecordingPlaybackDeps = {},
-): Promise<void> {
+): Promise<PlaySummarySentenceResult> {
   const fileExists = options.fileExists ?? deps.fileExists ?? defaultFileExists;
   const playLocal = options.playLocal ?? deps.playLocal ?? playRecording;
 
-  if (row.localFilePath && (await fileExists(row.localFilePath))) {
-    await playLocal(row.localFilePath);
-    return;
-  }
-  if (!row.serverRecordingId) {
-    return;
-  }
-  const cached = remoteCachePath(row.serverRecordingId);
-  if (!(await fileExists(cached))) {
-    const fetched = await requestServerRecordingContent(
-      row.serverRecordingId,
-      options,
-    );
-    if (!fetched.ok) {
-      return;
+  try {
+    if (row.localFilePath && (await fileExists(row.localFilePath))) {
+      await playLocal(row.localFilePath);
+      return {ok: true};
     }
-  }
-  if (await fileExists(cached)) {
+    if (!row.serverRecordingId) {
+      return {ok: false};
+    }
+    const cached = remoteCachePath(row.serverRecordingId);
+    if (!(await fileExists(cached))) {
+      const fetched = await requestServerRecordingContent(
+        row.serverRecordingId,
+        options,
+      );
+      if (!fetched.ok) {
+        return {ok: false};
+      }
+    }
+    if (!(await fileExists(cached))) {
+      return {ok: false};
+    }
     await playLocal(cached);
+    return {ok: true};
+  } catch {
+    return {ok: false};
   }
 }

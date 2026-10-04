@@ -20,16 +20,25 @@ import {ShadowingSummaryScreen} from '../ShadowingSummaryScreen';
 
 const SERVER_RECORDING_ID = '55555555-5555-4555-8555-555555555555';
 
-const baseRow = {
+type SummaryFailedRow = {
+  sentenceId: string;
+  textEn: string;
+  recordingId: string;
+  localFilePath: string | null;
+  serverRecordingId: string | null;
+  uploadPending: boolean;
+};
+
+const baseRow: SummaryFailedRow = {
   sentenceId: '22222222-2222-4222-8222-222222222221',
   textEn: 'Line one',
   recordingId: 'rec-1',
   localFilePath: '/local/rec-1.m4a',
-  serverRecordingId: null as string | null,
+  serverRecordingId: null,
   uploadPending: false,
 };
 
-function paramsFor(row: typeof baseRow) {
+function paramsFor(row: SummaryFailedRow) {
   return {
     lessonId: '11111111-1111-4111-8111-111111111111',
     lessonTitle: 'Bài demo',
@@ -40,7 +49,7 @@ function paramsFor(row: typeof baseRow) {
   };
 }
 
-async function renderSummary(row: typeof baseRow) {
+async function renderSummary(row: SummaryFailedRow) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(

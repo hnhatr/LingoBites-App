@@ -64,7 +64,7 @@ export function ShadowingSummaryScreen({
   useEffect(() => {
     setPlayVisibleBySentenceId(initialPlayVisible);
     let cancelled = false;
-    void (async () => {
+    const refreshPlayVisibility = async () => {
       const next: Record<string, boolean> = {};
       for (const row of failedSentences) {
         next[row.sentenceId] = await resolveSummaryPlayVisible({
@@ -76,7 +76,8 @@ export function ShadowingSummaryScreen({
       if (!cancelled) {
         setPlayVisibleBySentenceId(next);
       }
-    })();
+    };
+    refreshPlayVisibility().catch(() => undefined);
     return () => {
       cancelled = true;
     };
@@ -153,11 +154,20 @@ export function ShadowingSummaryScreen({
                       accessibilityLabel={`Nghe lại ${row.textEn}`}
                       icon="play_arrow"
                       onPress={() => {
-                        playSummarySentenceRecording({
-                          recordingId: row.recordingId,
-                          localFilePath: row.localFilePath,
-                          serverRecordingId: row.serverRecordingId,
-                        }).catch(() => undefined);
+                        const playRow = async () => {
+                          const result = await playSummarySentenceRecording({
+                            recordingId: row.recordingId,
+                            localFilePath: row.localFilePath,
+                            serverRecordingId: row.serverRecordingId,
+                          });
+                          if (!result.ok) {
+                            setPlayVisibleBySentenceId(prev => ({
+                              ...prev,
+                              [row.sentenceId]: false,
+                            }));
+                          }
+                        };
+                        playRow().catch(() => undefined);
                       }}
                       testID={`shadowing-summary-play-${row.sentenceId}`}
                     />

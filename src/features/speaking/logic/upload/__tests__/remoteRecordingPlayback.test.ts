@@ -70,11 +70,14 @@ describe('remoteRecordingPlayback', () => {
     writeFile.mockRestore();
   });
 
-  it('requestServerRecordingContent returns ok on HTTP 200', async () => {
+  it('requestServerRecordingContent rejects empty HTTP 200 body', async () => {
     mockAuthenticatedFetch.mockResolvedValue({ok: true, text: async () => ''});
+    const writeFile = jest.fn().mockResolvedValue(undefined);
+    configureRemoteRecordingPlayback({writeFile});
     const result = await requestServerRecordingContent(
       '55555555-5555-4555-8555-555555555555',
     );
-    expect(result).toEqual({ok: true});
+    expect(result).toEqual({ok: false, errorCode: 'EMPTY_CONTENT'});
+    expect(writeFile).not.toHaveBeenCalled();
   });
 });
