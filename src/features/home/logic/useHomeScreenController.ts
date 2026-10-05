@@ -41,7 +41,6 @@ import {
   buildShortcutItems,
   buildWeeklyGoalCard,
   deriveHeroState,
-  type ExploreCell,
   type FlameModel,
   type GreetingModel,
   type HeroState,
@@ -234,45 +233,6 @@ export function useHomeScreenController({navigation}: Args) {
     }));
   }, [catalogState]);
 
-  // Legacy explore cells (kept for existing HomeScreenView until TASK-003 replaces it)
-  const exploreCells: ExploreCell[] = useMemo(
-    () => [
-      {
-        icon: 'play_circle',
-        backgroundKey: 'accentSoft',
-        inkKey: 'primary',
-        titleKey: 'home.explore_video',
-        metaKey: 'home.explore_video_meta',
-        testID: 'home-explore-video',
-      },
-      {
-        icon: 'article',
-        backgroundKey: 'tertiarySoft',
-        inkKey: 'onTertiaryContainer',
-        titleKey: 'home.explore_news',
-        metaKey: 'home.explore_news_meta',
-        testID: 'home-explore-news',
-      },
-      {
-        icon: 'smartphone',
-        backgroundKey: 'secondarySoft',
-        inkKey: 'secondary',
-        titleKey: 'home.explore_offline',
-        metaKey: 'home.explore_offline_meta',
-        testID: 'home-explore-offline',
-      },
-      {
-        icon: 'fitness_center',
-        backgroundKey: 'surfaceContainer',
-        inkKey: 'text.primary',
-        titleKey: 'home.explore_practice',
-        metaKey: 'home.explore_practice_meta',
-        testID: 'home-explore-practice',
-      },
-    ],
-    [],
-  );
-
   const openRecentItem = useCallback(
     (item: RecentItem) => {
       trackEvent('unified_lesson_opened', {
@@ -345,8 +305,6 @@ export function useHomeScreenController({navigation}: Args) {
           estimatedDurationMinutes: startedDownload.estimatedDurationMinutes,
         }
       : null,
-    // Legacy explore cells (still used by HomeScreenView during TASK-003 transition)
-    exploreCells,
     railItems,
     youtubeEnabled,
     // Navigation handlers

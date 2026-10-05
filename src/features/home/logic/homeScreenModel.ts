@@ -383,23 +383,6 @@ export function buildWeeklyGoalCard(
   };
 }
 
-// ---------------------------------------------------------------------------
-// ExploreCell type — kept for test compatibility with existing HomeScreenMvp.test
-// ---------------------------------------------------------------------------
-
-export type ExploreCell = {
-  icon: HandoffIconName;
-  backgroundKey:
-    | 'accentSoft'
-    | 'tertiarySoft'
-    | 'secondarySoft'
-    | 'surfaceContainer';
-  inkKey: 'primary' | 'onTertiaryContainer' | 'secondary' | 'text.primary';
-  titleKey: string;
-  metaKey: string;
-  testID: string;
-};
-
 export function railIconForSource(
   _sourceType: LessonSourceType,
 ): HandoffIconName {
