@@ -114,7 +114,8 @@
     "hero_eyebrow_saved": "What to learn today?",
     "hero_eyebrow_in_progress": "In progress",
     "hero_eyebrow_youtube_disabled": "What to learn today?",
-    "hero_eyebrow_goal_met": "Excellent!"
+    "hero_eyebrow_goal_met": "Excellent!",
+    "shortcuts_title": "Shortcuts"
   },
   "practice": {
     "quick_empty_cause": "No lessons are ready for quick practice yet.",

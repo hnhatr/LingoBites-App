@@ -55,6 +55,8 @@ const NEW_HOME_KEYS = [
   'home.hero_eyebrow_in_progress',
   'home.hero_eyebrow_youtube_disabled',
   'home.hero_eyebrow_goal_met',
+  // Shortcuts section title (Gap 7, LING-261)
+  'home.shortcuts_title',
 ];
 
 function resolveKey(
