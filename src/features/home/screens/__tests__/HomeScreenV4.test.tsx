@@ -598,4 +598,52 @@ describe('CR-002 hero wave token and BUG-004 bubble (LING-264)', () => {
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('Chọn bài');
   });
+
+  // DEVIATION-01 (LING-264 repair 1): bubble text must not be force-clamped;
+  // full mascot_saved string renders without numberOfLines truncation.
+  it('DEVIATION-01: bubble text renders full mascot_saved string without numberOfLines clamp', async () => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    (getGamificationSnapshot as jest.Mock).mockReturnValue({
+      currentStreak: 0,
+      weeklyGoal: {completedThisWeek: 0, target: 6},
+      badges: [],
+    });
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+
+    // The bubble AppText must not have numberOfLines set (no forced ellipsis).
+    const bubbleNode = tree.root
+      .findAll(node => node.props.testID === 'home-mascot-bubble')
+      .find(node => node.children != null);
+    expect(bubbleNode).toBeDefined();
+
+    // Find the Text node inside the bubble that renders the speech text.
+    // It must carry the full string and must NOT have numberOfLines set.
+    // (numberOfLines prop on a native Text causes ellipsis/truncation on device.)
+    const serialized = JSON.stringify(tree.toJSON());
+    // Full vi string must be present in the rendered output (AE-3)
+    expect(serialized).toContain('Hôm nay học 5 phút thôi!');
+    // numberOfLines must not appear alongside the bubble content in the JSON.
+    // The Text element that renders the speech bubble must wrap freely.
+    // We assert this by finding Text nodes in the bubble that carry numberOfLines.
+    const bubbleRoot = bubbleNode!;
+    const textNodesWithClamp = bubbleRoot.findAll(
+      node =>
+        typeof node.props.numberOfLines === 'number' &&
+        typeof node.props.children === 'string' &&
+        String(node.props.children).includes('Hôm nay'),
+    );
+    expect(textNodesWithClamp.length).toBe(0);
+  });
 });

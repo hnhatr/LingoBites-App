@@ -309,7 +309,7 @@ export function HomeHeroCard({
 
       {/* Speech bubble — card-relative (BUG-004, right:58 top:8 from mockup v4) */}
       <View style={styles.bubble} testID="home-mascot-bubble">
-        <AppText variant="caption" style={styles.bubbleText} numberOfLines={2}>
+        <AppText variant="caption" style={styles.bubbleText}>
           {speechText}
         </AppText>
         {/* Downward tail pointing toward the mascot head */}
