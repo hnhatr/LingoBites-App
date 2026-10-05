@@ -3,7 +3,6 @@ import type {GamificationEventRecord} from '@core/db/types';
 import {
   addLocalDays,
   BADGE_DEFINITIONS,
-  completedReviewSessionDays,
   computeBestStreak,
   computeCurrentStreak,
   deriveGamificationSnapshot,
@@ -11,6 +10,7 @@ import {
   isOnTimeReview,
   ON_TIME_WATER_POINTS,
   sessionXp,
+  streakActivityDays,
   toLocalDayKey,
   XP_PER_RATING,
 } from '../gamificationPolicy';
@@ -30,6 +30,22 @@ function sessionEvent(
     eventType: 'review_session_completed',
     sourceEventId,
     points,
+    createdAt: localIsoForDayKey(dayKey),
+    revision: 0,
+    tombstone: false,
+  };
+}
+
+function activityEvent(
+  dayKey: string,
+  eventType: 'lesson_completed' | 'shadowing_session_completed',
+  sourceEventId = 'lesson-1',
+): GamificationEventRecord {
+  return {
+    id: `ev-${dayKey}-${sourceEventId}-${eventType}`,
+    eventType,
+    sourceEventId,
+    points: 0,
     createdAt: localIsoForDayKey(dayKey),
     revision: 0,
     tombstone: false,
@@ -111,7 +127,18 @@ describe('gamificationPolicy', () => {
         onTimeEvent('2026-09-05'),
         onTimeEvent('2026-09-03'),
       ];
-      expect(completedReviewSessionDays(events)).toEqual([
+      expect(streakActivityDays(events)).toEqual(['2026-09-04', '2026-09-05']);
+    });
+
+    it('counts completed lessons and Shadowing sessions as streak days', () => {
+      const events = [
+        activityEvent('2026-09-03', 'lesson_completed'),
+        activityEvent('2026-09-04', 'shadowing_session_completed'),
+        sessionEvent('2026-09-05', 7),
+        onTimeEvent('2026-09-02'),
+      ];
+      expect(streakActivityDays(events)).toEqual([
+        '2026-09-03',
         '2026-09-04',
         '2026-09-05',
       ]);
@@ -231,6 +258,20 @@ describe('gamificationPolicy', () => {
       expect(snapshot.currentStreak).toBe(3); // 03, 04, 05
       expect(snapshot.bestStreak).toBe(3);
       expect(snapshot.pet.stageId).toBe('seed');
+    });
+
+    it('keeps the streak from lessons and Shadowing without adding XP', () => {
+      const events = [
+        activityEvent('2026-09-03', 'lesson_completed'),
+        activityEvent('2026-09-04', 'shadowing_session_completed'),
+        activityEvent('2026-09-05', 'lesson_completed', 'lesson-2'),
+      ];
+      const snapshot = deriveGamificationSnapshot(events, today);
+      expect(snapshot.currentStreak).toBe(3);
+      expect(snapshot.bestStreak).toBe(3);
+      expect(snapshot.totalSessions).toBe(0);
+      expect(snapshot.totalXp).toBe(0);
+      expect(snapshot.badges.map(badge => badge.id)).toEqual(['streak_3']);
     });
 
     it('awards the first-review badge after one completed session', () => {

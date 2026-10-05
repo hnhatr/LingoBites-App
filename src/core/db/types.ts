@@ -128,15 +128,21 @@ export type AudioCacheStats = {
  * Types of events stored in the local `gamification_events` log (ADR-4, REQ-11).
  *
  * `review_session_completed` - one per finished review session that rated at
- *   least one card. Its `points` are the XP the session earned. A day only
- *   counts toward the streak when it contains one of these events.
+ *   least one card. Its `points` are the XP the session earned. Counts toward
+ *   the streak (see `STREAK_EVENT_TYPES`).
  * `review_on_time` - one per card reviewed on or before the day it was due
  *   (see `isOnTimeReview`). Its `points` accrue as pet water; this is what
  *   makes pet resources depend on timely review behaviour, not wall-clock time.
+ * `lesson_completed` - one per lesson that moves to completed. Zero points;
+ *   only marks the local day as a streak day.
+ * `shadowing_session_completed` - one per finished Shadowing session. Zero
+ *   points; only marks the local day as a streak day.
  */
 export type GamificationEventType =
   | 'review_session_completed'
-  | 'review_on_time';
+  | 'review_on_time'
+  | 'lesson_completed'
+  | 'shadowing_session_completed';
 
 /** Input for appending a single row to the gamification event log. */
 export type GamificationEventInput = {

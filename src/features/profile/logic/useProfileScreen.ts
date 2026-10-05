@@ -100,7 +100,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
   const streakSubtitle =
     streak > 0
       ? 'Tiếp tục duy trì — học gì đó hôm nay nhé!'
-      : 'Hoàn thành một phiên ôn tập để bắt đầu chuỗi.';
+      : 'Học một bài, ôn thẻ hoặc luyện nói để bắt đầu chuỗi.';
 
   const executeClearData = useCallback(() => {
     (async () => {
