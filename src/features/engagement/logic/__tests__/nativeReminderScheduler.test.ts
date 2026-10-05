@@ -14,6 +14,7 @@ import type {NotifeeLike} from '../nativeReminderScheduler';
 import {
   configureNativeReminderNotifications,
   createNativeReminderScheduler,
+  DAILY_REMINDER_NOTIFICATION_ID,
   GOLDEN_HOUR_CHANNEL_ID,
   permissionStatusFromSettings,
   shouldRequestReminderPermission,
@@ -22,6 +23,7 @@ import type {PendingReminder} from '../reminderPolicy';
 import {
   configureReminderScheduler,
   noopReminderScheduler,
+  setReviewRemindersEnabled,
 } from '../reminderService';
 
 const NOW = '2026-09-02T09:00:00.000Z';
@@ -273,6 +275,28 @@ describe('createNativeReminderScheduler', () => {
     expect(scheduler.listPending()).toEqual(expected);
   });
 
+  it('leaves the daily study reminder out of the Golden Hour shadow', async () => {
+    const {api} = createFakeNotifee({
+      getTriggerNotifications: async () =>
+        [
+          {
+            notification: {id: DAILY_REMINDER_NOTIFICATION_ID},
+            trigger: {
+              type: TriggerType.TIMESTAMP,
+              timestamp: Date.parse('2026-09-02T13:00:00.000Z'),
+            },
+          },
+        ] as unknown as Awaited<
+          ReturnType<NotifeeLike['getTriggerNotifications']>
+        >,
+    });
+    const scheduler = createNativeReminderScheduler(api, {now: FIXED_NOW_MS});
+
+    await scheduler.refreshPending();
+
+    expect(scheduler.listPending()).toEqual([]);
+  });
+
   it('keeps the current shadow when the OS pending query fails', async () => {
     const {api} = createFakeNotifee({
       getTriggerNotifications: async () => {
@@ -372,6 +396,56 @@ describe('configureNativeReminderNotifications', () => {
     expect(status).toBe('not-determined');
     expect(calls.requested).toBe(0);
     expect(calls.scheduled).toHaveLength(0);
+  });
+
+  it('prompts without a due card when the learner wants a reminder', async () => {
+    const {api, calls} = createFakeNotifee({
+      getNotificationSettings: async () =>
+        settingsWith(AuthorizationStatus.NOT_DETERMINED),
+      requestPermission: async () => {
+        calls.requested += 1;
+        return settingsWith(AuthorizationStatus.AUTHORIZED);
+      },
+    });
+
+    const status = await configureNativeReminderNotifications(api, {
+      now: () => NOW,
+      reminderWanted: true,
+    });
+
+    expect(status).toBe('granted');
+    expect(calls.requested).toBe(1);
+  });
+
+  it('cancels pending Golden Hour reminders while reminders are off', async () => {
+    const cardId = seedFlashcardDueInFuture();
+    const {api, calls} = createFakeNotifee({
+      getTriggerNotifications: async () =>
+        [
+          {
+            notification: {
+              id: cardId,
+              data: {dueAt: '2026-09-05T08:00:00.000Z'},
+            },
+            trigger: {
+              type: TriggerType.TIMESTAMP,
+              timestamp: Date.parse('2026-09-05T08:00:00.000Z'),
+            },
+          },
+        ] as unknown as Awaited<
+          ReturnType<NotifeeLike['getTriggerNotifications']>
+        >,
+    });
+    setReviewRemindersEnabled(false);
+    try {
+      await configureNativeReminderNotifications(api, {now: () => NOW});
+      await flushMicrotasks();
+    } finally {
+      setReviewRemindersEnabled(true);
+    }
+
+    expect(calls.scheduled).toHaveLength(0);
+    expect(calls.cancelled).toEqual([cardId]);
   });
 
   it('stays on the no-op scheduler when permission stays denied', async () => {

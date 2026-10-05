@@ -1,6 +1,7 @@
 import {useFocusEffect} from '@react-navigation/native';
 import {useCallback, useRef, useState} from 'react';
 
+import {recordLessonCompletedActivity} from '@features/engagement';
 import {requestSync} from '@features/sync';
 
 import {getLessonProgress, recordLessonEvent} from '@core/sync/lessonProgress';
@@ -22,6 +23,7 @@ export type UseLessonCompletionResult = {
 /**
  * Hub completion writer (LING-222 AD-004): one local `complete` tap through
  * `recordLessonEvent`, then a best-effort sync kick when the write succeeds.
+ * A lesson that newly moves to completed also earns a streak day (F10).
  * `markStarted` writes the matching `start` the first time a lesson opens so
  * Home can offer "Học tiếp"; later opens queue nothing.
  */
@@ -59,6 +61,9 @@ export function useLessonCompletion(
       return;
     }
     setState('finished');
+    if (result.advanced) {
+      recordLessonCompletedActivity(lessonId);
+    }
     requestSync();
   }, [lessonId]);
 

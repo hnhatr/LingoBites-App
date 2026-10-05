@@ -1,6 +1,8 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
+import {recordShadowingSessionActivity} from '@features/engagement';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
@@ -55,6 +57,7 @@ export function ShadowingSessionScreen({
     lessonId,
     initialSentenceIndex,
     onSessionComplete: summary => {
+      recordShadowingSessionActivity(summary.lessonId);
       navigation.navigate('ShadowingSummary', summary);
     },
   });

@@ -126,6 +126,7 @@ export function useHomeScreenController() {
           completedThisWeek: completed,
           target,
           badgeEarned: snapshot.badges.some(badge => badge.id === 'diligent'),
+          badgeTarget: snapshot.weeklyGoal.badgeTarget,
         }),
       );
       let downloads: DownloadedLessonSummary[] = [];

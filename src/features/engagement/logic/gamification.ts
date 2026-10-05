@@ -23,6 +23,7 @@ export function getGamificationSnapshot(
     weeklyGoal: {
       completedThisWeek: weekly.completedThisWeek,
       target: weekly.target,
+      badgeTarget: weekly.badgeTarget,
     },
     badges,
   };

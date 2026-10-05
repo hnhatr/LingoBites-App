@@ -11,13 +11,22 @@ import {
   useAudioLibrary,
 } from '@features/audio';
 import {
+  applyReminderSettings,
+  DAILY_REMINDER_TIME_OPTIONS,
   type GamificationSnapshot,
   getGamificationSnapshot,
+  getReminderSettings,
+  getWeeklyGoalTarget,
+  type ReminderSettings,
+  saveReminderSettings,
+  setWeeklyGoalTarget,
+  WEEKLY_GOAL_OPTIONS,
 } from '@features/engagement';
 import {
   clearAllLocalDataWithFiles,
   clearSpeakingLocalData,
 } from '@features/profile/logic/LocalDataDeletionService';
+import {formatLastSyncedLabel, readLastSyncedAt, syncNow} from '@features/sync';
 
 import {getSupportEmail} from '@core/api/appConfig';
 import {useFeatureFlags} from '@core/release';
@@ -35,6 +44,55 @@ const PROFILE_PLACEHOLDER = {
   name: 'Học viên',
   subtitle: 'Học tiếng Anh · Trình độ Beginner',
 } as const;
+
+/** Which Cài đặt picker sheet is open, if any (F6). */
+export type ProfileSettingsSheet = 'weeklyGoal' | 'reminder' | null;
+
+const REMINDER_OFF_KEY = 'off';
+const REMINDER_GOLDEN_HOUR_KEY = 'golden-hour';
+
+const WEEKLY_GOAL_SHEET_OPTIONS = WEEKLY_GOAL_OPTIONS.map(target => ({
+  key: String(target),
+  label: `${target} bài/tuần`,
+}));
+
+const REMINDER_SHEET_OPTIONS = [
+  {key: REMINDER_OFF_KEY, label: 'Tắt nhắc nhở'},
+  {
+    key: REMINDER_GOLDEN_HOUR_KEY,
+    label: 'Chỉ nhắc giờ vàng',
+    caption: 'Nhắc khi có thẻ đến lịch ôn.',
+  },
+  ...DAILY_REMINDER_TIME_OPTIONS.map(time => ({
+    key: time,
+    label: `Mỗi ngày lúc ${time}`,
+    caption: 'Kèm nhắc giờ vàng khi có thẻ đến lịch ôn.',
+  })),
+];
+
+function reminderKey(settings: ReminderSettings): string {
+  if (!settings.enabled) {
+    return REMINDER_OFF_KEY;
+  }
+  return settings.dailyTime ?? REMINDER_GOLDEN_HOUR_KEY;
+}
+
+function reminderSettingsForKey(key: string): ReminderSettings {
+  if (key === REMINDER_OFF_KEY) {
+    return {enabled: false, dailyTime: null};
+  }
+  if (key === REMINDER_GOLDEN_HOUR_KEY) {
+    return {enabled: true, dailyTime: null};
+  }
+  return {enabled: true, dailyTime: key};
+}
+
+function reminderTrailingLabel(settings: ReminderSettings): string {
+  if (!settings.enabled) {
+    return 'Tắt';
+  }
+  return settings.dailyTime ?? 'Giờ vàng';
+}
 
 export type ProfileScreenNavigation = NativeStackNavigationProp<
   ProfileStackParamList,
@@ -75,6 +133,16 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
   const [gamification, setGamification] = useState<GamificationSnapshot>(() =>
     getGamificationSnapshot(),
   );
+  const [openSettingsSheet, setOpenSettingsSheet] =
+    useState<ProfileSettingsSheet>(null);
+  const [weeklyGoalTarget, setWeeklyGoalTargetState] = useState(() =>
+    getWeeklyGoalTarget(),
+  );
+  const [reminderSettings, setReminderSettings] = useState(() =>
+    getReminderSettings(),
+  );
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => readLastSyncedAt());
+  const [isSyncing, setIsSyncing] = useState(false);
   const [learningMetrics, setLearningMetrics] = useState(() => {
     const report = getCapabilityProgressReport();
     return {
@@ -85,6 +153,9 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
   useFocusEffect(
     useCallback(() => {
       setGamification(getGamificationSnapshot());
+      setWeeklyGoalTargetState(getWeeklyGoalTarget());
+      setReminderSettings(getReminderSettings());
+      setLastSyncedAt(readLastSyncedAt());
       const report = getCapabilityProgressReport();
       setLearningMetrics({
         wordsKnownLabel: formatProfileWordCount(0),
@@ -100,7 +171,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
   const streakSubtitle =
     streak > 0
       ? 'Tiếp tục duy trì — học gì đó hôm nay nhé!'
-      : 'Hoàn thành một phiên ôn tập để bắt đầu chuỗi.';
+      : 'Học một bài, ôn thẻ hoặc luyện nói để bắt đầu chuỗi.';
 
   const executeClearData = useCallback(() => {
     (async () => {
@@ -230,6 +301,87 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     setIsClearDataModalVisible(true);
   }, []);
 
+  const closeSettingsSheet = useCallback(() => {
+    setOpenSettingsSheet(null);
+  }, []);
+
+  const openWeeklyGoalSheet = useCallback(() => {
+    setOpenSettingsSheet('weeklyGoal');
+  }, []);
+
+  const openReminderSheet = useCallback(() => {
+    setOpenSettingsSheet('reminder');
+  }, []);
+
+  const selectWeeklyGoal = useCallback((key: string) => {
+    setOpenSettingsSheet(null);
+    const target = Number(key);
+    if (!setWeeklyGoalTarget(target)) {
+      setStatusMessage('Chưa lưu được mục tiêu tuần. Vui lòng thử lại.');
+      return;
+    }
+    setWeeklyGoalTargetState(target);
+    setGamification(getGamificationSnapshot());
+  }, []);
+
+  const selectReminder = useCallback((key: string) => {
+    setOpenSettingsSheet(null);
+    const next = reminderSettingsForKey(key);
+    if (!saveReminderSettings(next)) {
+      setStatusMessage('Chưa lưu được cài đặt nhắc nhở. Vui lòng thử lại.');
+      return;
+    }
+    setReminderSettings(next);
+    applyReminderSettings({prompt: next.enabled})
+      .then(result => {
+        if (result === 'denied') {
+          Alert.alert(
+            'Thông báo đang bị tắt',
+            'Hãy cho phép LingoBites gửi thông báo trong Cài đặt của máy để nhận nhắc nhở.',
+            [
+              {text: 'Để sau', style: 'cancel'},
+              {
+                text: 'Mở Cài đặt',
+                onPress: () => {
+                  Linking.openSettings().catch(() => {});
+                },
+              },
+            ],
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSyncNow = useCallback(() => {
+    if (isSyncing) {
+      return;
+    }
+    setIsSyncing(true);
+    syncNow()
+      .then(ok => {
+        if (!ok) {
+          setStatusMessage(
+            'Chưa đồng bộ được. Kiểm tra kết nối mạng rồi thử lại.',
+          );
+        }
+      })
+      .catch(() => {
+        setStatusMessage(
+          'Chưa đồng bộ được. Kiểm tra kết nối mạng rồi thử lại.',
+        );
+      })
+      .finally(() => {
+        setLastSyncedAt(readLastSyncedAt());
+        setIsSyncing(false);
+      });
+  }, [isSyncing]);
+
+  const weeklyGoalTrailingLabel = `${weeklyGoalTarget} bài/tuần`;
+  const syncTrailingLabel = isSyncing
+    ? 'Đang đồng bộ…'
+    : `Lần cuối: ${formatLastSyncedLabel(lastSyncedAt)}`;
+
   const confirmClearData = useCallback(() => {
     setIsClearDataModalVisible(false);
     setClearDataConfirmText('');
@@ -239,6 +391,21 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
   return {
     accountPhase,
     audioCacheTrailingLabel,
+    closeSettingsSheet,
+    handleSyncNow,
+    isSyncing,
+    openReminderSheet,
+    openSettingsSheet,
+    openWeeklyGoalSheet,
+    reminderSelectedKey: reminderKey(reminderSettings),
+    reminderSheetOptions: REMINDER_SHEET_OPTIONS,
+    reminderTrailingLabel: reminderTrailingLabel(reminderSettings),
+    selectReminder,
+    selectWeeklyGoal,
+    syncTrailingLabel,
+    weeklyGoalSelectedKey: String(weeklyGoalTarget),
+    weeklyGoalSheetOptions: WEEKLY_GOAL_SHEET_OPTIONS,
+    weeklyGoalTrailingLabel,
     clearDataConfirmText,
     displayName,
     gamification,

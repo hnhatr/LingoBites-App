@@ -4,6 +4,7 @@ import path from 'node:path';
 import {
   anyWeekReachesTarget,
   countCompletionsInWeek,
+  resolveWeeklyGoalTarget,
   startOfLocalWeek,
   WEEKLY_LESSON_TARGET,
   type WeeklyGoalLessonRow,
@@ -189,5 +190,15 @@ describe('weeklyGoalPolicy (TC-2A / INV-001)', () => {
       });
       expect(anyWeekReachesTarget(rows)).toBe(true);
     });
+  });
+});
+
+describe('resolveWeeklyGoalTarget (F6)', () => {
+  it('uses a chosen 3/5/7 goal and falls back to the default otherwise', () => {
+    expect(resolveWeeklyGoalTarget(3)).toBe(3);
+    expect(resolveWeeklyGoalTarget(5)).toBe(5);
+    expect(resolveWeeklyGoalTarget(7)).toBe(7);
+    expect(resolveWeeklyGoalTarget(null)).toBe(WEEKLY_LESSON_TARGET);
+    expect(resolveWeeklyGoalTarget(4)).toBe(WEEKLY_LESSON_TARGET);
   });
 });

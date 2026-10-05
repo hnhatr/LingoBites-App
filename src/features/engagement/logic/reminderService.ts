@@ -52,6 +52,15 @@ export const noopReminderScheduler: ReminderScheduler = {
 // Before installation the no-op scheduler keeps the app safe and testable.
 let activeScheduler: ReminderScheduler = noopReminderScheduler;
 
+// Learner switch from Profile → Nhắc nhở (F6). While off, reconcile wants no
+// reminders, so every pending Golden Hour notification is cancelled.
+let reviewRemindersEnabled = true;
+
+/** Turns Golden Hour reminders on or off for later reconciles. */
+export function setReviewRemindersEnabled(enabled: boolean): void {
+  reviewRemindersEnabled = enabled;
+}
+
 /** Installs the real OS notification adapter (native integration slice). */
 export function configureReminderScheduler(scheduler: ReminderScheduler): void {
   activeScheduler = scheduler;
@@ -61,15 +70,19 @@ export function configureReminderScheduler(scheduler: ReminderScheduler): void {
 export function reconcileReminders(
   now = new Date().toISOString(),
 ): ReminderSyncResult {
-  return syncReviewReminders(activeScheduler, now);
+  return syncReviewReminders(activeScheduler, now, {
+    enabled: reviewRemindersEnabled,
+  });
 }
 
 /** Reconciles OS pending notifications with the DB's desired reminder set. */
 export function syncReviewReminders(
   scheduler: ReminderScheduler,
   now = new Date().toISOString(),
+  opts: {enabled?: boolean} = {},
 ): ReminderSyncResult {
-  const upcoming = listUpcomingReviewReminders(now);
+  const enabled = opts.enabled ?? true;
+  const upcoming = enabled ? listUpcomingReviewReminders(now) : [];
   const plan = computeReminderPlan({
     upcoming,
     pending: scheduler.listPending(),

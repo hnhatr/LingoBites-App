@@ -2,6 +2,7 @@ import {
   countPendingSyncEvents,
   listPendingSyncEvents,
 } from './adapters/SyncOutboxRepository';
+import {markSyncedNow} from './lastSync';
 import {drainOutboxOnce} from './outboxSync';
 import {
   isSyncStuck,
@@ -96,6 +97,7 @@ export function createSyncManager(deps: SyncManagerDeps = {}): SyncManager {
         }
         // synced: keep draining while rows remain.
         if (countPendingSyncEvents() === 0) {
+          markSyncedNow();
           clearRetryTimer();
           return;
         }

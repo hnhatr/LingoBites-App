@@ -1,4 +1,8 @@
-import type {GamificationEventRecord, ReviewRating} from '@core/db/types';
+import type {
+  GamificationEventRecord,
+  GamificationEventType,
+  ReviewRating,
+} from '@core/db/types';
 
 import {WEEKLY_LESSON_TARGET} from './weeklyGoalPolicy';
 
@@ -10,9 +14,10 @@ import {WEEKLY_LESSON_TARGET} from './weeklyGoalPolicy';
  * clock time or transient UI counters. The derivation is pure and deterministic
  * so that force-quitting and relaunching reproduces exactly the same state
  * (VC-6) and so that gamification can never reward the wrong behaviour
- * (RISK mitigation: no XP/streak credit without a completed-review event).
+ * (RISK mitigation: no XP credit without a completed-review event, and no
+ * streak credit without a completed review, lesson or Shadowing session).
  *
- * Day boundaries: a review session marks the *local* calendar day it was
+ * Day boundaries: a streak event marks the *local* calendar day it was
  * completed on (a streak is a habit, local to the learner). On-time
  * determination compares against the card's due instant, which the scheduler
  * stores in UTC — a review is on time when it happens on or before the UTC day
@@ -100,16 +105,23 @@ function isNextLocalDay(previous: string, next: string): boolean {
 }
 
 /**
- * Local calendar days that contain at least one completed review session.
- * A "completed review" means the learner finished a review session that rated
- * at least one card — the only event type that feeds streaks.
+ * Event types that mark a local day as a streak day: finishing a review
+ * session, completing a lesson, or finishing a Shadowing session (F10).
+ * `review_on_time` only waters the plant and never counts on its own.
  */
-export function completedReviewSessionDays(
-  events: GamificationEventRecord[],
+export const STREAK_EVENT_TYPES: ReadonlySet<GamificationEventType> = new Set([
+  'review_session_completed',
+  'lesson_completed',
+  'shadowing_session_completed',
+]);
+
+/** Local calendar days that contain at least one streak event. */
+export function streakActivityDays(
+  events: readonly GamificationEventRecord[],
 ): string[] {
   const days = new Set<string>();
   for (const event of events) {
-    if (event.eventType !== 'review_session_completed') {
+    if (!STREAK_EVENT_TYPES.has(event.eventType)) {
       continue;
     }
     days.add(toLocalDayKey(new Date(event.createdAt)));
@@ -118,9 +130,9 @@ export function completedReviewSessionDays(
 }
 
 /**
- * Current streak in days. A day is a streak day when it contains a completed
- * review session. The streak is still "alive" when the most recent completed
- * day is today or yesterday (the learner simply has not reviewed yet today);
+ * Current streak in days. A day is a streak day when it contains a streak
+ * event (see `STREAK_EVENT_TYPES`). The streak is still "alive" when the most recent completed
+ * day is today or yesterday (the learner simply has not studied yet today);
  * any older gap resets it to 0. Best streak is tracked separately.
  */
 export function computeCurrentStreak(
@@ -147,7 +159,7 @@ export function computeCurrentStreak(
   return streak;
 }
 
-/** Longest consecutive run of completed review days, even if now broken. */
+/** Longest consecutive run of streak days, even if now broken. */
 export function computeBestStreak(dayKeys: readonly string[]): number {
   if (dayKeys.length === 0) {
     return 0;
@@ -266,6 +278,7 @@ export type EarnedBadge = {
 export type WeeklyGoalProgress = {
   completedThisWeek: number;
   target: number;
+  badgeTarget: number;
 };
 
 export type GamificationSnapshot = {
@@ -300,7 +313,7 @@ export function deriveGamificationSnapshot(
     }
   }
 
-  const days = completedReviewSessionDays([...events]);
+  const days = streakActivityDays(events);
   const bestStreak = computeBestStreak(days);
   const counters = {totalSessions, bestStreak, totalXp, waterUnits};
   const badges = BADGE_DEFINITIONS.filter(definition =>
@@ -318,6 +331,7 @@ export function deriveGamificationSnapshot(
     weeklyGoal: {
       completedThisWeek: 0,
       target: WEEKLY_LESSON_TARGET,
+      badgeTarget: WEEKLY_LESSON_TARGET,
     },
   };
 }

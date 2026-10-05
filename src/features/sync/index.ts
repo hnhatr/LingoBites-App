@@ -1,4 +1,5 @@
-export {requestSync, startAppSync, stopAppSync} from './logic/appSync';
+export {requestSync, startAppSync, stopAppSync, syncNow} from './logic/appSync';
+export {formatLastSyncedLabel, readLastSyncedAt} from './logic/lastSync';
 export {
   drainOutboxOnce,
   getSyncOutboxStatus,

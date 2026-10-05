@@ -354,3 +354,24 @@ describe('buildWeeklyGoalCard (backward compat)', () => {
     expect(m.hintKey).toBe('home.weekly_goal_hint_met');
   });
 });
+
+describe('buildWeeklyGoalCard with a custom goal (F6)', () => {
+  it('only promises the badge when the goal equals the badge threshold', () => {
+    const custom = buildWeeklyGoalCard({
+      completedThisWeek: 1,
+      target: 3,
+      badgeEarned: false,
+      badgeTarget: 6,
+    });
+    expect(custom.hintKey).toBe('home.weekly_goal_hint_kept');
+    expect(custom.hintParams).toEqual({k: 2});
+
+    const matching = buildWeeklyGoalCard({
+      completedThisWeek: 1,
+      target: 6,
+      badgeEarned: false,
+      badgeTarget: 6,
+    });
+    expect(matching.hintKey).toBe('home.weekly_goal_hint_badge');
+  });
+});

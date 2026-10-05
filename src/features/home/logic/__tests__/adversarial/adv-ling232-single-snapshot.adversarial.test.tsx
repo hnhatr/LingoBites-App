@@ -68,7 +68,7 @@ function snapshot(
       waterForNextStage: 1,
       progressToNextStage: 0,
     },
-    weeklyGoal: {completedThisWeek, target: 6},
+    weeklyGoal: {completedThisWeek, target: 6, badgeTarget: 6},
   };
 }
 

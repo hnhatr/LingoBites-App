@@ -2,7 +2,7 @@ import {useEffect} from 'react';
 
 import {useFeatureEnabled} from '@core/release';
 
-import {bootstrapGoldenHourReminders} from '../logic/nativeReminderScheduler';
+import {applyReminderSettings} from '../logic/reminderSettings';
 
 /**
  * App-start engagement bootstrap: recomputes reminder state from the local
@@ -10,9 +10,10 @@ import {bootstrapGoldenHourReminders} from '../logic/nativeReminderScheduler';
  * system feature is enabled. Delivers no UI — gamification state is always
  * recomputed from the persisted event log on read (see `getGamificationSnapshot`).
  *
- * Notifications are installed by `bootstrapGoldenHourReminders`: when the OS
- * already granted permission it swaps the no-op scheduler for the real native
- * adapter and reconciles; otherwise the no-op scheduler keeps this path safe.
+ * Notifications are installed by `applyReminderSettings`: it honours the
+ * learner's Nhắc nhở switch, and when the OS already granted permission it
+ * swaps the no-op scheduler for the real native adapter, reconciles and
+ * re-arms the daily reminder; otherwise the no-op scheduler keeps this safe.
  */
 export function EngagementBootstrap() {
   const reviewSystemEnabled = useFeatureEnabled('reviewSystem');
@@ -21,7 +22,7 @@ export function EngagementBootstrap() {
     if (!reviewSystemEnabled) {
       return;
     }
-    bootstrapGoldenHourReminders().catch(() => {});
+    applyReminderSettings().catch(() => {});
   }, [reviewSystemEnabled]);
 
   return null;
