@@ -207,3 +207,38 @@ jest.mock('@react-navigation/native', () => {
     }),
   };
 });
+
+// react-native-svg: render SVG elements as plain RN Views/Text in Jest so
+// that component trees render without the native SVG module (AD-001, RISK-002).
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const {View, Text} = require('react-native');
+  const stub = props => React.createElement(View, props);
+  const TextStub = props => React.createElement(Text, props);
+  return {
+    __esModule: true,
+    default: stub,
+    Svg: stub,
+    Circle: stub,
+    Ellipse: stub,
+    G: stub,
+    Text: TextStub,
+    TSpan: TextStub,
+    TextPath: stub,
+    Path: stub,
+    Polygon: stub,
+    Polyline: stub,
+    Line: stub,
+    Rect: stub,
+    Use: stub,
+    Image: stub,
+    Symbol: stub,
+    Defs: stub,
+    LinearGradient: stub,
+    RadialGradient: stub,
+    Stop: stub,
+    ClipPath: stub,
+    Pattern: stub,
+    Mask: stub,
+  };
+});
