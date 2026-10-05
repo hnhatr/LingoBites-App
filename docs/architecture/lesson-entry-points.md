@@ -8,11 +8,12 @@
 
 ## 1. Nguyên tắc
 
-- **Một cổng code** vào player: `openLesson(navigation, lessonId)` —
-  `src/features/lesson/player/logic/lessonNavigation.ts`, export qua
-  `@features/lesson/player` (AD-004).
-- **Một cổng code** vào catalog: `openLessonCatalog(navigation)` —
-  cùng module, cùng barrel.
+- **Một cổng code** vào player: `useAppNavigation().openLesson(lessonId)` —
+  intent trong `@core/navigation`, cài đặt tại
+  `src/app/navigation/appNavigationAdapter.ts` (xem
+  [`navigation.md`](./navigation.md)). Helper cũ `lessonNavigation.ts` đã bị
+  xoá trong đợt thiết kế lại điều hướng.
+- **Một cổng code** vào catalog: `useAppNavigation().openCatalog()`.
 - **Một nguồn duy nhất** cho `GET /api/v1/lessons`: `canonicalLessonClient`
   (`fetchLessonCatalog`) + `useCanonicalCatalog`. Client lệch schema
   `lessonCatalogClient` / `useLessonCatalog` đã bị xoá.
@@ -54,13 +55,13 @@ flowchart LR
     TLib["Banner 'Đi tới thư viện'<br/>today-go-download"]
   end
 
-  OL{{"openLesson(navigation, lessonId)<br/>navigate CanonicalLessonPlayer {lessonId}"}}:::helper
-  OLC{{"openLessonCatalog(navigation)<br/>navigate CanonicalCatalog"}}:::helper
+  OL{{"useAppNavigation().openLesson(lessonId)<br/>root: CanonicalLessonPlayer {lessonId}"}}:::helper
+  OLC{{"useAppNavigation().openCatalog()<br/>root: CanonicalCatalog"}}:::helper
   P[["CanonicalLessonPlayer<br/>{lessonId}"]]:::player
 
   H1 --> OL
   H2 --> OL
-  H3 -->|"navigate Today (stack Home)"| T7
+  H3 -->|"openToday() (root stack)"| T7
   L1 --> OL
   CAT --> OL
   CR --> OL
@@ -77,11 +78,11 @@ flowchart LR
 | --- | --- | --- | --- |
 | ① | Rail Home | `useHomeScreenController.openRecentItem` → `openLesson` · view `HomeScreenView.tsx` (`home-recent-item-*`) | Giữ event `unified_lesson_opened` (`source: home_rail`) đúng một lần. Ưu tiên bài đã tải; khi chưa có bài nào thì hiện tối đa 6 bài từ catalog (`UNIFIED_RAIL_LIMIT`). Cổng capability `isUnifiedLessonReady` đã bị bỏ. |
 | ② | Tiếp tục bài đang học | `useHomeScreenController.onContinueStartedLesson` → `openLesson` · view `home-continue-action` | Bài đã tải + `in_progress`, hoặc trùng `continueLessonId` từ server. |
-| ③ | Chọn bài (starter) | `useHomeScreenController.onNavigateLessonList` → `navigation.navigate('Today')` · view `home-starter-pick` | Mở `Today` trong stack Home; back quay về Home. Nhãn "Chọn bài để học" giữ nguyên (DQ-007). |
+| ③ | Chọn bài (starter) | `useHomeScreenController.onNavigateLessonList` → `openToday()` · view `home-starter-pick` | Mở `Today` trên root stack; back quay về Home. Nhãn "Chọn bài để học" giữ nguyên (DQ-007). |
 | ④ | Danh sách bài đã tải | `LessonsTabContent.handleLessonPress` → `openLesson` | Nguồn: `listDownloadedLessonSummaries()` qua `useLibrarySegments().packagedLessons`. Prop `personalLessons` (luôn rỗng) đã bị xoá. |
 | ⑤ | Danh mục bài học | `CanonicalLessonCatalogScreen` → `openLesson` (`canonical-catalog-row-*`) | Nguồn: `useCanonicalCatalog` (client canonical, phân trang). |
-| ⑥ | Tạo bài xong | `LessonCreationScreen` → `openLesson` (nút `lesson-creation-open`) | Mở bài mới khi `state.status === 'succeeded'`. |
-| ⑦ | Today (kế hoạch học) | `TodayScreen.handleExecuteActivity` → `openLesson` / `openLessonCatalog` / `SpeakingRoom` / `DailyReview` | Vào từ nút ③ ở Home. Nút "Đi tới thư viện" (`today-go-download`) → `openLessonCatalog`. Nút luyện nói → `SpeakingRoom` (đã đăng ký trong stack Home). |
+| ⑥ | Tạo bài xong | `LessonCreationScreen` → `useCreateFlow().openCreatedLesson` → `finishCreate` (nút `lesson-creation-open`) | Mở bài mới khi `state.status === 'succeeded'`; luồng tạo bài bị xoá khỏi lịch sử nên back từ bài quay về tab đã bắt đầu tạo. |
+| ⑦ | Today (kế hoạch học) | `TodayScreen.handleExecuteActivity` → `openLesson` / `openCatalog` / `openSpeakingRoom` / `openShadowing` / `openReview` | Vào từ nút ③ ở Home. Nút "Đi tới thư viện" (`today-go-download`) → `openCatalog`. Nút luyện nói → `openSpeakingRoom()` / `openShadowing()`. |
 
 ### 2.2 Cổng vào **danh sách** bài học
 
@@ -89,8 +90,8 @@ flowchart LR
 | --- | --- | --- |
 | Rail Home | Mở tab Home | Bài đã tải trước, rồi `useCanonicalCatalog` (tối đa 6). |
 | `LessonsHistoryScreen` (segment Bài học) | Mở tab Lessons | Section "Bài học theo lộ trình": bài đã tải offline (`useLibrarySegments`). Section "Tất cả bài học": tối đa 5 bài từ `useCanonicalCatalog` (`CATALOG_PREVIEW_LIMIT`), kèm "Xem tất cả" → `openLessonCatalog`. |
-| `CanonicalCatalog` | Nút "Xem tất cả" ở section "Tất cả bài học" (tab Lessons, cùng stack), banner Today (cùng stack gọi) | `useCanonicalCatalog` → `fetchLessonCatalog`. |
-| Today | Nút `home-starter-pick` (stack Home) | `adaptationEngine` + `todayNavigation`. |
+| `CanonicalCatalog` | Nút "Xem tất cả" ở section "Tất cả bài học" (tab Lessons), banner Today — đều qua `openCatalog()` lên root stack | `useCanonicalCatalog` → `fetchLessonCatalog`. |
+| Today | Nút `home-starter-pick` (root stack) | `adaptationEngine` + `todayNavigation`. |
 
 ---
 
@@ -123,19 +124,19 @@ flowchart LR
 
 ## 4. Điều hướng và đăng ký route
 
-- `CanonicalLessonPlayer` đăng ký ở cả 2 stack (`Home`, `Lessons`) —
-  giữ nguyên để back quay về đúng tab xuất phát. Nằm trong
-  `IMMERSIVE_STACK_ROUTES` → ẩn tab bar khi học (giữ nguyên).
-- `Today` đăng ký ở cả 2 stack (giữ nguyên route trong stack Lessons).
-  Stack Home khai báo thêm `SpeakingRoom` để nút luyện nói trong Today
-  hoạt động khi Today được mở từ Home.
-- `home-starter-pick` mở `Today` trong stack Home (DQ-003/DQ-006).
+> Thay thế bởi đợt thiết kế lại điều hướng — xem [`navigation.md`](./navigation.md).
+
+- `CanonicalLessonPlayer`, `CanonicalCatalog`, `Today`, `SpeakingRoom` và
+  các màn Shadowing đăng ký **một lần** trên root stack, phía trên tab bar.
+  Back luôn quay về tab đã mở màn đó; tab bar tự bị che nên không cần
+  `IMMERSIVE_STACK_ROUTES` (đã xoá).
+- `home-starter-pick` mở `Today` qua `openToday()` (DQ-003/DQ-006).
 
 ---
 
 ## 5. Những thứ cố ý không đổi (ngoài phạm vi LING-179)
 
-- Player internals, logic tải offline, `IMMERSIVE_STACK_ROUTES`.
+- Player internals, logic tải offline.
 - Đã xoá tại LING-180: `CurriculumLessonsEntry` + `curriculumLessonSelection`
   (`fetchPublishedCurriculumLessons`, `CurriculumLessonSelection*`) cùng barrel
   export và test của chúng.

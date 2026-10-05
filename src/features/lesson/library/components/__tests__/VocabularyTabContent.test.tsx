@@ -6,6 +6,8 @@ import {AppThemeProvider} from '@ui/theme';
 import type {FlashcardRecord} from '@core/db/types';
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {VocabularyTabContent} from '../VocabularyTabContent';
 
 // Mock navigation
@@ -100,6 +102,7 @@ const mockFlashcard3: FlashcardRecord = {
 describe('VocabularyTabContent', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
+    mockAppNavigation.openLesson.mockClear();
     mockOnVocabularySave.mockClear();
     mockOnVocabularyUnsave.mockClear();
   });
@@ -164,13 +167,16 @@ describe('VocabularyTabContent', () => {
       card.props.onPress();
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('FlashcardDetail', {
-      vocabularyId: 'vocab-1',
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('lesson-1');
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('navigates with correct vocabularyId on card press', () => {
-    const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard2]} />);
+  it('opens the source lesson of the pressed card (no FlashcardDetail route)', () => {
+    const tree = render(
+      <VocabularyTabContent
+        vocabulary={[{...mockFlashcard2, lessonId: 'lesson-2'}]}
+      />,
+    );
 
     const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-2'});
 
@@ -178,9 +184,7 @@ describe('VocabularyTabContent', () => {
       card.props.onPress();
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('FlashcardDetail', {
-      vocabularyId: 'vocab-2',
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('lesson-2');
   });
 
   it('handles save callback', () => {

@@ -6,6 +6,8 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {CATALOG_PREVIEW_LIMIT, LessonsTabContent} from '../LessonsTabContent';
 
 // Mock navigation
@@ -67,6 +69,7 @@ const mockPackagedLesson2 = {
 describe('LessonsTabContent', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
+    mockAppNavigation.openLesson.mockClear();
   });
 
   afterEach(() => {
@@ -112,7 +115,7 @@ describe('LessonsTabContent', () => {
     expect(summaryText.props.children).toBe('Khóa học giao tiếp tiếng Anh');
   });
 
-  it('navigates to ContentLessonRuntime when packaged lesson is pressed', () => {
+  it('opens the lesson player when a packaged lesson is pressed', () => {
     const tree = render(
       <LessonsTabContent packagedLessons={[mockPackagedLesson]} />,
     );
@@ -125,9 +128,7 @@ describe('LessonsTabContent', () => {
       pressable.props.onPress();
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
-      lessonId: 'packaged-1',
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('packaged-1');
   });
 
   it('renders multiple packaged lessons', () => {

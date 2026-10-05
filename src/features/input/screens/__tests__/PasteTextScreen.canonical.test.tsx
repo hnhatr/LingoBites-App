@@ -6,6 +6,8 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {PasteTextScreen} from '../PasteTextScreen';
 
 jest.mock('@features/analytics', () => ({
@@ -41,7 +43,6 @@ async function flushPromises() {
 const navigation = {
   navigate: mockNavigate,
   setParams: jest.fn(),
-  getParent: () => ({navigate: mockTabNavigate}),
 } as unknown as React.ComponentProps<typeof PasteTextScreen>['navigation'];
 
 const route = {
@@ -87,14 +88,12 @@ describe('PasteTextScreen canonical creation (LING-176 TASK-008)', () => {
       await flushPromises();
     });
 
-    expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'LessonCreation',
-      params: expect.objectContaining({
-        initialSource: 'text',
-        initialText: 'We are offering a special discount for new customers.',
-        submissionId: expect.stringMatching(/^PasteText-/),
-      }),
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'text',
+      text: 'We are offering a special discount for new customers.',
+      submissionId: expect.stringMatching(/^PasteText-/),
     });
+    expect(mockTabNavigate).not.toHaveBeenCalled();
   });
 
   it('does not navigate to legacy Analyzing flow', async () => {

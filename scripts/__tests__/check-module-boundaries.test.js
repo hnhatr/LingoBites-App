@@ -3,6 +3,7 @@ const path = require('path');
 const os = require('os');
 const {
   checkModuleBoundaries,
+  checkNavigationRules,
   checkImportRules,
   isPublicFeatureBarrel,
   isUiPort,
@@ -357,6 +358,50 @@ describe('check-module-boundaries (AD-004 checker and fixture matrix)', () => {
       expect(nonLiteralImports).toHaveLength(2);
       expect(nonLiteralImports[0].kind).toBe('non-literal-require');
       expect(nonLiteralImports[1].kind).toBe('non-literal-import');
+    });
+  });
+
+  describe('navigation rules (useAppNavigation only in features)', () => {
+    const featureFile = path.join(
+      srcRoot,
+      'features/input/screens/CreateScreen.tsx',
+    );
+
+    it('rejects getParent() in feature code', () => {
+      const code = `
+        const tab = navigation.getParent();
+        tab?.navigate('Lessons', {screen: 'LessonCreation'});
+      `;
+      const violations = checkNavigationRules(featureFile, code);
+      expect(violations).toHaveLength(1);
+      expect(violations[0]).toMatchObject({
+        file: 'src/features/input/screens/CreateScreen.tsx',
+        line: 2,
+        rule: 'feature-navigation-get-parent',
+      });
+    });
+
+    it('rejects navigating to a route name cast to any', () => {
+      const code = `navigation.navigate('FlashcardDetail' as any, {id: 1});`;
+      const violations = checkNavigationRules(featureFile, code);
+      expect(violations.map(v => v.rule)).toEqual(['navigation-untyped-route']);
+    });
+
+    it('allows intents and typed in-flow navigation', () => {
+      const code = `
+        const nav = useAppNavigation();
+        nav.openLesson(id);
+        navigation.navigate('OCRReview', {imageUri});
+        navigation.goBack();
+      `;
+      expect(checkNavigationRules(featureFile, code)).toEqual([]);
+    });
+
+    it('lets the app layer use getParent()', () => {
+      const appFile = path.join(srcRoot, 'app/navigation/TabBar.tsx');
+      expect(checkNavigationRules(appFile, 'navigation.getParent();')).toEqual(
+        [],
+      );
     });
   });
 

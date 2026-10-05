@@ -12,6 +12,7 @@ import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
 import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
@@ -214,9 +215,10 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     await act(async () => {
       target.props.onPress();
     });
-    expect(nav.navigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
-      lessonId: '33333333-3333-4333-8333-333333333331',
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith(
+      '33333333-3333-4333-8333-333333333331',
+    );
+    expect(nav.navigate).not.toHaveBeenCalled();
     expect(mockTrackEvent).toHaveBeenCalledWith('unified_lesson_opened', {
       lesson_id: '33333333-3333-4333-8333-333333333331',
       source: 'home_rail',
@@ -266,9 +268,8 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     await act(async () => {
       target.props.onPress();
     });
-    expect(nav.navigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
-      lessonId: SEEDED_LESSON_ID,
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith(SEEDED_LESSON_ID);
+    expect(nav.navigate).not.toHaveBeenCalled();
   });
 
   it('routes home-starter-pick to Today and keeps its Vietnamese label', async () => {
@@ -283,7 +284,8 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     await act(async () => {
       target.props.onPress();
     });
-    expect(nav.navigate).toHaveBeenCalledWith('Today');
+    expect(mockAppNavigation.openToday).toHaveBeenCalledTimes(1);
+    expect(nav.navigate).not.toHaveBeenCalled();
   });
 
   it('shows in-progress weekly goal copy from the snapshot (AC-001 S1)', async () => {

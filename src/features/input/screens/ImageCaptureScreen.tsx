@@ -30,8 +30,8 @@ import {
   pickImageFromCamera,
   pickImageFromGallery,
 } from '../logic/imagePicker';
-import type {CreateStackParamList} from './navigationTypes';
-type Props = NativeStackScreenProps<CreateStackParamList, 'ImageCapture'>;
+import type {CreateFlowParamList} from './navigationTypes';
+type Props = NativeStackScreenProps<CreateFlowParamList, 'ImageCapture'>;
 
 export type ImageCaptureScreenProps = Props;
 

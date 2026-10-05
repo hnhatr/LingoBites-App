@@ -1,9 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useMemo} from 'react';
 import {Pressable, SectionList, StyleSheet, View} from 'react-native';
-
-import {openLesson} from '@features/lesson/player';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
@@ -12,9 +8,9 @@ import {SectionHeader} from '@ui/components/SectionHeader';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
+import {useAppNavigation} from '@core/navigation';
 import type {LessonCatalogItem} from '@core/schemas/lesson';
 
-import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface LessonsTabContentProps {
@@ -85,8 +81,7 @@ export function LessonsTabContent({
 }: LessonsTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<LessonsStackParamList>>();
+  const navigation = useAppNavigation();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const sections = useMemo((): LessonSection[] => {
@@ -124,7 +119,7 @@ export function LessonsTabContent({
   }, [packagedLessons, catalogLessons]);
 
   const handleLessonPress = (item: LessonItem) => {
-    openLesson(navigation, item.id);
+    navigation.openLesson(item.id);
   };
 
   const renderLessonItem = ({item}: {item: LessonItem}) => (

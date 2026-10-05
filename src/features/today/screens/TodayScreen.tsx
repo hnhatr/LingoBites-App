@@ -1,11 +1,6 @@
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
-
-import type {HomeStackParamList, RootTabParamList} from '@features/home';
-import type {LessonsStackParamList} from '@features/lesson/library';
-import {openLesson, openLessonCatalog} from '@features/lesson/player';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
@@ -15,6 +10,8 @@ import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+
+import {useAppNavigation} from '@core/navigation';
 
 import {
   generateStudyBlock,
@@ -28,11 +25,6 @@ import type {
   TodayMode,
 } from '../logic/types';
 
-type TodayNavigationParamList = HomeStackParamList &
-  LessonsStackParamList &
-  RootTabParamList;
-type NavigationProp = NativeStackNavigationProp<TodayNavigationParamList>;
-
 const TARGET_MINUTES: Record<TodayMode, number> = {
   '5-minute': 5,
   normal: 20,
@@ -42,7 +34,7 @@ const TARGET_MINUTES: Record<TodayMode, number> = {
 export function TodayScreen() {
   const {theme} = useAppTheme();
   const themedStyles = React.useMemo(() => makeStyles(theme), [theme]);
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useAppNavigation();
 
   const [mode, setMode] = useState<TodayMode>('normal');
   const [plan, setPlan] = useState<StudyBlockPlan | null>(null);
@@ -74,20 +66,20 @@ export function TodayScreen() {
     // targets fall back to `DailyReview` (never the removed v1
     // `FlashcardList` screen).
     if (resolved.screen === 'CanonicalLessonPlayer') {
-      openLesson(navigation, resolved.lessonId);
+      navigation.openLesson(resolved.lessonId);
     } else if (resolved.screen === 'CanonicalCatalog') {
-      openLessonCatalog(navigation);
+      navigation.openCatalog();
     } else if (resolved.screen === 'SpeakingRoom') {
-      navigation.navigate('SpeakingRoom');
+      navigation.openSpeakingRoom();
     } else if (resolved.screen === 'ShadowingLessonPicker') {
-      navigation.navigate('ShadowingLessonPicker');
+      navigation.openShadowing();
     } else if (resolved.screen === 'ShadowingSession') {
-      navigation.navigate('ShadowingSession', {
+      navigation.openShadowing({
         lessonId: resolved.lessonId,
         sentenceIndex: resolved.sentenceIndex,
       });
     } else {
-      navigation.navigate('DailyReview');
+      navigation.openReview();
     }
   }
 
@@ -120,7 +112,7 @@ export function TodayScreen() {
             </AppText>
             <AppButton
               title="Đi tới thư viện"
-              onPress={() => openLessonCatalog(navigation)}
+              onPress={navigation.openCatalog}
               testID="today-go-download"
             />
           </View>
@@ -272,7 +264,7 @@ export function TodayScreen() {
               <AppButton
                 title="Thêm bài mới"
                 variant="outline"
-                onPress={() => navigation.navigate('Create')}
+                onPress={() => navigation.goToTab('Create')}
                 testID="shortfall-action"
               />
             </View>

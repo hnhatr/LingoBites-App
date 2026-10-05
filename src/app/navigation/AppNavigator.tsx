@@ -1,7 +1,7 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo} from 'react';
 
 import {
   AccountSwitchGateScreen,
@@ -38,13 +38,23 @@ import {
 } from '@features/speaking/screens/speakingUiPort';
 import {TodayScreen} from '@features/today';
 
+import {AppNavigationProvider} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 
 import {accountGateRouteForPhase} from './accountGate';
-import {tabBarVisibilityOptions} from './immersiveTabRoutes';
+import {createAppNavigation, navigationRef} from './appNavigationAdapter';
 import {isIngestionRouteEnabled} from './ingestionRouteGate';
 import {TabBar} from './TabBar';
 import type {
+  CreateStackParamList,
+  HomeStackParamList,
+  LessonsStackParamList,
+  ProfileStackParamList,
+  RootStackParamList,
+  RootTabParamList,
+} from './types';
+
+export type {
   CreateStackParamList,
   HomeStackParamList,
   LessonsStackParamList,
@@ -60,91 +70,47 @@ const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
+const HIDDEN_HEADER = {headerShown: false} as const;
+
+/*
+ * Navigation layout (one registration per screen):
+ *
+ *   RootStack
+ *   ├─ Tabs            each tab holds only its hub screen
+ *   │  ├─ Home         HomeMain
+ *   │  ├─ Create       CreateMain
+ *   │  ├─ Lessons      LessonsList
+ *   │  └─ Profile      ProfileMain + settings pages
+ *   └─ task flows      cover the tab bar; back returns to the opening tab
+ *      PasteText, ImageCapture, OCRReview, LessonCreation,
+ *      CanonicalCatalog, CanonicalLessonPlayer, DailyReview, Today,
+ *      SpeakingRoom, ShadowingLessonPicker, ShadowingSession,
+ *      ShadowingSummary
+ *
+ * Features navigate through `useAppNavigation()` (see
+ * `appNavigationAdapter.ts`), never by reaching into a parent navigator.
+ */
+
 function HomeStackNavigator() {
   return (
     <HomeStack.Navigator>
       <HomeStack.Screen
         component={HomeScreen}
         name="HomeMain"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={CanonicalLessonCatalogScreen}
-        name="CanonicalCatalog"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={CanonicalLessonPlayerScreen}
-        name="CanonicalLessonPlayer"
-        options={{headerShown: false, gestureEnabled: false}}
-      />
-      <HomeStack.Screen
-        component={DailyReviewScreen}
-        name="DailyReview"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={TodayScreen}
-        name="Today"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={SpeakingRoomScreen}
-        name="SpeakingRoom"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={ShadowingLessonPickerScreen}
-        name="ShadowingLessonPicker"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={ShadowingSessionScreen}
-        name="ShadowingSession"
-        options={{headerShown: false}}
-      />
-      <HomeStack.Screen
-        component={ShadowingSummaryScreen}
-        name="ShadowingSummary"
-        options={{headerShown: false}}
+        options={HIDDEN_HEADER}
       />
     </HomeStack.Navigator>
   );
 }
 
 function CreateStackNavigator() {
-  const {config} = useFeatureFlags();
-  const canMount = (route: string) =>
-    isIngestionRouteEnabled(route, config.features);
-
   return (
     <CreateStack.Navigator>
       <CreateStack.Screen
         component={CreateScreen}
         name="CreateMain"
-        options={{headerShown: false}}
+        options={HIDDEN_HEADER}
       />
-      {canMount('PasteText') && (
-        <CreateStack.Screen
-          component={PasteTextScreen}
-          name="PasteText"
-          options={{headerShown: false}}
-        />
-      )}
-      {canMount('ImageCapture') && (
-        <CreateStack.Screen
-          component={ImageCaptureScreen}
-          name="ImageCapture"
-          options={{headerShown: false}}
-        />
-      )}
-      {canMount('OCRReview') && (
-        <CreateStack.Screen
-          component={OCRReviewScreen}
-          name="OCRReview"
-          options={{headerShown: false}}
-        />
-      )}
     </CreateStack.Navigator>
   );
 }
@@ -155,52 +121,7 @@ function LessonsStackNavigator() {
       <LessonsStack.Screen
         component={LessonsHistoryScreen}
         name="LessonsList"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={CanonicalLessonCatalogScreen}
-        name="CanonicalCatalog"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={CanonicalLessonPlayerScreen}
-        name="CanonicalLessonPlayer"
-        options={{headerShown: false, gestureEnabled: false}}
-      />
-      <LessonsStack.Screen
-        component={LessonCreationScreen}
-        name="LessonCreation"
-        options={{headerShown: false, gestureEnabled: false}}
-      />
-      <LessonsStack.Screen
-        component={SpeakingRoomScreen}
-        name="SpeakingRoom"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={ShadowingLessonPickerScreen}
-        name="ShadowingLessonPicker"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={ShadowingSessionScreen}
-        name="ShadowingSession"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={ShadowingSummaryScreen}
-        name="ShadowingSummary"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={TodayScreen}
-        name="Today"
-        options={{headerShown: false}}
-      />
-      <LessonsStack.Screen
-        component={DailyReviewScreen}
-        name="DailyReview"
-        options={{headerShown: false}}
+        options={HIDDEN_HEADER}
       />
     </LessonsStack.Navigator>
   );
@@ -212,30 +133,30 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen
         component={ProfileScreen}
         name="ProfileMain"
-        options={{headerShown: false}}
+        options={HIDDEN_HEADER}
       />
       <ProfileStack.Screen
         component={PrivacyNoteScreen}
         name="PrivacyNote"
-        options={{headerShown: false}}
+        options={HIDDEN_HEADER}
       />
       <ProfileStack.Screen
         component={ProgressReportScreen}
         name="ProgressReport"
-        options={{headerShown: false}}
+        options={HIDDEN_HEADER}
       />
       {__DEV__ ? (
         <ProfileStack.Screen
           component={FeatureStatusScreen}
           name="FeatureStatus"
-          options={{headerShown: false}}
+          options={HIDDEN_HEADER}
         />
       ) : null}
       {__DEV__ ? (
         <ProfileStack.Screen
           component={TtsSpikeScreen}
           name="TtsSpike"
-          options={{headerShown: false}}
+          options={HIDDEN_HEADER}
         />
       ) : null}
     </ProfileStack.Navigator>
@@ -245,42 +166,83 @@ function ProfileStackNavigator() {
 function TabNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={{headerShown: false}}
+      screenOptions={HIDDEN_HEADER}
       tabBar={props => <TabBar {...props} />}
     >
       <Tab.Screen
         component={HomeStackNavigator}
         name="Home"
-        options={({route}) => ({
-          title: 'Home',
-          ...tabBarVisibilityOptions({route}),
-        })}
+        options={{title: 'Home'}}
       />
       <Tab.Screen
         component={CreateStackNavigator}
         name="Create"
-        options={({route}) => ({
-          title: 'Create',
-          ...tabBarVisibilityOptions({route}),
-        })}
+        options={{title: 'Create'}}
       />
       <Tab.Screen
         component={LessonsStackNavigator}
         name="Lessons"
-        options={({route}) => ({
-          title: 'Lessons',
-          ...tabBarVisibilityOptions({route}),
-        })}
+        options={{title: 'Lessons'}}
       />
       <Tab.Screen
         component={ProfileStackNavigator}
         name="Profile"
-        options={({route}) => ({
-          title: 'Profile',
-          ...tabBarVisibilityOptions({route}),
-        })}
+        options={{title: 'Profile'}}
       />
     </Tab.Navigator>
+  );
+}
+
+function AuthenticatedRootStack() {
+  const {config} = useFeatureFlags();
+  const canMount = (route: string) =>
+    isIngestionRouteEnabled(route, config.features);
+
+  return (
+    <RootStack.Navigator id="RootStack" screenOptions={HIDDEN_HEADER}>
+      <RootStack.Screen component={TabNavigator} name="Tabs" />
+      {/* Create-lesson flow */}
+      {canMount('PasteText') && (
+        <RootStack.Screen component={PasteTextScreen} name="PasteText" />
+      )}
+      {canMount('ImageCapture') && (
+        <RootStack.Screen component={ImageCaptureScreen} name="ImageCapture" />
+      )}
+      {canMount('OCRReview') && (
+        <RootStack.Screen component={OCRReviewScreen} name="OCRReview" />
+      )}
+      <RootStack.Screen
+        component={LessonCreationScreen}
+        name="LessonCreation"
+        options={{gestureEnabled: false}}
+      />
+      {/* Lessons */}
+      <RootStack.Screen
+        component={CanonicalLessonCatalogScreen}
+        name="CanonicalCatalog"
+      />
+      <RootStack.Screen
+        component={CanonicalLessonPlayerScreen}
+        name="CanonicalLessonPlayer"
+        options={{gestureEnabled: false}}
+      />
+      {/* Practice */}
+      <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
+      <RootStack.Screen component={TodayScreen} name="Today" />
+      <RootStack.Screen component={SpeakingRoomScreen} name="SpeakingRoom" />
+      <RootStack.Screen
+        component={ShadowingLessonPickerScreen}
+        name="ShadowingLessonPicker"
+      />
+      <RootStack.Screen
+        component={ShadowingSessionScreen}
+        name="ShadowingSession"
+      />
+      <RootStack.Screen
+        component={ShadowingSummaryScreen}
+        name="ShadowingSummary"
+      />
+    </RootStack.Navigator>
   );
 }
 
@@ -288,6 +250,7 @@ export function AppNavigator() {
   useFeatureFlags();
   const phase = useAccountStore(state => state.phase);
   const boot = useAccountStore(state => state.boot);
+  const appNavigation = useMemo(() => createAppNavigation(navigationRef), []);
   useEffect(() => {
     boot().catch(() => {});
   }, [boot]);
@@ -296,10 +259,7 @@ export function AppNavigator() {
   if (gateRoute !== 'Tabs') {
     return (
       <NavigationContainer>
-        <RootStack.Navigator
-          id="RootStack"
-          screenOptions={{headerShown: false}}
-        >
+        <RootStack.Navigator id="RootStack" screenOptions={HIDDEN_HEADER}>
           {gateRoute === 'Onboarding' ? (
             <RootStack.Screen
               component={OnboardingNameScreen}
@@ -318,10 +278,10 @@ export function AppNavigator() {
     );
   }
   return (
-    <NavigationContainer>
-      <RootStack.Navigator id="RootStack" screenOptions={{headerShown: false}}>
-        <RootStack.Screen component={TabNavigator} name="Tabs" />
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <AppNavigationProvider value={appNavigation}>
+      <NavigationContainer ref={navigationRef}>
+        <AuthenticatedRootStack />
+      </NavigationContainer>
+    </AppNavigationProvider>
   );
 }

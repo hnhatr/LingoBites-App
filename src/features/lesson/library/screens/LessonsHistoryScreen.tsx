@@ -4,13 +4,15 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
-import {openLessonCatalog, useCanonicalCatalog} from '@features/lesson/player';
+import {useCanonicalCatalog} from '@features/lesson/player';
 import {useFlashcardLibrary} from '@features/review';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+
+import {useAppNavigation} from '@core/navigation';
 
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {LessonsTabContent} from '../components/LessonsTabContent';
@@ -34,7 +36,8 @@ type PracticeChip = {
   testID: string;
 };
 
-export function LessonsHistoryScreen({navigation}: Props) {
+export function LessonsHistoryScreen(_props: Props) {
+  const navigation = useAppNavigation();
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
@@ -73,7 +76,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
         labelKey: 'home.shortcut_review',
         backgroundKey: 'accentSoft',
         inkKey: 'primary',
-        onPress: () => navigation.navigate('DailyReview'),
+        onPress: () => navigation.openReview(),
         testID: 'library-practice-review',
       },
       {
@@ -82,7 +85,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
         labelKey: 'home.shortcut_speaking',
         backgroundKey: 'tertiarySoft',
         inkKey: 'onTertiaryContainer',
-        onPress: () => navigation.navigate('SpeakingRoom'),
+        onPress: () => navigation.openSpeakingRoom(),
         testID: 'library-practice-speaking',
       },
     ];
@@ -161,7 +164,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
             catalogLessons={
               catalogState.status === 'ready' ? catalogState.lessons : []
             }
-            onViewAllCatalog={() => openLessonCatalog(navigation)}
+            onViewAllCatalog={navigation.openCatalog}
           />
         </View>
       )}

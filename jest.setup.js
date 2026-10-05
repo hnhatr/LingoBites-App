@@ -208,6 +208,20 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
+// App navigation intents (@core/navigation): outside an
+// <AppNavigationProvider>, `useAppNavigation()` returns the shared
+// `mockAppNavigation` double so screens render in isolation and tests can
+// assert on intents (src/test/support/appNavigationMock.ts).
+jest.mock('@core/navigation', () => {
+  const actual = jest.requireActual('@core/navigation');
+  const {mockAppNavigation} = require('./src/test/support/appNavigationMock');
+  return {
+    ...actual,
+    useAppNavigation: () =>
+      actual.useOptionalAppNavigation() ?? mockAppNavigation,
+  };
+});
+
 // react-native-svg: render SVG elements as plain RN Views/Text in Jest so
 // that component trees render without the native SVG module (AD-001, RISK-002).
 jest.mock('react-native-svg', () => {

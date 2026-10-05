@@ -29,18 +29,18 @@ describe('TASK-008 retired App routes', () => {
     expect(source).toContain('CanonicalCatalog');
   });
 
-  it('registers Today and SpeakingRoom inside the Home stack (LING-179)', () => {
+  it('registers Today, SpeakingRoom and the lesson screens on the root stack', () => {
     const source = readFileSync(
       join(__dirname, '..', 'AppNavigator.tsx'),
       'utf8',
     );
-    const homeStack = source.slice(
-      source.indexOf('function HomeStackNavigator'),
-      source.indexOf('function CreateStackNavigator'),
+    const rootStack = source.slice(
+      source.indexOf('function AuthenticatedRootStack'),
+      source.indexOf('export function AppNavigator'),
     );
-    expect(homeStack).toContain('name="Today"');
-    expect(homeStack).toContain('name="SpeakingRoom"');
-    expect(homeStack).toContain('name="CanonicalLessonPlayer"');
-    expect(homeStack).toContain('name="CanonicalCatalog"');
+    expect(rootStack).toContain('name="Today"');
+    expect(rootStack).toContain('name="SpeakingRoom"');
+    expect(rootStack).toContain('name="CanonicalLessonPlayer"');
+    expect(rootStack).toContain('name="CanonicalCatalog"');
   });
 });

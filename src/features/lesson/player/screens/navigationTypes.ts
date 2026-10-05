@@ -11,3 +11,10 @@ export type LessonCreationRouteParams = {
   initialSource?: 'text' | 'ocr' | 'youtube';
   initialText?: string;
 };
+
+/** Lesson screens (registered on the root stack). */
+export type LessonFlowParamList = {
+  CanonicalCatalog: CanonicalCatalogRouteParams;
+  CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
+  LessonCreation: LessonCreationRouteParams;
+};

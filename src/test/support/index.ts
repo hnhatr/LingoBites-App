@@ -19,3 +19,4 @@ export {
   OFFLINE_REVIEW_MVP,
   THEME_UI_FLAGS,
 } from './testFeatureFlagSets';
+export {mockAppNavigation} from './appNavigationMock';

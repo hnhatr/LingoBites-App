@@ -1,4 +1,5 @@
 import {accountGateRouteForPhase} from '@app/navigation/accountGate';
+import {ROOT_FLOW_ROUTES} from '@app/navigation/rootStackRoutes';
 
 import type {AccountPhase} from '@features/account';
 
@@ -65,7 +66,13 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_004} navigation mount matrix`, () =>
       'authenticated',
       makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW).features,
     );
-    expect(beta.rootStackRoutes).toEqual(['Tabs']);
+    expect(beta.rootStackRoutes).toEqual([
+      'Tabs',
+      'PasteText',
+      'ImageCapture',
+      'OCRReview',
+      ...ROOT_FLOW_ROUTES,
+    ]);
     expect(beta.ingestionRoutes).toMatchObject({
       PasteText: true,
       ImageCapture: true,
@@ -76,6 +83,6 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_004} navigation mount matrix`, () =>
       'authenticated',
       makeTestReleaseConfig(ALL_IMPLEMENTED_FEATURES).features,
     );
-    expect(fullFeatures.rootStackRoutes).toEqual(['Tabs']);
+    expect(fullFeatures.rootStackRoutes).toEqual(beta.rootStackRoutes);
   });
 });

@@ -12,7 +12,6 @@ import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
 
 import {speak} from '@features/audio';
-import type {LessonsStackParamList} from '@features/lesson/library';
 
 /**
  * Lazily loaded through the youtube feature's public barrel so importing this
@@ -55,9 +54,10 @@ import {
 } from '../logic/lessonHubContent';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
+import type {LessonFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<
-  LessonsStackParamList,
+  LessonFlowParamList,
   'CanonicalLessonPlayer'
 >;
 

@@ -5,6 +5,8 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {LessonCreationScreen} from '../LessonCreationScreen';
 
 const CREATED_LESSON_ID = '33333333-3333-4333-8333-333333333302';
@@ -59,8 +61,9 @@ describe('LessonCreationScreen entry point (LING-179 TASK-001)', () => {
       target.props.onPress();
     });
 
-    expect(navigation.navigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
-      lessonId: CREATED_LESSON_ID,
-    });
+    expect(mockAppNavigation.finishCreate).toHaveBeenCalledWith(
+      CREATED_LESSON_ID,
+    );
+    expect(navigation.navigate).not.toHaveBeenCalled();
   });
 });

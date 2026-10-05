@@ -6,6 +6,8 @@ import {AppThemeProvider} from '@ui/theme';
 import type {GrammarBookmark} from '@core/db/types';
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {GrammarTabContent} from '../GrammarTabContent';
 
 const mockNavigate = jest.fn();
@@ -74,6 +76,7 @@ const mockGrammar2: GrammarBookmark & {title?: string; content?: string} = {
 describe('GrammarTabContent', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
+    mockAppNavigation.openLesson.mockClear();
     mockOnGrammarSave.mockClear();
     mockOnGrammarUnsave.mockClear();
   });
@@ -125,7 +128,7 @@ describe('GrammarTabContent', () => {
     expect(card2.props.isSaved).toBe(true);
   });
 
-  it('navigates with correct grammarId on card press', () => {
+  it('opens the source lesson on card press (no GrammarDetail route)', () => {
     const tree = render(<GrammarTabContent grammar={[mockGrammar1]} />);
 
     const card = tree.root.findByProps({testID: 'grammar-card-grammar-1'});
@@ -134,10 +137,8 @@ describe('GrammarTabContent', () => {
       card.props.onPress();
     });
 
-    expect(mockNavigate).toHaveBeenCalledWith('GrammarDetail', {
-      grammarId: 'grammar-1',
-      lessonId: 'lesson-1',
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('lesson-1');
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('handles save callback', () => {

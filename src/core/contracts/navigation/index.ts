@@ -7,30 +7,8 @@ import type {NavigateFn, ParamListBase, ReplaceFn} from './paramList';
 
 export type {NavigateFn, ParamListBase, ReplaceFn};
 
-export type ShellRouteNames =
-  | 'Tabs'
-  | 'YouTubeHistory'
-  | 'YouTubeLesson'
-  | 'Practice'
-  | 'BootGate'
-  | 'Onboarding';
-
-export type TabRouteNames =
-  | 'Home'
-  | 'Create'
-  | 'Lessons'
-  | 'Profile'
-  | 'Review'
-  | 'Settings';
-
-export type RootTabRouteNames = 'Home' | 'Create' | 'Lessons' | 'Profile';
-
-export type RootStackRouteNames = ShellRouteNames;
-
-export type NavigationContract = {
-  shellRoutes: ShellRouteNames;
-  tabRoutes: TabRouteNames;
-};
+// Route names live with the navigators (`app/navigation/types.ts`); feature
+// code navigates through intents (`AppNavigation` in `@core/navigation`).
 
 /**
  * Shared navigation primitives for feature screens and shell navigators.

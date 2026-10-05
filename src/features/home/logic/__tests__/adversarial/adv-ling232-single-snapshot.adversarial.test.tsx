@@ -35,7 +35,6 @@ jest.mock('@features/lesson/player', () => ({
     .fn()
     .mockResolvedValue({ok: true, progress: null}),
   listDownloadedLessonSummaries: jest.fn().mockReturnValue([]),
-  openLesson: jest.fn(),
   useCanonicalCatalog: () => ({
     refresh: jest.fn(),
     state: {status: 'idle' as const},
@@ -76,11 +75,6 @@ function snapshot(
   };
 }
 
-const navigation = {
-  navigate: jest.fn(),
-  getParent: () => ({navigate: jest.fn()}),
-} as never;
-
 describe('LING-232 Home focus snapshot ownership', () => {
   it('ADV-001 / H5 / FR-005: initial focus adds no separate weekly-card snapshot read', async () => {
     mockSnapshot
@@ -89,7 +83,7 @@ describe('LING-232 Home focus snapshot ownership', () => {
 
     let latest!: ReturnType<typeof useHomeScreenController>;
     function Driver() {
-      latest = useHomeScreenController({navigation});
+      latest = useHomeScreenController();
       return null;
     }
 
