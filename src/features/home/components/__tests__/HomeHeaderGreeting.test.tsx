@@ -116,38 +116,6 @@ describe('HomeHeader greeting rendered text (BUG-001, LING-262)', () => {
 // Accessibility label is unchanged (uses flame.a11yKey + a11yParams).
 // ---------------------------------------------------------------------------
 describe('HomeHeader streak pill localized text (BUG-003, LING-264)', () => {
-  function getFlameTextNodes(
-    tree: ReactTestRenderer.ReactTestRenderer,
-  ): string[] {
-    const flame = tree.root.findAll(
-      node => node.props.testID === 'home-header-flame',
-    );
-    const results: string[] = [];
-    const collect = (node: ReturnType<typeof tree.root.findAll>[0]) => {
-      if (typeof node.props.children === 'string') {
-        results.push(node.props.children);
-      }
-      if (Array.isArray(node.props.children)) {
-        for (const child of node.props.children) {
-          if (typeof child === 'string') results.push(child);
-        }
-      }
-    };
-    for (const f of flame) {
-      collect(f);
-    }
-    return results;
-  }
-
-  function getFlameA11yLabel(
-    tree: ReactTestRenderer.ReactTestRenderer,
-  ): string | undefined {
-    const flame = tree.root.findAll(
-      node => node.props.testID === 'home-header-flame',
-    );
-    return flame[0]?.props.accessibilityLabel as string | undefined;
-  }
-
   it('streak=0: pill renders "0 ngày" in vi', () => {
     // Failing before fix: pill rendered "0" (raw number), not "0 ngày"
     const tree = renderHeader(7, null, 0);

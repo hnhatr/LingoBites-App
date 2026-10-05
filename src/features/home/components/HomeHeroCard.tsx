@@ -319,6 +319,9 @@ export function HomeHeroCard({
   );
 }
 
+// CSS-triangle trick: border sides must be fully transparent to create the tail shape
+const TRANSPARENT = 'rgba(0,0,0,0)';
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     card: {
@@ -397,9 +400,9 @@ function makeStyles(theme: AppTheme) {
     // Downward tail pointing toward the mascot head (mockup v4 Gap 5)
     bubbleTail: {
       alignSelf: 'flex-end',
-      borderLeftColor: 'transparent',
+      borderLeftColor: TRANSPARENT,
       borderLeftWidth: 6,
-      borderRightColor: 'transparent',
+      borderRightColor: TRANSPARENT,
       borderRightWidth: 6,
       borderTopColor: theme.colors.overlayLight,
       borderTopWidth: 8,
