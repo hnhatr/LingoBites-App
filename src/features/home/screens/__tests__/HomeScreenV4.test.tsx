@@ -11,6 +11,8 @@ import React from 'react';
 import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
+import {getGamificationSnapshot} from '@features/engagement';
+
 import {AppThemeProvider} from '@ui/theme';
 
 import * as AuthSession from '@core/auth/authSession';
@@ -23,6 +25,8 @@ import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
+
+const reanimatedMock = require('../../../../../test-utils/reanimatedMock');
 
 // ---------------------------------------------------------------------------
 // Mock setup
@@ -198,6 +202,63 @@ describe('Home hero states (DQ-002, P-004)', () => {
       .findAll(node => node.props.testID === 'home-continue-action')
       .find(node => typeof node.props.onPress === 'function');
     expect(continueBtn).toBeDefined();
+  });
+
+  it('state goal_met: shows hero and confetti when weekly goal is met', async () => {
+    (getGamificationSnapshot as jest.Mock).mockReturnValue({
+      currentStreak: 3,
+      weeklyGoal: {completedThisWeek: 6, target: 6},
+      badges: [],
+    });
+    mockReducedMotion = false;
+    const tree = await renderHome();
+    expect(
+      tree.root.findAll(node => node.props.testID === 'home-hero-goal_met')
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      tree.root.findAll(node => node.props.testID === 'home-confetti').length,
+    ).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Hero animations — non-reduced motion (CR-001)
+// ---------------------------------------------------------------------------
+describe('Home hero animations (CR-001)', () => {
+  beforeEach(() => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+    mockReducedMotion = false;
+    reanimatedMock.clearWithSequenceCalls();
+  });
+
+  it('I8: CTA pulse uses withSequence on mount when reduced motion is off', async () => {
+    await renderHome();
+    expect(reanimatedMock.withSequenceCalls.length).toBeGreaterThan(0);
+  });
+
+  it('I2: mascot tap uses withSequence when reduced motion is off', async () => {
+    const tree = await renderHome();
+    reanimatedMock.clearWithSequenceCalls();
+    const mascotBtn = tree.root
+      .findAll(node => node.props.testID === 'home-hero-mascot-btn')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!mascotBtn) {
+      throw new Error('No mascot pressable found');
+    }
+    await act(async () => mascotBtn.props.onPress());
+    expect(reanimatedMock.withSequenceCalls.length).toBeGreaterThan(0);
   });
 });
 
