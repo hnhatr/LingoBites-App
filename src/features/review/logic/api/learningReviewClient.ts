@@ -2,6 +2,10 @@
  * Learning review API client (LING-100 TASK-011 split).
  *
  * Owns `GET /v1/me/review` and learner-safe Review projections.
+ *
+ * F9: not on any runtime path. The local SRS (`FlashcardRepository`) is the
+ * single source of due cards for Home and Daily Review; this client is kept,
+ * unexported from the feature barrel, for a future server-backed review.
  */
 
 import {z} from 'zod';

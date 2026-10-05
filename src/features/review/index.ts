@@ -29,16 +29,4 @@ export {
   type PushReviewEventsResult,
   type SyncReviewEvent,
 } from './logic/api/reviewEventsClient';
-export {
-  LEARNING_REVIEW_CLIENT_FIXTURE_REVISION,
-  LEARNING_REVIEW_CLIENT_DESIGN_REF,
-  fetchReview,
-} from './logic/api/learningReviewClient';
-export type {
-  ReviewExerciseContent,
-  ReviewExerciseEntry,
-  ReviewVocabularyContent,
-  ReviewVocabularyEntry,
-  ReviewResult,
-} from './logic/api/learningReviewClient';
 export type {UpcomingReviewReminder} from './logic/contracts';
