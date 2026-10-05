@@ -1,23 +1,25 @@
 /**
- * homeScreenModel — pure presentation logic for Home screen (LING-256).
+ * homeScreenModel — pure presentation logic for Home screen (LING-256, LING-267).
  *
  * Covers:
  * - 5 hero states (DQ-002, P-004): no_lessons, saved_only, in_progress,
  *   youtube_disabled, goal_met
  * - Time-of-day greeting (I5, DQ-008)
- * - Streak flame tiers 0..7+ (I4, P-001)
- * - 5-paw weekly goal model (I3, P-004)
- * - Due-flashcard count for review shortcut badge (P-003)
- * - 4-shortcut item configurations (DQ-005, D3)
- * - Saved-rail label (DQ-006)
+ * - Streak flame tiers 0..7+ (I4, P-001, §VS-1.3)
+ * - 5-paw weekly goal model (I3, P-004, §VS-3)
+ * - Due-flashcard count for review shortcut badge (P-003, §VS-4)
+ * - 4-shortcut item configurations (DQ-005, D3, §VS-4)
+ * - Saved-rail label (DQ-006, §VS-5)
  * - Graceful degradation when progress percent unavailable (A-009)
  */
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
 import type {LessonSourceType} from '@core/schemas/lesson';
 
+import type {HomeSvgIconName} from '../components/HomeSvgIcons';
+
 // ---------------------------------------------------------------------------
-// Retained constants (used in HomeScreenView legacy + new components)
+// Retained & new visual constants (§VS-0)
 // ---------------------------------------------------------------------------
 export const RAIL_LIMIT = 3;
 export const LINK_HIT_SLOP = {top: 10, bottom: 10, left: 10, right: 10};
@@ -31,6 +33,19 @@ export const HERO_TITLE = '#FFFFFF';
 export const HERO_CTA_BG = '#FFD35E';
 export const HERO_CTA_INK = '#40320D';
 export const HERO_WAVE_SECONDARY = '#3d88c4';
+
+export const HOME_TROPHY = '#d39b00';
+export const HOME_EMPTY_PAW = '#d9d6c3';
+export const HOME_HEART = '#ff5d7a';
+export const HOME_HIGHLIGHT = '#FFD35E';
+export const CONFETTI_COLORS = [
+  '#FFD35E',
+  '#EB6B6C',
+  '#6BD2AD',
+  '#2dd4bf',
+  '#226FAB',
+  '#fe7488',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Hero states (DQ-002, P-004)
@@ -73,7 +88,7 @@ export function deriveHeroState({
 }
 
 // ---------------------------------------------------------------------------
-// Time-of-day greeting (I5, DQ-008)
+// Time-of-day greeting (I5, DQ-008, §VS-1.1)
 // ---------------------------------------------------------------------------
 export type TimeOfDay = 'morning' | 'afternoon' | 'night';
 
@@ -86,16 +101,12 @@ export function getTimeOfDay(hour: number): TimeOfDay {
 
 export type GreetingModel = {
   timeOfDay: TimeOfDay;
-  /**
-   * i18n key for the greeting line.
-   *
-   * The unnamed keys (greeting_morning/afternoon/night) contain no `{{name}}`
-   * placeholder — they render as plain strings like "Chào buổi sáng!".
-   * When hasName is true, this key is used for the small prefix line and
-   * displayName is shown on a separate large accent line below.
-   * When hasName is false, this key is displayed as a single-line greeting.
-   * The `_named` variants (a11yKey) carry `{{name}}` for the a11y path only.
-   */
+  /** Prefix key for two-line greeting, e.g. "Chào buổi sáng," */
+  prefixKey:
+    | 'home.greeting_morning_prefix'
+    | 'home.greeting_afternoon_prefix'
+    | 'home.greeting_night_prefix';
+  /** Fallback greeting key for single-line greeting without name */
   greetingKey:
     | 'home.greeting_morning'
     | 'home.greeting_afternoon'
@@ -104,10 +115,7 @@ export type GreetingModel = {
   hasName: boolean;
   /** The display name to render on the second accent line, or null */
   displayName: string | null;
-  /**
-   * Accessible label key (the _named variant when name exists, so screen
-   * readers read the full greeting with the name).
-   */
+  /** Accessible label key */
   a11yKey:
     | 'home.greeting_morning'
     | 'home.greeting_afternoon'
@@ -123,7 +131,17 @@ export function buildGreeting(
   displayName: string | null,
 ): GreetingModel {
   const timeOfDay = getTimeOfDay(hour);
-  const keyMap: Record<
+  const prefixMap: Record<
+    TimeOfDay,
+    | 'home.greeting_morning_prefix'
+    | 'home.greeting_afternoon_prefix'
+    | 'home.greeting_night_prefix'
+  > = {
+    morning: 'home.greeting_morning_prefix',
+    afternoon: 'home.greeting_afternoon_prefix',
+    night: 'home.greeting_night_prefix',
+  };
+  const greetingKeyMap: Record<
     TimeOfDay,
     'home.greeting_morning' | 'home.greeting_afternoon' | 'home.greeting_night'
   > = {
@@ -131,7 +149,9 @@ export function buildGreeting(
     afternoon: 'home.greeting_afternoon',
     night: 'home.greeting_night',
   };
-  const greetingKey = keyMap[timeOfDay];
+
+  const prefixKey = prefixMap[timeOfDay];
+  const greetingKey = greetingKeyMap[timeOfDay];
 
   if (displayName) {
     const namedKeyMap: Record<
@@ -146,6 +166,7 @@ export function buildGreeting(
     };
     return {
       timeOfDay,
+      prefixKey,
       greetingKey,
       hasName: true,
       displayName,
@@ -156,6 +177,7 @@ export function buildGreeting(
 
   return {
     timeOfDay,
+    prefixKey,
     greetingKey,
     hasName: false,
     displayName: null,
@@ -165,7 +187,7 @@ export function buildGreeting(
 }
 
 // ---------------------------------------------------------------------------
-// Streak flame tiers (I4, P-001)
+// Streak flame tiers (I4, P-001, §VS-1.3)
 // ---------------------------------------------------------------------------
 /** 7 tiers: 0, 1, 2, 3, 4, 5, 6, 7+ */
 export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -174,35 +196,48 @@ export type FlameModel = {
   level: FlameLevel;
   /** Hex color for the flame icon fill */
   color: string;
+  /** Size in pt based on flame ladder (16 + 2.3 * level) */
+  size: number;
+  /** Glow radius in pt (level >= 3 ? (level - 2) * 1.6 : 0) */
+  glowRadius: number;
+  /** Embers enabled for level >= 7 */
+  hasEmbers: boolean;
   /** Accessible label i18n key */
   a11yKey: 'home.streak_days' | 'home.streak_zero';
   a11yParams?: {count: number};
 };
 
-// Colors progress warm-to-hot across tiers.
-const FLAME_COLORS: Record<FlameLevel, string> = {
-  0: '#B0BEC5', // grey — no streak
-  1: '#FFB74D', // amber
-  2: '#FFA726', // deep amber
-  3: '#FF7043', // deep orange
-  4: '#F4511E', // orange-red
-  5: '#E53935', // red
-  6: '#C62828', // deep red
-  7: '#7B1FA2', // purple (legendary)
+export const FLAME_COLORS: Record<FlameLevel, string> = {
+  0: '#b9b6a3',
+  1: '#ffb03a',
+  2: '#ffa133',
+  3: '#ff902b',
+  4: '#ff7d24',
+  5: '#ff6a1f',
+  6: '#ff571b',
+  7: '#ff4517',
 };
 
 export function buildFlameModel(streak: number): FlameModel {
-  const level = Math.min(7, streak) as FlameLevel;
+  const clampedStreak = Math.max(0, streak);
+  const level = Math.min(7, clampedStreak) as FlameLevel;
+  const size = 16 + 2.3 * level;
+  const glowRadius = level >= 3 ? (level - 2) * 1.6 : 0;
+  const hasEmbers = level >= 7;
+
   return {
     level,
     color: FLAME_COLORS[level],
-    a11yKey: streak === 0 ? 'home.streak_zero' : 'home.streak_days',
-    a11yParams: streak > 0 ? {count: streak} : undefined,
+    size,
+    glowRadius,
+    hasEmbers,
+    a11yKey: clampedStreak === 0 ? 'home.streak_zero' : 'home.streak_days',
+    a11yParams: clampedStreak > 0 ? {count: clampedStreak} : undefined,
   };
 }
 
 // ---------------------------------------------------------------------------
-// 5-paw weekly goal (I3, P-004)
+// 5-paw weekly goal (I3, P-004, §VS-3)
 // ---------------------------------------------------------------------------
 export const PAW_COUNT = 5;
 
@@ -232,22 +267,28 @@ export function buildPawGoalModel(
 }
 
 // ---------------------------------------------------------------------------
-// Shortcut items (DQ-005, D3, P-003)
+// Shortcut items (DQ-005, D3, P-003, §VS-4)
+// Order: video -> review -> speaking -> lessons
 // ---------------------------------------------------------------------------
-export type ShortcutKey = 'review' | 'speaking' | 'lessons' | 'video';
+export type ShortcutKey = 'video' | 'review' | 'speaking' | 'lessons';
 
 export type ShortcutItem = {
   key: ShortcutKey;
+  icon: HomeSvgIconName;
   /** i18n title key */
   titleKey: string;
-  /** i18n meta/subtitle key — null if no meta */
+  /** i18n sub/meta key */
+  subKey: string;
+  /** Backward-compatible metaKey */
   metaKey: string | null;
-  /** metaKey interpolation params */
+  /** metaParams for interpolation */
   metaParams?: Record<string, string | number>;
   testID: string;
-  /** Badge count — shown when > 0 */
+  /** Badge count number — null if none */
   badgeCount: number | null;
-  /** Whether the shortcut is locked/disabled */
+  /** Badge text (e.g. "99+" or "12") */
+  badgeText: string | null;
+  /** Whether the shortcut is disabled */
   disabled: boolean;
 };
 
@@ -260,48 +301,65 @@ export function buildShortcutItems({
   dueFlashcardCount,
   youtubeEnabled,
 }: ShortcutItemsInput): ShortcutItem[] {
+  const hasDue = dueFlashcardCount != null && dueFlashcardCount > 0;
+  const reviewSubKey = hasDue
+    ? 'home.shortcut_review_due'
+    : 'home.shortcut_review_none';
+  const badgeText = hasDue
+    ? dueFlashcardCount > 99
+      ? '99+'
+      : String(dueFlashcardCount)
+    : null;
+
   return [
     {
+      key: 'video',
+      icon: 'play_circle',
+      titleKey: 'home.shortcut_video',
+      subKey: youtubeEnabled
+        ? 'home.shortcut_video_sub'
+        : 'home.shortcut_video_unavailable',
+      metaKey: youtubeEnabled
+        ? 'home.shortcut_video_sub'
+        : 'home.shortcut_video_unavailable',
+      testID: 'home-shortcut-video',
+      badgeCount: null,
+      badgeText: null,
+      disabled: !youtubeEnabled,
+    },
+    {
       key: 'review',
+      icon: 'style',
       titleKey: 'home.shortcut_review',
-      metaKey:
-        dueFlashcardCount != null && dueFlashcardCount > 0
-          ? 'home.shortcut_review_meta'
-          : null,
-      metaParams:
-        dueFlashcardCount != null && dueFlashcardCount > 0
-          ? {count: dueFlashcardCount}
-          : undefined,
+      subKey: reviewSubKey,
+      metaKey: reviewSubKey,
+      metaParams: hasDue ? {count: dueFlashcardCount} : undefined,
       testID: 'home-shortcut-review',
-      badgeCount:
-        dueFlashcardCount != null && dueFlashcardCount > 0
-          ? dueFlashcardCount
-          : null,
+      badgeCount: hasDue ? dueFlashcardCount : null,
+      badgeText,
       disabled: false,
     },
     {
       key: 'speaking',
+      icon: 'record_voice_over',
       titleKey: 'home.shortcut_speaking',
-      metaKey: 'home.shortcut_speaking_meta',
+      subKey: 'home.shortcut_speaking_sub',
+      metaKey: 'home.shortcut_speaking_sub',
       testID: 'home-shortcut-speaking',
       badgeCount: null,
+      badgeText: null,
       disabled: false,
     },
     {
       key: 'lessons',
+      icon: 'school',
       titleKey: 'home.shortcut_lessons',
-      metaKey: null,
+      subKey: 'home.shortcut_lessons_sub',
+      metaKey: 'home.shortcut_lessons_sub',
       testID: 'home-shortcut-lessons',
       badgeCount: null,
+      badgeText: null,
       disabled: false,
-    },
-    {
-      key: 'video',
-      titleKey: 'home.shortcut_video',
-      metaKey: youtubeEnabled ? null : 'home.shortcut_video_locked',
-      testID: 'home-shortcut-video',
-      badgeCount: null,
-      disabled: !youtubeEnabled,
     },
   ];
 }

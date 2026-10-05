@@ -1,5 +1,5 @@
 /**
- * HomeSvgIcons tests (LING-256 TASK-001)
+ * HomeSvgIcons tests (LING-256 TASK-001, LING-267)
  *
  * Verifies that:
  * - Every HomeSvgIconName renders without errors under the Jest SVG mock (SVG-1, DQ-007).
@@ -22,9 +22,15 @@ const ALL_ICONS: HomeSvgIconName[] = [
   'emoji_events',
   'lock',
   'chevron_right',
+  'auto_awesome',
+  'menu_book',
+  'play_arrow',
+  'star',
+  'bookmark',
+  'favorite',
 ];
 
-describe('HomeIcon (SVG-1, SVG-2, DQ-007)', () => {
+describe('HomeIcon (SVG-1, SVG-2, DQ-007, §VS-6)', () => {
   it('renders every icon name without throwing', async () => {
     for (const name of ALL_ICONS) {
       let tree: ReactTestRenderer.ReactTestRenderer | null = null;
