@@ -6,4 +6,5 @@ export type {
   PasteTextRouteParams,
   ImageCaptureRouteParams,
   CreateStackParamList,
+  CreateFlowParamList,
 } from './screens/navigationTypes';

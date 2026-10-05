@@ -28,8 +28,6 @@ import {ShelfSurface} from '@ui/components/ShelfSurface';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import {isTabBarHiddenForDescriptors} from './immersiveTabRoutes';
-
 const TAB_ITEMS: Record<string, {labelKey: string; icon: HandoffIconName}> = {
   Home: {labelKey: 'nav.tab.home', icon: 'home'},
   Create: {labelKey: 'nav.tab.create', icon: 'document_scanner'},
@@ -40,74 +38,24 @@ const TAB_ITEMS: Record<string, {labelKey: string; icon: HandoffIconName}> = {
 const TAB_ITEM_HIT_SLOP = {top: 8, bottom: 8, left: 8, right: 8};
 const TAB_ICON_SIZE = 21;
 
-type CreateTabRouteState = {
-  state?: {
-    index?: number;
-    routes?: Array<{name?: string; params?: unknown}>;
-  };
-  params?: unknown;
-};
-
-function findCreateRoute(
-  tabState: BottomTabBarProps['state'],
-): CreateTabRouteState | undefined {
-  return tabState.routes.find(r => r.name === 'Create') as
-    | CreateTabRouteState
-    | undefined;
-}
-
 /**
- * SETE-287 follow-up: Home opens YouTubeInput directly in the Create stack
- * with `fromHome: true` (SETE-289: YouTubeHistory moved to the RootStack
- * above the tabs; SETE-310: its "create new" CTA carries the same flag).
- * If the user leaves via the bottom bar (Home tab) instead of the header
- * Back button, the Create stack stays rooted at that YouTube screen. The
- * next Create tap must reset to CreateMain instead of resurfacing the
- * stale screen. Returns true when any route in the nested Create stack
- * carries `params.fromHome === true`.
- *
- * SETE-310 follow-up: a simulator pass showed the nested-stack snapshot
- * exposed here can lag behind the params the screen itself sees, while
- * the deep-navigate residue (`navigate('Tabs', {screen: 'Create',
- * params: {screen, params: {fromHome: true}}})`) survives on the Create
- * tab route's own params. Check that level too so the reset cannot be
- * silently skipped at runtime.
+ * True when the focused tab asks to hide the bar via
+ * `tabBarStyle: {display: 'none'}`. The custom bar must honor that itself.
+ * Task flows now live on the root stack above the tabs, so no built-in tab
+ * sets it today; the hook stays for any future tab-level screen.
  */
-export function createStackHasFromHomeEntry(
-  tabState: BottomTabBarProps['state'],
+export function isTabBarHiddenForDescriptors(
+  state: {index: number; routes: Array<{key: string}>},
+  descriptors: Record<string, {options?: {tabBarStyle?: unknown}}>,
 ): boolean {
-  const createRoute = findCreateRoute(tabState);
-  const tabParams = createRoute?.params as
-    | {fromHome?: boolean; params?: {fromHome?: boolean} | undefined}
-    | undefined;
-  if (tabParams?.fromHome === true || tabParams?.params?.fromHome === true) {
-    return true;
-  }
-  const nestedRoutes = createRoute?.state?.routes;
-  if (!nestedRoutes) {
+  const focusedKey = state.routes[state.index]?.key;
+  if (!focusedKey) {
     return false;
   }
-  return nestedRoutes.some(
-    r => (r.params as {fromHome?: boolean} | undefined)?.fromHome === true,
-  );
-}
-
-/**
- * SETE-310 follow-up: true when the Create stack's focused route is
- * anything but CreateMain (a child screen is showing). Used for the
- * focused-tab re-tap escape hatch — the standard tab pop-to-top the
- * custom bar previously swallowed by ignoring focused taps.
- */
-export function createStackIsBeyondMain(
-  tabState: BottomTabBarProps['state'],
-): boolean {
-  const nested = findCreateRoute(tabState)?.state;
-  const routes = nested?.routes;
-  if (!routes || routes.length === 0) {
-    return false;
-  }
-  const focusedNested = routes[nested?.index ?? routes.length - 1];
-  return focusedNested?.name !== 'CreateMain';
+  const style = descriptors[focusedKey]?.options?.tabBarStyle as
+    | {display?: unknown}
+    | undefined;
+  return style?.display === 'none';
 }
 
 const INDICATOR_DURATION_MS = 200;
@@ -273,10 +221,9 @@ export function TabBar({
   const tabWidth = useSharedValue(0);
   const hasAnimated = useRef(false);
   const [indicatorReady, setIndicatorReady] = useState(false);
-  // Immersive routes (review session, lesson runtime, speaking — SETE-255)
-  // hide the bar via tabBarStyle display:none; the custom bar must honor it
-  // itself (see isTabBarHiddenForDescriptors). Read before the early return
-  // so hook order stays stable when visibility toggles.
+  // A tab may hide the bar via tabBarStyle display:none; the custom bar
+  // must honor it itself (see isTabBarHiddenForDescriptors). Read before
+  // the early return so hook order stays stable when visibility toggles.
   const hidden = isTabBarHiddenForDescriptors(state, descriptors);
 
   useEffect(() => {
@@ -412,26 +359,6 @@ export function TabBar({
                   });
                   if (event.defaultPrevented) {
                     return;
-                  }
-                  // SETE-287 follow-up: a stale fromHome YouTube entry
-                  // survives a bottom-bar exit (Home tab) because the
-                  // header-Back reset never ran. Reset on Create re-entry
-                  // so the lesson composer is reachable again. Normal
-                  // in-tab stacks (no fromHome) keep standard preserve
-                  // behavior. Handles the focused-tab tap too as an
-                  // escape hatch when already stuck on the stale screen.
-                  // SETE-310 follow-up: focused re-tap on any child
-                  // screen pops back to CreateMain (standard tab
-                  // pop-to-top) so no child screen is ever a dead end.
-                  if (route.name === 'Create') {
-                    if (createStackHasFromHomeEntry(state)) {
-                      navigation.navigate('Create', {screen: 'CreateMain'});
-                      return;
-                    }
-                    if (focused && createStackIsBeyondMain(state)) {
-                      navigation.navigate('Create', {screen: 'CreateMain'});
-                      return;
-                    }
                   }
                   if (!focused) {
                     navigation.navigate(route.name);

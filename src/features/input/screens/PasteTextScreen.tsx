@@ -1,11 +1,9 @@
-import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
-import type {RootTabParamList} from '@features/home';
 import {startLessonFromConfirmedText} from '@features/lesson/player';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -20,10 +18,11 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
 
+import {useAppNavigation} from '@core/navigation';
 import {validateConfirmedText} from '@core/utils/textValidation';
 
-import type {CreateStackParamList} from './navigationTypes';
-type Props = NativeStackScreenProps<CreateStackParamList, 'PasteText'>;
+import type {CreateFlowParamList} from './navigationTypes';
+type Props = NativeStackScreenProps<CreateFlowParamList, 'PasteText'>;
 
 export type PasteTextScreenProps = Props;
 
@@ -38,6 +37,7 @@ function countWords(text: string): number {
 }
 
 export function PasteTextScreen({navigation, route}: Props) {
+  const appNavigation = useAppNavigation();
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const [text, setText] = useState('');
@@ -80,16 +80,12 @@ export function PasteTextScreen({navigation, route}: Props) {
       confirmedText: validation.value,
       sourceType: 'paste_text',
       origin: 'PasteText',
-      navigate: (screen, params) => {
-        if (screen === 'LessonCreation') {
-          navigation
-            .getParent<NavigationProp<RootTabParamList>>()
-            ?.navigate('Lessons', {
-              screen: 'LessonCreation',
-              params,
-            });
-        }
-      },
+      navigate: (_screen, params) =>
+        appNavigation.startCreate({
+          kind: params.initialSource,
+          text: params.initialText,
+          submissionId: params.submissionId,
+        }),
     });
 
     if (!result.ok) {

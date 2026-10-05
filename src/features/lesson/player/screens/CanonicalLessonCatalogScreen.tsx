@@ -10,8 +10,6 @@ import {
   View,
 } from 'react-native';
 
-import type {LessonsStackParamList} from '@features/lesson/library';
-
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -21,10 +19,12 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import {openLesson} from '../logic/lessonNavigation';
-import {useCanonicalCatalog} from '../logic/useCanonicalCatalog';
+import {useAppNavigation} from '@core/navigation';
 
-type Props = NativeStackScreenProps<LessonsStackParamList, 'CanonicalCatalog'>;
+import {useCanonicalCatalog} from '../logic/useCanonicalCatalog';
+import type {LessonFlowParamList} from './navigationTypes';
+
+type Props = NativeStackScreenProps<LessonFlowParamList, 'CanonicalCatalog'>;
 
 /**
  * Canonical catalog: every visible lesson (admin and learner sources) in one
@@ -32,6 +32,7 @@ type Props = NativeStackScreenProps<LessonsStackParamList, 'CanonicalCatalog'>;
  * layout (title, summary, small chips) instead of contract field names.
  */
 export function CanonicalLessonCatalogScreen({navigation}: Props) {
+  const appNavigation = useAppNavigation();
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
@@ -80,7 +81,7 @@ export function CanonicalLessonCatalogScreen({navigation}: Props) {
               accessibilityLabel={item.title}
               accessibilityHint={t('lessonPlayer.catalog_row_hint')}
               testID={`canonical-catalog-row-${item.id}`}
-              onPress={() => openLesson(navigation, item.id)}
+              onPress={() => appNavigation.openLesson(item.id)}
             >
               <AppCard>
                 <View style={styles.cardContent}>

@@ -1,5 +1,3 @@
-import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 
@@ -10,8 +8,8 @@ import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
 import type {GrammarBookmark, SaveGrammarBookmarkInput} from '@core/db/types';
+import {useAppNavigation} from '@core/navigation';
 
-import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {GrammarRowCard} from './GrammarRowCard';
 import {LibraryEmptyState} from './LibraryEmptyState';
 
@@ -34,8 +32,7 @@ function createStyles(theme: AppTheme) {
 export function GrammarTabContent({grammar}: GrammarTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<LessonsStackParamList>>();
+  const navigation = useAppNavigation();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const {grammarSaveState, onGrammarSave, onGrammarUnsave} =
@@ -43,10 +40,8 @@ export function GrammarTabContent({grammar}: GrammarTabContentProps) {
 
   const handleCardPress = useCallback(
     (bookmark: GrammarBookmark & {title?: string; content?: string}) => {
-      navigation.navigate('GrammarDetail' as any, {
-        grammarId: bookmark.grammarId,
-        lessonId: bookmark.lessonId,
-      });
+      // No grammar detail screen yet: open the lesson the point came from.
+      navigation.openLesson(bookmark.lessonId);
     },
     [navigation],
   );

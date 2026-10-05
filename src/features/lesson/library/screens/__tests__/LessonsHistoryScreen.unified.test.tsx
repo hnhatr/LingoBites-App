@@ -6,6 +6,8 @@ import {AppThemeProvider} from '@ui/theme';
 import * as AuthSession from '@core/auth/authSession';
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
@@ -182,15 +184,16 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
     await act(async () => {
       row.props.onPress();
     });
-    expect(mockInnerNavigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
-      lessonId: '00000000-0000-4000-8000-000000000021',
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith(
+      '00000000-0000-4000-8000-000000000021',
+    );
 
     await act(async () => {
       tree.root
         .findByProps({testID: 'library-catalog-view-all'})
         .props.onPress();
     });
-    expect(navigation.navigate).toHaveBeenCalledWith('CanonicalCatalog');
+    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
+    expect(navigation.navigate).not.toHaveBeenCalled();
   });
 });

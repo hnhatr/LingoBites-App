@@ -2,6 +2,7 @@ export type {
   CanonicalCatalogRouteParams,
   CanonicalLessonPlayerRouteParams,
   LessonCreationRouteParams,
+  LessonFlowParamList,
 } from './screens/navigationTypes';
 export {CanonicalLessonCatalogScreen} from './screens/CanonicalLessonCatalogScreen';
 export {CanonicalLessonPlayerScreen} from './screens/CanonicalLessonPlayerScreen';
@@ -76,11 +77,8 @@ export {
 } from './logic/canonicalYouTubeCues';
 export {useCanonicalCatalog} from './logic/useCanonicalCatalog';
 export type {CanonicalCatalogState} from './logic/useCanonicalCatalog';
-export {openLesson, openLessonCatalog} from './logic/lessonNavigation';
-export type {
-  LessonCatalogNavigation,
-  LessonPlayerNavigation,
-} from './logic/lessonNavigation';
+export {useCreateFlow} from './logic/useCreateFlow';
+export type {CreateFlow} from './logic/useCreateFlow';
 export {useCanonicalLesson} from './logic/useCanonicalLesson';
 export type {CanonicalLessonViewState} from './logic/useCanonicalLesson';
 export {useLessonCreation} from './logic/useLessonCreation';

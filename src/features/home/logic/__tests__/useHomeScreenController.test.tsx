@@ -35,7 +35,6 @@ jest.mock('@features/lesson/player', () => ({
     .fn()
     .mockResolvedValue({ok: true, progress: null}),
   listDownloadedLessonSummaries: jest.fn().mockReturnValue([]),
-  openLesson: jest.fn(),
   useCanonicalCatalog: () => ({
     refresh: jest.fn(),
     state: {status: 'idle' as const},
@@ -65,11 +64,6 @@ function baseSnapshot(
   };
 }
 
-const navigation = {
-  navigate: jest.fn(),
-  getParent: () => ({navigate: jest.fn()}),
-} as never;
-
 jest.mock('@react-navigation/native', () => {
   const react = require('react');
   let latestFocus: (() => void) | undefined;
@@ -87,7 +81,7 @@ jest.mock('@react-navigation/native', () => {
 function makeDriver() {
   let latest!: ReturnType<typeof useHomeScreenController>;
   function Driver() {
-    latest = useHomeScreenController({navigation});
+    latest = useHomeScreenController();
     return null;
   }
   let tree!: ReactTestRenderer.ReactTestRenderer;

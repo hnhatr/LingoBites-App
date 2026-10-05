@@ -358,6 +358,71 @@ function checkImportRules(
   return violations;
 }
 
+/**
+ * Navigation rules (navigation redesign): feature code navigates through
+ * `useAppNavigation()` intents from `@core/navigation`, never by reaching
+ * into a parent navigator or by naming an unregistered route.
+ *
+ * - `feature-navigation-get-parent`: any `.getParent(...)` call in
+ *   `src/features` (reaching into the tab/root navigator from a screen is
+ *   what made flows land in the wrong tab).
+ * - `navigation-untyped-route`: `navigate(<route> as any, ...)` anywhere in
+ *   production source (it hid navigations to routes that do not exist).
+ */
+function checkNavigationRules(filePath, content, srcRoot = sourceRoot) {
+  const source = sourceLayer(filePath, srcRoot);
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    filePath.endsWith('.tsx') || filePath.endsWith('.jsx')
+      ? ts.ScriptKind.TSX
+      : ts.ScriptKind.TS,
+  );
+  const violations = [];
+
+  function report(node, rule) {
+    const line =
+      sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+    violations.push({
+      file: normalizePath(filePath),
+      line,
+      specifier: node.getText(sourceFile).split('\n')[0].slice(0, 80),
+      rule,
+      description:
+        rule === 'feature-navigation-get-parent'
+          ? 'Use useAppNavigation() intents instead of getParent() in features'
+          : 'Do not cast a route name to any; register the route instead',
+    });
+  }
+
+  function visit(node) {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression)
+    ) {
+      const method = node.expression.name.text;
+      if (method === 'getParent' && source.layer === 'features') {
+        report(node, 'feature-navigation-get-parent');
+      }
+      const firstArg = node.arguments[0];
+      if (
+        method === 'navigate' &&
+        firstArg &&
+        ts.isAsExpression(firstArg) &&
+        firstArg.type.kind === ts.SyntaxKind.AnyKeyword
+      ) {
+        report(node, 'navigation-untyped-route');
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return violations;
+}
+
 function loadExceptionManifest(manifestPath = defaultManifestPath) {
   if (!fs.existsSync(manifestPath)) {
     return {exceptions: [], byKey: new Map(), allowanceByKey: new Map()};
@@ -433,6 +498,7 @@ function checkModuleBoundaries(options = {}) {
       });
     }
 
+    const violations = checkNavigationRules(filePath, content, srcDir);
     for (const imp of literalImports) {
       const resolved = resolveSpecifier(
         imp.specifier,
@@ -440,51 +506,51 @@ function checkModuleBoundaries(options = {}) {
         compilerOptions,
         srcDir,
       );
-      const violations = checkImportRules(filePath, imp, resolved, srcDir);
-      for (const violation of violations) {
-        detectedViolations.push(violation);
+      violations.push(...checkImportRules(filePath, imp, resolved, srcDir));
+    }
+    for (const violation of violations) {
+      detectedViolations.push(violation);
 
-        const key = `${violation.file}::${violation.specifier}::${violation.rule}`;
-        const queue = remainingAllowances.get(key);
+      const key = `${violation.file}::${violation.specifier}::${violation.rule}`;
+      const queue = remainingAllowances.get(key);
 
-        if (queue && queue.length > 0) {
-          const manifestEntry = queue.shift();
-          if (
-            manifestEntry.expiry &&
-            /^\d{4}-\d{2}-\d{2}/.test(manifestEntry.expiry)
-          ) {
-            const expiryDate = Date.parse(manifestEntry.expiry);
-            if (!Number.isNaN(expiryDate) && Date.now() > expiryDate) {
-              expiredExceptions.push({
-                ...violation,
-                owner: manifestEntry.owner,
-                expiry: manifestEntry.expiry,
-              });
-              newViolations.push({
-                ...violation,
-                reason: `Exception expired at ${manifestEntry.expiry}`,
-              });
-              continue;
-            }
+      if (queue && queue.length > 0) {
+        const manifestEntry = queue.shift();
+        if (
+          manifestEntry.expiry &&
+          /^\d{4}-\d{2}-\d{2}/.test(manifestEntry.expiry)
+        ) {
+          const expiryDate = Date.parse(manifestEntry.expiry);
+          if (!Number.isNaN(expiryDate) && Date.now() > expiryDate) {
+            expiredExceptions.push({
+              ...violation,
+              owner: manifestEntry.owner,
+              expiry: manifestEntry.expiry,
+            });
+            newViolations.push({
+              ...violation,
+              reason: `Exception expired at ${manifestEntry.expiry}`,
+            });
+            continue;
           }
-          matchedExceptions.push({
-            ...violation,
-            owner: manifestEntry.owner,
-            expiry: manifestEntry.expiry,
-          });
-        } else {
-          const hadAllowance =
-            manifest.allowanceByKey && manifest.allowanceByKey.has(key);
-          const maxAllowed = hadAllowance
-            ? manifest.allowanceByKey.get(key).length
-            : 0;
-          newViolations.push({
-            ...violation,
-            reason: hadAllowance
-              ? `Surplus occurrence exceeding manifest allowance (${maxAllowed} allowed)`
-              : 'Not present in baseline manifest',
-          });
         }
+        matchedExceptions.push({
+          ...violation,
+          owner: manifestEntry.owner,
+          expiry: manifestEntry.expiry,
+        });
+      } else {
+        const hadAllowance =
+          manifest.allowanceByKey && manifest.allowanceByKey.has(key);
+        const maxAllowed = hadAllowance
+          ? manifest.allowanceByKey.get(key).length
+          : 0;
+        newViolations.push({
+          ...violation,
+          reason: hadAllowance
+            ? `Surplus occurrence exceeding manifest allowance (${maxAllowed} allowed)`
+            : 'Not present in baseline manifest',
+        });
       }
     }
   }
@@ -543,6 +609,7 @@ if (require.main === module) {
 
 module.exports = {
   checkModuleBoundaries,
+  checkNavigationRules,
   findImportsInSource,
   resolveSpecifier,
   checkImportRules,

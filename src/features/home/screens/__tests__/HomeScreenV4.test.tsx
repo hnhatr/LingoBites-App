@@ -21,7 +21,11 @@ import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {FeatureFlagProvider} from '@core/release';
 
-import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
+import {
+  CORE_WITH_REVIEW,
+  makeTestReleaseConfig,
+  mockAppNavigation,
+} from '@test/support';
 import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
@@ -126,6 +130,7 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.restoreAllMocks();
+    jest.clearAllMocks();
     jest
       .spyOn(AuthSession, 'ensureValidSession')
       .mockResolvedValue(validSession);
@@ -237,6 +242,7 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.restoreAllMocks();
+    jest.clearAllMocks();
     jest
       .spyOn(AuthSession, 'ensureValidSession')
       .mockResolvedValue(validSession);
@@ -297,7 +303,8 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
       .find(node => typeof node.props.onPress === 'function');
     if (!reviewBtn) throw new Error('No review shortcut found');
     await act(async () => reviewBtn.props.onPress());
-    expect(nav).toHaveBeenCalledWith('DailyReview');
+    expect(mockAppNavigation.openReview).toHaveBeenCalledTimes(1);
+    expect(nav).not.toHaveBeenCalled();
   });
 
   it('speaking shortcut navigates to SpeakingRoom', async () => {
@@ -308,7 +315,8 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
       .find(node => typeof node.props.onPress === 'function');
     if (!speakBtn) throw new Error('No speaking shortcut found');
     await act(async () => speakBtn.props.onPress());
-    expect(nav).toHaveBeenCalledWith('SpeakingRoom');
+    expect(mockAppNavigation.openSpeakingRoom).toHaveBeenCalledTimes(1);
+    expect(nav).not.toHaveBeenCalled();
   });
 
   it('lessons shortcut navigates to LessonList / Today', async () => {
@@ -319,7 +327,8 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
       .find(node => typeof node.props.onPress === 'function');
     if (!lessonsBtn) throw new Error('No lessons shortcut found');
     await act(async () => lessonsBtn.props.onPress());
-    expect(nav).toHaveBeenCalledWith('Today');
+    expect(mockAppNavigation.openToday).toHaveBeenCalledTimes(1);
+    expect(nav).not.toHaveBeenCalled();
   });
 });
 
@@ -331,6 +340,7 @@ describe('Home reduced motion (§VS-7, AC-004)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.restoreAllMocks();
+    jest.clearAllMocks();
     mockFetch.mockImplementation(async () => ({
       ok: true,
       status: 200,
@@ -367,6 +377,7 @@ describe('Speech bubble layout (§VS-2.3)', () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.restoreAllMocks();
+    jest.clearAllMocks();
     jest
       .spyOn(AuthSession, 'ensureValidSession')
       .mockResolvedValue(validSession);

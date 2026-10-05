@@ -5,6 +5,8 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
@@ -114,6 +116,7 @@ describe('LessonsHistoryScreen', () => {
   beforeEach(() => {
     mockRefresh.mockClear();
     navigation.navigate.mockClear();
+    jest.clearAllMocks();
   });
 
   it('renders three tabs', () => {
@@ -209,7 +212,7 @@ describe('LessonsHistoryScreen', () => {
     }
     act(() => target.props.onPress());
 
-    expect(navigation.navigate).toHaveBeenCalledWith('CanonicalCatalog');
+    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
   });
 
   it('routes practice chips to DailyReview and SpeakingRoom', () => {
@@ -226,8 +229,8 @@ describe('LessonsHistoryScreen', () => {
     };
 
     press('library-practice-review');
-    expect(navigation.navigate).toHaveBeenCalledWith('DailyReview');
+    expect(mockAppNavigation.openReview).toHaveBeenCalledTimes(1);
     press('library-practice-speaking');
-    expect(navigation.navigate).toHaveBeenCalledWith('SpeakingRoom');
+    expect(mockAppNavigation.openSpeakingRoom).toHaveBeenCalledTimes(1);
   });
 });

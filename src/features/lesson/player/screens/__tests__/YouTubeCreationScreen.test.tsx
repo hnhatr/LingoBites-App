@@ -9,6 +9,8 @@ import en from '@core/i18n/en.json';
 import vi from '@core/i18n/vi.json';
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import type {LessonCreationState} from '../../logic/useLessonCreation';
 import {LessonCreationScreen} from '../LessonCreationScreen';
 
@@ -213,16 +215,16 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
         requestId: 'r1',
         lessonId: CREATED_LESSON_ID,
       };
+      mockAppNavigation.finishCreate.mockClear();
       const navigation = {navigate: jest.fn(), goBack: jest.fn()};
       const tree = renderScreen('youtube', navigation);
-      expect(navigation.navigate).not.toHaveBeenCalled();
+      expect(mockAppNavigation.finishCreate).not.toHaveBeenCalled();
       pressByTestId(tree.root, 'lesson-creation-open');
-      expect(navigation.navigate).toHaveBeenCalledWith(
-        'CanonicalLessonPlayer',
-        {
-          lessonId: CREATED_LESSON_ID,
-        },
+      // Replaces the creation flow with the lesson (no push on top of it).
+      expect(mockAppNavigation.finishCreate).toHaveBeenCalledWith(
+        CREATED_LESSON_ID,
       );
+      expect(navigation.navigate).not.toHaveBeenCalled();
     });
 
     it('S4 does not start a looping animation when reduce motion is on', () => {
@@ -245,10 +247,11 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
 
     it('S5 goes back from processing via Quay lại', () => {
       mockState = {status: 'processing', requestId: 'r1'};
+      mockAppNavigation.goBack.mockClear();
       const navigation = {navigate: jest.fn(), goBack: jest.fn()};
       const tree = renderScreen('youtube', navigation);
       pressByTestId(tree.root, 'lesson-creation-back-processing');
-      expect(navigation.goBack).toHaveBeenCalledTimes(1);
+      expect(mockAppNavigation.goBack).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -264,10 +267,11 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
 
     it('S2 goes back from timeout via Quay lại sau', () => {
       mockState = {status: 'timedOut', requestId: 'r1'};
+      mockAppNavigation.goBack.mockClear();
       const navigation = {navigate: jest.fn(), goBack: jest.fn()};
       const tree = renderScreen('youtube', navigation);
       pressByTestId(tree.root, 'lesson-creation-back-later');
-      expect(navigation.goBack).toHaveBeenCalledTimes(1);
+      expect(mockAppNavigation.goBack).toHaveBeenCalledTimes(1);
     });
   });
 

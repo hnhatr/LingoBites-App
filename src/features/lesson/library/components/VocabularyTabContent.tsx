@@ -1,5 +1,3 @@
-import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 
@@ -11,8 +9,8 @@ import type {AppTheme} from '@ui/theme/types';
 
 import type {FlashcardRecord} from '@core/db/types';
 import type {SaveFlashcardInput} from '@core/db/types';
+import {useAppNavigation} from '@core/navigation';
 
-import type {LessonsStackParamList} from '../screens/navigationTypes';
 import {LibraryEmptyState} from './LibraryEmptyState';
 import {VocabularyRowCard} from './VocabularyRowCard';
 
@@ -35,8 +33,7 @@ function createStyles(theme: AppTheme) {
 export function VocabularyTabContent({vocabulary}: VocabularyTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<LessonsStackParamList>>();
+  const navigation = useAppNavigation();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const {vocabularySaveState, onVocabularySave, onVocabularyUnsave} =
@@ -44,10 +41,8 @@ export function VocabularyTabContent({vocabulary}: VocabularyTabContentProps) {
 
   const handleCardPress = useCallback(
     (flashcard: FlashcardRecord) => {
-      // Navigate to FlashcardDetail with vocabularyId
-      navigation.navigate('FlashcardDetail' as any, {
-        vocabularyId: flashcard.vocabularyId,
-      });
+      // No flashcard detail screen yet: open the lesson the word came from.
+      navigation.openLesson(flashcard.lessonId);
     },
     [navigation],
   );

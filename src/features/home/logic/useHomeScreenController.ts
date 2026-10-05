@@ -11,8 +11,7 @@
  * - Saved rail with renamed label (DQ-006)
  * - Graceful degradation when progress percent unavailable (A-009)
  */
-import {type NavigationProp, useFocusEffect} from '@react-navigation/native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useFocusEffect} from '@react-navigation/native';
 import {useCallback, useMemo, useState} from 'react';
 
 import {useAccountStore} from '@features/account';
@@ -21,19 +20,15 @@ import {getGamificationSnapshot} from '@features/engagement';
 import {
   fetchContinueLearning,
   listDownloadedLessonSummaries,
-  openLesson,
   useCanonicalCatalog,
 } from '@features/lesson/player';
 import {getDueFlashcards} from '@features/review';
 
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
+import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 import {getLessonProgress} from '@core/sync/lessonProgress';
 
-import type {
-  HomeStackParamList,
-  RootTabParamList,
-} from '../screens/navigationTypes';
 import {
   buildFlameModel,
   buildGreeting,
@@ -54,19 +49,9 @@ import {
   type WeeklyGoalCardModel,
 } from './homeScreenModel';
 
-type HomeNavigation = NativeStackScreenProps<
-  HomeStackParamList,
-  'HomeMain'
->['navigation'];
-
-type Args = {
-  navigation: HomeNavigation;
-};
-
-export function useHomeScreenController({navigation}: Args) {
+export function useHomeScreenController() {
   const {config} = useFeatureFlags();
-  const tabNavigation =
-    navigation.getParent<NavigationProp<RootTabParamList>>();
+  const navigation = useAppNavigation();
   const youtubeServerEnabled = useYouTubeServerEnabled();
   const youtubeEnabled =
     config.features.youtubeLearning && youtubeServerEnabled;
@@ -239,43 +224,43 @@ export function useHomeScreenController({navigation}: Args) {
         lesson_id: item.id,
         source: 'home_rail',
       });
-      openLesson(navigation, item.id);
+      navigation.openLesson(item.id);
     },
     [navigation],
   );
 
   const goLessonsTab = useCallback(
-    () => tabNavigation?.navigate('Lessons'),
-    [tabNavigation],
+    () => navigation.goToTab('Lessons'),
+    [navigation],
   );
 
   const openVideoCell = useCallback(
-    () => tabNavigation?.navigate('Create'),
-    [tabNavigation],
+    () => navigation.goToTab('Create'),
+    [navigation],
   );
 
   const onNavigateCreate = useCallback(
-    () => tabNavigation?.navigate('Create'),
-    [tabNavigation],
+    () => navigation.goToTab('Create'),
+    [navigation],
   );
 
   const onNavigateLessonList = useCallback(
-    () => navigation.navigate('Today'),
+    () => navigation.openToday(),
     [navigation],
   );
 
   const onContinueStartedLesson = useCallback(() => {
     if (!startedDownload) return;
-    openLesson(navigation, startedDownload.lessonId);
+    navigation.openLesson(startedDownload.lessonId);
   }, [navigation, startedDownload]);
 
   const onNavigateReview = useCallback(
-    () => navigation.navigate('DailyReview'),
+    () => navigation.openReview(),
     [navigation],
   );
 
   const onNavigateSpeaking = useCallback(
-    () => navigation.navigate('SpeakingRoom'),
+    () => navigation.openSpeakingRoom(),
     [navigation],
   );
 

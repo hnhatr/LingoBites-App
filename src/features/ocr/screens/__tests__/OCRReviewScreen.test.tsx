@@ -6,6 +6,8 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {OCRReviewScreen} from '../OCRReviewScreen';
 
 const mockNavigate = jest.fn();
@@ -40,7 +42,6 @@ async function flushPromises() {
 const navigation = {
   navigate: mockNavigate,
   setParams: jest.fn(),
-  getParent: () => ({navigate: mockTabNavigate}),
 } as unknown as React.ComponentProps<typeof OCRReviewScreen>['navigation'];
 
 const route = {
@@ -58,6 +59,7 @@ describe('OCRReviewScreen', () => {
   beforeEach(() => {
     mockNavigate.mockReset();
     mockTabNavigate.mockReset();
+    mockAppNavigation.startCreate.mockClear();
   });
 
   it('navigates to LessonCreation with edited confirmed text (TC-006)', async () => {
@@ -90,14 +92,12 @@ describe('OCRReviewScreen', () => {
       await flushPromises();
     });
 
-    expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'LessonCreation',
-      params: expect.objectContaining({
-        initialSource: 'ocr',
-        initialText: 'Edited OCR text.',
-        submissionId: expect.stringMatching(/^OCRReview-/),
-      }),
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'ocr',
+      text: 'Edited OCR text.',
+      submissionId: expect.stringMatching(/^OCRReview-/),
     });
+    expect(mockTabNavigate).not.toHaveBeenCalled();
   });
 
   it('renders correctly and does not crash when extractedText is undefined', async () => {

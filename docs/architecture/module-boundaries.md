@@ -92,6 +92,10 @@ Rules enforced:
 - `app-to-feature-private` — app must use a feature barrel or a `*UiPort`;
 - `cross-feature-private` — cross-feature imports must use the target barrel;
 - `production-to-test`.
+- `feature-navigation-get-parent` — feature code must not call
+  `.getParent(...)`; it navigates through `useAppNavigation()` intents
+  (see [`navigation.md`](./navigation.md));
+- `navigation-untyped-route` — no `navigate(<route> as any, ...)`.
 
 Baseline exceptions are stored in `scripts/module-boundary-exceptions.json`.
 After the LING-121 restructure the manifest is empty

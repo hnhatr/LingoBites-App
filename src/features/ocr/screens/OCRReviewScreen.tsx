@@ -1,12 +1,10 @@
-import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
-import type {RootTabParamList} from '@features/home';
-import type {CreateStackParamList} from '@features/input';
+import type {CreateFlowParamList} from '@features/input';
 import {startLessonFromConfirmedText} from '@features/lesson/player';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -20,13 +18,14 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
 
+import {useAppNavigation} from '@core/navigation';
 import {
   MAX_INPUT_TEXT_LENGTH,
   validateConfirmedText,
 } from '@core/utils/textValidation';
 
 import {extractText} from '../logic/OCRService';
-type Props = NativeStackScreenProps<CreateStackParamList, 'OCRReview'>;
+type Props = NativeStackScreenProps<CreateFlowParamList, 'OCRReview'>;
 
 export type OCRReviewScreenProps = Props;
 
@@ -41,6 +40,7 @@ function countWords(text: string): number {
 }
 
 export function OCRReviewScreen({navigation, route}: Props) {
+  const appNavigation = useAppNavigation();
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const {
@@ -110,16 +110,12 @@ export function OCRReviewScreen({navigation, route}: Props) {
       confirmedText: validation.value,
       sourceType,
       origin: 'OCRReview',
-      navigate: (screen, params) => {
-        if (screen === 'LessonCreation') {
-          navigation
-            .getParent<NavigationProp<RootTabParamList>>()
-            ?.navigate('Lessons', {
-              screen: 'LessonCreation',
-              params,
-            });
-        }
-      },
+      navigate: (_screen, params) =>
+        appNavigation.startCreate({
+          kind: params.initialSource,
+          text: params.initialText,
+          submissionId: params.submissionId,
+        }),
     });
 
     if (!result.ok) {

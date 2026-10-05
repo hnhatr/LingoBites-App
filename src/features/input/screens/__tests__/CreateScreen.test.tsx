@@ -10,6 +10,7 @@ import {
   ALL_IMPLEMENTED_FEATURES,
   CORE_WITH_REVIEW,
   makeTestReleaseConfig,
+  mockAppNavigation,
   OFFLINE_REVIEW_MVP,
 } from '@test/support';
 
@@ -72,8 +73,8 @@ describe('CreateScreen (SETE-247)', () => {
     const nav = navigation();
     const tree = await renderCreate(nav);
     await pressByTestID(tree, 'create-hero-camera');
-    expect(nav.navigate).toHaveBeenCalledWith('ImageCapture', {
-      sourceType: 'camera',
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'camera',
     });
   });
 
@@ -81,11 +82,13 @@ describe('CreateScreen (SETE-247)', () => {
     const nav = navigation();
     const tree = await renderCreate(nav);
     await pressByTestID(tree, 'create-tile-gallery');
-    expect(nav.navigate).toHaveBeenCalledWith('ImageCapture', {
-      sourceType: 'gallery',
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'gallery',
     });
     await pressByTestID(tree, 'create-tile-paste');
-    expect(nav.navigate).toHaveBeenCalledWith('PasteText');
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'paste',
+    });
   });
 
   it('shows the OCR tip while image input is enabled', async () => {
@@ -110,17 +113,14 @@ describe('CreateScreen (SETE-247)', () => {
       makeTestReleaseConfig(ALL_IMPLEMENTED_FEATURES),
     );
     await pressByTestID(flaggedOn, 'create-tile-youtube');
-    expect(nav.tabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'LessonCreation',
-      params: expect.objectContaining({
-        initialSource: 'youtube',
-        submissionId: expect.stringMatching(/^create-youtube-/),
-      }),
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'youtube',
     });
     await pressByTestID(flaggedOn, 'create-history-link');
-    expect(nav.tabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'CanonicalCatalog',
-    });
+    expect(mockAppNavigation.openCatalog).toHaveBeenCalled();
+    // The Create tab never reaches into another tab's stack.
+    expect(nav.tabNavigate).not.toHaveBeenCalled();
+    expect(nav.navigate).not.toHaveBeenCalled();
   });
 
   it('hides YouTube entry points when the server capability is off (SETE-290)', async () => {

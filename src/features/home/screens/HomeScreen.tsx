@@ -13,7 +13,7 @@ export type HomeScreenProps = Props;
  * Orchestration lives in {@link useHomeScreenController}; rendering in
  * {@link HomeScreenView}.
  */
-export function HomeScreen({navigation}: Props) {
-  const viewModel = useHomeScreenController({navigation});
+export function HomeScreen(_props: Props) {
+  const viewModel = useHomeScreenController();
   return <HomeScreenView {...viewModel} />;
 }

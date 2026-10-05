@@ -3,8 +3,6 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
 
-import type {LessonsStackParamList} from '@features/lesson/library';
-
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -21,10 +19,11 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import type {LearnerLessonCreationRequestBody} from '@core/schemas/lesson';
 
 import {YouTubeCreationView} from '../components/YouTubeCreationView';
-import {openLesson} from '../logic/lessonNavigation';
+import {useCreateFlow} from '../logic/useCreateFlow';
 import {useLessonCreation} from '../logic/useLessonCreation';
+import type {LessonFlowParamList} from './navigationTypes';
 
-type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonCreation'>;
+type Props = NativeStackScreenProps<LessonFlowParamList, 'LessonCreation'>;
 
 type CreationSource = 'text' | 'ocr' | 'youtube';
 
@@ -50,7 +49,8 @@ function countWords(value: string): number {
  * Paste-text / Analyzing screens: source chips, rounded input, a progress
  * card, and one primary action at the bottom.
  */
-export function LessonCreationScreen({navigation, route}: Props) {
+export function LessonCreationScreen({route}: Props) {
+  const flow = useCreateFlow();
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
@@ -80,8 +80,8 @@ export function LessonCreationScreen({navigation, route}: Props) {
       <YouTubeCreationView
         body={body}
         checkAgain={checkAgain}
-        onBack={() => navigation.goBack()}
-        onOpenLesson={lessonId => openLesson(navigation, lessonId)}
+        onBack={flow.back}
+        onOpenLesson={flow.openCreatedLesson}
         retryWithFreshKey={retryWithFreshKey}
         setUrl={setUrl}
         state={state}
@@ -93,10 +93,7 @@ export function LessonCreationScreen({navigation, route}: Props) {
 
   return (
     <AppScreen>
-      <ScreenHeader
-        title={t('lessonPlayer.create_title')}
-        onBack={() => navigation.goBack()}
-      />
+      <ScreenHeader title={t('lessonPlayer.create_title')} onBack={flow.back} />
       <ScrollView
         testID="lesson-creation-screen"
         contentContainerStyle={themedStyles.content}
@@ -280,7 +277,7 @@ export function LessonCreationScreen({navigation, route}: Props) {
           <PrimaryActionButton
             accessibilityLabel={t('lessonPlayer.create_open')}
             label={t('lessonPlayer.create_open')}
-            onPress={() => openLesson(navigation, state.lessonId)}
+            onPress={() => flow.openCreatedLesson(state.lessonId)}
             testID="lesson-creation-open"
           />
         ) : (

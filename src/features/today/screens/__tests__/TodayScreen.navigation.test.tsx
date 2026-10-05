@@ -5,7 +5,11 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
-import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
+import {
+  CORE_WITH_REVIEW,
+  makeTestReleaseConfig,
+  mockAppNavigation,
+} from '@test/support';
 
 import type {StudyBlockPlan} from '../../logic/types';
 import {TodayScreen} from '../TodayScreen';
@@ -145,6 +149,7 @@ function press(tree: ReactTestRenderer.ReactTestRenderer, testID: string) {
 describe('TodayScreen entry points (LING-179 TASK-001)', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
+    jest.clearAllMocks();
     mockHasDownloads = true;
     mockGenerateStudyBlock.mockImplementation(defaultStudyPlan);
   });
@@ -152,40 +157,39 @@ describe('TodayScreen entry points (LING-179 TASK-001)', () => {
   it('opens the player with the same lessonId from a lesson activity', async () => {
     const tree = await renderTodayScreen();
     press(tree, 'activity-item-0');
-    expect(mockNavigate).toHaveBeenCalledWith('CanonicalLessonPlayer', {
-      lessonId: PLAYER_LESSON_ID,
-    });
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith(PLAYER_LESSON_ID);
   });
 
   it('opens the catalog from a catalog activity', async () => {
     const tree = await renderTodayScreen();
     press(tree, 'activity-item-1');
-    expect(mockNavigate).toHaveBeenCalledWith('CanonicalCatalog');
+    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
   });
 
   it('reaches SpeakingRoom from a speaking activity', async () => {
     const tree = await renderTodayScreen();
     press(tree, 'activity-item-2');
-    expect(mockNavigate).toHaveBeenCalledWith('SpeakingRoom');
+    expect(mockAppNavigation.openSpeakingRoom).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to DailyReview for review activities', async () => {
     const tree = await renderTodayScreen();
     press(tree, 'activity-item-3');
-    expect(mockNavigate).toHaveBeenCalledWith('DailyReview');
+    expect(mockAppNavigation.openReview).toHaveBeenCalledTimes(1);
   });
 
   it('opens the catalog from the empty-downloads library action', async () => {
     mockHasDownloads = false;
     const tree = await renderTodayScreen();
     press(tree, 'today-go-download');
-    expect(mockNavigate).toHaveBeenCalledWith('CanonicalCatalog');
+    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('TodayScreen shadowing entry (LING-244)', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
+    jest.clearAllMocks();
     mockHasDownloads = true;
     mockGenerateStudyBlock.mockImplementation(defaultStudyPlan);
   });
@@ -210,8 +214,8 @@ describe('TodayScreen shadowing entry (LING-244)', () => {
     });
     const tree = await renderTodayScreen();
     press(tree, 'activity-item-0');
-    expect(mockNavigate).toHaveBeenCalledWith('ShadowingLessonPicker');
-    expect(mockNavigate).not.toHaveBeenCalledWith('SpeakingRoom');
+    expect(mockAppNavigation.openShadowing).toHaveBeenCalledWith();
+    expect(mockAppNavigation.openSpeakingRoom).not.toHaveBeenCalled();
   });
 
   it('AC-002 S2: interview activity still opens SpeakingRoom', async () => {
@@ -234,6 +238,6 @@ describe('TodayScreen shadowing entry (LING-244)', () => {
     });
     const tree = await renderTodayScreen();
     press(tree, 'activity-item-0');
-    expect(mockNavigate).toHaveBeenCalledWith('SpeakingRoom');
+    expect(mockAppNavigation.openSpeakingRoom).toHaveBeenCalledTimes(1);
   });
 });

@@ -6,6 +6,8 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {OCRReviewScreen} from '../OCRReviewScreen';
 
 jest.mock('../../logic/OCRService', () => ({
@@ -45,7 +47,6 @@ async function flushPromises() {
 const navigation = {
   navigate: mockNavigate,
   setParams: jest.fn(),
-  getParent: () => ({navigate: mockTabNavigate}),
 } as unknown as React.ComponentProps<typeof OCRReviewScreen>['navigation'];
 
 const route = {
@@ -94,14 +95,12 @@ describe('OCRReviewScreen canonical creation (LING-176 TASK-008)', () => {
       await flushPromises();
     });
 
-    expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'LessonCreation',
-      params: expect.objectContaining({
-        initialSource: 'ocr',
-        initialText: 'Edited OCR text for the lesson.',
-        submissionId: expect.stringMatching(/^OCRReview-/),
-      }),
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'ocr',
+      text: 'Edited OCR text for the lesson.',
+      submissionId: expect.stringMatching(/^OCRReview-/),
     });
+    expect(mockTabNavigate).not.toHaveBeenCalled();
   });
 
   it('does not navigate to legacy Analyzing flow', async () => {

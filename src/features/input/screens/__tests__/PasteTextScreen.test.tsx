@@ -7,6 +7,8 @@ import {AppThemeProvider} from '@ui/theme';
 import i18n from '@core/i18n';
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {PasteTextScreen} from '../PasteTextScreen';
 
 const mockNavigate = jest.fn();
@@ -42,7 +44,6 @@ const mockTabNavigate = jest.fn();
 const navigation = {
   navigate: mockNavigate,
   setParams: jest.fn(),
-  getParent: () => ({navigate: mockTabNavigate}),
 } as unknown as React.ComponentProps<typeof PasteTextScreen>['navigation'];
 
 const route = {
@@ -65,6 +66,7 @@ describe('PasteTextScreen', () => {
   beforeEach(() => {
     mockNavigate.mockReset();
     mockTabNavigate.mockReset();
+    mockAppNavigation.startCreate.mockClear();
   });
 
   it('navigates to LessonCreation with validated paste text', async () => {
@@ -91,14 +93,12 @@ describe('PasteTextScreen', () => {
       await flushPromises();
     });
 
-    expect(mockTabNavigate).toHaveBeenCalledWith('Lessons', {
-      screen: 'LessonCreation',
-      params: expect.objectContaining({
-        initialSource: 'text',
-        initialText: 'We are offering a special discount for new customers.',
-        submissionId: expect.stringMatching(/^PasteText-/),
-      }),
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'text',
+      text: 'We are offering a special discount for new customers.',
+      submissionId: expect.stringMatching(/^PasteText-/),
     });
+    expect(mockTabNavigate).not.toHaveBeenCalled();
   });
 
   it('starts empty with a placeholder and clears entered text', async () => {
@@ -195,6 +195,7 @@ describe('PasteTextScreen', () => {
     });
 
     expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockAppNavigation.startCreate).not.toHaveBeenCalled();
     expect(JSON.stringify(tree!.toJSON())).toContain(
       i18n.t('errors.empty_input'),
     );

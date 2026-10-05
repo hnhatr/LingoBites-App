@@ -1,10 +1,7 @@
-import type {NavigationProp} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
-
-import type {RootTabParamList} from '@features/home';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -13,6 +10,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
+import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 
 import type {CreateStackParamList} from './navigationTypes';
@@ -34,7 +32,8 @@ type Tile = {
  * Home. All tiles share one visual style so equal-weight actions read as
  * equal — the only solid block on this screen is the camera hero.
  */
-export function CreateScreen({navigation}: Props) {
+export function CreateScreen(_props: Props) {
+  const appNavigation = useAppNavigation();
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
@@ -50,26 +49,19 @@ export function CreateScreen({navigation}: Props) {
   const youtubeServerEnabled = useYouTubeServerEnabled();
   const youtubeEnabled =
     config.features.youtubeLearning && youtubeServerEnabled;
-  const tabNavigation =
-    navigation.getParent<NavigationProp<RootTabParamList>>();
-  const openYoutubeCreation = useCallback(() => {
-    tabNavigation?.navigate('Lessons', {
-      screen: 'LessonCreation',
-      params: {
-        submissionId: `create-youtube-${Date.now()}`,
-        initialSource: 'youtube',
-      },
-    });
-  }, [tabNavigation]);
+  const openYoutubeCreation = useCallback(
+    () => appNavigation.startCreate({kind: 'youtube'}),
+    [appNavigation],
+  );
   const pasteEnabled = config.features.pasteTextInput;
 
   const openCamera = useCallback(
-    () => navigation.navigate('ImageCapture', {sourceType: 'camera'}),
-    [navigation],
+    () => appNavigation.startCreate({kind: 'camera'}),
+    [appNavigation],
   );
   const openGallery = useCallback(
-    () => navigation.navigate('ImageCapture', {sourceType: 'gallery'}),
-    [navigation],
+    () => appNavigation.startCreate({kind: 'gallery'}),
+    [appNavigation],
   );
 
   const tiles: Tile[] = [];
@@ -96,7 +88,7 @@ export function CreateScreen({navigation}: Props) {
       icon: 'content_paste',
       labelKey: 'home.paste_text',
       a11yKey: 'home.paste_text_a11y',
-      onPress: () => navigation.navigate('PasteText'),
+      onPress: () => appNavigation.startCreate({kind: 'paste'}),
       testID: 'create-tile-paste',
     });
   }
@@ -193,11 +185,7 @@ export function CreateScreen({navigation}: Props) {
               <Pressable
                 accessibilityLabel={t('home.youtube_history_a11y')}
                 accessibilityRole="button"
-                onPress={() =>
-                  tabNavigation?.navigate('Lessons', {
-                    screen: 'CanonicalCatalog',
-                  })
-                }
+                onPress={appNavigation.openCatalog}
                 style={({pressed}) => [
                   styles.historyLink,
                   pressed && styles.pressed,
