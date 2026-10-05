@@ -9,17 +9,22 @@ import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonVocabularyEntry} from '../logic/lessonHubContent';
+import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
+import {SaveItemButton} from './SaveItemButton';
 
 export type LessonVocabularySectionProps = {
   entries: LessonVocabularyEntry[];
   /** Speaks a word (TTS); omitted = no play buttons. */
   onSpeakText?: (text: string) => void;
+  /** "Lưu thẻ" per word; omitted = no save buttons. */
+  saveControl?: VocabularySaveControl;
 };
 
 /** "Từ vựng chính": lesson vocabulary as word cards. */
 export function LessonVocabularySection({
   entries,
   onSpeakText,
+  saveControl,
 }: LessonVocabularySectionProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -53,6 +58,18 @@ export function LessonVocabularySection({
               <AppText color="secondary" variant="bodyLg">
                 {entry.meaning}
               </AppText>
+              {saveControl ? (
+                <SaveItemButton
+                  accessibilityHint={t('lessonPlayer.save_card_hint')}
+                  label={t('lessonPlayer.save_card')}
+                  onPress={() =>
+                    saveControl.onToggle({...entry, id: entry.key})
+                  }
+                  saved={saveControl.isSaved(entry.word)}
+                  savedLabel={t('lessonPlayer.saved')}
+                  testID={`lesson-vocabulary-save-${entry.key}`}
+                />
+              ) : null}
             </View>
             {onSpeakText ? (
               <IconButton

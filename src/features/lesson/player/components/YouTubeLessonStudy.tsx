@@ -11,6 +11,7 @@ import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {activeSentenceIndexAt} from '../logic/canonicalYouTubeCues';
 import {sortedBlocks, sortedSentences} from '../logic/lessonHubContent';
+import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
 import {CanonicalBlockView} from './CanonicalBlockView';
 import {LessonStatusBanners} from './LessonStatusBanners';
 import type {
@@ -41,6 +42,7 @@ export type YouTubeLessonStudyProps = {
     SentenceAnalysisPanelState | SentenceAnalysisPanelError
   >;
   onSpeakText?: (text: string) => void;
+  vocabularySave?: VocabularySaveControl;
 };
 
 type OpenSheet = 'none' | 'analysis' | 'transcript';
@@ -62,6 +64,7 @@ export function YouTubeLessonStudy({
   onRetryAnalysis,
   analysisStates,
   onSpeakText,
+  vocabularySave,
 }: YouTubeLessonStudyProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -301,6 +304,7 @@ export function YouTubeLessonStudy({
         onRetryAnalysis={onRetryAnalysis}
         onSpeakText={onSpeakText}
         sentenceId={currentSentenceId}
+        vocabularySave={vocabularySave}
         visible={openSheet === 'analysis' && currentSentenceId.length > 0}
       />
       <YouTubeTranscriptSheet

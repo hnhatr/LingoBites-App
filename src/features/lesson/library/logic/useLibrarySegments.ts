@@ -1,7 +1,10 @@
 import {useCallback, useMemo, useState} from 'react';
 
 import type {LibraryLessonCardView} from '@features/lesson/library/logic/lesson';
-import {listDownloadedLessonSummaries} from '@features/lesson/player';
+import {
+  collectLessonGrammar,
+  listDownloadedLessonSummaries,
+} from '@features/lesson/player';
 import {listAllBookmarkedGrammar, listFlashcards} from '@features/review';
 
 import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
@@ -71,7 +74,7 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
   }, [vocabularyFilter, refreshVersion]);
 
   const grammar = useMemo(() => {
-    const bookmarks = listAllBookmarkedGrammar();
+    const bookmarks = withGrammarDetails(listAllBookmarkedGrammar());
     return filterBySearchAndSource(bookmarks, grammarFilter, {
       searchFields: ['title', 'content'],
     });
@@ -90,6 +93,32 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
     setGrammarFilter,
     refresh,
   };
+}
+
+/**
+ * Bookmarks only store ids; the title/summary come from the downloaded
+ * lesson the point was saved from. Points that cannot be resolved (lesson
+ * removed, or grammar from an analysis fetched after download) keep no title.
+ */
+function withGrammarDetails(
+  bookmarks: GrammarBookmark[],
+): (GrammarBookmark & {title?: string; content?: string})[] {
+  if (bookmarks.length === 0) return bookmarks;
+  const details = new Map<string, {title: string; content: string}>();
+  listDownloadedLessonSummaries().forEach(lesson => {
+    collectLessonGrammar(lesson.snapshot, lesson.snapshot.analyses).forEach(
+      entry => {
+        details.set(`${lesson.lessonId}:${entry.key}`, {
+          title: entry.name,
+          content: entry.formula ?? entry.nameVi ?? entry.explanation ?? '',
+        });
+      },
+    );
+  });
+  return bookmarks.map(bookmark => ({
+    ...bookmark,
+    ...details.get(`${bookmark.lessonId}:${bookmark.grammarId}`),
+  }));
 }
 
 function filterLessonsByQueryAndSource(

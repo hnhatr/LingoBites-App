@@ -8,6 +8,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
+import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
 import {
   SentenceAnalysisPanel,
   type SentenceAnalysisPanelError,
@@ -29,6 +30,7 @@ export type YouTubeAnalysisSheetProps = {
   onRequestAnalysis?: (sentenceId: string) => void;
   onRetryAnalysis?: (sentenceId: string) => void;
   onSpeakText?: (text: string) => void;
+  vocabularySave?: VocabularySaveControl;
 };
 
 /**
@@ -46,6 +48,7 @@ export function YouTubeAnalysisSheet({
   onRequestAnalysis,
   onRetryAnalysis,
   onSpeakText,
+  vocabularySave,
 }: YouTubeAnalysisSheetProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -61,6 +64,7 @@ export function YouTubeAnalysisSheet({
         onSpeakText={onSpeakText}
         sentenceId={sentenceId}
         state={{status: 'ready', analysis: stored}}
+        vocabularySave={vocabularySave}
       />
     );
   } else if (asyncState) {

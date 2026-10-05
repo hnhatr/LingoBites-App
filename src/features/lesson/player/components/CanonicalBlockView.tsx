@@ -35,6 +35,14 @@ function blockBody(block: LessonBlock): string {
     case 'example':
     case 'context':
       return textOf(data.content ?? data.text ?? data.body);
+    case 'activity':
+      // The card header already shows `block.title`; avoid repeating it.
+      return [
+        block.title ? '' : textOf(data.titleVi),
+        textOf(data.instructionsVi),
+      ]
+        .filter(part => part.length > 0)
+        .join('\n');
     case 'grammar':
       return [
         textOf(data.nameEn ?? data.name),
@@ -56,10 +64,33 @@ function blockBody(block: LessonBlock): string {
   }
 }
 
+type ActivityLine = {id: string; en: string; vi: string};
+
+/** Practice lines of an `activity` block (`lines`, else `dialogueTurns`). */
+function activityLines(block: LessonBlock): ActivityLine[] {
+  if (block.type !== 'activity') return [];
+  const data = block.data as Record<string, unknown>;
+  const raw = Array.isArray(data.lines)
+    ? data.lines
+    : Array.isArray(data.dialogueTurns)
+    ? data.dialogueTurns
+    : [];
+  return raw.flatMap((item, index) => {
+    if (item === null || typeof item !== 'object') return [];
+    const turn = item as Record<string, unknown>;
+    const en = textOf(turn.textEn);
+    if (en.length === 0) return [];
+    return [
+      {id: textOf(turn.id) || String(index), en, vi: textOf(turn.textVi)},
+    ];
+  });
+}
+
 /**
  * Canonical lesson-level block renderer (7 kept types; `exercise` was
  * removed by FR-014). Unknown types render the unsupported fallback instead
- * of crashing the player.
+ * of crashing the player. `activity` blocks are read-only: the App has no
+ * interaction for them yet and never submits attempts.
  */
 export function CanonicalBlockView({block}: {block: LessonBlock}) {
   const {theme} = useAppTheme();
@@ -76,6 +107,7 @@ export function CanonicalBlockView({block}: {block: LessonBlock}) {
     );
   }
   const body = blockBody(block);
+  const lines = activityLines(block);
   return (
     <View testID={blockTestId(block.type)} style={themedStyles.card}>
       <View style={styles.titleRow}>
@@ -101,6 +133,27 @@ export function CanonicalBlockView({block}: {block: LessonBlock}) {
           {body}
         </AppText>
       ) : null}
+      {lines.map(line => (
+        <View
+          key={line.id}
+          testID={`${blockTestId(block.type)}-line-${line.id}`}
+          style={themedStyles.line}
+        >
+          <AppText variant="bodyLg">{line.en}</AppText>
+          {line.vi.length > 0 ? (
+            <AppText color="secondary">{line.vi}</AppText>
+          ) : null}
+        </View>
+      ))}
+      {block.type === 'activity' ? (
+        <AppText
+          testID={`${blockTestId(block.type)}-read-only`}
+          color="muted"
+          variant="caption"
+        >
+          {t('lessonPlayer.activity_read_only')}
+        </AppText>
+      ) : null}
     </View>
   );
 }
@@ -119,6 +172,12 @@ function makeStyles(theme: AppTheme) {
       backgroundColor: theme.colors.surfaceMuted,
       borderRadius: theme.radius.lg,
       padding: theme.spacing.md,
+    },
+    line: {
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: theme.radius.md,
+      gap: 2,
+      padding: theme.spacing.sm,
     },
     medallion: {
       alignItems: 'center',
