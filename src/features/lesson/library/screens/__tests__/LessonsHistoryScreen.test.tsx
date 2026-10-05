@@ -12,6 +12,7 @@ import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 const mockRefresh = jest.fn();
 
 jest.mock('../../logic/useLibrarySegments', () => ({
+  ...jest.requireActual('../../logic/useLibrarySegments'),
   useLibrarySegments: () => ({
     packagedLessons: [],
     vocabulary: [],

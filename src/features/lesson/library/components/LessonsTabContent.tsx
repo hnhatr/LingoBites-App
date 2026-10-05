@@ -18,6 +18,8 @@ export interface LessonsTabContentProps {
   /** First page of the canonical catalog, shown as a capped preview. */
   catalogLessons?: LessonCatalogItem[];
   onViewAllCatalog?: () => void;
+  /** A search/source filter is active, so an empty list means no matches. */
+  isFiltered?: boolean;
 }
 
 /** How many catalog lessons the "Tất cả bài học" section previews. */
@@ -78,6 +80,7 @@ export function LessonsTabContent({
   packagedLessons,
   catalogLessons,
   onViewAllCatalog,
+  isFiltered = false,
 }: LessonsTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
@@ -181,7 +184,7 @@ export function LessonsTabContent({
   );
 
   if (sections.length === 0) {
-    return <LibraryEmptyState type="lessons" />;
+    return <LibraryEmptyState type={isFiltered ? 'no-results' : 'lessons'} />;
   }
 
   return (

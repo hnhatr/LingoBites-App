@@ -15,6 +15,8 @@ import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface GrammarTabContentProps {
   grammar: (GrammarBookmark & {title?: string; content?: string})[];
+  /** A search/source filter is active, so an empty list means no matches. */
+  isFiltered?: boolean;
 }
 
 function createStyles(theme: AppTheme) {
@@ -29,7 +31,10 @@ function createStyles(theme: AppTheme) {
   });
 }
 
-export function GrammarTabContent({grammar}: GrammarTabContentProps) {
+export function GrammarTabContent({
+  grammar,
+  isFiltered = false,
+}: GrammarTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const navigation = useAppNavigation();
@@ -84,7 +89,7 @@ export function GrammarTabContent({grammar}: GrammarTabContentProps) {
   );
 
   if (grammar.length === 0) {
-    return <LibraryEmptyState type="grammar" />;
+    return <LibraryEmptyState type={isFiltered ? 'no-results' : 'grammar'} />;
   }
 
   return (

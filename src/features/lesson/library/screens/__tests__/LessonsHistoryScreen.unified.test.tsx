@@ -12,8 +12,10 @@ import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
 const mockInnerNavigate = jest.fn();
+let mockLessonsFilter = {searchQuery: '', sourceFilter: 'all'};
 
 jest.mock('../../logic/useLibrarySegments', () => ({
+  ...jest.requireActual('../../logic/useLibrarySegments'),
   useLibrarySegments: () => ({
     packagedLessons: [
       {
@@ -25,7 +27,7 @@ jest.mock('../../logic/useLibrarySegments', () => ({
     ],
     vocabulary: [],
     grammar: [],
-    lessonsFilter: {searchQuery: '', sourceFilter: 'all'},
+    lessonsFilter: mockLessonsFilter,
     vocabularyFilter: {searchQuery: '', sourceFilter: 'all'},
     grammarFilter: {searchQuery: '', sourceFilter: 'all'},
     setLessonsFilter: jest.fn(),
@@ -130,6 +132,7 @@ function renderUnified() {
 describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLessonsFilter = {searchQuery: '', sourceFilter: 'all'};
     jest
       .spyOn(AuthSession, 'ensureValidSession')
       .mockResolvedValue(validSession);
@@ -195,5 +198,23 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
     });
     expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
     expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  it('filters the catalog preview by the real source_type', async () => {
+    mockLessonsFilter = {searchQuery: '', sourceFilter: 'youtube'};
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await act(async () => {
+      ({tree} = renderUnified());
+    });
+
+    expect(
+      tree.root.findByProps({testID: 'filter-chip-youtube'}).props.selected,
+    ).toBe(true);
+    expect(() =>
+      tree.root.findByProps({
+        testID: 'lesson-item-00000000-0000-4000-8000-000000000021',
+      }),
+    ).toThrow();
+    expect(JSON.stringify(tree.toJSON())).not.toContain('Tất cả bài học');
   });
 });
