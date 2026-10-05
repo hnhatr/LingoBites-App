@@ -1,5 +1,12 @@
 /**
- * HomeShortcutsGrid — 2x2 grid of 4 real-destination shortcuts (DQ-005, D3, P-003).
+ * HomeShortcutsGrid — "Lối tắt" section title + 2x2 grid of 4 compact sticker
+ * shortcuts (DQ-005, D3, P-003, Gap 7 LING-261).
+ *
+ * Color mapping matches mockup v4 (Gap 7):
+ *   video    → accentSoft / primary
+ *   review   → tertiarySoft / onTertiaryContainer
+ *   speaking → secondarySoft / secondary
+ *   lessons  → surfaceContainer / text.primary
  *
  * Motion (AD-002):
  *   - I6 (sticker wobble/tilt on press): disabled under reduced motion
@@ -33,24 +40,26 @@ const ICON_MAP: Record<ShortcutKey, HomeSvgIconName> = {
   video: 'play_circle',
 };
 
+// Mockup v4 colors (Gap 7): video=accentSoft, review=tertiarySoft,
+// speaking=secondarySoft, lessons=surfaceContainer
 const BG_MAP: Record<
   ShortcutKey,
   'accentSoft' | 'tertiarySoft' | 'secondarySoft' | 'surfaceContainer'
 > = {
-  review: 'accentSoft',
-  speaking: 'tertiarySoft',
-  lessons: 'secondarySoft',
-  video: 'surfaceContainer',
+  video: 'accentSoft',
+  review: 'tertiarySoft',
+  speaking: 'secondarySoft',
+  lessons: 'surfaceContainer',
 };
 
 const INK_MAP: Record<
   ShortcutKey,
   'primary' | 'onTertiaryContainer' | 'secondary' | 'text.primary'
 > = {
-  review: 'primary',
-  speaking: 'onTertiaryContainer',
-  lessons: 'secondary',
-  video: 'text.primary',
+  video: 'primary',
+  review: 'onTertiaryContainer',
+  speaking: 'secondary',
+  lessons: 'text.primary',
 };
 
 function ShortcutCell({
@@ -184,24 +193,38 @@ function ShortcutCell({
 }
 
 export function HomeShortcutsGrid({shortcuts, onPress}: Props) {
+  const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
   return (
-    <View style={styles.grid} testID="home-shortcuts-grid">
-      {shortcuts.map(item => (
-        <ShortcutCell
-          key={item.key}
-          item={item}
-          onPress={() => onPress(item.key)}
-        />
-      ))}
+    <View testID="home-shortcuts-section">
+      {/* Section title: "Lối tắt" (Gap 7, mockup v4) */}
+      <AppText
+        variant="h3"
+        style={styles.sectionTitle}
+        testID="home-shortcuts-title"
+      >
+        {t('home.shortcuts_title')}
+      </AppText>
+      <View style={styles.grid} testID="home-shortcuts-grid">
+        {shortcuts.map(item => (
+          <ShortcutCell
+            key={item.key}
+            item={item}
+            onPress={() => onPress(item.key)}
+          />
+        ))}
+      </View>
     </View>
   );
 }
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    sectionTitle: {
+      marginBottom: theme.spacing.sm,
+    },
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -212,19 +235,20 @@ function makeStyles(theme: AppTheme) {
       flexGrow: 1,
       minWidth: 140,
     },
+    // Compact sticker tile style (Gap 7: smaller minHeight vs old explore cell)
     cell: {
       borderRadius: theme.radius.lg,
       gap: theme.spacing.sm,
-      minHeight: 160,
+      minHeight: 110,
       padding: theme.spacing.md,
     },
     iconTile: {
       alignItems: 'center',
-      borderRadius: 16,
-      height: 48,
+      borderRadius: 12,
+      height: 40,
       justifyContent: 'center',
       position: 'relative',
-      width: 48,
+      width: 40,
     },
     lockOverlay: {
       position: 'absolute',

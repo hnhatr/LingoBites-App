@@ -109,7 +109,13 @@
     "saved_rail_title": "Bài đã lưu",
     "saved_rail_view_all": "Xem tất cả",
     "saved_rail_view_all_a11y": "Xem tất cả bài đã lưu",
-    "saved_rail_empty": "Chưa có bài lưu nào"
+    "saved_rail_empty": "Chưa có bài lưu nào",
+    "hero_eyebrow_no_lessons": "Bắt đầu",
+    "hero_eyebrow_saved": "Hôm nay học gì?",
+    "hero_eyebrow_in_progress": "Đang học dở",
+    "hero_eyebrow_youtube_disabled": "Hôm nay học gì?",
+    "hero_eyebrow_goal_met": "Tuyệt vời!",
+    "shortcuts_title": "Lối tắt"
   },
   "practice": {
     "quick_empty_cause": "Chưa có bài học nào để luyện nhanh.",

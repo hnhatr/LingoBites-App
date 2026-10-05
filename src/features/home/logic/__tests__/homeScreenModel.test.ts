@@ -109,26 +109,37 @@ describe('getTimeOfDay (I5, DQ-008)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildGreeting (I5, DQ-008)
+// buildGreeting (I5, DQ-008) — Gap 3 fix: two-line mode + _named a11y keys
 // ---------------------------------------------------------------------------
 describe('buildGreeting (I5, DQ-008)', () => {
-  it('returns morning greeting key for hour < 11', () => {
+  it('returns morning greeting key for hour < 11 (no name)', () => {
     const model = buildGreeting(8, null);
     expect(model.greetingKey).toBe('home.greeting_morning');
     expect(model.timeOfDay).toBe('morning');
-    expect(model.greetingParams).toBeUndefined();
+    expect(model.hasName).toBe(false);
+    expect(model.displayName).toBeNull();
+    expect(model.a11yKey).toBe('home.greeting_morning');
+    expect(model.a11yParams).toBeUndefined();
   });
 
-  it('includes greetingParams when displayName is provided', () => {
+  it('returns afternoon key + two-line mode when displayName is provided', () => {
     const model = buildGreeting(14, 'An');
+    // greetingKey stays unnamed (used for the small prefix line)
     expect(model.greetingKey).toBe('home.greeting_afternoon');
-    expect(model.greetingParams).toEqual({name: 'An'});
+    expect(model.hasName).toBe(true);
+    expect(model.displayName).toBe('An');
+    // a11y key is the _named variant
+    expect(model.a11yKey).toBe('home.greeting_afternoon_named');
+    expect(model.a11yParams).toEqual({name: 'An'});
   });
 
-  it('returns night greeting key for hour >= 18', () => {
+  it('returns night greeting key + two-line mode for hour >= 18 with name', () => {
     const model = buildGreeting(22, 'Bình');
     expect(model.greetingKey).toBe('home.greeting_night');
-    expect(model.greetingParams).toEqual({name: 'Bình'});
+    expect(model.hasName).toBe(true);
+    expect(model.displayName).toBe('Bình');
+    expect(model.a11yKey).toBe('home.greeting_night_named');
+    expect(model.a11yParams).toEqual({name: 'Bình'});
   });
 });
 

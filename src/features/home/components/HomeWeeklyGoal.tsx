@@ -83,9 +83,6 @@ export function HomeWeeklyGoal({pawGoal, card}: Props) {
           {t('home.weekly_goal_label')}
         </AppText>
         <AppText variant="label">{countLine}</AppText>
-        <AppText variant="label" testID="home-weekly-goal-ring-label">
-          {`${card.ringPercent}%`}
-        </AppText>
         <AppText color="muted" variant="caption">
           {hint}
         </AppText>
@@ -121,7 +118,7 @@ function makeStyles(theme: AppTheme) {
     },
     pawRow: {
       alignItems: 'center',
-      flexDirection: 'column',
+      flexDirection: 'row',
       gap: 4,
     },
     copy: {
