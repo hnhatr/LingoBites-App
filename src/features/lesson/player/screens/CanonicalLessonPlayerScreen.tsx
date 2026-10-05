@@ -90,8 +90,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {state, open, checkForUpdate, requestAnalysis} =
     useCanonicalLesson(lessonId);
-  const {state: completionState, complete: completeLesson} =
-    useLessonCompletion(lessonId);
+  const {
+    state: completionState,
+    complete: completeLesson,
+    markStarted,
+  } = useLessonCompletion(lessonId);
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -111,6 +114,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   useEffect(() => {
     open();
   }, [open]);
+
+  const lessonReady = state.status === 'ready';
+  useEffect(() => {
+    if (lessonReady) {
+      markStarted();
+    }
+  }, [lessonReady, markStarted]);
 
   useFocusEffect(
     useCallback(() => {

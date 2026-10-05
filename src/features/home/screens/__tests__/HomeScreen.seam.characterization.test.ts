@@ -13,7 +13,6 @@ describe('HomeScreen UI seam (LING-115 TASK-017)', () => {
     '@features/youtube',
     '@features/engagement',
     '@features/lesson/player',
-    'fetchContinueLearning',
     'getGamificationSnapshot',
     'listYouTubeLessons',
     'countYouTubeLessons',

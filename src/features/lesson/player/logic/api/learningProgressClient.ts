@@ -126,14 +126,6 @@ const VocabularyProgressEnvelopeSchema = z
   })
   .strict();
 
-const ContinueLearningEnvelopeSchema = z
-  .object({
-    request_id: z.string(),
-    status: z.literal('success'),
-    progress: LessonProgressSchema.nullable(),
-  })
-  .strict();
-
 /** Loose error envelope: unknown codes must still map, never throw. */
 const LearningErrorResponseSchema = z.object({
   request_id: z.string().optional(),
@@ -189,10 +181,6 @@ export type VocabularySeenResult =
   | LearningClientError;
 
 export type SetVocabularyProgressResult = VocabularySeenResult;
-
-export type ContinueLearningResult =
-  | {ok: true; requestId: string; progress: LessonProgress | null}
-  | LearningClientError;
 
 export type LearningClientOptions = {
   fetchImpl?: typeof fetch;
@@ -511,32 +499,6 @@ export async function setVocabularyProgress(
   const parsed = VocabularyProgressEnvelopeSchema.safeParse(answered.body);
   if (!parsed.success) {
     return protocolError('Server returned an invalid vocabulary progress.');
-  }
-  return {
-    ok: true,
-    requestId: parsed.data.request_id,
-    progress: parsed.data.progress,
-  };
-}
-
-/**
- * Most recently updated active (`in_progress`) lesson, or `null` when the
- * owner has none. Resolve lesson content via `lesson_id` on the caller.
- * `GET /v1/me/continue-learning`.
- */
-export async function fetchContinueLearning(
-  options: LearningClientOptions = {},
-): Promise<ContinueLearningResult> {
-  const answered = await send(
-    '/v1/me/continue-learning',
-    {method: 'GET', headers: {Accept: 'application/json'}},
-    'LESSON_NOT_FOUND',
-    options,
-  );
-  if (!('body' in answered)) return answered;
-  const parsed = ContinueLearningEnvelopeSchema.safeParse(answered.body);
-  if (!parsed.success) {
-    return protocolError('Server returned an invalid continue-learning.');
   }
   return {
     ok: true,

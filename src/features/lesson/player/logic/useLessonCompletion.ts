@@ -15,11 +15,15 @@ function readCompletionState(lessonId: string): LessonCompletionState {
 export type UseLessonCompletionResult = {
   state: LessonCompletionState;
   complete: () => void;
+  /** Records a `start` once for a never-started lesson (Home "Học tiếp"). */
+  markStarted: () => void;
 };
 
 /**
  * Hub completion writer (LING-222 AD-004): one local `complete` tap through
  * `recordLessonEvent`, then a best-effort sync kick when the write succeeds.
+ * `markStarted` writes the matching `start` the first time a lesson opens so
+ * Home can offer "Học tiếp"; later opens queue nothing.
  */
 export function useLessonCompletion(
   lessonId: string,
@@ -58,5 +62,15 @@ export function useLessonCompletion(
     requestSync();
   }, [lessonId]);
 
-  return {state, complete};
+  const markStarted = useCallback(() => {
+    if (getLessonProgress(lessonId)) {
+      return;
+    }
+    const result = recordLessonEvent({lessonId, event: 'start'});
+    if (result.ok) {
+      requestSync();
+    }
+  }, [lessonId]);
+
+  return {state, complete, markStarted};
 }

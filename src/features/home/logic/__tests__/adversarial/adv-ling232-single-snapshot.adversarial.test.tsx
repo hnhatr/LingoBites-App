@@ -31,9 +31,6 @@ jest.mock('@features/account', () => ({
 }));
 
 jest.mock('@features/lesson/player', () => ({
-  fetchContinueLearning: jest
-    .fn()
-    .mockResolvedValue({ok: true, progress: null}),
   listDownloadedLessonSummaries: jest.fn().mockReturnValue([]),
   useCanonicalCatalog: () => ({
     refresh: jest.fn(),

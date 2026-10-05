@@ -11,6 +11,7 @@ import * as AuthSession from '@core/auth/authSession';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {FeatureFlagProvider} from '@core/release';
+import {recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {mockAppNavigation} from '@test/support';
 import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
@@ -238,28 +239,8 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
 
   it('opens the downloaded lesson from the Continue action', async () => {
     seedCanonicalLessonDownload();
-    mockFetch.mockImplementation(async (url: string) =>
-      String(url).includes('/api/v1/lessons')
-        ? catalogResponse()
-        : {
-            ok: true,
-            status: 200,
-            headers: new Headers(),
-            json: async () => ({
-              request_id: 'req-continue-1',
-              status: 'success',
-              progress: {
-                id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
-                lesson_id: SEEDED_LESSON_ID,
-                status: 'in_progress',
-                started_at: '2026-09-25T07:00:00.000Z',
-                completed_at: null,
-                created_at: '2026-09-25T07:00:00.000Z',
-                updated_at: '2026-09-25T07:15:00.000Z',
-              },
-            }),
-          },
-    );
+    // F5: Home reads the started lesson from local lesson_progress.
+    recordLessonEvent({lessonId: SEEDED_LESSON_ID, event: 'start'});
     const {tree, nav} = await renderHome();
     const target = tree.root
       .findAll(node => node.props.testID === 'home-continue-action')

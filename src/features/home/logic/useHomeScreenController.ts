@@ -18,7 +18,7 @@ import {useAccountStore} from '@features/account';
 import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
 import {
-  fetchContinueLearning,
+  type DownloadedLessonSummary,
   listDownloadedLessonSummaries,
   useCanonicalCatalog,
 } from '@features/lesson/player';
@@ -27,7 +27,7 @@ import {getDueFlashcards} from '@features/review';
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
-import {getLessonProgress} from '@core/sync/lessonProgress';
+import {listInProgressLessonIds} from '@core/sync/lessonProgress';
 
 import {
   buildFlameModel,
@@ -49,6 +49,21 @@ import {
   type WeeklyGoalCardModel,
 } from './homeScreenModel';
 
+/**
+ * Most recently started downloaded lesson that is not finished, from local
+ * `lesson_progress` (A-009: no progress percentage exposed).
+ */
+function findStartedDownload(
+  downloads: DownloadedLessonSummary[],
+): DownloadedLessonSummary | null {
+  if (downloads.length === 0) return null;
+  for (const lessonId of listInProgressLessonIds()) {
+    const match = downloads.find(item => item.lessonId === lessonId);
+    if (match) return match;
+  }
+  return null;
+}
+
 export function useHomeScreenController() {
   const {config} = useFeatureFlags();
   const navigation = useAppNavigation();
@@ -65,7 +80,8 @@ export function useHomeScreenController() {
   );
 
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
-  const [continueLessonId, setContinueLessonId] = useState<string | null>(null);
+  const [startedDownload, setStartedDownload] =
+    useState<DownloadedLessonSummary | null>(null);
   const [streak, setStreak] = useState<number>(
     () => getGamificationSnapshot().currentStreak,
   );
@@ -86,15 +102,6 @@ export function useHomeScreenController() {
   useFocusEffect(
     useCallback(() => {
       canonicalRefresh();
-      fetchContinueLearning()
-        .then(res => {
-          if (res.ok && res.progress) {
-            setContinueLessonId(res.progress.lesson_id);
-          } else {
-            setContinueLessonId(null);
-          }
-        })
-        .catch(() => undefined);
       const snapshot = getGamificationSnapshot();
       setStreak(snapshot.currentStreak);
       const completed = snapshot.weeklyGoal.completedThisWeek;
@@ -108,10 +115,17 @@ export function useHomeScreenController() {
           badgeEarned: snapshot.badges.some(badge => badge.id === 'diligent'),
         }),
       );
+      let downloads: DownloadedLessonSummary[] = [];
       try {
-        setDownloadCount(listDownloadedLessonSummaries().length);
+        downloads = listDownloadedLessonSummaries();
+        setDownloadCount(downloads.length);
       } catch {
         setDownloadCount(null);
+      }
+      try {
+        setStartedDownload(findStartedDownload(downloads));
+      } catch {
+        setStartedDownload(null);
       }
       // Due flashcard count for review shortcut badge (AD-003, P-003)
       try {
@@ -121,21 +135,6 @@ export function useHomeScreenController() {
       }
     }, [canonicalRefresh]),
   );
-
-  // Determine in-progress lesson (A-009: no progress percentage exposed)
-  const startedDownload = useMemo(() => {
-    const downloads = listDownloadedLessonSummaries();
-    for (const item of downloads) {
-      const progress = getLessonProgress(item.lessonId);
-      if (progress?.status === 'in_progress') {
-        return item;
-      }
-    }
-    if (continueLessonId) {
-      return downloads.find(item => item.lessonId === continueLessonId) ?? null;
-    }
-    return null;
-  }, [continueLessonId]);
 
   // 5 hero states (DQ-002, P-004)
   const heroState: HeroState = useMemo(
