@@ -17,6 +17,7 @@ import {
   buildWeeklyGoalCard,
   deriveHeroState,
   getTimeOfDay,
+  HERO_WAVE_SECONDARY,
 } from '../homeScreenModel';
 
 // ---------------------------------------------------------------------------
@@ -293,5 +294,18 @@ describe('buildWeeklyGoalCard (backward compat)', () => {
       badgeEarned: true,
     });
     expect(m.hintKey).toBe('home.weekly_goal_hint_met');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CR-002 (LING-264): HERO_WAVE_SECONDARY exported constant
+// ---------------------------------------------------------------------------
+describe('HERO_WAVE_SECONDARY (CR-002, LING-264)', () => {
+  it('is exported with value #3d88c4', () => {
+    expect(HERO_WAVE_SECONDARY).toBe('#3d88c4');
+  });
+
+  it('is a valid hex colour string', () => {
+    expect(/^#[0-9a-fA-F]{6}$/.test(HERO_WAVE_SECONDARY)).toBe(true);
   });
 });
