@@ -49,6 +49,22 @@ describe('LibraryEmptyState', () => {
     expect(messageText.props.children).toBe('Chưa lưu ngữ pháp nào');
   });
 
+  it('tells the learner how to save words and grammar', () => {
+    ['vocabulary', 'grammar'].forEach(type => {
+      const tree = render(
+        <LibraryEmptyState type={type as 'vocabulary' | 'grammar'} />,
+      );
+      expect(
+        tree.root.findByProps({testID: `empty-state-hint-${type}`}).props
+          .children,
+      ).toBe('Bấm ➕ trong bài học để lưu');
+    });
+    const lessons = render(<LibraryEmptyState type="lessons" />);
+    expect(
+      lessons.root.findAllByProps({testID: 'empty-state-hint-lessons'}),
+    ).toHaveLength(0);
+  });
+
   it('shows no-results message for search with no matches', () => {
     const tree = render(<LibraryEmptyState type="no-results" />);
 

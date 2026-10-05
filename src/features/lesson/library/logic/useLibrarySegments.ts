@@ -1,17 +1,22 @@
 import {useCallback, useMemo, useState} from 'react';
 
-import type {LibraryLessonCardView} from '@features/lesson/library/logic/lesson';
+import type {
+  LibraryLessonCardView,
+  LibrarySourceFilter,
+} from '@features/lesson/library/logic/lesson';
 import {
   collectLessonGrammar,
+  type DownloadedLessonSummary,
   listDownloadedLessonSummaries,
 } from '@features/lesson/player';
 import {listAllBookmarkedGrammar, listFlashcards} from '@features/review';
 
 import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
+import type {LessonSourceType} from '@core/schemas/lesson';
 
 export interface SegmentFilterState {
   searchQuery: string;
-  sourceFilter: 'all' | 'offline' | 'image_ocr' | 'paste';
+  sourceFilter: LibrarySourceFilter;
 }
 
 export interface UseLibrarySegmentsResult {
@@ -47,39 +52,61 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
     setRefreshVersion(v => v + 1);
   }, []);
 
+  const downloads = useMemo(
+    () => listDownloadedLessonSummaries(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [refreshVersion],
+  );
+
+  // Saved words/grammar only keep a lessonId; their source is the source of
+  // the downloaded lesson they were saved from.
+  const sourceByLessonId = useMemo(
+    () =>
+      new Map<string, LessonSourceType>(
+        downloads.map(item => [item.lessonId, item.snapshot.source_type]),
+      ),
+    [downloads],
+  );
+
   const packagedLessons = useMemo(() => {
-    const cards: LibraryLessonCardView[] = listDownloadedLessonSummaries().map(
-      item => ({
-        id: item.lessonId,
-        title: item.title,
-        blurb: item.description,
-        dateLabel: item.downloadedAt.slice(0, 10),
-        vocabularyCount: item.snapshot.sentences.length,
-        durationMin: item.estimatedDurationMinutes,
-        subjectLabel: 'Offline',
-        subjectTone: 'neutral' as const,
-        subjectKey: 'conversation' as const,
+    const cards: LibraryLessonCardView[] = downloads.map(item => ({
+      id: item.lessonId,
+      title: item.title,
+      blurb: item.description,
+      dateLabel: item.downloadedAt.slice(0, 10),
+      vocabularyCount: item.snapshot.sentences.length,
+      durationMin: item.estimatedDurationMinutes,
+      sourceType: item.snapshot.source_type,
+    }));
+    return cards.filter(card =>
+      matchesSegmentFilter(lessonsFilter, {
+        texts: [card.title, card.blurb],
+        sourceType: card.sourceType,
       }),
     );
-    return filterLessonsByQueryAndSource(cards, lessonsFilter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lessonsFilter, refreshVersion]);
+  }, [downloads, lessonsFilter]);
 
   const vocabulary = useMemo(() => {
     const cards = listFlashcards({includeUnsaved: false});
-    return filterBySearchAndSource(cards, vocabularyFilter, {
-      searchFields: ['word', 'meaningVi', 'example'],
-    });
+    return cards.filter(card =>
+      matchesSegmentFilter(vocabularyFilter, {
+        texts: [card.word, card.meaningVi, card.example],
+        sourceType: sourceByLessonId.get(card.lessonId),
+      }),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocabularyFilter, refreshVersion]);
+  }, [vocabularyFilter, sourceByLessonId, refreshVersion]);
 
   const grammar = useMemo(() => {
-    const bookmarks = withGrammarDetails(listAllBookmarkedGrammar());
-    return filterBySearchAndSource(bookmarks, grammarFilter, {
-      searchFields: ['title', 'content'],
-    });
+    const bookmarks = withGrammarDetails(listAllBookmarkedGrammar(), downloads);
+    return bookmarks.filter(bookmark =>
+      matchesSegmentFilter(grammarFilter, {
+        texts: [bookmark.title, bookmark.content],
+        sourceType: sourceByLessonId.get(bookmark.lessonId),
+      }),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [grammarFilter, refreshVersion]);
+  }, [grammarFilter, downloads, sourceByLessonId, refreshVersion]);
 
   return {
     packagedLessons,
@@ -102,10 +129,11 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
  */
 function withGrammarDetails(
   bookmarks: GrammarBookmark[],
+  downloads: DownloadedLessonSummary[],
 ): (GrammarBookmark & {title?: string; content?: string})[] {
   if (bookmarks.length === 0) return bookmarks;
   const details = new Map<string, {title: string; content: string}>();
-  listDownloadedLessonSummaries().forEach(lesson => {
+  downloads.forEach(lesson => {
     collectLessonGrammar(lesson.snapshot, lesson.snapshot.analyses).forEach(
       entry => {
         details.set(`${lesson.lessonId}:${entry.key}`, {
@@ -121,50 +149,26 @@ function withGrammarDetails(
   }));
 }
 
-function filterLessonsByQueryAndSource(
-  lessons: LibraryLessonCardView[],
+/**
+ * Search matches any of `texts` (case-insensitive); the source filter matches
+ * the item's real lesson `source_type`. Items whose source is unknown only
+ * show under "Tất cả".
+ */
+export function matchesSegmentFilter(
   filter: SegmentFilterState,
-): LibraryLessonCardView[] {
-  return lessons.filter(lesson => {
-    const matchesSearch =
-      !filter.searchQuery ||
-      lesson.title?.toLowerCase().includes(filter.searchQuery.toLowerCase()) ||
-      lesson.blurb?.toLowerCase().includes(filter.searchQuery.toLowerCase());
-
-    const matchesSource =
-      filter.sourceFilter === 'all' || filter.sourceFilter === 'offline';
-
-    return matchesSearch && matchesSource;
-  });
+  item: {
+    texts: (string | null | undefined)[];
+    sourceType: LessonSourceType | undefined;
+  },
+): boolean {
+  const query = filter.searchQuery.trim().toLowerCase();
+  const matchesSearch =
+    !query || item.texts.some(text => text?.toLowerCase().includes(query));
+  const matchesSource =
+    filter.sourceFilter === 'all' || item.sourceType === filter.sourceFilter;
+  return matchesSearch && matchesSource;
 }
 
-function filterBySearchAndSource(
-  items: any[],
-  filter: SegmentFilterState,
-  options: {searchFields: string[]},
-): any[] {
-  return items.filter(item => {
-    const matchesSearch =
-      !filter.searchQuery ||
-      options.searchFields.some(field =>
-        item[field]?.toLowerCase?.().includes(filter.searchQuery.toLowerCase()),
-      );
-
-    const matchesSource =
-      filter.sourceFilter === 'all' ||
-      normalizeSourceType(item.sourceType) === filter.sourceFilter;
-
-    return matchesSearch && matchesSource;
-  });
-}
-
-function normalizeSourceType(sourceType: string | undefined): string {
-  if (!sourceType) return 'all';
-  if (sourceType === 'camera' || sourceType === 'gallery') {
-    return 'image_ocr';
-  }
-  if (sourceType === 'paste_text') {
-    return 'paste';
-  }
-  return sourceType;
+export function isSegmentFilterActive(filter: SegmentFilterState): boolean {
+  return filter.searchQuery.trim() !== '' || filter.sourceFilter !== 'all';
 }

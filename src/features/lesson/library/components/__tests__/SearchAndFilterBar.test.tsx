@@ -6,6 +6,7 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import type {LibrarySourceFilter} from '../../logic/lesson';
 import {SearchAndFilterBar} from '../SearchAndFilterBar';
 
 function render(ui: React.ReactElement) {
@@ -48,9 +49,10 @@ describe('SearchAndFilterBar', () => {
     const textInstances = tree.root.findAllByType(Text);
     const labels = textInstances.map(node => node.props.children);
     expect(labels).toContain('Tất cả');
-    expect(labels).toContain('Offline');
+    expect(labels).toContain('Bài mẫu');
+    expect(labels).toContain('Văn bản');
     expect(labels).toContain('Ảnh / OCR');
-    expect(labels).toContain('Dán văn bản');
+    expect(labels).toContain('YouTube');
   });
 
   it('calls onSearchChange when search text is entered', () => {
@@ -90,14 +92,14 @@ describe('SearchAndFilterBar', () => {
     const tree = render(
       <SearchAndFilterBar
         searchQuery=""
-        sourceFilter="offline"
+        sourceFilter="youtube"
         onSearchChange={jest.fn()}
         onFilterChange={jest.fn()}
       />,
     );
 
-    const offlineChip = tree.root.findByProps({testID: 'filter-chip-offline'});
-    expect(offlineChip.props.selected).toBe(true);
+    const youtubeChip = tree.root.findByProps({testID: 'filter-chip-youtube'});
+    expect(youtubeChip.props.selected).toBe(true);
 
     const allChip = tree.root.findByProps({testID: 'filter-chip-all'});
     expect(allChip.props.selected).toBe(false);
@@ -115,13 +117,13 @@ describe('SearchAndFilterBar', () => {
     );
 
     const imageOcrChip = tree.root.findByProps({
-      testID: 'filter-chip-image_ocr',
+      testID: 'filter-chip-learner_ocr',
     });
     act(() => {
       imageOcrChip.props.onPress();
     });
 
-    expect(onFilterChange).toHaveBeenCalledWith('image_ocr');
+    expect(onFilterChange).toHaveBeenCalledWith('learner_ocr');
   });
 
   it('renders filter chips for all options', () => {
@@ -134,17 +136,13 @@ describe('SearchAndFilterBar', () => {
       />,
     );
 
-    const allChip = tree.root.findByProps({testID: 'filter-chip-all'});
-    const offlineChip = tree.root.findByProps({testID: 'filter-chip-offline'});
-    const imageOcrChip = tree.root.findByProps({
-      testID: 'filter-chip-image_ocr',
-    });
-    const pasteChip = tree.root.findByProps({testID: 'filter-chip-paste'});
-
-    expect(allChip).toBeDefined();
-    expect(offlineChip).toBeDefined();
-    expect(imageOcrChip).toBeDefined();
-    expect(pasteChip).toBeDefined();
+    ['all', 'admin_text', 'learner_text', 'learner_ocr', 'youtube'].forEach(
+      key => {
+        expect(
+          tree.root.findByProps({testID: `filter-chip-${key}`}),
+        ).toBeDefined();
+      },
+    );
   });
 
   it('updates active filter when sourceFilter prop changes', () => {
@@ -167,7 +165,7 @@ describe('SearchAndFilterBar', () => {
           <AppThemeProvider>
             <SearchAndFilterBar
               searchQuery=""
-              sourceFilter="image_ocr"
+              sourceFilter="learner_ocr"
               onSearchChange={jest.fn()}
               onFilterChange={onFilterChange}
             />
@@ -177,7 +175,7 @@ describe('SearchAndFilterBar', () => {
     });
 
     const imageOcrChip = tree.root.findByProps({
-      testID: 'filter-chip-image_ocr',
+      testID: 'filter-chip-learner_ocr',
     });
     allChip = tree.root.findByProps({testID: 'filter-chip-all'});
 
@@ -187,11 +185,12 @@ describe('SearchAndFilterBar', () => {
 
   it('handles all filter types correctly', () => {
     const onFilterChange = jest.fn();
-    const filterTypes: Array<'all' | 'offline' | 'image_ocr' | 'paste'> = [
+    const filterTypes: LibrarySourceFilter[] = [
       'all',
-      'offline',
-      'image_ocr',
-      'paste',
+      'admin_text',
+      'learner_text',
+      'learner_ocr',
+      'youtube',
     ];
 
     filterTypes.forEach(filter => {

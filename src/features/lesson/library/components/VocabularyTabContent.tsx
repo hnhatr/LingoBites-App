@@ -16,6 +16,8 @@ import {VocabularyRowCard} from './VocabularyRowCard';
 
 export interface VocabularyTabContentProps {
   vocabulary: FlashcardRecord[];
+  /** A search/source filter is active, so an empty list means no matches. */
+  isFiltered?: boolean;
 }
 
 function createStyles(theme: AppTheme) {
@@ -30,7 +32,10 @@ function createStyles(theme: AppTheme) {
   });
 }
 
-export function VocabularyTabContent({vocabulary}: VocabularyTabContentProps) {
+export function VocabularyTabContent({
+  vocabulary,
+  isFiltered = false,
+}: VocabularyTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const navigation = useAppNavigation();
@@ -96,7 +101,9 @@ export function VocabularyTabContent({vocabulary}: VocabularyTabContentProps) {
   );
 
   if (vocabulary.length === 0) {
-    return <LibraryEmptyState type="vocabulary" />;
+    return (
+      <LibraryEmptyState type={isFiltered ? 'no-results' : 'vocabulary'} />
+    );
   }
 
   return (

@@ -7,19 +7,17 @@ import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
+import {
+  LIBRARY_SOURCE_FILTER_OPTIONS,
+  type LibrarySourceFilter,
+} from '../logic/lesson';
+
 export interface SearchAndFilterBarProps {
   searchQuery: string;
-  sourceFilter: 'all' | 'offline' | 'image_ocr' | 'paste';
+  sourceFilter: LibrarySourceFilter;
   onSearchChange: (query: string) => void;
-  onFilterChange: (filter: 'all' | 'offline' | 'image_ocr' | 'paste') => void;
+  onFilterChange: (filter: LibrarySourceFilter) => void;
 }
-
-const FILTER_OPTIONS = [
-  {key: 'all' as const, label: 'Tất cả'},
-  {key: 'offline' as const, label: 'Offline'},
-  {key: 'image_ocr' as const, label: 'Ảnh / OCR'},
-  {key: 'paste' as const, label: 'Dán văn bản'},
-] as const;
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -85,7 +83,7 @@ export function SearchAndFilterBar({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filterRow}
       >
-        {FILTER_OPTIONS.map(filter => (
+        {LIBRARY_SOURCE_FILTER_OPTIONS.map(filter => (
           <Chip
             key={filter.key}
             label={filter.label}

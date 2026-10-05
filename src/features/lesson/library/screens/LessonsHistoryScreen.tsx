@@ -19,7 +19,11 @@ import {LessonsTabContent} from '../components/LessonsTabContent';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
 import {SegmentedTabBar} from '../components/SegmentedTabBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
-import {useLibrarySegments} from '../logic/useLibrarySegments';
+import {
+  isSegmentFilterActive,
+  matchesSegmentFilter,
+  useLibrarySegments,
+} from '../logic/useLibrarySegments';
 import type {LessonsStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
@@ -52,8 +56,10 @@ export function LessonsHistoryScreen(_props: Props) {
     packagedLessons,
     vocabulary,
     grammar,
+    lessonsFilter,
     vocabularyFilter,
     grammarFilter,
+    setLessonsFilter,
     setVocabularyFilter,
     setGrammarFilter,
     refresh,
@@ -91,11 +97,34 @@ export function LessonsHistoryScreen(_props: Props) {
     ];
   }, [dueCount, navigation, t]);
 
+  const catalogLessons = useMemo(
+    () =>
+      catalogState.status === 'ready'
+        ? catalogState.lessons.filter(lesson =>
+            matchesSegmentFilter(lessonsFilter, {
+              texts: [lesson.title, lesson.description],
+              sourceType: lesson.source_type,
+            }),
+          )
+        : [],
+    [catalogState, lessonsFilter],
+  );
+
   const currentFilter =
-    activeTab === 'vocabulary' ? vocabularyFilter : grammarFilter;
+    activeTab === 'lessons'
+      ? lessonsFilter
+      : activeTab === 'vocabulary'
+      ? vocabularyFilter
+      : grammarFilter;
 
   const setCurrentFilter =
-    activeTab === 'vocabulary' ? setVocabularyFilter : setGrammarFilter;
+    activeTab === 'lessons'
+      ? setLessonsFilter
+      : activeTab === 'vocabulary'
+      ? setVocabularyFilter
+      : setGrammarFilter;
+
+  const isFiltered = isSegmentFilterActive(currentFilter);
 
   return (
     <AppScreen>
@@ -144,38 +173,38 @@ export function LessonsHistoryScreen(_props: Props) {
 
       <SegmentedTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {activeTab !== 'lessons' && (
-        <SearchAndFilterBar
-          searchQuery={currentFilter.searchQuery}
-          sourceFilter={currentFilter.sourceFilter}
-          onSearchChange={query =>
-            setCurrentFilter({...currentFilter, searchQuery: query})
-          }
-          onFilterChange={filter =>
-            setCurrentFilter({...currentFilter, sourceFilter: filter})
-          }
-        />
-      )}
+      <SearchAndFilterBar
+        searchQuery={currentFilter.searchQuery}
+        sourceFilter={currentFilter.sourceFilter}
+        onSearchChange={query =>
+          setCurrentFilter({...currentFilter, searchQuery: query})
+        }
+        onFilterChange={filter =>
+          setCurrentFilter({...currentFilter, sourceFilter: filter})
+        }
+      />
 
       {activeTab === 'lessons' && (
         <View style={themedStyles.tabContent} testID="lessons-tab-content">
           <LessonsTabContent
             packagedLessons={packagedLessons}
-            catalogLessons={
-              catalogState.status === 'ready' ? catalogState.lessons : []
-            }
+            catalogLessons={catalogLessons}
             onViewAllCatalog={navigation.openCatalog}
+            isFiltered={isFiltered}
           />
         </View>
       )}
       {activeTab === 'vocabulary' && (
         <View style={themedStyles.tabContent} testID="vocabulary-tab-content">
-          <VocabularyTabContent vocabulary={vocabulary} />
+          <VocabularyTabContent
+            vocabulary={vocabulary}
+            isFiltered={isFiltered}
+          />
         </View>
       )}
       {activeTab === 'grammar' && (
         <View style={themedStyles.tabContent} testID="grammar-tab-content">
-          <GrammarTabContent grammar={grammar} />
+          <GrammarTabContent grammar={grammar} isFiltered={isFiltered} />
         </View>
       )}
     </AppScreen>

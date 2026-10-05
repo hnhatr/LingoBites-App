@@ -10,12 +10,17 @@ export interface LibraryEmptyStateProps {
   type: 'lessons' | 'vocabulary' | 'grammar' | 'no-results';
 }
 
-const EMPTY_STATE_CONFIG = {
+const SAVE_HINT = 'Bấm ➕ trong bài học để lưu';
+
+const EMPTY_STATE_CONFIG: Record<
+  LibraryEmptyStateProps['type'],
+  {icon: string; message: string; hint?: string}
+> = {
   lessons: {icon: '📖', message: 'Chưa có bài học nào'},
-  vocabulary: {icon: '📚', message: 'Chưa lưu từ vựng nào'},
-  grammar: {icon: '✏️', message: 'Chưa lưu ngữ pháp nào'},
+  vocabulary: {icon: '📚', message: 'Chưa lưu từ vựng nào', hint: SAVE_HINT},
+  grammar: {icon: '✏️', message: 'Chưa lưu ngữ pháp nào', hint: SAVE_HINT},
   'no-results': {icon: '🔍', message: 'Không tìm thấy kết quả'},
-} as const;
+};
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -53,6 +58,16 @@ export function LibraryEmptyState({type}: LibraryEmptyStateProps) {
         >
           {config.message}
         </AppText>
+        {config.hint ? (
+          <AppText
+            variant="label"
+            color="secondary"
+            style={styles.message}
+            testID={`empty-state-hint-${type}`}
+          >
+            {config.hint}
+          </AppText>
+        ) : null}
       </View>
     </View>
   );
