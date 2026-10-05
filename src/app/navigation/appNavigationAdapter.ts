@@ -4,7 +4,7 @@ import {
   type NavigationContainerRefWithCurrent,
 } from '@react-navigation/native';
 
-import type {AppNavigation, CreateEntry} from '@core/navigation';
+import type {AppNavigation, CourseTarget, CreateEntry} from '@core/navigation';
 
 import type {RootStackParamList} from './types';
 
@@ -78,6 +78,27 @@ export function createAppNavigation(
     }
   };
 
+  const openCourse = (target?: CourseTarget) => {
+    if (!target) {
+      navigate('CourseList', undefined);
+      return;
+    }
+    switch (target.kind) {
+      case 'course':
+        navigate('CourseLevels', {
+          courseSlug: target.courseSlug,
+          title: target.title,
+        });
+        return;
+      case 'level':
+        navigate('LevelUnits', {levelId: target.levelId, title: target.title});
+        return;
+      case 'unit':
+        navigate('UnitLessons', {unitId: target.unitId, title: target.title});
+        return;
+    }
+  };
+
   const finishCreate = (lessonId: string) => {
     if (!ref.isReady()) {
       return;
@@ -109,6 +130,7 @@ export function createAppNavigation(
   return {
     openLesson: lessonId => navigate('CanonicalLessonPlayer', {lessonId}),
     openCatalog: () => navigate('CanonicalCatalog', undefined),
+    openCourse,
     startCreate,
     finishCreate,
     openReview: () => navigate('DailyReview', undefined),

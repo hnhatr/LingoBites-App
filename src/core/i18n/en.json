@@ -571,5 +571,27 @@
     "create_ready": "Your lesson is ready.",
     "create_open": "Open lesson",
     "create_open_hint": "Opens the new lesson"
+  },
+  "course": {
+    "courses_title": "Courses",
+    "courses_empty": "No courses yet",
+    "course_row_hint": "Open the course levels",
+    "levels_title": "Levels",
+    "levels_empty": "This course has no levels yet",
+    "level_row_hint": "Open the level units",
+    "units_title": "Units",
+    "units_empty": "This level has no units yet",
+    "unit_row_hint": "Open the unit lessons",
+    "unit_number": "Unit {{number}}",
+    "unit_progress": "{{completed}}/{{total}} lessons",
+    "unit_progress_hint": "Lessons completed in this unit",
+    "lessons_title": "Lessons",
+    "lessons_empty": "This unit has no lessons yet",
+    "lesson_row_hint": "Open the lesson",
+    "lesson_number": "Lesson {{number}}",
+    "lesson_completed": "Completed",
+    "lesson_minutes": "{{count}} min",
+    "load_failed": "The curriculum failed to load.",
+    "retry_hint": "Reload the curriculum"
   }
 }

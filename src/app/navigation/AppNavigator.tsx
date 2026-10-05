@@ -10,6 +10,12 @@ import {
   useAccountStore,
 } from '@features/account';
 import {TtsSpikeScreen} from '@features/audio';
+import {
+  CourseLevelsScreen,
+  CourseListScreen,
+  LevelUnitsScreen,
+  UnitLessonsScreen,
+} from '@features/course';
 import {HomeScreen} from '@features/home';
 import {
   CreateScreen,
@@ -83,9 +89,9 @@ const HIDDEN_HEADER = {headerShown: false} as const;
  *   │  └─ Profile      ProfileMain + settings pages
  *   └─ task flows      cover the tab bar; back returns to the opening tab
  *      PasteText, ImageCapture, OCRReview, LessonCreation,
- *      CanonicalCatalog, CanonicalLessonPlayer, DailyReview, Today,
- *      SpeakingRoom, ShadowingLessonPicker, ShadowingSession,
- *      ShadowingSummary
+ *      CanonicalCatalog, CanonicalLessonPlayer, CourseList, CourseLevels,
+ *      LevelUnits, UnitLessons, DailyReview, Today, SpeakingRoom,
+ *      ShadowingLessonPicker, ShadowingSession, ShadowingSummary
  *
  * Features navigate through `useAppNavigation()` (see
  * `appNavigationAdapter.ts`), never by reaching into a parent navigator.
@@ -226,6 +232,11 @@ function AuthenticatedRootStack() {
         name="CanonicalLessonPlayer"
         options={{gestureEnabled: false}}
       />
+      {/* Structured curriculum */}
+      <RootStack.Screen component={CourseListScreen} name="CourseList" />
+      <RootStack.Screen component={CourseLevelsScreen} name="CourseLevels" />
+      <RootStack.Screen component={LevelUnitsScreen} name="LevelUnits" />
+      <RootStack.Screen component={UnitLessonsScreen} name="UnitLessons" />
       {/* Practice */}
       <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
       <RootStack.Screen component={TodayScreen} name="Today" />

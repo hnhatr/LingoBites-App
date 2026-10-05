@@ -3,4 +3,9 @@ export {
   useAppNavigation,
   useOptionalAppNavigation,
 } from './appNavigation';
-export type {AppNavigation, AppTabName, CreateEntry} from './appNavigation';
+export type {
+  AppNavigation,
+  AppTabName,
+  CourseTarget,
+  CreateEntry,
+} from './appNavigation';

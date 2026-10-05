@@ -58,6 +58,23 @@ describe('createAppNavigation (root-stack adapter)', () => {
     ]);
   });
 
+  it('maps every curriculum target to its screen', () => {
+    const ref = fakeRef();
+    const nav = createAppNavigation(ref);
+
+    nav.openCourse();
+    nav.openCourse({kind: 'course', courseSlug: 'english-a1', title: 'A1'});
+    nav.openCourse({kind: 'level', levelId: 'level-1'});
+    nav.openCourse({kind: 'unit', unitId: 'unit-1', title: 'Greetings'});
+
+    expect(ref.navigate.mock.calls).toEqual([
+      ['CourseList', undefined],
+      ['CourseLevels', {courseSlug: 'english-a1', title: 'A1'}],
+      ['LevelUnits', {levelId: 'level-1', title: undefined}],
+      ['UnitLessons', {unitId: 'unit-1', title: 'Greetings'}],
+    ]);
+  });
+
   it('maps every create entry to its flow screen', () => {
     const ref = fakeRef();
     const nav = createAppNavigation(ref);
