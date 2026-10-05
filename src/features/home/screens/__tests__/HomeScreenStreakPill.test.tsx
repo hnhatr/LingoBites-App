@@ -16,6 +16,14 @@ import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {startReviewSession} from '../../../engagement/logic/reviewSession';
 import {HomeScreen} from '../HomeScreen';
 
+jest.mock('react-native-reanimated', () => {
+  const base = require('../../../../../test-utils/reanimatedMock');
+  return {
+    ...base,
+    withRepeat: (anim: unknown) => anim,
+  };
+});
+
 const EXPLORE_IDS = [
   'home-explore-video',
   'home-explore-news',
@@ -138,7 +146,7 @@ describe('HomeScreen hero streak (LING-221)', () => {
     }));
   });
 
-  it('shows the streak badge on the studying hero when streak > 0', async () => {
+  it('shows the streak pill in the header when streak > 0', async () => {
     seedOneSessionToday();
     const tree = await renderHomeWithContinue();
     const text = JSON.stringify(tree.toJSON());

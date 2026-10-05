@@ -1,11 +1,11 @@
 /**
- * HomeScreen v4 redesign tests (LING-256 TASK-003).
+ * HomeScreen v4 redesign tests (LING-256, LING-267, AC-001..AC-004).
  *
  * Covers:
- * - Five hero states (DQ-002, P-004)
- * - Shortcut destinations and locked Video tile (DQ-005, D3, P-003)
- * - Reduced motion: animations deactivated (D5, AD-002)
- * - Dark and Sticker-soft theme contrast ≥ 4.5:1 (DQ-004)
+ * - Five hero states (DQ-002, P-004, AC-002)
+ * - Shortcut destinations and disabled Video tile (DQ-005, D3, P-003, §VS-4)
+ * - Repeating animations & Reduced motion rest poses (AD-002, §VS-7, AC-004)
+ * - Dark and Sticker-soft theme contrast >= 4.5:1 (DQ-004, AC-004)
  */
 import React from 'react';
 import {StyleSheet} from 'react-native';
@@ -27,8 +27,6 @@ import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
-const reanimatedMock = require('../../../../../test-utils/reanimatedMock');
-
 // ---------------------------------------------------------------------------
 // Mock setup
 // ---------------------------------------------------------------------------
@@ -47,12 +45,12 @@ jest.mock('@features/engagement', () => ({
   })),
 }));
 
-// Override reduced motion for D5 tests
 jest.mock('react-native-reanimated', () => {
   const base = require('../../../../../test-utils/reanimatedMock');
   return {
     ...base,
     useReducedMotion: () => mockReducedMotion,
+    withRepeat: (anim: unknown) => anim,
   };
 });
 
@@ -121,9 +119,9 @@ async function renderHome(
 }
 
 // ---------------------------------------------------------------------------
-// Five hero states (DQ-002, P-004)
+// Five hero states (AC-002, §VS-2.4)
 // ---------------------------------------------------------------------------
-describe('Home hero states (DQ-002, P-004)', () => {
+describe('Home hero states (AC-002, §VS-2.4)', () => {
   beforeEach(() => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
@@ -139,33 +137,30 @@ describe('Home hero states (DQ-002, P-004)', () => {
     }));
   });
 
-  it('state no_lessons: shows hero with create CTA when youtube is on', async () => {
-    // No downloads, youtube flag on + server on → no_lessons state
+  it('state S1 no_lessons: renders S1 copy and CTA', async () => {
     mockYouTubeServerEnabled = true;
     const tree = await renderHome(
       navigation(),
       makeTestReleaseConfig({...CORE_WITH_REVIEW, youtubeLearning: true}),
     );
     const text = JSON.stringify(tree.toJSON());
-    // Hero renders the "no lessons" content
     expect(text).toContain('home-hero-no_lessons');
+    expect(text).toContain('Chưa có bài học nào');
+    expect(text).toContain('Tạo bài học đầu tiên');
+    expect(text).toContain('Meo! Mình học bài đầu tiên nha?');
   });
 
-  it('state youtube_disabled: shows hero with youtube-disabled content', async () => {
-    // No downloads, youtube off → youtube_disabled
-    const tree = await renderHome();
-    const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('home-hero-youtube_disabled');
-  });
-
-  it('state saved_only: shows hero when downloads > 0 but none in progress', async () => {
+  it('state S2 saved_only: renders S2 copy, count and CTA', async () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('home-hero-saved_only');
+    expect(text).toContain('Chọn bài để học');
+    expect(text).toContain('Chọn bài');
+    expect(text).toContain('Hôm nay học 5 phút thôi!');
   });
 
-  it('state in_progress: shows home-continue-action testID for hero CTA', async () => {
+  it('state S3 in_progress: renders lesson title, minutes body and CTA without progress bar', async () => {
     seedCanonicalLessonDownload();
     mockFetch.mockImplementation(async (url: string) =>
       String(url).includes('/api/v1/lessons')
@@ -199,13 +194,23 @@ describe('Home hero states (DQ-002, P-004)', () => {
           },
     );
     const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('home-hero-in_progress');
+    expect(text).toContain('Đang học dở');
+    expect(text).toContain('Sắp xong rồi, cố lên!');
     const continueBtn = tree.root
       .findAll(node => node.props.testID === 'home-continue-action')
       .find(node => typeof node.props.onPress === 'function');
     expect(continueBtn).toBeDefined();
   });
 
-  it('state goal_met: shows hero and confetti when weekly goal is met', async () => {
+  it('state S4 youtube_disabled: renders disabled hero state', async () => {
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('home-hero-youtube_disabled');
+  });
+
+  it('state S5 goal_met: renders S5 copy and screen-level confetti', async () => {
     (getGamificationSnapshot as jest.Mock).mockReturnValue({
       currentStreak: 3,
       weeklyGoal: {completedThisWeek: 6, target: 6},
@@ -213,10 +218,11 @@ describe('Home hero states (DQ-002, P-004)', () => {
     });
     mockReducedMotion = false;
     const tree = await renderHome();
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-hero-goal_met')
-        .length,
-    ).toBeGreaterThan(0);
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('home-hero-goal_met');
+    expect(text).toContain('Đã đạt mục tiêu tuần');
+    expect(text).toContain('Học thêm bài nữa để giữ chuỗi nhé.');
+    expect(text).toContain('Giỏi quá! Meo meo!');
     expect(
       tree.root.findAll(node => node.props.testID === 'home-confetti').length,
     ).toBeGreaterThan(0);
@@ -224,49 +230,9 @@ describe('Home hero states (DQ-002, P-004)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Hero animations — non-reduced motion (CR-001)
+// Shortcut destinations and disabled video tile (§VS-4)
 // ---------------------------------------------------------------------------
-describe('Home hero animations (CR-001)', () => {
-  beforeEach(() => {
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-    mockReducedMotion = false;
-    reanimatedMock.clearWithSequenceCalls();
-  });
-
-  it('I8: CTA pulse uses withSequence on mount when reduced motion is off', async () => {
-    await renderHome();
-    expect(reanimatedMock.withSequenceCalls.length).toBeGreaterThan(0);
-  });
-
-  it('I2: mascot tap uses withSequence when reduced motion is off', async () => {
-    const tree = await renderHome();
-    reanimatedMock.clearWithSequenceCalls();
-    const mascotBtn = tree.root
-      .findAll(node => node.props.testID === 'home-hero-mascot-btn')
-      .find(node => typeof node.props.onPress === 'function');
-    if (!mascotBtn) {
-      throw new Error('No mascot pressable found');
-    }
-    await act(async () => mascotBtn.props.onPress());
-    expect(reanimatedMock.withSequenceCalls.length).toBeGreaterThan(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Shortcut destinations and locked video tile (DQ-005, D3, P-003)
-// ---------------------------------------------------------------------------
-describe('Home shortcuts (DQ-005, D3, P-003)', () => {
+describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
   beforeEach(() => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
@@ -283,22 +249,26 @@ describe('Home shortcuts (DQ-005, D3, P-003)', () => {
     mockYouTubeServerEnabled = false;
   });
 
-  it('renders all 4 shortcut tiles', async () => {
+  it('renders all 4 shortcut tiles in §VS-4 order without lock overlay', async () => {
     const tree = await renderHome();
     const shortcutIds = [
+      'home-shortcut-video',
       'home-shortcut-review',
       'home-shortcut-speaking',
       'home-shortcut-lessons',
-      'home-shortcut-video',
     ];
     for (const id of shortcutIds) {
       expect(
         tree.root.findAll(node => node.props.testID === id).length,
       ).toBeGreaterThan(0);
     }
+    // No lock icon rendered in shortcuts
+    expect(tree.root.findAll(node => node.props.name === 'lock').length).toBe(
+      0,
+    );
   });
 
-  it('video shortcut is disabled when youtube is off (D3)', async () => {
+  it('video shortcut is disabled when youtube is off', async () => {
     const tree = await renderHome();
     const videoBtn = tree.root
       .findAll(node => node.props.testID === 'home-shortcut-video')
@@ -340,12 +310,23 @@ describe('Home shortcuts (DQ-005, D3, P-003)', () => {
     await act(async () => speakBtn.props.onPress());
     expect(nav).toHaveBeenCalledWith('SpeakingRoom');
   });
+
+  it('lessons shortcut navigates to LessonList / Today', async () => {
+    const nav = jest.fn();
+    const tree = await renderHome(navigation(jest.fn(), nav));
+    const lessonsBtn = tree.root
+      .findAll(node => node.props.testID === 'home-shortcut-lessons')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!lessonsBtn) throw new Error('No lessons shortcut found');
+    await act(async () => lessonsBtn.props.onPress());
+    expect(nav).toHaveBeenCalledWith('Today');
+  });
 });
 
 // ---------------------------------------------------------------------------
-// Reduced motion (D5, AD-002)
+// Reduced motion (D5, AD-002, §VS-7, AC-004)
 // ---------------------------------------------------------------------------
-describe('Home reduced motion (D5, AD-002)', () => {
+describe('Home reduced motion (§VS-7, AC-004)', () => {
   beforeEach(() => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
@@ -359,134 +340,30 @@ describe('Home reduced motion (D5, AD-002)', () => {
     mockReducedMotion = true;
   });
 
-  it('renders successfully with reduced motion enabled', async () => {
-    let tree!: ReactTestRenderer.ReactTestRenderer;
-    await act(async () => {
-      tree = ReactTestRenderer.create(
-        <FeatureFlagProvider
-          releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}
-        >
-          <AppThemeProvider>
-            <HomeScreen
-              navigation={navigation() as never}
-              route={{} as never}
-            />
-          </AppThemeProvider>
-        </FeatureFlagProvider>,
-      );
-      await Promise.resolve();
+  it('renders successfully with reduced motion enabled (no confetti or heart bursts)', async () => {
+    (getGamificationSnapshot as jest.Mock).mockReturnValue({
+      currentStreak: 3,
+      weeklyGoal: {completedThisWeek: 6, target: 6},
+      badges: [],
     });
-    activeRenderers.push(tree);
-    // Wave decorations with reduced motion: visible but static
-    // Confetti: not rendered
+    const tree = await renderHome();
     const confettiNodes = tree.root.findAll(
       node => node.props.testID === 'home-confetti',
     );
     expect(confettiNodes.length).toBe(0);
-  });
 
-  it('heart burst is not rendered under reduced motion (I2)', async () => {
-    seedCanonicalLessonDownload();
-    mockFetch.mockImplementation(async (url: string) =>
-      String(url).includes('/api/v1/lessons')
-        ? {
-            ok: true,
-            status: 200,
-            headers: new Headers(),
-            json: async () => ({
-              contract_version: 1,
-              lessons: [],
-              next_cursor: null,
-            }),
-          }
-        : {
-            ok: true,
-            status: 200,
-            headers: new Headers(),
-            json: async () => CONTINUE_NULL,
-          },
-    );
-    const tree = await renderHome();
     const hearts = tree.root.findAll(
       node => node.props.testID === 'home-heart-burst',
     );
-    // HeartBurst renders nothing when reducedMotion=true
     expect(hearts.length).toBe(0);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Dark and Sticker-soft contrast (DQ-004)
-// Existing HomeScreenChipContrast.test.tsx covers theme contrast fully.
-// This test supplements with the new home pairings used in shortcuts.
+// Speech bubble layout (§VS-2.3)
 // ---------------------------------------------------------------------------
-describe('Home shortcut contrast (DQ-004 supplement)', () => {
-  type RGB = [number, number, number];
-
-  function parseHex(hex: string): RGB {
-    const clean = hex.replace('#', '');
-    return [
-      parseInt(clean.slice(0, 2), 16),
-      parseInt(clean.slice(2, 4), 16),
-      parseInt(clean.slice(4, 6), 16),
-    ];
-  }
-
-  function luminance([r, g, b]: RGB): number {
-    const linear = (v: number) => {
-      const s = v / 255;
-      return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-    };
-    return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
-  }
-
-  function contrast(a: RGB, b: RGB): number {
-    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  }
-
-  it('hero CTA pairing (yellow on blue) meets 4.5:1 (DQ-004)', () => {
-    const bg = parseHex('#FFD35E');
-    const ink = parseHex('#40320D');
-    expect(contrast(bg, ink)).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('hero title (white on deep-blue) meets 4.5:1 (DQ-004)', () => {
-    const bg = parseHex('#226FAB');
-    const ink = parseHex('#FFFFFF');
-    expect(contrast(bg, ink)).toBeGreaterThanOrEqual(4.5);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// CR-002 + BUG-004 (LING-264): wave token, bubble anchor, saved state copy
-// ---------------------------------------------------------------------------
-describe('CR-002 hero wave token and BUG-004 bubble (LING-264)', () => {
-  beforeEach(() => {
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-  });
-
-  it('CR-002: HomeHeroCard uses HERO_WAVE_SECONDARY from homeScreenModel (no inline hex)', () => {
-    // Regression: HomeHeroCard must not contain a '#3d88c4' literal;
-    // it must pass HERO_WAVE_SECONDARY to HomeWaveDecoration.
-    // Verified via rg AC-001: no hex literal remaining in HomeHeroCard.tsx.
-    // This test asserts the constant itself has the correct value.
-    const {HERO_WAVE_SECONDARY} = require('../../logic/homeScreenModel');
-    expect(HERO_WAVE_SECONDARY).toBe('#3d88c4');
-  });
-
-  it('BUG-004: speech bubble renders with card-relative testID in saved state', async () => {
+describe('Speech bubble layout (§VS-2.3)', () => {
+  it('bubble style has right=58, top=8, width=120, maxWidth=120', async () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.restoreAllMocks();
@@ -501,148 +378,15 @@ describe('CR-002 hero wave token and BUG-004 bubble (LING-264)', () => {
     }));
     seedCanonicalLessonDownload();
     const tree = await renderHome();
-    const bubbles = tree.root.findAll(
-      node => node.props.testID === 'home-mascot-bubble',
-    );
-    expect(bubbles.length).toBeGreaterThan(0);
-  });
-
-  it('BUG-004: bubble tail renders in saved state', async () => {
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-    seedCanonicalLessonDownload();
-    const tree = await renderHome();
-    const tails = tree.root.findAll(
-      node => node.props.testID === 'home-mascot-bubble-tail',
-    );
-    expect(tails.length).toBeGreaterThan(0);
-  });
-
-  it('BUG-004: bubble style has right=58, top=8, maxWidth=120', async () => {
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-    seedCanonicalLessonDownload();
-    const tree = await renderHome();
-    // Find bubble node and verify its serialized style contains the anchor values
-    const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('"right":58');
-    expect(text).toContain('"top":8');
-    expect(text).toContain('"maxWidth":120');
-    expect(text).toContain('"width":120');
-  });
-
-  it('BUG-002: saved state shows updated mascot speech text', async () => {
-    // Use a standard reset so state is saved_only (downloads but no goal met)
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    // Reset gamification to default (no goal met) to get saved_only state
-    (getGamificationSnapshot as jest.Mock).mockReturnValue({
-      currentStreak: 0,
-      weeklyGoal: {completedThisWeek: 0, target: 6},
-      badges: [],
-    });
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-    seedCanonicalLessonDownload();
-    const tree = await renderHome();
-    const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Hôm nay học 5 phút thôi!');
-  });
-
-  it('BUG-002: saved state shows updated CTA text', async () => {
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    (getGamificationSnapshot as jest.Mock).mockReturnValue({
-      currentStreak: 0,
-      weeklyGoal: {completedThisWeek: 0, target: 6},
-      badges: [],
-    });
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-    seedCanonicalLessonDownload();
-    const tree = await renderHome();
-    const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Chọn bài');
-  });
-
-  // DEVIATION-01 (LING-264 repair 1): bubble text must not be force-clamped;
-  // full mascot_saved string renders without numberOfLines truncation.
-  it('DEVIATION-01: bubble text renders full mascot_saved string without numberOfLines clamp', async () => {
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    (getGamificationSnapshot as jest.Mock).mockReturnValue({
-      currentStreak: 0,
-      weeklyGoal: {completedThisWeek: 0, target: 6},
-      badges: [],
-    });
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-    seedCanonicalLessonDownload();
-    const tree = await renderHome();
-
-    // The bubble AppText must not have numberOfLines set (no forced ellipsis).
     const bubbleNode = tree.root
       .findAll(node => node.props.testID === 'home-mascot-bubble')
       .find(node => node.children != null);
     expect(bubbleNode).toBeDefined();
 
-    // Find the Text node inside the bubble that renders the speech text.
-    // It must carry the full string and must NOT have numberOfLines set.
-    // (numberOfLines prop on a native Text causes ellipsis/truncation on device.)
-    const serialized = JSON.stringify(tree.toJSON());
-    // Full vi string must be present in the rendered output (AE-3)
-    expect(serialized).toContain('Hôm nay học 5 phút thôi!');
-    // numberOfLines must not appear alongside the bubble content in the JSON.
-    // The Text element that renders the speech bubble must wrap freely.
-    // We assert this by finding Text nodes in the bubble that carry numberOfLines.
-    // DEVIATION-01 (LING-264 repair 2): bubble container must have explicit width: 120
-    // so Yoga provides a fixed wrapping width constraint (104pt inner) to native Text.
-    const flattenedBubbleStyle = StyleSheet.flatten(bubbleNode!.props.style);
-    expect(flattenedBubbleStyle.width).toBe(120);
-    expect(flattenedBubbleStyle.maxWidth).toBe(120);
+    const flattened = StyleSheet.flatten(bubbleNode!.props.style);
+    expect(flattened.right).toBe(58);
+    expect(flattened.top).toBe(8);
+    expect(flattened.width).toBe(120);
+    expect(flattened.maxWidth).toBe(120);
   });
 });

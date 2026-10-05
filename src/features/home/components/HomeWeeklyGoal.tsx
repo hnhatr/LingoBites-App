@@ -1,32 +1,34 @@
 /**
- * HomeWeeklyGoal — 5-paw weekly goal component (I3, P-004).
+ * HomeWeeklyGoal — 5-paw weekly goal card (LING-256, LING-267, §VS-3).
  *
- * Motion (AD-002):
- *   - I3 (paw fill animation): each paw fills progressively; static under reduced motion
- *   - I7 (confetti on goal met): disabled under reduced motion
+ * Layout:
+ *   [Label -> 5 paws row -> Count line -> Hint] ... [26pt plain trophy]
  */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
-import {useReducedMotion} from 'react-native-reanimated';
 
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {PawGoalModel, WeeklyGoalCardModel} from '../logic/homeScreenModel';
-import {ConfettiParticles} from './HomeDecorations';
+import {HOME_EMPTY_PAW, HOME_TROPHY} from '../logic/homeScreenModel';
+import {getHardShadow} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
+
+const GOAL_PALETTE = {
+  borderInk: '#1c1c10',
+  countLine: '#1c1c10',
+};
 
 type Props = {
   pawGoal: PawGoalModel;
-  /** Legacy weekly goal card model for ring + text (backward compat) */
   card: WeeklyGoalCardModel;
 };
 
 export function HomeWeeklyGoal({pawGoal, card}: Props) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
-  const reducedMotion = useReducedMotion();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
   const countLine = t(card.countLineKey, card.countLineParams);
@@ -47,58 +49,42 @@ export function HomeWeeklyGoal({pawGoal, card}: Props) {
       style={styles.card}
       testID="home-weekly-goal-card"
     >
-      {pawGoal.goalMet && (
-        <ConfettiParticles
-          visible={!reducedMotion}
-          testID="home-goal-confetti"
-        />
-      )}
-
-      {/* Paw prints (I3) */}
-      <View
-        style={styles.pawRow}
-        testID="home-paw-goal-row"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        {Array.from({length: pawGoal.totalPaws}).map((_, i) => {
-          const filled = i < pawGoal.filledPaws;
-          return (
-            <HomeIcon
-              key={i}
-              name="pets"
-              size={24}
-              color={
-                filled ? theme.colors.secondary : theme.colors.surfaceContainer
-              }
-              testID={`home-paw-${i}`}
-            />
-          );
-        })}
-      </View>
-
-      {/* Goal info */}
+      {/* Goal text column (§VS-3) */}
       <View style={styles.copy}>
-        <AppText color="secondary" variant="caption">
-          {t('home.weekly_goal_label')}
-        </AppText>
-        <AppText variant="label">{countLine}</AppText>
-        <AppText color="muted" variant="caption">
-          {hint}
-        </AppText>
+        <AppText style={styles.label}>{t('home.weekly_goal_label')}</AppText>
+
+        {/* 5-paw row: 22pt pets icons */}
+        <View
+          style={styles.pawRow}
+          testID="home-paw-goal-row"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          {Array.from({length: pawGoal.totalPaws}).map((_, i) => {
+            const filled = i < pawGoal.filledPaws;
+            return (
+              <HomeIcon
+                key={i}
+                name="pets"
+                size={22}
+                color={filled ? theme.colors.secondary : HOME_EMPTY_PAW}
+                testID={`home-paw-${i}`}
+              />
+            );
+          })}
+        </View>
+
+        <AppText style={styles.countLine}>{countLine}</AppText>
+        <AppText style={styles.hint}>{hint}</AppText>
       </View>
 
-      {/* Trophy icon */}
+      {/* Right: Plain 26pt trophy (#d39b00), no background tile */}
       <View
         accessibilityElementsHidden
         importantForAccessibility="no"
-        style={[styles.trophyWrap, {backgroundColor: theme.colors.accent}]}
+        style={styles.trophyWrap}
       >
-        <HomeIcon
-          name="emoji_events"
-          size={22}
-          color={theme.colors.accentInk ?? '#fff'}
-        />
+        <HomeIcon name="emoji_events" size={26} color={HOME_TROPHY} />
       </View>
     </View>
   );
@@ -109,29 +95,45 @@ function makeStyles(theme: AppTheme) {
     card: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.lg,
+      borderColor: GOAL_PALETTE.borderInk,
+      borderRadius: 20,
+      borderWidth: 2,
       flexDirection: 'row',
-      gap: theme.spacing.md,
-      overflow: 'hidden',
-      padding: theme.spacing.md,
-      ...theme.shadow.soft,
+      gap: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      ...getHardShadow(4),
+    },
+    copy: {
+      flex: 1,
+      minWidth: 0,
+    },
+    label: {
+      color: theme.colors.text.secondary,
+      fontSize: 12,
+      fontWeight: '700',
     },
     pawRow: {
       alignItems: 'center',
       flexDirection: 'row',
       gap: 4,
+      marginBottom: 2,
+      marginTop: 4,
     },
-    copy: {
-      flex: 1,
-      gap: 4,
-      minWidth: 0,
+    countLine: {
+      color: GOAL_PALETTE.countLine,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    hint: {
+      color: theme.colors.text.muted,
+      fontSize: 12,
+      fontWeight: '600',
     },
     trophyWrap: {
       alignItems: 'center',
-      borderRadius: 10,
-      height: 36,
       justifyContent: 'center',
-      width: 36,
+      padding: 4,
     },
   });
 }

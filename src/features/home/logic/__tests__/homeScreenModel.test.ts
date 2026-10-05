@@ -1,13 +1,14 @@
 /**
- * homeScreenModel unit tests (LING-256 TASK-002)
+ * homeScreenModel unit tests (LING-256, LING-267)
  *
  * Covers:
  * - deriveHeroState: all 5 hero states (DQ-002, P-004)
  * - getTimeOfDay: morning/afternoon/night boundaries (I5, DQ-008)
- * - buildGreeting: keys and named variants
- * - buildFlameModel: tiers 0..7+ (I4, P-001)
- * - buildPawGoalModel: filled paw count (I3, P-004)
- * - buildShortcutItems: review badge, video locked (DQ-005, D3, P-003)
+ * - buildGreeting: prefix keys and named variants
+ * - buildFlameModel: tiers 0..7+ (I4, P-001, §VS-1.3)
+ * - buildPawGoalModel: filled paw count (I3, P-004, §VS-3)
+ * - buildShortcutItems: review badge, video locked, order (DQ-005, D3, P-003, §VS-4)
+ * - visual constants (§VS-0)
  */
 import {
   buildFlameModel,
@@ -15,9 +16,15 @@ import {
   buildPawGoalModel,
   buildShortcutItems,
   buildWeeklyGoalCard,
+  CONFETTI_COLORS,
   deriveHeroState,
+  FLAME_COLORS,
   getTimeOfDay,
   HERO_WAVE_SECONDARY,
+  HOME_EMPTY_PAW,
+  HOME_HEART,
+  HOME_HIGHLIGHT,
+  HOME_TROPHY,
 } from '../homeScreenModel';
 
 // ---------------------------------------------------------------------------
@@ -110,11 +117,12 @@ describe('getTimeOfDay (I5, DQ-008)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildGreeting (I5, DQ-008) — Gap 3 fix: two-line mode + _named a11y keys
+// buildGreeting (I5, DQ-008, §VS-1.1)
 // ---------------------------------------------------------------------------
-describe('buildGreeting (I5, DQ-008)', () => {
-  it('returns morning greeting key for hour < 11 (no name)', () => {
+describe('buildGreeting (I5, DQ-008, §VS-1.1)', () => {
+  it('returns morning prefix and greeting key for hour < 11 (no name)', () => {
     const model = buildGreeting(8, null);
+    expect(model.prefixKey).toBe('home.greeting_morning_prefix');
     expect(model.greetingKey).toBe('home.greeting_morning');
     expect(model.timeOfDay).toBe('morning');
     expect(model.hasName).toBe(false);
@@ -123,20 +131,18 @@ describe('buildGreeting (I5, DQ-008)', () => {
     expect(model.a11yParams).toBeUndefined();
   });
 
-  it('returns afternoon key + two-line mode when displayName is provided', () => {
+  it('returns afternoon prefix + two-line mode when displayName is provided', () => {
     const model = buildGreeting(14, 'An');
-    // greetingKey stays unnamed (used for the small prefix line)
-    expect(model.greetingKey).toBe('home.greeting_afternoon');
+    expect(model.prefixKey).toBe('home.greeting_afternoon_prefix');
     expect(model.hasName).toBe(true);
     expect(model.displayName).toBe('An');
-    // a11y key is the _named variant
     expect(model.a11yKey).toBe('home.greeting_afternoon_named');
     expect(model.a11yParams).toEqual({name: 'An'});
   });
 
-  it('returns night greeting key + two-line mode for hour >= 18 with name', () => {
+  it('returns night prefix + two-line mode for hour >= 18 with name', () => {
     const model = buildGreeting(22, 'Bình');
-    expect(model.greetingKey).toBe('home.greeting_night');
+    expect(model.prefixKey).toBe('home.greeting_night_prefix');
     expect(model.hasName).toBe(true);
     expect(model.displayName).toBe('Bình');
     expect(model.a11yKey).toBe('home.greeting_night_named');
@@ -145,40 +151,69 @@ describe('buildGreeting (I5, DQ-008)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildFlameModel — streak tiers 0..7+ (I4, P-001)
+// buildFlameModel — streak tiers 0..7+ (I4, P-001, §VS-1.3)
 // ---------------------------------------------------------------------------
-describe('buildFlameModel (I4, P-001)', () => {
-  it('returns level 0 and streak_zero key for streak 0', () => {
+describe('buildFlameModel (I4, P-001, §VS-1.3)', () => {
+  it('returns level 0, size 16, no glow, no embers, and streak_zero for streak 0', () => {
     const m = buildFlameModel(0);
     expect(m.level).toBe(0);
+    expect(m.color).toBe('#b9b6a3');
+    expect(m.size).toBe(16);
+    expect(m.glowRadius).toBe(0);
+    expect(m.hasEmbers).toBe(false);
     expect(m.a11yKey).toBe('home.streak_zero');
     expect(m.a11yParams).toBeUndefined();
   });
 
-  it.each([1, 2, 3, 4, 5, 6])('streak %i maps to level %i', streak => {
-    const m = buildFlameModel(streak);
-    expect(m.level).toBe(streak);
-    expect(m.a11yKey).toBe('home.streak_days');
-    expect(m.a11yParams).toEqual({count: streak});
+  it.each([1, 2, 3, 4, 5, 6])(
+    'streak %i maps to level %i with correct size and color',
+    streak => {
+      const m = buildFlameModel(streak);
+      expect(m.level).toBe(streak);
+      expect(m.color).toBe(FLAME_COLORS[streak as keyof typeof FLAME_COLORS]);
+      expect(m.size).toBeCloseTo(16 + 2.3 * streak, 2);
+      expect(m.glowRadius).toBe(streak >= 3 ? (streak - 2) * 1.6 : 0);
+      expect(m.hasEmbers).toBe(false);
+      expect(m.a11yKey).toBe('home.streak_days');
+      expect(m.a11yParams).toEqual({count: streak});
+    },
+  );
+
+  it('clamps streak >= 7 to level 7 with embers enabled', () => {
+    const m7 = buildFlameModel(7);
+    expect(m7.level).toBe(7);
+    expect(m7.color).toBe('#ff4517');
+    expect(m7.size).toBeCloseTo(32.1, 1);
+    expect(m7.glowRadius).toBeCloseTo(8.0, 1);
+    expect(m7.hasEmbers).toBe(true);
+
+    const m30 = buildFlameModel(30);
+    expect(m30.level).toBe(7);
+    expect(m30.hasEmbers).toBe(true);
+    expect(m30.a11yParams).toEqual({count: 30});
   });
 
-  it('clamps streak >= 7 to level 7 (legendary)', () => {
-    expect(buildFlameModel(7).level).toBe(7);
-    expect(buildFlameModel(30).level).toBe(7);
-    expect(buildFlameModel(365).level).toBe(7);
-  });
-
-  it('each tier has a distinct color', () => {
-    const colors = Array.from({length: 8}, (_, i) => buildFlameModel(i).color);
-    const unique = new Set(colors);
-    expect(unique.size).toBe(8);
+  it('each tier has a distinct color matching §VS-1.3', () => {
+    const expected = [
+      '#b9b6a3',
+      '#ffb03a',
+      '#ffa133',
+      '#ff902b',
+      '#ff7d24',
+      '#ff6a1f',
+      '#ff571b',
+      '#ff4517',
+    ];
+    for (let i = 0; i <= 7; i++) {
+      expect(buildFlameModel(i).color).toBe(expected[i]);
+    }
   });
 });
 
 // ---------------------------------------------------------------------------
-// buildPawGoalModel — 5-paw weekly goal (I3, P-004)
+// buildPawGoalModel — 5-paw weekly goal (I3, P-004, §VS-3)
 // ---------------------------------------------------------------------------
-describe('buildPawGoalModel (I3, P-004)', () => {
+describe('buildPawGoalModel (I3, P-004, §VS-3)', () => {
   it('returns 5 filled paws when goal is met (6/6)', () => {
     const m = buildPawGoalModel(6, 6);
     expect(m.filledPaws).toBe(5);
@@ -204,71 +239,94 @@ describe('buildPawGoalModel (I3, P-004)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildShortcutItems — 4 shortcuts (DQ-005, D3, P-003)
+// buildShortcutItems — 4 shortcuts in §VS-4 order (video, review, speaking, lessons)
 // ---------------------------------------------------------------------------
-describe('buildShortcutItems (DQ-005, D3, P-003)', () => {
-  it('returns exactly 4 shortcuts', () => {
+describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
+  it('returns exactly 4 shortcuts in specified order: video, review, speaking, lessons', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 0,
       youtubeEnabled: true,
     });
     expect(items).toHaveLength(4);
+    expect(items.map(i => i.key)).toEqual([
+      'video',
+      'review',
+      'speaking',
+      'lessons',
+    ]);
   });
 
-  it('review shortcut has badge when dueFlashcardCount > 0', () => {
+  it('review shortcut has badge and badgeText when dueFlashcardCount > 0', () => {
     const items = buildShortcutItems({
-      dueFlashcardCount: 5,
+      dueFlashcardCount: 12,
       youtubeEnabled: true,
     });
     const review = items.find(i => i.key === 'review');
-    expect(review?.badgeCount).toBe(5);
+    expect(review?.badgeCount).toBe(12);
+    expect(review?.badgeText).toBe('12');
+    expect(review?.subKey).toBe('home.shortcut_review_due');
   });
 
-  it('review shortcut has no badge when dueFlashcardCount is 0', () => {
+  it('review shortcut caps badgeText at 99+ when dueFlashcardCount > 99 (EC-005)', () => {
     const items = buildShortcutItems({
+      dueFlashcardCount: 150,
+      youtubeEnabled: true,
+    });
+    const review = items.find(i => i.key === 'review');
+    expect(review?.badgeCount).toBe(150);
+    expect(review?.badgeText).toBe('99+');
+  });
+
+  it('review shortcut has no badge when dueFlashcardCount is 0 or null', () => {
+    const items0 = buildShortcutItems({
       dueFlashcardCount: 0,
       youtubeEnabled: true,
     });
-    const review = items.find(i => i.key === 'review');
-    expect(review?.badgeCount).toBeNull();
-  });
+    const review0 = items0.find(i => i.key === 'review');
+    expect(review0?.badgeCount).toBeNull();
+    expect(review0?.badgeText).toBeNull();
+    expect(review0?.subKey).toBe('home.shortcut_review_none');
 
-  it('review shortcut has no badge when dueFlashcardCount is null', () => {
-    const items = buildShortcutItems({
+    const itemsNull = buildShortcutItems({
       dueFlashcardCount: null,
       youtubeEnabled: true,
     });
-    const review = items.find(i => i.key === 'review');
-    expect(review?.badgeCount).toBeNull();
+    const reviewNull = itemsNull.find(i => i.key === 'review');
+    expect(reviewNull?.badgeCount).toBeNull();
   });
 
-  it('video shortcut is disabled when youtubeEnabled is false (D3)', () => {
+  it('video shortcut is disabled when youtubeEnabled is false with unavailable sub-line', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 0,
       youtubeEnabled: false,
     });
     const video = items.find(i => i.key === 'video');
     expect(video?.disabled).toBe(true);
+    expect(video?.subKey).toBe('home.shortcut_video_unavailable');
   });
 
-  it('video shortcut is enabled when youtubeEnabled is true', () => {
+  it('video shortcut is enabled when youtubeEnabled is true with youtube sub-line', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 0,
       youtubeEnabled: true,
     });
     const video = items.find(i => i.key === 'video');
     expect(video?.disabled).toBe(false);
+    expect(video?.subKey).toBe('home.shortcut_video_sub');
   });
+});
 
-  it('other shortcuts are never disabled', () => {
-    const items = buildShortcutItems({
-      dueFlashcardCount: 0,
-      youtubeEnabled: false,
-    });
-    const nonVideo = items.filter(i => i.key !== 'video');
-    for (const item of nonVideo) {
-      expect(item.disabled).toBe(false);
-    }
+// ---------------------------------------------------------------------------
+// Visual constants (§VS-0)
+// ---------------------------------------------------------------------------
+describe('Visual constants (§VS-0)', () => {
+  it('exports required mockup v4 theme and local color constants', () => {
+    expect(HOME_TROPHY).toBe('#d39b00');
+    expect(HOME_EMPTY_PAW).toBe('#d9d6c3');
+    expect(HOME_HEART).toBe('#ff5d7a');
+    expect(HOME_HIGHLIGHT).toBe('#FFD35E');
+    expect(HERO_WAVE_SECONDARY).toBe('#3d88c4');
+    expect(CONFETTI_COLORS).toHaveLength(6);
   });
 });
 
@@ -294,18 +352,5 @@ describe('buildWeeklyGoalCard (backward compat)', () => {
       badgeEarned: true,
     });
     expect(m.hintKey).toBe('home.weekly_goal_hint_met');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// CR-002 (LING-264): HERO_WAVE_SECONDARY exported constant
-// ---------------------------------------------------------------------------
-describe('HERO_WAVE_SECONDARY (CR-002, LING-264)', () => {
-  it('is exported with value #3d88c4', () => {
-    expect(HERO_WAVE_SECONDARY).toBe('#3d88c4');
-  });
-
-  it('is a valid hex colour string', () => {
-    expect(/^#[0-9a-fA-F]{6}$/.test(HERO_WAVE_SECONDARY)).toBe(true);
   });
 });

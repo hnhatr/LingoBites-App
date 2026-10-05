@@ -1,15 +1,15 @@
 /**
  * HomeShortcutsGrid — "Lối tắt" section title + 2x2 grid of 4 compact sticker
- * shortcuts (DQ-005, D3, P-003, Gap 7 LING-261).
+ * shortcuts (LING-256, LING-267, §VS-4).
  *
- * Color mapping matches mockup v4 (Gap 7):
- *   video    → accentSoft / primary
- *   review   → tertiarySoft / onTertiaryContainer
- *   speaking → secondarySoft / secondary
- *   lessons  → surfaceContainer / text.primary
+ * Color mapping matches mockup v4 (§VS-4):
+ *   1. video    -> accentSoft / primary
+ *   2. review   -> tertiarySoft / onTertiaryContainer
+ *   3. speaking -> secondarySoft / secondary
+ *   4. lessons  -> surfaceContainer / text.primary
  *
- * Motion (AD-002):
- *   - I6 (sticker wobble/tilt on press): disabled under reduced motion
+ * Motion (§VS-7):
+ *   - I6 (press wiggle +/-10° over 500ms): off under RM
  */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -18,30 +18,35 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
 import {AppText} from '@ui/components/AppText';
-import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {ShortcutItem, ShortcutKey} from '../logic/homeScreenModel';
-import {HomeIcon, type HomeSvgIconName} from './HomeSvgIcons';
+import {getHardShadow} from './HomeDecorations';
+import {HomeIcon} from './HomeSvgIcons';
+
+const GRID_PALETTE = {
+  borderInk: '#1c1c10',
+  badgeText: '#ffffff',
+};
 
 type Props = {
   shortcuts: ShortcutItem[];
   onPress: (key: ShortcutKey) => void;
 };
 
-const ICON_MAP: Record<ShortcutKey, HomeSvgIconName> = {
-  review: 'style',
-  speaking: 'record_voice_over',
-  lessons: 'school',
-  video: 'play_circle',
+// Static tilt: -6° on tiles 1 & 3, +5° on tiles 2 & 4 (§VS-4)
+const STATIC_TILT: Record<ShortcutKey, number> = {
+  video: -6,
+  review: 5,
+  speaking: -6,
+  lessons: 5,
 };
 
-// Mockup v4 colors (Gap 7): video=accentSoft, review=tertiarySoft,
-// speaking=secondarySoft, lessons=surfaceContainer
 const BG_MAP: Record<
   ShortcutKey,
   'accentSoft' | 'tertiarySoft' | 'secondarySoft' | 'surfaceContainer'
@@ -74,10 +79,23 @@ function ShortcutCell({
   const reducedMotion = useReducedMotion();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
-  // I6: tilt/wobble on press — disabled under reduced motion
-  const tilt = useSharedValue(0);
-  const tiltStyle = useAnimatedStyle(() => ({
-    transform: [{rotate: `${tilt.value}deg`}],
+  // I6: Press wiggle +/-10° over 500ms (§VS-7)
+  const baseTilt = reducedMotion ? 0 : STATIC_TILT[item.key];
+  const wiggle = useSharedValue(0);
+
+  const handlePressIn = () => {
+    if (!reducedMotion && !item.disabled) {
+      wiggle.value = withSequence(
+        withTiming(10, {duration: 125}),
+        withTiming(-10, {duration: 125}),
+        withTiming(5, {duration: 125}),
+        withTiming(0, {duration: 125}),
+      );
+    }
+  };
+
+  const iconTileAnimStyle = useAnimatedStyle(() => ({
+    transform: [{rotate: `${baseTilt + wiggle.value}deg`}],
   }));
 
   const backgroundColor = theme.colors[BG_MAP[item.key]];
@@ -86,109 +104,54 @@ function ShortcutCell({
     inkKey === 'text.primary'
       ? theme.colors.text.primary
       : theme.colors[inkKey];
-  const iconName = ICON_MAP[item.key];
+
   const titleText = t(item.titleKey);
-  const metaText =
-    item.metaKey && item.metaParams
-      ? t(item.metaKey, item.metaParams)
-      : item.metaKey
-      ? t(item.metaKey)
-      : null;
+  const subText = item.subKey ? t(item.subKey, item.metaParams) : '';
 
   const isDisabled = item.disabled;
-  const a11yLabel = isDisabled
-    ? `${titleText}. ${t('home.shortcut_video_locked')}`
-    : metaText
-    ? `${titleText}. ${metaText}`
-    : titleText;
-
-  const shelf = theme.shelf?.surface;
+  const a11yLabel = subText ? `${titleText}. ${subText}` : titleText;
 
   return (
-    <Pressable
-      accessibilityLabel={a11yLabel}
-      accessibilityRole="button"
-      accessibilityState={isDisabled ? {disabled: true} : undefined}
-      disabled={isDisabled}
-      onPress={onPress}
-      onPressIn={() => {
-        if (!reducedMotion && !isDisabled) {
-          tilt.value = withTiming(3, {duration: 100});
-        }
-      }}
-      onPressOut={() => {
-        if (!reducedMotion) {
-          tilt.value = withTiming(0, {duration: 150});
-        }
-      }}
-      testID={item.testID}
-      style={styles.cellWrap}
-    >
-      {({pressed}) => (
-        <Animated.View style={tiltStyle}>
-          <ShelfSurface
-            shelfHeight={shelf?.height}
-            shelfColor={shelf?.color}
-            borderRadius={theme.radius.lg}
-            isPressed={pressed}
-            isDisabled={isDisabled}
-            containerStyle={theme.shadow.soft}
-            faceStyle={[
-              styles.cell,
-              {backgroundColor},
-              !shelf && pressed && !isDisabled && styles.pressed,
-            ]}
-          >
-            {/* Icon tile */}
-            <View
-              style={[styles.iconTile, {backgroundColor: theme.colors.surface}]}
-            >
-              <HomeIcon name={iconName} size={24} color={ink} />
-              {/* Lock overlay for disabled (D3) */}
-              {isDisabled ? (
-                <View style={styles.lockOverlay}>
-                  <HomeIcon
-                    name="lock"
-                    size={14}
-                    color={theme.colors.text.primary}
-                  />
-                </View>
-              ) : null}
-            </View>
-
-            <AppText
-              variant="label"
-              style={[styles.title, {color: ink}]}
-              numberOfLines={2}
-            >
-              {titleText}
-            </AppText>
-
-            {metaText ? (
-              <AppText
-                variant="caption"
-                style={[styles.meta, {color: ink}]}
-                numberOfLines={1}
-              >
-                {metaText}
-              </AppText>
-            ) : null}
-
-            {/* Badge (P-003) */}
-            {item.badgeCount != null && item.badgeCount > 0 ? (
-              <View
-                style={[styles.badge, {backgroundColor: theme.colors.danger}]}
-                testID={`${item.testID}-badge`}
-              >
-                <AppText variant="caption" style={styles.badgeLabel}>
-                  {item.badgeCount}
-                </AppText>
-              </View>
-            ) : null}
-          </ShelfSurface>
+    <View style={styles.cellWrapper}>
+      <Pressable
+        accessibilityLabel={a11yLabel}
+        accessibilityRole="button"
+        accessibilityState={isDisabled ? {disabled: true} : undefined}
+        disabled={isDisabled}
+        hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        testID={item.testID}
+        style={({pressed}) => [
+          styles.tile,
+          {backgroundColor},
+          isDisabled && styles.disabledTile,
+          pressed && !isDisabled && styles.pressedTile,
+        ]}
+      >
+        {/* Icon box 44x44 with static tilt and border 2 ink */}
+        <Animated.View style={[styles.iconBox, iconTileAnimStyle]}>
+          <HomeIcon name={item.icon} size={24} color={ink} />
         </Animated.View>
-      )}
-    </Pressable>
+
+        {/* Title: 15pt weight 700 */}
+        <AppText style={[styles.title, {color: ink}]} numberOfLines={2}>
+          {titleText}
+        </AppText>
+
+        {/* Sub-line: 12pt weight 600 */}
+        <AppText style={[styles.subLine, {color: ink}]} numberOfLines={2}>
+          {subText}
+        </AppText>
+
+        {/* Badge in top-right corner for review when due > 0 (§VS-4) */}
+        {item.badgeText ? (
+          <View style={styles.badge} testID={`${item.testID}-badge`}>
+            <AppText style={styles.badgeText}>{item.badgeText}</AppText>
+          </View>
+        ) : null}
+      </Pressable>
+    </View>
   );
 }
 
@@ -198,13 +161,8 @@ export function HomeShortcutsGrid({shortcuts, onPress}: Props) {
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
   return (
-    <View testID="home-shortcuts-section">
-      {/* Section title: "Lối tắt" (Gap 7, mockup v4) */}
-      <AppText
-        variant="h3"
-        style={styles.sectionTitle}
-        testID="home-shortcuts-title"
-      >
+    <View style={styles.section} testID="home-shortcuts-section">
+      <AppText style={styles.sectionTitle} testID="home-shortcuts-title">
         {t('home.shortcuts_title')}
       </AppText>
       <View style={styles.grid} testID="home-shortcuts-grid">
@@ -222,55 +180,76 @@ export function HomeShortcutsGrid({shortcuts, onPress}: Props) {
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    section: {
+      gap: 10,
+    },
     sectionTitle: {
-      marginBottom: theme.spacing.sm,
+      color: theme.colors.text.primary,
+      fontSize: 18,
+      fontWeight: '700',
     },
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: theme.spacing.md,
+      gap: 12,
     },
-    cellWrap: {
+    cellWrapper: {
       flexBasis: '47%',
       flexGrow: 1,
       minWidth: 140,
     },
-    // Compact sticker tile style (Gap 7: smaller minHeight vs old explore cell)
-    cell: {
-      borderRadius: theme.radius.lg,
-      gap: theme.spacing.sm,
-      minHeight: 110,
-      padding: theme.spacing.md,
-    },
-    iconTile: {
-      alignItems: 'center',
-      borderRadius: 12,
-      height: 40,
-      justifyContent: 'center',
+    tile: {
+      borderColor: GRID_PALETTE.borderInk,
+      borderRadius: 20,
+      borderWidth: 2,
+      gap: 6,
+      minHeight: 118,
+      padding: 14,
       position: 'relative',
-      width: 40,
+      ...getHardShadow(4),
     },
-    lockOverlay: {
-      position: 'absolute',
-      bottom: -2,
-      right: -2,
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: 8,
-      padding: 2,
+    disabledTile: {
+      opacity: 0.45,
+      ...getHardShadow(2),
     },
-    title: {},
-    meta: {},
+    pressedTile: {
+      transform: [{translateY: 3}],
+      ...getHardShadow(1),
+    },
+    iconBox: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: GRID_PALETTE.borderInk,
+      borderRadius: 14,
+      borderWidth: 2,
+      height: 44,
+      justifyContent: 'center',
+      width: 44,
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    subLine: {
+      fontSize: 12,
+      fontWeight: '600',
+      opacity: 0.85,
+    },
     badge: {
-      alignSelf: 'flex-start',
-      borderRadius: 10,
-      minWidth: 20,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      backgroundColor: theme.colors.secondary,
+      borderColor: GRID_PALETTE.borderInk,
+      borderRadius: 999,
+      borderWidth: 2,
+      paddingHorizontal: 9,
+      paddingVertical: 3,
+      position: 'absolute',
+      right: 10,
+      top: 10,
     },
-    badgeLabel: {
-      color: theme.colors.text.inverse,
-      textAlign: 'center',
+    badgeText: {
+      color: GRID_PALETTE.badgeText,
+      fontSize: 12,
+      fontWeight: '800',
     },
-    pressed: {opacity: theme.states.pressedOpacity},
   });
 }

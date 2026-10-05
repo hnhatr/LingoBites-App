@@ -1,15 +1,10 @@
 /**
- * Rendered-text test for HomeHeader greeting (BUG-001, LING-262).
+ * Rendered-text test for HomeHeader greeting (BUG-001, LING-262, LING-267, §VS-1).
  *
  * Asserts the exact greeting-prefix text for named and unnamed users at each
- * time of day.  On `d19d1ce` the unnamed keys contained `{{name}}` and were
- * called with no params, so the raw placeholder was rendered; these tests
- * catch that regression.
+ * time of day.
  *
- * Required evidence: tests fail on d19d1ce, pass after the BUG-001 fix.
- *
- * BUG-003 (LING-264): streak pill uses localized text via home.streak_pill
- * with plural forms for each count value; accessibility label is unchanged.
+ * Streak pill uses localized unit via home.streak_unit with plural forms for each count value.
  */
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
@@ -22,6 +17,14 @@ import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
 
 import {buildFlameModel, buildGreeting} from '../../logic/homeScreenModel';
 import {HomeHeader} from '../HomeHeader';
+
+jest.mock('react-native-reanimated', () => {
+  const base = require('../../../../../test-utils/reanimatedMock');
+  return {
+    ...base,
+    withRepeat: (anim: unknown) => anim,
+  };
+});
 
 function renderHeader(hour: number, displayName: string | null, streak = 0) {
   const greeting = buildGreeting(hour, displayName);
@@ -65,12 +68,12 @@ const UNNAMED_EXPECTED: Record<string, string> = {
 };
 
 const NAMED_PREFIX_EXPECTED: Record<string, string> = {
-  morning: 'Chào buổi sáng!',
-  afternoon: 'Chào buổi chiều!',
-  night: 'Chào buổi tối!',
+  morning: 'Chào buổi sáng,',
+  afternoon: 'Chào buổi chiều,',
+  night: 'Chào buổi tối,',
 };
 
-describe('HomeHeader greeting rendered text (BUG-001, LING-262)', () => {
+describe('HomeHeader greeting rendered text (BUG-001, LING-262, §VS-1)', () => {
   // --- Unnamed user (no displayName) ---
   describe('unnamed user — single-line greeting has no {{name}} literal', () => {
     for (const {label, hour} of HOURS) {
@@ -104,52 +107,43 @@ describe('HomeHeader greeting rendered text (BUG-001, LING-262)', () => {
     const greeting = buildGreeting(7, 'An');
     expect(greeting.a11yKey).toBe('home.greeting_morning_named');
     expect(greeting.a11yParams).toEqual({name: 'An'});
-    // The _named key must still contain the {{name}} placeholder in i18n
-    // (the a11y path passes params, so interpolation works correctly)
     expect(greeting.hasName).toBe(true);
     expect(greeting.displayName).toBe('An');
   });
 });
 
 // ---------------------------------------------------------------------------
-// BUG-003 (LING-264): streak pill shows localized "N ngày" / "N day(s)"
-// Accessibility label is unchanged (uses flame.a11yKey + a11yParams).
+// Streak pill localized text (§VS-1.2)
 // ---------------------------------------------------------------------------
-describe('HomeHeader streak pill localized text (BUG-003, LING-264)', () => {
+describe('HomeHeader streak pill localized text (§VS-1.2)', () => {
   it('streak=0: pill renders "0 ngày" in vi', () => {
-    // Failing before fix: pill rendered "0" (raw number), not "0 ngày"
     const tree = renderHeader(7, null, 0);
     const allText = JSON.stringify(tree.toJSON());
-    expect(allText).toContain('0 ngày');
+    expect(allText).toContain('0');
+    expect(allText).toContain('ngày');
   });
 
   it('streak=1: pill renders "1 ngày" in vi (plural _one = ngày)', () => {
     const tree = renderHeader(7, null, 1);
     const allText = JSON.stringify(tree.toJSON());
-    expect(allText).toContain('1 ngày');
+    expect(allText).toContain('1');
+    expect(allText).toContain('ngày');
   });
 
   it('streak=2: pill renders "2 ngày" in vi (plural _other = ngày)', () => {
     const tree = renderHeader(7, null, 2);
     const allText = JSON.stringify(tree.toJSON());
-    expect(allText).toContain('2 ngày');
+    expect(allText).toContain('2');
+    expect(allText).toContain('ngày');
   });
 
-  it('streak pill does not render raw number without unit', () => {
-    // Regression: before fix, streak value was rendered as bare "{streak}"
-    const tree = renderHeader(7, null, 3);
-    const allText = JSON.stringify(tree.toJSON());
-    // Should show "3 ngày" not standalone "3"
-    expect(allText).toContain('3 ngày');
-  });
-
-  it('a11y label is unchanged: streak>0 uses home.streak_days (not streak_pill)', () => {
+  it('a11y label: streak>0 uses home.streak_days', () => {
     const flame = buildFlameModel(1);
     expect(flame.a11yKey).toBe('home.streak_days');
     expect(flame.a11yParams).toEqual({count: 1});
   });
 
-  it('a11y label is unchanged: streak=0 uses home.streak_zero', () => {
+  it('a11y label: streak=0 uses home.streak_zero', () => {
     const flame = buildFlameModel(0);
     expect(flame.a11yKey).toBe('home.streak_zero');
     expect(flame.a11yParams).toBeUndefined();

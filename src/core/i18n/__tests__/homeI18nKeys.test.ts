@@ -1,65 +1,87 @@
 /**
- * i18n key parity test for Home screen new keys (LING-256 TASK-002, A-004).
+ * i18n key parity test for Home screen new keys (LING-256 TASK-002, LING-267, §VS-8).
  *
- * Verifies that every new home locale key added for the redesign exists in
- * both vi.json and en.json with a non-empty string value.
+ * Verifies that every home locale key exists in both vi.json and en.json
+ * with a non-empty string value and matching interpolation parameters.
  */
 
 import en from '../en.json';
 import vi from '../vi.json';
 
-const NEW_HOME_KEYS = [
-  // Greeting (I5, DQ-008)
+const HOME_KEYS = [
+  // Greeting (§VS-1.1, §VS-8)
   'home.greeting_morning',
+  'home.greeting_morning_named',
+  'home.greeting_morning_prefix',
   'home.greeting_afternoon',
+  'home.greeting_afternoon_named',
+  'home.greeting_afternoon_prefix',
   'home.greeting_night',
-  // Streak (I4, P-001)
+  'home.greeting_night_named',
+  'home.greeting_night_prefix',
+  // Streak (§VS-1.2, §VS-8)
   'home.streak_days',
   'home.streak_zero',
-  // Streak pill visible label (BUG-003, LING-264)
-  'home.streak_pill_one',
-  'home.streak_pill_other',
-  // Paw goal (I3, P-004)
-  'home.paw_goal_a11y',
-  'home.paw_goal_label',
-  // Hero states (DQ-002)
+  'home.streak_unit_one',
+  'home.streak_unit_other',
+  // Weekly goal (§VS-3, §VS-8)
+  'home.weekly_goal_label',
+  'home.weekly_goal_line',
+  'home.weekly_goal_hint_badge',
+  'home.weekly_goal_hint_met',
+  'home.weekly_goal_hint_kept',
+  'home.weekly_goal_a11y',
+  // Hero states (§VS-2, §VS-8)
+  'home.hero_eyebrow_no_lessons',
+  'home.hero_eyebrow_saved',
+  'home.hero_eyebrow_in_progress',
+  'home.hero_eyebrow_youtube_disabled',
+  'home.hero_eyebrow_goal_met',
   'home.hero_no_lessons_title',
   'home.hero_no_lessons_body',
   'home.hero_no_lessons_cta',
   'home.hero_saved_title',
-  'home.hero_saved_body',
   'home.hero_saved_cta',
+  'home.hero_saved_body_one',
+  'home.hero_saved_body_other',
   'home.hero_in_progress_title',
+  'home.hero_in_progress_body',
   'home.hero_in_progress_cta',
+  'home.hero_continue_cta',
+  'home.hero_continue_cta_a11y',
   'home.hero_goal_met_title',
   'home.hero_goal_met_body',
   'home.hero_goal_met_cta',
   'home.hero_youtube_disabled_title',
   'home.hero_youtube_disabled_body',
   'home.hero_youtube_disabled_cta',
-  // Mascot speech bubbles
+  // Mascot speech bubbles (§VS-2.4, §VS-8)
   'home.mascot_no_lessons',
   'home.mascot_saved',
   'home.mascot_in_progress',
   'home.mascot_goal_met',
   'home.mascot_youtube_disabled',
-  // Shortcuts (DQ-005)
-  'home.shortcut_lessons',
+  // Shortcuts (§VS-4, §VS-8)
+  'home.shortcuts_title',
   'home.shortcut_video',
-  'home.shortcut_video_locked',
-  // Saved rail (DQ-006)
+  'home.shortcut_video_sub',
+  'home.shortcut_video_unavailable',
+  'home.shortcut_review',
+  'home.shortcut_review_due',
+  'home.shortcut_review_none',
+  'home.shortcut_speaking',
+  'home.shortcut_speaking_sub',
+  'home.shortcut_lessons',
+  'home.shortcut_lessons_sub',
+  // Saved rail (§VS-5, §VS-8)
   'home.saved_rail_title',
   'home.saved_rail_view_all',
   'home.saved_rail_view_all_a11y',
   'home.saved_rail_empty',
-  // Hero eyebrow labels (Gap 5, LING-261)
-  'home.hero_eyebrow_no_lessons',
-  'home.hero_eyebrow_saved',
-  'home.hero_eyebrow_in_progress',
-  'home.hero_eyebrow_youtube_disabled',
-  'home.hero_eyebrow_goal_met',
-  // Shortcuts section title (Gap 7, LING-261)
-  'home.shortcuts_title',
+  'home.rail_saved',
+  'home.rail_meta',
+  'home.rail_type_video',
+  'home.rail_type_reading',
 ];
 
 function resolveKey(
@@ -75,8 +97,8 @@ function resolveKey(
   return typeof current === 'string' ? current : undefined;
 }
 
-describe('Home i18n key parity (A-004, LING-256 TASK-002)', () => {
-  for (const key of NEW_HOME_KEYS) {
+describe('Home i18n key parity (AC-001, AC-004, §VS-8)', () => {
+  for (const key of HOME_KEYS) {
     it(`"${key}" exists in vi.json with non-empty value`, () => {
       const value = resolveKey(vi as Record<string, unknown>, key);
       expect(value).toBeDefined();
@@ -93,76 +115,100 @@ describe('Home i18n key parity (A-004, LING-256 TASK-002)', () => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// BUG-002 (LING-264): exact copy for saved state in vi and en
-// ---------------------------------------------------------------------------
-describe('BUG-002 saved-state copy (LING-264)', () => {
-  it('vi.json hero_saved_cta is "Chọn bài"', () => {
-    const value = resolveKey(
-      vi as Record<string, unknown>,
-      'home.hero_saved_cta',
-    );
-    expect(value).toBe('Chọn bài');
+describe('§VS-8 exact copy assertions', () => {
+  it('hero_no_lessons_title matches approved copy in vi and en', () => {
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.hero_no_lessons_title'),
+    ).toBe('Chưa có bài học nào');
+    expect(
+      resolveKey(en as Record<string, unknown>, 'home.hero_no_lessons_title'),
+    ).toBe('No lessons yet');
   });
 
-  it('en.json hero_saved_cta is "Choose a lesson"', () => {
-    const value = resolveKey(
-      en as Record<string, unknown>,
-      'home.hero_saved_cta',
-    );
-    expect(value).toBe('Choose a lesson');
+  it('hero_no_lessons_cta matches approved copy in vi and en', () => {
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.hero_no_lessons_cta'),
+    ).toBe('Tạo bài học đầu tiên');
+    expect(
+      resolveKey(en as Record<string, unknown>, 'home.hero_no_lessons_cta'),
+    ).toBe('Create your first lesson');
   });
 
-  it('vi.json mascot_saved is "Hôm nay học 5 phút thôi!"', () => {
-    const value = resolveKey(
-      vi as Record<string, unknown>,
-      'home.mascot_saved',
-    );
-    expect(value).toBe('Hôm nay học 5 phút thôi!');
+  it('hero_goal_met_title and cta match approved copy', () => {
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.hero_goal_met_title'),
+    ).toBe('Đã đạt mục tiêu tuần');
+    expect(
+      resolveKey(en as Record<string, unknown>, 'home.hero_goal_met_title'),
+    ).toBe('Weekly goal reached');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.hero_goal_met_cta'),
+    ).toBe('Chọn bài');
+    expect(
+      resolveKey(en as Record<string, unknown>, 'home.hero_goal_met_cta'),
+    ).toBe('Choose a lesson');
   });
 
-  it('en.json mascot_saved is "Let\'s study for just 5 minutes today!"', () => {
-    const value = resolveKey(
-      en as Record<string, unknown>,
-      'home.mascot_saved',
+  it('mascot copy matches approved copy per state', () => {
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.mascot_no_lessons'),
+    ).toBe('Meo! Mình học bài đầu tiên nha?');
+    expect(resolveKey(vi as Record<string, unknown>, 'home.mascot_saved')).toBe(
+      'Hôm nay học 5 phút thôi!',
     );
-    expect(value).toBe("Let's study for just 5 minutes today!");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// BUG-003 (LING-264): streak_pill plural forms have correct values
-// ---------------------------------------------------------------------------
-describe('BUG-003 streak_pill plural forms (LING-264)', () => {
-  it('vi.json streak_pill_one is "{{count}} ngày"', () => {
-    const value = resolveKey(
-      vi as Record<string, unknown>,
-      'home.streak_pill_one',
-    );
-    expect(value).toBe('{{count}} ngày');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.mascot_in_progress'),
+    ).toBe('Sắp xong rồi, cố lên!');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.mascot_goal_met'),
+    ).toBe('Giỏi quá! Meo meo!');
   });
 
-  it('vi.json streak_pill_other is "{{count}} ngày"', () => {
-    const value = resolveKey(
-      vi as Record<string, unknown>,
-      'home.streak_pill_other',
-    );
-    expect(value).toBe('{{count}} ngày');
+  it('shortcuts copy matches approved copy', () => {
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.shortcut_video'),
+    ).toBe('Học qua video');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.shortcut_video_sub'),
+    ).toBe('Tạo bài từ YouTube');
+    expect(
+      resolveKey(
+        vi as Record<string, unknown>,
+        'home.shortcut_video_unavailable',
+      ),
+    ).toBe('Tính năng đang chưa khả dụng');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.shortcut_speaking_sub'),
+    ).toBe('Phòng nói & shadowing');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.shortcut_lessons'),
+    ).toBe('Thư viện');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.shortcut_lessons_sub'),
+    ).toBe('Tất cả bài học');
   });
 
-  it('en.json streak_pill_one is "{{count}} day"', () => {
-    const value = resolveKey(
-      en as Record<string, unknown>,
-      'home.streak_pill_one',
-    );
-    expect(value).toBe('{{count}} day');
+  it('saved_rail_empty matches approved copy', () => {
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.saved_rail_empty'),
+    ).toBe('Bài bạn tạo hoặc tải về sẽ hiện ở đây.');
+    expect(
+      resolveKey(en as Record<string, unknown>, 'home.saved_rail_empty'),
+    ).toBe('Lessons you create or download will show up here.');
   });
 
-  it('en.json streak_pill_other is "{{count}} days"', () => {
-    const value = resolveKey(
-      en as Record<string, unknown>,
-      'home.streak_pill_other',
-    );
-    expect(value).toBe('{{count}} days');
+  it('streak_unit plural forms have correct values in vi and en', () => {
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.streak_unit_one'),
+    ).toBe('ngày');
+    expect(
+      resolveKey(vi as Record<string, unknown>, 'home.streak_unit_other'),
+    ).toBe('ngày');
+    expect(
+      resolveKey(en as Record<string, unknown>, 'home.streak_unit_one'),
+    ).toBe('day');
+    expect(
+      resolveKey(en as Record<string, unknown>, 'home.streak_unit_other'),
+    ).toBe('days');
   });
 });

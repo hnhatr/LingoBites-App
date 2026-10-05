@@ -1,17 +1,21 @@
 /**
- * HomeHeroCard — paper-cut hero card for the 5 Home states (DQ-002, P-004).
+ * HomeHeroCard — paper-cut hero card for the 5 Home states (LING-256, LING-267, §VS-2).
  *
- * Motion (AD-002):
- *   - I2 (cat bounce): disabled under reduced motion
- *   - I8 (CTA breathing pulse): disabled under reduced motion
+ * Motion (§VS-7):
+ *   - I1 (bubble pop-in): scale 0 -> 1 with overshoot, 400ms, delay 500ms; static under RM
+ *   - I2 (cat bob loop): 3s loop translateY -5, rotate -2°; tap: squash + 4 hearts; off under RM
+ *   - I8 (CTA breathe loop): 2.4s halo pulse 0 to 6pt around CTA; off under RM
  */
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Image, Pressable, StyleSheet, View} from 'react-native';
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
+  withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
@@ -21,20 +25,17 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {HeroState} from '../logic/homeScreenModel';
 import {
-  HERO_BADGE_BG,
-  HERO_BADGE_INK,
   HERO_BLUE,
+  HERO_CORAL,
   HERO_CTA_BG,
   HERO_CTA_INK,
-  HERO_MINT,
   HERO_TITLE,
-  HERO_WAVE_SECONDARY,
 } from '../logic/homeScreenModel';
 import {
-  ConfettiParticles,
+  getHardShadow,
   HeartBurst,
-  HeroBlobs,
-  HomeWaveDecoration,
+  HomeHeroSparks,
+  HomeHeroWaves,
 } from './HomeDecorations';
 import {HomeIcon, type HomeSvgIconName} from './HomeSvgIcons';
 
@@ -50,15 +51,15 @@ type Props = {
 };
 
 type StateContent = {
-  /** Eyebrow label (kicker) i18n key — mockup v4 Gap 5 */
   eyebrowKey: string;
-  titleKey: string;
+  titleKey?: string;
+  explicitTitle?: string;
   titleParams?: Record<string, string | number>;
   bodyKey?: string;
-  ctaKey: string;
+  bodyParams?: Record<string, string | number>;
+  ctaKey?: string;
+  explicitCta?: string;
   ctaParams?: Record<string, string | number>;
-  ctaA11yKey?: string;
-  /** Icon name for the CTA button — mockup v4 Gap 5 */
   ctaIconName: HomeSvgIconName;
 };
 
@@ -66,7 +67,6 @@ function getStateContent(
   heroState: HeroState,
   startedLessonTitle: string | undefined,
   startedLessonMinutes: number | undefined,
-  displayName: string | null,
   libraryCount: number | null | undefined,
 ): StateContent {
   switch (heroState) {
@@ -82,19 +82,37 @@ function getStateContent(
       return {
         eyebrowKey: 'home.hero_eyebrow_saved',
         titleKey: 'home.hero_saved_title',
-        titleParams: libraryCount != null ? {n: libraryCount} : undefined,
-        bodyKey: 'home.hero_saved_body',
+        bodyKey:
+          libraryCount === 1
+            ? 'home.hero_saved_body_one'
+            : 'home.hero_saved_body_other',
+        bodyParams: {count: libraryCount ?? 0},
         ctaKey: 'home.hero_saved_cta',
         ctaIconName: 'menu_book',
       };
     case 'in_progress':
       return {
         eyebrowKey: 'home.hero_eyebrow_in_progress',
+        explicitTitle: startedLessonTitle,
         titleKey: startedLessonTitle
-          ? 'home.hero_in_progress_title'
+          ? undefined
           : 'home.hero_in_progress_title',
-        bodyKey: undefined, // A-009: no progress bar
-        ctaKey: 'home.hero_in_progress_cta',
+        bodyKey:
+          startedLessonMinutes != null
+            ? 'home.hero_in_progress_body'
+            : undefined,
+        bodyParams:
+          startedLessonMinutes != null
+            ? {minutes: startedLessonMinutes}
+            : undefined,
+        ctaKey:
+          startedLessonMinutes != null
+            ? 'home.hero_continue_cta'
+            : 'home.hero_in_progress_cta',
+        ctaParams:
+          startedLessonMinutes != null
+            ? {minutes: startedLessonMinutes}
+            : undefined,
         ctaIconName: 'play_arrow',
       };
     case 'goal_met':
@@ -129,8 +147,6 @@ function getMascotSpeech(heroState: HeroState): string {
 
 export function HomeHeroCard({
   heroState,
-  streak,
-  displayName,
   startedLessonTitle,
   startedLessonMinutes,
   libraryCount,
@@ -144,21 +160,78 @@ export function HomeHeroCard({
   const [showHearts, setShowHearts] = useState(false);
   const heartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // I2: cat bounce on tap — disabled under reduced motion
-  const mascotScale = useSharedValue(1);
+  // I1: Bubble pop-in animation (§VS-7)
+  const bubbleScale = useSharedValue(reducedMotion ? 1 : 0);
+  useEffect(() => {
+    if (!reducedMotion) {
+      bubbleScale.value = withDelay(
+        500,
+        withTiming(1, {duration: 400, easing: Easing.out(Easing.quad)}),
+      );
+    } else {
+      bubbleScale.value = 1;
+    }
+  }, [bubbleScale, reducedMotion]);
+
+  const bubbleAnimStyle = useAnimatedStyle(() => ({
+    transform: [{scale: bubbleScale.value}],
+  }));
+
+  // I2: Cat bobbing loop (§VS-7: 3s ease-in-out loop translateY -5, rotate -2°)
+  const catBobY = useSharedValue(0);
+  const catBobRotate = useSharedValue(0);
+  const catSquashScaleX = useSharedValue(1);
+  const catSquashScaleY = useSharedValue(1);
+  const catSquashRotate = useSharedValue(0);
+
+  useEffect(() => {
+    if (!reducedMotion) {
+      catBobY.value = withRepeat(
+        withSequence(
+          withTiming(-5, {duration: 1500, easing: Easing.inOut(Easing.quad)}),
+          withTiming(0, {duration: 1500, easing: Easing.inOut(Easing.quad)}),
+        ),
+        -1,
+        false,
+      );
+      catBobRotate.value = withRepeat(
+        withSequence(
+          withTiming(-2, {duration: 1500, easing: Easing.inOut(Easing.quad)}),
+          withTiming(0, {duration: 1500, easing: Easing.inOut(Easing.quad)}),
+        ),
+        -1,
+        false,
+      );
+    } else {
+      catBobY.value = 0;
+      catBobRotate.value = 0;
+    }
+  }, [catBobRotate, catBobY, reducedMotion]);
 
   const handleMascotTap = useCallback(() => {
     if (reducedMotion) return;
-    mascotScale.value = withSequence(
-      withTiming(1.2, {duration: 150}),
+    // Squash: 30% scale 1.08x0.9; 60% 0.95x1.08, rotate 3°
+    catSquashScaleX.value = withSequence(
+      withTiming(1.08, {duration: 150}),
+      withTiming(0.95, {duration: 150}),
       withTiming(1.0, {duration: 200}),
+    );
+    catSquashScaleY.value = withSequence(
+      withTiming(0.9, {duration: 150}),
+      withTiming(1.08, {duration: 150}),
+      withTiming(1.0, {duration: 200}),
+    );
+    catSquashRotate.value = withSequence(
+      withTiming(0, {duration: 150}),
+      withTiming(3, {duration: 150}),
+      withTiming(0, {duration: 200}),
     );
     setShowHearts(true);
     if (heartTimerRef.current) {
       clearTimeout(heartTimerRef.current);
     }
-    heartTimerRef.current = setTimeout(() => setShowHearts(false), 800);
-  }, [mascotScale, reducedMotion]);
+    heartTimerRef.current = setTimeout(() => setShowHearts(false), 1100);
+  }, [catSquashRotate, catSquashScaleX, catSquashScaleY, reducedMotion]);
 
   useEffect(() => {
     return () => {
@@ -168,43 +241,67 @@ export function HomeHeroCard({
     };
   }, []);
 
-  const mascotStyle = useAnimatedStyle(() => ({
-    transform: [{scale: mascotScale.value}],
+  const catAnimStyle = useAnimatedStyle(() => ({
+    transform: [
+      {translateY: catBobY.value},
+      {rotate: `${catBobRotate.value + catSquashRotate.value}deg`},
+      {scaleX: catSquashScaleX.value},
+      {scaleY: catSquashScaleY.value},
+    ],
   }));
 
-  // I8: CTA breathing pulse — disabled under reduced motion
-  const ctaScale = useSharedValue(1);
+  // I8: CTA breathe loop (§VS-7: 2.4s halo pulse 0 to 6pt around CTA)
+  const ctaHalo = useSharedValue(0);
   useEffect(() => {
     if (!reducedMotion) {
-      ctaScale.value = withSequence(
-        withTiming(1.04, {duration: 1000}),
-        withTiming(1.0, {duration: 1000}),
+      ctaHalo.value = withRepeat(
+        withSequence(
+          withTiming(6, {duration: 1200, easing: Easing.inOut(Easing.quad)}),
+          withTiming(0, {duration: 1200, easing: Easing.inOut(Easing.quad)}),
+        ),
+        -1,
+        false,
       );
+    } else {
+      ctaHalo.value = 0;
     }
-  }, [ctaScale, reducedMotion]);
+  }, [ctaHalo, reducedMotion]);
 
-  const ctaStyle = useAnimatedStyle(() => ({
-    transform: [{scale: ctaScale.value}],
+  const ctaHaloStyle = useAnimatedStyle(() => ({
+    top: -ctaHalo.value,
+    bottom: -ctaHalo.value,
+    left: -ctaHalo.value,
+    right: -ctaHalo.value,
+    opacity: ctaHalo.value > 0 ? 0.33 : 0,
   }));
 
   const content = getStateContent(
     heroState,
     startedLessonTitle,
     startedLessonMinutes,
-    displayName,
     libraryCount,
   );
   const eyebrowText = t(content.eyebrowKey);
-  const titleText = content.titleParams
-    ? t(content.titleKey, content.titleParams)
-    : t(content.titleKey);
-  const bodyText = content.bodyKey ? t(content.bodyKey) : null;
-  const ctaText = content.ctaParams
-    ? t(content.ctaKey, content.ctaParams)
-    : t(content.ctaKey);
+  const titleText = content.explicitTitle
+    ? content.explicitTitle
+    : content.titleKey
+    ? content.titleParams
+      ? t(content.titleKey, content.titleParams)
+      : t(content.titleKey)
+    : '';
+  const bodyText = content.bodyKey
+    ? content.bodyParams
+      ? t(content.bodyKey, content.bodyParams)
+      : t(content.bodyKey)
+    : null;
+  const ctaText = content.explicitCta
+    ? content.explicitCta
+    : content.ctaKey
+    ? content.ctaParams
+      ? t(content.ctaKey, content.ctaParams)
+      : t(content.ctaKey)
+    : '';
   const speechText = t(getMascotSpeech(heroState));
-
-  const isGoalMet = heroState === 'goal_met';
 
   return (
     <View
@@ -212,51 +309,49 @@ export function HomeHeroCard({
       testID={testID ?? `home-hero-${heroState}`}
       accessibilityRole="none"
     >
-      <HeroBlobs />
-      {/* Paper-cut wave decoration at bottom of hero (Gap 5) */}
-      <HomeWaveDecoration
-        color={HERO_MINT}
-        secondaryColor={HERO_WAVE_SECONDARY}
-        width={400}
-        height={60}
-        testID="home-hero-waves"
-      />
-      {isGoalMet && <ConfettiParticles visible={!reducedMotion} />}
+      {/* §VS-2.2 Decorations in paint order */}
+      {/* 1. Coral circle 140 at right -40, top -50 */}
+      <View style={styles.coralBlob} />
 
-      {/* Text content */}
-      <View style={styles.copy} testID="home-hero-copy">
-        {/* Eyebrow / kicker label — mockup v4 Gap 5 */}
+      {/* 2. Paper sheet 118x150 rotated -6° at right 18, bottom -6 */}
+      <View style={styles.paperSheet} />
+
+      {/* 3. Waves SVG (back #3d88c4, front #6BD2AD) */}
+      <HomeHeroWaves />
+
+      {/* 4. Sparks (white opacity 0.85) */}
+      <HomeHeroSparks />
+
+      {/* Foreground (§VS-2.3): column text layout with paddingRight 138 */}
+      <View style={styles.textColumn} testID="home-hero-copy">
+        {/* Kicker: 12pt weight 800 uppercase */}
         <AppText
-          variant="caption"
-          style={styles.eyebrow}
+          style={styles.kicker}
           testID="home-hero-eyebrow"
           numberOfLines={1}
         >
           {eyebrowText}
         </AppText>
 
-        {streak > 0 && heroState === 'in_progress' ? (
-          <View style={styles.badge}>
-            <AppText variant="label" style={styles.badgeLabel}>
-              {t('home.hero_streak', {count: streak})}
-            </AppText>
-          </View>
-        ) : null}
-
-        <AppText variant="h3" style={styles.title} numberOfLines={2}>
+        {/* Title: 20/25 weight 700, max 3 lines (EC-003) */}
+        <AppText style={styles.title} numberOfLines={3}>
           {titleText}
         </AppText>
 
+        {/* Body: 13pt weight 500 opacity 0.95 */}
         {bodyText ? (
-          <AppText variant="caption" style={styles.body}>
+          <AppText style={styles.body} numberOfLines={2}>
             {bodyText}
           </AppText>
         ) : null}
 
-        <Animated.View style={ctaStyle}>
+        {/* CTA button with halo and icon */}
+        <View style={styles.ctaWrapper}>
+          <Animated.View style={[styles.ctaHalo, ctaHaloStyle]} />
           <Pressable
             accessibilityLabel={ctaText}
             accessibilityRole="button"
+            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
             onPress={onPrimary}
             testID={
               heroState === 'in_progress'
@@ -267,39 +362,36 @@ export function HomeHeroCard({
                 ? 'home-starter-first'
                 : 'home-hero-cta'
             }
-            style={({pressed}) => [
-              styles.cta,
-              pressed && {opacity: theme.states.pressedOpacity},
-            ]}
+            style={({pressed}) => [styles.cta, pressed && styles.ctaPressed]}
           >
-            {/* CTA icon — mockup v4 Gap 5 */}
             <HomeIcon
               name={content.ctaIconName}
-              size={18}
+              size={20}
               color={HERO_CTA_INK}
               testID="home-hero-cta-icon"
             />
-            <AppText variant="label" style={styles.ctaLabel}>
+            <AppText style={styles.ctaLabel} numberOfLines={1}>
               {ctaText}
             </AppText>
           </Pressable>
-        </Animated.View>
+        </View>
       </View>
 
-      {/* Mascot with tap interaction (I2) */}
-      <View style={styles.mascotWrap}>
+      {/* Cat image & tap target (absolute at right 6, bottom -14) */}
+      <View style={styles.catContainer}>
         <HeartBurst visible={showHearts} />
         <Pressable
           onPress={handleMascotTap}
-          accessibilityLabel={t('home.mascot_in_progress')}
+          accessibilityLabel={speechText}
           accessibilityRole="image"
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
           testID="home-hero-mascot-btn"
-          style={styles.mascotTapTarget}
+          style={styles.catTapTarget}
         >
-          <Animated.View style={mascotStyle}>
+          <Animated.View style={catAnimStyle}>
             <Image
               source={require('@ui/assets/home-hero-cat.png')}
-              style={styles.mascotImage}
+              style={styles.catImage}
               resizeMode="contain"
               accessibilityIgnoresInvertColors
             />
@@ -307,112 +399,193 @@ export function HomeHeroCard({
         </Pressable>
       </View>
 
-      {/* Speech bubble — card-relative (BUG-004, right:58 top:8 from mockup v4) */}
-      <View style={styles.bubble} testID="home-mascot-bubble">
-        <AppText variant="caption" style={styles.bubbleText}>
-          {speechText}
-        </AppText>
-        {/* Downward tail pointing toward the mascot head */}
-        <View style={styles.bubbleTail} testID="home-mascot-bubble-tail" />
-      </View>
+      {/* Speech bubble: absolute at right 58, top 8, width 120, white bg, border 2 ink */}
+      <Animated.View
+        style={[styles.bubble, bubbleAnimStyle]}
+        testID="home-mascot-bubble"
+      >
+        <AppText style={styles.bubbleText}>{speechText}</AppText>
+        {/* Downward tail: outer ink triangle + inner white triangle */}
+        <View style={styles.bubbleTailOuter} testID="home-mascot-bubble-tail" />
+        <View style={styles.bubbleTailInner} />
+      </Animated.View>
     </View>
   );
 }
 
-// CSS-triangle trick: border sides must be fully transparent to create the tail shape
+const CARD_PALETTE = {
+  borderInk: '#1c1c10',
+  paperSheet: '#ffffff22',
+  haloBg: '#ffd35e',
+  bubbleBg: '#ffffff',
+  bubbleTailInner: '#ffffff',
+  bubbleText: '#1c1c10',
+};
+
 const TRANSPARENT = 'rgba(0,0,0,0)';
 
-function makeStyles(theme: AppTheme) {
+function makeStyles(_theme: AppTheme) {
   return StyleSheet.create({
     card: {
-      alignItems: 'center',
       backgroundColor: HERO_BLUE,
-      borderRadius: theme.radius.xl,
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      minHeight: 250,
+      borderColor: CARD_PALETTE.borderInk,
+      borderRadius: 24,
+      borderWidth: 2,
+      minHeight: 190,
       overflow: 'hidden',
-      padding: theme.spacing.lg,
-      ...theme.shadow.soft,
+      paddingBottom: 20,
+      paddingLeft: 20,
+      paddingRight: 138,
+      paddingTop: 20,
+      position: 'relative',
+      ...getHardShadow(6),
     },
-    copy: {flex: 1, gap: theme.spacing.sm, minWidth: 0},
-    eyebrow: {
+    coralBlob: {
+      backgroundColor: HERO_CORAL,
+      borderRadius: 70,
+      height: 140,
+      position: 'absolute',
+      right: -40,
+      top: -50,
+      width: 140,
+    },
+    paperSheet: {
+      backgroundColor: CARD_PALETTE.paperSheet,
+      borderRadius: 18,
+      bottom: -6,
+      height: 150,
+      position: 'absolute',
+      right: 18,
+      transform: [{rotate: '-6deg'}],
+      width: 118,
+    },
+    textColumn: {
+      flex: 1,
+      minWidth: 0,
+      zIndex: 1,
+    },
+    kicker: {
       color: HERO_TITLE,
+      fontSize: 12,
       fontWeight: '800',
       letterSpacing: 0.6,
+      marginTop: 34,
       opacity: 0.9,
       textTransform: 'uppercase',
     },
-    badge: {
-      alignSelf: 'flex-start',
-      backgroundColor: HERO_BADGE_BG,
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: 6,
+    title: {
+      color: HERO_TITLE,
+      fontSize: 20,
+      fontWeight: '700',
+      lineHeight: 25,
+      marginBottom: 4,
+      marginTop: 6,
     },
-    badgeLabel: {color: HERO_BADGE_INK},
-    title: {color: HERO_TITLE},
-    body: {color: HERO_TITLE, opacity: 0.92},
+    body: {
+      color: HERO_TITLE,
+      fontSize: 13,
+      fontWeight: '500',
+      marginBottom: 14,
+      opacity: 0.95,
+    },
+    ctaWrapper: {
+      alignSelf: 'flex-start',
+      marginTop: 4,
+      position: 'relative',
+    },
+    ctaHalo: {
+      backgroundColor: CARD_PALETTE.haloBg,
+      borderRadius: 999,
+      position: 'absolute',
+    },
     cta: {
       alignItems: 'center',
-      alignSelf: 'flex-start',
       backgroundColor: HERO_CTA_BG,
+      borderColor: CARD_PALETTE.borderInk,
       borderRadius: 999,
+      borderWidth: 2,
       flexDirection: 'row',
       gap: 6,
       justifyContent: 'center',
-      marginTop: theme.spacing.xs,
-      minHeight: 48,
-      paddingHorizontal: theme.spacing.lg,
-      paddingVertical: theme.spacing.sm,
+      minHeight: 44,
+      paddingLeft: 14,
+      paddingRight: 18,
+      paddingVertical: 10,
+      ...getHardShadow(4),
     },
-    ctaLabel: {color: HERO_CTA_INK, textAlign: 'center'},
-    mascotWrap: {
+    ctaPressed: {
+      transform: [{translateY: 3}],
+      ...getHardShadow(1),
+    },
+    ctaLabel: {
+      color: HERO_CTA_INK,
+      fontSize: 15,
+      fontWeight: '800',
+      textAlign: 'center',
+    },
+    catContainer: {
+      bottom: -14,
+      position: 'absolute',
+      right: 6,
+      width: 126,
+      zIndex: 2,
+    },
+    catTapTarget: {
       alignItems: 'center',
       justifyContent: 'flex-end',
-      marginBottom: -110,
-      marginRight: -18,
       minHeight: 48,
       minWidth: 48,
-      position: 'relative',
-      width: 128,
+      width: 126,
     },
-    mascotTapTarget: {
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      minHeight: 48,
-      minWidth: 48,
-      width: 128,
+    catImage: {
+      height: 157,
+      width: 126,
     },
-    mascotImage: {height: 140, width: 112},
-    // BUG-004: card-relative anchor per mockup v4 (right:58, top:8, maxWidth:120, width:120)
     bubble: {
-      backgroundColor: theme.colors.overlayLight,
-      borderRadius: theme.radius.md,
+      backgroundColor: CARD_PALETTE.bubbleBg,
+      borderColor: CARD_PALETTE.borderInk,
+      borderRadius: 14,
+      borderWidth: 2,
       maxWidth: 120,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
+      paddingHorizontal: 9,
+      paddingVertical: 6,
       position: 'absolute',
       right: 58,
       top: 8,
       width: 120,
-      zIndex: 2,
+      zIndex: 3,
     },
-    // Downward tail pointing toward the mascot head (mockup v4 Gap 5)
-    bubbleTail: {
-      alignSelf: 'flex-end',
+    bubbleText: {
+      color: CARD_PALETTE.bubbleText,
+      fontSize: 12,
+      fontWeight: '800',
+      lineHeight: 15,
+    },
+    bubbleTailOuter: {
       borderLeftColor: TRANSPARENT,
       borderLeftWidth: 6,
       borderRightColor: TRANSPARENT,
       borderRightWidth: 6,
-      borderTopColor: theme.colors.overlayLight,
-      borderTopWidth: 8,
-      bottom: -8,
+      borderTopColor: CARD_PALETTE.borderInk,
+      borderTopWidth: 12,
+      bottom: -12,
       height: 0,
-      marginRight: 10,
       position: 'absolute',
+      right: 16,
       width: 0,
     },
-    bubbleText: {color: HERO_TITLE, opacity: 0.9},
+    bubbleTailInner: {
+      borderLeftColor: TRANSPARENT,
+      borderLeftWidth: 4,
+      borderRightColor: TRANSPARENT,
+      borderRightWidth: 4,
+      borderTopColor: CARD_PALETTE.bubbleTailInner,
+      borderTopWidth: 9,
+      bottom: -8,
+      height: 0,
+      position: 'absolute',
+      right: 18,
+      width: 0,
+    },
   });
 }

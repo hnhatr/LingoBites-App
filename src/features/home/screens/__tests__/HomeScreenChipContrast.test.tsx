@@ -73,9 +73,8 @@ const PAIRINGS = [
   },
 ] as const;
 
-// SETE-281: the hero CTA uses fixed brand colors (yellow on the fixed
-// deep-blue card) in every theme, so it is checked directly instead of
-// through theme tokens.
+// SETE-281 & LING-268: the hero and bubble use fixed brand colors
+// checked directly instead of through theme tokens.
 const HERO_CTA_BG = '#FFD35E';
 const HERO_CTA_INK = '#40320D';
 const HERO_BADGE_BG = '#DAF1FA';
@@ -83,10 +82,22 @@ const HERO_BADGE_INK = '#134F7E';
 const HERO_TITLE = '#FFFFFF';
 const HERO_BLUE = '#226FAB';
 
+// LING-268 / LING-267 (§VS-2, §VS-8) v4 tokens
+const V4_BUBBLE_BG = '#FFFFFF';
+const V4_BUBBLE_INK = '#1C1C10';
+const V4_HERO_BG = '#FBF7EE';
+const V4_HERO_CTA_BG = '#FFD84D';
+const V4_HERO_PRIMARY_INK = '#1C1C10';
+const V4_HERO_MUTED_INK = '#6A685C';
+
 const FIXED_PAIRINGS = [
   {name: 'hero-cta', background: HERO_CTA_BG, ink: HERO_CTA_INK},
   {name: 'hero-badge', background: HERO_BADGE_BG, ink: HERO_BADGE_INK},
   {name: 'hero-title', background: HERO_BLUE, ink: HERO_TITLE},
+  {name: 'v4-mascot-bubble', background: V4_BUBBLE_BG, ink: V4_BUBBLE_INK},
+  {name: 'v4-hero-cta', background: V4_HERO_CTA_BG, ink: V4_HERO_PRIMARY_INK},
+  {name: 'v4-hero-primary', background: V4_HERO_BG, ink: V4_HERO_PRIMARY_INK},
+  {name: 'v4-hero-muted', background: V4_HERO_BG, ink: V4_HERO_MUTED_INK},
 ] as const;
 
 function resolveColor(

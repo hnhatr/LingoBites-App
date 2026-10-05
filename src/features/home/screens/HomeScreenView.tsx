@@ -1,24 +1,24 @@
 /**
- * HomeScreenView — Home screen layout (LING-256 paper-cut v4 redesign).
+ * HomeScreenView — Home screen layout (LING-256, LING-267, §VS-0..§VS-8).
  *
- * Renders in mockup v4 order (AC-1):
+ * Renders in mockup v4 order (AC-1, FR-001):
  * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
  * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8)
  * 3. HomeWeeklyGoal — 5-paw goal directly under hero (I3, P-004)
  * 4. HomeShortcutsGrid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003)
- * 5. HomeSavedRail — renamed "Bài đã lưu" rail (DQ-006)
+ * 5. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
  *
- * Theme contrast: uses existing theme tokens (DQ-004).
- * Accessibility: min 48pt hit targets, accessibilityLabel/Role (A-005).
- * Reduced motion: all animations disabled via useReducedMotion() (D5, AD-002).
+ * Header is inside the ScrollView and scrolls with the content.
+ * Confetti (I7) is rendered once as a full-screen overlay when goal_met.
  */
 import React, {useMemo} from 'react';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {ConfettiOverlay} from '../components/HomeDecorations';
 import {HomeHeader} from '../components/HomeHeader';
 import {HomeHeroCard} from '../components/HomeHeroCard';
 import {HomeSavedRail} from '../components/HomeSavedRail';
@@ -56,6 +56,11 @@ export function HomeScreenView(props: HomeScreenViewModel) {
   // Shortcut navigation handler
   const handleShortcutPress = (key: (typeof shortcutItems)[0]['key']) => {
     switch (key) {
+      case 'video':
+        if (youtubeEnabled) {
+          openVideoCell();
+        }
+        break;
       case 'review':
         onNavigateReview();
         break;
@@ -65,72 +70,92 @@ export function HomeScreenView(props: HomeScreenViewModel) {
       case 'lessons':
         onNavigateLessonList();
         break;
-      case 'video':
-        if (youtubeEnabled) {
-          openVideoCell();
-        }
-        break;
     }
   };
 
+  const isGoalMet = heroState === 'goal_met';
+
   return (
     <AppScreen>
-      {/* Header: time-of-day greeting + streak flame — no app brand (DQ-008, D7) */}
-      <HomeHeader greeting={greetingModel} streak={streak} flame={flameModel} />
+      {/* Screen-level full overlay for goal_met state (I7, A-006, §VS-7) */}
+      <ConfettiOverlay visible={isGoalMet} />
 
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          {paddingBottom: feedClearance},
+          {paddingBottom: Math.max(feedClearance, 28)},
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero card — 5 states (DQ-002, P-004, I2, I8) */}
-        <HomeHeroCard
-          heroState={heroState}
+        {/* Header (§VS-1) scrolls with content (FR-001) */}
+        <HomeHeader
+          greeting={greetingModel}
           streak={streak}
-          displayName={trimmedDisplayName}
-          startedLessonTitle={startedLesson?.titleVi}
-          startedLessonMinutes={startedLesson?.estimatedDurationMinutes}
-          libraryCount={libraryCount}
-          onPrimary={
-            heroState === 'in_progress'
-              ? onContinueStartedLesson
-              : heroState === 'saved_only'
-              ? onNavigateLessonList
-              : onNavigateCreate
-          }
+          flame={flameModel}
         />
 
-        {/* Weekly goal — 5 paws directly under hero (I3, P-004) — mockup v4 order */}
-        <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
+        {/* Hero card (§VS-2) */}
+        <View style={styles.heroSection}>
+          <HomeHeroCard
+            heroState={heroState}
+            streak={streak}
+            displayName={trimmedDisplayName}
+            startedLessonTitle={startedLesson?.titleVi}
+            startedLessonMinutes={startedLesson?.estimatedDurationMinutes}
+            libraryCount={libraryCount}
+            onPrimary={
+              heroState === 'in_progress'
+                ? onContinueStartedLesson
+                : heroState === 'saved_only'
+                ? onNavigateLessonList
+                : onNavigateCreate
+            }
+          />
+        </View>
 
-        {/* Shortcuts grid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003, I6) */}
-        <HomeShortcutsGrid
-          shortcuts={shortcutItems}
-          onPress={handleShortcutPress}
-        />
+        {/* Weekly goal (§VS-3) directly under hero */}
+        <View style={styles.goalSection}>
+          <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
+        </View>
 
-        {/* Saved lessons rail (DQ-006) */}
-        <HomeSavedRail
-          items={railItems}
-          onItem={openRecentItem}
-          onViewAll={goLessonsTab}
-          onCreateFirst={onNavigateCreate}
-        />
+        {/* Shortcuts grid (§VS-4) */}
+        <View style={styles.shortcutsSection}>
+          <HomeShortcutsGrid
+            shortcuts={shortcutItems}
+            onPress={handleShortcutPress}
+          />
+        </View>
+
+        {/* Saved rail (§VS-5) */}
+        <View style={styles.railSection}>
+          <HomeSavedRail
+            items={railItems}
+            onItem={openRecentItem}
+            onViewAll={goLessonsTab}
+          />
+        </View>
       </ScrollView>
     </AppScreen>
   );
 }
 
-function makeStyles(theme: AppTheme) {
+function makeStyles(_theme: AppTheme) {
   return StyleSheet.create({
     scrollContent: {
       flexGrow: 1,
-      gap: theme.spacing.xl,
-      paddingBottom: 28,
-      paddingHorizontal: theme.gutter,
-      paddingTop: theme.spacing.sm,
+      paddingHorizontal: 16,
+    },
+    heroSection: {
+      marginBottom: 18,
+    },
+    goalSection: {
+      marginBottom: 22,
+    },
+    shortcutsSection: {
+      marginBottom: 22,
+    },
+    railSection: {
+      marginBottom: 10,
     },
   });
 }

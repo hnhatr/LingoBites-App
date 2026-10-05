@@ -13,6 +13,14 @@ import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
+jest.mock('react-native-reanimated', () => {
+  const base = require('../../../../../test-utils/reanimatedMock');
+  return {
+    ...base,
+    withRepeat: (anim: unknown) => anim,
+  };
+});
+
 let mockYouTubeServerEnabled = false;
 
 jest.mock('@core/api/youtubeCapabilities', () => ({
@@ -92,7 +100,6 @@ describe('HomeScreen weekly goal card (TC-4B / LING-232)', () => {
   it('renders the weekly goal card after the hero and before the shortcuts (v4 order, AC-1)', async () => {
     const tree = await renderHome();
     const ids = orderedTestIds(tree);
-    // Find first hero testID (e.g. home-hero-youtube_disabled)
     const hero = ids.findIndex(id => id.startsWith('home-hero-'));
     const card = ids.indexOf('home-weekly-goal-card');
     const shortcuts = ids.indexOf('home-shortcuts-grid');
@@ -117,7 +124,6 @@ describe('HomeScreen weekly goal card (TC-4B / LING-232)', () => {
       tree.root.findAll(node => node.props.testID === 'home-explore-section')
         .length,
     ).toBe(0);
-    // None of the old explore cell IDs should exist
     for (const id of [
       'home-explore-video',
       'home-explore-news',
