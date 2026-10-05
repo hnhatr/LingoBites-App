@@ -1,4 +1,10 @@
+import React from 'react';
+import {StyleSheet} from 'react-native';
+import ReactTestRenderer from 'react-test-renderer';
+
 import {themeIds, themes} from '@ui/theme/themeRegistry';
+
+import {HomeWeeklyGoal} from '../../components/HomeWeeklyGoal';
 
 /**
  * SETE-249 D2: the practice chips on Home ("Luyện tập hôm nay") and Library
@@ -128,6 +134,60 @@ describe('practice chip contrast (SETE-249 D2)', () => {
       const background = parseColor(pairing.background).rgb;
       const ink = parseColor(pairing.ink).rgb;
       expect(contrast(background, ink)).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+});
+
+let mockTheme: (typeof themes)[keyof typeof themes] = themes.default;
+jest.mock('@ui/theme', () => {
+  const actual = jest.requireActual('@ui/theme');
+  return {
+    ...actual,
+    useAppTheme: () => ({theme: mockTheme}),
+  };
+});
+
+describe('HomeWeeklyGoal contrast (BUG-002, §VS-3)', () => {
+  for (const id of themeIds) {
+    it(`weekly-goal count line is readable on surface in ${id} theme (≥ 4.5:1)`, () => {
+      mockTheme = themes[id];
+      const pawGoal = {totalPaws: 5 as const, filledPaws: 2, goalMet: false};
+      const card = {
+        completedThisWeek: 2,
+        target: 5,
+        ringPercent: 40,
+        isMet: false,
+        countLineKey: 'home.weekly_goal_line' as const,
+        countLineParams: {n: 2, target: 5},
+        hintKey: 'home.weekly_goal_hint_badge' as const,
+        hintParams: {k: 3},
+      };
+      let renderer!: ReactTestRenderer.ReactTestRenderer;
+      ReactTestRenderer.act(() => {
+        renderer = ReactTestRenderer.create(
+          <HomeWeeklyGoal pawGoal={pawGoal} card={card} />,
+        );
+      });
+      const cardView = renderer.root.findByProps({
+        testID: 'home-weekly-goal-card',
+      });
+      const cardStyle = StyleSheet.flatten(cardView.props.style);
+      const cardBg = cardStyle.backgroundColor;
+
+      const textNodes = renderer.root.findAll(
+        node =>
+          node.props.style &&
+          StyleSheet.flatten(node.props.style).fontSize === 15 &&
+          StyleSheet.flatten(node.props.style).fontWeight === '700',
+      );
+      expect(textNodes.length).toBeGreaterThan(0);
+      const countLineStyle = StyleSheet.flatten(textNodes[0].props.style);
+      const countLineColor = countLineStyle.color;
+
+      const bgRgb = parseColor(cardBg).rgb;
+      const inkRgb = parseColor(countLineColor).rgb;
+      const ratio = contrast(bgRgb, inkRgb);
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
     });
   }
 });
