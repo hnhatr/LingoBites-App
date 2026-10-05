@@ -10,6 +10,7 @@
  * - 4-shortcut grid with Video locked when YouTube is off (DQ-005, D3)
  * - Saved rail with renamed label (DQ-006)
  * - Graceful degradation when progress percent unavailable (A-009)
+ * - "Gợi ý hôm nay" card from the Today study-block engine (F12)
  */
 import {useFocusEffect} from '@react-navigation/native';
 import {useCallback, useMemo, useState} from 'react';
@@ -23,6 +24,15 @@ import {
   useCanonicalCatalog,
 } from '@features/lesson/player';
 import {getDueFlashcards} from '@features/review';
+import {
+  generateStudyBlock,
+  getLearnerStateSnapshot,
+  type LearnerStateSnapshot,
+  openStudyActivity,
+  type StudyActivityItem,
+  type StudyBlockPlan,
+  type TodayMode,
+} from '@features/today';
 
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
@@ -98,6 +108,9 @@ export function useHomeScreenController() {
   const [dueFlashcardCount, setDueFlashcardCount] = useState<number | null>(
     null,
   );
+  const [todayMode, setTodayMode] = useState<TodayMode>('normal');
+  const [learnerSnapshot, setLearnerSnapshot] =
+    useState<LearnerStateSnapshot | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -132,6 +145,12 @@ export function useHomeScreenController() {
         setDueFlashcardCount(getDueFlashcards().length);
       } catch {
         setDueFlashcardCount(null);
+      }
+      // Learner snapshot for the "Gợi ý hôm nay" card (F12)
+      try {
+        setLearnerSnapshot(getLearnerStateSnapshot());
+      } catch {
+        setLearnerSnapshot(null);
       }
     }, [canonicalRefresh]),
   );
@@ -189,6 +208,16 @@ export function useHomeScreenController() {
       }),
     [dueFlashcardCount, youtubeEnabled],
   );
+
+  // "Gợi ý hôm nay" study block, same engine as the Today screen (F12)
+  const todayPlan: StudyBlockPlan | null = useMemo(() => {
+    if (!learnerSnapshot) return null;
+    try {
+      return generateStudyBlock(learnerSnapshot, todayMode);
+    } catch {
+      return null;
+    }
+  }, [learnerSnapshot, todayMode]);
 
   // Saved rail items (DQ-006)
   const railItems: RecentItem[] = useMemo(() => {
@@ -263,6 +292,16 @@ export function useHomeScreenController() {
     [navigation],
   );
 
+  const onStartTodayActivity = useCallback(
+    (activity: StudyActivityItem) => openStudyActivity(navigation, activity),
+    [navigation],
+  );
+
+  const onViewTodayDetails = useCallback(
+    () => navigation.openToday({mode: todayMode}),
+    [navigation, todayMode],
+  );
+
   return {
     // Hero state
     heroState,
@@ -291,6 +330,12 @@ export function useHomeScreenController() {
       : null,
     railItems,
     youtubeEnabled,
+    // "Gợi ý hôm nay" (F12)
+    todayMode,
+    todayPlan,
+    onTodayModeChange: setTodayMode,
+    onStartTodayActivity,
+    onViewTodayDetails,
     // Navigation handlers
     goLessonsTab,
     openVideoCell,

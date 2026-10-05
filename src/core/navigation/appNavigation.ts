@@ -44,7 +44,11 @@ export interface AppNavigation {
    */
   finishCreate(lessonId: string): void;
   openReview(): void;
-  openToday(): void;
+  /**
+   * Open the full "Hôm nay" study-block screen, optionally pre-selecting a
+   * study length.
+   */
+  openToday(target?: {mode?: '5-minute' | 'normal' | 'deep-practice'}): void;
   openSpeakingRoom(): void;
   /**
    * Open shadowing practice: a specific lesson/sentence when given,

@@ -308,6 +308,83 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// "Gợi ý hôm nay" card (F12)
+// ---------------------------------------------------------------------------
+describe('Home today suggestion card (F12)', () => {
+  beforeEach(() => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+  });
+
+  it('renders the suggestion between the hero and the weekly goal', async () => {
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Gợi ý hôm nay');
+    expect(text).toContain('⚡ 5 phút');
+    expect(text).toContain('🎯 20 phút');
+    expect(text).toContain('🔥 45 phút');
+    const heroAt = text.indexOf('home-hero-');
+    const suggestionAt = text.indexOf('home-today-suggestion');
+    const goalAt = text.indexOf('home-weekly-goal-card');
+    expect(heroAt).toBeGreaterThan(-1);
+    expect(suggestionAt).toBeGreaterThan(heroAt);
+    expect(goalAt).toBeGreaterThan(suggestionAt);
+    expect(
+      tree.root.findAll(
+        node => node.props.testID === 'home-today-first-activity',
+      ).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('starts the first suggested activity from Home', async () => {
+    const tree = await renderHome();
+    const activity = tree.root
+      .findAll(node => node.props.testID === 'home-today-first-activity')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!activity) throw new Error('No suggested activity found');
+    await act(async () => activity.props.onPress());
+    const calls = [
+      mockAppNavigation.openLesson,
+      mockAppNavigation.openCatalog,
+      mockAppNavigation.openReview,
+      mockAppNavigation.openSpeakingRoom,
+      mockAppNavigation.openShadowing,
+    ].reduce((sum, fn) => sum + (fn as jest.Mock).mock.calls.length, 0);
+    expect(calls).toBe(1);
+    expect(mockAppNavigation.openToday).not.toHaveBeenCalled();
+  });
+
+  it('"Xem chi tiết" opens Today with the selected mode', async () => {
+    const tree = await renderHome();
+    const deepChip = tree.root
+      .findAll(node => node.props.testID === 'home-today-mode-deep-practice')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!deepChip) throw new Error('No 45-minute chip found');
+    await act(async () => deepChip.props.onPress());
+    const details = tree.root
+      .findAll(node => node.props.testID === 'home-today-details')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!details) throw new Error('No details link found');
+    await act(async () => details.props.onPress());
+    expect(mockAppNavigation.openToday).toHaveBeenCalledWith({
+      mode: 'deep-practice',
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Reduced motion (D5, AD-002, §VS-7, AC-004)
 // ---------------------------------------------------------------------------
 describe('Home reduced motion (§VS-7, AC-004)', () => {

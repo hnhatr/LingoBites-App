@@ -4,9 +4,10 @@
  * Renders in mockup v4 order (AC-1, FR-001):
  * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
  * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8)
- * 3. HomeWeeklyGoal — 5-paw goal directly under hero (I3, P-004)
- * 4. HomeShortcutsGrid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003)
- * 5. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
+ * 3. HomeTodaySuggestion — "Gợi ý hôm nay" under "Học tiếp" (F12)
+ * 4. HomeWeeklyGoal — 5-paw goal (I3, P-004)
+ * 5. HomeShortcutsGrid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003)
+ * 6. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
  *
  * Header is inside the ScrollView and scrolls with the content.
  * Confetti (I7) is rendered once as a full-screen overlay when goal_met.
@@ -23,6 +24,7 @@ import {HomeHeader} from '../components/HomeHeader';
 import {HomeHeroCard} from '../components/HomeHeroCard';
 import {HomeSavedRail} from '../components/HomeSavedRail';
 import {HomeShortcutsGrid} from '../components/HomeShortcutsGrid';
+import {HomeTodaySuggestion} from '../components/HomeTodaySuggestion';
 import {HomeWeeklyGoal} from '../components/HomeWeeklyGoal';
 import type {HomeScreenViewModel} from '../logic/useHomeScreenController';
 
@@ -40,6 +42,11 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     startedLesson,
     railItems,
     youtubeEnabled,
+    todayMode,
+    todayPlan,
+    onTodayModeChange,
+    onStartTodayActivity,
+    onViewTodayDetails,
     goLessonsTab,
     openVideoCell,
     openRecentItem,
@@ -113,7 +120,18 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           />
         </View>
 
-        {/* Weekly goal (§VS-3) directly under hero */}
+        {/* "Gợi ý hôm nay" (F12) directly under the "Học tiếp" hero */}
+        <View style={styles.todaySection}>
+          <HomeTodaySuggestion
+            mode={todayMode}
+            plan={todayPlan}
+            onModeChange={onTodayModeChange}
+            onStartActivity={onStartTodayActivity}
+            onViewDetails={onViewTodayDetails}
+          />
+        </View>
+
+        {/* Weekly goal (§VS-3) */}
         <View style={styles.goalSection}>
           <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
         </View>
@@ -146,6 +164,9 @@ function makeStyles(_theme: AppTheme) {
       paddingHorizontal: 16,
     },
     heroSection: {
+      marginBottom: 18,
+    },
+    todaySection: {
       marginBottom: 18,
     },
     goalSection: {

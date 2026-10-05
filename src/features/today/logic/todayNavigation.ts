@@ -1,6 +1,8 @@
 import {resolveShadowingEntry} from '@features/speaking';
 
-import type {TodayNavigationTarget} from './types';
+import type {AppNavigation} from '@core/navigation';
+
+import type {StudyActivityItem, TodayNavigationTarget} from './types';
 
 export type TodayNavigationRequest =
   | {screen: 'DailyReview'}
@@ -46,4 +48,35 @@ export function resolveTodayNavigation(
     return {screen: 'CanonicalCatalog'};
   }
   return {screen: 'DailyReview'};
+}
+
+/**
+ * Opens the screen for one study activity. Shared by the Today screen and the
+ * Home "Gợi ý hôm nay" card so both start an activity the same way.
+ *
+ * `ContentLessonRuntime` targets open the content-package runtime screen
+ * (never the removed v1 `SavedLessonDetail`), and `FlashcardList` targets
+ * fall back to `DailyReview` (LING-48 / TASK-007).
+ */
+export function openStudyActivity(
+  navigation: AppNavigation,
+  activity: StudyActivityItem,
+): void {
+  const resolved = resolveTodayNavigation(activity.navigationTarget);
+  if (resolved.screen === 'CanonicalLessonPlayer') {
+    navigation.openLesson(resolved.lessonId);
+  } else if (resolved.screen === 'CanonicalCatalog') {
+    navigation.openCatalog();
+  } else if (resolved.screen === 'SpeakingRoom') {
+    navigation.openSpeakingRoom();
+  } else if (resolved.screen === 'ShadowingLessonPicker') {
+    navigation.openShadowing();
+  } else if (resolved.screen === 'ShadowingSession') {
+    navigation.openShadowing({
+      lessonId: resolved.lessonId,
+      sentenceIndex: resolved.sentenceIndex,
+    });
+  } else {
+    navigation.openReview();
+  }
 }
