@@ -20,6 +20,7 @@ import * as AuthSession from '@core/auth/authSession';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {FeatureFlagProvider} from '@core/release';
+import {recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {
   CORE_WITH_REVIEW,
@@ -167,37 +168,11 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
 
   it('state S3 in_progress: renders lesson title, minutes body and CTA without progress bar', async () => {
     seedCanonicalLessonDownload();
-    mockFetch.mockImplementation(async (url: string) =>
-      String(url).includes('/api/v1/lessons')
-        ? {
-            ok: true,
-            status: 200,
-            headers: new Headers(),
-            json: async () => ({
-              contract_version: 1,
-              lessons: [],
-              next_cursor: null,
-            }),
-          }
-        : {
-            ok: true,
-            status: 200,
-            headers: new Headers(),
-            json: async () => ({
-              request_id: 'req-continue-1',
-              status: 'success',
-              progress: {
-                id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
-                lesson_id: '33333333-3333-4333-8333-333333333301',
-                status: 'in_progress',
-                started_at: '2026-09-25T07:00:00.000Z',
-                completed_at: null,
-                created_at: '2026-09-25T07:00:00.000Z',
-                updated_at: '2026-09-25T07:15:00.000Z',
-              },
-            }),
-          },
-    );
+    // F5: Home reads the started lesson from local lesson_progress.
+    recordLessonEvent({
+      lessonId: '33333333-3333-4333-8333-333333333301',
+      event: 'start',
+    });
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('home-hero-in_progress');

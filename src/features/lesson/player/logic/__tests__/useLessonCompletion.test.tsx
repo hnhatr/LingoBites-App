@@ -36,7 +36,11 @@ const mockedGet = getLessonProgress as jest.Mock;
 const mockedRecord = recordLessonEvent as jest.Mock;
 
 function makeDriver() {
-  let latest!: {state: LessonCompletionState; complete: () => void};
+  let latest!: {
+    state: LessonCompletionState;
+    complete: () => void;
+    markStarted: () => void;
+  };
   function Driver() {
     latest = useLessonCompletion(LESSON_ID);
     return null;
@@ -126,5 +130,41 @@ describe('useLessonCompletion (LING-222 AD-004)', () => {
     });
     expect(latest().state).toBe('finished');
     expect(mockedRecord).toHaveBeenCalledTimes(2);
+  });
+
+  it('F5: markStarted records a start for a never-started lesson', () => {
+    mockedRecord.mockReturnValue({
+      ok: true,
+      status: 'in_progress',
+      advanced: true,
+      eventId: 'evt-start',
+    });
+    const {latest} = makeDriver();
+    act(() => {
+      latest().markStarted();
+    });
+    expect(mockedRecord).toHaveBeenCalledWith({
+      lessonId: LESSON_ID,
+      event: 'start',
+    });
+    expect(mockRequestSync).toHaveBeenCalledTimes(1);
+  });
+
+  it('F5: markStarted queues nothing once local progress exists', () => {
+    mockedGet.mockReturnValue({
+      lessonId: LESSON_ID,
+      status: 'in_progress',
+      startedAt: '2026-10-01T10:00:00.000Z',
+      completedAt: null,
+      revision: 0,
+      tombstone: false,
+      updatedAt: '2026-10-01T10:00:00.000Z',
+    });
+    const {latest} = makeDriver();
+    act(() => {
+      latest().markStarted();
+    });
+    expect(mockedRecord).not.toHaveBeenCalled();
+    expect(mockRequestSync).not.toHaveBeenCalled();
   });
 });

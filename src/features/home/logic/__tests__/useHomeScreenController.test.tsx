@@ -3,6 +3,9 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {getGamificationSnapshot} from '@features/engagement';
 import type {GamificationSnapshot} from '@features/engagement/logic/gamificationPolicy';
+import {listDownloadedLessonSummaries} from '@features/lesson/player';
+
+import {listInProgressLessonIds} from '@core/sync/lessonProgress';
 
 import {useHomeScreenController} from '../useHomeScreenController';
 
@@ -31,9 +34,6 @@ jest.mock('@features/account', () => ({
 }));
 
 jest.mock('@features/lesson/player', () => ({
-  fetchContinueLearning: jest
-    .fn()
-    .mockResolvedValue({ok: true, progress: null}),
   listDownloadedLessonSummaries: jest.fn().mockReturnValue([]),
   useCanonicalCatalog: () => ({
     refresh: jest.fn(),
@@ -41,7 +41,22 @@ jest.mock('@features/lesson/player', () => ({
   }),
 }));
 
+jest.mock('@core/sync/lessonProgress', () => ({
+  listInProgressLessonIds: jest.fn().mockReturnValue([]),
+}));
+
 const mockSnapshot = getGamificationSnapshot as jest.Mock;
+const mockDownloads = listDownloadedLessonSummaries as jest.Mock;
+const mockInProgress = listInProgressLessonIds as jest.Mock;
+
+function download(lessonId: string, title: string) {
+  return {
+    lessonId,
+    title,
+    estimatedDurationMinutes: 7,
+    snapshot: {source_type: 'text'},
+  };
+}
 
 function baseSnapshot(
   overrides: Partial<GamificationSnapshot> = {},
@@ -135,5 +150,54 @@ describe('useHomeScreenController weekly goal (TC-4A / FR-005)', () => {
     );
     const {latest} = makeDriver();
     expect(latest().weeklyGoalCard.hintKey).toBe('home.weekly_goal_hint_kept');
+  });
+});
+
+describe('useHomeScreenController continue learning (F5)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSnapshot.mockReturnValue(baseSnapshot());
+    mockDownloads.mockReturnValue([]);
+    mockInProgress.mockReturnValue([]);
+  });
+
+  it('shows the most recently started downloaded lesson', () => {
+    mockDownloads.mockReturnValue([
+      download('lesson-a', 'Bài A'),
+      download('lesson-b', 'Bài B'),
+    ]);
+    mockInProgress.mockReturnValue(['lesson-x', 'lesson-b', 'lesson-a']);
+    const {latest} = makeDriver();
+    expect(latest().heroState).toBe('in_progress');
+    expect(latest().startedLesson).toEqual({
+      id: 'lesson-b',
+      titleVi: 'Bài B',
+      estimatedDurationMinutes: 7,
+    });
+  });
+
+  it('picks up a lesson started since the last focus', () => {
+    mockDownloads.mockReturnValue([download('lesson-a', 'Bài A')]);
+    const {latest} = makeDriver();
+    expect(latest().heroState).toBe('saved_only');
+    expect(latest().startedLesson).toBeNull();
+
+    mockInProgress.mockReturnValue(['lesson-a']);
+    const nav = require('@react-navigation/native');
+    act(() => {
+      nav.__runFocus();
+    });
+    expect(latest().heroState).toBe('in_progress');
+    expect(latest().startedLesson?.id).toBe('lesson-a');
+  });
+
+  it('keeps the download count when the progress read fails', () => {
+    mockDownloads.mockReturnValue([download('lesson-a', 'Bài A')]);
+    mockInProgress.mockImplementation(() => {
+      throw new Error('db');
+    });
+    const {latest} = makeDriver();
+    expect(latest().libraryCount).toBe(1);
+    expect(latest().startedLesson).toBeNull();
   });
 });

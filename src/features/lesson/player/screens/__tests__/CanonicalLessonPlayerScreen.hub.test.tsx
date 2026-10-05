@@ -76,10 +76,13 @@ jest.mock('../../logic/useCanonicalLesson', () => ({
 let mockCompletionState: 'unfinished' | 'finished' | 'error' = 'unfinished';
 const mockCompleteLesson = jest.fn();
 
+const mockMarkStarted = jest.fn();
+
 jest.mock('../../logic/useLessonCompletion', () => ({
   useLessonCompletion: () => ({
     state: mockCompletionState,
     complete: mockCompleteLesson,
+    markStarted: mockMarkStarted,
   }),
 }));
 
@@ -134,6 +137,8 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     expect(has(tree, 'canonical-hub-see-all')).toBe(true);
     expect(has(tree, 'canonical-player')).toBe(false);
     expect(has(tree, 'canonical-player-retry')).toBe(false);
+    // F5: opening a ready lesson records its start for Home "Học tiếp".
+    expect(mockMarkStarted).toHaveBeenCalled();
   });
 
   it('"Bắt đầu học" shows the sentence study and back returns to the hub', () => {
