@@ -290,7 +290,8 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     const {tree} = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('4 trên 6 bài đã xong');
-    expect(text).toContain('67%');
+    // ringPercent display removed in v4 (mockup v4 Gap 6: paw row replaces ring)
+    expect(text).not.toContain('67%');
     expect(text).toContain('Thêm 2 bài để nhận huy hiệu Chăm chỉ.');
   });
 });

@@ -49,6 +49,12 @@ const NEW_HOME_KEYS = [
   'home.saved_rail_view_all',
   'home.saved_rail_view_all_a11y',
   'home.saved_rail_empty',
+  // Hero eyebrow labels (Gap 5, LING-261)
+  'home.hero_eyebrow_no_lessons',
+  'home.hero_eyebrow_saved',
+  'home.hero_eyebrow_in_progress',
+  'home.hero_eyebrow_youtube_disabled',
+  'home.hero_eyebrow_goal_met',
 ];
 
 function resolveKey(

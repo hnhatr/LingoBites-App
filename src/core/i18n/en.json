@@ -109,7 +109,12 @@
     "saved_rail_title": "Saved lessons",
     "saved_rail_view_all": "View all",
     "saved_rail_view_all_a11y": "View all saved lessons",
-    "saved_rail_empty": "No saved lessons yet"
+    "saved_rail_empty": "No saved lessons yet",
+    "hero_eyebrow_no_lessons": "Get started",
+    "hero_eyebrow_saved": "What to learn today?",
+    "hero_eyebrow_in_progress": "In progress",
+    "hero_eyebrow_youtube_disabled": "What to learn today?",
+    "hero_eyebrow_goal_met": "Excellent!"
   },
   "practice": {
     "quick_empty_cause": "No lessons are ready for quick practice yet.",

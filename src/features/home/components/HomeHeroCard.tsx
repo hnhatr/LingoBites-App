@@ -26,9 +26,11 @@ import {
   HERO_BLUE,
   HERO_CTA_BG,
   HERO_CTA_INK,
+  HERO_MINT,
   HERO_TITLE,
 } from '../logic/homeScreenModel';
-import {ConfettiParticles, HeartBurst, HeroBlobs} from './HomeDecorations';
+import {ConfettiParticles, HeartBurst, HeroBlobs, HomeWaveDecoration} from './HomeDecorations';
+import {HomeIcon, type HomeSvgIconName} from './HomeSvgIcons';
 
 type Props = {
   heroState: HeroState;
@@ -42,12 +44,16 @@ type Props = {
 };
 
 type StateContent = {
+  /** Eyebrow label (kicker) i18n key — mockup v4 Gap 5 */
+  eyebrowKey: string;
   titleKey: string;
   titleParams?: Record<string, string | number>;
   bodyKey?: string;
   ctaKey: string;
   ctaParams?: Record<string, string | number>;
   ctaA11yKey?: string;
+  /** Icon name for the CTA button — mockup v4 Gap 5 */
+  ctaIconName: HomeSvgIconName;
 };
 
 function getStateContent(
@@ -60,36 +66,46 @@ function getStateContent(
   switch (heroState) {
     case 'no_lessons':
       return {
+        eyebrowKey: 'home.hero_eyebrow_no_lessons',
         titleKey: 'home.hero_no_lessons_title',
         bodyKey: 'home.hero_no_lessons_body',
         ctaKey: 'home.hero_no_lessons_cta',
+        ctaIconName: 'auto_awesome',
       };
     case 'saved_only':
       return {
+        eyebrowKey: 'home.hero_eyebrow_saved',
         titleKey: 'home.hero_saved_title',
         titleParams: libraryCount != null ? {n: libraryCount} : undefined,
         bodyKey: 'home.hero_saved_body',
         ctaKey: 'home.hero_saved_cta',
+        ctaIconName: 'menu_book',
       };
     case 'in_progress':
       return {
+        eyebrowKey: 'home.hero_eyebrow_in_progress',
         titleKey: startedLessonTitle
           ? 'home.hero_in_progress_title'
           : 'home.hero_in_progress_title',
         bodyKey: undefined, // A-009: no progress bar
         ctaKey: 'home.hero_in_progress_cta',
+        ctaIconName: 'play_arrow',
       };
     case 'goal_met':
       return {
+        eyebrowKey: 'home.hero_eyebrow_goal_met',
         titleKey: 'home.hero_goal_met_title',
         bodyKey: 'home.hero_goal_met_body',
         ctaKey: 'home.hero_goal_met_cta',
+        ctaIconName: 'menu_book',
       };
     case 'youtube_disabled':
       return {
+        eyebrowKey: 'home.hero_eyebrow_youtube_disabled',
         titleKey: 'home.hero_youtube_disabled_title',
         bodyKey: 'home.hero_youtube_disabled_body',
         ctaKey: 'home.hero_youtube_disabled_cta',
+        ctaIconName: 'menu_book',
       };
   }
 }
@@ -172,6 +188,7 @@ export function HomeHeroCard({
     displayName,
     libraryCount,
   );
+  const eyebrowText = t(content.eyebrowKey);
   const titleText = content.titleParams
     ? t(content.titleKey, content.titleParams)
     : t(content.titleKey);
@@ -190,10 +207,28 @@ export function HomeHeroCard({
       accessibilityRole="none"
     >
       <HeroBlobs />
+      {/* Paper-cut wave decoration at bottom of hero (Gap 5) */}
+      <HomeWaveDecoration
+        color={HERO_MINT}
+        secondaryColor="#3d88c4"
+        width={400}
+        height={60}
+        testID="home-hero-waves"
+      />
       {isGoalMet && <ConfettiParticles visible={!reducedMotion} />}
 
       {/* Text content */}
       <View style={styles.copy} testID="home-hero-copy">
+        {/* Eyebrow / kicker label — mockup v4 Gap 5 */}
+        <AppText
+          variant="caption"
+          style={styles.eyebrow}
+          testID="home-hero-eyebrow"
+          numberOfLines={1}
+        >
+          {eyebrowText}
+        </AppText>
+
         {streak > 0 && heroState === 'in_progress' ? (
           <View style={styles.badge}>
             <AppText variant="label" style={styles.badgeLabel}>
@@ -211,17 +246,6 @@ export function HomeHeroCard({
             {bodyText}
           </AppText>
         ) : null}
-
-        {/* Speech bubble (I1) */}
-        <View style={styles.bubble} testID="home-mascot-bubble">
-          <AppText
-            variant="caption"
-            style={styles.bubbleText}
-            numberOfLines={2}
-          >
-            {speechText}
-          </AppText>
-        </View>
 
         <Animated.View style={ctaStyle}>
           <Pressable
@@ -242,6 +266,13 @@ export function HomeHeroCard({
               pressed && {opacity: theme.states.pressedOpacity},
             ]}
           >
+            {/* CTA icon — mockup v4 Gap 5 */}
+            <HomeIcon
+              name={content.ctaIconName}
+              size={18}
+              color={HERO_CTA_INK}
+              testID="home-hero-cta-icon"
+            />
             <AppText variant="label" style={styles.ctaLabel}>
               {ctaText}
             </AppText>
@@ -249,24 +280,36 @@ export function HomeHeroCard({
         </Animated.View>
       </View>
 
-      {/* Mascot with tap interaction (I2) */}
-      <Pressable
-        onPress={handleMascotTap}
-        accessibilityLabel={t('home.mascot_in_progress')}
-        accessibilityRole="image"
-        testID="home-hero-mascot-btn"
-        style={styles.mascotWrap}
-      >
+      {/* Mascot with tap interaction (I2) + speech bubble overlay (Gap 5) */}
+      <View style={styles.mascotWrap}>
+        {/* Speech bubble positioned above cat — mockup v4 Gap 5 */}
+        <View style={styles.bubble} testID="home-mascot-bubble">
+          <AppText
+            variant="caption"
+            style={styles.bubbleText}
+            numberOfLines={2}
+          >
+            {speechText}
+          </AppText>
+        </View>
         <HeartBurst visible={showHearts} />
-        <Animated.View style={mascotStyle}>
-          <Image
-            source={require('@ui/assets/home-hero-cat.png')}
-            style={styles.mascotImage}
-            resizeMode="contain"
-            accessibilityIgnoresInvertColors
-          />
-        </Animated.View>
-      </Pressable>
+        <Pressable
+          onPress={handleMascotTap}
+          accessibilityLabel={t('home.mascot_in_progress')}
+          accessibilityRole="image"
+          testID="home-hero-mascot-btn"
+          style={styles.mascotTapTarget}
+        >
+          <Animated.View style={mascotStyle}>
+            <Image
+              source={require('@ui/assets/home-hero-cat.png')}
+              style={styles.mascotImage}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
+          </Animated.View>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -285,6 +328,13 @@ function makeStyles(theme: AppTheme) {
       ...theme.shadow.soft,
     },
     copy: {flex: 1, gap: theme.spacing.sm, minWidth: 0},
+    eyebrow: {
+      color: HERO_TITLE,
+      fontWeight: '800',
+      letterSpacing: 0.6,
+      opacity: 0.9,
+      textTransform: 'uppercase',
+    },
     badge: {
       alignSelf: 'flex-start',
       backgroundColor: HERO_BADGE_BG,
@@ -295,24 +345,16 @@ function makeStyles(theme: AppTheme) {
     badgeLabel: {color: HERO_BADGE_INK},
     title: {color: HERO_TITLE},
     body: {color: HERO_TITLE, opacity: 0.92},
-    bubble: {
-      alignSelf: 'flex-start',
-      backgroundColor: theme.colors.overlayLight,
-      borderRadius: theme.radius.md,
-      maxWidth: '90%',
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-    },
-    bubbleText: {color: HERO_TITLE, opacity: 0.9},
     cta: {
       alignItems: 'center',
       alignSelf: 'flex-start',
       backgroundColor: HERO_CTA_BG,
       borderRadius: 999,
+      flexDirection: 'row',
+      gap: 6,
       justifyContent: 'center',
       marginTop: theme.spacing.xs,
       minHeight: 48,
-      minWidth: 160,
       paddingHorizontal: theme.spacing.lg,
       paddingVertical: theme.spacing.sm,
     },
@@ -324,8 +366,29 @@ function makeStyles(theme: AppTheme) {
       marginRight: -18,
       minHeight: 48,
       minWidth: 48,
+      position: 'relative',
+      width: 128,
+    },
+    mascotTapTarget: {
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      minHeight: 48,
+      minWidth: 48,
       width: 128,
     },
     mascotImage: {height: 140, width: 112},
+    bubble: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.overlayLight,
+      borderRadius: theme.radius.md,
+      maxWidth: '90%',
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      zIndex: 2,
+    },
+    bubbleText: {color: HERO_TITLE, opacity: 0.9},
   });
 }
