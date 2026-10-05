@@ -8,7 +8,6 @@ import {
   productionThemeOptions,
   SYSTEM_THEME_ID,
   SYSTEM_THEME_LABEL,
-  themeIds,
   type ThemePreference,
   themeReleaseFlag,
   themes,
@@ -36,28 +35,21 @@ export function ThemePicker() {
     return null;
   }
 
-  // Production offers exactly Sáng / Tối / Theo hệ thống.
-  // Experimental themes stay visible in dev builds only.
-  // (__DEV__ is read at render time so tests can toggle it.)
-  let options: PickerOption[];
-  if (!__DEV__) {
-    options = productionThemeOptions.map(id => ({
+  // Settings offers only Sáng / Tối / Sticker / Theo hệ thống in every
+  // build. The other themes (pastel-kids, core, neo, comic, cartoon) stay
+  // registered in themeRegistry but are hidden from the picker.
+  const options: PickerOption[] = productionThemeOptions
+    .filter(id => {
+      if (id === SYSTEM_THEME_ID) {
+        return true;
+      }
+      const flag = themeReleaseFlag[id];
+      return flag === undefined || isFeatureEnabled(flag);
+    })
+    .map(id => ({
       id,
       label: id === SYSTEM_THEME_ID ? SYSTEM_THEME_LABEL : themes[id].name,
     }));
-  } else {
-    const visibleIds = themeIds.filter(id => {
-      const flag = themeReleaseFlag[id];
-      return flag === undefined || isFeatureEnabled(flag);
-    });
-    options = [
-      ...visibleIds.map(id => ({
-        id: id as ThemePreference,
-        label: themes[id].name,
-      })),
-      {id: SYSTEM_THEME_ID as ThemePreference, label: SYSTEM_THEME_LABEL},
-    ];
-  }
 
   return (
     <View style={styles.row}>

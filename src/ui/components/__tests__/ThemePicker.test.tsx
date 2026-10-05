@@ -59,15 +59,11 @@ describe('ThemePicker', () => {
     expect(labelsOf(tree)).toEqual([]);
   });
 
-  it('shows all eight dev themes plus the system option with the full theme stack', async () => {
+  it('offers only Sáng / Tối / Sticker / Theo hệ thống in dev builds', async () => {
     const labels = labelsOf(
       await render(makeTestReleaseConfig(FULL_FEATURE_SHOWCASE_FLAGS)),
     );
-    expect(labels).toHaveLength(9);
-    expect(labels).toEqual([
-      ...themeIds.map(id => themes[id].name),
-      'Theo hệ thống',
-    ]);
+    expect(labels).toEqual(['Sáng', 'Tối', 'Sticker', 'Theo hệ thống']);
   });
 
   it('offers exactly Sáng / Tối / Sticker / Theo hệ thống on production builds', async () => {
@@ -83,12 +79,35 @@ describe('ThemePicker', () => {
     }
   });
 
+  it('keeps hidden themes registered but out of the picker', async () => {
+    const labels = labelsOf(
+      await render(makeTestReleaseConfig(FULL_FEATURE_SHOWCASE_FLAGS)),
+    );
+    expect(themeIds).toEqual(
+      expect.arrayContaining([
+        'pastel-kids',
+        'core',
+        'neo',
+        'comic',
+        'cartoon',
+      ]),
+    );
+    for (const id of [
+      'pastel-kids',
+      'core',
+      'neo',
+      'comic',
+      'cartoon',
+    ] as const) {
+      expect(labels).not.toContain(themes[id].name);
+    }
+  });
+
   it('hides dark when its flag is off', async () => {
     const labels = labelsOf(
       await render(makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW)),
     );
     expect(labels).toContain(themes.default.name);
-    expect(labels).toContain(themes['pastel-kids'].name);
     expect(labels).not.toContain(themes.dark.name);
   });
 
