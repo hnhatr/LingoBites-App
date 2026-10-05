@@ -29,7 +29,12 @@ import {
   HERO_MINT,
   HERO_TITLE,
 } from '../logic/homeScreenModel';
-import {ConfettiParticles, HeartBurst, HeroBlobs, HomeWaveDecoration} from './HomeDecorations';
+import {
+  ConfettiParticles,
+  HeartBurst,
+  HeroBlobs,
+  HomeWaveDecoration,
+} from './HomeDecorations';
 import {HomeIcon, type HomeSvgIconName} from './HomeSvgIcons';
 
 type Props = {

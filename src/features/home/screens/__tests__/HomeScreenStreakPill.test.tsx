@@ -148,9 +148,9 @@ describe('HomeScreen hero streak (LING-221)', () => {
   it('does not render the legacy explore grid (Gap 1 removed)', async () => {
     const tree = await renderHomeWithContinue();
     for (const id of EXPLORE_IDS) {
-      expect(
-        tree.root.findAll(node => node.props.testID === id).length,
-      ).toBe(0);
+      expect(tree.root.findAll(node => node.props.testID === id).length).toBe(
+        0,
+      );
     }
   });
 });

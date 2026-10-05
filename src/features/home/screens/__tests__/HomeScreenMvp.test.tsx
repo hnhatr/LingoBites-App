@@ -2,12 +2,13 @@ import React from 'react';
 import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
+import {AppThemeProvider} from '@ui/theme';
+
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {FeatureFlagProvider} from '@core/release';
 
 import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';
-import {AppThemeProvider} from '@ui/theme';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
@@ -123,9 +124,9 @@ describe('HomeScreen weekly goal card (TC-4B / LING-232)', () => {
       'home-explore-offline',
       'home-explore-practice',
     ]) {
-      expect(
-        tree.root.findAll(node => node.props.testID === id).length,
-      ).toBe(0);
+      expect(tree.root.findAll(node => node.props.testID === id).length).toBe(
+        0,
+      );
     }
   });
 });

@@ -108,11 +108,7 @@ export function HomeHeader({greeting, streak, flame}: Props) {
             </AppText>
           </>
         ) : (
-          <AppText
-            variant="h3"
-            numberOfLines={1}
-            testID="home-header-greeting"
-          >
+          <AppText variant="h3" numberOfLines={1} testID="home-header-greeting">
             {greetingPrefixText}
           </AppText>
         )}
