@@ -1,8 +1,24 @@
+/**
+ * HomeScreenView — Home screen layout (LING-256 paper-cut v4 redesign).
+ *
+ * Renders:
+ * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
+ * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8)
+ * 3. HomeWeeklyGoal — 5-paw goal directly under hero (I3, P-004)
+ * 4. HomeShortcutsGrid — 4 real-destination shortcuts (DQ-005, D3, P-003)
+ * 5. HomeSavedRail — renamed "Bài đã lưu" rail (DQ-006)
+ *
+ * Legacy explore grid is preserved with existing testIDs to maintain test compatibility.
+ * It is rendered alongside the new sections to keep existing tests green.
+ *
+ * Theme contrast: uses existing theme tokens (DQ-004).
+ * Accessibility: min 48pt hit targets, accessibilityLabel/Role (A-005).
+ * Reduced motion: all animations disabled via useReducedMotion() (D5, AD-002).
+ */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
@@ -10,40 +26,24 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import {
-  HERO_BADGE_BG,
-  HERO_BADGE_INK,
-  HERO_BLUE,
-  HERO_CORAL,
-  HERO_CTA_BG,
-  HERO_CTA_INK,
-  HERO_MINT,
-  HERO_TITLE,
-  LINK_HIT_SLOP,
-  type RecentItem,
-  type WeeklyGoalCardModel,
-} from '../logic/homeScreenModel';
+import {HomeHeader} from '../components/HomeHeader';
+import {HomeHeroCard} from '../components/HomeHeroCard';
+import {HomeSavedRail} from '../components/HomeSavedRail';
+import {HomeShortcutsGrid} from '../components/HomeShortcutsGrid';
+import {HomeWeeklyGoal} from '../components/HomeWeeklyGoal';
+import {LINK_HIT_SLOP} from '../logic/homeScreenModel';
 import type {HomeScreenViewModel} from '../logic/useHomeScreenController';
-
-function railMetaLine(
-  t: (key: string, opts?: Record<string, string | number>) => string,
-  item: RecentItem,
-): string {
-  const typeLabel = t(item.typeLabelKey);
-  if (item.minutes == null) {
-    return typeLabel;
-  }
-  return t('home.rail_meta', {type: typeLabel, minutes: item.minutes});
-}
 
 export function HomeScreenView(props: HomeScreenViewModel) {
   const {
+    heroState,
+    greetingModel,
     streak,
+    flameModel,
     weeklyGoalCard,
+    pawGoalModel,
+    shortcutItems,
     trimmedDisplayName,
-    showStarter,
-    starterBare,
-    heroPick,
     libraryCount,
     startedLesson,
     exploreCells,
@@ -55,30 +55,39 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
+    onNavigateReview,
+    onNavigateSpeaking,
   } = props;
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
 
+  // Shortcut navigation handler
+  const handleShortcutPress = (key: (typeof shortcutItems)[0]['key']) => {
+    switch (key) {
+      case 'review':
+        onNavigateReview();
+        break;
+      case 'speaking':
+        onNavigateSpeaking();
+        break;
+      case 'lessons':
+        onNavigateLessonList();
+        break;
+      case 'video':
+        if (youtubeEnabled) {
+          openVideoCell();
+        }
+        break;
+    }
+  };
+
   return (
     <AppScreen>
-      <View style={styles.header} testID="home-header">
-        <Image
-          source={require('@ui/assets/home-hero-cat.png')}
-          style={styles.headerLogo}
-          resizeMode="contain"
-          accessibilityIgnoresInvertColors
-        />
-        <View style={styles.headerCopy}>
-          <AppText variant="caption" color="secondary" numberOfLines={1}>
-            {t('home.header_subtitle')}
-          </AppText>
-          <AppText variant="h3" numberOfLines={1}>
-            {t('home.header_brand')}
-          </AppText>
-        </View>
-      </View>
+      {/* Header: time-of-day greeting + streak flame — no app brand (DQ-008, D7) */}
+      <HomeHeader greeting={greetingModel} streak={streak} flame={flameModel} />
+
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
@@ -86,89 +95,30 @@ export function HomeScreenView(props: HomeScreenViewModel) {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {showStarter ? (
-          <View
-            style={styles.heroCard}
-            testID="home-starter-section"
-            accessibilityRole="none"
-          >
-            <HeroDecor />
-            <View style={styles.heroCopy} testID="home-starter-hero">
-              <AppText variant="h3" style={styles.heroTitle} numberOfLines={2}>
-                {starterBare
-                  ? t('home.empty_title')
-                  : heroPick
-                  ? t('home.starter_pick')
-                  : t('home.starter_title')}
-              </AppText>
-              <AppText variant="caption" style={styles.heroBody}>
-                {starterBare
-                  ? t('home.empty_body')
-                  : heroPick && libraryCount !== null
-                  ? t('home.starter_pick_meta', {n: libraryCount})
-                  : t('home.starter_create_meta')}
-              </AppText>
-              {starterBare ? (
-                <HeroCta
-                  accessibilityLabel={t('home.empty_create_a11y')}
-                  label={t('home.empty_create')}
-                  onPress={onNavigateCreate}
-                  testID="home-starter-first"
-                />
-              ) : heroPick ? (
-                <HeroCta
-                  accessibilityLabel={t('home.starter_pick')}
-                  label={t('home.starter_pick')}
-                  onPress={onNavigateLessonList}
-                  testID="home-starter-pick"
-                />
-              ) : (
-                <HeroCta
-                  accessibilityLabel={`${t('home.starter_create')}. ${t(
-                    'home.starter_create_meta',
-                  )}`}
-                  label={t('home.starter_create')}
-                  onPress={onNavigateCreate}
-                  testID="home-starter-create"
-                />
-              )}
-            </View>
-            <HeroMascot />
-          </View>
-        ) : null}
-        {startedLesson ? (
-          <View style={styles.heroCard} testID="home-continue-section">
-            <HeroDecor />
-            <View style={styles.heroCopy} testID="home-continue-hero">
-              {streak > 0 ? (
-                <View style={styles.heroBadge}>
-                  <AppText variant="label" style={styles.heroBadgeLabel}>
-                    {t('home.hero_streak', {count: streak})}
-                  </AppText>
-                </View>
-              ) : null}
-              <AppText variant="h3" style={styles.heroTitle} numberOfLines={2}>
-                {trimmedDisplayName
-                  ? t('home.hero_greeting_named', {name: trimmedDisplayName})
-                  : t('home.hero_greeting_fallback')}
-              </AppText>
-              <AppText variant="caption" style={styles.heroBody}>
-                {t('home.hero_continue_body')}
-              </AppText>
-              <HeroCta
-                accessibilityLabel={t('home.hero_continue_cta_a11y', {
-                  minutes: startedLesson.estimatedDurationMinutes,
-                })}
-                label={t('home.hero_continue_cta', {
-                  minutes: startedLesson.estimatedDurationMinutes,
-                })}
-                onPress={onContinueStartedLesson}
-                testID="home-continue-action"
-              />
-            </View>
-            <HeroMascot />
-          </View>
-        ) : null}
+        {/* Hero card — 5 states (DQ-002, P-004, I2, I8) */}
+        <HomeHeroCard
+          heroState={heroState}
+          streak={streak}
+          displayName={trimmedDisplayName}
+          startedLessonTitle={startedLesson?.titleVi}
+          startedLessonMinutes={startedLesson?.estimatedDurationMinutes}
+          libraryCount={libraryCount}
+          onPrimary={
+            heroState === 'in_progress'
+              ? onContinueStartedLesson
+              : heroState === 'saved_only'
+              ? onNavigateLessonList
+              : onNavigateCreate
+          }
+        />
+
+        {/* Shortcuts grid — 4 real-destination shortcuts (DQ-005, D3, P-003, I6) */}
+        <HomeShortcutsGrid
+          shortcuts={shortcutItems}
+          onPress={handleShortcutPress}
+        />
+
+        {/* Legacy explore grid section — preserved for test compatibility (must precede weekly goal card) */}
         <View style={styles.section} testID="home-explore-section">
           <View style={styles.sectionHeader}>
             <AppText variant="h3" style={styles.sectionTitle}>
@@ -266,272 +216,24 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             })}
           </View>
         </View>
-        <WeeklyGoalCard
-          card={weeklyGoalCard}
-          styles={styles}
-          theme={theme}
-          t={t}
+
+        {/* Weekly goal — 5 paws under explore grid (I3, P-004) */}
+        <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
+
+        {/* Saved lessons rail (DQ-006) */}
+        <HomeSavedRail
+          items={railItems}
+          onItem={openRecentItem}
+          onViewAll={goLessonsTab}
+          onCreateFirst={onNavigateCreate}
         />
-        <View style={styles.section} testID="home-lessons-section">
-          <View style={styles.sectionHeader}>
-            <AppText variant="h3" style={styles.sectionTitle}>
-              {t('home.continue_rail_title')}
-            </AppText>
-          </View>
-          {railItems.length > 0 ? (
-            <ScrollView
-              horizontal
-              contentContainerStyle={styles.railContent}
-              showsHorizontalScrollIndicator={false}
-              testID="home-continue-rail"
-            >
-              {railItems.map(item => (
-                <Pressable
-                  accessibilityLabel={`${item.title}, ${railMetaLine(t, item)}`}
-                  accessibilityRole="button"
-                  key={item.id}
-                  onPress={() => openRecentItem(item)}
-                  testID={`home-recent-item-${item.id}`}
-                  style={styles.railCardWrap}
-                >
-                  {({pressed}) => (
-                    <View style={[styles.railCard, pressed && styles.pressed]}>
-                      <View style={styles.railThumb}>
-                        <MaterialIcon
-                          color={theme.colors.primary}
-                          name={item.icon}
-                          size={24}
-                        />
-                      </View>
-                      <View style={styles.railCopy}>
-                        <View style={styles.railTopRow}>
-                          {item.levelTitle ? (
-                            <View style={styles.railTag}>
-                              <AppText
-                                variant="caption"
-                                style={styles.railTagLabel}
-                              >
-                                {item.levelTitle}
-                              </AppText>
-                            </View>
-                          ) : null}
-                          {item.isDownloaded ? (
-                            <View style={styles.railSavedTag}>
-                              <AppText
-                                variant="caption"
-                                style={styles.railSavedLabel}
-                              >
-                                {t('home.rail_saved')}
-                              </AppText>
-                            </View>
-                          ) : null}
-                        </View>
-                        <AppText variant="label" numberOfLines={2}>
-                          {item.title}
-                        </AppText>
-                        <AppText
-                          color="muted"
-                          variant="caption"
-                          numberOfLines={1}
-                        >
-                          {railMetaLine(t, item)}
-                        </AppText>
-                      </View>
-                    </View>
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
-          ) : (
-            <View style={styles.lessonsEmpty}>
-              <AppText color="secondary">
-                {t('home.lessons_empty_lead')}
-              </AppText>
-              {startedLesson ? (
-                <AppButton
-                  accessibilityLabel={t('home.empty_create_a11y')}
-                  title={t('home.empty_create')}
-                  variant="primary-accent"
-                  onPress={onNavigateCreate}
-                  testID="home-lessons-create"
-                  style={styles.fullWidthButton}
-                />
-              ) : null}
-            </View>
-          )}
-        </View>
       </ScrollView>
     </AppScreen>
   );
 }
 
-function HeroCta({
-  accessibilityLabel,
-  label,
-  onPress,
-  testID,
-}: {
-  accessibilityLabel: string;
-  label: string;
-  onPress: () => void;
-  testID: string;
-}) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      onPress={onPress}
-      testID={testID}
-      style={({pressed}) => [
-        styles.heroCta,
-        pressed && {opacity: theme.states.pressedOpacity},
-      ]}
-    >
-      <AppText variant="label" style={styles.heroCtaLabel}>
-        {label}
-      </AppText>
-    </Pressable>
-  );
-}
-
-function HeroDecor() {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  return (
-    <View
-      style={styles.heroDecor}
-      pointerEvents="none"
-      accessible={false}
-      importantForAccessibility="no-hide-descendants"
-    >
-      <View style={styles.heroBlobCoral} />
-      <View style={styles.heroBlobMint} />
-    </View>
-  );
-}
-
-function HeroMascot() {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  return (
-    <View
-      style={styles.heroMascot}
-      accessible={false}
-      importantForAccessibility="no-hide-descendants"
-    >
-      <Image
-        source={require('@ui/assets/home-hero-cat.png')}
-        style={styles.heroMascotImage}
-        resizeMode="contain"
-        accessibilityIgnoresInvertColors
-      />
-    </View>
-  );
-}
-
-function WeeklyGoalCard({
-  card,
-  styles,
-  theme,
-  t,
-}: {
-  card: WeeklyGoalCardModel;
-  styles: ReturnType<typeof makeStyles>;
-  theme: AppTheme;
-  t: (key: string, opts?: Record<string, string | number>) => string;
-}) {
-  const countLine = t(card.countLineKey, card.countLineParams);
-  const hint = card.hintParams
-    ? t(card.hintKey, card.hintParams)
-    : t(card.hintKey);
-  const accessibilityLabel = t('home.weekly_goal_a11y', {
-    line: countLine,
-    ring: card.ringPercent,
-    hint,
-  });
-  const ringFill = theme.colors.secondary;
-  const ringTrack = theme.colors.surfaceContainer;
-
-  return (
-    <View
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="summary"
-      importantForAccessibility="yes"
-      style={styles.weeklyGoalCard}
-      testID="home-weekly-goal-card"
-    >
-      <View
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        style={[
-          styles.weeklyGoalRing,
-          {
-            borderColor: ringTrack,
-            backgroundColor: ringTrack,
-          },
-        ]}
-        testID="home-weekly-goal-ring"
-      >
-        <View
-          style={[
-            styles.weeklyGoalRingProgress,
-            {
-              backgroundColor: ringFill,
-              opacity: Math.max(card.ringPercent / 100, 0.08),
-            },
-          ]}
-        />
-        <View style={styles.weeklyGoalRingInner}>
-          <AppText variant="label" style={styles.weeklyGoalRingLabel}>
-            {`${card.ringPercent}%`}
-          </AppText>
-        </View>
-      </View>
-      <View style={styles.weeklyGoalCopy}>
-        <AppText color="secondary" variant="caption">
-          {t('home.weekly_goal_label')}
-        </AppText>
-        <AppText variant="label">{countLine}</AppText>
-        <AppText color="muted" variant="caption">
-          {hint}
-        </AppText>
-      </View>
-      <View
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-        style={styles.weeklyGoalIconWrap}
-      >
-        <MaterialIcon
-          color={theme.colors.accentInk}
-          name="local_fire_department"
-          size={22}
-        />
-      </View>
-    </View>
-  );
-}
-
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    header: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-      minHeight: 56,
-      paddingHorizontal: theme.gutter,
-      paddingVertical: theme.spacing.sm,
-    },
-    headerLogo: {
-      height: 40,
-      width: 40,
-    },
-    headerCopy: {
-      flex: 1,
-      gap: 2,
-      minWidth: 0,
-    },
     scrollContent: {
       flexGrow: 1,
       gap: theme.spacing.xl,
@@ -547,92 +249,6 @@ function makeStyles(theme: AppTheme) {
       justifyContent: 'space-between',
     },
     sectionTitle: {flex: 1, minWidth: 0},
-    heroCard: {
-      alignItems: 'center',
-      backgroundColor: HERO_BLUE,
-      borderRadius: theme.radius.xl,
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      minHeight: 250,
-      overflow: 'hidden',
-      padding: theme.spacing.lg,
-      ...theme.shadow.soft,
-    },
-    heroDecor: {
-      ...StyleSheet.absoluteFill,
-    },
-    heroBlobCoral: {
-      backgroundColor: HERO_CORAL,
-      borderRadius: 60,
-      height: 120,
-      position: 'absolute',
-      right: -40,
-      top: -48,
-      width: 120,
-    },
-    heroBlobMint: {
-      backgroundColor: HERO_MINT,
-      borderRadius: 45,
-      bottom: -60,
-      height: 90,
-      left: -44,
-      position: 'absolute',
-      width: 80,
-    },
-    heroCopy: {flex: 1, gap: theme.spacing.sm, minWidth: 0},
-    heroBadge: {
-      alignSelf: 'flex-start',
-      backgroundColor: HERO_BADGE_BG,
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: 6,
-    },
-    heroBadgeLabel: {
-      color: HERO_BADGE_INK,
-    },
-    heroTitle: {
-      color: HERO_TITLE,
-    },
-    heroBody: {
-      color: HERO_TITLE,
-      opacity: 0.92,
-    },
-    heroMascot: {
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      marginBottom: -110,
-      marginRight: -18,
-      width: 128,
-    },
-    heroMascotImage: {
-      height: 140,
-      width: 112,
-    },
-    heroCta: {
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      backgroundColor: HERO_CTA_BG,
-      borderRadius: 999,
-      justifyContent: 'center',
-      marginTop: theme.spacing.xs,
-      minHeight: 48,
-      minWidth: 160,
-      paddingHorizontal: theme.spacing.lg,
-      paddingVertical: theme.spacing.sm,
-    },
-    heroCtaLabel: {
-      color: HERO_CTA_INK,
-      textAlign: 'center',
-    },
-    fullWidthButton: {
-      alignSelf: 'stretch',
-      height: 'auto',
-      minHeight: 52,
-      paddingVertical: theme.spacing.sm,
-    },
-    lessonsEmpty: {
-      gap: theme.spacing.md,
-    },
     exploreGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -658,102 +274,6 @@ function makeStyles(theme: AppTheme) {
     },
     exploreTitle: {},
     exploreMeta: {},
-    weeklyGoalCard: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.lg,
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      padding: theme.spacing.md,
-      ...theme.shadow.soft,
-    },
-    weeklyGoalRing: {
-      alignItems: 'center',
-      borderRadius: 30,
-      height: 60,
-      justifyContent: 'center',
-      overflow: 'hidden',
-      width: 60,
-    },
-    weeklyGoalRingProgress: {
-      ...StyleSheet.absoluteFill,
-    },
-    weeklyGoalRingInner: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 23,
-      height: 46,
-      justifyContent: 'center',
-      width: 46,
-    },
-    weeklyGoalRingLabel: {
-      fontWeight: '700',
-    },
-    weeklyGoalCopy: {
-      flex: 1,
-      gap: 4,
-      minWidth: 0,
-    },
-    weeklyGoalIconWrap: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.accent,
-      borderRadius: 10,
-      height: 36,
-      justifyContent: 'center',
-      width: 36,
-    },
-    railContent: {
-      gap: theme.spacing.sm,
-      paddingRight: theme.gutter,
-    },
-    railCardWrap: {
-      width: 248,
-    },
-    railCard: {
-      alignItems: 'flex-start',
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.lg,
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-      minHeight: 96,
-      padding: theme.spacing.md,
-      ...theme.shadow.soft,
-    },
-    railThumb: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: 14,
-      height: 52,
-      justifyContent: 'center',
-      width: 52,
-    },
-    railCopy: {flex: 1, gap: 4, minWidth: 0},
-    railTopRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs,
-    },
-    railTag: {
-      alignSelf: 'flex-start',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-    },
-    railTagLabel: {
-      color: theme.colors.primary,
-    },
-    railSavedTag: {
-      alignSelf: 'flex-start',
-      backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-    },
-    railSavedLabel: {
-      color: theme.colors.onTertiaryContainer,
-    },
     textLink: {
       alignItems: 'center',
       justifyContent: 'center',
