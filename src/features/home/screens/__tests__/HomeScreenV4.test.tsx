@@ -20,6 +20,7 @@ import * as AuthSession from '@core/auth/authSession';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {FeatureFlagProvider} from '@core/release';
+import {recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {
   CORE_WITH_REVIEW,
@@ -167,37 +168,11 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
 
   it('state S3 in_progress: renders lesson title, minutes body and CTA without progress bar', async () => {
     seedCanonicalLessonDownload();
-    mockFetch.mockImplementation(async (url: string) =>
-      String(url).includes('/api/v1/lessons')
-        ? {
-            ok: true,
-            status: 200,
-            headers: new Headers(),
-            json: async () => ({
-              contract_version: 1,
-              lessons: [],
-              next_cursor: null,
-            }),
-          }
-        : {
-            ok: true,
-            status: 200,
-            headers: new Headers(),
-            json: async () => ({
-              request_id: 'req-continue-1',
-              status: 'success',
-              progress: {
-                id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
-                lesson_id: '33333333-3333-4333-8333-333333333301',
-                status: 'in_progress',
-                started_at: '2026-09-25T07:00:00.000Z',
-                completed_at: null,
-                created_at: '2026-09-25T07:00:00.000Z',
-                updated_at: '2026-09-25T07:15:00.000Z',
-              },
-            }),
-          },
-    );
+    // F5: Home reads the started lesson from local lesson_progress.
+    recordLessonEvent({
+      lessonId: '33333333-3333-4333-8333-333333333301',
+      event: 'start',
+    });
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('home-hero-in_progress');
@@ -329,6 +304,83 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
     await act(async () => lessonsBtn.props.onPress());
     expect(mockAppNavigation.openToday).toHaveBeenCalledTimes(1);
     expect(nav).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// "Gợi ý hôm nay" card (F12)
+// ---------------------------------------------------------------------------
+describe('Home today suggestion card (F12)', () => {
+  beforeEach(() => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+  });
+
+  it('renders the suggestion between the hero and the weekly goal', async () => {
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Gợi ý hôm nay');
+    expect(text).toContain('⚡ 5 phút');
+    expect(text).toContain('🎯 20 phút');
+    expect(text).toContain('🔥 45 phút');
+    const heroAt = text.indexOf('home-hero-');
+    const suggestionAt = text.indexOf('home-today-suggestion');
+    const goalAt = text.indexOf('home-weekly-goal-card');
+    expect(heroAt).toBeGreaterThan(-1);
+    expect(suggestionAt).toBeGreaterThan(heroAt);
+    expect(goalAt).toBeGreaterThan(suggestionAt);
+    expect(
+      tree.root.findAll(
+        node => node.props.testID === 'home-today-first-activity',
+      ).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('starts the first suggested activity from Home', async () => {
+    const tree = await renderHome();
+    const activity = tree.root
+      .findAll(node => node.props.testID === 'home-today-first-activity')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!activity) throw new Error('No suggested activity found');
+    await act(async () => activity.props.onPress());
+    const calls = [
+      mockAppNavigation.openLesson,
+      mockAppNavigation.openCatalog,
+      mockAppNavigation.openReview,
+      mockAppNavigation.openSpeakingRoom,
+      mockAppNavigation.openShadowing,
+    ].reduce((sum, fn) => sum + (fn as jest.Mock).mock.calls.length, 0);
+    expect(calls).toBe(1);
+    expect(mockAppNavigation.openToday).not.toHaveBeenCalled();
+  });
+
+  it('"Xem chi tiết" opens Today with the selected mode', async () => {
+    const tree = await renderHome();
+    const deepChip = tree.root
+      .findAll(node => node.props.testID === 'home-today-mode-deep-practice')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!deepChip) throw new Error('No 45-minute chip found');
+    await act(async () => deepChip.props.onPress());
+    const details = tree.root
+      .findAll(node => node.props.testID === 'home-today-details')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!details) throw new Error('No details link found');
+    await act(async () => details.props.onPress());
+    expect(mockAppNavigation.openToday).toHaveBeenCalledWith({
+      mode: 'deep-practice',
+    });
   });
 });
 

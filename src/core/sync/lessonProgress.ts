@@ -100,6 +100,28 @@ export function listCompletedLessons(): CompletedLessonRow[] {
   return rows;
 }
 
+/**
+ * Lessons started but not finished on device, most recently touched first
+ * (Home "Học tiếp"). Excludes tombstoned rows.
+ */
+export function listInProgressLessonIds(): string[] {
+  const db = getDatabase();
+  const result = db.execute(
+    `SELECT lesson_id FROM lesson_progress
+     WHERE status = 'in_progress'
+       AND tombstone = 0
+     ORDER BY updated_at DESC;`,
+  );
+  const ids: string[] = [];
+  if (!result.rows) {
+    return ids;
+  }
+  for (let i = 0; i < result.rows.length; i += 1) {
+    ids.push((result.rows.item(i) as {lesson_id: string}).lesson_id);
+  }
+  return ids;
+}
+
 /** Locally stored progress for one lesson, or null when never started. */
 export function getLessonProgress(
   lessonId: string,

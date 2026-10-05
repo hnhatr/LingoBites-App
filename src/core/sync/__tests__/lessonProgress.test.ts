@@ -18,6 +18,7 @@ import {
   lessonEventStatus,
   lessonProgressRank,
   listCompletedLessons,
+  listInProgressLessonIds,
   recordLessonEvent,
 } from '../lessonProgress';
 
@@ -287,5 +288,28 @@ describe('recordLessonEvent', () => {
       occurredAt: T2,
     });
     expect(count('SELECT COUNT(*) AS c FROM lesson_progress')).toBe(1);
+  });
+
+  it('F5: listInProgressLessonIds returns started lessons, newest first', () => {
+    recordLessonEvent({lessonId: 'lesson-old', event: 'start', occurredAt: T1});
+    recordLessonEvent({lessonId: 'lesson-new', event: 'start', occurredAt: T2});
+    recordLessonEvent({
+      lessonId: 'lesson-done',
+      event: 'start',
+      occurredAt: T2,
+    });
+    recordLessonEvent({
+      lessonId: 'lesson-done',
+      event: 'complete',
+      occurredAt: T2,
+    });
+    db.execute(
+      `INSERT INTO lesson_progress (
+        lesson_id, status, started_at, completed_at, revision, tombstone, updated_at
+      ) VALUES (?, 'in_progress', ?, NULL, 1, 1, ?);`,
+      ['lesson-tombstoned', T2, T2],
+    );
+
+    expect(listInProgressLessonIds()).toEqual(['lesson-new', 'lesson-old']);
   });
 });

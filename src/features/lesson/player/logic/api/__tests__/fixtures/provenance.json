@@ -11,8 +11,6 @@
     "submit-attempt-response.json",
     "vocabulary-seen-response.json",
     "set-vocabulary-progress-response.json",
-    "review-response.json",
-    "continue-learning-response.json",
-    "continue-learning-null-response.json"
+    "review-response.json"
   ]
 }

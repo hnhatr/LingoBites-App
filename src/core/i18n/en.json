@@ -98,7 +98,19 @@
     "shortcut_review_due_other": "{{count}} cards due",
     "shortcut_review_none": "No cards due",
     "shortcut_speaking_sub": "Speaking room & shadowing",
-    "shortcut_lessons_sub": "All lessons"
+    "shortcut_lessons_sub": "All lessons",
+    "today_label": "Today's suggestion",
+    "today_mode_5": "⚡ 5 min",
+    "today_mode_20": "🎯 20 min",
+    "today_mode_45": "🔥 45 min",
+    "today_mode_a11y": "Study {{minutes}} minutes today",
+    "today_summary": "{{count}} activities · ~{{minutes}} min",
+    "today_details": "See details",
+    "today_details_a11y": "See today's suggestion details",
+    "today_details_hint": "Opens the Today screen with the full activity list",
+    "today_empty": "No suggestion yet. Download a lesson to get started.",
+    "today_start_a11y": "Start: {{title}}, about {{minutes}} minutes",
+    "today_start_hint": "Opens the first suggested activity"
   },
   "practice": {
     "quick_empty_cause": "No lessons are ready for quick practice yet.",

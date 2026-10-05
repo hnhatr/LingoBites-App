@@ -345,6 +345,19 @@ function createMockDatabase() {
       );
     }
 
+    if (
+      normalized.startsWith(
+        "select lesson_id from lesson_progress where status = 'in_progress'",
+      )
+    ) {
+      return toRows(
+        lessonProgress
+          .filter(row => row.status === 'in_progress' && !row.tombstone)
+          .sort((a, b) => String(b.updated_at).localeCompare(a.updated_at))
+          .map(row => ({lesson_id: row.lesson_id})),
+      );
+    }
+
     if (normalized.startsWith('select status from lesson_progress where')) {
       const row = lessonProgress.find(r => r.lesson_id === params[0]);
       return toRows(row ? [{status: row.status}] : []);

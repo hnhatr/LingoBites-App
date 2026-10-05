@@ -102,6 +102,28 @@ describe('TodayScreen UI', () => {
     expect(text).toContain('Ưu tiên phát âm');
   });
 
+  it('pre-selects the mode passed from the Home suggestion card', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await act(async () => {
+      tree = ReactTestRenderer.create(
+        <FeatureFlagProvider
+          releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}
+        >
+          <AppThemeProvider>
+            <TodayScreen route={{params: {mode: 'deep-practice'}}} />
+          </AppThemeProvider>
+        </FeatureFlagProvider>,
+      );
+      await Promise.resolve();
+    });
+    const chip = (testID: string) =>
+      tree.root.find(
+        node => node.props.testID === testID && node.props.label != null,
+      );
+    expect(chip('mode-deep-practice').props.selected).toBe(true);
+    expect(chip('mode-normal').props.selected).toBe(false);
+  });
+
   it('allows changing Today mode and updates plan display', async () => {
     const tree = await renderTodayScreen();
 

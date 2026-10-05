@@ -10,6 +10,7 @@
  * - 4-shortcut grid with Video locked when YouTube is off (DQ-005, D3)
  * - Saved rail with renamed label (DQ-006)
  * - Graceful degradation when progress percent unavailable (A-009)
+ * - "Gợi ý hôm nay" card from the Today study-block engine (F12)
  */
 import {useFocusEffect} from '@react-navigation/native';
 import {useCallback, useMemo, useState} from 'react';
@@ -18,16 +19,25 @@ import {useAccountStore} from '@features/account';
 import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
 import {
-  fetchContinueLearning,
+  type DownloadedLessonSummary,
   listDownloadedLessonSummaries,
   useCanonicalCatalog,
 } from '@features/lesson/player';
 import {getDueFlashcards} from '@features/review';
+import {
+  generateStudyBlock,
+  getLearnerStateSnapshot,
+  type LearnerStateSnapshot,
+  openStudyActivity,
+  type StudyActivityItem,
+  type StudyBlockPlan,
+  type TodayMode,
+} from '@features/today';
 
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
-import {getLessonProgress} from '@core/sync/lessonProgress';
+import {listInProgressLessonIds} from '@core/sync/lessonProgress';
 
 import {
   buildFlameModel,
@@ -49,6 +59,21 @@ import {
   type WeeklyGoalCardModel,
 } from './homeScreenModel';
 
+/**
+ * Most recently started downloaded lesson that is not finished, from local
+ * `lesson_progress` (A-009: no progress percentage exposed).
+ */
+function findStartedDownload(
+  downloads: DownloadedLessonSummary[],
+): DownloadedLessonSummary | null {
+  if (downloads.length === 0) return null;
+  for (const lessonId of listInProgressLessonIds()) {
+    const match = downloads.find(item => item.lessonId === lessonId);
+    if (match) return match;
+  }
+  return null;
+}
+
 export function useHomeScreenController() {
   const {config} = useFeatureFlags();
   const navigation = useAppNavigation();
@@ -65,7 +90,8 @@ export function useHomeScreenController() {
   );
 
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
-  const [continueLessonId, setContinueLessonId] = useState<string | null>(null);
+  const [startedDownload, setStartedDownload] =
+    useState<DownloadedLessonSummary | null>(null);
   const [streak, setStreak] = useState<number>(
     () => getGamificationSnapshot().currentStreak,
   );
@@ -82,19 +108,13 @@ export function useHomeScreenController() {
   const [dueFlashcardCount, setDueFlashcardCount] = useState<number | null>(
     null,
   );
+  const [todayMode, setTodayMode] = useState<TodayMode>('normal');
+  const [learnerSnapshot, setLearnerSnapshot] =
+    useState<LearnerStateSnapshot | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       canonicalRefresh();
-      fetchContinueLearning()
-        .then(res => {
-          if (res.ok && res.progress) {
-            setContinueLessonId(res.progress.lesson_id);
-          } else {
-            setContinueLessonId(null);
-          }
-        })
-        .catch(() => undefined);
       const snapshot = getGamificationSnapshot();
       setStreak(snapshot.currentStreak);
       const completed = snapshot.weeklyGoal.completedThisWeek;
@@ -108,10 +128,17 @@ export function useHomeScreenController() {
           badgeEarned: snapshot.badges.some(badge => badge.id === 'diligent'),
         }),
       );
+      let downloads: DownloadedLessonSummary[] = [];
       try {
-        setDownloadCount(listDownloadedLessonSummaries().length);
+        downloads = listDownloadedLessonSummaries();
+        setDownloadCount(downloads.length);
       } catch {
         setDownloadCount(null);
+      }
+      try {
+        setStartedDownload(findStartedDownload(downloads));
+      } catch {
+        setStartedDownload(null);
       }
       // Due flashcard count for review shortcut badge (AD-003, P-003)
       try {
@@ -119,23 +146,14 @@ export function useHomeScreenController() {
       } catch {
         setDueFlashcardCount(null);
       }
+      // Learner snapshot for the "Gợi ý hôm nay" card (F12)
+      try {
+        setLearnerSnapshot(getLearnerStateSnapshot());
+      } catch {
+        setLearnerSnapshot(null);
+      }
     }, [canonicalRefresh]),
   );
-
-  // Determine in-progress lesson (A-009: no progress percentage exposed)
-  const startedDownload = useMemo(() => {
-    const downloads = listDownloadedLessonSummaries();
-    for (const item of downloads) {
-      const progress = getLessonProgress(item.lessonId);
-      if (progress?.status === 'in_progress') {
-        return item;
-      }
-    }
-    if (continueLessonId) {
-      return downloads.find(item => item.lessonId === continueLessonId) ?? null;
-    }
-    return null;
-  }, [continueLessonId]);
 
   // 5 hero states (DQ-002, P-004)
   const heroState: HeroState = useMemo(
@@ -190,6 +208,16 @@ export function useHomeScreenController() {
       }),
     [dueFlashcardCount, youtubeEnabled],
   );
+
+  // "Gợi ý hôm nay" study block, same engine as the Today screen (F12)
+  const todayPlan: StudyBlockPlan | null = useMemo(() => {
+    if (!learnerSnapshot) return null;
+    try {
+      return generateStudyBlock(learnerSnapshot, todayMode);
+    } catch {
+      return null;
+    }
+  }, [learnerSnapshot, todayMode]);
 
   // Saved rail items (DQ-006)
   const railItems: RecentItem[] = useMemo(() => {
@@ -264,6 +292,16 @@ export function useHomeScreenController() {
     [navigation],
   );
 
+  const onStartTodayActivity = useCallback(
+    (activity: StudyActivityItem) => openStudyActivity(navigation, activity),
+    [navigation],
+  );
+
+  const onViewTodayDetails = useCallback(
+    () => navigation.openToday({mode: todayMode}),
+    [navigation, todayMode],
+  );
+
   return {
     // Hero state
     heroState,
@@ -292,6 +330,12 @@ export function useHomeScreenController() {
       : null,
     railItems,
     youtubeEnabled,
+    // "Gợi ý hôm nay" (F12)
+    todayMode,
+    todayPlan,
+    onTodayModeChange: setTodayMode,
+    onStartTodayActivity,
+    onViewTodayDetails,
     // Navigation handlers
     goLessonsTab,
     openVideoCell,

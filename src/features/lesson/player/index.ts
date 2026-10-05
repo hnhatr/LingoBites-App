@@ -99,7 +99,6 @@ export {
   submitExerciseAttempt,
   markVocabularySeen,
   setVocabularyProgress,
-  fetchContinueLearning,
 } from './logic/api/learningProgressClient';
 export type {
   LessonProgressStatus,
@@ -116,7 +115,6 @@ export type {
   SubmitAttemptResult,
   VocabularySeenResult,
   SetVocabularyProgressResult,
-  ContinueLearningResult,
   LearningClientOptions,
 } from './logic/api/learningProgressClient';
 export {startLessonFromConfirmedText} from './logic/startLessonFromConfirmedText';

@@ -91,7 +91,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {state, open, checkForUpdate, requestAnalysis} =
     useCanonicalLesson(lessonId);
-  const {state: completionState, complete: completeLesson} =
+  const {state: completionState, complete: completeLesson, markStarted} =
     useLessonCompletion(lessonId);
   const savedItems = useLessonSavedItems(lessonId);
   const reloadSavedItems = savedItems.reload;
@@ -114,6 +114,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   useEffect(() => {
     open();
   }, [open]);
+
+  const lessonReady = state.status === 'ready';
+  useEffect(() => {
+    if (lessonReady) {
+      markStarted();
+    }
+  }, [lessonReady, markStarted]);
 
   useFocusEffect(
     useCallback(() => {

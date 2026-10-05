@@ -2,7 +2,6 @@ import * as AuthSession from '@core/auth/authSession';
 
 import {
   completeLessonProgress,
-  fetchContinueLearning,
   listLessonProgress,
   markVocabularySeen,
   setVocabularyProgress,
@@ -10,8 +9,6 @@ import {
   submitExerciseAttempt,
 } from '../learningProgressClient';
 import completeFixture from './fixtures/complete-lesson-response.json';
-import continueNullFixture from './fixtures/continue-learning-null-response.json';
-import continueFixture from './fixtures/continue-learning-response.json';
 import listFixture from './fixtures/list-lesson-progress-response.json';
 import setProgressFixture from './fixtures/set-vocabulary-progress-response.json';
 import startFixture from './fixtures/start-lesson-response.json';
@@ -69,8 +66,6 @@ const ALL_FIXTURES = [
   attemptFixture,
   seenFixture,
   setProgressFixture,
-  continueFixture,
-  continueNullFixture,
 ];
 
 beforeEach(() => {
@@ -190,33 +185,6 @@ describe('learningProgressClient request contracts', () => {
     expect(init.body).toBe(JSON.stringify({status: 'known'}));
   });
 
-  it('GETs continue-learning returning the active progress', async () => {
-    const fetchImpl = jest
-      .fn()
-      .mockResolvedValue(jsonResponse(continueFixture));
-    const result = await fetchContinueLearning({fetchImpl});
-
-    expect(result).toEqual({
-      ok: true,
-      requestId: 'req-continue-001',
-      progress: continueFixture.progress,
-    });
-    const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe(`${BASE_URL}/v1/me/continue-learning`);
-    expect(init.method).toBe('GET');
-  });
-
-  it('maps a null continue-learning to progress null', async () => {
-    const fetchImpl = jest
-      .fn()
-      .mockResolvedValue(jsonResponse(continueNullFixture));
-    await expect(fetchContinueLearning({fetchImpl})).resolves.toEqual({
-      ok: true,
-      requestId: 'req-continue-002',
-      progress: null,
-    });
-  });
-
   it('URL-encodes path identifiers', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(jsonResponse(startFixture));
     await startLessonProgress('lesson id/with?chars', {fetchImpl});
@@ -297,7 +265,7 @@ describe('learningClient auth, cancellation, and transport', () => {
     const abortError = new Error('aborted');
     abortError.name = 'AbortError';
     const fetchImpl = jest.fn().mockRejectedValue(abortError);
-    const result = await fetchContinueLearning({fetchImpl});
+    const result = await listLessonProgress({fetchImpl});
 
     expect(result).toMatchObject({
       ok: false,
@@ -573,19 +541,6 @@ describe('learningClient strict response parsing', () => {
         {fetchImpl},
       ),
     ).resolves.toMatchObject({
-      ok: false,
-      kind: 'protocol-error',
-      errorCode: 'INVALID_RESPONSE',
-    });
-  });
-
-  it('rejects a non-null continue-learning with the wrong shape', async () => {
-    const fetchImpl = jest
-      .fn()
-      .mockResolvedValue(
-        jsonResponse({request_id: 'r', status: 'success', progress: 42}),
-      );
-    await expect(fetchContinueLearning({fetchImpl})).resolves.toMatchObject({
       ok: false,
       kind: 'protocol-error',
       errorCode: 'INVALID_RESPONSE',
