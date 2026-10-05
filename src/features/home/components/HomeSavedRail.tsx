@@ -1,19 +1,21 @@
 /**
- * HomeSavedRail — saved lessons horizontal rail (DQ-006).
+ * HomeSavedRail — saved lessons horizontal rail (LING-256, LING-267, §VS-5).
  *
- * Section title is "Bài đã lưu" / "Saved lessons" (renamed from "Tiếp tục học").
- * "Xem tất cả" navigates to the Lessons tab.
+ * Section title: "Bài đã lưu" (§VS-0 style)
+ * "Xem tất cả ›" only when items.length > 0.
+ * Thumbs use SVG HomeIcon (no MaterialIcon).
+ * Empty state: dashed container with one sentence, no button.
  */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {LINK_HIT_SLOP, type RecentItem} from '../logic/homeScreenModel';
+import {getHardShadow} from './HomeDecorations';
+import {HomeIcon} from './HomeSvgIcons';
 
 function railMetaLine(
   t: (key: string, opts?: Record<string, string | number>) => string,
@@ -30,45 +32,44 @@ type Props = {
   items: RecentItem[];
   onItem: (item: RecentItem) => void;
   onViewAll: () => void;
-  onCreateFirst?: () => void;
 };
 
-export function HomeSavedRail({
-  items,
-  onItem,
-  onViewAll,
-  onCreateFirst,
-}: Props) {
+export function HomeSavedRail({items, onItem, onViewAll}: Props) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
+  const hasItems = items.length > 0;
+
   return (
     <View style={styles.section} testID="home-lessons-section">
-      {/* Section header — "Bài đã lưu" (DQ-006) */}
+      {/* Section header row (§VS-5) */}
       <View style={styles.sectionHeader}>
-        <AppText variant="h3" style={styles.sectionTitle}>
+        <AppText style={styles.sectionTitle}>
           {t('home.saved_rail_title')}
         </AppText>
-        <Pressable
-          accessibilityLabel={t('home.saved_rail_view_all_a11y')}
-          accessibilityRole="button"
-          hitSlop={LINK_HIT_SLOP}
-          onPress={onViewAll}
-          style={styles.textLink}
-          testID="home-saved-view-all"
-        >
-          <AppText
-            variant="label"
-            style={styles.textLinkLabel}
-            numberOfLines={1}
+        {hasItems ? (
+          <Pressable
+            accessibilityLabel={t('home.saved_rail_view_all_a11y')}
+            accessibilityRole="button"
+            hitSlop={LINK_HIT_SLOP}
+            onPress={onViewAll}
+            style={styles.viewAllButton}
+            testID="home-saved-view-all"
           >
-            {t('home.saved_rail_view_all')}
-          </AppText>
-        </Pressable>
+            <AppText style={styles.viewAllText} numberOfLines={1}>
+              {t('home.saved_rail_view_all')}
+            </AppText>
+            <HomeIcon
+              name="chevron_right"
+              size={20}
+              color={theme.colors.primary}
+            />
+          </Pressable>
+        ) : null}
       </View>
 
-      {items.length > 0 ? (
+      {hasItems ? (
         <ScrollView
           horizontal
           contentContainerStyle={styles.railContent}
@@ -79,41 +80,56 @@ export function HomeSavedRail({
             <Pressable
               accessibilityLabel={`${item.title}, ${railMetaLine(t, item)}`}
               accessibilityRole="button"
+              hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
               key={item.id}
               onPress={() => onItem(item)}
               testID={`home-recent-item-${item.id}`}
               style={styles.cardWrap}
             >
               {({pressed}) => (
-                <View style={[styles.card, pressed && styles.pressed]}>
+                <View style={[styles.card, pressed && styles.cardPressed]}>
+                  {/* Thumb: 48x48 radius 14 accentSoft with 26pt primary SVG icon */}
                   <View style={styles.thumb}>
-                    <MaterialIcon
+                    <HomeIcon
+                      name={
+                        item.icon === 'play_circle' ? 'play_circle' : 'article'
+                      }
+                      size={26}
                       color={theme.colors.primary}
-                      name={item.icon}
-                      size={24}
                     />
                   </View>
+
                   <View style={styles.copy}>
+                    {/* Tags row (§VS-5) */}
                     <View style={styles.topRow}>
                       {item.levelTitle ? (
-                        <View style={styles.tag}>
-                          <AppText variant="caption" style={styles.tagLabel}>
+                        <View style={styles.levelTag}>
+                          <AppText style={styles.levelTagLabel}>
                             {item.levelTitle}
                           </AppText>
                         </View>
                       ) : null}
                       {item.isDownloaded ? (
                         <View style={styles.savedTag}>
-                          <AppText variant="caption" style={styles.savedLabel}>
+                          <HomeIcon
+                            name="bookmark"
+                            size={12}
+                            color={theme.colors.onTertiaryContainer}
+                          />
+                          <AppText style={styles.savedTagLabel}>
                             {t('home.rail_saved')}
                           </AppText>
                         </View>
                       ) : null}
                     </View>
-                    <AppText variant="label" numberOfLines={2}>
+
+                    {/* Title: 14/18 weight 700 */}
+                    <AppText style={styles.itemTitle} numberOfLines={2}>
                       {item.title}
                     </AppText>
-                    <AppText color="muted" variant="caption" numberOfLines={1}>
+
+                    {/* Meta: 12pt weight 600 */}
+                    <AppText style={styles.itemMeta} numberOfLines={1}>
                       {railMetaLine(t, item)}
                     </AppText>
                   </View>
@@ -123,18 +139,11 @@ export function HomeSavedRail({
           ))}
         </ScrollView>
       ) : (
-        <View style={styles.empty}>
-          <AppText color="secondary">{t('home.saved_rail_empty')}</AppText>
-          {onCreateFirst ? (
-            <AppButton
-              accessibilityLabel={t('home.empty_create_a11y')}
-              title={t('home.empty_create')}
-              variant="primary-accent"
-              onPress={onCreateFirst}
-              testID="home-lessons-create"
-              style={styles.fullWidthButton}
-            />
-          ) : null}
+        /* Empty state (§VS-5): dashed box with 1 sentence, no button */
+        <View style={styles.emptyBox}>
+          <AppText style={styles.emptyText}>
+            {t('home.saved_rail_empty')}
+          </AppText>
         </View>
       )}
     </View>
@@ -143,75 +152,129 @@ export function HomeSavedRail({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    section: {gap: theme.spacing.md},
+    section: {
+      gap: 10,
+    },
     sectionHeader: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: theme.spacing.sm,
       justifyContent: 'space-between',
     },
-    sectionTitle: {flex: 1, minWidth: 0},
-    textLink: {
+    sectionTitle: {
+      color: theme.colors.text.primary,
+      fontSize: 18,
+      fontWeight: '700',
+    },
+    viewAllButton: {
       alignItems: 'center',
-      justifyContent: 'center',
+      flexDirection: 'row',
+      gap: 2,
       minHeight: 44,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
     },
-    textLinkLabel: {color: theme.colors.primary},
+    viewAllText: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '800',
+    },
     railContent: {
-      gap: theme.spacing.sm,
-      paddingRight: theme.gutter,
+      gap: 10,
+      paddingBottom: 8,
+      paddingRight: 16,
     },
-    cardWrap: {width: 248},
+    cardWrap: {
+      width: 230,
+    },
     card: {
       alignItems: 'flex-start',
       backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.lg,
+      borderColor: '#1c1c10',
+      borderRadius: 18,
+      borderWidth: 2,
       flexDirection: 'row',
-      gap: theme.spacing.sm,
+      gap: 10,
       minHeight: 96,
-      padding: theme.spacing.md,
-      ...theme.shadow.soft,
+      padding: 12,
+      ...getHardShadow(4),
+    },
+    cardPressed: {
+      transform: [{translateY: 2}],
+      ...getHardShadow(2),
     },
     thumb: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surfaceContainer,
+      backgroundColor: theme.colors.accentSoft,
       borderRadius: 14,
-      height: 52,
+      height: 48,
       justifyContent: 'center',
-      width: 52,
+      width: 48,
     },
-    copy: {flex: 1, gap: 4, minWidth: 0},
+    copy: {
+      flex: 1,
+      gap: 4,
+      minWidth: 0,
+    },
     topRow: {
       alignItems: 'center',
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: theme.spacing.xs,
+      gap: 4,
+      marginBottom: 3,
     },
-    tag: {
+    levelTag: {
       alignSelf: 'flex-start',
       backgroundColor: theme.colors.accentSoft,
-      borderRadius: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 1,
     },
-    tagLabel: {color: theme.colors.primary},
+    levelTagLabel: {
+      color: theme.colors.primary,
+      fontSize: 11,
+      fontWeight: '800',
+    },
     savedTag: {
+      alignItems: 'center',
       alignSelf: 'flex-start',
       backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: 8,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
+      borderRadius: 6,
+      flexDirection: 'row',
+      gap: 2,
+      paddingHorizontal: 6,
+      paddingVertical: 1,
     },
-    savedLabel: {color: theme.colors.onTertiaryContainer},
-    empty: {gap: theme.spacing.md},
-    fullWidthButton: {
-      alignSelf: 'stretch',
-      height: 'auto',
-      minHeight: 52,
-      paddingVertical: theme.spacing.sm,
+    savedTagLabel: {
+      color: theme.colors.onTertiaryContainer,
+      fontSize: 11,
+      fontWeight: '800',
     },
-    pressed: {opacity: theme.states.pressedOpacity},
+    itemTitle: {
+      color: theme.colors.text.primary,
+      fontSize: 14,
+      fontWeight: '700',
+      lineHeight: 18,
+    },
+    itemMeta: {
+      color: theme.colors.text.muted,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    emptyBox: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.text.muted,
+      borderRadius: 18,
+      borderStyle: 'dashed',
+      borderWidth: 2,
+      justifyContent: 'center',
+      padding: 16,
+    },
+    emptyText: {
+      color: theme.colors.text.secondary,
+      fontSize: 14,
+      fontWeight: '500',
+      textAlign: 'center',
+    },
   });
 }

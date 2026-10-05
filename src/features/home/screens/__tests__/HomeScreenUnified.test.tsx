@@ -17,6 +17,14 @@ import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
+jest.mock('react-native-reanimated', () => {
+  const base = require('../../../../../test-utils/reanimatedMock');
+  return {
+    ...base,
+    withRepeat: (anim: unknown) => anim,
+  };
+});
+
 jest.mock('@features/engagement', () => ({
   getGamificationSnapshot: jest.fn(() => ({
     currentStreak: 0,
@@ -62,8 +70,6 @@ function catalogLesson(index: number) {
   };
 }
 
-// Canonical contract shape: contract_version + snake_case (AC-003). Eight
-// lessons so the three-item rail cap is observable.
 const CATALOG_PAGE = {
   contract_version: 1,
   lessons: [31, 32, 33, 34, 35, 36, 37, 38].map(catalogLesson),
@@ -129,7 +135,6 @@ async function renderHome(nav = navigation()) {
     await Promise.resolve();
     await Promise.resolve();
   });
-  // Let the catalog fetch resolve and commit.
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
@@ -290,7 +295,6 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     const {tree} = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('4 trên 6 bài đã xong');
-    // ringPercent display removed in v4 (mockup v4 Gap 6: paw row replaces ring)
     expect(text).not.toContain('67%');
     expect(text).toContain('Thêm 2 bài để nhận huy hiệu Chăm chỉ.');
   });
