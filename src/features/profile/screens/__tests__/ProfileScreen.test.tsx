@@ -4,6 +4,8 @@ import * as Keychain from 'react-native-keychain';
 import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer from 'react-test-renderer';
 
+import {getReminderSettings, getWeeklyGoalTarget} from '@features/engagement';
+
 import {TextField} from '@ui/components/TextField';
 import {AppThemeProvider} from '@ui/theme';
 
@@ -174,7 +176,7 @@ describe('ProfileScreen', () => {
     ).toBeGreaterThanOrEqual(1);
   });
 
-  it('shows Chưa đặt for settings without values instead of fake values or chevrons', async () => {
+  it('shows only settings that work, with real values (F6)', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
 
     await ReactTestRenderer.act(async () => {
@@ -182,10 +184,50 @@ describe('ProfileScreen', () => {
     });
 
     const text = JSON.stringify(tree!.toJSON());
-    expect(text).not.toContain('10 từ');
-    expect(text).not.toContain('Tiếng Việt');
-    expect(text).not.toContain('Incomplete');
-    expect(text.match(/Chưa đặt/g)?.length).toBe(4);
+    expect(text).not.toContain('Chưa đặt');
+    expect(text).not.toContain('Ngôn ngữ app');
+    expect(text).not.toContain('Dịch sang');
+    expect(text).not.toContain('Cây ảo');
+    expect(text).toContain('Mục tiêu tuần');
+    expect(text).toContain('6 bài/tuần');
+    expect(text).toContain('Nhắc nhở');
+    expect(text).toContain('Giờ vàng');
+    expect(findPressableByLabel(tree!.root, 'Mục tiêu tuần')).toBeTruthy();
+    expect(findPressableByLabel(tree!.root, 'Nhắc nhở')).toBeTruthy();
+  });
+
+  it('saves the weekly goal picked from the sheet (F6)', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(async () => {
+      tree = renderProfileScreen();
+    });
+
+    await ReactTestRenderer.act(async () => {
+      findPressableByLabel(tree!.root, 'Mục tiêu tuần')!.props.onPress();
+    });
+    await ReactTestRenderer.act(async () => {
+      findPressableByLabel(tree!.root, '3 bài/tuần')!.props.onPress();
+    });
+
+    expect(JSON.stringify(tree!.toJSON())).toContain('3 bài/tuần');
+    expect(getWeeklyGoalTarget()).toBe(3);
+  });
+
+  it('turns reminders off from the sheet (F6)', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(async () => {
+      tree = renderProfileScreen();
+    });
+
+    await ReactTestRenderer.act(async () => {
+      findPressableByLabel(tree!.root, 'Nhắc nhở')!.props.onPress();
+    });
+    await ReactTestRenderer.act(async () => {
+      findPressableByLabel(tree!.root, 'Tắt nhắc nhở')!.props.onPress();
+    });
+
+    expect(getReminderSettings()).toEqual({enabled: false, dailyTime: null});
+    expect(JSON.stringify(tree!.toJSON())).toContain('"Tắt"');
   });
 
   it('shows developer entries in dev builds', async () => {
@@ -473,6 +515,22 @@ describe('ProfileScreen logout (TASK-006 confirmed sign-out)', () => {
     });
 
     expect(JSON.stringify(tree!.toJSON())).not.toContain('Đăng xuất');
+  });
+
+  it('shows the sync row only while authenticated (F6)', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(async () => {
+      tree = renderProfileScreen();
+    });
+    expect(JSON.stringify(tree!.toJSON())).not.toContain('Đồng bộ ngay');
+
+    await bootToAuthenticated();
+    await ReactTestRenderer.act(async () => {
+      tree = renderProfileScreen();
+    });
+    const text = JSON.stringify(tree!.toJSON());
+    expect(text).toContain('Đồng bộ ngay');
+    expect(text).toContain('Lần cuối: Chưa đồng bộ');
   });
 
   it('shows the logout action while authenticated', async () => {

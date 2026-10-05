@@ -17,6 +17,7 @@ import {
   SPEAKING_ATTEMPTS_EVENT_TYPE,
 } from '@core/sync/speakingAttempts';
 
+import {markSyncedNow} from './lastSync';
 import {syncPull} from './syncClient';
 
 let isRunning = false;
@@ -411,6 +412,9 @@ export async function runPullWorker() {
         break;
       }
       hasMore = res.data.has_more;
+      if (!hasMore) {
+        markSyncedNow();
+      }
     }
   } finally {
     isRunning = false;

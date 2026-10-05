@@ -15,10 +15,8 @@ import {TextField} from '@ui/components/TextField';
 import {ThemePicker} from '@ui/components/ThemePicker';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {SettingsOptionSheet} from '../components/SettingsOptionSheet';
 import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
-
-/** Settings without a backing store yet — show an honest "not set" value. */
-const UNSET_TRAILING = {chip: 'Chưa đặt', chipTone: 'neutral' as const};
 
 export type ProfileScreenViewProps = ProfileScreenViewModel & {
   speakingRecordingsSection?: React.ReactNode;
@@ -27,6 +25,21 @@ export type ProfileScreenViewProps = ProfileScreenViewModel & {
 export function ProfileScreenView({
   accountPhase,
   audioCacheTrailingLabel,
+  closeSettingsSheet,
+  handleSyncNow,
+  isSyncing,
+  openReminderSheet,
+  openSettingsSheet,
+  openWeeklyGoalSheet,
+  reminderSelectedKey,
+  reminderSheetOptions,
+  reminderTrailingLabel,
+  selectReminder,
+  selectWeeklyGoal,
+  syncTrailingLabel,
+  weeklyGoalSelectedKey,
+  weeklyGoalSheetOptions,
+  weeklyGoalTrailingLabel,
   clearDataConfirmText,
   displayName,
   gamification,
@@ -118,12 +131,6 @@ export function ProfileScreenView({
                 Huy hiệu
               </AppText>
             </View>
-            <View style={[styles.metricCard, themedStyles.metricAccent]}>
-              <AppText style={themedStyles.metricValuePrimary}>
-                {t(`gamification.pet_stage.${gamification.pet.stageId}`)}
-              </AppText>
-              <AppText style={themedStyles.metricLabelPrimary}>Cây ảo</AppText>
-            </View>
           </View>
 
           <View style={styles.metricsRow}>
@@ -143,36 +150,38 @@ export function ProfileScreenView({
                 Độ chính xác
               </AppText>
             </View>
-            <View style={themedStyles.flex1} />
           </View>
         </View>
 
         <View style={styles.settingsSection}>
           <SectionHeader title="Cài đặt" />
           <ProfileSettingsRow
+            accessibilityLabel={`Mục tiêu tuần: ${weeklyGoalTrailingLabel}`}
             icon="flag"
-            label="Mục tiêu hàng ngày"
+            label="Mục tiêu tuần"
             medallionTone="teal"
-            trailing={UNSET_TRAILING}
+            onPress={openWeeklyGoalSheet}
+            trailing={{text: weeklyGoalTrailingLabel}}
           />
           <ProfileSettingsRow
-            icon="translate"
-            label="Ngôn ngữ app"
-            medallionTone="coral"
-            trailing={UNSET_TRAILING}
-          />
-          <ProfileSettingsRow
-            icon="subtitles"
-            label="Dịch sang"
-            medallionTone="gold"
-            trailing={UNSET_TRAILING}
-          />
-          <ProfileSettingsRow
+            accessibilityLabel={`Nhắc nhở: ${reminderTrailingLabel}`}
             icon="notifications"
             label="Nhắc nhở"
-            medallionTone="teal"
-            trailing={UNSET_TRAILING}
+            medallionTone="coral"
+            onPress={openReminderSheet}
+            trailing={{text: reminderTrailingLabel}}
           />
+          {accountPhase === 'authenticated' ? (
+            <ProfileSettingsRow
+              accessibilityHint="Gửi và nhận dữ liệu học với tài khoản ngay bây giờ"
+              accessibilityLabel={`Đồng bộ ngay. ${syncTrailingLabel}`}
+              icon="refresh"
+              label="Đồng bộ ngay"
+              medallionTone="gold"
+              onPress={isSyncing ? undefined : handleSyncNow}
+              trailing={{text: syncTrailingLabel}}
+            />
+          ) : null}
           <ProfileSettingsRow
             accessibilityLabel="Dung lượng âm thanh chương học đã tải về máy — bấm để nghe thử clip đã tải"
             icon="volume_up"
@@ -320,6 +329,27 @@ export function ProfileScreenView({
         ) : null}
       </ScrollView>
 
+      {openSettingsSheet === 'weeklyGoal' ? (
+        <SettingsOptionSheet
+          onDismiss={closeSettingsSheet}
+          onSelect={selectWeeklyGoal}
+          options={weeklyGoalSheetOptions}
+          selectedKey={weeklyGoalSelectedKey}
+          testID="profile-weekly-goal-sheet"
+          title="Mục tiêu tuần"
+        />
+      ) : null}
+      {openSettingsSheet === 'reminder' ? (
+        <SettingsOptionSheet
+          onDismiss={closeSettingsSheet}
+          onSelect={selectReminder}
+          options={reminderSheetOptions}
+          selectedKey={reminderSelectedKey}
+          testID="profile-reminder-sheet"
+          title="Nhắc nhở"
+        />
+      ) : null}
+
       <Modal
         animationType="fade"
         transparent
@@ -453,14 +483,6 @@ function makeStyles(theme: AppTheme) {
       fontWeight: theme.typography.weight.medium,
       marginLeft: theme.spacing.xs,
     },
-    metricAccent: {
-      backgroundColor: theme.colors.accentSoft,
-    },
-    metricLabelPrimary: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.weight.medium,
-    },
     metricLabelSecondary: {
       color: theme.colors.secondary,
       fontSize: theme.typography.size.xs,
@@ -476,11 +498,6 @@ function makeStyles(theme: AppTheme) {
     },
     metricTertiary: {
       backgroundColor: theme.colors.tertiarySoft,
-    },
-    metricValuePrimary: {
-      color: theme.colors.primary,
-      fontSize: 26,
-      fontWeight: '700',
     },
     metricValueSecondary: {
       color: theme.colors.secondary,

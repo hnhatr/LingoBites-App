@@ -1,5 +1,20 @@
-/** Fixed weekly lesson target (LING-222 Q-003 ★A). */
+/**
+ * Weekly lessons that earn the "Chăm chỉ" badge (LING-222 Q-003 ★A). Also the
+ * default weekly goal until the learner picks one in Profile (F6); the badge
+ * threshold stays fixed whatever goal is chosen.
+ */
 export const WEEKLY_LESSON_TARGET = 6;
+
+/** Weekly goals the learner can choose in Profile → Cài đặt (F6). */
+export const WEEKLY_GOAL_OPTIONS = [3, 5, 7] as const;
+
+/** Stored goal when valid, otherwise the default {@link WEEKLY_LESSON_TARGET}. */
+export function resolveWeeklyGoalTarget(stored: number | null): number {
+  return stored !== null &&
+    (WEEKLY_GOAL_OPTIONS as readonly number[]).includes(stored)
+    ? stored
+    : WEEKLY_LESSON_TARGET;
+}
 
 export type WeeklyGoalLessonRow = {
   lessonId: string;

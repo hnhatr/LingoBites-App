@@ -41,6 +41,9 @@ import {
  *    stays the fallback until permission is granted.
  */
 
+/** Fixed id of the repeating daily study reminder (F6). */
+export const DAILY_REMINDER_NOTIFICATION_ID = 'daily-study-reminder';
+
 /** Android notification channel all Golden Hour reminders post to. */
 export const GOLDEN_HOUR_CHANNEL_ID = 'golden-hour-review';
 export const GOLDEN_HOUR_CHANNEL_NAME = 'Nhắc ôn tập giờ vàng';
@@ -199,6 +202,11 @@ export function createNativeReminderScheduler(
       }
       shadow.clear();
       for (const item of osPending) {
+        if (item.notification.id === DAILY_REMINDER_NOTIFICATION_ID) {
+          // The daily study reminder is not a per-card Golden Hour reminder;
+          // keeping it out of the shadow stops reconcile from cancelling it.
+          continue;
+        }
         const cardId = item.notification.id;
         const dueAt = dueAtOfPending(item);
         if (cardId && dueAt) {
@@ -239,7 +247,12 @@ async function installNativeScheduler(
  */
 export async function configureNativeReminderNotifications(
   api: NotifeeLike,
-  opts: {promptIfUseful?: boolean; now?: () => string} = {},
+  opts: {
+    promptIfUseful?: boolean;
+    /** Also ask when no card is due, e.g. the learner set a daily reminder. */
+    reminderWanted?: boolean;
+    now?: () => string;
+  } = {},
 ): Promise<ReminderPermissionStatus> {
   const now = opts.now ?? (() => new Date().toISOString());
   const promptIfUseful = opts.promptIfUseful ?? true;
@@ -263,7 +276,9 @@ export async function configureNativeReminderNotifications(
     return status;
   }
 
-  const hasUpcoming = listUpcomingReviewReminders(now()).length > 0;
+  const hasUpcoming =
+    opts.reminderWanted === true ||
+    listUpcomingReviewReminders(now()).length > 0;
   const requestAfterDenied = Platform.OS === 'android';
   if (
     !promptIfUseful ||

@@ -1,6 +1,7 @@
 import {AppState, type AppStateStatus} from 'react-native';
 
-import {startPullWorker, stopPullWorker} from './pullWorker';
+import {readLastSyncedAt} from './lastSync';
+import {runPullWorker, startPullWorker, stopPullWorker} from './pullWorker';
 import {createSyncManager, type SyncManager} from './syncManager';
 
 /**
@@ -36,6 +37,18 @@ export function requestSync(): void {
   if (manager?.isRunning()) {
     manager.requestSync();
   }
+}
+
+/**
+ * "Đồng bộ ngay" (F6): sends pending changes and pulls server changes now.
+ * Resolves true when the pull finished and moved the last-synced time.
+ */
+export async function syncNow(): Promise<boolean> {
+  const before = readLastSyncedAt();
+  requestSync();
+  await runPullWorker();
+  const after = readLastSyncedAt();
+  return after !== null && after !== before;
 }
 
 export function startAppSync(): void {

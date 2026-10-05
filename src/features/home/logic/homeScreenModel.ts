@@ -396,6 +396,8 @@ export type WeeklyGoalCardInput = {
   completedThisWeek: number;
   target: number;
   badgeEarned: boolean;
+  /** Weekly count for the diligent badge; defaults to `target`. */
+  badgeTarget?: number;
 };
 
 export type WeeklyGoalCardModel = {
@@ -416,6 +418,7 @@ export function buildWeeklyGoalCard(
   input: WeeklyGoalCardInput,
 ): WeeklyGoalCardModel {
   const {completedThisWeek, target, badgeEarned} = input;
+  const badgeTarget = input.badgeTarget ?? target;
   const ringPercent = Math.round(
     (Math.min(completedThisWeek, target) / target) * 100,
   );
@@ -425,7 +428,8 @@ export function buildWeeklyGoalCard(
   let hintParams: WeeklyGoalCardModel['hintParams'];
   if (completedThisWeek >= target) {
     hintKey = 'home.weekly_goal_hint_met';
-  } else if (badgeEarned) {
+  } else if (badgeEarned || target !== badgeTarget) {
+    // The badge hint only fits when finishing the goal also earns the badge.
     hintKey = 'home.weekly_goal_hint_kept';
     hintParams = {k: remaining};
   } else {

@@ -74,7 +74,7 @@ function baseSnapshot(
       waterForNextStage: 1,
       progressToNextStage: 0,
     },
-    weeklyGoal: {completedThisWeek: 0, target: 6},
+    weeklyGoal: {completedThisWeek: 0, target: 6, badgeTarget: 6},
     ...overrides,
   };
 }
@@ -115,7 +115,7 @@ describe('useHomeScreenController weekly goal (TC-4A / FR-005)', () => {
   it('derives the card from getGamificationSnapshot when Home gains focus', () => {
     mockSnapshot.mockReturnValue(
       baseSnapshot({
-        weeklyGoal: {completedThisWeek: 4, target: 6},
+        weeklyGoal: {completedThisWeek: 4, target: 6, badgeTarget: 6},
       }),
     );
     const {latest} = makeDriver();
@@ -126,13 +126,17 @@ describe('useHomeScreenController weekly goal (TC-4A / FR-005)', () => {
 
   it('refreshes the card when the focus callback runs again (FR-005)', () => {
     mockSnapshot.mockReturnValue(
-      baseSnapshot({weeklyGoal: {completedThisWeek: 1, target: 6}}),
+      baseSnapshot({
+        weeklyGoal: {completedThisWeek: 1, target: 6, badgeTarget: 6},
+      }),
     );
     const {latest} = makeDriver();
     expect(latest().weeklyGoalCard.completedThisWeek).toBe(1);
 
     mockSnapshot.mockReturnValue(
-      baseSnapshot({weeklyGoal: {completedThisWeek: 5, target: 6}}),
+      baseSnapshot({
+        weeklyGoal: {completedThisWeek: 5, target: 6, badgeTarget: 6},
+      }),
     );
     const nav = require('@react-navigation/native');
     act(() => {
@@ -145,7 +149,7 @@ describe('useHomeScreenController weekly goal (TC-4A / FR-005)', () => {
     mockSnapshot.mockReturnValue(
       baseSnapshot({
         badges: [{id: 'diligent'}],
-        weeklyGoal: {completedThisWeek: 2, target: 6},
+        weeklyGoal: {completedThisWeek: 2, target: 6, badgeTarget: 6},
       }),
     );
     const {latest} = makeDriver();

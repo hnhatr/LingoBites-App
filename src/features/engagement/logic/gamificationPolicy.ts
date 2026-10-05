@@ -278,6 +278,7 @@ export type EarnedBadge = {
 export type WeeklyGoalProgress = {
   completedThisWeek: number;
   target: number;
+  badgeTarget: number;
 };
 
 export type GamificationSnapshot = {
@@ -330,6 +331,7 @@ export function deriveGamificationSnapshot(
     weeklyGoal: {
       completedThisWeek: 0,
       target: WEEKLY_LESSON_TARGET,
+      badgeTarget: WEEKLY_LESSON_TARGET,
     },
   };
 }
