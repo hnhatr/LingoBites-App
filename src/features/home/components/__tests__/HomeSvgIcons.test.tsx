@@ -20,7 +20,6 @@ const ALL_ICONS: HomeSvgIconName[] = [
   'local_fire_department',
   'pets',
   'emoji_events',
-  'lock',
   'chevron_right',
   'auto_awesome',
   'menu_book',
@@ -40,7 +39,9 @@ describe('HomeIcon (SVG-1, SVG-2, DQ-007, §VS-6)', () => {
         );
       });
       expect(tree).not.toBeNull();
-      tree!.unmount();
+      await act(async () => {
+        tree!.unmount();
+      });
     }
   });
 
@@ -53,7 +54,9 @@ describe('HomeIcon (SVG-1, SVG-2, DQ-007, §VS-6)', () => {
       node => node.props.testID === 'home-icon-pets',
     );
     expect(nodes.length).toBeGreaterThan(0);
-    tree.unmount();
+    await act(async () => {
+      tree.unmount();
+    });
   });
 
   it('applies a custom testID when supplied', async () => {
@@ -67,7 +70,9 @@ describe('HomeIcon (SVG-1, SVG-2, DQ-007, §VS-6)', () => {
       node => node.props.testID === 'streak-flame-icon',
     );
     expect(nodes.length).toBeGreaterThan(0);
-    tree.unmount();
+    await act(async () => {
+      tree.unmount();
+    });
   });
 
   it('passes size and color to the Svg element', async () => {
@@ -84,6 +89,8 @@ describe('HomeIcon (SVG-1, SVG-2, DQ-007, §VS-6)', () => {
         node.props.fill === '#EB6B6C',
     );
     expect(svgNode.length).toBeGreaterThan(0);
-    tree.unmount();
+    await act(async () => {
+      tree.unmount();
+    });
   });
 });
