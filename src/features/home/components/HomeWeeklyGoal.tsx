@@ -18,7 +18,6 @@ import {HomeIcon} from './HomeSvgIcons';
 
 const GOAL_PALETTE = {
   borderInk: '#1c1c10',
-  countLine: '#1c1c10',
 };
 
 type Props = {
@@ -121,7 +120,7 @@ function makeStyles(theme: AppTheme) {
       marginTop: 4,
     },
     countLine: {
-      color: GOAL_PALETTE.countLine,
+      color: theme.colors.text.primary,
       fontSize: 15,
       fontWeight: '700',
     },
