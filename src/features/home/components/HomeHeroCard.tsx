@@ -28,6 +28,7 @@ import {
   HERO_CTA_INK,
   HERO_MINT,
   HERO_TITLE,
+  HERO_WAVE_SECONDARY,
 } from '../logic/homeScreenModel';
 import {
   ConfettiParticles,
@@ -215,7 +216,7 @@ export function HomeHeroCard({
       {/* Paper-cut wave decoration at bottom of hero (Gap 5) */}
       <HomeWaveDecoration
         color={HERO_MINT}
-        secondaryColor="#3d88c4"
+        secondaryColor={HERO_WAVE_SECONDARY}
         width={400}
         height={60}
         testID="home-hero-waves"
@@ -285,18 +286,8 @@ export function HomeHeroCard({
         </Animated.View>
       </View>
 
-      {/* Mascot with tap interaction (I2) + speech bubble overlay (Gap 5) */}
+      {/* Mascot with tap interaction (I2) */}
       <View style={styles.mascotWrap}>
-        {/* Speech bubble positioned above cat — mockup v4 Gap 5 */}
-        <View style={styles.bubble} testID="home-mascot-bubble">
-          <AppText
-            variant="caption"
-            style={styles.bubbleText}
-            numberOfLines={2}
-          >
-            {speechText}
-          </AppText>
-        </View>
         <HeartBurst visible={showHearts} />
         <Pressable
           onPress={handleMascotTap}
@@ -315,9 +306,21 @@ export function HomeHeroCard({
           </Animated.View>
         </Pressable>
       </View>
+
+      {/* Speech bubble — card-relative (BUG-004, right:58 top:8 from mockup v4) */}
+      <View style={styles.bubble} testID="home-mascot-bubble">
+        <AppText variant="caption" style={styles.bubbleText} numberOfLines={2}>
+          {speechText}
+        </AppText>
+        {/* Downward tail pointing toward the mascot head */}
+        <View style={styles.bubbleTail} testID="home-mascot-bubble-tail" />
+      </View>
     </View>
   );
 }
+
+// CSS-triangle trick: border sides must be fully transparent to create the tail shape
+const TRANSPARENT = 'rgba(0,0,0,0)';
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -382,17 +385,32 @@ function makeStyles(theme: AppTheme) {
       width: 128,
     },
     mascotImage: {height: 140, width: 112},
+    // BUG-004: card-relative anchor per mockup v4 (right:58, top:8, maxWidth:120)
     bubble: {
-      alignSelf: 'flex-start',
       backgroundColor: theme.colors.overlayLight,
       borderRadius: theme.radius.md,
-      maxWidth: '90%',
+      maxWidth: 120,
       paddingHorizontal: theme.spacing.sm,
       paddingVertical: theme.spacing.xs,
       position: 'absolute',
-      top: 0,
-      left: 0,
+      right: 58,
+      top: 8,
       zIndex: 2,
+    },
+    // Downward tail pointing toward the mascot head (mockup v4 Gap 5)
+    bubbleTail: {
+      alignSelf: 'flex-end',
+      borderLeftColor: TRANSPARENT,
+      borderLeftWidth: 6,
+      borderRightColor: TRANSPARENT,
+      borderRightWidth: 6,
+      borderTopColor: theme.colors.overlayLight,
+      borderTopWidth: 8,
+      bottom: -8,
+      height: 0,
+      marginRight: 10,
+      position: 'absolute',
+      width: 0,
     },
     bubbleText: {color: HERO_TITLE, opacity: 0.9},
   });

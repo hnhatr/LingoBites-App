@@ -456,3 +456,146 @@ describe('Home shortcut contrast (DQ-004 supplement)', () => {
     expect(contrast(bg, ink)).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+// ---------------------------------------------------------------------------
+// CR-002 + BUG-004 (LING-264): wave token, bubble anchor, saved state copy
+// ---------------------------------------------------------------------------
+describe('CR-002 hero wave token and BUG-004 bubble (LING-264)', () => {
+  beforeEach(() => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+  });
+
+  it('CR-002: HomeHeroCard uses HERO_WAVE_SECONDARY from homeScreenModel (no inline hex)', () => {
+    // Regression: HomeHeroCard must not contain a '#3d88c4' literal;
+    // it must pass HERO_WAVE_SECONDARY to HomeWaveDecoration.
+    // Verified via rg AC-001: no hex literal remaining in HomeHeroCard.tsx.
+    // This test asserts the constant itself has the correct value.
+    const {HERO_WAVE_SECONDARY} = require('../../logic/homeScreenModel');
+    expect(HERO_WAVE_SECONDARY).toBe('#3d88c4');
+  });
+
+  it('BUG-004: speech bubble renders with card-relative testID in saved state', async () => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    const bubbles = tree.root.findAll(
+      node => node.props.testID === 'home-mascot-bubble',
+    );
+    expect(bubbles.length).toBeGreaterThan(0);
+  });
+
+  it('BUG-004: bubble tail renders in saved state', async () => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    const tails = tree.root.findAll(
+      node => node.props.testID === 'home-mascot-bubble-tail',
+    );
+    expect(tails.length).toBeGreaterThan(0);
+  });
+
+  it('BUG-004: bubble style has right=58, top=8, maxWidth=120', async () => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    // Find bubble node and verify its serialized style contains the anchor values
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('"right":58');
+    expect(text).toContain('"top":8');
+    expect(text).toContain('"maxWidth":120');
+  });
+
+  it('BUG-002: saved state shows updated mascot speech text', async () => {
+    // Use a standard reset so state is saved_only (downloads but no goal met)
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    // Reset gamification to default (no goal met) to get saved_only state
+    (getGamificationSnapshot as jest.Mock).mockReturnValue({
+      currentStreak: 0,
+      weeklyGoal: {completedThisWeek: 0, target: 6},
+      badges: [],
+    });
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Hôm nay học 5 phút thôi!');
+  });
+
+  it('BUG-002: saved state shows updated CTA text', async () => {
+    __resetMockDatabases();
+    resetDatabaseForTests(open({name: DB_NAME}));
+    jest.restoreAllMocks();
+    (getGamificationSnapshot as jest.Mock).mockReturnValue({
+      currentStreak: 0,
+      weeklyGoal: {completedThisWeek: 0, target: 6},
+      badges: [],
+    });
+    jest
+      .spyOn(AuthSession, 'ensureValidSession')
+      .mockResolvedValue(validSession);
+    mockFetch.mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => CONTINUE_NULL,
+    }));
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Chọn bài');
+  });
+});

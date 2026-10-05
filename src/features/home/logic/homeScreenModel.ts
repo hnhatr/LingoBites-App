@@ -30,6 +30,7 @@ export const HERO_BADGE_INK = '#134F7E';
 export const HERO_TITLE = '#FFFFFF';
 export const HERO_CTA_BG = '#FFD35E';
 export const HERO_CTA_INK = '#40320D';
+export const HERO_WAVE_SECONDARY = '#3d88c4';
 
 // ---------------------------------------------------------------------------
 // Hero states (DQ-002, P-004)

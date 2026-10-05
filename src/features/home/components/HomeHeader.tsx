@@ -72,7 +72,10 @@ export function HomeHeader({greeting, streak, flame}: Props) {
   // Small greeting prefix text (no name embedded)
   const greetingPrefixText = t(greeting.greetingKey);
 
-  // Streak pill label — always show (Gap 4); "0 ngày" when streak = 0
+  // Streak pill visible label — always show (Gap 4, BUG-003); "0 ngày" when streak = 0
+  const streakPillText = t('home.streak_pill', {count: streak});
+
+  // Streak pill accessibility label — unchanged (uses flame.a11yKey + a11yParams)
   const streakA11yLabel = flame.a11yParams
     ? t(flame.a11yKey, flame.a11yParams)
     : t(flame.a11yKey);
@@ -128,7 +131,7 @@ export function HomeHeader({greeting, streak, flame}: Props) {
           testID="home-flame-icon"
         />
         <AppText variant="label" style={{color: flame.color}}>
-          {streak}
+          {streakPillText}
         </AppText>
       </Animated.View>
     </View>
