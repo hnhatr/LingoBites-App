@@ -30,11 +30,28 @@ export type CreateEntry =
   /** Submit already-confirmed text and show creation progress. */
   | {kind: 'text' | 'ocr'; text: string; submissionId?: string};
 
+/**
+ * One step of the structured curriculum (Course → Level → Unit → Lesson).
+ * `title` is only shown in the header while the screen loads its list.
+ */
+export type CourseTarget =
+  /** The levels of one course. */
+  | {kind: 'course'; courseSlug: string; title?: string}
+  /** The units of one level, each with its progress bar. */
+  | {kind: 'level'; levelId: string; title?: string}
+  /** The lessons of one unit; a lesson opens with `openLesson`. */
+  | {kind: 'unit'; unitId: string; title?: string};
+
 export interface AppNavigation {
   /** Open one lesson in the lesson player. */
   openLesson(lessonId: string): void;
   /** Open the lesson catalog. */
   openCatalog(): void;
+  /**
+   * Open the structured curriculum: the course list without a target,
+   * otherwise one course, level or unit.
+   */
+  openCourse(target?: CourseTarget): void;
   /** Start (or continue to the next step of) the create-lesson flow. */
   startCreate(entry: CreateEntry): void;
   /**

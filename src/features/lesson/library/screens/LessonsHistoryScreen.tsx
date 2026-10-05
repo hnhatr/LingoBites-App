@@ -4,6 +4,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {CourseListContent} from '@features/course';
 import {useCanonicalCatalog} from '@features/lesson/player';
 import {useFlashcardLibrary} from '@features/review';
 
@@ -17,7 +18,10 @@ import {useAppNavigation} from '@core/navigation';
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {LessonsTabContent} from '../components/LessonsTabContent';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
-import {SegmentedTabBar} from '../components/SegmentedTabBar';
+import {
+  type LibraryTabId,
+  SegmentedTabBar,
+} from '../components/SegmentedTabBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
 import {
   isSegmentFilterActive,
@@ -48,9 +52,7 @@ export function LessonsHistoryScreen(_props: Props) {
   const {getDueFlashcards} = useFlashcardLibrary();
   const [dueCount, setDueCount] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<
-    'lessons' | 'vocabulary' | 'grammar'
-  >('lessons');
+  const [activeTab, setActiveTab] = useState<LibraryTabId>('lessons');
 
   const {
     packagedLessons,
@@ -173,16 +175,18 @@ export function LessonsHistoryScreen(_props: Props) {
 
       <SegmentedTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <SearchAndFilterBar
-        searchQuery={currentFilter.searchQuery}
-        sourceFilter={currentFilter.sourceFilter}
-        onSearchChange={query =>
-          setCurrentFilter({...currentFilter, searchQuery: query})
-        }
-        onFilterChange={filter =>
-          setCurrentFilter({...currentFilter, sourceFilter: filter})
-        }
-      />
+      {activeTab !== 'courses' && (
+        <SearchAndFilterBar
+          searchQuery={currentFilter.searchQuery}
+          sourceFilter={currentFilter.sourceFilter}
+          onSearchChange={query =>
+            setCurrentFilter({...currentFilter, searchQuery: query})
+          }
+          onFilterChange={filter =>
+            setCurrentFilter({...currentFilter, sourceFilter: filter})
+          }
+        />
+      )}
 
       {activeTab === 'lessons' && (
         <View style={themedStyles.tabContent} testID="lessons-tab-content">
@@ -192,6 +196,11 @@ export function LessonsHistoryScreen(_props: Props) {
             onViewAllCatalog={navigation.openCatalog}
             isFiltered={isFiltered}
           />
+        </View>
+      )}
+      {activeTab === 'courses' && (
+        <View style={themedStyles.tabContent} testID="courses-tab-content">
+          <CourseListContent />
         </View>
       )}
       {activeTab === 'vocabulary' && (

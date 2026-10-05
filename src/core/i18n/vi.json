@@ -571,5 +571,27 @@
     "create_ready": "Bài học đã sẵn sàng.",
     "create_open": "Mở bài học",
     "create_open_hint": "Mở bài học vừa tạo"
+  },
+  "course": {
+    "courses_title": "Khóa học",
+    "courses_empty": "Chưa có khóa học nào",
+    "course_row_hint": "Mở các cấp độ của khóa học",
+    "levels_title": "Cấp độ",
+    "levels_empty": "Khóa học này chưa có cấp độ nào",
+    "level_row_hint": "Mở các chương của cấp độ",
+    "units_title": "Chương",
+    "units_empty": "Cấp độ này chưa có chương nào",
+    "unit_row_hint": "Mở các bài học của chương",
+    "unit_number": "Chương {{number}}",
+    "unit_progress": "{{completed}}/{{total}} bài",
+    "unit_progress_hint": "Số bài đã hoàn thành trong chương",
+    "lessons_title": "Bài học",
+    "lessons_empty": "Chương này chưa có bài học nào",
+    "lesson_row_hint": "Mở bài học",
+    "lesson_number": "Bài {{number}}",
+    "lesson_completed": "Đã hoàn thành",
+    "lesson_minutes": "{{count}} phút",
+    "load_failed": "Không tải được giáo trình.",
+    "retry_hint": "Tải lại giáo trình"
   }
 }

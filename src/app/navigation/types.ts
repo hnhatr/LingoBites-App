@@ -5,6 +5,12 @@ import type {
   BootGateRouteParams,
   OnboardingRouteParams,
 } from '@features/account';
+import type {
+  CourseLevelsRouteParams,
+  CourseListRouteParams,
+  LevelUnitsRouteParams,
+  UnitLessonsRouteParams,
+} from '@features/course';
 import type {HomeStackParamList} from '@features/home';
 import type {
   CreateStackParamList,
@@ -60,6 +66,11 @@ export type RootStackParamList = {
   // Lessons
   CanonicalCatalog: CanonicalCatalogRouteParams;
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
+  // Structured curriculum (Course → Level → Unit → Lesson)
+  CourseList: CourseListRouteParams;
+  CourseLevels: CourseLevelsRouteParams;
+  LevelUnits: LevelUnitsRouteParams;
+  UnitLessons: UnitLessonsRouteParams;
   // Practice
   DailyReview: DailyReviewRouteParams;
   Today: TodayRouteParams;

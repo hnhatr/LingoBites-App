@@ -18,6 +18,7 @@ RootStack
 └─ Luồng công việc         phủ lên tab bar; Back quay về tab đã mở luồng
    ├─ Tạo bài  PasteText, ImageCapture, OCRReview, LessonCreation
    ├─ Bài học  CanonicalCatalog, CanonicalLessonPlayer
+   ├─ Giáo trình  CourseList, CourseLevels, LevelUnits, UnitLessons
    └─ Luyện    DailyReview, Today, SpeakingRoom,
                ShadowingLessonPicker, ShadowingSession, ShadowingSummary
 ```
@@ -44,6 +45,8 @@ features/*             const nav = useAppNavigation(); nav.openLesson(id)
 |---|---|
 | `openLesson(id)` | `CanonicalLessonPlayer` |
 | `openCatalog()` | `CanonicalCatalog` |
+| `openCourse()` | `CourseList` |
+| `openCourse({kind: 'course' \| 'level' \| 'unit', ...})` | `CourseLevels` / `LevelUnits` / `UnitLessons` (bài trong Unit mở bằng `openLesson`) |
 | `startCreate({kind: 'paste' \| 'camera' \| 'gallery' \| 'youtube'})` | `PasteText` / `ImageCapture` / `LessonCreation` |
 | `startCreate({kind: 'text' \| 'ocr', text})` | `LessonCreation` (gửi luôn text đã xác nhận) |
 | `finishCreate(lessonId)` | Xoá các màn tạo bài khỏi lịch sử rồi mở bài |
