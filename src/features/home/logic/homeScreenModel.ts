@@ -88,10 +88,12 @@ export type GreetingModel = {
   /**
    * i18n key for the greeting line.
    *
-   * When hasName is true, this is the unnamed key (no {{name}} params) used
-   * for the small prefix line; displayName is shown on a separate large accent
-   * line below. The named i18n keys serve as accessible labels.
-   * When hasName is false, this is the unnamed key displayed as a single line.
+   * The unnamed keys (greeting_morning/afternoon/night) contain no `{{name}}`
+   * placeholder — they render as plain strings like "Chào buổi sáng!".
+   * When hasName is true, this key is used for the small prefix line and
+   * displayName is shown on a separate large accent line below.
+   * When hasName is false, this key is displayed as a single-line greeting.
+   * The `_named` variants (a11yKey) carry `{{name}}` for the a11y path only.
    */
   greetingKey:
     | 'home.greeting_morning'
