@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -126,8 +127,10 @@ export function HomeHeroCard({
 
   const handleMascotTap = useCallback(() => {
     if (reducedMotion) return;
-    mascotScale.value = withTiming(1.2, {duration: 150});
-    mascotScale.value = withTiming(1.0, {duration: 200});
+    mascotScale.value = withSequence(
+      withTiming(1.2, {duration: 150}),
+      withTiming(1.0, {duration: 200}),
+    );
     setShowHearts(true);
     if (heartTimerRef.current) {
       clearTimeout(heartTimerRef.current);
@@ -151,8 +154,10 @@ export function HomeHeroCard({
   const ctaScale = useSharedValue(1);
   useEffect(() => {
     if (!reducedMotion) {
-      ctaScale.value = withTiming(1.04, {duration: 1000});
-      ctaScale.value = withTiming(1.0, {duration: 1000});
+      ctaScale.value = withSequence(
+        withTiming(1.04, {duration: 1000}),
+        withTiming(1.0, {duration: 1000}),
+      );
     }
   }, [ctaScale, reducedMotion]);
 

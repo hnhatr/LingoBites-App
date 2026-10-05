@@ -60,6 +60,18 @@ function withSpring(toValue) {
   return toValue;
 }
 
+/** Tracks animation sequences (I2/I8 HomeHeroCard). */
+const withSequenceCalls = [];
+
+function withSequence(...animations) {
+  withSequenceCalls.push(animations);
+  return animations.length > 0 ? animations[animations.length - 1] : 0;
+}
+
+function clearWithSequenceCalls() {
+  withSequenceCalls.length = 0;
+}
+
 function withDelay(_, animation) {
   return animation;
 }
@@ -112,6 +124,9 @@ module.exports = {
   useReducedMotion,
   useSharedValue,
   withDelay,
+  withSequence,
   withSpring,
   withTiming,
+  clearWithSequenceCalls,
+  withSequenceCalls,
 };
