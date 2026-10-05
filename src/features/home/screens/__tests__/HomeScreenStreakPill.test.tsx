@@ -118,7 +118,14 @@ function seedOneSessionToday() {
   if (!outcome?.ok) throw new Error('Could not seed review session');
 }
 
-describe('HomeScreen hero streak + explore slots (LING-221)', () => {
+/**
+ * HomeScreen hero streak (LING-221).
+ *
+ * The explore-cell slot assertions are removed (LING-261 Gap 1): the legacy
+ * explore grid is no longer rendered. The streak badge and header streak pill
+ * tests are retained.
+ */
+describe('HomeScreen hero streak (LING-221)', () => {
   beforeEach(() => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
@@ -131,15 +138,6 @@ describe('HomeScreen hero streak + explore slots (LING-221)', () => {
     }));
   });
 
-  it('does not show a header streak pill', async () => {
-    seedOneSessionToday();
-    const tree = await renderHomeWithContinue();
-    expect(
-      tree.root.findAll(node => node.props.testID === 'home-streak-pill')
-        .length,
-    ).toBe(0);
-  });
-
   it('shows the streak badge on the studying hero when streak > 0', async () => {
     seedOneSessionToday();
     const tree = await renderHomeWithContinue();
@@ -147,32 +145,12 @@ describe('HomeScreen hero streak + explore slots (LING-221)', () => {
     expect(text).toContain('Chuỗi 1 ngày');
   });
 
-  it('renders no badge or tag slots on explore cells', async () => {
+  it('does not render the legacy explore grid (Gap 1 removed)', async () => {
     const tree = await renderHomeWithContinue();
     for (const id of EXPLORE_IDS) {
       expect(
-        tree.root.findAll(node => node.props.testID === `${id}-badge`).length,
+        tree.root.findAll(node => node.props.testID === id).length,
       ).toBe(0);
-      expect(
-        tree.root.findAll(node => node.props.testID === `${id}-tag`).length,
-      ).toBe(0);
-      expect(
-        tree.root.findAll(node => node.props.testID === `${id}-arrow`).length,
-      ).toBe(0);
-    }
-  });
-
-  it('exposes exactly one button per explore cell', async () => {
-    const tree = await renderHomeWithContinue();
-    for (const id of EXPLORE_IDS) {
-      const buttons = tree.root
-        .findAll(node => node.props.testID === id)
-        .filter(
-          node =>
-            typeof node.props.onPress === 'function' &&
-            node.props.accessibilityRole === 'button',
-        );
-      expect(buttons.length).toBe(1);
     }
   });
 });
