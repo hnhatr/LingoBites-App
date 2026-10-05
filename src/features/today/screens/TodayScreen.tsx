@@ -18,12 +18,13 @@ import {
   REASON_CODE_VI_LABELS,
 } from '../logic/adaptationEngine';
 import {getLearnerStateSnapshot} from '../logic/todayAdapter';
-import {resolveTodayNavigation} from '../logic/todayNavigation';
+import {openStudyActivity} from '../logic/todayNavigation';
 import type {
   StudyActivityItem,
   StudyBlockPlan,
   TodayMode,
 } from '../logic/types';
+import type {TodayRouteParams} from './navigationTypes';
 
 const TARGET_MINUTES: Record<TodayMode, number> = {
   '5-minute': 5,
@@ -31,12 +32,16 @@ const TARGET_MINUTES: Record<TodayMode, number> = {
   'deep-practice': 45,
 };
 
-export function TodayScreen() {
+type Props = {
+  route?: {params?: TodayRouteParams};
+};
+
+export function TodayScreen({route}: Props = {}) {
   const {theme} = useAppTheme();
   const themedStyles = React.useMemo(() => makeStyles(theme), [theme]);
   const navigation = useAppNavigation();
 
-  const [mode, setMode] = useState<TodayMode>('normal');
+  const [mode, setMode] = useState<TodayMode>(route?.params?.mode ?? 'normal');
   const [plan, setPlan] = useState<StudyBlockPlan | null>(null);
   const [hasDownloads, setHasDownloads] = useState(true);
 
@@ -59,28 +64,7 @@ export function TodayScreen() {
   }
 
   function handleExecuteActivity(activity: StudyActivityItem) {
-    const resolved = resolveTodayNavigation(activity.navigationTarget);
-    // Map navigation target to a surviving screen (LING-48 / TASK-007):
-    // `ContentLessonRuntime` targets open the content-package runtime
-    // screen (never the removed v1 `SavedLessonDetail`), and `FlashcardList`
-    // targets fall back to `DailyReview` (never the removed v1
-    // `FlashcardList` screen).
-    if (resolved.screen === 'CanonicalLessonPlayer') {
-      navigation.openLesson(resolved.lessonId);
-    } else if (resolved.screen === 'CanonicalCatalog') {
-      navigation.openCatalog();
-    } else if (resolved.screen === 'SpeakingRoom') {
-      navigation.openSpeakingRoom();
-    } else if (resolved.screen === 'ShadowingLessonPicker') {
-      navigation.openShadowing();
-    } else if (resolved.screen === 'ShadowingSession') {
-      navigation.openShadowing({
-        lessonId: resolved.lessonId,
-        sentenceIndex: resolved.sentenceIndex,
-      });
-    } else {
-      navigation.openReview();
-    }
+    openStudyActivity(navigation, activity);
   }
 
   return (

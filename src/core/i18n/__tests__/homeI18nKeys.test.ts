@@ -82,6 +82,19 @@ const HOME_KEYS = [
   'home.rail_meta',
   'home.rail_type_video',
   'home.rail_type_reading',
+  // "Gợi ý hôm nay" card (F12)
+  'home.today_label',
+  'home.today_mode_5',
+  'home.today_mode_20',
+  'home.today_mode_45',
+  'home.today_mode_a11y',
+  'home.today_summary',
+  'home.today_details',
+  'home.today_details_a11y',
+  'home.today_details_hint',
+  'home.today_empty',
+  'home.today_start_a11y',
+  'home.today_start_hint',
 ];
 
 function resolveKey(
