@@ -7,7 +7,9 @@ import {FeatureFlagProvider} from '@core/release';
 
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
 
+import {CanonicalBlockView} from '../CanonicalBlockView';
 import {SentenceAnalysisPanel} from '../SentenceAnalysisPanel';
+
 async function renderWithTheme(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
@@ -85,5 +87,48 @@ describe('SentenceAnalysisPanel', () => {
       busy.root.findByProps({testID: 'analysis-retry-s1'}).props.onPress();
     });
     expect(onRetry).toHaveBeenCalled();
+  });
+});
+
+describe('CanonicalBlockView activity', () => {
+  it('renders an activity read-only with its lines and no submit action', async () => {
+    const tree = await renderWithTheme(
+      <CanonicalBlockView
+        block={{
+          id: '77777777-7777-4777-8777-777777777701',
+          type: 'activity',
+          position: 0,
+          title: null,
+          data: {
+            activityKind: 'listen_and_repeat',
+            titleVi: 'Nghe và nhắc lại',
+            instructionsVi: 'Đọc to từng câu.',
+            lines: [
+              {
+                id: 'l1',
+                speaker: 'a',
+                textEn: 'Good morning!',
+                textVi: 'Chào buổi sáng!',
+              },
+            ],
+          },
+        }}
+      />,
+    );
+    const content = tree.root.findByProps({
+      testID: 'canonical-block-activity-content',
+    });
+    expect(content.props.children).toBe('Nghe và nhắc lại\nĐọc to từng câu.');
+    expect(
+      tree.root.findAllByProps({testID: 'canonical-block-activity-line-l1'})
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      tree.root.findAllByProps({testID: 'canonical-block-activity-read-only'})
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      tree.root.findAll(node => typeof node.props.onPress === 'function'),
+    ).toHaveLength(0);
   });
 });

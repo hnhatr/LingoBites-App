@@ -10,6 +10,9 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
+import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
+import {SaveItemButton} from './SaveItemButton';
+
 export type SentenceAnalysisPanelState =
   | {status: 'loading'}
   | {status: 'ready'; analysis: LessonAnalysis}
@@ -27,6 +30,8 @@ export type SentenceAnalysisPanelProps = {
   onRetry?: () => void;
   /** Speaks a vocabulary word (TTS); omitted = no play buttons. */
   onSpeakText?: (text: string) => void;
+  /** "Lưu thẻ" per analysed word; omitted = no save buttons. */
+  vocabularySave?: VocabularySaveControl;
 };
 
 /**
@@ -39,6 +44,7 @@ export function SentenceAnalysisPanel({
   state,
   onRetry,
   onSpeakText,
+  vocabularySave,
 }: SentenceAnalysisPanelProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -127,6 +133,16 @@ export function SentenceAnalysisPanel({
                   /{item.ipa.replace(/^\/|\/$/g, '')}/
                 </AppText>
                 <AppText color="secondary">{item.meaning}</AppText>
+                {vocabularySave ? (
+                  <SaveItemButton
+                    accessibilityHint={t('lessonPlayer.save_card_hint')}
+                    label={t('lessonPlayer.save_card')}
+                    onPress={() => vocabularySave.onToggle(item)}
+                    saved={vocabularySave.isSaved(item.word)}
+                    savedLabel={t('lessonPlayer.saved')}
+                    testID={`analysis-save-${item.id}`}
+                  />
+                ) : null}
               </View>
               {onSpeakText ? (
                 <IconButton

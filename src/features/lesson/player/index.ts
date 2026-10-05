@@ -75,6 +75,8 @@ export {
   areCuesBoundedByDuration,
   formatCueTimestamp,
 } from './logic/canonicalYouTubeCues';
+export {collectLessonGrammar} from './logic/lessonHubContent';
+export type {LessonGrammarEntry} from './logic/lessonHubContent';
 export {useCanonicalCatalog} from './logic/useCanonicalCatalog';
 export type {CanonicalCatalogState} from './logic/useCanonicalCatalog';
 export {useCreateFlow} from './logic/useCreateFlow';

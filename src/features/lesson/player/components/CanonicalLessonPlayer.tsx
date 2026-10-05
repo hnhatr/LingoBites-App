@@ -10,6 +10,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {sortedBlocks, sortedSentences} from '../logic/lessonHubContent';
+import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
 import {CanonicalBlockView} from './CanonicalBlockView';
 import {LessonStatusBanners} from './LessonStatusBanners';
 import {
@@ -49,6 +50,8 @@ export type CanonicalLessonPlayerProps = {
   >;
   /** Speaks one English sentence (TTS); omitted = no play buttons. */
   onSpeakText?: (text: string) => void;
+  /** "Lưu thẻ" on analysed words; omitted = no save buttons. */
+  vocabularySave?: VocabularySaveControl;
 };
 
 /**
@@ -77,6 +80,7 @@ export function CanonicalLessonPlayer({
   onRetryAnalysis,
   analysisStates,
   onSpeakText,
+  vocabularySave,
 }: CanonicalLessonPlayerProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -114,6 +118,7 @@ export function CanonicalLessonPlayer({
         onRetryAnalysis={onRetryAnalysis}
         analysisStates={analysisStates}
         onSpeakText={onSpeakText}
+        vocabularySave={vocabularySave}
       />
     );
   }
@@ -181,6 +186,7 @@ export function CanonicalLessonPlayer({
                   sentenceId={sentence.id}
                   state={{status: 'ready', analysis: stored}}
                   onSpeakText={onSpeakText}
+                  vocabularySave={vocabularySave}
                 />
               ) : asyncState ? (
                 <SentenceAnalysisPanel

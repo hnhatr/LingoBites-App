@@ -54,6 +54,7 @@ import {
 } from '../logic/lessonHubContent';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
+import {useLessonSavedItems} from '../logic/useLessonSavedItems';
 import type {LessonFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<
@@ -90,11 +91,10 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {state, open, checkForUpdate, requestAnalysis} =
     useCanonicalLesson(lessonId);
-  const {
-    state: completionState,
-    complete: completeLesson,
-    markStarted,
-  } = useLessonCompletion(lessonId);
+  const {state: completionState, complete: completeLesson, markStarted} =
+    useLessonCompletion(lessonId);
+  const savedItems = useLessonSavedItems(lessonId);
+  const reloadSavedItems = savedItems.reload;
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -127,6 +127,9 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       checkForUpdate();
     }, [checkForUpdate]),
   );
+
+  // Saved state can change elsewhere (Library, Review) while this is open.
+  useFocusEffect(reloadSavedItems);
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const isYouTubeStudy = snapshot?.source_type === 'youtube';
@@ -267,6 +270,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         onRetryAnalysis={handleRequestAnalysis}
         analysisStates={analysisStates}
         onSpeakText={handleSpeak}
+        vocabularySave={savedItems.vocabulary}
       />
     ) : null;
 
@@ -402,10 +406,16 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           <LessonVocabularySection
             entries={vocabulary}
             onSpeakText={handleSpeak}
+            saveControl={savedItems.vocabulary}
           />
         );
       case 'grammar':
-        return <LessonGrammarSection entries={grammar} />;
+        return (
+          <LessonGrammarSection
+            entries={grammar}
+            saveControl={savedItems.grammar}
+          />
+        );
     }
   };
 

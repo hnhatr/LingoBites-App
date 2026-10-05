@@ -8,16 +8,23 @@ import {Chip} from '@ui/components/Chip';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonGrammarEntry} from '../logic/lessonHubContent';
+import type {GrammarSaveControl} from '../logic/useLessonSavedItems';
+import {SaveItemButton} from './SaveItemButton';
 
 export type LessonGrammarSectionProps = {
   entries: LessonGrammarEntry[];
+  /** "Đánh dấu" per grammar point; omitted = no bookmark buttons. */
+  saveControl?: GrammarSaveControl;
 };
 
 /**
  * "Ngữ pháp trong ngữ cảnh": one card per grammar point with formula,
  * explanation, how it is used in this lesson, and examples.
  */
-export function LessonGrammarSection({entries}: LessonGrammarSectionProps) {
+export function LessonGrammarSection({
+  entries,
+  saveControl,
+}: LessonGrammarSectionProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
@@ -80,6 +87,16 @@ export function LessonGrammarSection({entries}: LessonGrammarSectionProps) {
                   </View>
                 ))}
               </View>
+            ) : null}
+            {saveControl ? (
+              <SaveItemButton
+                accessibilityHint={t('lessonPlayer.bookmark_grammar_hint')}
+                label={t('lessonPlayer.bookmark_grammar')}
+                onPress={() => saveControl.onToggle(entry.key)}
+                saved={saveControl.isSaved(entry.key)}
+                savedLabel={t('lessonPlayer.saved')}
+                testID={`lesson-grammar-save-${entry.key}`}
+              />
             ) : null}
           </View>
         </AppCard>
