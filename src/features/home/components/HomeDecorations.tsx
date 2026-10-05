@@ -84,12 +84,7 @@ export function TimeOfDayBadge({timeOfDay, testID}: TODBadgeProps) {
     transform: [{rotate: `${rotation.value}deg`}],
   }));
 
-  const moonAnimStyle = useAnimatedStyle(() => ({
-    opacity: twinkle.value,
-  }));
-
   const isMorning = timeOfDay === 'morning';
-  const isAfternoon = timeOfDay === 'afternoon';
   const isNight = timeOfDay === 'night';
 
   const sunFill = isMorning ? '#FFD35E' : '#ffa94d';
@@ -428,12 +423,14 @@ export function ConfettiOverlay({
 export const ConfettiParticles = ConfettiOverlay;
 export const HomeWaveDecoration = HomeHeroWaves;
 
+const BORDER_INK = '#1c1c10';
+
 const styles = StyleSheet.create({
   todBadgeContainer: {
     alignItems: 'center',
     borderRadius: 23,
     borderWidth: 2,
-    borderColor: '#1c1c10',
+    borderColor: BORDER_INK,
     height: 46,
     justifyContent: 'center',
     width: 46,

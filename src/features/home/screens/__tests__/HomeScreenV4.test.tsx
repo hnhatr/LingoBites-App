@@ -27,8 +27,6 @@ import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {HomeScreen} from '../HomeScreen';
 
-const reanimatedMock = require('../../../../../test-utils/reanimatedMock');
-
 // ---------------------------------------------------------------------------
 // Mock setup
 // ---------------------------------------------------------------------------

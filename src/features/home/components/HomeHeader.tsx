@@ -27,6 +27,15 @@ import type {FlameModel, GreetingModel} from '../logic/homeScreenModel';
 import {getHardShadow, TimeOfDayBadge} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
+const PALETTE = {
+  highlight: '#FFD35E',
+  borderInk: '#1c1c10',
+  ember1: '#ffb03a',
+  ember2: '#ff6a1a',
+  streakNumber: '#1c1c10',
+  flameGlow: 'rgba(255,110,0,0.75)',
+};
+
 type Props = {
   greeting: GreetingModel;
   streak: number;
@@ -171,7 +180,7 @@ export function HomeHeader({greeting, streak, flame}: Props) {
           style={[
             styles.flameContainer,
             lv >= 3 && {
-              shadowColor: 'rgba(255,110,0,0.75)',
+              shadowColor: PALETTE.flameGlow,
               shadowOffset: {width: 0, height: 0},
               shadowOpacity: 0.75,
               shadowRadius: flame.glowRadius,
@@ -232,7 +241,7 @@ function makeStyles(theme: AppTheme) {
       position: 'relative',
     },
     nameHighlightBar: {
-      backgroundColor: '#FFD35E',
+      backgroundColor: PALETTE.highlight,
       borderRadius: 6,
       bottom: 3,
       height: 9,
@@ -259,7 +268,7 @@ function makeStyles(theme: AppTheme) {
     streakPill: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: '#1c1c10',
+      borderColor: PALETTE.borderInk,
       borderRadius: 999,
       borderWidth: 2,
       flexDirection: 'row',
@@ -279,7 +288,7 @@ function makeStyles(theme: AppTheme) {
       width: 24,
     },
     ember1: {
-      backgroundColor: '#ffb03a',
+      backgroundColor: PALETTE.ember1,
       borderRadius: 2,
       bottom: 22,
       height: 4,
@@ -288,7 +297,7 @@ function makeStyles(theme: AppTheme) {
       width: 4,
     },
     ember2: {
-      backgroundColor: '#ff6a1a',
+      backgroundColor: PALETTE.ember2,
       borderRadius: 2,
       bottom: 22,
       height: 4,
@@ -297,7 +306,7 @@ function makeStyles(theme: AppTheme) {
       width: 4,
     },
     streakNumber: {
-      color: '#1c1c10',
+      color: PALETTE.streakNumber,
       fontSize: 16,
       fontWeight: '900',
     },

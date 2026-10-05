@@ -29,6 +29,11 @@ import type {ShortcutItem, ShortcutKey} from '../logic/homeScreenModel';
 import {getHardShadow} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
+const GRID_PALETTE = {
+  borderInk: '#1c1c10',
+  badgeText: '#ffffff',
+};
+
 type Props = {
   shortcuts: ShortcutItem[];
   onPress: (key: ShortcutKey) => void;
@@ -194,7 +199,7 @@ function makeStyles(theme: AppTheme) {
       minWidth: 140,
     },
     tile: {
-      borderColor: '#1c1c10',
+      borderColor: GRID_PALETTE.borderInk,
       borderRadius: 20,
       borderWidth: 2,
       gap: 6,
@@ -214,7 +219,7 @@ function makeStyles(theme: AppTheme) {
     iconBox: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: '#1c1c10',
+      borderColor: GRID_PALETTE.borderInk,
       borderRadius: 14,
       borderWidth: 2,
       height: 44,
@@ -232,7 +237,7 @@ function makeStyles(theme: AppTheme) {
     },
     badge: {
       backgroundColor: theme.colors.secondary,
-      borderColor: '#1c1c10',
+      borderColor: GRID_PALETTE.borderInk,
       borderRadius: 999,
       borderWidth: 2,
       paddingHorizontal: 9,
@@ -242,7 +247,7 @@ function makeStyles(theme: AppTheme) {
       top: 10,
     },
     badgeText: {
-      color: '#ffffff',
+      color: GRID_PALETTE.badgeText,
       fontSize: 12,
       fontWeight: '800',
     },

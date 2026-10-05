@@ -413,13 +413,22 @@ export function HomeHeroCard({
   );
 }
 
+const CARD_PALETTE = {
+  borderInk: '#1c1c10',
+  paperSheet: '#ffffff22',
+  haloBg: '#ffd35e',
+  bubbleBg: '#ffffff',
+  bubbleTailInner: '#ffffff',
+  bubbleText: '#1c1c10',
+};
+
 const TRANSPARENT = 'rgba(0,0,0,0)';
 
 function makeStyles(_theme: AppTheme) {
   return StyleSheet.create({
     card: {
       backgroundColor: HERO_BLUE,
-      borderColor: '#1c1c10',
+      borderColor: CARD_PALETTE.borderInk,
       borderRadius: 24,
       borderWidth: 2,
       minHeight: 190,
@@ -441,7 +450,7 @@ function makeStyles(_theme: AppTheme) {
       width: 140,
     },
     paperSheet: {
-      backgroundColor: '#ffffff22',
+      backgroundColor: CARD_PALETTE.paperSheet,
       borderRadius: 18,
       bottom: -6,
       height: 150,
@@ -485,14 +494,14 @@ function makeStyles(_theme: AppTheme) {
       position: 'relative',
     },
     ctaHalo: {
-      backgroundColor: '#ffd35e',
+      backgroundColor: CARD_PALETTE.haloBg,
       borderRadius: 999,
       position: 'absolute',
     },
     cta: {
       alignItems: 'center',
       backgroundColor: HERO_CTA_BG,
-      borderColor: '#1c1c10',
+      borderColor: CARD_PALETTE.borderInk,
       borderRadius: 999,
       borderWidth: 2,
       flexDirection: 'row',
@@ -533,8 +542,8 @@ function makeStyles(_theme: AppTheme) {
       width: 126,
     },
     bubble: {
-      backgroundColor: '#ffffff',
-      borderColor: '#1c1c10',
+      backgroundColor: CARD_PALETTE.bubbleBg,
+      borderColor: CARD_PALETTE.borderInk,
       borderRadius: 14,
       borderWidth: 2,
       maxWidth: 120,
@@ -547,7 +556,7 @@ function makeStyles(_theme: AppTheme) {
       zIndex: 3,
     },
     bubbleText: {
-      color: '#1c1c10',
+      color: CARD_PALETTE.bubbleText,
       fontSize: 12,
       fontWeight: '800',
       lineHeight: 15,
@@ -557,7 +566,7 @@ function makeStyles(_theme: AppTheme) {
       borderLeftWidth: 6,
       borderRightColor: TRANSPARENT,
       borderRightWidth: 6,
-      borderTopColor: '#1c1c10',
+      borderTopColor: CARD_PALETTE.borderInk,
       borderTopWidth: 12,
       bottom: -12,
       height: 0,
@@ -570,7 +579,7 @@ function makeStyles(_theme: AppTheme) {
       borderLeftWidth: 4,
       borderRightColor: TRANSPARENT,
       borderRightWidth: 4,
-      borderTopColor: '#ffffff',
+      borderTopColor: CARD_PALETTE.bubbleTailInner,
       borderTopWidth: 9,
       bottom: -8,
       height: 0,
