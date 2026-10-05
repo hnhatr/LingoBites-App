@@ -16,6 +16,9 @@ const NEW_HOME_KEYS = [
   // Streak (I4, P-001)
   'home.streak_days',
   'home.streak_zero',
+  // Streak pill visible label (BUG-003, LING-264)
+  'home.streak_pill_one',
+  'home.streak_pill_other',
   // Paw goal (I3, P-004)
   'home.paw_goal_a11y',
   'home.paw_goal_label',
@@ -88,4 +91,78 @@ describe('Home i18n key parity (A-004, LING-256 TASK-002)', () => {
       expect((value as string).length).toBeGreaterThan(0);
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// BUG-002 (LING-264): exact copy for saved state in vi and en
+// ---------------------------------------------------------------------------
+describe('BUG-002 saved-state copy (LING-264)', () => {
+  it('vi.json hero_saved_cta is "Chọn bài"', () => {
+    const value = resolveKey(
+      vi as Record<string, unknown>,
+      'home.hero_saved_cta',
+    );
+    expect(value).toBe('Chọn bài');
+  });
+
+  it('en.json hero_saved_cta is "Choose a lesson"', () => {
+    const value = resolveKey(
+      en as Record<string, unknown>,
+      'home.hero_saved_cta',
+    );
+    expect(value).toBe('Choose a lesson');
+  });
+
+  it('vi.json mascot_saved is "Hôm nay học 5 phút thôi!"', () => {
+    const value = resolveKey(
+      vi as Record<string, unknown>,
+      'home.mascot_saved',
+    );
+    expect(value).toBe('Hôm nay học 5 phút thôi!');
+  });
+
+  it('en.json mascot_saved is "Let\'s study for just 5 minutes today!"', () => {
+    const value = resolveKey(
+      en as Record<string, unknown>,
+      'home.mascot_saved',
+    );
+    expect(value).toBe("Let's study for just 5 minutes today!");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-003 (LING-264): streak_pill plural forms have correct values
+// ---------------------------------------------------------------------------
+describe('BUG-003 streak_pill plural forms (LING-264)', () => {
+  it('vi.json streak_pill_one is "{{count}} ngày"', () => {
+    const value = resolveKey(
+      vi as Record<string, unknown>,
+      'home.streak_pill_one',
+    );
+    expect(value).toBe('{{count}} ngày');
+  });
+
+  it('vi.json streak_pill_other is "{{count}} ngày"', () => {
+    const value = resolveKey(
+      vi as Record<string, unknown>,
+      'home.streak_pill_other',
+    );
+    expect(value).toBe('{{count}} ngày');
+  });
+
+  it('en.json streak_pill_one is "{{count}} day"', () => {
+    const value = resolveKey(
+      en as Record<string, unknown>,
+      'home.streak_pill_one',
+    );
+    expect(value).toBe('{{count}} day');
+  });
+
+  it('en.json streak_pill_other is "{{count}} days"', () => {
+    const value = resolveKey(
+      en as Record<string, unknown>,
+      'home.streak_pill_other',
+    );
+    expect(value).toBe('{{count}} days');
+  });
 });
