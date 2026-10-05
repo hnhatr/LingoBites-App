@@ -385,7 +385,7 @@ function makeStyles(theme: AppTheme) {
       width: 128,
     },
     mascotImage: {height: 140, width: 112},
-    // BUG-004: card-relative anchor per mockup v4 (right:58, top:8, maxWidth:120)
+    // BUG-004: card-relative anchor per mockup v4 (right:58, top:8, maxWidth:120, width:120)
     bubble: {
       backgroundColor: theme.colors.overlayLight,
       borderRadius: theme.radius.md,
@@ -395,6 +395,7 @@ function makeStyles(theme: AppTheme) {
       position: 'absolute',
       right: 58,
       top: 8,
+      width: 120,
       zIndex: 2,
     },
     // Downward tail pointing toward the mascot head (mockup v4 Gap 5)

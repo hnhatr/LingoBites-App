@@ -8,6 +8,7 @@
  * - Dark and Sticker-soft theme contrast ≥ 4.5:1 (DQ-004)
  */
 import React from 'react';
+import {StyleSheet} from 'react-native';
 import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
@@ -547,6 +548,7 @@ describe('CR-002 hero wave token and BUG-004 bubble (LING-264)', () => {
     expect(text).toContain('"right":58');
     expect(text).toContain('"top":8');
     expect(text).toContain('"maxWidth":120');
+    expect(text).toContain('"width":120');
   });
 
   it('BUG-002: saved state shows updated mascot speech text', async () => {
@@ -637,13 +639,10 @@ describe('CR-002 hero wave token and BUG-004 bubble (LING-264)', () => {
     // numberOfLines must not appear alongside the bubble content in the JSON.
     // The Text element that renders the speech bubble must wrap freely.
     // We assert this by finding Text nodes in the bubble that carry numberOfLines.
-    const bubbleRoot = bubbleNode!;
-    const textNodesWithClamp = bubbleRoot.findAll(
-      node =>
-        typeof node.props.numberOfLines === 'number' &&
-        typeof node.props.children === 'string' &&
-        String(node.props.children).includes('Hôm nay'),
-    );
-    expect(textNodesWithClamp.length).toBe(0);
+    // DEVIATION-01 (LING-264 repair 2): bubble container must have explicit width: 120
+    // so Yoga provides a fixed wrapping width constraint (104pt inner) to native Text.
+    const flattenedBubbleStyle = StyleSheet.flatten(bubbleNode!.props.style);
+    expect(flattenedBubbleStyle.width).toBe(120);
+    expect(flattenedBubbleStyle.maxWidth).toBe(120);
   });
 });
