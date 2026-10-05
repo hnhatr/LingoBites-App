@@ -5,6 +5,11 @@
  * Motion (AD-002):
  *   - I4 (flame wiggle): disabled under reduced motion
  *   - I5 (greeting fade-in): static under reduced motion
+ *
+ * Gap 3 (LING-261): two-line greeting when a name is present — small greeting
+ *   prefix + large accent name below.
+ * Gap 4 (LING-261): streak pill always visible, including when streak = 0
+ *   ("0 ngày").
  */
 import React, {useEffect, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -59,10 +64,18 @@ export function HomeHeader({greeting, streak, flame}: Props) {
     transform: [{scale: flameScale.value}],
   }));
 
-  // Resolve greeting text
-  const greetingText = greeting.greetingParams
-    ? t(greeting.greetingKey, greeting.greetingParams)
-    : t(greeting.greetingKey);
+  // Resolve accessible label for the full greeting
+  const greetingA11y = greeting.a11yParams
+    ? t(greeting.a11yKey, greeting.a11yParams)
+    : t(greeting.a11yKey);
+
+  // Small greeting prefix text (no name embedded)
+  const greetingPrefixText = t(greeting.greetingKey);
+
+  // Streak pill label — always show (Gap 4); "0 ngày" when streak = 0
+  const streakA11yLabel = flame.a11yParams
+    ? t(flame.a11yKey, flame.a11yParams)
+    : t(flame.a11yKey);
 
   return (
     <View style={styles.header} testID="home-header">
@@ -71,41 +84,57 @@ export function HomeHeader({greeting, streak, flame}: Props) {
         <TimeOfDayBadge timeOfDay={greeting.timeOfDay} />
       </View>
 
-      {/* Center: greeting */}
-      <Animated.View style={[styles.greetingWrap, greetingStyle]}>
-        <AppText
-          variant="h3"
-          numberOfLines={1}
-          testID="home-header-greeting"
-          accessibilityLabel={greetingText}
-        >
-          {greetingText}
-        </AppText>
+      {/* Center: greeting — single or two-line (Gap 3) */}
+      <Animated.View
+        style={[styles.greetingWrap, greetingStyle]}
+        accessibilityLabel={greetingA11y}
+      >
+        {greeting.hasName && greeting.displayName ? (
+          <>
+            <AppText
+              variant="caption"
+              color="muted"
+              numberOfLines={1}
+              testID="home-header-greeting-prefix"
+            >
+              {greetingPrefixText}
+            </AppText>
+            <AppText
+              variant="h3"
+              numberOfLines={1}
+              testID="home-header-greeting"
+            >
+              {greeting.displayName}
+            </AppText>
+          </>
+        ) : (
+          <AppText
+            variant="h3"
+            numberOfLines={1}
+            testID="home-header-greeting"
+          >
+            {greetingPrefixText}
+          </AppText>
+        )}
       </Animated.View>
 
-      {/* Right: streak flame badge */}
-      {streak > 0 ? (
-        <Animated.View
-          style={[styles.flameBadge, flameStyle]}
-          testID="home-header-flame"
-          accessibilityLabel={
-            flame.a11yParams
-              ? t(flame.a11yKey, flame.a11yParams)
-              : t(flame.a11yKey)
-          }
-          accessibilityRole="text"
-        >
-          <HomeIcon
-            name="local_fire_department"
-            size={20}
-            color={flame.color}
-            testID="home-flame-icon"
-          />
-          <AppText variant="label" style={{color: flame.color}}>
-            {streak}
-          </AppText>
-        </Animated.View>
-      ) : null}
+      {/* Right: streak flame badge — always visible, including streak = 0 (Gap 4) */}
+      <Animated.View
+        style={[styles.flameBadge, flameStyle]}
+        testID="home-header-flame"
+        accessibilityLabel={streakA11yLabel}
+        accessibilityRole="text"
+      >
+        <HomeIcon
+          name="local_fire_department"
+          size={20}
+          color={flame.color}
+          testID="home-flame-icon"
+        />
+        <AppText variant="label" style={{color: flame.color}}>
+          {streak}
+        </AppText>
+      </Animated.View>
     </View>
   );
 }

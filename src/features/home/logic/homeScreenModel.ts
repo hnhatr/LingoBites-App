@@ -85,12 +85,34 @@ export function getTimeOfDay(hour: number): TimeOfDay {
 
 export type GreetingModel = {
   timeOfDay: TimeOfDay;
-  /** i18n key for the greeting line */
+  /**
+   * i18n key for the greeting line.
+   *
+   * When hasName is true, this is the unnamed key (no {{name}} params) used
+   * for the small prefix line; displayName is shown on a separate large accent
+   * line below. The named i18n keys serve as accessible labels.
+   * When hasName is false, this is the unnamed key displayed as a single line.
+   */
   greetingKey:
     | 'home.greeting_morning'
     | 'home.greeting_afternoon'
     | 'home.greeting_night';
-  greetingParams?: {name: string};
+  /** True when displayName is non-null; HomeHeader renders two lines */
+  hasName: boolean;
+  /** The display name to render on the second accent line, or null */
+  displayName: string | null;
+  /**
+   * Accessible label key (the _named variant when name exists, so screen
+   * readers read the full greeting with the name).
+   */
+  a11yKey:
+    | 'home.greeting_morning'
+    | 'home.greeting_afternoon'
+    | 'home.greeting_night'
+    | 'home.greeting_morning_named'
+    | 'home.greeting_afternoon_named'
+    | 'home.greeting_night_named';
+  a11yParams?: {name: string};
 };
 
 export function buildGreeting(
@@ -98,15 +120,44 @@ export function buildGreeting(
   displayName: string | null,
 ): GreetingModel {
   const timeOfDay = getTimeOfDay(hour);
-  const keyMap: Record<TimeOfDay, GreetingModel['greetingKey']> = {
+  const keyMap: Record<
+    TimeOfDay,
+    'home.greeting_morning' | 'home.greeting_afternoon' | 'home.greeting_night'
+  > = {
     morning: 'home.greeting_morning',
     afternoon: 'home.greeting_afternoon',
     night: 'home.greeting_night',
   };
+  const greetingKey = keyMap[timeOfDay];
+
+  if (displayName) {
+    const namedKeyMap: Record<
+      TimeOfDay,
+      | 'home.greeting_morning_named'
+      | 'home.greeting_afternoon_named'
+      | 'home.greeting_night_named'
+    > = {
+      morning: 'home.greeting_morning_named',
+      afternoon: 'home.greeting_afternoon_named',
+      night: 'home.greeting_night_named',
+    };
+    return {
+      timeOfDay,
+      greetingKey,
+      hasName: true,
+      displayName,
+      a11yKey: namedKeyMap[timeOfDay],
+      a11yParams: {name: displayName},
+    };
+  }
+
   return {
     timeOfDay,
-    greetingKey: keyMap[timeOfDay],
-    greetingParams: displayName ? {name: displayName} : undefined,
+    greetingKey,
+    hasName: false,
+    displayName: null,
+    a11yKey: greetingKey,
+    a11yParams: undefined,
   };
 }
 
