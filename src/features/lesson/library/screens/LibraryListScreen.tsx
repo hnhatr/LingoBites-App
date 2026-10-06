@@ -1,11 +1,6 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {
-  ActivityIndicator,
-  InteractionManager,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {InteractionManager, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
@@ -14,6 +9,7 @@ import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
 
 import {GrammarTabContent} from '../components/GrammarTabContent';
+import {LibraryLoadingNotice} from '../components/LibraryLoadingNotice';
 import {LessonsTabContent} from '../components/LessonsTabContent';
 import {PublicLessonsList} from '../components/PublicLessonsList';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
@@ -107,7 +103,9 @@ export function LibraryListScreen({navigation, route}: Props) {
             searchQuery={searchQuery}
           />
         ) : !ready ? (
-          <ActivityIndicator style={styles.loading} />
+          <View style={styles.loading}>
+            <LibraryLoadingNotice message="Đang tải dữ liệu, vui lòng đợi…" />
+          </View>
         ) : isOwnLessonSection(section) ? (
           <LessonsTabContent
             packagedLessons={lessons}
@@ -135,6 +133,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loading: {
-    marginTop: 32,
+    paddingHorizontal: 16,
   },
 });

@@ -17,6 +17,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import {useAppNavigation} from '@core/navigation';
 
 import {CreateLessonHeaderButton} from '../components/CreateLessonHeaderButton';
+import {LibraryLoadingNotice} from '../components/LibraryLoadingNotice';
 import {
   isOwnLessonSection,
   lessonBelongsToSection,
@@ -107,6 +108,9 @@ export function LessonsHistoryScreen({navigation}: Props) {
         <AppText variant="label" color="secondary" style={styles.subtitle}>
           Bài đã tải về học được cả khi không có mạng.
         </AppText>
+        {ready ? null : (
+          <LibraryLoadingNotice message="Đang tải dữ liệu thư viện, vui lòng đợi…" />
+        )}
         {GROUPS.map(group => (
           <View
             key={group.id}
