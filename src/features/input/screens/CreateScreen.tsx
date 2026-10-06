@@ -8,6 +8,8 @@ import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {solidOver} from '@ui/theme/colorUtils';
+import {getHardShadow} from '@ui/theme/hardShadow';
 
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
@@ -161,7 +163,7 @@ export function CreateScreen(_props: Props) {
             ) : null}
             {tiles.length > 0 ? (
               <View style={styles.sourceList}>
-                <AppText variant="label" color="secondary">
+                <AppText style={styles.sectionTitle}>
                   {t('create.more_ways')}
                 </AppText>
                 {tiles.map(tile => (
@@ -211,7 +213,7 @@ export function CreateScreen(_props: Props) {
                 onPress={appNavigation.openCatalog}
                 style={({pressed}) => [
                   styles.historyLink,
-                  pressed && styles.pressed,
+                  pressed && styles.linkPressed,
                 ]}
                 testID="create-history-link"
               >
@@ -264,16 +266,21 @@ function makeStyles(theme: AppTheme) {
     heroCamera: {
       alignItems: 'center',
       backgroundColor: theme.colors.primaryContainer,
-      borderRadius: theme.radius.xl,
+      borderColor: theme.colors.ink,
+      borderRadius: 24,
+      borderWidth: 2,
       gap: theme.spacing.sm,
       justifyContent: 'center',
       minHeight: 190,
       padding: theme.spacing.lg,
+      ...getHardShadow(6, theme.colors.ink),
     },
     heroCameraIcon: {
       alignItems: 'center',
-      backgroundColor: theme.colors.overlayLight,
-      borderRadius: theme.radius.pill,
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.ink,
+      borderRadius: 20,
+      borderWidth: 2,
       height: 64,
       justifyContent: 'center',
       width: 64,
@@ -287,21 +294,29 @@ function makeStyles(theme: AppTheme) {
       textAlign: 'center',
     },
     sourceList: {gap: theme.spacing.sm},
+    sectionTitle: {
+      color: theme.colors.text.primary,
+      fontSize: 18,
+      fontWeight: '700',
+    },
     sourceRow: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.lg,
-      borderWidth: 1,
+      borderColor: theme.colors.ink,
+      borderRadius: 20,
+      borderWidth: 2,
       flexDirection: 'row',
       gap: theme.spacing.md,
       minHeight: 72,
       padding: theme.spacing.md,
+      ...getHardShadow(4, theme.colors.ink),
     },
     sourceIcon: {
       alignItems: 'center',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.pill,
+      backgroundColor: solidOver(theme.colors.accentSoft, theme.colors.surface),
+      borderColor: theme.colors.ink,
+      borderRadius: 14,
+      borderWidth: 2,
       height: 44,
       justifyContent: 'center',
       width: 44,
@@ -320,8 +335,13 @@ function makeStyles(theme: AppTheme) {
     },
     tipCard: {
       alignItems: 'center',
-      backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: theme.radius.lg,
+      backgroundColor: solidOver(
+        theme.colors.tertiarySoft,
+        theme.colors.surface,
+      ),
+      borderColor: theme.colors.ink,
+      borderRadius: 20,
+      borderWidth: 2,
       flexDirection: 'row',
       gap: theme.spacing.sm,
       padding: theme.spacing.md,
@@ -345,6 +365,10 @@ function makeStyles(theme: AppTheme) {
       width: 64,
     },
     centerText: {textAlign: 'center'},
-    pressed: {opacity: theme.states.pressedOpacity},
+    linkPressed: {opacity: theme.states.pressedOpacity},
+    pressed: {
+      transform: [{translateY: 3}],
+      ...getHardShadow(1, theme.colors.ink),
+    },
   });
 }

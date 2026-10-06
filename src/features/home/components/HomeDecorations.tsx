@@ -19,6 +19,7 @@ import Animated, {
 import {Circle, G, Line, Path, Svg} from 'react-native-svg';
 
 import {useAppTheme} from '@ui/theme';
+import {getHardShadow} from '@ui/theme/hardShadow';
 
 import {CONFETTI_COLORS, type TimeOfDay} from '../logic/homeScreenModel';
 import {HomeIcon} from './HomeSvgIcons';
@@ -26,15 +27,7 @@ import {HomeIcon} from './HomeSvgIcons';
 // ---------------------------------------------------------------------------
 // Hard shadow helper (§VS-0, R-001)
 // ---------------------------------------------------------------------------
-export function getHardShadow(offset: number, color: string) {
-  return {
-    shadowColor: color,
-    shadowOffset: {width: 0, height: offset},
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: offset,
-  };
-}
+export {getHardShadow};
 
 // ---------------------------------------------------------------------------
 // Time-of-day badge (§VS-1.1, I5)
