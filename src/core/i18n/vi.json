@@ -101,6 +101,8 @@
     "shortcut_review_due_one": "{{count}} thẻ đến hạn",
     "shortcut_review_due_other": "{{count}} thẻ đến hạn",
     "shortcut_review_none": "Chưa có thẻ đến hạn",
+    "review_banner_cta": "Ôn tập ngay",
+    "review_banner_due": "{{count}} thẻ đến hạn",
     "shortcut_speaking_sub": "Phòng nói & shadowing",
     "shortcut_create_sub": "Từ văn bản, ảnh, video",
     "today_label": "Gợi ý hôm nay",
@@ -633,8 +635,6 @@
   },
   "library": {
     "title": "Thư viện",
-    "review_banner_cta": "Ôn tập ngay",
-    "review_banner_due": "{{count}} thẻ đến hạn",
     "speaking_a11y": "Mở phòng luyện nói",
     "vocabulary": {
       "save_a11y": "Lưu từ này",

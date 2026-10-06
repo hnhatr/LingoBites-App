@@ -101,6 +101,8 @@
     "shortcut_review_due_one": "{{count}} card due",
     "shortcut_review_due_other": "{{count}} cards due",
     "shortcut_review_none": "No cards due",
+    "review_banner_cta": "Review now",
+    "review_banner_due": "{{count}} cards due",
     "shortcut_speaking_sub": "Speaking room & shadowing",
     "shortcut_create_sub": "From text, photo or video",
     "today_label": "Today's suggestion",
@@ -633,8 +635,6 @@
   },
   "library": {
     "title": "Library",
-    "review_banner_cta": "Review now",
-    "review_banner_due": "{{count}} cards due",
     "speaking_a11y": "Open speaking room",
     "vocabulary": {
       "save_a11y": "Save this word",
