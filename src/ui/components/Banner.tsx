@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {useAppTheme} from '../theme';
+import {getStickerFace} from '../theme/hardShadow';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
 
@@ -26,6 +27,7 @@ export function Banner({message, variant = 'info'}: Props) {
             : theme.colors.accentSoft,
           borderColor: isNeutral ? theme.colors.border : theme.colors.accent,
         },
+        getStickerFace(theme),
       ]}
       testID="review-banner"
     >
@@ -44,7 +46,7 @@ export function Banner({message, variant = 'info'}: Props) {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: 'row',
     gap: 8,

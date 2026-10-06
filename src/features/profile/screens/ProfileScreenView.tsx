@@ -14,6 +14,8 @@ import {SectionHeader} from '@ui/components/SectionHeader';
 import {TextField} from '@ui/components/TextField';
 import {ThemePicker} from '@ui/components/ThemePicker';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {solidOver} from '@ui/theme/colorUtils';
+import {getStickerFace} from '@ui/theme/hardShadow';
 
 import {SettingsOptionSheet} from '../components/SettingsOptionSheet';
 import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
@@ -410,7 +412,7 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 20,
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 16,
@@ -447,6 +449,7 @@ function makeStyles(theme: AppTheme) {
       alignItems: 'center',
       backgroundColor: theme.colors.accent,
       borderRadius: theme.radius.pill,
+      ...getStickerFace(theme),
       height: 64,
       justifyContent: 'center',
       width: 64,
@@ -460,8 +463,8 @@ function makeStyles(theme: AppTheme) {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.danger,
-      borderRadius: theme.radius.lg,
-      borderWidth: 1,
+      borderRadius: 20,
+      borderWidth: 2,
       justifyContent: 'center',
       minHeight: 48,
       opacity: 1,
@@ -478,9 +481,9 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: theme.gutter,
     },
     headerTitle: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.size.lg,
-      fontWeight: theme.typography.weight.medium,
+      color: theme.colors.text.primary,
+      fontSize: theme.typography.presets.h2.fontSize,
+      fontWeight: theme.typography.weight.bold,
       marginLeft: theme.spacing.xs,
     },
     metricLabelSecondary: {
@@ -494,10 +497,18 @@ function makeStyles(theme: AppTheme) {
       fontWeight: theme.typography.weight.medium,
     },
     metricSecondary: {
-      backgroundColor: theme.colors.secondarySoft,
+      backgroundColor: solidOver(
+        theme.colors.secondarySoft,
+        theme.colors.surface,
+      ),
+      ...getStickerFace(theme, 3),
     },
     metricTertiary: {
-      backgroundColor: theme.colors.tertiarySoft,
+      backgroundColor: solidOver(
+        theme.colors.tertiarySoft,
+        theme.colors.surface,
+      ),
+      ...getStickerFace(theme, 3),
     },
     metricValueSecondary: {
       color: theme.colors.secondary,
@@ -545,7 +556,7 @@ function makeStyles(theme: AppTheme) {
       flexDirection: 'row',
       gap: 14,
       padding: theme.spacing.lg,
-      ...theme.shadow.medium,
+      ...(getStickerFace(theme, 4) ?? theme.shadow.medium),
     },
     streakSubtitle: {
       color: theme.colors.accentInk,

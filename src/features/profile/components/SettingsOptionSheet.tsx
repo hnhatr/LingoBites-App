@@ -4,6 +4,7 @@ import {Modal, Pressable, StyleSheet, View} from 'react-native';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerFace} from '@ui/theme/hardShadow';
 
 export type SettingsOption = {
   key: string;
@@ -97,6 +98,7 @@ function makeStyles(theme: AppTheme) {
       borderColor: theme.colors.border,
       borderRadius: theme.radius.lg,
       borderWidth: 1,
+      ...getStickerFace(theme),
       flexDirection: 'row',
       gap: theme.spacing.md,
       minHeight: 52,

@@ -3,6 +3,8 @@ import {Pressable, StyleSheet, View} from 'react-native';
 
 import type {HandoffIconName} from '../icons/iconRegistry';
 import {useAppTheme} from '../theme';
+import {solidOver} from '../theme/colorUtils';
+import {getStickerFace} from '../theme/hardShadow';
 import {AppText} from './AppText';
 import {Chip, type ChipTone} from './Chip';
 import {MaterialIcon} from './MaterialIcon';
@@ -47,6 +49,9 @@ export function ProfileSettingsRow({
   const {theme} = useAppTheme();
   const medallion = medallionColors(theme, medallionTone);
   const shelf = theme.shelf?.surface;
+  const stickerFace = getStickerFace(theme, 3);
+  const rowRadius = stickerFace ? 20 : 22;
+  const rowShadow = stickerFace ? undefined : theme.shadow.soft;
 
   const trailingNode = (() => {
     if (trailing === 'chevron') {
@@ -78,8 +83,13 @@ export function ProfileSettingsRow({
       <View
         style={{
           alignItems: 'center',
-          backgroundColor: medallion.bg,
-          borderRadius: 999,
+          backgroundColor: stickerFace
+            ? solidOver(medallion.bg, theme.colors.surface)
+            : medallion.bg,
+          borderRadius: stickerFace ? 14 : 999,
+          ...(stickerFace
+            ? {borderColor: theme.colors.ink, borderWidth: 2}
+            : null),
           height: 42,
           justifyContent: 'center',
           width: 42,
@@ -99,13 +109,14 @@ export function ProfileSettingsRow({
     gap: 14,
     paddingHorizontal: 15,
     paddingVertical: 13,
+    ...stickerFace,
   } as const;
 
   if (!onPress) {
     return (
       <ShelfSurface
-        borderRadius={22}
-        containerStyle={theme.shadow.soft}
+        borderRadius={rowRadius}
+        containerStyle={rowShadow}
         faceStyle={faceStyle}
       >
         {rowContent}
@@ -124,9 +135,9 @@ export function ProfileSettingsRow({
         <ShelfSurface
           shelfHeight={shelf?.height}
           shelfColor={shelf?.color}
-          borderRadius={22}
+          borderRadius={rowRadius}
           isPressed={pressed}
-          containerStyle={theme.shadow.soft}
+          containerStyle={rowShadow}
           faceStyle={[
             faceStyle,
             !shelf && pressed && {opacity: theme.states.pressedOpacity},
