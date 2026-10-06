@@ -70,12 +70,12 @@ describe('LibraryListScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Run the post-transition load immediately.
-    jest
-      .spyOn(InteractionManager, 'runAfterInteractions')
-      .mockImplementation(((task: () => void) => {
-        task();
-        return {then: jest.fn(), done: jest.fn(), cancel: jest.fn()};
-      }) as any);
+    jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation(((
+      task: () => void,
+    ) => {
+      task();
+      return {then: jest.fn(), done: jest.fn(), cancel: jest.fn()};
+    }) as any);
   });
   afterEach(() => jest.restoreAllMocks());
 
