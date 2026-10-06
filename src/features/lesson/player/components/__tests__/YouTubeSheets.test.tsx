@@ -218,7 +218,6 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
     expect(
       tree.root.findByProps({testID: `youtube-transcript-row-${S3}`}),
     ).toBeDefined();
-    pressByTestId(tree.root, 'youtube-toggle-translation');
     const row = tree.root.findByProps({testID: `youtube-transcript-row-${S1}`});
     expect(row).toBeDefined();
   });

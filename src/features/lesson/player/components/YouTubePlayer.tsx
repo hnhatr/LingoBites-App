@@ -15,6 +15,17 @@ import YoutubeIframe, {
 const TIME_UPDATE_INTERVAL_MS = 250;
 const PLAYER_MIN_HEIGHT = 200;
 
+// Quiet the embed: no captions, annotations, related videos or fullscreen
+// button. YouTube still draws its own share / "Watch on YouTube" chrome on
+// small embeds; that cannot be turned off from the IFrame API.
+const INITIAL_PLAYER_PARAMS = {
+  showClosedCaptions: false,
+  iv_load_policy: 3,
+  modestbranding: true,
+  preventFullScreen: true,
+  rel: false,
+} as const;
+
 export const YOUTUBE_PLAYER_ERROR_CODES = {
   INVALID_PARAMETER: 'YOUTUBE_INVALID_URL',
   HTML5_ERROR: 'YOUTUBE_PLAYER_HTML5_ERROR',
@@ -199,6 +210,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
           width={frameWidth > 0 ? frameWidth : undefined}
           play={playing}
           playbackRate={playbackRate}
+          initialPlayerParams={INITIAL_PLAYER_PARAMS}
           videoId={videoId}
           onChangeState={handleChangeState}
           onReady={handleReady}

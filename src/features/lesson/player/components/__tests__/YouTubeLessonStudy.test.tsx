@@ -2,6 +2,7 @@ import React from 'react';
 import {Modal} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
+import {IconButton} from '@ui/components/IconButton';
 import {AppThemeProvider} from '@ui/theme';
 
 import vi from '@core/i18n/vi.json';
@@ -204,40 +205,58 @@ describe('YouTubeLessonStudy', () => {
     expect(tree.root.findByProps({children: 'ipa-1'})).toBeDefined();
   });
 
-  it('toggles translation visibility and a11y label (AC-006)', async () => {
-    const tree = await renderStudy();
-    const toggle = tree.root.findByProps({
-      testID: 'youtube-toggle-translation',
-    });
-    expect(toggle.props.accessibilityLabel).toBe(
-      vi.youtube.translation_hide_a11y,
-    );
-    pressByTestId(tree.root, 'youtube-toggle-translation');
+  it('hides translation and IPA when the header toggles are off (AC-006, AC-007)', async () => {
+    const tree = await renderStudy({showTranslation: false, showIpa: false});
     expect(
       tree.root.findAll(node => node.props.children === 'Câu 1 vi.'),
     ).toHaveLength(0);
     expect(
-      tree.root.findByProps({testID: 'youtube-toggle-translation'}).props
-        .accessibilityLabel,
-    ).toBe(vi.youtube.translation_show_a11y);
-    pressByTestId(tree.root, 'youtube-toggle-translation');
-    expect(tree.root.findByProps({children: 'Câu 1 vi.'})).toBeDefined();
-  });
-
-  it('toggles IPA visibility and selected state (AC-007)', async () => {
-    const tree = await renderStudy();
-    const toggle = tree.root.findByProps({testID: 'youtube-toggle-ipa'});
-    expect(toggle.props.accessibilityState?.selected).toBe(true);
-    pressByTestId(tree.root, 'youtube-toggle-ipa');
-    expect(
       tree.root.findAll(node => node.props.children === 'ipa-1'),
     ).toHaveLength(0);
-    expect(
-      tree.root.findByProps({testID: 'youtube-toggle-ipa'}).props
-        .accessibilityState?.selected,
-    ).toBe(false);
-    pressByTestId(tree.root, 'youtube-toggle-ipa');
-    expect(tree.root.findByProps({children: 'ipa-1'})).toBeDefined();
+  });
+
+  it('pauses the video when a card is tapped', async () => {
+    const onPauseVideo = jest.fn();
+    const tree = await renderStudy({onPauseVideo});
+    pressByTestId(
+      tree.root,
+      'youtube-cue-11111111-1111-4111-8111-111111111102',
+    );
+    expect(onPauseVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it('follows the video cue while playing and stops after manual navigation', async () => {
+    const tree = await renderStudy({videoPlaying: true, playbackPositionMs: 0});
+    const indicator = () =>
+      tree.root.findByProps({testID: 'youtube-sentence-indicator'}).props
+        .children as string;
+    expect(indicator()).toContain('1/3');
+    const rerender = async (positionMs: number) => {
+      await act(async () => {
+        tree.update(
+          <FeatureFlagProvider
+            releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+          >
+            <AppThemeProvider>
+              <YouTubeLessonStudy
+                snapshot={snapshotWithSentenceCount(3)}
+                analyses={{}}
+                playbackPositionMs={positionMs}
+                videoAvailable
+                videoPlaying
+                videoSlot={<React.Fragment />}
+              />
+            </AppThemeProvider>
+          </FeatureFlagProvider>,
+        );
+      });
+    };
+    await rerender(2500);
+    expect(indicator()).toContain('2/3');
+    pressByTestId(tree.root, 'youtube-cards-prev');
+    expect(indicator()).toContain('1/3');
+    await rerender(4500);
+    expect(indicator()).toContain('1/3');
   });
 
   it('does not render snapshot metadata fields as text (AC-008 S3)', async () => {
@@ -253,11 +272,9 @@ describe('YouTubeLessonStudy', () => {
   it('uses distinct testIDs for transcript open control and sheet (AC-009)', async () => {
     const tree = await renderStudy();
     pressByTestId(tree.root, 'youtube-open-transcript');
-    const openControls = tree.root.findAll(
-      node =>
-        node.props.testID === 'youtube-open-transcript' &&
-        typeof node.props.onPress === 'function',
-    );
+    const openControls = tree.root
+      .findAllByType(IconButton)
+      .filter(node => node.props.testID === 'youtube-open-transcript');
     expect(openControls).toHaveLength(1);
     const sheetModals = tree.root
       .findAllByType(Modal)

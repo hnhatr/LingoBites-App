@@ -36,11 +36,15 @@ export type CanonicalLessonPlayerProps = {
   playbackPositionMs?: number;
   videoAvailable?: boolean;
   videoPlaying?: boolean;
+  /** YouTube study display options (owned by the screen header toggles). */
+  showTranslation?: boolean;
+  showIpa?: boolean;
   unavailableReason?: string;
   /** Screen-owned YouTube iframe (AD-002); study view only. */
   videoSlot?: React.ReactNode;
   onRetryVideo?: () => void;
   onSeek?: (positionMs: number) => void;
+  onPauseVideo?: () => void;
   onRequestAnalysis?: (sentenceId: string) => void;
   onRetryAnalysis?: (sentenceId: string) => void;
   /** Per-sentence async analysis state for sentences without stored analysis. */
@@ -72,10 +76,13 @@ export function CanonicalLessonPlayer({
   playbackPositionMs = 0,
   videoAvailable = true,
   videoPlaying = false,
+  showTranslation = true,
+  showIpa = true,
   unavailableReason,
   videoSlot,
   onRetryVideo,
   onSeek,
+  onPauseVideo,
   onRequestAnalysis,
   onRetryAnalysis,
   analysisStates,
@@ -110,10 +117,13 @@ export function CanonicalLessonPlayer({
         playbackPositionMs={playbackPositionMs}
         videoAvailable={videoAvailable}
         videoPlaying={videoPlaying}
+        showTranslation={showTranslation}
+        showIpa={showIpa}
         unavailableReason={unavailableReason}
         videoSlot={videoSlot}
         onRetryVideo={onRetryVideo}
         onSeek={onSeek}
+        onPauseVideo={onPauseVideo}
         onRequestAnalysis={onRequestAnalysis}
         onRetryAnalysis={onRetryAnalysis}
         analysisStates={analysisStates}

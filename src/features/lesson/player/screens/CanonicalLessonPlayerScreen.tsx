@@ -42,6 +42,7 @@ import {
   type LessonHubSection,
 } from '../components/CanonicalLessonHub';
 import {CanonicalLessonPlayer} from '../components/CanonicalLessonPlayer';
+import {LessonDisplayToggles} from '../components/LessonDisplayToggles';
 import {LessonGrammarSection} from '../components/LessonGrammarSection';
 import {LessonVocabularySection} from '../components/LessonVocabularySection';
 import type {
@@ -106,6 +107,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoMountKey, setVideoMountKey] = useState(0);
+  const [showTranslation, setShowTranslation] = useState(true);
+  const [showIpa, setShowIpa] = useState(true);
   const youtubePlayerRef = useRef<YouTubePlayerRef>(null);
   const seekHoldMsRef = useRef<number | null>(null);
   const [view, setView] = useState<PlayerView>('hub');
@@ -249,6 +252,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     setPositionMs(ms);
   }, []);
 
+  const handlePauseVideo = useCallback(() => {
+    youtubePlayerRef.current?.pause();
+    setVideoPlaying(false);
+  }, []);
+
   const handleRetryVideo = useCallback(() => {
     setVideoAvailable(true);
     setVideoPlaying(false);
@@ -269,10 +277,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         playbackPositionMs={positionMs}
         videoAvailable={videoAvailable}
         videoPlaying={videoPlaying}
+        showTranslation={showTranslation}
+        showIpa={showIpa}
         unavailableReason={t('lessonPlayer.video_unavailable')}
         videoSlot={options?.videoSlot}
         onRetryVideo={options?.onRetryVideo}
         onSeek={handleSeek}
+        onPauseVideo={handlePauseVideo}
         onRequestAnalysis={handleRequestAnalysis}
         onRetryAnalysis={handleRequestAnalysis}
         analysisStates={analysisStates}
@@ -431,23 +442,42 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     }
   };
 
+  const studyReady = isYouTubeStudy && state.status === 'ready';
+
   return (
     <AppScreen>
       <ScreenHeader
         title={title}
+        titleNumberOfLines={studyReady ? 1 : undefined}
         onBack={() => (inSection ? openView('hub') : navigation.goBack())}
+        rightAction={
+          studyReady ? (
+            <LessonDisplayToggles
+              onToggleIpa={() => setShowIpa(value => !value)}
+              onToggleTranslation={() => setShowTranslation(value => !value)}
+              showIpa={showIpa}
+              showTranslation={showTranslation}
+            />
+          ) : undefined
+        }
       />
-      <ScrollView
-        ref={scrollRef}
-        testID="canonical-player-screen"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          themedStyles.content,
-          showHub || isYouTubeStudy ? null : {paddingBottom: floatingClearance},
-        ]}
-      >
-        {renderBody()}
-      </ScrollView>
+      {studyReady ? (
+        <View style={themedStyles.study} testID="canonical-player-screen">
+          {renderBody()}
+        </View>
+      ) : (
+        <ScrollView
+          ref={scrollRef}
+          testID="canonical-player-screen"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            themedStyles.content,
+            showHub ? null : {paddingBottom: floatingClearance},
+          ]}
+        >
+          {renderBody()}
+        </ScrollView>
+      )}
       {showHub ? (
         <BottomActionBar
           style={[themedStyles.actionBar, {paddingBottom: floatingClearance}]}
@@ -509,6 +539,9 @@ function makeStyles(theme: AppTheme) {
       paddingBottom: theme.spacing.lg,
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
+    },
+    study: {
+      flex: 1,
     },
     errorBox: {
       backgroundColor: theme.colors.surfaceMuted,
