@@ -18,7 +18,16 @@ export const LESSON_CONTRACT_VERSION = 1;
 
 export const LESSON_CONTRACT_FIXTURE_REVISION = 'ling-149-task-001-r1';
 
-export const LessonContractVersionSchema = z.literal(LESSON_CONTRACT_VERSION);
+/**
+ * Versions this build can read. v2 (Server snapshot with `items`) is additive
+ * over v1, so the app accepts both and a rollout of v2 never forces an update.
+ */
+export const LESSON_CONTRACT_SUPPORTED_VERSIONS = [1, 2] as const;
+
+export const LessonContractVersionSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+]);
 
 export const LessonOriginValues = ['admin', 'learner'] as const;
 
@@ -175,6 +184,25 @@ export const LessonCatalogResponseSchema = z
 
 export type LessonCatalogResponse = z.infer<typeof LessonCatalogResponseSchema>;
 
+/**
+ * Normalised learning item (Server snapshot v2, `learning_items`). Accepted as
+ * optional and non-strict ahead of the Server rollout so a snapshot that starts
+ * carrying `items` never trips the strict parse of an older app build.
+ */
+export const LessonItemKindValues = ['word', 'phrase', 'grammar'] as const;
+
+export const LessonItemSchema = z
+  .object({
+    id: z.string().uuid(),
+    kind: z.enum(LessonItemKindValues),
+    item_key: NonBlankTextSchema,
+    payload: z.record(z.string(), z.unknown()),
+    sentence_ids: z.array(z.string().uuid()).optional(),
+  })
+  .passthrough();
+
+export type LessonItem = z.infer<typeof LessonItemSchema>;
+
 export const LessonSnapshotSchema = z
   .object({
     id: z.string().uuid(),
@@ -189,6 +217,7 @@ export const LessonSnapshotSchema = z
     sentences: z.array(LessonSentenceSchema),
     blocks: z.array(LessonBlockSchema),
     analyses: z.record(z.string(), LessonAnalysisSchema),
+    items: z.array(LessonItemSchema).optional(),
   })
   .strict();
 

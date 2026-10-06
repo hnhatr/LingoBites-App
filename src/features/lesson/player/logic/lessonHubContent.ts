@@ -69,10 +69,13 @@ function vocabularyFromBlock(block: LessonBlock): LessonVocabularyEntry[] {
       textOf(item.meaningVi) ?? textOf(item.meaning) ?? textOf(item.nameVi);
     if (!word || !meaning) return;
     entries.push({
-      key: `${block.id}-${index}`,
+      // The Server snapshot embeds the catalog vocabulary id; fall back to the
+      // block position only for hand-written / legacy items without one.
+      key: textOf(item.id) ?? `${block.id}-${index}`,
       word,
       meaning,
-      ipa: textOf(item.ipa),
+      // Snapshot items carry `pronunciation`; `ipa` is the analysis spelling.
+      ipa: textOf(item.ipa) ?? textOf(item.pronunciation),
       pos: textOf(item.pos),
     });
   });
