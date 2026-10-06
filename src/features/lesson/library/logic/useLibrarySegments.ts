@@ -125,9 +125,11 @@ export function useLibrarySegments(
     [downloads],
   );
 
-  const packagedLessons = useMemo(() => {
+  // Building the cards (practice eligibility per lesson) is the costly part;
+  // keep it apart from the filter so typing in search only re-filters.
+  const lessonCards = useMemo((): LibraryLessonCardView[] => {
     if (!needsLessons) return [];
-    const cards: LibraryLessonCardView[] = downloads.map(item => ({
+    return downloads.map(item => ({
       id: item.lessonId,
       title: item.title,
       blurb: item.description,
@@ -136,16 +138,20 @@ export function useLibrarySegments(
       durationMin: item.estimatedDurationMinutes,
       sourceType: item.snapshot.source_type,
       origin: item.snapshot.origin,
-      practiceReady: getPracticeEligibility(buildPracticeSource(item.snapshot))
-        .eligible,
+      practiceReady: isPracticeReady(item.snapshot),
     }));
-    return cards.filter(card =>
-      matchesSegmentFilter(lessonsFilter, {
-        texts: [card.title, card.blurb],
-        sourceType: card.sourceType,
-      }),
-    );
-  }, [needsLessons, downloads, lessonsFilter]);
+  }, [needsLessons, downloads]);
+
+  const packagedLessons = useMemo(
+    () =>
+      lessonCards.filter(card =>
+        matchesSegmentFilter(lessonsFilter, {
+          texts: [card.title, card.blurb],
+          sourceType: card.sourceType,
+        }),
+      ),
+    [lessonCards, lessonsFilter],
+  );
 
   const vocabulary = useMemo(() => {
     if (!needsVocabulary) return [];
@@ -221,6 +227,18 @@ export function useLibrarySegments(
     setGrammarFilter,
     refresh,
   };
+}
+
+/** Eligibility is derived from an immutable snapshot, so compute it once. */
+const practiceReadyBySnapshot = new WeakMap<object, boolean>();
+
+function isPracticeReady(snapshot: DownloadedLessonSummary['snapshot']) {
+  let ready = practiceReadyBySnapshot.get(snapshot);
+  if (ready === undefined) {
+    ready = getPracticeEligibility(buildPracticeSource(snapshot)).eligible;
+    practiceReadyBySnapshot.set(snapshot, ready);
+  }
+  return ready;
 }
 
 /**

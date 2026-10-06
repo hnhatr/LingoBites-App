@@ -54,7 +54,12 @@ export function PublicLessonsList({
   );
 
   const downloadedIds = useMemo(
-    () => new Set(listDownloadedLessonSummaries().map(item => item.lessonId)),
+    () =>
+      // Skip the local read while the catalog is still loading, so opening
+      // the list is not held up by it.
+      state.status === 'ready'
+        ? new Set(listDownloadedLessonSummaries().map(item => item.lessonId))
+        : new Set<string>(),
     // Re-read once the catalog has (re)loaded: a lesson may have been saved.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.status],
