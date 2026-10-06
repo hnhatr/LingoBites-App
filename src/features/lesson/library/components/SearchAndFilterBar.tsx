@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {Chip} from '@ui/components/Chip';
@@ -42,6 +42,9 @@ function createStyles(theme: AppTheme) {
     searchInput: {
       paddingLeft: theme.spacing.xl + theme.spacing.lg,
     },
+    toggleRow: {
+      alignItems: 'flex-start',
+    },
     filterRow: {
       flexDirection: 'row',
       gap: theme.spacing.sm,
@@ -58,6 +61,11 @@ export function SearchAndFilterBar({
 }: SearchAndFilterBarProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  // Source chips stay folded behind one toggle so the list gets the space.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeLabel =
+    LIBRARY_SOURCE_FILTER_OPTIONS.find(option => option.key === sourceFilter)
+      ?.label ?? '';
 
   return (
     <View style={styles.container}>
@@ -78,21 +86,33 @@ export function SearchAndFilterBar({
         />
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
-        {LIBRARY_SOURCE_FILTER_OPTIONS.map(filter => (
-          <Chip
-            key={filter.key}
-            label={filter.label}
-            selected={sourceFilter === filter.key}
-            onPress={() => onFilterChange(filter.key)}
-            testID={`filter-chip-${filter.key}`}
-          />
-        ))}
-      </ScrollView>
+      <View style={styles.toggleRow}>
+        <Chip
+          label={`Nguồn: ${activeLabel} ${filtersOpen ? '▴' : '▾'}`}
+          selected={sourceFilter !== 'all'}
+          onPress={() => setFiltersOpen(open => !open)}
+          accessibilityHint="Mở hoặc đóng bộ lọc theo nguồn bài học"
+          testID="filter-toggle"
+        />
+      </View>
+
+      {filtersOpen ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
+          {LIBRARY_SOURCE_FILTER_OPTIONS.map(filter => (
+            <Chip
+              key={filter.key}
+              label={filter.label}
+              selected={sourceFilter === filter.key}
+              onPress={() => onFilterChange(filter.key)}
+              testID={`filter-chip-${filter.key}`}
+            />
+          ))}
+        </ScrollView>
+      ) : null}
     </View>
   );
 }
