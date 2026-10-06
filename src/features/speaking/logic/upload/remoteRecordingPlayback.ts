@@ -42,6 +42,7 @@ function localPathExistsSync(filePath: string): boolean {
   if (typeof process.env.JEST_WORKER_ID === 'string') {
     try {
       // Dynamic require avoids Metro static analyzer resolution error in React Native build
+      // eslint-disable-next-line no-eval
       const fs = (0, eval)('require')('fs');
       return fs.existsSync(filePath);
     } catch {
