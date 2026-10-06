@@ -1,6 +1,5 @@
-import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -26,7 +25,10 @@ import {
   type LibrarySectionConfig,
   type LibrarySectionId,
 } from '../logic/librarySections';
-import {useLibrarySegments} from '../logic/useLibrarySegments';
+import {
+  useLibrarySegments,
+  useRefreshOnRefocus,
+} from '../logic/useLibrarySegments';
 import type {LessonsStackParamList} from './navigationTypes';
 
 const GROUPS: {id: LibraryGroup; title: string}[] = [
@@ -47,11 +49,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const tileWidth = useGridTileWidth();
   const {packagedLessons, vocabulary, grammar, refresh} = useLibrarySegments();
 
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh]),
-  );
+  useRefreshOnRefocus(refresh);
 
   const counts = useMemo(() => {
     const result = {} as Record<LibrarySectionId, number>;
@@ -76,8 +74,8 @@ export function LessonsHistoryScreen({navigation}: Props) {
     section.catalog
       ? 'Cần kết nối mạng'
       : counts[section.id] > 0
-      ? `${counts[section.id]} ${section.unit}`
-      : section.emptyHint;
+        ? `${counts[section.id]} ${section.unit}`
+        : section.emptyHint;
 
   return (
     <AppScreen>

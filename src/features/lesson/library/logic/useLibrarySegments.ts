@@ -1,4 +1,5 @@
-import {useCallback, useMemo, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import {useCallback, useMemo, useRef, useState} from 'react';
 
 import type {
   LibraryLessonCardView,
@@ -50,7 +51,45 @@ export interface UseLibrarySegmentsResult {
   refresh: () => void;
 }
 
-export function useLibrarySegments(): UseLibrarySegmentsResult {
+/** Which segments a screen reads; unused ones are not loaded at all. */
+export interface LibrarySegmentsNeeds {
+  lessons?: boolean;
+  vocabulary?: boolean;
+  grammar?: boolean;
+}
+
+const ALL_SEGMENTS: LibrarySegmentsNeeds = {
+  lessons: true,
+  vocabulary: true,
+  grammar: true,
+};
+
+/**
+ * Calls `refresh` when the screen regains focus, not on the first focus: the
+ * data was just loaded on mount, so refreshing then would load it twice.
+ */
+export function useRefreshOnRefocus(refresh: () => void) {
+  const firstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (firstFocus.current) {
+        firstFocus.current = false;
+        return;
+      }
+      refresh();
+    }, [refresh]),
+  );
+}
+
+export function useLibrarySegments(
+  needs: LibrarySegmentsNeeds = ALL_SEGMENTS,
+): UseLibrarySegmentsResult {
+  const {
+    lessons: needsLessons = false,
+    vocabulary: needsVocabulary = false,
+    grammar: needsGrammar = false,
+  } = needs;
+  const needsDownloads = needsLessons || needsVocabulary || needsGrammar;
   const [refreshVersion, setRefreshVersion] = useState(0);
 
   const [lessonsFilter, setLessonsFilter] = useState<SegmentFilterState>({
@@ -71,9 +110,9 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
   }, []);
 
   const downloads = useMemo(
-    () => listDownloadedLessonSummaries(),
+    () => (needsDownloads ? listDownloadedLessonSummaries() : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [refreshVersion],
+    [needsDownloads, refreshVersion],
   );
 
   // Saved words/grammar only keep a lessonId; their source is the source of
@@ -87,6 +126,7 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
   );
 
   const packagedLessons = useMemo(() => {
+    if (!needsLessons) return [];
     const cards: LibraryLessonCardView[] = downloads.map(item => ({
       id: item.lessonId,
       title: item.title,
@@ -105,9 +145,10 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
         sourceType: card.sourceType,
       }),
     );
-  }, [downloads, lessonsFilter]);
+  }, [needsLessons, downloads, lessonsFilter]);
 
   const vocabulary = useMemo(() => {
+    if (!needsVocabulary) return [];
     const sourcesByCard = listFlashcardSources();
     const titleByLessonId = new Map(
       downloads.map(item => [item.lessonId, item.title] as const),
@@ -142,9 +183,16 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
       ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocabularyFilter, downloads, sourceByLessonId, refreshVersion]);
+  }, [
+    needsVocabulary,
+    vocabularyFilter,
+    downloads,
+    sourceByLessonId,
+    refreshVersion,
+  ]);
 
   const grammar = useMemo(() => {
+    if (!needsGrammar) return [];
     const bookmarks = withGrammarDetails(listAllBookmarkedGrammar(), downloads);
     return bookmarks.filter(bookmark =>
       matchesSegmentFilter(grammarFilter, {
@@ -153,7 +201,13 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [grammarFilter, downloads, sourceByLessonId, refreshVersion]);
+  }, [
+    needsGrammar,
+    grammarFilter,
+    downloads,
+    sourceByLessonId,
+    refreshVersion,
+  ]);
 
   return {
     packagedLessons,

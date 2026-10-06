@@ -1,4 +1,3 @@
-import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
@@ -19,7 +18,10 @@ import {
   isOwnLessonSection,
   lessonBelongsToSection,
 } from '../logic/librarySections';
-import {useLibrarySegments} from '../logic/useLibrarySegments';
+import {
+  useLibrarySegments,
+  useRefreshOnRefocus,
+} from '../logic/useLibrarySegments';
 import type {LessonsStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LibraryList'>;
@@ -40,13 +42,13 @@ export function LibraryListScreen({navigation, route}: Props) {
     setVocabularyFilter,
     setGrammarFilter,
     refresh,
-  } = useLibrarySegments();
+  } = useLibrarySegments({
+    lessons: isOwnLessonSection(section),
+    vocabulary: section.id === 'vocabulary',
+    grammar: section.id === 'grammar',
+  });
 
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh]),
-  );
+  useRefreshOnRefocus(refresh);
 
   const handleSearchChange = useCallback(
     (query: string) => {
