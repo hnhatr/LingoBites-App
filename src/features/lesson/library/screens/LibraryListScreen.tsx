@@ -1,6 +1,11 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useMemo, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {
+  ActivityIndicator,
+  InteractionManager,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
@@ -34,6 +39,13 @@ export function LibraryListScreen({navigation, route}: Props) {
   const appNavigation = useAppNavigation();
   const practiceEnabled = useFeatureEnabled('shortPractice');
   const [searchQuery, setSearchQuery] = useState('');
+  // Load local data only once the push animation has finished, so tapping a
+  // card transitions immediately instead of freezing on the data read.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => setReady(true));
+    return () => task.cancel();
+  }, []);
   const {
     packagedLessons,
     vocabulary,
@@ -43,9 +55,9 @@ export function LibraryListScreen({navigation, route}: Props) {
     setGrammarFilter,
     refresh,
   } = useLibrarySegments({
-    lessons: isOwnLessonSection(section),
-    vocabulary: section.id === 'vocabulary',
-    grammar: section.id === 'grammar',
+    lessons: ready && isOwnLessonSection(section),
+    vocabulary: ready && section.id === 'vocabulary',
+    grammar: ready && section.id === 'grammar',
   });
 
   useRefreshOnRefocus(refresh);
@@ -94,6 +106,8 @@ export function LibraryListScreen({navigation, route}: Props) {
             sourceType={section.catalog.sourceType}
             searchQuery={searchQuery}
           />
+        ) : !ready ? (
+          <ActivityIndicator style={styles.loading} />
         ) : isOwnLessonSection(section) ? (
           <LessonsTabContent
             packagedLessons={lessons}
@@ -119,5 +133,8 @@ export function LibraryListScreen({navigation, route}: Props) {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
+  },
+  loading: {
+    marginTop: 32,
   },
 });

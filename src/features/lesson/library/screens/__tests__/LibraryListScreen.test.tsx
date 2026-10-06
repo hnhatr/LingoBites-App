@@ -1,5 +1,5 @@
 import React from 'react';
-import {TextInput} from 'react-native';
+import {InteractionManager, TextInput} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
@@ -67,7 +67,17 @@ function render(section: 'mine' | 'video' | 'vocabulary') {
 }
 
 describe('LibraryListScreen', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Run the post-transition load immediately.
+    jest
+      .spyOn(InteractionManager, 'runAfterInteractions')
+      .mockImplementation(((task: () => void) => {
+        task();
+        return {then: jest.fn(), done: jest.fn(), cancel: jest.fn()};
+      }) as any);
+  });
+  afterEach(() => jest.restoreAllMocks());
 
   it('lists only the lessons of its section', () => {
     const tree = render('mine');
