@@ -137,9 +137,10 @@ describe('LessonsHistoryScreen (Library hub)', () => {
     });
   });
 
-  it('refreshes library data on focus', () => {
+  it('does not reload library data again on the first focus', () => {
+    mockRefresh.mockClear();
     renderHub();
-    expect(mockRefresh).toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
   });
 
   it('opens the create-lesson hub from the call to action', () => {
