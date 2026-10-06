@@ -40,9 +40,14 @@ function download(lessonId: string, sourceType: string) {
     estimatedDurationMinutes: 5,
     downloadedAt: '2026-09-06T00:00:00.000Z',
     snapshot: {
+      id: lessonId,
+      content_revision: 1,
       source_type: sourceType,
-      sentences: [{text_en: 'Hi', text_vi: 'Chào'}],
-      analyses: [],
+      sentences: [
+        {id: `${lessonId}-s1`, position: 0, text_en: 'Hi', text_vi: 'Chào'},
+      ],
+      blocks: [],
+      analyses: {},
     },
   };
 }
@@ -107,6 +112,34 @@ describe('useLibrarySegments', () => {
     expect(latest.packagedLessons.map(l => l.id)).toEqual(['ocr-lesson']);
     expect(latest.vocabulary.map(c => c.id)).toEqual(['c1']);
     expect(latest.grammar.map(g => g.grammarId)).toEqual(['g1']);
+  });
+});
+
+describe('useLibrarySegments practice readiness', () => {
+  beforeEach(() => {
+    mockedDownloads.mockReset();
+    mockedFlashcards.mockReset().mockReturnValue([]);
+    mockedGrammar.mockReset().mockReturnValue([]);
+    mockedSources.mockReset().mockReturnValue(new Map());
+  });
+
+  it('marks only lessons big enough for a quiz as practice-ready', async () => {
+    const big = download('big', 'learner_text');
+    big.snapshot.sentences = ['a', 'b', 'c', 'd'].map((letter, index) => ({
+      id: `big-${letter}`,
+      position: index,
+      text_en: `Sentence ${letter}.`,
+      text_vi: `Câu ${letter}.`,
+    }));
+    mockedDownloads.mockReturnValue([big, download('tiny', 'learner_text')]);
+
+    await renderProbe();
+
+    expect(
+      Object.fromEntries(
+        latest.packagedLessons.map(l => [l.id, l.practiceReady]),
+      ),
+    ).toEqual({big: true, tiny: false});
   });
 });
 

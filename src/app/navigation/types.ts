@@ -24,6 +24,7 @@ import type {
   LessonCreationRouteParams,
 } from '@features/lesson/player';
 import type {OCRReviewRouteParams} from '@features/ocr';
+import type {PracticeRouteParams} from '@features/practice';
 import type {ProfileStackParamList} from '@features/profile';
 import type {DailyReviewRouteParams} from '@features/review';
 import type {
@@ -73,6 +74,7 @@ export type RootStackParamList = {
   UnitLessons: UnitLessonsRouteParams;
   // Practice
   DailyReview: DailyReviewRouteParams;
+  Practice: PracticeRouteParams;
   Today: TodayRouteParams;
   SpeakingRoom: SpeakingRoomRouteParams;
   ShadowingLessonPicker: ShadowingLessonPickerRouteParams;

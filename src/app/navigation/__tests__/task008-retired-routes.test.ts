@@ -12,12 +12,10 @@ const RETIRED_ROUTE_TOKENS = [
   'YouTubeInput',
   'YouTubeProcessing',
   'YouTubeLesson',
-  'PracticeScreen',
-  'name="Practice"',
 ];
 
 describe('TASK-008 retired App routes', () => {
-  it('AppNavigator does not register removed lesson/practice/youtube screens', () => {
+  it('AppNavigator does not register removed lesson/youtube screens', () => {
     const source = readFileSync(
       join(__dirname, '..', 'AppNavigator.tsx'),
       'utf8',
@@ -42,5 +40,17 @@ describe('TASK-008 retired App routes', () => {
     expect(rootStack).toContain('name="SpeakingRoom"');
     expect(rootStack).toContain('name="CanonicalLessonPlayer"');
     expect(rootStack).toContain('name="CanonicalCatalog"');
+  });
+
+  it('registers the revived Practice route only from the on-device feature', () => {
+    // The old server-driven practice screens stay retired (tokens above);
+    // `Practice` is the quick quiz generated on the device from a downloaded
+    // lesson (`features/practice`).
+    const source = readFileSync(
+      join(__dirname, '..', 'AppNavigator.tsx'),
+      'utf8',
+    );
+    expect(source).toContain("from '@features/practice'");
+    expect(source).toContain('name="Practice"');
   });
 });

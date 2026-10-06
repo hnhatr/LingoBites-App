@@ -238,4 +238,46 @@ describe('LessonsTabContent', () => {
     });
     expect(onViewAll).toHaveBeenCalledTimes(1);
   });
+
+  describe('practice action', () => {
+    const lessons = [
+      {...mockPackagedLesson, id: 'ready', practiceReady: true},
+      {...mockPackagedLesson, id: 'tiny', practiceReady: false},
+    ];
+    const practiceButtons = (tree: ReactTestRenderer.ReactTestRenderer) =>
+      tree.root.findAll(
+        node =>
+          typeof node.props.testID === 'string' &&
+          node.props.testID.startsWith('lesson-practice-') &&
+          typeof node.props.onPress === 'function',
+      );
+
+    it('starts practice for a lesson that is ready, as a sibling of the card button', () => {
+      const onPracticeLesson = jest.fn();
+      const tree = render(
+        <LessonsTabContent
+          onPracticeLesson={onPracticeLesson}
+          packagedLessons={lessons}
+        />,
+      );
+      const buttons = practiceButtons(tree);
+      expect(buttons.map(b => b.props.testID)).toEqual([
+        'lesson-practice-ready',
+      ]);
+      expect(buttons[0]!.props.accessibilityLabel).toContain(
+        'Tiếng Anh Giao Tiếp',
+      );
+      const card = tree.root.findByProps({testID: 'lesson-item-ready'});
+      expect(
+        card.findAllByProps({testID: 'lesson-practice-ready'}),
+      ).toHaveLength(0);
+      act(() => buttons[0]!.props.onPress());
+      expect(onPracticeLesson).toHaveBeenCalledWith('ready');
+    });
+
+    it('hides the action when practice is off', () => {
+      const tree = render(<LessonsTabContent packagedLessons={lessons} />);
+      expect(practiceButtons(tree)).toHaveLength(0);
+    });
+  });
 });

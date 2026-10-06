@@ -29,6 +29,7 @@ import {
   LessonCreationScreen,
 } from '@features/lesson/player';
 import {OCRReviewScreen} from '@features/ocr';
+import {PracticeScreen} from '@features/practice';
 import {
   FeatureStatusScreen,
   PrivacyNoteScreen,
@@ -90,7 +91,7 @@ const HIDDEN_HEADER = {headerShown: false} as const;
  *   └─ task flows      cover the tab bar; back returns to the opening tab
  *      PasteText, ImageCapture, OCRReview, LessonCreation,
  *      CanonicalCatalog, CanonicalLessonPlayer, CourseList, CourseLevels,
- *      LevelUnits, UnitLessons, DailyReview, Today, SpeakingRoom,
+ *      LevelUnits, UnitLessons, DailyReview, Practice, Today, SpeakingRoom,
  *      ShadowingLessonPicker, ShadowingSession, ShadowingSummary
  *
  * Features navigate through `useAppNavigation()` (see
@@ -239,6 +240,7 @@ function AuthenticatedRootStack() {
       <RootStack.Screen component={UnitLessonsScreen} name="UnitLessons" />
       {/* Practice */}
       <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
+      <RootStack.Screen component={PracticeScreen} name="Practice" />
       <RootStack.Screen component={TodayScreen} name="Today" />
       <RootStack.Screen component={SpeakingRoomScreen} name="SpeakingRoom" />
       <RootStack.Screen

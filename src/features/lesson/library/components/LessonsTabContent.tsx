@@ -1,4 +1,5 @@
 import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 
 import {AppCard} from '@ui/components/AppCard';
@@ -20,6 +21,11 @@ export interface LessonsTabContentProps {
   onViewAllCatalog?: () => void;
   /** A search/source filter is active, so an empty list means no matches. */
   isFiltered?: boolean;
+  /**
+   * Starts quick practice for a downloaded lesson. Omit to hide the action
+   * (practice flag off); it only shows on lessons big enough for a quiz.
+   */
+  onPracticeLesson?: (lessonId: string) => void;
 }
 
 /** How many catalog lessons the "Tất cả bài học" section previews. */
@@ -32,6 +38,7 @@ interface LessonItem {
   title: string;
   summary: string | null;
   type: LessonType;
+  practiceReady: boolean;
 }
 
 interface LessonSection {
@@ -66,6 +73,12 @@ function createStyles(theme: AppTheme) {
     viewAll: {
       paddingVertical: theme.spacing.xs,
     },
+    practice: {
+      alignSelf: 'flex-start',
+      justifyContent: 'center',
+      minHeight: 44,
+      paddingHorizontal: theme.spacing.xs,
+    },
     sectionHeader: {
       paddingHorizontal: 0,
       marginTop: theme.spacing.md,
@@ -81,10 +94,12 @@ export function LessonsTabContent({
   catalogLessons,
   onViewAllCatalog,
   isFiltered = false,
+  onPracticeLesson,
 }: LessonsTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const navigation = useAppNavigation();
+  const {t} = useTranslation();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const sections = useMemo((): LessonSection[] => {
@@ -96,6 +111,7 @@ export function LessonsTabContent({
         title: lesson.titleVi || lesson.title,
         summary: lesson.blurbVi || lesson.summary || null,
         type: 'packaged' as const,
+        practiceReady: lesson.practiceReady === true,
       }));
 
       result.push({
@@ -113,6 +129,7 @@ export function LessonsTabContent({
           title: lesson.title,
           summary: lesson.description || `${lesson.sentence_count} câu`,
           type: 'catalog' as const,
+          practiceReady: false,
         })),
         type: 'catalog',
       });
@@ -126,37 +143,54 @@ export function LessonsTabContent({
   };
 
   const renderLessonItem = ({item}: {item: LessonItem}) => (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={item.title}
-      accessibilityHint={LESSON_HINTS[item.type]}
-      onPress={() => handleLessonPress(item)}
-      testID={`lesson-item-${item.id}`}
-      style={styles.pressable}
-    >
-      <AppCard>
-        <View style={styles.cardContent}>
-          <AppText
-            variant="h3"
-            style={styles.lessonTitle}
-            testID={`lesson-title-${item.id}`}
-          >
-            {item.title}
-          </AppText>
-          {item.summary && (
+    <View style={styles.pressable}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={item.title}
+        accessibilityHint={LESSON_HINTS[item.type]}
+        onPress={() => handleLessonPress(item)}
+        testID={`lesson-item-${item.id}`}
+        style={styles.pressable}
+      >
+        <AppCard>
+          <View style={styles.cardContent}>
             <AppText
-              variant="label"
-              color="secondary"
-              numberOfLines={2}
-              ellipsizeMode="tail"
-              testID={`lesson-summary-${item.id}`}
+              variant="h3"
+              style={styles.lessonTitle}
+              testID={`lesson-title-${item.id}`}
             >
-              {item.summary}
+              {item.title}
             </AppText>
-          )}
-        </View>
-      </AppCard>
-    </Pressable>
+            {item.summary && (
+              <AppText
+                variant="label"
+                color="secondary"
+                numberOfLines={2}
+                ellipsizeMode="tail"
+                testID={`lesson-summary-${item.id}`}
+              >
+                {item.summary}
+              </AppText>
+            )}
+          </View>
+        </AppCard>
+      </Pressable>
+      {/* A sibling of the card button (not nested) so it stays reachable. */}
+      {onPracticeLesson && item.practiceReady ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('library.practice_a11y', {title: item.title})}
+          accessibilityHint={t('practice.entry_hint')}
+          onPress={() => onPracticeLesson(item.id)}
+          style={styles.practice}
+          testID={`lesson-practice-${item.id}`}
+        >
+          <AppText variant="label" color="primary">
+            {t('practice.entry_button')}
+          </AppText>
+        </Pressable>
+      ) : null}
+    </View>
   );
 
   const renderSectionHeader = ({section}: {section: LessonSection}) => (

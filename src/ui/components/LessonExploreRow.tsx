@@ -17,6 +17,7 @@ type Props = {
   badge?: string;
   onPress?: () => void;
   disabled?: boolean;
+  testID?: string;
 };
 
 function medallionColors(
@@ -43,6 +44,7 @@ export function LessonExploreRow({
   badge,
   onPress,
   disabled = false,
+  testID,
 }: Props) {
   const {theme} = useAppTheme();
   const medallion = medallionColors(theme, medallionTone);
@@ -99,6 +101,7 @@ export function LessonExploreRow({
       accessibilityState={{disabled}}
       disabled={disabled}
       onPress={onPress}
+      testID={testID}
     >
       {({pressed}) => (
         <ShelfSurface

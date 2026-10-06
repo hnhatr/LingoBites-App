@@ -29,4 +29,6 @@ export type LibraryLessonCardView = {
   vocabularyCount: number;
   durationMin: number;
   sourceType: LessonSourceType;
+  /** The lesson is big enough for a quick-practice quiz. */
+  practiceReady?: boolean;
 };

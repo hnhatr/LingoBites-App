@@ -114,7 +114,40 @@
   },
   "practice": {
     "quick_empty_cause": "No lessons are ready for quick practice yet.",
-    "quick_empty_explain": "Quick practice pulls questions from lessons you have created."
+    "quick_empty_explain": "Quick practice pulls questions from lessons you have created.",
+    "title": "Quick practice",
+    "close_a11y": "Close practice",
+    "progress": "Question {{current}}/{{total}}",
+    "progress_a11y": "Practice progress",
+    "prompt_meaning_choice": "Choose the correct meaning",
+    "prompt_cloze_choice": "Choose the word for the blank",
+    "prompt_translation_choice": "Choose the correct translation",
+    "option_a11y": "Option {{key}}: {{text}}",
+    "feedback_correct": "Correct!",
+    "feedback_wrong": "Not quite. Answer: {{answer}}",
+    "next": "Next question",
+    "finish": "See results",
+    "result_title": "Results",
+    "result_score": "{{correct}}/{{total}} correct",
+    "result_accuracy": "{{accuracy}}% accuracy",
+    "result_great": "Great job! You know this lesson well.",
+    "result_ok": "Pretty good. Review a few words.",
+    "result_retry_hint": "Try again to remember them for longer.",
+    "missed_title": "Words to review",
+    "missed_save_all": "Save all as flashcards",
+    "missed_save": "Save",
+    "missed_saved": "Saved",
+    "missed_save_a11y": "Save {{word}} as a flashcard",
+    "retry": "Try again",
+    "back_to_lesson": "Back to lesson",
+    "unavailable_not_downloaded": "Download the lesson to practise it.",
+    "unavailable_not_enough": "This lesson does not have enough words or sentences for a quiz yet.",
+    "unavailable_disabled": "Practice is not available right now.",
+    "entry_button": "Quick practice",
+    "entry_hint": "Take a short multiple-choice quiz from this lesson",
+    "close_hint": "Leaves the quiz and returns to the lesson",
+    "missed_save_hint": "Adds this word to your flashcards for review",
+    "option_hint": "Double tap to choose this answer"
   },
   "review": {
     "title": "Review today",
@@ -607,6 +640,7 @@
       "source_untitled": "Lesson",
       "sources_toggle_hint": "Opens or closes the list of lessons",
       "source_open_hint": "Opens the lesson to see this word in context"
-    }
+    },
+    "practice_a11y": "Quick practice for {{title}}"
   }
 }

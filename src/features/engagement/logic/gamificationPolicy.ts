@@ -106,13 +106,14 @@ function isNextLocalDay(previous: string, next: string): boolean {
 
 /**
  * Event types that mark a local day as a streak day: finishing a review
- * session, completing a lesson, or finishing a Shadowing session (F10).
+ * session, completing a lesson, finishing a Shadowing session (F10), or finishing a quick-practice quiz.
  * `review_on_time` only waters the plant and never counts on its own.
  */
 export const STREAK_EVENT_TYPES: ReadonlySet<GamificationEventType> = new Set([
   'review_session_completed',
   'lesson_completed',
   'shadowing_session_completed',
+  'practice_session_completed',
 ]);
 
 /** Local calendar days that contain at least one streak event. */

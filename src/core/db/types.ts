@@ -146,12 +146,15 @@ export type AudioCacheStats = {
  *   only marks the local day as a streak day.
  * `shadowing_session_completed` - one per finished Shadowing session. Zero
  *   points; only marks the local day as a streak day.
+ * `practice_session_completed` - one per finished quick-practice quiz. Zero
+ *   points; only marks the local day as a streak day.
  */
 export type GamificationEventType =
   | 'review_session_completed'
   | 'review_on_time'
   | 'lesson_completed'
-  | 'shadowing_session_completed';
+  | 'shadowing_session_completed'
+  | 'practice_session_completed';
 
 /** Input for appending a single row to the gamification event log. */
 export type GamificationEventInput = {
