@@ -30,7 +30,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 const TAB_ITEMS: Record<string, {labelKey: string; icon: HandoffIconName}> = {
   Home: {labelKey: 'nav.tab.home', icon: 'home'},
-  Create: {labelKey: 'nav.tab.create', icon: 'document_scanner'},
+  Courses: {labelKey: 'nav.tab.courses', icon: 'menu_book'},
   Lessons: {labelKey: 'nav.tab.library', icon: 'school'},
   Profile: {labelKey: 'nav.tab.profile', icon: 'person'},
 };

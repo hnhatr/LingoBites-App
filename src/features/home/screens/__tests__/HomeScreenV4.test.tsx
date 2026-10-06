@@ -236,7 +236,7 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
       'home-shortcut-video',
       'home-shortcut-review',
       'home-shortcut-speaking',
-      'home-shortcut-lessons',
+      'home-shortcut-create',
     ];
     for (const id of shortcutIds) {
       expect(
@@ -294,15 +294,15 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
     expect(nav).not.toHaveBeenCalled();
   });
 
-  it('lessons shortcut navigates to LessonList / Today', async () => {
+  it('create shortcut opens the create-lesson hub', async () => {
     const nav = jest.fn();
     const tree = await renderHome(navigation(jest.fn(), nav));
     const lessonsBtn = tree.root
-      .findAll(node => node.props.testID === 'home-shortcut-lessons')
+      .findAll(node => node.props.testID === 'home-shortcut-create')
       .find(node => typeof node.props.onPress === 'function');
-    if (!lessonsBtn) throw new Error('No lessons shortcut found');
+    if (!lessonsBtn) throw new Error('No create shortcut found');
     await act(async () => lessonsBtn.props.onPress());
-    expect(mockAppNavigation.openToday).toHaveBeenCalledTimes(1);
+    expect(mockAppNavigation.openCreate).toHaveBeenCalledTimes(1);
     expect(nav).not.toHaveBeenCalled();
   });
 });

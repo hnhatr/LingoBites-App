@@ -51,7 +51,7 @@ describe('Root stack layout (navigation redesign)', () => {
 
   it('keeps each tab stack to its hub screen (plus Profile settings pages)', () => {
     expect(countRegistrations(tabStacks, 'HomeMain')).toBe(1);
-    expect(countRegistrations(tabStacks, 'CreateMain')).toBe(1);
+    expect(countRegistrations(tabStacks, 'CourseList')).toBe(1);
     expect(countRegistrations(tabStacks, 'LessonsList')).toBe(1);
     expect(countRegistrations(tabStacks, 'ProfileMain')).toBe(1);
   });

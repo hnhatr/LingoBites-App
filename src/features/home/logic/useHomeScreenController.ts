@@ -264,12 +264,12 @@ export function useHomeScreenController() {
   );
 
   const openVideoCell = useCallback(
-    () => navigation.goToTab('Create'),
+    () => navigation.startCreate({kind: 'youtube'}),
     [navigation],
   );
 
   const onNavigateCreate = useCallback(
-    () => navigation.goToTab('Create'),
+    () => navigation.openCreate(),
     [navigation],
   );
 
@@ -319,6 +319,7 @@ export function useHomeScreenController() {
     pawGoalModel,
     // Shortcuts (DQ-005, D3, P-003)
     shortcutItems,
+    dueFlashcardCount,
     // General
     trimmedDisplayName,
     libraryCount: downloadCount,

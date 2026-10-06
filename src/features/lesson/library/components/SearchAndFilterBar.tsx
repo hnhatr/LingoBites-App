@@ -14,9 +14,10 @@ import {
 
 export interface SearchAndFilterBarProps {
   searchQuery: string;
-  sourceFilter: LibrarySourceFilter;
+  /** Omit (with `onFilterChange`) to show the search field alone. */
+  sourceFilter?: LibrarySourceFilter;
   onSearchChange: (query: string) => void;
-  onFilterChange: (filter: LibrarySourceFilter) => void;
+  onFilterChange?: (filter: LibrarySourceFilter) => void;
 }
 
 function createStyles(theme: AppTheme) {
@@ -55,7 +56,7 @@ function createStyles(theme: AppTheme) {
 
 export function SearchAndFilterBar({
   searchQuery,
-  sourceFilter,
+  sourceFilter = 'all',
   onSearchChange,
   onFilterChange,
 }: SearchAndFilterBarProps) {
@@ -86,17 +87,19 @@ export function SearchAndFilterBar({
         />
       </View>
 
-      <View style={styles.toggleRow}>
-        <Chip
-          label={`Nguồn: ${activeLabel} ${filtersOpen ? '▴' : '▾'}`}
-          selected={sourceFilter !== 'all'}
-          onPress={() => setFiltersOpen(open => !open)}
-          accessibilityHint="Mở hoặc đóng bộ lọc theo nguồn bài học"
-          testID="filter-toggle"
-        />
-      </View>
+      {onFilterChange ? (
+        <View style={styles.toggleRow}>
+          <Chip
+            label={`Nguồn: ${activeLabel} ${filtersOpen ? '▴' : '▾'}`}
+            selected={sourceFilter !== 'all'}
+            onPress={() => setFiltersOpen(open => !open)}
+            accessibilityHint="Mở hoặc đóng bộ lọc theo nguồn bài học"
+            testID="filter-toggle"
+          />
+        </View>
+      ) : null}
 
-      {filtersOpen ? (
+      {onFilterChange && filtersOpen ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}

@@ -6,7 +6,9 @@ export type {
   SegmentFilterState,
   UseLibrarySegmentsResult,
 } from './logic/useLibrarySegments';
+export {LibraryListScreen} from './screens/LibraryListScreen';
 export type {
   LessonsListRouteParams,
+  LibraryListRouteParams,
   LessonsStackParamList,
 } from './screens/navigationTypes';

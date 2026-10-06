@@ -248,7 +248,7 @@ export function TodayScreen({route}: Props = {}) {
               <AppButton
                 title="Thêm bài mới"
                 variant="outline"
-                onPress={() => navigation.goToTab('Create')}
+                onPress={() => navigation.openCreate()}
                 testID="shortfall-action"
               />
             </View>

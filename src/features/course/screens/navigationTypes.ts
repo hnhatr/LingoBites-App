@@ -16,9 +16,13 @@ export type UnitLessonsRouteParams = {
   title?: string;
 };
 
+/** The Courses tab holds only the course list. */
+export type CoursesStackParamList = {
+  CourseList: CourseListRouteParams;
+};
+
 /** Curriculum screens (registered on the root stack). */
 export type CourseFlowParamList = {
-  CourseList: CourseListRouteParams;
   CourseLevels: CourseLevelsRouteParams;
   LevelUnits: LevelUnitsRouteParams;
   UnitLessons: UnitLessonsRouteParams;

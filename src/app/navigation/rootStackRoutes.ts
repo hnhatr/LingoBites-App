@@ -7,10 +7,10 @@ type RootRouteName = Extract<keyof RootStackParamList, string>;
 
 /** Root-stack task flows, each registered exactly once (see AppNavigator). */
 export const ROOT_FLOW_ROUTES = [
+  'CreateHub',
   'LessonCreation',
   'CanonicalCatalog',
   'CanonicalLessonPlayer',
-  'CourseList',
   'CourseLevels',
   'LevelUnits',
   'UnitLessons',

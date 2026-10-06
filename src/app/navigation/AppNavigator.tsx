@@ -22,7 +22,10 @@ import {
   ImageCaptureScreen,
   PasteTextScreen,
 } from '@features/input';
-import {LessonsHistoryScreen} from '@features/lesson/library';
+import {
+  LessonsHistoryScreen,
+  LibraryListScreen,
+} from '@features/lesson/library';
 import {
   CanonicalLessonCatalogScreen,
   CanonicalLessonPlayerScreen,
@@ -53,7 +56,7 @@ import {createAppNavigation, navigationRef} from './appNavigationAdapter';
 import {isIngestionRouteEnabled} from './ingestionRouteGate';
 import {TabBar} from './TabBar';
 import type {
-  CreateStackParamList,
+  CoursesStackParamList,
   HomeStackParamList,
   LessonsStackParamList,
   ProfileStackParamList,
@@ -62,7 +65,7 @@ import type {
 } from './types';
 
 export type {
-  CreateStackParamList,
+  CoursesStackParamList,
   HomeStackParamList,
   LessonsStackParamList,
   ProfileStackParamList,
@@ -71,7 +74,7 @@ export type {
 } from './types';
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
-const CreateStack = createNativeStackNavigator<CreateStackParamList>();
+const CoursesStack = createNativeStackNavigator<CoursesStackParamList>();
 const LessonsStack = createNativeStackNavigator<LessonsStackParamList>();
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -85,12 +88,12 @@ const HIDDEN_HEADER = {headerShown: false} as const;
  *   RootStack
  *   ├─ Tabs            each tab holds only its hub screen
  *   │  ├─ Home         HomeMain
- *   │  ├─ Create       CreateMain
+ *   │  ├─ Courses      CourseList
  *   │  ├─ Lessons      LessonsList
  *   │  └─ Profile      ProfileMain + settings pages
  *   └─ task flows      cover the tab bar; back returns to the opening tab
- *      PasteText, ImageCapture, OCRReview, LessonCreation,
- *      CanonicalCatalog, CanonicalLessonPlayer, CourseList, CourseLevels,
+ *      CreateHub, PasteText, ImageCapture, OCRReview, LessonCreation,
+ *      CanonicalCatalog, CanonicalLessonPlayer, CourseLevels,
  *      LevelUnits, UnitLessons, DailyReview, Practice, Today, SpeakingRoom,
  *      ShadowingLessonPicker, ShadowingSession, ShadowingSummary
  *
@@ -110,15 +113,15 @@ function HomeStackNavigator() {
   );
 }
 
-function CreateStackNavigator() {
+function CoursesStackNavigator() {
   return (
-    <CreateStack.Navigator>
-      <CreateStack.Screen
-        component={CreateScreen}
-        name="CreateMain"
+    <CoursesStack.Navigator>
+      <CoursesStack.Screen
+        component={CourseListScreen}
+        name="CourseList"
         options={HIDDEN_HEADER}
       />
-    </CreateStack.Navigator>
+    </CoursesStack.Navigator>
   );
 }
 
@@ -128,6 +131,11 @@ function LessonsStackNavigator() {
       <LessonsStack.Screen
         component={LessonsHistoryScreen}
         name="LessonsList"
+        options={HIDDEN_HEADER}
+      />
+      <LessonsStack.Screen
+        component={LibraryListScreen}
+        name="LibraryList"
         options={HIDDEN_HEADER}
       />
     </LessonsStack.Navigator>
@@ -182,9 +190,9 @@ function TabNavigator() {
         options={{title: 'Home'}}
       />
       <Tab.Screen
-        component={CreateStackNavigator}
-        name="Create"
-        options={{title: 'Create'}}
+        component={CoursesStackNavigator}
+        name="Courses"
+        options={{title: 'Courses'}}
       />
       <Tab.Screen
         component={LessonsStackNavigator}
@@ -209,6 +217,7 @@ function AuthenticatedRootStack() {
     <RootStack.Navigator id="RootStack" screenOptions={HIDDEN_HEADER}>
       <RootStack.Screen component={TabNavigator} name="Tabs" />
       {/* Create-lesson flow */}
+      <RootStack.Screen component={CreateScreen} name="CreateHub" />
       {canMount('PasteText') && (
         <RootStack.Screen component={PasteTextScreen} name="PasteText" />
       )}
@@ -234,7 +243,6 @@ function AuthenticatedRootStack() {
         options={{gestureEnabled: false}}
       />
       {/* Structured curriculum */}
-      <RootStack.Screen component={CourseListScreen} name="CourseList" />
       <RootStack.Screen component={CourseLevelsScreen} name="CourseLevels" />
       <RootStack.Screen component={LevelUnitsScreen} name="LevelUnits" />
       <RootStack.Screen component={UnitLessonsScreen} name="UnitLessons" />

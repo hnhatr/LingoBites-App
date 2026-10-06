@@ -1,258 +1,117 @@
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useMemo, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, View} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
-import {CourseListContent} from '@features/course';
-import {useCanonicalCatalog} from '@features/lesson/player';
-import {useFlashcardLibrary} from '@features/review';
-
+import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {solidOver} from '@ui/theme/colorUtils';
-import {getHardShadow} from '@ui/theme/hardShadow';
 
 import {useAppNavigation} from '@core/navigation';
-import {useFeatureEnabled} from '@core/release';
 
-import {GrammarTabContent} from '../components/GrammarTabContent';
-import {LessonsTabContent} from '../components/LessonsTabContent';
-import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
+import {LibraryHubCard} from '../components/LibraryHubCard';
 import {
-  type LibraryTabId,
-  SegmentedTabBar,
-} from '../components/SegmentedTabBar';
-import {VocabularyTabContent} from '../components/VocabularyTabContent';
-import {
-  isSegmentFilterActive,
-  matchesSegmentFilter,
-  useLibrarySegments,
-} from '../logic/useLibrarySegments';
+  isLessonSection,
+  lessonBelongsToSection,
+  LIBRARY_SECTIONS,
+  type LibrarySectionConfig,
+  type LibrarySectionId,
+} from '../logic/librarySections';
+import {useLibrarySegments} from '../logic/useLibrarySegments';
 import type {LessonsStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
 
 export type LessonsHistoryScreenProps = Props;
 
-export function LessonsHistoryScreen(_props: Props) {
-  const navigation = useAppNavigation();
+/** The Library hub: one card per section, each opening its own list. */
+export function LessonsHistoryScreen({navigation}: Props) {
   const {theme} = useAppTheme();
-  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const {t} = useTranslation();
-  const {getDueFlashcards} = useFlashcardLibrary();
-  const practiceEnabled = useFeatureEnabled('shortPractice');
-  const [dueCount, setDueCount] = useState(0);
-
-  const [activeTab, setActiveTab] = useState<LibraryTabId>('lessons');
-
-  const {
-    packagedLessons,
-    vocabulary,
-    grammar,
-    lessonsFilter,
-    vocabularyFilter,
-    grammarFilter,
-    setLessonsFilter,
-    setVocabularyFilter,
-    setGrammarFilter,
-    refresh,
-  } = useLibrarySegments();
-  const {state: catalogState, refresh: refreshCatalog} = useCanonicalCatalog();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const feedClearance = useFloatingTabBarClearance();
+  const appNavigation = useAppNavigation();
+  const {packagedLessons, vocabulary, grammar, refresh} = useLibrarySegments();
 
   useFocusEffect(
     useCallback(() => {
       refresh();
-      refreshCatalog();
-      setDueCount(getDueFlashcards().length);
-    }, [refresh, refreshCatalog, getDueFlashcards]),
+    }, [refresh]),
   );
 
-  const catalogLessons = useMemo(
-    () =>
-      catalogState.status === 'ready'
-        ? catalogState.lessons.filter(lesson =>
-            matchesSegmentFilter(lessonsFilter, {
-              texts: [lesson.title, lesson.description],
-              sourceType: lesson.source_type,
-            }),
-          )
-        : [],
-    [catalogState, lessonsFilter],
-  );
+  const counts = useMemo(() => {
+    const result = {} as Record<LibrarySectionId, number>;
+    LIBRARY_SECTIONS.forEach(section => {
+      if (isLessonSection(section)) {
+        result[section.id] = packagedLessons.filter(lesson =>
+          lessonBelongsToSection(section, lesson.sourceType),
+        ).length;
+      } else {
+        result[section.id] =
+          section.id === 'vocabulary' ? vocabulary.length : grammar.length;
+      }
+    });
+    return result;
+  }, [packagedLessons, vocabulary, grammar]);
 
-  const currentFilter =
-    activeTab === 'lessons'
-      ? lessonsFilter
-      : activeTab === 'vocabulary'
-      ? vocabularyFilter
-      : grammarFilter;
-
-  const setCurrentFilter =
-    activeTab === 'lessons'
-      ? setLessonsFilter
-      : activeTab === 'vocabulary'
-      ? setVocabularyFilter
-      : setGrammarFilter;
-
-  const isFiltered = isSegmentFilterActive(currentFilter);
+  const countLabel = (section: LibrarySectionConfig) =>
+    counts[section.id] > 0
+      ? `${counts[section.id]} ${section.unit}`
+      : section.emptyHint;
 
   return (
     <AppScreen>
-      <View style={themedStyles.header}>
-        <AppText variant="h2" style={themedStyles.title}>
-          {t('library.title')}
+      <ScrollView
+        contentContainerStyle={[styles.content, {paddingBottom: feedClearance}]}
+        testID="library-hub"
+      >
+        <AppText variant="h2" style={styles.title}>
+          Thư viện
         </AppText>
-        <Pressable
-          accessibilityLabel={t('library.speaking_a11y')}
-          accessibilityRole="button"
-          onPress={() => navigation.openSpeakingRoom()}
-          style={({pressed}) => [
-            themedStyles.speakingButton,
-            pressed && themedStyles.pressed,
-          ]}
-          testID="library-practice-speaking"
-        >
-          <MaterialIcon
-            color={theme.colors.onTertiaryContainer}
-            name="mic"
-            size={22}
-          />
-        </Pressable>
-      </View>
-
-      {dueCount > 0 ? (
-        <View style={themedStyles.practiceRow} testID="library-practice-row">
-          <Pressable
-            accessibilityLabel={`${t('library.review_banner_cta')}. ${t(
-              'library.review_banner_due',
-              {count: dueCount},
-            )}`}
-            accessibilityRole="button"
-            onPress={() => navigation.openReview()}
-            style={({pressed}) => [
-              themedStyles.reviewBanner,
-              pressed && themedStyles.pressed,
-            ]}
-            testID="library-practice-review"
-          >
-            <MaterialIcon
-              color={theme.colors.primary}
-              name="refresh"
-              size={20}
-            />
-            <AppText
-              variant="label"
-              style={themedStyles.reviewText}
-              numberOfLines={1}
-            >
-              {t('library.review_banner_due', {count: dueCount})}
-            </AppText>
-            <AppText variant="label" style={themedStyles.reviewCta}>
-              {t('library.review_banner_cta')}
-            </AppText>
-          </Pressable>
-        </View>
-      ) : null}
-
-      <SegmentedTabBar activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {activeTab !== 'courses' && (
-        <SearchAndFilterBar
-          searchQuery={currentFilter.searchQuery}
-          sourceFilter={currentFilter.sourceFilter}
-          onSearchChange={query =>
-            setCurrentFilter({...currentFilter, searchQuery: query})
-          }
-          onFilterChange={filter =>
-            setCurrentFilter({...currentFilter, sourceFilter: filter})
-          }
+        <AppText variant="label" color="secondary" style={styles.subtitle}>
+          Bài học đã tải về học được cả khi không có mạng.
+        </AppText>
+        <AppButton
+          title="Tạo bài học mới"
+          onPress={() => appNavigation.openCreate()}
+          testID="library-create-lesson"
         />
-      )}
-
-      {activeTab === 'lessons' && (
-        <View style={themedStyles.tabContent} testID="lessons-tab-content">
-          <LessonsTabContent
-            packagedLessons={packagedLessons}
-            catalogLessons={catalogLessons}
-            onViewAllCatalog={navigation.openCatalog}
-            isFiltered={isFiltered}
-            onPracticeLesson={
-              practiceEnabled ? navigation.openPractice : undefined
-            }
-          />
+        <View style={styles.cards}>
+          {LIBRARY_SECTIONS.map(section => (
+            <LibraryHubCard
+              key={section.id}
+              icon={section.icon}
+              title={section.title}
+              description={section.description}
+              countLabel={countLabel(section)}
+              hasItems={counts[section.id] > 0}
+              onPress={() =>
+                navigation.navigate('LibraryList', {section: section.id})
+              }
+              testID={`library-card-${section.id}`}
+            />
+          ))}
         </View>
-      )}
-      {activeTab === 'courses' && (
-        <View style={themedStyles.tabContent} testID="courses-tab-content">
-          <CourseListContent />
-        </View>
-      )}
-      {activeTab === 'vocabulary' && (
-        <View style={themedStyles.tabContent} testID="vocabulary-tab-content">
-          <VocabularyTabContent
-            vocabulary={vocabulary}
-            isFiltered={isFiltered}
-          />
-        </View>
-      )}
-      {activeTab === 'grammar' && (
-        <View style={themedStyles.tabContent} testID="grammar-tab-content">
-          <GrammarTabContent grammar={grammar} isFiltered={isFiltered} />
-        </View>
-      )}
+      </ScrollView>
     </AppScreen>
   );
 }
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    header: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.gutter,
-      paddingVertical: theme.spacing.md,
+    content: {
+      gap: theme.spacing.sm,
+      padding: theme.gutter,
     },
     title: {
       color: theme.colors.text.primary,
     },
-    speakingButton: {
-      alignItems: 'center',
-      backgroundColor: solidOver(
-        theme.colors.tertiarySoft,
-        theme.colors.surface,
-      ),
-      borderColor: theme.colors.ink,
-      borderRadius: 14,
-      borderWidth: 2,
-      height: 44,
-      justifyContent: 'center',
-      width: 44,
+    subtitle: {
+      marginBottom: theme.spacing.sm,
     },
-    practiceRow: {
-      paddingBottom: theme.spacing.sm,
-      paddingHorizontal: theme.gutter,
-    },
-    reviewBanner: {
-      alignItems: 'center',
-      backgroundColor: solidOver(theme.colors.accentSoft, theme.colors.surface),
-      borderColor: theme.colors.ink,
-      borderRadius: 20,
-      borderWidth: 2,
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-      minHeight: 48,
-      ...getHardShadow(3, theme.colors.ink),
-      paddingHorizontal: theme.spacing.md,
-    },
-    reviewText: {color: theme.colors.text.primary, flex: 1},
-    reviewCta: {color: theme.colors.primary},
-    pressed: {opacity: theme.states.pressedOpacity},
-    tabContent: {
-      flex: 1,
+    cards: {
+      gap: theme.spacing.md,
     },
   });
 }
