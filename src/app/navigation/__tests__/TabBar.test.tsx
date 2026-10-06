@@ -28,7 +28,7 @@ type BarProps = React.ComponentProps<typeof TabBar>;
 function makeProps(activeIndex = 0): BarProps {
   const routes = [
     {key: 'home', name: 'Home'},
-    {key: 'create', name: 'Create'},
+    {key: 'courses', name: 'Courses'},
     {key: 'lessons', name: 'Lessons'},
     {key: 'profile', name: 'Profile'},
   ];
@@ -158,7 +158,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     const {tree} = renderBar(defaultTheme);
     for (const testID of [
       'tab-bar-item-Home',
-      'tab-bar-item-Create',
+      'tab-bar-item-Courses',
       'tab-bar-item-Lessons',
       'tab-bar-item-Profile',
     ]) {
@@ -182,7 +182,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
       .findAllByType(Text)
       .map((n: {props: {children?: unknown}}) => n.props.children);
     expect(labels).toEqual(
-      expect.arrayContaining(['Trang chủ', 'Tạo bài', 'Thư viện', 'Hồ sơ']),
+      expect.arrayContaining(['Trang chủ', 'Khóa học', 'Thư viện', 'Hồ sơ']),
     );
   });
 
@@ -190,7 +190,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     const {tree} = renderBar(defaultTheme);
     const label = tree.root
       .findAllByType(Text)
-      .find(node => node.props.children === 'Tạo bài');
+      .find(node => node.props.children === 'Khóa học');
     expect(label).toBeDefined();
     // Single line + shrink-to-fit: no ellipsis even for the longest labels.
     expect(label!.props.numberOfLines).toBe(1);
@@ -221,7 +221,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     expect(nav.navigate).not.toHaveBeenCalled();
   });
 
-  it('switches to the Create tab with a plain navigate (no stack surgery)', () => {
+  it('switches to the Courses tab with a plain navigate (no stack surgery)', () => {
     // Task flows live on the root stack, so a tab never holds a stale
     // flow screen and the bar needs no per-tab reset logic.
     const {tree, props} = renderBar(defaultTheme);
@@ -230,10 +230,10 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
       navigate: jest.Mock;
     };
     act(() => {
-      tree.root.findByProps({testID: 'tab-bar-item-Create'}).props.onPress();
+      tree.root.findByProps({testID: 'tab-bar-item-Courses'}).props.onPress();
     });
     expect(nav.navigate).toHaveBeenCalledTimes(1);
-    expect(nav.navigate).toHaveBeenCalledWith('Create');
+    expect(nav.navigate).toHaveBeenCalledWith('Courses');
   });
 
   it('does nothing when a tabPress listener prevents the default', () => {
@@ -271,7 +271,7 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
 
     for (const testID of [
       'tab-bar-item-Home',
-      'tab-bar-item-Create',
+      'tab-bar-item-Courses',
       'tab-bar-item-Lessons',
       'tab-bar-item-Profile',
     ]) {

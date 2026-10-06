@@ -3,10 +3,13 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
+import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+
+import {useAppNavigation} from '@core/navigation';
 
 import {LibraryHubCard} from '../components/LibraryHubCard';
 import {
@@ -28,6 +31,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const feedClearance = useFloatingTabBarClearance();
+  const appNavigation = useAppNavigation();
   const {packagedLessons, vocabulary, grammar, refresh} = useLibrarySegments();
 
   useFocusEffect(
@@ -68,6 +72,11 @@ export function LessonsHistoryScreen({navigation}: Props) {
         <AppText variant="label" color="secondary" style={styles.subtitle}>
           Bài học đã tải về học được cả khi không có mạng.
         </AppText>
+        <AppButton
+          title="Tạo bài học mới"
+          onPress={() => appNavigation.openCreate()}
+          testID="library-create-lesson"
+        />
         <View style={styles.cards}>
           {LIBRARY_SECTIONS.map(section => (
             <LibraryHubCard

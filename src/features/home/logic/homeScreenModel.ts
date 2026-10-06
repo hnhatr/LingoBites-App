@@ -268,9 +268,9 @@ export function buildPawGoalModel(
 
 // ---------------------------------------------------------------------------
 // Shortcut items (DQ-005, D3, P-003, §VS-4)
-// Order: video -> review -> speaking -> lessons
+// Order: video -> review -> speaking -> create
 // ---------------------------------------------------------------------------
-export type ShortcutKey = 'video' | 'review' | 'speaking' | 'lessons';
+export type ShortcutKey = 'video' | 'review' | 'speaking' | 'create';
 
 export type ShortcutItem = {
   key: ShortcutKey;
@@ -351,12 +351,12 @@ export function buildShortcutItems({
       disabled: false,
     },
     {
-      key: 'lessons',
-      icon: 'school',
-      titleKey: 'home.shortcut_lessons',
-      subKey: 'home.shortcut_lessons_sub',
-      metaKey: 'home.shortcut_lessons_sub',
-      testID: 'home-shortcut-lessons',
+      key: 'create',
+      icon: 'article',
+      titleKey: 'home.shortcut_create',
+      subKey: 'home.shortcut_create_sub',
+      metaKey: 'home.shortcut_create_sub',
+      testID: 'home-shortcut-create',
       badgeCount: null,
       badgeText: null,
       disabled: false,

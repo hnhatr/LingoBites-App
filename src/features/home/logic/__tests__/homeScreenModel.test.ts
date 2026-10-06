@@ -239,10 +239,10 @@ describe('buildPawGoalModel (I3, P-004, §VS-3)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildShortcutItems — 4 shortcuts in §VS-4 order (video, review, speaking, lessons)
+// buildShortcutItems — 4 shortcuts in §VS-4 order (video, review, speaking, create)
 // ---------------------------------------------------------------------------
 describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
-  it('returns exactly 4 shortcuts in specified order: video, review, speaking, lessons', () => {
+  it('returns exactly 4 shortcuts in specified order: video, review, speaking, create', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 0,
       youtubeEnabled: true,
@@ -252,7 +252,7 @@ describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
       'video',
       'review',
       'speaking',
-      'lessons',
+      'create',
     ]);
   });
 

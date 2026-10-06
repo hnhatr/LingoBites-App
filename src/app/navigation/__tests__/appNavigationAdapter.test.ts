@@ -68,7 +68,7 @@ describe('createAppNavigation (root-stack adapter)', () => {
     nav.openCourse({kind: 'unit', unitId: 'unit-1', title: 'Greetings'});
 
     expect(ref.navigate.mock.calls).toEqual([
-      ['CourseList', undefined],
+      ['Tabs', {screen: 'Courses'}],
       ['CourseLevels', {courseSlug: 'english-a1', title: 'A1'}],
       ['LevelUnits', {levelId: 'level-1', title: undefined}],
       ['UnitLessons', {unitId: 'unit-1', title: 'Greetings'}],
@@ -108,8 +108,8 @@ describe('createAppNavigation (root-stack adapter)', () => {
 
   it('switches tabs through the root Tabs route', () => {
     const ref = fakeRef();
-    createAppNavigation(ref).goToTab('Create');
-    expect(ref.navigate).toHaveBeenCalledWith('Tabs', {screen: 'Create'});
+    createAppNavigation(ref).goToTab('Courses');
+    expect(ref.navigate).toHaveBeenCalledWith('Tabs', {screen: 'Courses'});
   });
 
   it('finishCreate replaces the whole create flow with the lesson', () => {

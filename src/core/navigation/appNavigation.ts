@@ -8,7 +8,7 @@ import {createContext, useContext} from 'react';
  * implementation is the adapter in `app/navigation/appNavigationAdapter.ts`,
  * which is the single place that knows the navigator layout:
  *
- * - Tabs hold only their hub screen (Home, Create, Lessons, Profile).
+ * - Tabs hold only their hub screen (Home, Courses, Lessons, Profile).
  * - Task flows (create a lesson, lesson player, review, speaking, today,
  *   catalog) are registered once on the root stack, above the tab bar, so
  *   back always returns to the tab that opened them.
@@ -18,7 +18,7 @@ import {createContext, useContext} from 'react';
  * `getParent()` is rejected by `yarn lint:boundaries`.
  */
 
-export type AppTabName = 'Home' | 'Create' | 'Lessons' | 'Profile';
+export type AppTabName = 'Home' | 'Courses' | 'Lessons' | 'Profile';
 
 export type CreateEntry =
   /** Open the paste-text composer. */
@@ -52,6 +52,8 @@ export interface AppNavigation {
    * otherwise one course, level or unit.
    */
   openCourse(target?: CourseTarget): void;
+  /** Open the create-lesson hub (camera, gallery, paste, YouTube). */
+  openCreate(): void;
   /** Start (or continue to the next step of) the create-lesson flow. */
   startCreate(entry: CreateEntry): void;
   /**

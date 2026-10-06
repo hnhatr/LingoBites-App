@@ -5,6 +5,8 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
+import {mockAppNavigation} from '@test/support';
+
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
@@ -115,5 +117,13 @@ describe('LessonsHistoryScreen (Library hub)', () => {
   it('refreshes library data on focus', () => {
     renderHub();
     expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it('opens the create-lesson hub from the call to action', () => {
+    const tree = renderHub();
+    act(() => {
+      tree.root.findByProps({testID: 'library-create-lesson'}).props.onPress();
+    });
+    expect(mockAppNavigation.openCreate).toHaveBeenCalledTimes(1);
   });
 });
