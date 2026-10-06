@@ -28,7 +28,7 @@ function serverItem(
   n: number,
   kind: 'word' | 'phrase' | 'grammar',
   key: string,
-  payload: object,
+  payload: Record<string, unknown>,
   sentences: number[],
 ) {
   return {

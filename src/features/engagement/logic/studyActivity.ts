@@ -47,3 +47,22 @@ export function recordShadowingSessionActivity(
     return false;
   }
 }
+
+/** Records one finished quick-practice quiz. */
+export function recordPracticeSessionActivity(
+  lessonId: string,
+  completedAt = new Date().toISOString(),
+): boolean {
+  try {
+    insertGamificationEvent({
+      eventType: 'practice_session_completed',
+      sourceEventId: lessonId,
+      points: 0,
+      createdAt: completedAt,
+    });
+    return true;
+  } catch (error) {
+    console.log('[studyActivity] practice event write failed', error);
+    return false;
+  }
+}

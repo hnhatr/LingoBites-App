@@ -61,6 +61,8 @@ export interface AppNavigation {
    */
   finishCreate(lessonId: string): void;
   openReview(): void;
+  /** Open a quick-practice quiz generated from one downloaded lesson. */
+  openPractice(lessonId: string): void;
   /**
    * Open the full "Hôm nay" study-block screen, optionally pre-selecting a
    * study length.

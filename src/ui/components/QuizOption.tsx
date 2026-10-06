@@ -27,6 +27,7 @@ type Props = {
   onPress?: () => void;
   testID?: string;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
 };
 
 export function QuizOption({
@@ -38,6 +39,7 @@ export function QuizOption({
   onPress,
   testID,
   accessibilityLabel,
+  accessibilityHint,
 }: Props) {
   const {theme} = useAppTheme();
   const resolved: QuizOptionState =
@@ -120,6 +122,7 @@ export function QuizOption({
 
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
       accessibilityLabel={resolvedAccessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{

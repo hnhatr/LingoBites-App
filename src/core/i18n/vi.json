@@ -114,7 +114,40 @@
   },
   "practice": {
     "quick_empty_cause": "Chưa có bài học nào để luyện nhanh.",
-    "quick_empty_explain": "Luyện nhanh lấy câu từ các bài học bạn đã tạo."
+    "quick_empty_explain": "Luyện nhanh lấy câu từ các bài học bạn đã tạo.",
+    "title": "Luyện tập nhanh",
+    "close_a11y": "Đóng bài luyện tập",
+    "progress": "Câu {{current}}/{{total}}",
+    "progress_a11y": "Tiến độ luyện tập",
+    "prompt_meaning_choice": "Chọn nghĩa đúng của từ",
+    "prompt_cloze_choice": "Chọn từ điền vào chỗ trống",
+    "prompt_translation_choice": "Chọn bản dịch đúng",
+    "option_a11y": "Phương án {{key}}: {{text}}",
+    "feedback_correct": "Chính xác!",
+    "feedback_wrong": "Chưa đúng. Đáp án: {{answer}}",
+    "next": "Câu tiếp theo",
+    "finish": "Xem kết quả",
+    "result_title": "Kết quả",
+    "result_score": "{{correct}}/{{total}} câu đúng",
+    "result_accuracy": "Chính xác {{accuracy}}%",
+    "result_great": "Tuyệt vời! Bạn nắm vững bài này.",
+    "result_ok": "Khá tốt. Ôn lại vài từ nhé.",
+    "result_retry_hint": "Hãy thử lại để nhớ lâu hơn.",
+    "missed_title": "Từ cần ôn lại",
+    "missed_save_all": "Lưu tất cả vào flashcard",
+    "missed_save": "Lưu",
+    "missed_saved": "Đã lưu",
+    "missed_save_a11y": "Lưu từ {{word}} vào flashcard",
+    "retry": "Làm lại",
+    "back_to_lesson": "Về bài học",
+    "unavailable_not_downloaded": "Hãy tải bài học về máy để luyện tập.",
+    "unavailable_not_enough": "Bài này chưa đủ từ vựng hoặc câu để tạo bài luyện tập.",
+    "unavailable_disabled": "Tính năng luyện tập hiện chưa được bật.",
+    "entry_button": "Luyện tập nhanh",
+    "entry_hint": "Làm bài trắc nghiệm ngắn từ chính bài học này",
+    "close_hint": "Thoát khỏi bài luyện tập và quay lại bài học",
+    "missed_save_hint": "Thêm từ này vào danh sách flashcard để ôn tập",
+    "option_hint": "Chạm hai lần để chọn đáp án này"
   },
   "review": {
     "title": "Ôn tập hôm nay",
@@ -607,6 +640,7 @@
       "source_untitled": "Bài học",
       "sources_toggle_hint": "Mở hoặc đóng danh sách các bài học",
       "source_open_hint": "Mở bài học để xem từ này trong ngữ cảnh"
-    }
+    },
+    "practice_a11y": "Luyện tập nhanh bài {{title}}"
   }
 }

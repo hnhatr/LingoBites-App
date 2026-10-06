@@ -35,11 +35,11 @@ export const featureRegistry = [
   },
   {
     key: 'shortPractice',
-    module: 'src/features/review',
+    module: 'src/features/practice',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
-    entryPoint: 'Today tab -> DailyReview',
+    entryPoint: 'Lesson player -> Practice',
   },
   {
     key: 'pronunciationSupport',

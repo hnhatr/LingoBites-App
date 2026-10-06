@@ -17,5 +17,6 @@ export {getWeeklyGoalTarget, setWeeklyGoalTarget} from './logic/weeklyGoal';
 export {WEEKLY_GOAL_OPTIONS} from './logic/weeklyGoalPolicy';
 export {
   recordLessonCompletedActivity,
+  recordPracticeSessionActivity,
   recordShadowingSessionActivity,
 } from './logic/studyActivity';

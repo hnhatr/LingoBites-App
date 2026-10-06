@@ -18,6 +18,7 @@ export const mockAppNavigation: jest.Mocked<AppNavigation> = {
   startCreate: jest.fn(),
   finishCreate: jest.fn(),
   openReview: jest.fn(),
+  openPractice: jest.fn(),
   openToday: jest.fn(),
   openSpeakingRoom: jest.fn(),
   openShadowing: jest.fn(),
