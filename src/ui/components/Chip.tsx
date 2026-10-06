@@ -2,6 +2,7 @@ import React from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {useAppTheme} from '../theme';
+import {getStickerFace} from '../theme/hardShadow';
 import type {AppTheme} from '../theme/types';
 import {AppText} from './AppText';
 
@@ -94,6 +95,7 @@ export function Chip({
         borderColor: style.border,
         borderRadius: theme.radius.pill,
         borderWidth: 1,
+        ...getStickerFace(theme, 0, 1.5),
         paddingHorizontal: theme.spacing.md,
         paddingVertical: theme.spacing.xs,
       }}
