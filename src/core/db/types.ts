@@ -175,42 +175,15 @@ export type ReviewEventPayload = {
 
 export const REVIEW_EVENT_SCHEMA_VERSION = 1 as const;
 export const REVIEW_EVENT_TYPE = 'review' as const;
-export const PRACTICE_EVENT_TYPE = 'practice' as const;
 
 /**
  * Outbox event types (SETE-206 / P12). The `sync_outbox` table was already
  * generic (`event_type` column), but the type was narrowed to the review
- * literal. Practice answer events reuse the same transactional outbox;
- * review behaviour is unchanged.
+ * literal; the outbox carries review and generic sync-collection events.
  */
 export type SyncOutboxEventType = string;
 
-/**
- * Practice answer payload stored in the outbox (P12 / D4 allowlist).
- * Only source IDs + outcome + timing leave the device — never snapshot text.
- * Mirrors `AnswerEvent` minus the local `sync_status` bookkeeping field.
- */
-export type PracticeEventPayload = {
-  event_id: string;
-  contract_version: number;
-  session_id: string;
-  question_id: string;
-  sequence: number;
-  selected_option_id: string;
-  is_correct: boolean;
-  answered_at: string;
-  duration_ms: number;
-  try_index: number;
-  grading: {
-    mode: 'device_deterministic';
-    grader_version: string;
-  };
-};
-
-export type SyncOutboxPayload =
-  | ReviewEventPayload
-  | PracticeEventPayload
-  | Record<string, unknown>;
+export type SyncOutboxPayload = ReviewEventPayload | Record<string, unknown>;
 
 /** Row of the local `sync_outbox` table (see migrations.ts). */
 export type SyncOutboxRow = {

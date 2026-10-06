@@ -67,6 +67,37 @@ describe('canonical lesson contract mirror (Server integration/LING-149)', () =>
     }
   });
 
+  it('accepts a v2 snapshot that carries normalised items', () => {
+    const body = loadFixture('valid-lesson-snapshot-response.json') as {
+      lesson: Record<string, unknown>;
+    };
+    const parsed = LessonSnapshotResponseSchema.safeParse({
+      ...body,
+      contract_version: 2,
+      lesson: {
+        ...body.lesson,
+        items: [
+          {
+            id: '44444444-4444-4444-8444-444444444401',
+            kind: 'word',
+            item_key: 'coffee',
+            payload: {word: 'coffee', meaning_vi: 'cà phê'},
+            sentence_ids: [],
+            future_field: true,
+          },
+        ],
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('still parses a v1 snapshot without items', () => {
+    const parsed = LessonSnapshotResponseSchema.safeParse(
+      loadFixture('valid-lesson-snapshot-response.json'),
+    );
+    expect(parsed.success && parsed.data.lesson.items).toBeFalsy();
+  });
+
   it('rejects a contract_version mismatch instead of parsing leniently', () => {
     const body = loadFixture('valid-lesson-snapshot-response.json') as Record<
       string,

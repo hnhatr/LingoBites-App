@@ -85,37 +85,5 @@ export {useCanonicalLesson} from './logic/useCanonicalLesson';
 export type {CanonicalLessonViewState} from './logic/useCanonicalLesson';
 export {useLessonCreation} from './logic/useLessonCreation';
 export type {LessonCreationState} from './logic/useLessonCreation';
-export {
-  LEARNING_PROGRESS_CLIENT_FIXTURE_REVISION,
-  LEARNING_PROGRESS_CLIENT_DESIGN_REF,
-  LessonProgressStatusSchema,
-  LessonProgressSchema,
-  VocabularyProgressStatusSchema,
-  VocabularyProgressSchema,
-  AttemptResultSchema,
-  startLessonProgress,
-  completeLessonProgress,
-  listLessonProgress,
-  submitExerciseAttempt,
-  markVocabularySeen,
-  setVocabularyProgress,
-} from './logic/api/learningProgressClient';
-export type {
-  LessonProgressStatus,
-  LessonProgress,
-  VocabularyProgressStatus,
-  VocabularyProgress,
-  AttemptResult,
-  LearningAttemptAnswer,
-  LearningClientErrorKind,
-  LearningClientError,
-  StartLessonResult,
-  CompleteLessonResult,
-  LessonProgressListResult,
-  SubmitAttemptResult,
-  VocabularySeenResult,
-  SetVocabularyProgressResult,
-  LearningClientOptions,
-} from './logic/api/learningProgressClient';
 export {startLessonFromConfirmedText} from './logic/startLessonFromConfirmedText';
 export type {NavigateFn} from './logic/startLessonFromConfirmedText';

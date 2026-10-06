@@ -116,6 +116,38 @@ describe('lessonHubContent', () => {
     expect(entries[0]).toMatchObject({meaning: 'cà phê', ipa: 'ˈkɒfi'});
   });
 
+  it('reads Server snapshot items: catalog id as key, pronunciation as ipa', () => {
+    const catalogId = '44444444-4444-4444-8444-444444444401';
+    const entries = collectLessonVocabulary(
+      {
+        ...snapshot,
+        blocks: [
+          {
+            id: '22222222-2222-4222-8222-222222222208',
+            type: 'vocabulary',
+            position: 0,
+            title: null,
+            data: {
+              items: [
+                {
+                  id: catalogId,
+                  word: 'brew',
+                  meaning: 'pha',
+                  pronunciation: 'bruː',
+                  position: 0,
+                },
+              ],
+            },
+          },
+        ],
+      },
+      {},
+    );
+    expect(entries).toEqual([
+      {key: catalogId, word: 'brew', meaning: 'pha', ipa: 'bruː', pos: null},
+    ]);
+  });
+
   it('skips vocabulary block items without a word or meaning', () => {
     const entries = collectLessonVocabulary(
       {
