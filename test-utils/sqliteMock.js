@@ -15,6 +15,7 @@ function createMockDatabase() {
   const lessons = [];
   const appSettings = [];
   const flashcards = [];
+  const flashcardSources = [];
   const reviewSchedule = [];
   const reviewSessions = [];
   const audioAssets = [];
@@ -1008,6 +1009,7 @@ function createMockDatabase() {
         is_saved: params[13],
         created_at: params[14],
         updated_at: params[15],
+        item_key: params[16] ?? null,
       });
       return {rowsAffected: 1, insertId: flashcards.length};
     }
@@ -1061,13 +1063,34 @@ function createMockDatabase() {
 
     if (normalized.startsWith('update flashcards set is_saved = 1')) {
       const updatedAt = params[0];
-      const id = params[1];
+      // `... item_key = coalesce(item_key, ?) where id = ?` (schema v5) carries
+      // the key before the id; the legacy form carries only the id.
+      const id = params[params.length - 1];
       const row = flashcards.find(card => card.id === id);
       if (!row) {
         return {rowsAffected: 0};
       }
       row.is_saved = 1;
       row.updated_at = updatedAt;
+      if (params.length === 3 && (row.item_key ?? null) === null) {
+        row.item_key = params[1] ?? null;
+      }
+      return {rowsAffected: 1};
+    }
+
+    if (normalized.startsWith('insert or ignore into flashcard_sources')) {
+      const exists = flashcardSources.some(
+        row => row.card_id === params[0] && row.lesson_id === params[1],
+      );
+      if (exists) {
+        return {rowsAffected: 0};
+      }
+      flashcardSources.push({
+        card_id: params[0],
+        lesson_id: params[1],
+        source_sentence: params[2],
+        created_at: params[3],
+      });
       return {rowsAffected: 1};
     }
 
@@ -1260,6 +1283,17 @@ function createMockDatabase() {
       return toRows(typeof limit === 'number' ? due.slice(0, limit) : due);
     }
 
+    if (
+      normalized.includes('from flashcards where item_key = ?') &&
+      normalized.includes('tombstone')
+    ) {
+      return toRows(
+        flashcards.filter(
+          row => row.item_key === params[0] && !(row.tombstone ?? 0),
+        ),
+      );
+    }
+
     if (normalized.includes('from flashcards')) {
       let rows = [...flashcards];
       if (normalized.includes('is_saved = 1')) {
@@ -1267,7 +1301,16 @@ function createMockDatabase() {
       }
       if (normalized.includes('lesson_id = ?')) {
         const lessonId = params[params.length - 1];
-        rows = rows.filter(row => row.lesson_id === lessonId);
+        const viaSources = normalized.includes('flashcard_sources');
+        rows = rows.filter(
+          row =>
+            row.lesson_id === lessonId ||
+            (viaSources &&
+              flashcardSources.some(
+                source =>
+                  source.card_id === row.id && source.lesson_id === lessonId,
+              )),
+        );
       }
       rows.sort((a, b) =>
         String(a.created_at).localeCompare(String(b.created_at)),
@@ -2159,6 +2202,7 @@ function createMockDatabase() {
         lessons,
         app_settings: appSettings,
         flashcards,
+        flashcard_sources: flashcardSources,
         review_schedule: reviewSchedule,
         review_sessions: reviewSessions,
         audio_assets: audioAssets,
@@ -2204,6 +2248,7 @@ function createMockDatabase() {
         lessons,
         app_settings: appSettings,
         flashcards,
+        flashcard_sources: flashcardSources,
         review_schedule: reviewSchedule,
         review_sessions: reviewSessions,
         audio_assets: audioAssets,

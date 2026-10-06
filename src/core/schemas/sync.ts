@@ -60,6 +60,7 @@ export const SyncCollectionSchema = z.enum([
   'first_listen_attempts',
   'passed_situations',
   'speaking_attempts',
+  'activity_attempts',
 ]);
 
 export type SyncCollection = z.infer<typeof SyncCollectionSchema>;
@@ -235,4 +236,42 @@ export const SpeakingAttemptPayloadSchema = z
 
 export type SpeakingAttemptPayload = z.infer<
   typeof SpeakingAttemptPayloadSchema
+>;
+
+/**
+ * `activity_attempts` push payload (mirror of the Server's
+ * `ActivityAttemptPushPayloadSchema`): identifiers, outcome and timing only,
+ * never lesson or answer text. `entity_id` is the attempt uuid.
+ */
+export const ActivityAttemptKindValues = [
+  'review',
+  'practice',
+  'game',
+] as const;
+
+export const ActivityAttemptResultValues = [
+  'correct',
+  'incorrect',
+  'skipped',
+] as const;
+
+export const ActivityAttemptPayloadSchema = z
+  .object({
+    kind: z.enum(ActivityAttemptKindValues),
+    activity: z
+      .string()
+      .min(1)
+      .max(64)
+      .regex(/^[a-z0-9_]+$/),
+    lesson_id: z.string().uuid().nullable(),
+    item_key: z.string().trim().min(1).max(255).nullable(),
+    session_id: z.string().uuid().nullable(),
+    result: z.enum(ActivityAttemptResultValues),
+    score: z.number().min(0).max(1).nullable(),
+    duration_ms: z.number().int().min(0).max(3_600_000),
+  })
+  .strict();
+
+export type ActivityAttemptPayload = z.infer<
+  typeof ActivityAttemptPayloadSchema
 >;

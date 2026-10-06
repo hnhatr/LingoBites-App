@@ -288,6 +288,9 @@ export function applySyncRecord(
     payload.created_at = payload.created_at ?? record.occurred_at;
   } else if (record.collection === 'review_schedules') {
     payload.card_id = payload.card_id ?? record.entity_id;
+  } else if (record.collection === 'activity_attempts') {
+    payload.id = payload.id ?? record.entity_id;
+    payload.occurred_at = payload.occurred_at ?? record.occurred_at;
   }
 
   // Extract PK values
