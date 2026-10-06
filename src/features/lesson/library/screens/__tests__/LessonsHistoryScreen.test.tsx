@@ -1,4 +1,5 @@
 import React from 'react';
+import {InteractionManager} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
@@ -70,6 +71,13 @@ describe('LessonsHistoryScreen (Library hub)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Run the post-paint count load immediately.
+    jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation(((
+      task: () => void,
+    ) => {
+      task();
+      return {then: jest.fn(), done: jest.fn(), cancel: jest.fn()};
+    }) as any);
     mockLessons = [
       card('a', 'learner_text'),
       card('b', 'learner_ocr'),
