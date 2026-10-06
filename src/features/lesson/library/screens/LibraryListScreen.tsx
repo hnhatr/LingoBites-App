@@ -55,9 +55,9 @@ export function LibraryListScreen({navigation, route}: Props) {
     setGrammarFilter,
     refresh,
   } = useLibrarySegments({
-    lessons: ready && isOwnLessonSection(section),
-    vocabulary: ready && section.id === 'vocabulary',
-    grammar: ready && section.id === 'grammar',
+    lessons: isOwnLessonSection(section),
+    vocabulary: section.id === 'vocabulary',
+    grammar: section.id === 'grammar',
   });
 
   useRefreshOnRefocus(refresh);
