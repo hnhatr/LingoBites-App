@@ -30,7 +30,6 @@ import {getHardShadow} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
 const GRID_PALETTE = {
-  borderInk: '#1c1c10',
   badgeText: '#ffffff',
 };
 
@@ -199,27 +198,27 @@ function makeStyles(theme: AppTheme) {
       minWidth: 140,
     },
     tile: {
-      borderColor: GRID_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 20,
       borderWidth: 2,
       gap: 6,
       minHeight: 118,
       padding: 14,
       position: 'relative',
-      ...getHardShadow(4),
+      ...getHardShadow(4, theme.colors.ink),
     },
     disabledTile: {
       opacity: 0.45,
-      ...getHardShadow(2),
+      ...getHardShadow(2, theme.colors.ink),
     },
     pressedTile: {
       transform: [{translateY: 3}],
-      ...getHardShadow(1),
+      ...getHardShadow(1, theme.colors.ink),
     },
     iconBox: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: GRID_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 14,
       borderWidth: 2,
       height: 44,
@@ -237,7 +236,7 @@ function makeStyles(theme: AppTheme) {
     },
     badge: {
       backgroundColor: theme.colors.secondary,
-      borderColor: GRID_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 999,
       borderWidth: 2,
       paddingHorizontal: 9,

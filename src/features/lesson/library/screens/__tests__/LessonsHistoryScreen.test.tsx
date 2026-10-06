@@ -68,7 +68,7 @@ jest.mock('@features/lesson/player', () => {
   };
 });
 
-const mockGetDueFlashcards = jest.fn(() => []);
+const mockGetDueFlashcards = jest.fn((): unknown[] => [{}, {}]);
 
 jest.mock('@features/review', () => ({
   useFlashcardLibrary: () => ({

@@ -18,13 +18,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import {Circle, G, Line, Path, Svg} from 'react-native-svg';
 
+import {useAppTheme} from '@ui/theme';
+
 import {CONFETTI_COLORS, type TimeOfDay} from '../logic/homeScreenModel';
 import {HomeIcon} from './HomeSvgIcons';
 
 // ---------------------------------------------------------------------------
 // Hard shadow helper (§VS-0, R-001)
 // ---------------------------------------------------------------------------
-export function getHardShadow(offset: number, color = '#1c1c10') {
+export function getHardShadow(offset: number, color: string) {
   return {
     shadowColor: color,
     shadowOffset: {width: 0, height: offset},
@@ -50,6 +52,7 @@ const TOD_BG: Record<TimeOfDay, string> = {
 };
 
 export function TimeOfDayBadge({timeOfDay, testID}: TODBadgeProps) {
+  const {theme} = useAppTheme();
   const reducedMotion = useReducedMotion();
   const rotation = useSharedValue(0);
   const twinkle = useSharedValue(1);
@@ -92,7 +95,14 @@ export function TimeOfDayBadge({timeOfDay, testID}: TODBadgeProps) {
 
   return (
     <View
-      style={[styles.todBadgeContainer, {backgroundColor: TOD_BG[timeOfDay]}]}
+      style={[
+        styles.todBadgeContainer,
+        {
+          backgroundColor: TOD_BG[timeOfDay],
+          borderColor: theme.colors.ink,
+          ...getHardShadow(3, theme.colors.ink),
+        },
+      ]}
       testID={testID ?? `home-tod-badge-${timeOfDay}`}
     >
       {isNight ? (
@@ -423,18 +433,14 @@ export function ConfettiOverlay({
 export const ConfettiParticles = ConfettiOverlay;
 export const HomeWaveDecoration = HomeHeroWaves;
 
-const BORDER_INK = '#1c1c10';
-
 const styles = StyleSheet.create({
   todBadgeContainer: {
     alignItems: 'center',
     borderRadius: 23,
     borderWidth: 2,
-    borderColor: BORDER_INK,
     height: 46,
     justifyContent: 'center',
     width: 46,
-    ...getHardShadow(3),
   },
   wavesContainer: {
     bottom: -2,

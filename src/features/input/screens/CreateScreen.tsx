@@ -22,6 +22,7 @@ export type CreateScreenProps = Props;
 type Tile = {
   icon: 'add_photo_alternate' | 'play_circle' | 'content_paste';
   labelKey: string;
+  descKey: string;
   a11yKey: string;
   onPress: () => void;
   testID: string;
@@ -69,6 +70,7 @@ export function CreateScreen(_props: Props) {
     tiles.push({
       icon: 'add_photo_alternate',
       labelKey: 'home.upload_image',
+      descKey: 'create.source_gallery_desc',
       a11yKey: 'home.upload_image_a11y',
       onPress: openGallery,
       testID: 'create-tile-gallery',
@@ -78,6 +80,7 @@ export function CreateScreen(_props: Props) {
     tiles.push({
       icon: 'play_circle',
       labelKey: 'home.youtube',
+      descKey: 'create.source_youtube_desc',
       a11yKey: 'home.youtube_a11y',
       onPress: openYoutubeCreation,
       testID: 'create-tile-youtube',
@@ -87,6 +90,7 @@ export function CreateScreen(_props: Props) {
     tiles.push({
       icon: 'content_paste',
       labelKey: 'home.paste_text',
+      descKey: 'create.source_paste_desc',
       a11yKey: 'home.paste_text_a11y',
       onPress: () => appNavigation.startCreate({kind: 'paste'}),
       testID: 'create-tile-paste',
@@ -156,7 +160,10 @@ export function CreateScreen(_props: Props) {
               </Pressable>
             ) : null}
             {tiles.length > 0 ? (
-              <View style={styles.tileRow}>
+              <View style={styles.sourceList}>
+                <AppText variant="label" color="secondary">
+                  {t('create.more_ways')}
+                </AppText>
                 {tiles.map(tile => (
                   <Pressable
                     accessibilityLabel={t(tile.a11yKey)}
@@ -164,19 +171,35 @@ export function CreateScreen(_props: Props) {
                     key={tile.testID}
                     onPress={tile.onPress}
                     style={({pressed}) => [
-                      styles.tile,
+                      styles.sourceRow,
                       pressed && styles.pressed,
                     ]}
                     testID={tile.testID}
                   >
+                    <View style={styles.sourceIcon}>
+                      <MaterialIcon
+                        color={theme.colors.primary}
+                        name={tile.icon}
+                        size={24}
+                      />
+                    </View>
+                    <View style={styles.sourceCopy}>
+                      <AppText variant="label" numberOfLines={1}>
+                        {t(tile.labelKey)}
+                      </AppText>
+                      <AppText
+                        variant="caption"
+                        color="secondary"
+                        numberOfLines={2}
+                      >
+                        {t(tile.descKey)}
+                      </AppText>
+                    </View>
                     <MaterialIcon
-                      color={theme.colors.primary}
-                      name={tile.icon}
+                      color={theme.colors.text.muted}
+                      name="chevron_right"
                       size={22}
                     />
-                    <AppText style={styles.tileLabel} numberOfLines={2}>
-                      {t(tile.labelKey)}
-                    </AppText>
                   </Pressable>
                 ))}
               </View>
@@ -263,27 +286,27 @@ function makeStyles(theme: AppTheme) {
       color: theme.colors.onPrimaryContainer,
       textAlign: 'center',
     },
-    tileRow: {flexDirection: 'row', gap: theme.spacing.sm},
-    tile: {
+    sourceList: {gap: theme.spacing.sm},
+    sourceRow: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outline,
-      borderRadius: 20,
-      borderWidth: 1.5,
-      flex: 1,
-      gap: theme.spacing.sm,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.radius.lg,
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: theme.spacing.md,
+      minHeight: 72,
+      padding: theme.spacing.md,
+    },
+    sourceIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: theme.radius.pill,
+      height: 44,
       justifyContent: 'center',
-      minHeight: 88,
-      minWidth: 0,
-      padding: theme.spacing.sm,
+      width: 44,
     },
-    tileLabel: {
-      color: theme.colors.text.primary,
-      fontSize: 13.5,
-      fontWeight: theme.typography.weight.medium,
-      lineHeight: 17,
-      textAlign: 'center',
-    },
+    sourceCopy: {flex: 1, gap: 2, minWidth: 0},
     historyLink: {
       alignItems: 'center',
       flexDirection: 'row',

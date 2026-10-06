@@ -35,16 +35,6 @@ type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
 
 export type LessonsHistoryScreenProps = Props;
 
-type PracticeChip = {
-  icon: 'refresh' | 'mic' | 'bolt';
-  value: string;
-  labelKey: string;
-  backgroundKey: 'accentSoft' | 'tertiarySoft' | 'secondarySoft';
-  inkKey: 'primary' | 'onTertiaryContainer' | 'secondary';
-  onPress: () => void;
-  testID: string;
-};
-
 export function LessonsHistoryScreen(_props: Props) {
   const navigation = useAppNavigation();
   const {theme} = useAppTheme();
@@ -78,29 +68,6 @@ export function LessonsHistoryScreen(_props: Props) {
     }, [refresh, refreshCatalog, getDueFlashcards]),
   );
 
-  const practiceChips: PracticeChip[] = useMemo(() => {
-    return [
-      {
-        icon: 'refresh',
-        value: t('home.shortcut_review_meta', {count: dueCount}),
-        labelKey: 'home.shortcut_review',
-        backgroundKey: 'accentSoft',
-        inkKey: 'primary',
-        onPress: () => navigation.openReview(),
-        testID: 'library-practice-review',
-      },
-      {
-        icon: 'mic',
-        value: t('home.shortcut_speaking_meta'),
-        labelKey: 'home.shortcut_speaking',
-        backgroundKey: 'tertiarySoft',
-        inkKey: 'onTertiaryContainer',
-        onPress: () => navigation.openSpeakingRoom(),
-        testID: 'library-practice-speaking',
-      },
-    ];
-  }, [dueCount, navigation, t]);
-
   const catalogLessons = useMemo(
     () =>
       catalogState.status === 'ready'
@@ -133,47 +100,60 @@ export function LessonsHistoryScreen(_props: Props) {
   return (
     <AppScreen>
       <View style={themedStyles.header}>
-        <AppText style={themedStyles.title}>Thư viện</AppText>
+        <AppText variant="h2" style={themedStyles.title}>
+          {t('library.title')}
+        </AppText>
+        <Pressable
+          accessibilityLabel={t('library.speaking_a11y')}
+          accessibilityRole="button"
+          onPress={() => navigation.openSpeakingRoom()}
+          style={({pressed}) => [
+            themedStyles.speakingButton,
+            pressed && themedStyles.pressed,
+          ]}
+          testID="library-practice-speaking"
+        >
+          <MaterialIcon
+            color={theme.colors.onTertiaryContainer}
+            name="mic"
+            size={22}
+          />
+        </Pressable>
       </View>
 
-      <View style={themedStyles.practiceRow} testID="library-practice-row">
-        {practiceChips.map(chip => (
+      {dueCount > 0 ? (
+        <View style={themedStyles.practiceRow} testID="library-practice-row">
           <Pressable
-            accessibilityLabel={`${t(chip.labelKey)}. ${chip.value}`}
+            accessibilityLabel={`${t('library.review_banner_cta')}. ${t(
+              'library.review_banner_due',
+              {count: dueCount},
+            )}`}
             accessibilityRole="button"
-            key={chip.testID}
-            onPress={chip.onPress}
+            onPress={() => navigation.openReview()}
             style={({pressed}) => [
-              themedStyles.practiceChip,
-              {backgroundColor: theme.colors[chip.backgroundKey]},
+              themedStyles.reviewBanner,
               pressed && themedStyles.pressed,
             ]}
-            testID={chip.testID}
+            testID="library-practice-review"
           >
             <MaterialIcon
-              color={theme.colors[chip.inkKey]}
-              name={chip.icon}
+              color={theme.colors.primary}
+              name="refresh"
               size={20}
             />
-            <View style={themedStyles.practiceCopy}>
-              <AppText
-                variant="label"
-                style={{color: theme.colors[chip.inkKey]}}
-                numberOfLines={1}
-              >
-                {t(chip.labelKey)}
-              </AppText>
-              <AppText
-                variant="caption"
-                style={{color: theme.colors[chip.inkKey]}}
-                numberOfLines={1}
-              >
-                {chip.value}
-              </AppText>
-            </View>
+            <AppText
+              variant="label"
+              style={themedStyles.reviewText}
+              numberOfLines={1}
+            >
+              {t('library.review_banner_due', {count: dueCount})}
+            </AppText>
+            <AppText variant="label" style={themedStyles.reviewCta}>
+              {t('library.review_banner_cta')}
+            </AppText>
           </Pressable>
-        ))}
-      </View>
+        </View>
+      ) : null}
 
       <SegmentedTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -228,31 +208,38 @@ export function LessonsHistoryScreen(_props: Props) {
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       paddingHorizontal: theme.gutter,
       paddingVertical: theme.spacing.md,
     },
     title: {
-      fontSize: theme.typography.size.lg,
-      fontWeight: '700',
-      color: theme.colors.primary,
+      color: theme.colors.text.primary,
+    },
+    speakingButton: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: theme.radius.pill,
+      height: 44,
+      justifyContent: 'center',
+      width: 44,
     },
     practiceRow: {
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
+      paddingBottom: theme.spacing.sm,
       paddingHorizontal: theme.gutter,
     },
-    practiceChip: {
+    reviewBanner: {
       alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
       borderRadius: theme.radius.lg,
-      flex: 1,
       flexDirection: 'row',
       gap: theme.spacing.sm,
-      minHeight: 56,
-      minWidth: 0,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.sm,
+      minHeight: 48,
+      paddingHorizontal: theme.spacing.md,
     },
-    practiceCopy: {flex: 1, gap: 0, minWidth: 0},
+    reviewText: {color: theme.colors.text.primary, flex: 1},
+    reviewCta: {color: theme.colors.primary},
     pressed: {opacity: theme.states.pressedOpacity},
     tabContent: {
       flex: 1,

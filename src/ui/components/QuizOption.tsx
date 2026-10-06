@@ -6,12 +6,6 @@ import {AppText} from './AppText';
 
 export type QuizOptionState = 'default' | 'selected' | 'correct' | 'wrong';
 
-/**
- * Coral 10%-alpha fill for the `wrong` state, matching
- * `design/app.css` (`.quiz-opt.wrong`).
- */
-const WRONG_BACKGROUND = 'rgba(254,116,136,0.1)';
-
 type Props = {
   label: string;
   /** Key shown in the leading circle (e.g. "A", "B", "C"). Omit to hide it. */
@@ -57,7 +51,7 @@ export function QuizOption({
     keyBackground = theme.colors.accent;
     keyColor = theme.colors.accentInk;
   } else if (resolved === 'wrong') {
-    backgroundColor = WRONG_BACKGROUND;
+    backgroundColor = theme.colors.secondarySoft;
     borderColor = theme.colors.secondaryContainer;
     keyBackground = theme.colors.secondaryContainer;
     keyColor = theme.colors.text.inverse;

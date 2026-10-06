@@ -11,6 +11,10 @@
     }
   },
   "create": {
+    "more_ways": "Cách khác để tạo bài",
+    "source_gallery_desc": "Chọn ảnh có sẵn trong thư viện máy",
+    "source_youtube_desc": "Xem video và học từ phụ đề",
+    "source_paste_desc": "Dán đoạn văn bản bạn muốn học",
     "title": "Tạo bài học mới",
     "subtitle": "Biến ảnh, văn bản hoặc video thành bài học của bạn.",
     "empty_title": "Chưa có cách tạo bài nào",
@@ -628,6 +632,10 @@
     "retry_hint": "Tải lại giáo trình"
   },
   "library": {
+    "title": "Thư viện",
+    "review_banner_cta": "Ôn tập ngay",
+    "review_banner_due": "{{count}} thẻ đến hạn",
+    "speaking_a11y": "Mở phòng luyện nói",
     "vocabulary": {
       "save_a11y": "Lưu từ này",
       "unsave_a11y": "Bỏ lưu từ này",

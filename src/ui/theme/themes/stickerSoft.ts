@@ -31,6 +31,7 @@ export const stickerSoftTheme: AppTheme = {
     accentInk: '#00413a',
     accentSoft: '#cdf3ee',
     danger: '#ba1a1a',
+    ink: '#1c1c10',
     overlayLight: 'rgba(255,255,255,0.34)',
     overlay: 'rgba(0,0,0,0.55)',
     onOverlay: '#ffffff',
