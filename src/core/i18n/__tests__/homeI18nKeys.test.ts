@@ -71,8 +71,8 @@ const HOME_KEYS = [
   'home.shortcut_review_none',
   'home.shortcut_speaking',
   'home.shortcut_speaking_sub',
-  'home.shortcut_lessons',
-  'home.shortcut_lessons_sub',
+  'home.shortcut_create',
+  'home.shortcut_create_sub',
   // Saved rail (§VS-5, §VS-8)
   'home.saved_rail_title',
   'home.saved_rail_view_all',
@@ -194,11 +194,11 @@ describe('§VS-8 exact copy assertions', () => {
       resolveKey(vi as Record<string, unknown>, 'home.shortcut_speaking_sub'),
     ).toBe('Phòng nói & shadowing');
     expect(
-      resolveKey(vi as Record<string, unknown>, 'home.shortcut_lessons'),
-    ).toBe('Thư viện');
+      resolveKey(vi as Record<string, unknown>, 'home.shortcut_create'),
+    ).toBe('Tạo bài học');
     expect(
-      resolveKey(vi as Record<string, unknown>, 'home.shortcut_lessons_sub'),
-    ).toBe('Tất cả bài học');
+      resolveKey(vi as Record<string, unknown>, 'home.shortcut_create_sub'),
+    ).toBe('Từ văn bản, ảnh, video');
   });
 
   it('saved_rail_empty matches approved copy', () => {

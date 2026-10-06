@@ -264,12 +264,12 @@ export function useHomeScreenController() {
   );
 
   const openVideoCell = useCallback(
-    () => navigation.goToTab('Create'),
+    () => navigation.startCreate({kind: 'youtube'}),
     [navigation],
   );
 
   const onNavigateCreate = useCallback(
-    () => navigation.goToTab('Create'),
+    () => navigation.openCreate(),
     [navigation],
   );
 

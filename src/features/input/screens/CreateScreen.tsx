@@ -5,8 +5,8 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {getHardShadow} from '@ui/theme/hardShadow';
@@ -15,9 +15,9 @@ import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 
-import type {CreateStackParamList} from './navigationTypes';
+import type {CreateFlowParamList} from './navigationTypes';
 
-type Props = NativeStackScreenProps<CreateStackParamList, 'CreateMain'>;
+type Props = NativeStackScreenProps<CreateFlowParamList, 'CreateHub'>;
 
 export type CreateScreenProps = Props;
 
@@ -31,14 +31,13 @@ type Tile = {
 };
 
 /**
- * Lesson-creation tab (SETE-247): the four input sources moved intact from
+ * Lesson-creation hub (SETE-247), pushed from Home and the Library: the four input sources moved intact from
  * Home. All tiles share one visual style so equal-weight actions read as
  * equal — the only solid block on this screen is the camera hero.
  */
 export function CreateScreen(_props: Props) {
   const appNavigation = useAppNavigation();
   const {theme} = useAppTheme();
-  const feedClearance = useFloatingTabBarClearance();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
   const {config} = useFeatureFlags();
@@ -102,15 +101,16 @@ export function CreateScreen(_props: Props) {
 
   return (
     <AppScreen>
+      <ScreenHeader
+        title={t('create.title')}
+        onBack={appNavigation.goBack}
+        numberOfLines={1}
+      />
       <View style={styles.header}>
-        <AppText variant="h2">{t('create.title')}</AppText>
         <AppText color="secondary">{t('create.subtitle')}</AppText>
       </View>
       <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          {paddingBottom: feedClearance},
-        ]}
+        contentContainerStyle={[styles.scrollContent]}
         showsVerticalScrollIndicator={false}
       >
         {!hasAnySource ? (
@@ -255,7 +255,6 @@ function makeStyles(theme: AppTheme) {
     header: {
       gap: theme.spacing.xs,
       paddingHorizontal: theme.gutter,
-      paddingTop: theme.spacing.md,
     },
     scrollContent: {
       gap: theme.spacing.md,

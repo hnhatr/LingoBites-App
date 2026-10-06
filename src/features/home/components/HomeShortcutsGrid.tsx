@@ -6,7 +6,7 @@
  *   1. video    -> accentSoft / primary
  *   2. review   -> tertiarySoft / onTertiaryContainer
  *   3. speaking -> secondarySoft / secondary
- *   4. lessons  -> surfaceContainer / text.primary
+ *   4. create   -> surfaceContainer / text.primary
  *
  * Motion (§VS-7):
  *   - I6 (press wiggle +/-10° over 500ms): off under RM
@@ -44,7 +44,7 @@ const STATIC_TILT: Record<ShortcutKey, number> = {
   video: -6,
   review: 5,
   speaking: -6,
-  lessons: 5,
+  create: 5,
 };
 
 const BG_MAP: Record<
@@ -54,7 +54,7 @@ const BG_MAP: Record<
   video: 'accentSoft',
   review: 'tertiarySoft',
   speaking: 'secondarySoft',
-  lessons: 'surfaceContainer',
+  create: 'surfaceContainer',
 };
 
 const INK_MAP: Record<
@@ -64,7 +64,7 @@ const INK_MAP: Record<
   video: 'primary',
   review: 'onTertiaryContainer',
   speaking: 'secondary',
-  lessons: 'text.primary',
+  create: 'text.primary',
 };
 
 function ShortcutCell({

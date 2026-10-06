@@ -25,6 +25,7 @@ type RootRouteName = keyof RootStackParamList;
 
 /** Root routes that belong to the create-lesson flow. */
 export const CREATE_FLOW_ROUTES: ReadonlySet<string> = new Set([
+  'CreateHub',
   'PasteText',
   'ImageCapture',
   'OCRReview',
@@ -80,7 +81,7 @@ export function createAppNavigation(
 
   const openCourse = (target?: CourseTarget) => {
     if (!target) {
-      navigate('CourseList', undefined);
+      navigate('Tabs', {screen: 'Courses'});
       return;
     }
     switch (target.kind) {
@@ -131,6 +132,7 @@ export function createAppNavigation(
     openLesson: lessonId => navigate('CanonicalLessonPlayer', {lessonId}),
     openCatalog: () => navigate('CanonicalCatalog', undefined),
     openCourse,
+    openCreate: () => navigate('CreateHub', undefined),
     startCreate,
     finishCreate,
     openReview: () => navigate('DailyReview', undefined),

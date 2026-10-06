@@ -2,6 +2,7 @@ export type {
   CourseFlowParamList,
   CourseLevelsRouteParams,
   CourseListRouteParams,
+  CoursesStackParamList,
   LevelUnitsRouteParams,
   UnitLessonsRouteParams,
 } from './screens/navigationTypes';

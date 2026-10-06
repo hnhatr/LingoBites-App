@@ -7,13 +7,13 @@ import type {
 } from '@features/account';
 import type {
   CourseLevelsRouteParams,
-  CourseListRouteParams,
+  CoursesStackParamList,
   LevelUnitsRouteParams,
   UnitLessonsRouteParams,
 } from '@features/course';
 import type {HomeStackParamList} from '@features/home';
 import type {
-  CreateStackParamList,
+  CreateHubRouteParams,
   ImageCaptureRouteParams,
   PasteTextRouteParams,
 } from '@features/input';
@@ -36,7 +36,7 @@ import type {
 import type {TodayRouteParams} from '@features/today';
 
 export type {
-  CreateStackParamList,
+  CoursesStackParamList,
   HomeStackParamList,
   LessonsStackParamList,
   ProfileStackParamList,
@@ -45,7 +45,7 @@ export type {
 /** Each tab holds only its hub screen (plus Profile's settings pages). */
 export type RootTabParamList = {
   Home: NavigatorScreenParams<HomeStackParamList> | undefined;
-  Create: NavigatorScreenParams<CreateStackParamList> | undefined;
+  Courses: NavigatorScreenParams<CoursesStackParamList> | undefined;
   Lessons: NavigatorScreenParams<LessonsStackParamList> | undefined;
   Profile: NavigatorScreenParams<ProfileStackParamList> | undefined;
 };
@@ -60,6 +60,7 @@ export type RootStackParamList = {
   Onboarding: OnboardingRouteParams;
   AccountSwitch: AccountSwitchRouteParams;
   // Create-lesson flow
+  CreateHub: CreateHubRouteParams;
   PasteText: PasteTextRouteParams;
   ImageCapture: ImageCaptureRouteParams;
   OCRReview: OCRReviewRouteParams;
@@ -68,7 +69,6 @@ export type RootStackParamList = {
   CanonicalCatalog: CanonicalCatalogRouteParams;
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
   // Structured curriculum (Course → Level → Unit → Lesson)
-  CourseList: CourseListRouteParams;
   CourseLevels: CourseLevelsRouteParams;
   LevelUnits: LevelUnitsRouteParams;
   UnitLessons: UnitLessonsRouteParams;

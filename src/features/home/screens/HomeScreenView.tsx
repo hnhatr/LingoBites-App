@@ -74,8 +74,8 @@ export function HomeScreenView(props: HomeScreenViewModel) {
       case 'speaking':
         onNavigateSpeaking();
         break;
-      case 'lessons':
-        onNavigateLessonList();
+      case 'create':
+        onNavigateCreate();
         break;
     }
   };

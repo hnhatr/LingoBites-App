@@ -5,7 +5,7 @@
   "nav": {
     "tab": {
       "home": "Trang chủ",
-      "create": "Tạo bài",
+      "courses": "Khóa học",
       "library": "Thư viện",
       "profile": "Hồ sơ"
     }
@@ -75,7 +75,7 @@
     "mascot_in_progress": "Sắp xong rồi, cố lên!",
     "mascot_goal_met": "Giỏi quá! Meo meo!",
     "mascot_youtube_disabled": "Học từ văn bản cũng rất hiệu quả!",
-    "shortcut_lessons": "Thư viện",
+    "shortcut_create": "Tạo bài học",
     "shortcut_video": "Học qua video",
     "saved_rail_title": "Bài đã lưu",
     "saved_rail_view_all": "Xem tất cả",
@@ -102,7 +102,7 @@
     "shortcut_review_due_other": "{{count}} thẻ đến hạn",
     "shortcut_review_none": "Chưa có thẻ đến hạn",
     "shortcut_speaking_sub": "Phòng nói & shadowing",
-    "shortcut_lessons_sub": "Tất cả bài học",
+    "shortcut_create_sub": "Từ văn bản, ảnh, video",
     "today_label": "Gợi ý hôm nay",
     "today_mode_5": "⚡ 5 phút",
     "today_mode_20": "🎯 20 phút",
