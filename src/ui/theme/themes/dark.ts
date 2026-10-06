@@ -118,7 +118,7 @@ export const darkTheme: AppTheme = {
         radius: 8,
       },
     },
-    card: {background: '#1e293b', radius: 8, padding: 12, shadow: 'medium'},
+    card: {background: '#1e293b', radius: 20, padding: 16, shadow: 'medium'},
     input: {
       background: '#1e293b',
       text: '#f8fafc',

@@ -12,6 +12,8 @@ import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {solidOver} from '@ui/theme/colorUtils';
+import {getHardShadow} from '@ui/theme/hardShadow';
 
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
@@ -219,8 +221,13 @@ function makeStyles(theme: AppTheme) {
     },
     speakingButton: {
       alignItems: 'center',
-      backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: theme.radius.pill,
+      backgroundColor: solidOver(
+        theme.colors.tertiarySoft,
+        theme.colors.surface,
+      ),
+      borderColor: theme.colors.ink,
+      borderRadius: 14,
+      borderWidth: 2,
       height: 44,
       justifyContent: 'center',
       width: 44,
@@ -231,11 +238,14 @@ function makeStyles(theme: AppTheme) {
     },
     reviewBanner: {
       alignItems: 'center',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.lg,
+      backgroundColor: solidOver(theme.colors.accentSoft, theme.colors.surface),
+      borderColor: theme.colors.ink,
+      borderRadius: 20,
+      borderWidth: 2,
       flexDirection: 'row',
       gap: theme.spacing.sm,
       minHeight: 48,
+      ...getHardShadow(3, theme.colors.ink),
       paddingHorizontal: theme.spacing.md,
     },
     reviewText: {color: theme.colors.text.primary, flex: 1},

@@ -24,6 +24,7 @@ import Animated, {
 
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {solidOver} from '@ui/theme/colorUtils';
 
 import type {ShortcutItem, ShortcutKey} from '../logic/homeScreenModel';
 import {getHardShadow} from './HomeDecorations';
@@ -97,7 +98,11 @@ function ShortcutCell({
     transform: [{rotate: `${baseTilt + wiggle.value}deg`}],
   }));
 
-  const backgroundColor = theme.colors[BG_MAP[item.key]];
+  // Opaque: the hard shadow would otherwise bleed through the tint.
+  const backgroundColor = solidOver(
+    theme.colors[BG_MAP[item.key]],
+    theme.colors.surface,
+  );
   const inkKey = INK_MAP[item.key];
   const ink =
     inkKey === 'text.primary'
