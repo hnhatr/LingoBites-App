@@ -29,13 +29,13 @@ import {
   LessonCreationScreen,
 } from '@features/lesson/player';
 import {OCRReviewScreen} from '@features/ocr';
+import {PracticeScreen} from '@features/practice';
 import {
   FeatureStatusScreen,
   PrivacyNoteScreen,
   ProfileScreen,
   ProgressReportScreen,
 } from '@features/profile';
-import {PracticeScreen} from '@features/practice';
 import {DailyReviewScreen} from '@features/review';
 import {
   ShadowingLessonPickerScreen,
