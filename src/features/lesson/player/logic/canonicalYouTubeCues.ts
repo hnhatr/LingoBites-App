@@ -24,6 +24,25 @@ export function activeSentenceIndexAt(
   return null;
 }
 
+/**
+ * Index of the last cued sentence that has started by `positionMs`. Unlike
+ * `activeSentenceIndexAt` it bridges gaps between cues, so cards that follow
+ * the video never stall while no cue contains the position.
+ */
+export function startedSentenceIndexAt(
+  sentences: LessonSentence[],
+  positionMs: number,
+): number | null {
+  let found: number | null = null;
+  for (let index = 0; index < sentences.length; index += 1) {
+    const start = sentences[index].start_ms;
+    if (start === null) continue;
+    if (start > positionMs) break;
+    found = index;
+  }
+  return found;
+}
+
 /** `m:ss` label for a cue bound. */
 export function formatCueTimestamp(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));

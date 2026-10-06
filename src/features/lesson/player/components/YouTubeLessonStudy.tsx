@@ -8,7 +8,10 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
-import {activeSentenceIndexAt} from '../logic/canonicalYouTubeCues';
+import {
+  activeSentenceIndexAt,
+  startedSentenceIndexAt,
+} from '../logic/canonicalYouTubeCues';
 import {sortedBlocks, sortedSentences} from '../logic/lessonHubContent';
 import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
 import {CanonicalBlockView} from './CanonicalBlockView';
@@ -96,6 +99,11 @@ export function YouTubeLessonStudy({
     () => activeSentenceIndexAt(orderedSentences, playbackPositionMs),
     [orderedSentences, playbackPositionMs],
   );
+  const followIndex = useMemo(
+    () => startedSentenceIndexAt(orderedSentences, playbackPositionMs),
+    [orderedSentences, playbackPositionMs],
+  );
+
   useEffect(() => {
     if (videoPlaying) {
       setFollowVideo(true);
@@ -106,13 +114,13 @@ export function YouTubeLessonStudy({
     if (
       videoPlaying &&
       followVideo &&
-      activeIndex !== null &&
-      activeIndex !== currentIndexRef.current
+      followIndex !== null &&
+      followIndex !== currentIndexRef.current
     ) {
       setCarouselScrollAnimated(true);
-      setCurrentIndex(activeIndex);
+      setCurrentIndex(followIndex);
     }
-  }, [activeIndex, followVideo, videoPlaying]);
+  }, [followIndex, followVideo, videoPlaying]);
 
   const handleOpenAnalysis = useCallback(
     (sentenceId: string) => {
