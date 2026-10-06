@@ -7,6 +7,7 @@ import {
   type CourseResult,
   type CourseUnit,
   type CurriculumLesson,
+  fetchCourseEntitlements,
   fetchCourseLevels,
   fetchCourses,
   fetchLevelUnits,
@@ -55,9 +56,31 @@ function useCurriculumLoader<T>(
 }
 
 /** Published courses (Library "Khóa học" segment, course list screen). */
+export type CourseWithAccess = Course & {unlocked: boolean};
+
 export function useCourses() {
-  const load = useCallback((signal: AbortSignal) => fetchCourses({signal}), []);
-  return useCurriculumLoader<Course[]>(load);
+  const load = useCallback(
+    async (signal: AbortSignal): Promise<CourseResult<CourseWithAccess[]>> => {
+      const courses = await fetchCourses({signal});
+      if (!courses.ok) return courses;
+      const needsEntitlements = courses.value.some(course => course.isLocked);
+      // A failed entitlement lookup keeps locked courses locked; it must not
+      // hide the whole list.
+      const entitled = needsEntitlements
+        ? await fetchCourseEntitlements({signal})
+        : null;
+      const entitledIds = entitled?.ok ? entitled.value : [];
+      return {
+        ok: true,
+        value: courses.value.map(course => ({
+          ...course,
+          unlocked: !course.isLocked || entitledIds.includes(course.id),
+        })),
+      };
+    },
+    [],
+  );
+  return useCurriculumLoader<CourseWithAccess[]>(load);
 }
 
 /** Levels of one course. */

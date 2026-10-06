@@ -614,6 +614,8 @@
   "course": {
     "courses_title": "Courses",
     "courses_empty": "No courses yet",
+    "course_locked_hint": "Paid course, not unlocked yet",
+    "course_locked_message": "Unlock this course to start learning",
     "course_row_hint": "Open the course levels",
     "levels_title": "Levels",
     "levels_empty": "This course has no levels yet",

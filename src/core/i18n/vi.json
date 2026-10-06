@@ -614,6 +614,8 @@
   "course": {
     "courses_title": "Khóa học",
     "courses_empty": "Chưa có khóa học nào",
+    "course_locked_hint": "Khóa học trả phí, chưa mở khóa",
+    "course_locked_message": "Khóa học này cần mở khóa để học",
     "course_row_hint": "Mở các cấp độ của khóa học",
     "levels_title": "Cấp độ",
     "levels_empty": "Khóa học này chưa có cấp độ nào",

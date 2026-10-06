@@ -37,6 +37,8 @@ type Props = {
   /** Short strong line at the bottom, e.g. "3 bài". */
   meta?: string;
   tone?: GridTileTone;
+  /** Shows a lock badge (paid content not yet unlocked). */
+  locked?: boolean;
   width: number;
   onPress: () => void;
   accessibilityLabel?: string;
@@ -55,6 +57,7 @@ export function GridTile({
   subtitle,
   meta,
   tone = 'neutral',
+  locked = false,
   width,
   onPress,
   accessibilityLabel,
@@ -80,8 +83,11 @@ export function GridTile({
       ]}
       testID={testID}
     >
-      <View style={styles.iconBox}>
-        <MaterialIcon color={ink} name={icon} size={24} />
+      <View style={styles.iconRow}>
+        <View style={styles.iconBox}>
+          <MaterialIcon color={ink} name={icon} size={24} />
+        </View>
+        {locked ? <MaterialIcon color={ink} name="lock" size={20} /> : null}
       </View>
       <AppText style={[styles.title, {color: ink}]} numberOfLines={2}>
         {title}
@@ -144,6 +150,11 @@ function makeStyles(theme: AppTheme) {
     pressed: {
       transform: [{translateY: 3}],
       ...getHardShadow(1, theme.colors.ink),
+    },
+    iconRow: {
+      alignItems: 'flex-start',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
     iconBox: {
       alignItems: 'center',

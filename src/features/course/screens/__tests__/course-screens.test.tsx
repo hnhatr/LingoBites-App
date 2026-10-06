@@ -14,6 +14,7 @@ import {UnitLessonsScreen} from '../UnitLessonsScreen';
 
 jest.mock('../../logic/courseClient', () => ({
   fetchCourses: jest.fn(),
+  fetchCourseEntitlements: jest.fn(),
   fetchCourseLevels: jest.fn(),
   fetchLevelUnits: jest.fn(),
   fetchUnitLessons: jest.fn(),
@@ -24,7 +25,11 @@ jest.mock('@core/sync/lessonProgress', () => ({
 }));
 
 const client = jest.requireMock('../../logic/courseClient') as Record<
-  'fetchCourses' | 'fetchCourseLevels' | 'fetchLevelUnits' | 'fetchUnitLessons',
+  | 'fetchCourses'
+  | 'fetchCourseEntitlements'
+  | 'fetchCourseLevels'
+  | 'fetchLevelUnits'
+  | 'fetchUnitLessons',
   jest.Mock
 >;
 const {listCompletedLessons} = jest.requireMock(
@@ -117,6 +122,39 @@ describe('Curriculum screens (F14)', () => {
       kind: 'course',
       courseSlug: 'english-a1',
       title: 'English A1',
+    });
+  });
+
+  it('blocks a locked course until the user is entitled to it', async () => {
+    const course = {
+      id: 'course-2',
+      slug: 'english-pro',
+      title: 'English Pro',
+      description: '',
+      sourceLanguage: 'vi',
+      targetLanguage: 'en',
+      isLocked: true,
+      productId: 'course.english_pro',
+      priceAmount: 199000,
+      priceCurrency: 'VND',
+    };
+    client.fetchCourses.mockResolvedValue({ok: true, value: [course]});
+    client.fetchCourseEntitlements.mockResolvedValue({ok: true, value: []});
+
+    let tree = await render(<CourseListContent />);
+    press(tree, 'course-list-row-course-2');
+    expect(mockAppNavigation.openCourse).not.toHaveBeenCalled();
+
+    client.fetchCourseEntitlements.mockResolvedValue({
+      ok: true,
+      value: ['course-2'],
+    });
+    tree = await render(<CourseListContent />);
+    press(tree, 'course-list-row-course-2');
+    expect(mockAppNavigation.openCourse).toHaveBeenCalledWith({
+      kind: 'course',
+      courseSlug: 'english-pro',
+      title: 'English Pro',
     });
   });
 

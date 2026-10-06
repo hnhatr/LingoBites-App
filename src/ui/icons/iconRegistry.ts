@@ -7,6 +7,7 @@ import glyphmap from 'react-native-vector-icons/glyphmaps/MaterialIcons.json';
 
 /** Handoff Material Symbols names used in the app (snake_case). */
 export const HANDOFF_ICONS = [
+  'add',
   'add_photo_alternate',
   'analytics',
   'arrow_back',
@@ -43,6 +44,7 @@ export const HANDOFF_ICONS = [
   'language',
   'lightbulb',
   'local_fire_department',
+  'lock',
   'menu_book',
   'mic',
   'more_vert',
