@@ -6,10 +6,11 @@ import {
 
 import {createRequestId} from '@core/api/requestId';
 import {getOrCreateAnonymousUserId} from '@core/db/anonymousUserId';
-import {getDatabase, withTransaction} from '@core/db/database';
+import {getDatabase, withSavepoint, withTransaction} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import type {
   FlashcardRecord,
+  FlashcardSource,
   GetDueFlashcardsOptions,
   ListFlashcardsOptions,
   RecordFlashcardRatingInput,
@@ -18,6 +19,7 @@ import type {
   SaveFlashcardResult,
 } from '@core/db/types';
 import {REVIEW_EVENT_SCHEMA_VERSION} from '@core/db/types';
+import {vocabularyItemKey} from '@core/learning';
 
 type FlashcardRow = {
   id: string;
@@ -36,6 +38,7 @@ type FlashcardRow = {
   is_saved: number;
   created_at: string;
   updated_at: string;
+  item_key?: string | null;
   revision?: number;
   tombstone?: number;
 };
@@ -52,6 +55,7 @@ type ReviewScheduleRow = {
 
 function mapFlashcardRow(row: FlashcardRow): FlashcardRecord {
   return {
+    itemKey: row.item_key ?? null,
     id: row.id,
     lessonId: row.lesson_id,
     vocabularyId: row.vocabulary_id,
@@ -79,76 +83,115 @@ function firstRow<T>(result: {
   return (result.rows?.item(0) as T | undefined) ?? null;
 }
 
+/**
+ * Saves a word as a flashcard. One card per lemma across lessons (schema v5):
+ * a word already saved from another lesson reuses that card, keeps its review
+ * schedule and just gains this lesson as a source. Lookup and write share one
+ * savepoint (so it also works inside a caller's transaction), and `idx_flashcards_item_key_live` rejects a second live card
+ * with the same key at the database level.
+ */
 export function saveFlashcard(input: SaveFlashcardInput): SaveFlashcardResult {
   try {
     const db = getDatabase();
     const now = input.now ?? new Date().toISOString();
-    const existing = firstRow<FlashcardRow>(
-      db.execute(
-        'SELECT * FROM flashcards WHERE lesson_id = ? AND vocabulary_id = ? LIMIT 1;',
-        [input.lessonId, input.vocabulary.id],
-      ),
-    );
+    const itemKey = vocabularyItemKey(input.vocabulary.word);
+    const sourceSentence =
+      input.vocabulary.source_sentence ??
+      input.vocabulary.sourceSentence ??
+      null;
 
-    if (existing) {
+    const addSource = (cardId: string) => {
       db.execute(
-        'UPDATE flashcards SET is_saved = 1, updated_at = ? WHERE id = ?;',
-        [now, existing.id],
+        `INSERT OR IGNORE INTO flashcard_sources (
+          card_id, lesson_id, source_sentence, created_at
+        ) VALUES (?, ?, ?, ?);`,
+        [cardId, input.lessonId, sourceSentence, now],
       );
-      return {ok: true, flashcardId: existing.id, duplicate: true};
-    }
+    };
 
-    const flashcardId = createRequestId();
-    db.execute(
-      `INSERT INTO flashcards (
-        id, lesson_id, vocabulary_id, word, phrase_from_text, word_type,
-        meaning_vi, pronunciation_guide_vi, ipa, cefr_level, source_sentence,
-        example, example_translation, is_saved, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-      [
-        flashcardId,
-        input.lessonId,
-        input.vocabulary.id,
-        input.vocabulary.word,
-        input.vocabulary.phrase_from_text ??
-          input.vocabulary.phraseFromText ??
-          null,
-        input.vocabulary.word_type ?? input.vocabulary.wordType ?? null,
-        input.vocabulary.meaning_vi ?? input.vocabulary.meaningVi ?? '',
-        input.vocabulary.pronunciation_guide_vi ??
-          input.vocabulary.pronunciationGuideVi ??
-          null,
-        input.vocabulary.ipa ?? null,
-        input.vocabulary.cefr_level ?? input.vocabulary.cefrLevel ?? null,
-        input.vocabulary.source_sentence ??
-          input.vocabulary.sourceSentence ??
-          null,
-        input.vocabulary.example ?? null,
-        input.vocabulary.example_translation ??
-          input.vocabulary.exampleTranslation ??
-          null,
-        1,
-        now,
-        now,
-      ],
-    );
-    db.execute(
-      `INSERT INTO review_schedule (
-        card_id, lesson_id, interval_days, next_review_at, last_reviewed_at,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?);`,
-      [
-        flashcardId,
-        input.lessonId,
-        DEFAULT_REVIEW_INTERVAL_DAYS,
-        now,
-        null,
-        now,
-        now,
-      ],
-    );
+    return withSavepoint(db, (): SaveFlashcardResult => {
+      const sameLemma = itemKey
+        ? firstRow<FlashcardRow>(
+            db.execute(
+              `SELECT * FROM flashcards
+                WHERE item_key = ? AND COALESCE(tombstone, 0) = 0 LIMIT 1;`,
+              [itemKey],
+            ),
+          )
+        : null;
+      const existing =
+        sameLemma ??
+        firstRow<FlashcardRow>(
+          db.execute(
+            'SELECT * FROM flashcards WHERE lesson_id = ? AND vocabulary_id = ? LIMIT 1;',
+            [input.lessonId, input.vocabulary.id],
+          ),
+        );
 
-    return {ok: true, flashcardId, duplicate: false};
+      if (existing) {
+        db.execute(
+          `UPDATE flashcards
+              SET is_saved = 1, updated_at = ?, item_key = COALESCE(item_key, ?)
+            WHERE id = ?;`,
+          [now, itemKey, existing.id],
+        );
+        addSource(existing.id);
+        return {ok: true, flashcardId: existing.id, duplicate: true};
+      }
+
+      const flashcardId = createRequestId();
+      db.execute(
+        `INSERT INTO flashcards (
+          id, lesson_id, vocabulary_id, word, phrase_from_text, word_type,
+          meaning_vi, pronunciation_guide_vi, ipa, cefr_level, source_sentence,
+          example, example_translation, is_saved, created_at, updated_at,
+          item_key
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+        [
+          flashcardId,
+          input.lessonId,
+          input.vocabulary.id,
+          input.vocabulary.word,
+          input.vocabulary.phrase_from_text ??
+            input.vocabulary.phraseFromText ??
+            null,
+          input.vocabulary.word_type ?? input.vocabulary.wordType ?? null,
+          input.vocabulary.meaning_vi ?? input.vocabulary.meaningVi ?? '',
+          input.vocabulary.pronunciation_guide_vi ??
+            input.vocabulary.pronunciationGuideVi ??
+            null,
+          input.vocabulary.ipa ?? null,
+          input.vocabulary.cefr_level ?? input.vocabulary.cefrLevel ?? null,
+          sourceSentence,
+          input.vocabulary.example ?? null,
+          input.vocabulary.example_translation ??
+            input.vocabulary.exampleTranslation ??
+            null,
+          1,
+          now,
+          now,
+          itemKey,
+        ],
+      );
+      db.execute(
+        `INSERT INTO review_schedule (
+          card_id, lesson_id, interval_days, next_review_at, last_reviewed_at,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+        [
+          flashcardId,
+          input.lessonId,
+          DEFAULT_REVIEW_INTERVAL_DAYS,
+          now,
+          null,
+          now,
+          now,
+        ],
+      );
+      addSource(flashcardId);
+
+      return {ok: true, flashcardId, duplicate: false};
+    });
   } catch {
     return {
       ok: false,
@@ -169,8 +212,14 @@ export function listFlashcards({
     clauses.push('is_saved = 1');
   }
   if (lessonId) {
-    clauses.push('lesson_id = ?');
-    params.push(lessonId);
+    // A card saved from another lesson still belongs to this one when this
+    // lesson is one of its sources (schema v5).
+    clauses.push(
+      `(id IN (SELECT card_id FROM flashcard_sources WHERE lesson_id = ?)
+        OR (lesson_id = ? AND NOT EXISTS (
+          SELECT 1 FROM flashcard_sources s WHERE s.card_id = flashcards.id)))`,
+    );
+    params.push(lessonId, lessonId);
   }
 
   const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
@@ -190,6 +239,76 @@ export function listFlashcards({
   }
 
   return items;
+}
+
+/**
+ * Every lesson each card was saved from, oldest first, keyed by card id. A card
+ * with no source rows (legacy, or a word with no usable key) is absent: callers
+ * fall back to the card's own `lessonId`.
+ */
+export function listFlashcardSources(): Map<string, FlashcardSource[]> {
+  const db = getDatabase();
+  const result = db.execute(
+    `SELECT card_id, lesson_id, source_sentence, created_at
+       FROM flashcard_sources
+      ORDER BY datetime(created_at) ASC, lesson_id ASC;`,
+  );
+  const sources = new Map<string, FlashcardSource[]>();
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    const row = result.rows!.item(index) as {
+      card_id: string;
+      lesson_id: string;
+      source_sentence: string | null;
+      created_at: string;
+    };
+    const entry: FlashcardSource = {
+      lessonId: row.lesson_id,
+      sourceSentence: row.source_sentence,
+      createdAt: row.created_at,
+    };
+    const list = sources.get(row.card_id);
+    if (list) {
+      list.push(entry);
+    } else {
+      sources.set(row.card_id, [entry]);
+    }
+  }
+  return sources;
+}
+
+/**
+ * "Remove from this lesson": drops the lesson from the card's sources. The card
+ * stays saved while any other lesson still sources it and is only unsaved when
+ * the last source goes, so un-saving a word in one lesson never silently
+ * removes it from the others. A card with no source rows (legacy) is unsaved
+ * outright. The library heart keeps using `unsaveFlashcard` (whole card).
+ */
+export function removeFlashcardFromLesson(
+  cardId: string,
+  lessonId: string,
+  updatedAt = new Date().toISOString(),
+): boolean {
+  const db = getDatabase();
+  return withSavepoint(db, () => {
+    db.execute(
+      'DELETE FROM flashcard_sources WHERE card_id = ? AND lesson_id = ?;',
+      [cardId, lessonId],
+    );
+    const remaining = firstRow<{n: number}>(
+      db.execute(
+        'SELECT COUNT(*) AS n FROM flashcard_sources WHERE card_id = ?;',
+        [cardId],
+      ),
+    );
+    if (Number(remaining?.n ?? 0) > 0) {
+      return true;
+    }
+    const result = db.execute(
+      'UPDATE flashcards SET is_saved = 0, updated_at = ? WHERE id = ?;',
+      [updatedAt, cardId],
+    );
+    return (result.rowsAffected ?? 0) > 0;
+  });
 }
 
 export function unsaveFlashcard(

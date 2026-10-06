@@ -1,0 +1,19 @@
+{
+  "revision": "learning-items-r1",
+  "cases": [
+    {"input": "Coffee", "key": "coffee"},
+    {"input": "  Wake   UP ", "key": "wake up"},
+    {"input": "“Hello,”", "key": "hello"},
+    {"input": "don’t", "key": "don't"},
+    {"input": "well-known", "key": "well-known"},
+    {"input": "Present Simple.", "key": "present simple"},
+    {"input": "Thì hiện tại đơn", "key": "thì hiện tại đơn"},
+    {"input": "ＡＢＣ", "key": "abc"},
+    {"input": "...", "key": ""},
+    {"input": "   ", "key": ""}
+  ],
+  "kinds": [
+    {"key": "coffee", "kind": "word"},
+    {"key": "wake up", "kind": "phrase"}
+  ]
+}

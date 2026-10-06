@@ -26,6 +26,8 @@ export type VocabularyItem = {
 export type ReviewRating = 'remembered' | 'forgot';
 
 export type FlashcardRecord = {
+  /** `word:coffee` / `phrase:wake up`; null/absent for a card with no usable key. */
+  itemKey?: string | null;
   revision: number;
   tombstone: boolean;
   id: string;
@@ -44,6 +46,13 @@ export type FlashcardRecord = {
   isSaved: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+/** A lesson a flashcard was saved from (schema v5 `flashcard_sources`). */
+export type FlashcardSource = {
+  lessonId: string;
+  sourceSentence: string | null;
+  createdAt: string;
 };
 
 export type ReviewScheduleRecord = {

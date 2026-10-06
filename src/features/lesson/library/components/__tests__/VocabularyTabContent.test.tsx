@@ -187,6 +187,26 @@ describe('VocabularyTabContent', () => {
     expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('lesson-2');
   });
 
+  it('opens a chosen source lesson of a word shared by several lessons', () => {
+    const shared = {
+      ...mockFlashcard1,
+      sources: [
+        {lessonId: 'lesson-1', title: 'Morning routine'},
+        {lessonId: 'lesson-7', title: 'At the cafe'},
+      ],
+    };
+    const tree = render(<VocabularyTabContent vocabulary={[shared]} />);
+
+    const card = tree.root.findByProps({testID: 'vocabulary-card-flashcard-1'});
+    expect(card.props.sources).toEqual(shared.sources);
+
+    act(() => {
+      card.props.onOpenSource('lesson-7');
+    });
+
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('lesson-7');
+  });
+
   it('handles save callback', () => {
     const tree = render(<VocabularyTabContent vocabulary={[mockFlashcard1]} />);
 

@@ -82,12 +82,18 @@ function FlashcardFace({
           }}
           testID="review-speak-back"
         />
-        {card.example ? (
-          <AppText color="secondary" style={styles.example}>
-            {card.example}
+        {/* A word saved from an analysis has no curated example, but it does
+            carry the sentence it was found in: show that as context. */}
+        {card.example || card.sourceSentence ? (
+          <AppText
+            color="secondary"
+            style={styles.example}
+            testID="review-card-example"
+          >
+            {card.example ?? card.sourceSentence}
           </AppText>
         ) : null}
-        {card.exampleTranslation ? (
+        {card.example && card.exampleTranslation ? (
           <AppText color="secondary" style={styles.example}>
             {card.exampleTranslation}
           </AppText>

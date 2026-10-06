@@ -12,8 +12,10 @@ export {
   getCardDueAt,
   getDueFlashcards,
   listFlashcards,
+  listFlashcardSources,
   listUpcomingReviewReminders,
   recordFlashcardRating,
+  removeFlashcardFromLesson,
   saveFlashcard,
   unsaveFlashcard,
 } from './logic/FlashcardRepository';

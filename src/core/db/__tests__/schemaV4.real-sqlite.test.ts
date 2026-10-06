@@ -6,8 +6,8 @@ import {
   APP_SCHEMA_VERSION,
   APP_SCHEMA_VERSION_V3,
   readAppSchemaVersion,
-  runMigrations,
   runMigrationsThroughSchemaV3,
+  runMigrationsThroughSchemaV4,
 } from '@core/db/migrations';
 import {APP_SCHEMA_VERSION_V4} from '@core/db/schemaV4';
 
@@ -96,7 +96,8 @@ function snapshotSchemaFingerprint(): string {
 
 function assertSchemaV4Shape(): void {
   expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION_V4);
-  expect(APP_SCHEMA_VERSION).toBe(APP_SCHEMA_VERSION_V4);
+  // The app has moved on to v5; this file pins the v4 step only.
+  expect(APP_SCHEMA_VERSION).toBeGreaterThanOrEqual(APP_SCHEMA_VERSION_V4);
 
   const recordingColumns = tableColumnNames('speaking_recordings');
   for (const column of SPEAKING_RECORDINGS_V4_COLUMNS) {
@@ -170,7 +171,7 @@ describe('LING-235 / AC-016 schema v4 on real SQLite', () => {
     expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION_V3);
     insertLegacySpeakingRecording();
 
-    runMigrations(db);
+    runMigrationsThroughSchemaV4(db);
     assertSchemaV4Shape();
 
     const row = legacyRecordingRow();
@@ -191,18 +192,18 @@ describe('LING-235 / AC-016 schema v4 on real SQLite', () => {
     });
 
     const fingerprintAfterFirst = snapshotSchemaFingerprint();
-    runMigrations(db);
+    runMigrationsThroughSchemaV4(db);
     assertSchemaV4Shape();
     expect(snapshotSchemaFingerprint()).toBe(fingerprintAfterFirst);
     expect(legacyRecordingRow()).toEqual(row);
   });
 
   it('leaves a database already at v4 unchanged on re-run', () => {
-    runMigrations(db);
+    runMigrationsThroughSchemaV4(db);
     assertSchemaV4Shape();
     const fingerprint = snapshotSchemaFingerprint();
 
-    runMigrations(db);
+    runMigrationsThroughSchemaV4(db);
     expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION_V4);
     expect(snapshotSchemaFingerprint()).toBe(fingerprint);
   });
@@ -214,7 +215,7 @@ describe('LING-235 / AC-016 schema v4 on real SQLite', () => {
       'sentence_id',
     );
 
-    runMigrations(db);
+    runMigrationsThroughSchemaV4(db);
     expect(readAppSchemaVersion(db)).toBe(4);
     expect(tableColumnNames('speaking_recordings')).toContain('sentence_id');
   });

@@ -9,7 +9,11 @@ import {
   type DownloadedLessonSummary,
   listDownloadedLessonSummaries,
 } from '@features/lesson/player';
-import {listAllBookmarkedGrammar, listFlashcards} from '@features/review';
+import {
+  listAllBookmarkedGrammar,
+  listFlashcards,
+  listFlashcardSources,
+} from '@features/review';
 
 import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
 import type {LessonSourceType} from '@core/schemas/lesson';
@@ -19,9 +23,22 @@ export interface SegmentFilterState {
   sourceFilter: LibrarySourceFilter;
 }
 
+/** A lesson a saved word came from, with what the library can say about it. */
+export interface LibraryVocabularySource {
+  lessonId: string;
+  /** Title of the downloaded lesson, or null when it is not downloaded. */
+  title: string | null;
+  sourceType?: LessonSourceType;
+}
+
+/** One saved word (a card is shared by every lesson it was saved from). */
+export type LibraryVocabularyEntry = FlashcardRecord & {
+  sources: LibraryVocabularySource[];
+};
+
 export interface UseLibrarySegmentsResult {
   packagedLessons: LibraryLessonCardView[];
-  vocabulary: FlashcardRecord[];
+  vocabulary: LibraryVocabularyEntry[];
   grammar: (GrammarBookmark & {title?: string; content?: string})[];
   lessonsFilter: SegmentFilterState;
   vocabularyFilter: SegmentFilterState;
@@ -87,15 +104,41 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
   }, [downloads, lessonsFilter]);
 
   const vocabulary = useMemo(() => {
-    const cards = listFlashcards({includeUnsaved: false});
+    const sourcesByCard = listFlashcardSources();
+    const titleByLessonId = new Map(
+      downloads.map(item => [item.lessonId, item.title] as const),
+    );
+    const cards = listFlashcards({includeUnsaved: false}).map(
+      (card): LibraryVocabularyEntry => {
+        // A card saved before schema v5, or with no usable key, has no source
+        // rows: its own lesson is its only source.
+        const lessonIds = (sourcesByCard.get(card.id) ?? []).map(
+          source => source.lessonId,
+        );
+        const sources = (
+          lessonIds.length > 0 ? lessonIds : [card.lessonId]
+        ).map(
+          (lessonId): LibraryVocabularySource => ({
+            lessonId,
+            title: titleByLessonId.get(lessonId) ?? null,
+            sourceType: sourceByLessonId.get(lessonId),
+          }),
+        );
+        return {...card, sources};
+      },
+    );
     return cards.filter(card =>
-      matchesSegmentFilter(vocabularyFilter, {
-        texts: [card.word, card.meaningVi, card.example],
-        sourceType: sourceByLessonId.get(card.lessonId),
-      }),
+      // A word shared by several lessons matches a source filter through any
+      // of them.
+      card.sources.some(source =>
+        matchesSegmentFilter(vocabularyFilter, {
+          texts: [card.word, card.meaningVi, card.example],
+          sourceType: source.sourceType,
+        }),
+      ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocabularyFilter, sourceByLessonId, refreshVersion]);
+  }, [vocabularyFilter, downloads, sourceByLessonId, refreshVersion]);
 
   const grammar = useMemo(() => {
     const bookmarks = withGrammarDetails(listAllBookmarkedGrammar(), downloads);
