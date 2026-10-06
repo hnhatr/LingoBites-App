@@ -18,6 +18,7 @@ import {
   useGridTileWidth,
 } from '@ui/components/GridTile';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -29,6 +30,8 @@ export type CurriculumRow = {
   eyebrow?: string;
   /** Extra content under the description (progress bar, completed mark). */
   footer?: React.ReactNode;
+  /** Locked (paid) content the user has not unlocked. */
+  locked?: boolean;
   accessibilityHint: string;
   onPress: () => void;
 };
@@ -119,6 +122,7 @@ export function CurriculumList({
             title={item.title}
             subtitle={item.description?.trim() || undefined}
             meta={item.eyebrow}
+            locked={item.locked}
             tone={gridTileToneAt(index)}
             width={tileWidth}
             accessibilityHint={item.accessibilityHint}
@@ -140,7 +144,18 @@ export function CurriculumList({
                     {item.eyebrow}
                   </AppText>
                 ) : null}
-                <AppText variant="h3">{item.title}</AppText>
+                <View style={styles.titleRow}>
+                  <AppText style={styles.titleText} variant="h3">
+                    {item.title}
+                  </AppText>
+                  {item.locked ? (
+                    <MaterialIcon
+                      color={theme.colors.text.secondary}
+                      name="lock"
+                      size={18}
+                    />
+                  ) : null}
+                </View>
                 {item.description && item.description.trim().length > 0 ? (
                   <AppText
                     color="secondary"
@@ -194,6 +209,14 @@ function makeStyles(theme: AppTheme) {
 const styles = StyleSheet.create({
   cardContent: {
     gap: 6,
+  },
+  titleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  titleText: {
+    flexShrink: 1,
   },
   centered: {
     textAlign: 'center',

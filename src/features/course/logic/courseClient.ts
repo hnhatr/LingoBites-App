@@ -23,6 +23,11 @@ const CourseSchema = z.object({
   description: z.string(),
   sourceLanguage: z.string(),
   targetLanguage: z.string(),
+  /** Paid course: needs an entitlement for the signed-in user. */
+  isLocked: z.boolean().default(false),
+  productId: z.string().nullable().default(null),
+  priceAmount: z.number().int().nullable().default(null),
+  priceCurrency: z.string().nullable().default(null),
 });
 
 const LevelSchema = z.object({
@@ -53,6 +58,7 @@ const CurriculumLessonSchema = z.object({
   estimatedMinutes: z.number().int().nullable(),
 });
 
+const EntitlementsResponseSchema = z.object({course_ids: z.array(z.string())});
 const CourseListResponseSchema = z.object({courses: z.array(CourseSchema)});
 const LevelListResponseSchema = z.object({levels: z.array(LevelSchema)});
 const UnitListResponseSchema = z.object({units: z.array(UnitSchema)});
@@ -94,7 +100,7 @@ async function readJson(response: Response): Promise<unknown> {
 
 async function getList<T>(
   path: string,
-  schema: z.ZodType<T>,
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
   options: CourseClientOptions,
 ): Promise<CourseResult<T>> {
   const cancelled: CourseClientError = {
@@ -158,6 +164,18 @@ export async function fetchCourses(
     options,
   );
   return result.ok ? {ok: true, value: result.value.courses} : result;
+}
+
+/** Ids of locked courses the signed-in user has unlocked. */
+export async function fetchCourseEntitlements(
+  options: CourseClientOptions = {},
+): Promise<CourseResult<string[]>> {
+  const result = await getList(
+    '/v1/me/course-entitlements',
+    EntitlementsResponseSchema,
+    options,
+  );
+  return result.ok ? {ok: true, value: result.value.course_ids} : result;
 }
 
 /** Published levels of one course, in course order. */

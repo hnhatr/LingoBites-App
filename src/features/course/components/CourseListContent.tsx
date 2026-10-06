@@ -2,6 +2,8 @@ import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
 
+import {showToast} from '@ui/components/toast';
+
 import {useAppNavigation} from '@core/navigation';
 
 import {useCourses} from '../logic/useCurriculum';
@@ -29,13 +31,21 @@ export function CourseListContent() {
           id: course.id,
           title: course.title,
           description: course.description,
-          accessibilityHint: t('course.course_row_hint'),
-          onPress: () =>
+          locked: !course.unlocked,
+          accessibilityHint: course.unlocked
+            ? t('course.course_row_hint')
+            : t('course.course_locked_hint'),
+          onPress: () => {
+            if (!course.unlocked) {
+              showToast(t('course.course_locked_message'));
+              return;
+            }
             navigation.openCourse({
               kind: 'course',
               courseSlug: course.slug,
               title: course.title,
-            }),
+            });
+          },
         }))
       : [];
 

@@ -3,7 +3,6 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {
@@ -13,10 +12,12 @@ import {
   useGridTileWidth,
 } from '@ui/components/GridTile';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 
+import {CreateLessonHeaderButton} from '../components/CreateLessonHeaderButton';
 import {
   isOwnLessonSection,
   lessonBelongsToSection,
@@ -80,21 +81,21 @@ export function LessonsHistoryScreen({navigation}: Props) {
 
   return (
     <AppScreen>
+      <ScreenHeader
+        title="Thư viện"
+        rightAction={
+          <CreateLessonHeaderButton
+            onPress={() => appNavigation.openCreate()}
+          />
+        }
+      />
       <ScrollView
         contentContainerStyle={[styles.content, {paddingBottom: feedClearance}]}
         testID="library-hub"
       >
-        <AppText variant="h2" style={styles.title}>
-          Thư viện
-        </AppText>
         <AppText variant="label" color="secondary" style={styles.subtitle}>
           Bài đã tải về học được cả khi không có mạng.
         </AppText>
-        <AppButton
-          title="Tạo bài học mới"
-          onPress={() => appNavigation.openCreate()}
-          testID="library-create-lesson"
-        />
         {GROUPS.map(group => (
           <View
             key={group.id}
@@ -142,9 +143,6 @@ function makeStyles(theme: AppTheme) {
     content: {
       gap: theme.spacing.sm,
       padding: theme.gutter,
-    },
-    title: {
-      color: theme.colors.text.primary,
     },
     subtitle: {
       marginBottom: theme.spacing.sm,
