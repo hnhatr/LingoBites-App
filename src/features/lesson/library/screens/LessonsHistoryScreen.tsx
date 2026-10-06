@@ -86,10 +86,10 @@ export function LessonsHistoryScreen({navigation}: Props) {
     section.catalog
       ? 'Cần kết nối mạng'
       : !ready
-        ? 'Đang tải…'
-        : counts[section.id] > 0
-          ? `${counts[section.id]} ${section.unit}`
-          : section.emptyHint;
+      ? 'Đang tải…'
+      : counts[section.id] > 0
+      ? `${counts[section.id]} ${section.unit}`
+      : section.emptyHint;
 
   return (
     <AppScreen>
