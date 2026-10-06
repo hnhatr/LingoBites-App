@@ -6,12 +6,17 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {
+  GRID_TILE_GAP,
+  GridTile,
+  gridTileToneAt,
+  useGridTileWidth,
+} from '@ui/components/GridTile';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 
-import {LibraryHubCard} from '../components/LibraryHubCard';
 import {
   isLessonSection,
   lessonBelongsToSection,
@@ -32,6 +37,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const feedClearance = useFloatingTabBarClearance();
   const appNavigation = useAppNavigation();
+  const tileWidth = useGridTileWidth();
   const {packagedLessons, vocabulary, grammar, refresh} = useLibrarySegments();
 
   useFocusEffect(
@@ -78,18 +84,22 @@ export function LessonsHistoryScreen({navigation}: Props) {
           testID="library-create-lesson"
         />
         <View style={styles.cards}>
-          {LIBRARY_SECTIONS.map(section => (
-            <LibraryHubCard
+          {LIBRARY_SECTIONS.map((section, index) => (
+            <GridTile
               key={section.id}
               icon={section.icon}
               title={section.title}
-              description={section.description}
-              countLabel={countLabel(section)}
-              hasItems={counts[section.id] > 0}
+              subtitle={section.description}
+              meta={countLabel(section)}
+              tone={gridTileToneAt(index)}
+              width={tileWidth}
+              accessibilityLabel={`${section.title}. ${countLabel(section)}`}
+              accessibilityHint={section.description}
               onPress={() =>
                 navigation.navigate('LibraryList', {section: section.id})
               }
               testID={`library-card-${section.id}`}
+              metaTestID={`library-card-${section.id}-count`}
             />
           ))}
         </View>
@@ -111,7 +121,9 @@ function makeStyles(theme: AppTheme) {
       marginBottom: theme.spacing.sm,
     },
     cards: {
-      gap: theme.spacing.md,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: GRID_TILE_GAP,
     },
   });
 }

@@ -11,6 +11,12 @@ import {
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
+import {
+  GRID_TILE_GAP,
+  GridTile,
+  gridTileToneAt,
+  useGridTileWidth,
+} from '@ui/components/GridTile';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {Medallion} from '@ui/components/Medallion';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -35,6 +41,8 @@ type Props = {
   /** Prefix for list/row test ids, e.g. `course-list`. */
   testID: string;
   header?: React.ReactElement;
+  /** `grid`: two-column tiles (course list); `list`: one card per row. */
+  layout?: 'list' | 'grid';
 };
 
 /**
@@ -48,11 +56,14 @@ export function CurriculumList({
   onRetry,
   testID,
   header,
+  layout = 'list',
 }: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const floatingClearance = useFloatingTabBarClearance();
+  const tileWidth = useGridTileWidth();
+  const isGrid = layout === 'grid';
 
   if (status === 'loading') {
     return (
@@ -99,37 +110,53 @@ export function CurriculumList({
           </AppText>
         </View>
       }
-      renderItem={({item}) => (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={item.title}
-          accessibilityHint={item.accessibilityHint}
-          testID={`${testID}-row-${item.id}`}
-          onPress={item.onPress}
-        >
-          <AppCard>
-            <View style={styles.cardContent}>
-              {item.eyebrow ? (
-                <AppText color="secondary" variant="caption">
-                  {item.eyebrow}
-                </AppText>
-              ) : null}
-              <AppText variant="h3">{item.title}</AppText>
-              {item.description && item.description.trim().length > 0 ? (
-                <AppText
-                  color="secondary"
-                  ellipsizeMode="tail"
-                  numberOfLines={2}
-                  variant="label"
-                >
-                  {item.description}
-                </AppText>
-              ) : null}
-              {item.footer}
-            </View>
-          </AppCard>
-        </Pressable>
-      )}
+      numColumns={isGrid ? 2 : 1}
+      columnWrapperStyle={isGrid ? {gap: GRID_TILE_GAP} : undefined}
+      renderItem={({item, index}) =>
+        isGrid ? (
+          <GridTile
+            icon="menu_book"
+            title={item.title}
+            subtitle={item.description?.trim() || undefined}
+            meta={item.eyebrow}
+            tone={gridTileToneAt(index)}
+            width={tileWidth}
+            accessibilityHint={item.accessibilityHint}
+            onPress={item.onPress}
+            testID={`${testID}-row-${item.id}`}
+          />
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={item.title}
+            accessibilityHint={item.accessibilityHint}
+            testID={`${testID}-row-${item.id}`}
+            onPress={item.onPress}
+          >
+            <AppCard>
+              <View style={styles.cardContent}>
+                {item.eyebrow ? (
+                  <AppText color="secondary" variant="caption">
+                    {item.eyebrow}
+                  </AppText>
+                ) : null}
+                <AppText variant="h3">{item.title}</AppText>
+                {item.description && item.description.trim().length > 0 ? (
+                  <AppText
+                    color="secondary"
+                    ellipsizeMode="tail"
+                    numberOfLines={2}
+                    variant="label"
+                  >
+                    {item.description}
+                  </AppText>
+                ) : null}
+                {item.footer}
+              </View>
+            </AppCard>
+          </Pressable>
+        )
+      }
       contentContainerStyle={[
         themedStyles.list,
         {paddingBottom: floatingClearance},
