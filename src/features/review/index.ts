@@ -12,6 +12,7 @@ export {
   getCardDueAt,
   getDueFlashcards,
   listFlashcards,
+  listFlashcardSources,
   listUpcomingReviewReminders,
   recordFlashcardRating,
   saveFlashcard,

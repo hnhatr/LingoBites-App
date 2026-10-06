@@ -11,11 +11,12 @@ import type {FlashcardRecord} from '@core/db/types';
 import type {SaveFlashcardInput} from '@core/db/types';
 import {useAppNavigation} from '@core/navigation';
 
+import type {LibraryVocabularyEntry} from '../logic/useLibrarySegments';
 import {LibraryEmptyState} from './LibraryEmptyState';
 import {VocabularyRowCard} from './VocabularyRowCard';
 
 export interface VocabularyTabContentProps {
-  vocabulary: FlashcardRecord[];
+  vocabulary: Array<FlashcardRecord & Partial<LibraryVocabularyEntry>>;
   /** A search/source filter is active, so an empty list means no matches. */
   isFiltered?: boolean;
 }
@@ -45,9 +46,12 @@ export function VocabularyTabContent({
     useBookmarkOptimistic();
 
   const handleCardPress = useCallback(
-    (flashcard: FlashcardRecord) => {
+    (flashcard: FlashcardRecord & Partial<LibraryVocabularyEntry>) => {
       // No flashcard detail screen yet: open the lesson the word came from.
-      navigation.openLesson(flashcard.lessonId);
+      // A word with several sources toggles its list on the card instead.
+      navigation.openLesson(
+        flashcard.sources?.[0]?.lessonId ?? flashcard.lessonId,
+      );
     },
     [navigation],
   );
@@ -83,7 +87,7 @@ export function VocabularyTabContent({
   );
 
   const renderItem = useCallback(
-    ({item}: {item: FlashcardRecord}) => {
+    ({item}: {item: FlashcardRecord & Partial<LibraryVocabularyEntry>}) => {
       const isSaved = vocabularySaveState.getIsSaved(item.id, item.isSaved);
 
       return (
@@ -93,11 +97,19 @@ export function VocabularyTabContent({
           onSave={() => handleSave(item)}
           onUnsave={() => handleUnsave(item)}
           onPress={() => handleCardPress(item)}
+          sources={item.sources}
+          onOpenSource={lessonId => navigation.openLesson(lessonId)}
           testID={`vocabulary-card-${item.id}`}
         />
       );
     },
-    [vocabularySaveState, handleSave, handleUnsave, handleCardPress],
+    [
+      vocabularySaveState,
+      handleSave,
+      handleUnsave,
+      handleCardPress,
+      navigation,
+    ],
   );
 
   if (vocabulary.length === 0) {

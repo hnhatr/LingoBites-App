@@ -48,6 +48,13 @@ export type FlashcardRecord = {
   updatedAt: string;
 };
 
+/** A lesson a flashcard was saved from (schema v5 `flashcard_sources`). */
+export type FlashcardSource = {
+  lessonId: string;
+  sourceSentence: string | null;
+  createdAt: string;
+};
+
 export type ReviewScheduleRecord = {
   revision: number;
   tombstone: boolean;

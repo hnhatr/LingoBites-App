@@ -397,3 +397,133 @@ describe('VocabularyRowCard', () => {
     expect(meaningText).toBeDefined();
   });
 });
+
+describe('VocabularyRowCard sources and phonetics', () => {
+  const sources = [
+    {lessonId: 'lesson-a', title: 'Morning routine'},
+    {lessonId: 'lesson-b', title: null},
+    {lessonId: 'lesson-c', title: 'At the cafe'},
+  ];
+
+  it('shows the part of speech and IPA under the word', () => {
+    const tree = render(
+      <VocabularyRowCard
+        flashcard={mockFlashcard}
+        isSaved
+        onSave={jest.fn()}
+        onUnsave={jest.fn()}
+        onPress={jest.fn()}
+      />,
+    );
+    expect(
+      tree.root.findByProps({testID: 'phonetic-text'}).props.children,
+    ).toBe('[noun] /ˈæpəl/');
+  });
+
+  it('omits the phonetic line when there is nothing to show', () => {
+    const tree = render(
+      <VocabularyRowCard
+        flashcard={{...mockFlashcard, wordType: null, ipa: null}}
+        isSaved
+        onSave={jest.fn()}
+        onUnsave={jest.fn()}
+        onPress={jest.fn()}
+      />,
+    );
+    expect(tree.root.findAllByProps({testID: 'phonetic-text'})).toHaveLength(0);
+  });
+
+  it('a word from one lesson opens that lesson and shows no source list', () => {
+    const onPress = jest.fn();
+    const tree = render(
+      <VocabularyRowCard
+        flashcard={mockFlashcard}
+        isSaved
+        onSave={jest.fn()}
+        onUnsave={jest.fn()}
+        onPress={onPress}
+        sources={[{lessonId: 'lesson-a', title: 'Morning routine'}]}
+      />,
+    );
+    expect(tree.root.findAllByProps({testID: 'sources-toggle'})).toHaveLength(
+      0,
+    );
+    act(() => {
+      tree.root
+        .findByProps({testID: 'vocabulary-card-pressable'})
+        .props.onPress();
+    });
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('a word from several lessons toggles its lesson list instead of opening one', () => {
+    const onPress = jest.fn();
+    const onOpenSource = jest.fn();
+    const tree = render(
+      <VocabularyRowCard
+        flashcard={mockFlashcard}
+        isSaved
+        onSave={jest.fn()}
+        onUnsave={jest.fn()}
+        onPress={onPress}
+        sources={sources}
+        onOpenSource={onOpenSource}
+      />,
+    );
+
+    const toggle = () => tree.root.findByProps({testID: 'sources-toggle'});
+    expect(toggle().props.accessibilityLabel).toBe('Xem 3 bài chứa từ apple');
+    expect(toggle().props.accessibilityState).toEqual({expanded: false});
+    expect(tree.root.findAllByProps({testID: 'sources-list'})).toHaveLength(0);
+
+    // Tapping the card body opens the list, never an arbitrary lesson.
+    act(() => {
+      tree.root
+        .findByProps({testID: 'vocabulary-card-pressable'})
+        .props.onPress();
+    });
+    expect(onPress).not.toHaveBeenCalled();
+    expect(
+      tree.root.findAllByProps({testID: 'sources-list'}).length,
+    ).toBeGreaterThan(0);
+    expect(toggle().props.accessibilityState).toEqual({expanded: true});
+    expect(toggle().props.accessibilityLabel).toBe(
+      'Ẩn danh sách bài chứa từ apple',
+    );
+
+    const rowLabel = (id: string) =>
+      tree.root.findByProps({testID: `source-row-${id}`}).props
+        .accessibilityLabel;
+    expect(rowLabel('lesson-a')).toBe('Mở bài Morning routine');
+    expect(rowLabel('lesson-b')).toBe('Mở bài Bài học'); // not downloaded
+    act(() => {
+      tree.root.findByProps({testID: 'source-row-lesson-c'}).props.onPress();
+    });
+    expect(onOpenSource).toHaveBeenCalledWith('lesson-c');
+
+    act(() => {
+      toggle().props.onPress();
+    });
+    expect(tree.root.findAllByProps({testID: 'sources-list'})).toHaveLength(0);
+  });
+
+  it('the save heart and the source rows are not inside the card button', () => {
+    const tree = render(
+      <VocabularyRowCard
+        flashcard={mockFlashcard}
+        isSaved={false}
+        onSave={jest.fn()}
+        onUnsave={jest.fn()}
+        onPress={jest.fn()}
+        sources={sources}
+      />,
+    );
+    const cardButton = tree.root.findByProps({
+      testID: 'vocabulary-card-pressable',
+    });
+    expect(cardButton.findAllByProps({testID: 'save-button'})).toHaveLength(0);
+    expect(cardButton.findAllByProps({testID: 'sources-toggle'})).toHaveLength(
+      0,
+    );
+  });
+});

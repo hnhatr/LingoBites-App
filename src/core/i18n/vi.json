@@ -593,5 +593,20 @@
     "lesson_minutes": "{{count}} phút",
     "load_failed": "Không tải được giáo trình.",
     "retry_hint": "Tải lại giáo trình"
+  },
+  "library": {
+    "vocabulary": {
+      "save_a11y": "Lưu từ này",
+      "unsave_a11y": "Bỏ lưu từ này",
+      "sources_count": "Từ {{count}} bài",
+      "sources_show": "Xem bài",
+      "sources_hide": "Ẩn",
+      "sources_toggle_show_a11y": "Xem {{count}} bài chứa từ {{word}}",
+      "sources_toggle_hide_a11y": "Ẩn danh sách bài chứa từ {{word}}",
+      "source_open_a11y": "Mở bài {{title}}",
+      "source_untitled": "Bài học",
+      "sources_toggle_hint": "Mở hoặc đóng danh sách các bài học",
+      "source_open_hint": "Mở bài học để xem từ này trong ngữ cảnh"
+    }
   }
 }

@@ -10,6 +10,7 @@ import {getDatabase, withSavepoint, withTransaction} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import type {
   FlashcardRecord,
+  FlashcardSource,
   GetDueFlashcardsOptions,
   ListFlashcardsOptions,
   RecordFlashcardRatingInput,
@@ -236,6 +237,41 @@ export function listFlashcards({
   }
 
   return items;
+}
+
+/**
+ * Every lesson each card was saved from, oldest first, keyed by card id. A card
+ * with no source rows (legacy, or a word with no usable key) is absent: callers
+ * fall back to the card's own `lessonId`.
+ */
+export function listFlashcardSources(): Map<string, FlashcardSource[]> {
+  const db = getDatabase();
+  const result = db.execute(
+    `SELECT card_id, lesson_id, source_sentence, created_at
+       FROM flashcard_sources
+      ORDER BY datetime(created_at) ASC, lesson_id ASC;`,
+  );
+  const sources = new Map<string, FlashcardSource[]>();
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    const row = result.rows!.item(index) as {
+      card_id: string;
+      lesson_id: string;
+      source_sentence: string | null;
+      created_at: string;
+    };
+    const entry: FlashcardSource = {
+      lessonId: row.lesson_id,
+      sourceSentence: row.source_sentence,
+      createdAt: row.created_at,
+    };
+    const list = sources.get(row.card_id);
+    if (list) {
+      list.push(entry);
+    } else {
+      sources.set(row.card_id, [entry]);
+    }
+  }
+  return sources;
 }
 
 export function unsaveFlashcard(

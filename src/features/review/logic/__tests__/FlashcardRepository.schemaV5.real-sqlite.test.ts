@@ -10,6 +10,7 @@ import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 import {
   getDueFlashcards,
   listFlashcards,
+  listFlashcardSources,
   saveFlashcard,
   unsaveFlashcard,
 } from '../FlashcardRepository';
@@ -206,5 +207,47 @@ describe('saveFlashcard (schema v5)', () => {
     });
     expect(rows('SELECT id FROM flashcards;')).toHaveLength(1);
     expect(rows('SELECT * FROM flashcard_sources;')).toHaveLength(2);
+  });
+});
+
+describe('listFlashcardSources', () => {
+  it('groups source lessons per card, oldest first, and omits cards without any', () => {
+    const first = saveFlashcard({
+      lessonId: 'L2',
+      vocabulary: vocab('v1', 'coffee', {sourceSentence: 'Coffee is hot.'}),
+      now: '2026-10-02T00:00:00.000Z',
+    });
+    saveFlashcard({
+      lessonId: 'L1',
+      vocabulary: vocab('v2', 'Coffee'),
+      now: '2026-10-03T00:00:00.000Z',
+    });
+    saveFlashcard({
+      lessonId: 'L3',
+      vocabulary: vocab('v3', 'tea'),
+      now: '2026-10-01T00:00:00.000Z',
+    });
+    getDatabase().execute(
+      `INSERT INTO flashcards (id, lesson_id, vocabulary_id, word, meaning_vi,
+         is_saved, created_at, updated_at)
+       VALUES ('legacy', 'L9', 'v9', '...', 'x', 1, 'x', 'x');`,
+    );
+
+    const sources = listFlashcardSources();
+    if (!first.ok) throw new Error('save failed');
+    expect(sources.get(first.flashcardId)).toEqual([
+      {
+        lessonId: 'L2',
+        sourceSentence: 'Coffee is hot.',
+        createdAt: '2026-10-02T00:00:00.000Z',
+      },
+      {
+        lessonId: 'L1',
+        sourceSentence: null,
+        createdAt: '2026-10-03T00:00:00.000Z',
+      },
+    ]);
+    expect(sources.size).toBe(2);
+    expect(sources.has('legacy')).toBe(false);
   });
 });

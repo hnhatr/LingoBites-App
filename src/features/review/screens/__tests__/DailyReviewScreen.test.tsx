@@ -398,4 +398,33 @@ describe('DailyReviewScreen', () => {
     expect(backTexts.join('\n')).not.toBe(frontTexts.join('\n'));
     expect(tree.root.findByProps({testID: 'review-speak-back'})).toBeTruthy();
   });
+
+  it('falls back to the sentence a word was found in when it has no curated example', async () => {
+    const saved = saveFlashcard({
+      lessonId: 'review-lesson-context',
+      vocabulary: {
+        ...validFullOutput.vocabulary[0],
+        id: 'review-word-context',
+        word: 'brew',
+        meaning_vi: 'pha',
+        example: undefined,
+        example_translation: 'bản dịch của ví dụ',
+        source_sentence: 'I brew coffee every morning.',
+      },
+      now: '2026-08-17T00:00:00.000Z',
+    });
+    expect(saved.ok).toBe(true);
+    const tree = await renderScreen(
+      <DailyReviewScreen navigation={navigation() as never} />,
+    );
+    await revealCard(tree);
+
+    const back = tree.root.findByProps({testID: 'review-card-back'});
+    const texts = back
+      .findAll(node => typeof node.props?.children === 'string')
+      .map(node => node.props.children as string);
+    expect(texts).toContain('I brew coffee every morning.');
+    // The example translation belongs to the example, not to the sentence.
+    expect(texts).not.toContain('bản dịch của ví dụ');
+  });
 });

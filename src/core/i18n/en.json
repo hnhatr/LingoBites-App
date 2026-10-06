@@ -593,5 +593,20 @@
     "lesson_minutes": "{{count}} min",
     "load_failed": "The curriculum failed to load.",
     "retry_hint": "Reload the curriculum"
+  },
+  "library": {
+    "vocabulary": {
+      "save_a11y": "Save this word",
+      "unsave_a11y": "Remove this word",
+      "sources_count": "From {{count}} lessons",
+      "sources_show": "Show lessons",
+      "sources_hide": "Hide",
+      "sources_toggle_show_a11y": "Show the {{count}} lessons containing {{word}}",
+      "sources_toggle_hide_a11y": "Hide the lessons containing {{word}}",
+      "source_open_a11y": "Open lesson {{title}}",
+      "source_untitled": "Lesson",
+      "sources_toggle_hint": "Opens or closes the list of lessons",
+      "source_open_hint": "Opens the lesson to see this word in context"
+    }
   }
 }
