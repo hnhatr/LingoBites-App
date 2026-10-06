@@ -21,8 +21,11 @@ jest.mock('../../logic/useLibrarySegments', () => ({
       {
         id: '00000000-0000-4000-8000-000000000010',
         title: 'Unified one',
-        summary: 'First',
-        source: 'canonical',
+        blurb: 'First',
+        dateLabel: '2026-10-06',
+        vocabularyCount: 3,
+        durationMin: 2,
+        sourceType: 'admin_text',
       },
     ],
     vocabulary: [],
@@ -178,7 +181,7 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
     expect(String(mockFetch.mock.calls[0][0])).toContain('/api/v1/lessons');
     expect(() => tree.root.findByProps({testID: 'tab-catalog'})).toThrow();
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Bài học theo lộ trình');
+    expect(text).toContain('Đã tải về');
     expect(text).toContain('Tất cả bài học');
 
     const row = tree.root.findByProps({

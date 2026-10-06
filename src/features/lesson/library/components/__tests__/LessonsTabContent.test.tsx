@@ -35,11 +35,12 @@ function render(ui: React.ReactElement) {
 
 const mockPackagedLesson = {
   id: 'packaged-1',
-  titleVi: 'Tiếng Anh Giao Tiếp',
-  blurbVi: 'Khóa học giao tiếp tiếng Anh',
-  titleEn: 'English Communication',
-  level: 'A1',
-  estimatedDurationMinutes: 30,
+  title: 'Tiếng Anh Giao Tiếp',
+  blurb: 'Khóa học giao tiếp tiếng Anh',
+  dateLabel: '2026-10-06',
+  vocabularyCount: 12,
+  durationMin: 6,
+  sourceType: 'admin_text' as const,
 };
 
 function catalogLesson(index: number, description = `Catalog ${index}`) {
@@ -59,11 +60,12 @@ function catalogLesson(index: number, description = `Catalog ${index}`) {
 
 const mockPackagedLesson2 = {
   id: 'packaged-2',
-  titleVi: 'Tiếng Anh Kinh Doanh',
-  blurbVi: 'Khóa học tiếng Anh kinh doanh',
-  titleEn: 'Business English',
-  level: 'B1',
-  estimatedDurationMinutes: 45,
+  title: 'Tiếng Anh Kinh Doanh',
+  blurb: 'Khóa học tiếng Anh kinh doanh',
+  dateLabel: '2026-10-05',
+  vocabularyCount: 20,
+  durationMin: 10,
+  sourceType: 'learner_text' as const,
 };
 
 describe('LessonsTabContent', () => {
@@ -87,7 +89,7 @@ describe('LessonsTabContent', () => {
 
     const sectionList = tree.root.findByProps({testID: 'lessons-section-list'});
     expect(sectionList.props.sections).toHaveLength(1);
-    expect(sectionList.props.sections[0].title).toBe('Bài học theo lộ trình');
+    expect(sectionList.props.sections[0].title).toBe('Đã tải về');
   });
 
   it('shows empty state when no lessons', () => {
@@ -113,6 +115,12 @@ describe('LessonsTabContent', () => {
       testID: 'lesson-summary-packaged-1',
     });
     expect(summaryText.props.children).toBe('Khóa học giao tiếp tiếng Anh');
+
+    const meta = tree.root.findByProps({testID: 'lesson-meta-packaged-1'});
+    expect(meta.props.children).toBe('12 câu · ~6 phút · Tải 2026-10-06');
+    expect(
+      tree.root.findAllByProps({children: 'Bài mẫu'}).length,
+    ).toBeGreaterThan(0);
   });
 
   it('opens the lesson player when a packaged lesson is pressed', () => {
@@ -193,10 +201,11 @@ describe('LessonsTabContent', () => {
     expect(() =>
       tree.root.findByProps({testID: 'empty-state-message-lessons'}),
     ).toThrow();
-    const summary = tree.root.findByProps({
-      testID: 'lesson-summary-catalog-4',
-    });
-    expect(summary.props.children).toBe('4 câu');
+    expect(
+      tree.root.findAllByProps({testID: 'lesson-summary-catalog-4'}),
+    ).toHaveLength(0);
+    const meta = tree.root.findByProps({testID: 'lesson-meta-catalog-4'});
+    expect(meta.props.children).toBe('4 câu');
   });
 
   it('renders "Xem tất cả" only on the catalog section header', () => {

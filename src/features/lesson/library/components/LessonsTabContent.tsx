@@ -4,18 +4,23 @@ import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
 import {useAppNavigation} from '@core/navigation';
-import type {LessonCatalogItem} from '@core/schemas/lesson';
+import type {LessonCatalogItem, LessonSourceType} from '@core/schemas/lesson';
 
+import {
+  LIBRARY_SOURCE_FILTER_OPTIONS,
+  type LibraryLessonCardView,
+} from '../logic/lesson';
 import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface LessonsTabContentProps {
-  packagedLessons: any[];
+  packagedLessons: LibraryLessonCardView[];
   /** First page of the canonical catalog, shown as a capped preview. */
   catalogLessons?: LessonCatalogItem[];
   onViewAllCatalog?: () => void;
@@ -37,6 +42,9 @@ interface LessonItem {
   id: string;
   title: string;
   summary: string | null;
+  /** "12 câu · ~6 phút · Tải 2026-10-06": what the lesson contains. */
+  meta: string;
+  sourceType: LessonSourceType;
   type: LessonType;
   practiceReady: boolean;
 }
@@ -48,9 +56,17 @@ interface LessonSection {
 }
 
 const LESSON_HINTS: Record<LessonType, string> = {
-  packaged: 'Bài học theo lộ trình. Chạm để xem chi tiết.',
+  packaged: 'Bài học đã tải về. Chạm để học.',
   catalog: 'Bài học trong danh mục. Chạm để mở bài.',
 };
+
+const SOURCE_LABELS = Object.fromEntries(
+  LIBRARY_SOURCE_FILTER_OPTIONS.map(option => [option.key, option.label]),
+) as Record<string, string>;
+
+function buildMeta(parts: (string | null)[]): string {
+  return parts.filter(Boolean).join(' · ');
+}
 
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
@@ -66,6 +82,9 @@ function createStyles(theme: AppTheme) {
     },
     cardContent: {
       gap: theme.spacing.xs,
+    },
+    badgeRow: {
+      alignItems: 'flex-start',
     },
     lessonTitle: {
       marginBottom: theme.spacing.xs,
@@ -108,14 +127,20 @@ export function LessonsTabContent({
     if (packagedLessons && packagedLessons.length > 0) {
       const packagedItems: LessonItem[] = packagedLessons.map(lesson => ({
         id: lesson.id,
-        title: lesson.titleVi || lesson.title,
-        summary: lesson.blurbVi || lesson.summary || null,
+        title: lesson.title,
+        summary: lesson.blurb || null,
+        meta: buildMeta([
+          lesson.vocabularyCount > 0 ? `${lesson.vocabularyCount} câu` : null,
+          lesson.durationMin > 0 ? `~${lesson.durationMin} phút` : null,
+          lesson.dateLabel ? `Tải ${lesson.dateLabel}` : null,
+        ]),
+        sourceType: lesson.sourceType,
         type: 'packaged' as const,
         practiceReady: lesson.practiceReady === true,
       }));
 
       result.push({
-        title: 'Bài học theo lộ trình',
+        title: 'Đã tải về',
         data: packagedItems,
         type: 'packaged',
       });
@@ -127,7 +152,9 @@ export function LessonsTabContent({
         data: catalogLessons.slice(0, CATALOG_PREVIEW_LIMIT).map(lesson => ({
           id: lesson.id,
           title: lesson.title,
-          summary: lesson.description || `${lesson.sentence_count} câu`,
+          summary: lesson.description || null,
+          meta: buildMeta([`${lesson.sentence_count} câu`]),
+          sourceType: lesson.source_type,
           type: 'catalog' as const,
           practiceReady: false,
         })),
@@ -154,6 +181,12 @@ export function LessonsTabContent({
       >
         <AppCard>
           <View style={styles.cardContent}>
+            <View style={styles.badgeRow}>
+              <Chip
+                label={SOURCE_LABELS[item.sourceType] ?? item.sourceType}
+                tone="accentSoft"
+              />
+            </View>
             <AppText
               variant="h3"
               style={styles.lessonTitle}
@@ -172,6 +205,15 @@ export function LessonsTabContent({
                 {item.summary}
               </AppText>
             )}
+            {item.meta ? (
+              <AppText
+                variant="caption"
+                color="muted"
+                testID={`lesson-meta-${item.id}`}
+              >
+                {item.meta}
+              </AppText>
+            ) : null}
           </View>
         </AppCard>
       </Pressable>
