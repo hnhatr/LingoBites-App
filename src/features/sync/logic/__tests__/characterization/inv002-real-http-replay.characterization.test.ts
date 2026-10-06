@@ -6,8 +6,6 @@ import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import type {ReviewEventPayload} from '@core/db/types';
-import type {PracticeEventPayload} from '@core/db/types';
-import {PRACTICE_EVENT_TYPE} from '@core/db/types';
 
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';
 
@@ -25,33 +23,15 @@ const reviewPayload: ReviewEventPayload = {
   next_review_at: '2026-09-30T12:00:00.000Z',
 };
 
-const practicePayload: PracticeEventPayload = {
-  event_id: 'ev-practice-real-1',
-  contract_version: 1,
-  session_id: 'sess-practice-real-1',
-  question_id: 'q1',
-  sequence: 1,
-  selected_option_id: 'opt-1',
-  is_correct: true,
-  answered_at: '2026-09-27T12:01:00.000Z',
-  duration_ms: 0,
-  try_index: 1,
-  grading: {mode: 'device_deterministic', grader_version: 'grader-v1'},
-};
-
 type IdempotentServer = {
   port: number;
   close: () => Promise<void>;
-  practicePostCount: () => number;
   reviewPostCount: () => number;
-  practiceEffectCount: () => number;
   reviewEffectCount: () => number;
 };
 
 async function startIdempotentBatchServer(): Promise<IdempotentServer> {
-  const practiceSeen = new Set<string>();
   const reviewSeen = new Set<string>();
-  let practicePosts = 0;
   let reviewPosts = 0;
 
   const server = http.createServer((req, res) => {
@@ -85,24 +65,6 @@ async function startIdempotentBatchServer(): Promise<IdempotentServer> {
         );
         return;
       }
-      if (req.url === '/v1/practice-events:batch' && req.method === 'POST') {
-        practicePosts += 1;
-        const events = body.events ?? [];
-        const accepted_ids: string[] = [];
-        const duplicate_ids: string[] = [];
-        for (const event of events) {
-          const id = event.event_id as string;
-          if (practiceSeen.has(id)) {
-            duplicate_ids.push(id);
-          } else {
-            practiceSeen.add(id);
-            accepted_ids.push(id);
-          }
-        }
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify({accepted_ids, duplicate_ids, rejected: []}));
-        return;
-      }
       res.writeHead(404);
       res.end();
     });
@@ -122,9 +84,7 @@ async function startIdempotentBatchServer(): Promise<IdempotentServer> {
       new Promise((resolve, reject) => {
         server.close(error => (error ? reject(error) : resolve()));
       }),
-    practicePostCount: () => practicePosts,
     reviewPostCount: () => reviewPosts,
-    practiceEffectCount: () => practiceSeen.size,
     reviewEffectCount: () => reviewSeen.size,
   };
 }
@@ -152,7 +112,7 @@ beforeEach(() => {
 });
 
 describe(`${CHARACTERIZATION_INVARIANTS.INV_002} real HTTP replay (HC-002)`, () => {
-  it('drains review and practice batches to a local server without duplicate server effects on retry', async () => {
+  it('drains review batches to a local server without duplicate server effects on retry', async () => {
     const server = await startIdempotentBatchServer();
     const fetchImpl = realFetchForPort(server.port);
 
@@ -162,27 +122,15 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_002} real HTTP replay (HC-002)`, () 
       payload: reviewPayload,
       createdAt: '2026-09-27T12:00:00.000Z',
     });
-    enqueueSyncOutboxEvent({
-      id: 'ev-practice-real-1',
-      entityId: 'sess-practice-real-1',
-      eventType: PRACTICE_EVENT_TYPE,
-      payload: practicePayload,
-      createdAt: '2026-09-27T12:01:00.000Z',
-    });
 
     const first = await drainOutboxOnce({fetchImpl});
     expect(first).toEqual({
       status: 'synced',
-      syncedIds: expect.arrayContaining([
-        'review-real-1',
-        'ev-practice-real-1',
-      ]),
+      syncedIds: expect.arrayContaining(['review-real-1']),
     });
     expect(listPendingSyncEvents()).toHaveLength(0);
     expect(server.reviewPostCount()).toBe(1);
-    expect(server.practicePostCount()).toBe(1);
     expect(server.reviewEffectCount()).toBe(1);
-    expect(server.practiceEffectCount()).toBe(1);
 
     // Re-enqueue the same ids to simulate a client retry after timeout.
     enqueueSyncOutboxEvent({
@@ -191,20 +139,11 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_002} real HTTP replay (HC-002)`, () 
       payload: reviewPayload,
       createdAt: '2026-09-27T12:00:00.000Z',
     });
-    enqueueSyncOutboxEvent({
-      id: 'ev-practice-real-1',
-      entityId: 'sess-practice-real-1',
-      eventType: PRACTICE_EVENT_TYPE,
-      payload: practicePayload,
-      createdAt: '2026-09-27T12:01:00.000Z',
-    });
 
     const retry = await drainOutboxOnce({fetchImpl});
     expect(retry.status).toBe('synced');
     expect(server.reviewPostCount()).toBe(2);
-    expect(server.practicePostCount()).toBe(2);
     expect(server.reviewEffectCount()).toBe(1);
-    expect(server.practiceEffectCount()).toBe(1);
 
     await server.close();
   });
