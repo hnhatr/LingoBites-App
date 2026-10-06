@@ -103,6 +103,26 @@ export function getLessonDownload(
   }
 }
 
+/**
+ * Parsing a snapshot (JSON + strict zod over every sentence) is the costly
+ * part of listing downloads, and the Library lists them on each open. A row
+ * only changes through a re-download (new `downloaded_at`/revision), so the
+ * parsed record is reused while that stamp is unchanged.
+ */
+const parsedRowCache = new Map<
+  string,
+  {stamp: string; record: LessonDownloadRecord | null}
+>();
+
+function mapRowCached(row: LessonDownloadRow): LessonDownloadRecord | null {
+  const stamp = `${row.content_revision}|${row.server_revision}|${row.downloaded_at}|${row.snapshot_json.length}`;
+  const hit = parsedRowCache.get(row.lesson_id);
+  if (hit && hit.stamp === stamp) return hit.record;
+  const record = mapRow(row);
+  parsedRowCache.set(row.lesson_id, {stamp, record});
+  return record;
+}
+
 /** Every stored download, newest first. Unparseable rows are skipped. */
 export function listLessonDownloads(
   db: QuickSQLiteConnection = getDatabase(),
@@ -111,17 +131,22 @@ export function listLessonDownloads(
     'SELECT * FROM lesson_downloads ORDER BY downloaded_at DESC;',
   );
   const records: LessonDownloadRecord[] = [];
+  const seen = new Set<string>();
   const length = result.rows?.length ?? 0;
   for (let index = 0; index < length; index += 1) {
     const row = result.rows?.item(index) as LessonDownloadRow | undefined;
     if (!row) continue;
+    seen.add(row.lesson_id);
     try {
-      const record = mapRow(row);
+      const record = mapRowCached(row);
       if (record) records.push(record);
     } catch {
       // Skip a corrupt row without breaking the catalog.
     }
   }
+  parsedRowCache.forEach((_, id) => {
+    if (!seen.has(id)) parsedRowCache.delete(id);
+  });
   return records;
 }
 
