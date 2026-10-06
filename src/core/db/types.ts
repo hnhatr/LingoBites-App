@@ -26,6 +26,8 @@ export type VocabularyItem = {
 export type ReviewRating = 'remembered' | 'forgot';
 
 export type FlashcardRecord = {
+  /** `word:coffee` / `phrase:wake up`; null/absent for a card with no usable key. */
+  itemKey?: string | null;
   revision: number;
   tombstone: boolean;
   id: string;

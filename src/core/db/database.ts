@@ -34,6 +34,33 @@ export function resetDatabaseForTests(
  * synchronous (the current codebase contract) while still giving the atomicity
  * the outbox design (ADR-2) relies on for the review write + outbox insert.
  */
+let savepointCounter = 0;
+
+/**
+ * Atomic block that is safe both inside and outside an open transaction
+ * (`SAVEPOINT` starts a transaction when none is open, and nests otherwise).
+ * Use it for repository writes that callers may already wrap in
+ * `withTransaction`; `withTransaction` itself cannot nest.
+ */
+export function withSavepoint<T>(db: QuickSQLiteConnection, run: () => T): T {
+  savepointCounter += 1;
+  const name = `sp_${savepointCounter}`;
+  db.execute(`SAVEPOINT ${name};`);
+  try {
+    const result = run();
+    db.execute(`RELEASE ${name};`);
+    return result;
+  } catch (error) {
+    try {
+      db.execute(`ROLLBACK TO ${name};`);
+      db.execute(`RELEASE ${name};`);
+    } catch {
+      // Rollback failure leaves the connection unusable; surface the original error.
+    }
+    throw error;
+  }
+}
+
 export function withTransaction<T>(db: QuickSQLiteConnection, run: () => T): T {
   db.execute('BEGIN');
   try {

@@ -4,8 +4,8 @@ import path from 'node:path';
 
 import {
   readAppSchemaVersion,
-  runMigrations,
   runMigrationsThroughSchemaV3,
+  runMigrationsThroughSchemaV4,
 } from '@core/db/migrations';
 import {APP_SCHEMA_VERSION_V4, ensureSchemaV4Upgrade} from '@core/db/schemaV4';
 
@@ -230,7 +230,7 @@ describe('LING-235 schema v4 adversarial review (real SQLite)', () => {
       expect(tableNames()).not.toContain(table);
     }
 
-    runMigrations(db);
+    runMigrationsThroughSchemaV4(db);
 
     expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION_V4);
     for (const table of RETIRED_TABLE_NAMES) {
