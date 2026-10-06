@@ -41,6 +41,7 @@ const mockPackagedLesson = {
   vocabularyCount: 12,
   durationMin: 6,
   sourceType: 'admin_text' as const,
+  origin: 'admin' as const,
 };
 
 function catalogLesson(index: number, description = `Catalog ${index}`) {
@@ -66,6 +67,7 @@ const mockPackagedLesson2 = {
   vocabularyCount: 20,
   durationMin: 10,
   sourceType: 'learner_text' as const,
+  origin: 'learner' as const,
 };
 
 describe('LessonsTabContent', () => {

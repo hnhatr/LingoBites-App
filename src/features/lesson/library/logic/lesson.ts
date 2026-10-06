@@ -1,4 +1,4 @@
-import type {LessonSourceType} from '@core/schemas/lesson';
+import type {LessonOrigin, LessonSourceType} from '@core/schemas/lesson';
 
 export type LessonCardView = {
   id: string;
@@ -29,6 +29,8 @@ export type LibraryLessonCardView = {
   vocabularyCount: number;
   durationMin: number;
   sourceType: LessonSourceType;
+  /** `admin` lessons are public; `learner` lessons are the user's own. */
+  origin: LessonOrigin;
   /** The lesson is big enough for a quick-practice quiz. */
   practiceReady?: boolean;
 };

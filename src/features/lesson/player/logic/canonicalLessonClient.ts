@@ -22,9 +22,11 @@ import {
   type LessonAnalysis,
   type LessonCatalogResponse,
   type LessonCreationStatusResponse,
+  type LessonOrigin,
   type LessonRevisionItem,
   type LessonRevisionsResponse,
   type LessonSnapshot,
+  type LessonSourceType,
   parseLessonAnalysisResponse,
   parseLessonCatalogResponse,
   parseLessonCreationAcceptedResponse,
@@ -186,12 +188,23 @@ async function send(
 
 /** List the lessons visible to the caller (catalog). */
 export async function fetchLessonCatalog(
-  query: {limit?: number; cursor?: string} = {},
+  query: {
+    limit?: number;
+    cursor?: string;
+    /** Narrow to one origin (`admin` = public lessons). */
+    origin?: LessonOrigin;
+    /** Narrow to one source type (e.g. `youtube`). */
+    sourceType?: LessonSourceType;
+  } = {},
   options: CanonicalLessonClientOptions = {},
 ): Promise<CanonicalLessonResult<LessonCatalogResponse>> {
   const params = new URLSearchParams();
   if (query.limit !== undefined) params.set('limit', String(query.limit));
   if (query.cursor !== undefined) params.set('cursor', query.cursor);
+  if (query.origin !== undefined) params.set('origin', query.origin);
+  if (query.sourceType !== undefined) {
+    params.set('source_type', query.sourceType);
+  }
   const suffix = params.size > 0 ? `?${params.toString()}` : '';
   const answered = await send(
     `${LESSONS_PATH}${suffix}`,

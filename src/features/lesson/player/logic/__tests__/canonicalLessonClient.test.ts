@@ -4,6 +4,7 @@ import path from 'node:path';
 import {getAppConfig} from '@core/api/appConfig';
 
 import {
+  fetchLessonCatalog,
   fetchLessonRevisions,
   fetchLessonSnapshot,
   fetchSentenceAnalysis,
@@ -60,6 +61,32 @@ beforeEach(() => {
 });
 
 describe('canonical lesson client', () => {
+  it('sends the origin and source type narrowing on the catalog request', async () => {
+    authenticatedFetch.mockResolvedValue(
+      jsonResponse(200, {contract_version: 1, lessons: [], next_cursor: null}),
+    );
+    await fetchLessonCatalog({
+      limit: 20,
+      origin: 'admin',
+      sourceType: 'youtube',
+    });
+    const url = String(authenticatedFetch.mock.calls[0][0]);
+    expect(url).toContain('/api/v1/lessons?');
+    expect(url).toContain('limit=20');
+    expect(url).toContain('origin=admin');
+    expect(url).toContain('source_type=youtube');
+  });
+
+  it('leaves the catalog request unchanged without narrowing', async () => {
+    authenticatedFetch.mockResolvedValue(
+      jsonResponse(200, {contract_version: 1, lessons: [], next_cursor: null}),
+    );
+    await fetchLessonCatalog({limit: 20});
+    const url = String(authenticatedFetch.mock.calls[0][0]);
+    expect(url).not.toContain('origin=');
+    expect(url).not.toContain('source_type=');
+  });
+
   it('parses the snapshot fixture through the strict mirror', async () => {
     authenticatedFetch.mockResolvedValue(
       jsonResponse(200, fixture('valid-lesson-snapshot-response.json')),

@@ -1,6 +1,10 @@
 import {useCallback, useState} from 'react';
 
-import type {LessonCatalogItem} from '@core/schemas/lesson';
+import type {
+  LessonCatalogItem,
+  LessonOrigin,
+  LessonSourceType,
+} from '@core/schemas/lesson';
 
 import {
   type CanonicalLessonError,
@@ -23,12 +27,18 @@ export type CanonicalCatalogState =
  * contract mirror. Every source (admin/learner text, OCR, YouTube) appears
  * in the same catalog and opens the same player.
  */
-export function useCanonicalCatalog() {
+export type CanonicalCatalogFilter = {
+  origin?: LessonOrigin;
+  sourceType?: LessonSourceType;
+};
+
+export function useCanonicalCatalog(filter: CanonicalCatalogFilter = {}) {
+  const {origin, sourceType} = filter;
   const [state, setState] = useState<CanonicalCatalogState>({status: 'idle'});
 
   const refresh = useCallback(async () => {
     setState({status: 'loading'});
-    const result = await fetchLessonCatalog({limit: 20});
+    const result = await fetchLessonCatalog({limit: 20, origin, sourceType});
     if (!result.ok) {
       setState({status: 'error', error: result});
       return;
@@ -39,7 +49,7 @@ export function useCanonicalCatalog() {
       nextCursor: result.value.next_cursor,
       loadingMore: false,
     });
-  }, []);
+  }, [origin, sourceType]);
 
   const loadMore = useCallback(async () => {
     let cursor: string | null = null;
@@ -60,7 +70,12 @@ export function useCanonicalCatalog() {
       );
       return;
     }
-    const result = await fetchLessonCatalog({limit: 20, cursor});
+    const result = await fetchLessonCatalog({
+      limit: 20,
+      cursor,
+      origin,
+      sourceType,
+    });
     if (!result.ok) {
       setState(previous =>
         previous.status === 'ready'
@@ -75,7 +90,7 @@ export function useCanonicalCatalog() {
       nextCursor: result.value.next_cursor,
       loadingMore: false,
     });
-  }, []);
+  }, [origin, sourceType]);
 
   return {state, refresh, loadMore};
 }
