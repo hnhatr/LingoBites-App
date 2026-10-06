@@ -122,7 +122,7 @@ jobs:
       - name: Preflight - assert staging bundle id (not production)
         run: |
           set -euo pipefail
-          resolved="$(xcodebuild -workspace ios/ScanLearnEnglish.xcworkspace -scheme Staging -configuration ReleaseStag -showBuildSettings 2>/dev/null | awk -F ' = ' '$1 ~ /^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER$/ {print $2}')"
+          resolved="$(xcodebuild -workspace ios/LingoBites.xcworkspace -scheme Staging -configuration ReleaseStag -showBuildSettings 2>/dev/null | awk -F ' = ' '$1 ~ /^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER$/ {print $2}')"
           echo "Resolved bundle id: $resolved"
           if [ "$resolved" != "$STAGING_IOS_BUNDLE_ID" ]; then
             echo "Resolved bundle id '$resolved' does not match expected staging bundle id '$STAGING_IOS_BUNDLE_ID'. Aborting." >&2
