@@ -14,6 +14,7 @@ import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
 
 import {GrammarTabContent} from '../components/GrammarTabContent';
+import {LibraryLoadingNotice} from '../components/LibraryLoadingNotice';
 import {LessonsTabContent} from '../components/LessonsTabContent';
 import {PublicLessonsList} from '../components/PublicLessonsList';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
