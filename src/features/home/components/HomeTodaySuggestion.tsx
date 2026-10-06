@@ -27,10 +27,6 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {getHardShadow} from './HomeDecorations';
 
-const SUGGESTION_PALETTE = {
-  borderInk: '#1c1c10',
-};
-
 const MODE_OPTIONS: ReadonlyArray<{
   mode: TodayMode;
   labelKey: string;
@@ -149,13 +145,13 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     card: {
       backgroundColor: theme.colors.surface,
-      borderColor: SUGGESTION_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 20,
       borderWidth: 2,
       gap: 10,
       paddingHorizontal: 14,
       paddingVertical: 12,
-      ...getHardShadow(4),
+      ...getHardShadow(4, theme.colors.ink),
     },
     headerRow: {
       alignItems: 'center',

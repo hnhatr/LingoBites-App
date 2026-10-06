@@ -33,3 +33,9 @@ describe('theme consistency (SETE-280)', () => {
     },
   );
 });
+
+describe('theme ink token', () => {
+  it.each(Object.keys(themes))('theme %s defines a hard-outline ink', id => {
+    expect(themes[id as keyof typeof themes].colors.ink).toMatch(/^#/);
+  });
+});

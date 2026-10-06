@@ -16,10 +16,6 @@ import {HOME_EMPTY_PAW, HOME_TROPHY} from '../logic/homeScreenModel';
 import {getHardShadow} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
-const GOAL_PALETTE = {
-  borderInk: '#1c1c10',
-};
-
 type Props = {
   pawGoal: PawGoalModel;
   card: WeeklyGoalCardModel;
@@ -94,14 +90,14 @@ function makeStyles(theme: AppTheme) {
     card: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: GOAL_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 20,
       borderWidth: 2,
       flexDirection: 'row',
       gap: 14,
       paddingHorizontal: 14,
       paddingVertical: 12,
-      ...getHardShadow(4),
+      ...getHardShadow(4, theme.colors.ink),
     },
     copy: {
       flex: 1,

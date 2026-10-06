@@ -17,8 +17,6 @@ import {LINK_HIT_SLOP, type RecentItem} from '../logic/homeScreenModel';
 import {getHardShadow} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
-const BORDER_INK = '#1c1c10';
-
 function railMetaLine(
   t: (key: string, opts?: Record<string, string | number>) => string,
   item: RecentItem,
@@ -191,18 +189,18 @@ function makeStyles(theme: AppTheme) {
     card: {
       alignItems: 'flex-start',
       backgroundColor: theme.colors.surface,
-      borderColor: BORDER_INK,
+      borderColor: theme.colors.ink,
       borderRadius: 18,
       borderWidth: 2,
       flexDirection: 'row',
       gap: 10,
       minHeight: 96,
       padding: 12,
-      ...getHardShadow(4),
+      ...getHardShadow(4, theme.colors.ink),
     },
     cardPressed: {
       transform: [{translateY: 2}],
-      ...getHardShadow(2),
+      ...getHardShadow(2, theme.colors.ink),
     },
     thumb: {
       alignItems: 'center',

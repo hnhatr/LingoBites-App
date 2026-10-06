@@ -37,6 +37,8 @@ export type ColorScale = {
   accentInk: string;
   accentSoft: string;
   danger: string;
+  /** Hard outline/shadow color for sticker-style surfaces (dark ink on light themes, light on dark). */
+  ink: string;
   /** Translucent white "glass" highlight over solid brand-colored surfaces. */
   overlayLight: string;
   /** Dark scrim behind captions/text overlaid on arbitrary photos. */

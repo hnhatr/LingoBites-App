@@ -22,8 +22,9 @@ export interface SearchAndFilterBarProps {
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
-      padding: theme.spacing.md,
-      gap: theme.spacing.md,
+      paddingHorizontal: theme.gutter,
+      paddingVertical: theme.spacing.sm,
+      gap: theme.spacing.sm,
     },
     searchContainer: {
       position: 'relative',
@@ -43,8 +44,7 @@ function createStyles(theme: AppTheme) {
     },
     filterRow: {
       flexDirection: 'row',
-      gap: theme.spacing.md,
-      paddingHorizontal: theme.spacing.md,
+      gap: theme.spacing.sm,
       paddingRight: theme.spacing.xl,
     },
   });

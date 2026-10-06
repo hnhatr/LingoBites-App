@@ -29,10 +29,8 @@ import {HomeIcon} from './HomeSvgIcons';
 
 const PALETTE = {
   highlight: '#FFD35E',
-  borderInk: '#1c1c10',
   ember1: '#ffb03a',
   ember2: '#ff6a1a',
-  streakNumber: '#1c1c10',
   flameGlow: 'rgba(255,110,0,0.75)',
 };
 
@@ -268,7 +266,7 @@ function makeStyles(theme: AppTheme) {
     streakPill: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 999,
       borderWidth: 2,
       flexDirection: 'row',
@@ -278,7 +276,7 @@ function makeStyles(theme: AppTheme) {
       paddingLeft: 8,
       paddingRight: 12,
       paddingTop: 6,
-      ...getHardShadow(3),
+      ...getHardShadow(3, theme.colors.ink),
     },
     flameContainer: {
       alignItems: 'center',
@@ -306,7 +304,7 @@ function makeStyles(theme: AppTheme) {
       width: 4,
     },
     streakNumber: {
-      color: PALETTE.streakNumber,
+      color: theme.colors.text.primary,
       fontSize: 16,
       fontWeight: '900',
     },

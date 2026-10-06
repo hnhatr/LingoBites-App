@@ -11,6 +11,10 @@
     }
   },
   "create": {
+    "more_ways": "More ways to create",
+    "source_gallery_desc": "Pick an existing photo from your device",
+    "source_youtube_desc": "Watch a video and learn from its captions",
+    "source_paste_desc": "Paste any text you want to study",
     "title": "Create a new lesson",
     "subtitle": "Turn a photo, text, or video into your own lesson.",
     "empty_title": "No creation methods available",
@@ -628,6 +632,10 @@
     "retry_hint": "Reload the curriculum"
   },
   "library": {
+    "title": "Library",
+    "review_banner_cta": "Review now",
+    "review_banner_due": "{{count}} cards due",
+    "speaking_a11y": "Open speaking room",
     "vocabulary": {
       "save_a11y": "Save this word",
       "unsave_a11y": "Remove this word",

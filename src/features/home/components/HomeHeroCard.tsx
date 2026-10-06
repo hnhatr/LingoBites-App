@@ -414,7 +414,6 @@ export function HomeHeroCard({
 }
 
 const CARD_PALETTE = {
-  borderInk: '#1c1c10',
   paperSheet: '#ffffff22',
   haloBg: '#ffd35e',
   bubbleBg: '#ffffff',
@@ -424,11 +423,11 @@ const CARD_PALETTE = {
 
 const TRANSPARENT = 'rgba(0,0,0,0)';
 
-function makeStyles(_theme: AppTheme) {
+function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     card: {
       backgroundColor: HERO_BLUE,
-      borderColor: CARD_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 24,
       borderWidth: 2,
       minHeight: 190,
@@ -438,7 +437,7 @@ function makeStyles(_theme: AppTheme) {
       paddingRight: 138,
       paddingTop: 20,
       position: 'relative',
-      ...getHardShadow(6),
+      ...getHardShadow(6, theme.colors.ink),
     },
     coralBlob: {
       backgroundColor: HERO_CORAL,
@@ -501,7 +500,7 @@ function makeStyles(_theme: AppTheme) {
     cta: {
       alignItems: 'center',
       backgroundColor: HERO_CTA_BG,
-      borderColor: CARD_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 999,
       borderWidth: 2,
       flexDirection: 'row',
@@ -511,11 +510,11 @@ function makeStyles(_theme: AppTheme) {
       paddingLeft: 14,
       paddingRight: 18,
       paddingVertical: 10,
-      ...getHardShadow(4),
+      ...getHardShadow(4, theme.colors.ink),
     },
     ctaPressed: {
       transform: [{translateY: 3}],
-      ...getHardShadow(1),
+      ...getHardShadow(1, theme.colors.ink),
     },
     ctaLabel: {
       color: HERO_CTA_INK,
@@ -543,7 +542,7 @@ function makeStyles(_theme: AppTheme) {
     },
     bubble: {
       backgroundColor: CARD_PALETTE.bubbleBg,
-      borderColor: CARD_PALETTE.borderInk,
+      borderColor: theme.colors.ink,
       borderRadius: 14,
       borderWidth: 2,
       maxWidth: 120,
@@ -566,7 +565,7 @@ function makeStyles(_theme: AppTheme) {
       borderLeftWidth: 6,
       borderRightColor: TRANSPARENT,
       borderRightWidth: 6,
-      borderTopColor: CARD_PALETTE.borderInk,
+      borderTopColor: theme.colors.ink,
       borderTopWidth: 12,
       bottom: -12,
       height: 0,

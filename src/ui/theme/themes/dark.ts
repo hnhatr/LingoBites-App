@@ -31,6 +31,7 @@ export const darkTheme: AppTheme = {
     accentInk: '#083344',
     accentSoft: '#1f4458',
     danger: '#f87171',
+    ink: '#e2e8f0',
     overlayLight: 'rgba(255,255,255,0.34)',
     overlay: 'rgba(0,0,0,0.55)',
     onOverlay: '#ffffff',

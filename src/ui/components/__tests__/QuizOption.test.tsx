@@ -168,7 +168,7 @@ describe('QuizOption', () => {
 
     const style = containerStyleOf(tree);
     expect(style.borderColor).toBe(activeTheme.colors.secondaryContainer);
-    expect(style.backgroundColor).toBe('rgba(254,116,136,0.1)');
+    expect(style.backgroundColor).toBe('rgba(254,116,136,0.16)');
     expect(keyCircleOf(tree)?.backgroundColor).toBe(
       activeTheme.colors.secondaryContainer,
     );
