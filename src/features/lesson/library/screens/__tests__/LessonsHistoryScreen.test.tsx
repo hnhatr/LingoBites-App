@@ -5,24 +5,32 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
-import {mockAppNavigation} from '@test/support';
-
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
 
+const card = (id: string, sourceType: string) => ({
+  id,
+  title: id,
+  blurb: '',
+  dateLabel: '2026-10-06',
+  vocabularyCount: 3,
+  durationMin: 2,
+  sourceType,
+});
+
+let mockLessons = [
+  card('a', 'learner_text'),
+  card('b', 'learner_ocr'),
+  card('c', 'youtube'),
+];
+
 jest.mock('../../logic/useLibrarySegments', () => ({
   ...jest.requireActual('../../logic/useLibrarySegments'),
   useLibrarySegments: () => ({
-    packagedLessons: [],
-    vocabulary: [],
+    packagedLessons: mockLessons,
+    vocabulary: [{id: 'v1'}],
     grammar: [],
-    lessonsFilter: {searchQuery: '', sourceFilter: 'all'},
-    vocabularyFilter: {searchQuery: '', sourceFilter: 'all'},
-    grammarFilter: {searchQuery: '', sourceFilter: 'all'},
-    setLessonsFilter: jest.fn(),
-    setVocabularyFilter: jest.fn(),
-    setGrammarFilter: jest.fn(),
     refresh: mockRefresh,
   }),
 }));
@@ -32,63 +40,8 @@ jest.mock('@react-navigation/native', () => {
   return {
     useFocusEffect: (callback: () => void) =>
       ReactModule.useEffect(callback, [callback]),
-    useNavigation: () => ({
-      navigate: jest.fn(),
-    }),
   };
 });
-
-jest.mock('@features/lesson/player', () => {
-  const actual = jest.requireActual('@features/lesson/player');
-  return {
-    ...actual,
-    UnifiedLessonsScreen: () => null,
-    useCanonicalCatalog: () => ({
-      state: {
-        status: 'ready',
-        lessons: [
-          {
-            id: 'catalog-1',
-            title: 'Catalog one',
-            description: 'First',
-            origin: 'admin',
-            source_type: 'admin_text',
-            content_revision: 1,
-            sentence_count: 3,
-            youtube_video_id: null,
-            unit: null,
-            updated_at: '2026-09-30T04:15:00.000Z',
-          },
-        ],
-        nextCursor: null,
-      },
-      refresh: jest.fn(),
-      loadMore: jest.fn(),
-    }),
-  };
-});
-
-const mockGetDueFlashcards = jest.fn((): unknown[] => [{}, {}]);
-
-jest.mock('@features/review', () => ({
-  useFlashcardLibrary: () => ({
-    getDueFlashcards: mockGetDueFlashcards,
-  }),
-  useBookmarkOptimistic: () => ({
-    vocabularySaveState: {
-      isSaved: new Map(),
-      getIsSaved: (_itemId: string, dbValue: boolean) => dbValue,
-    },
-    grammarSaveState: {
-      isSaved: new Map(),
-      getIsSaved: (_itemId: string, dbValue: boolean) => dbValue,
-    },
-    onVocabularySave: jest.fn(),
-    onVocabularyUnsave: jest.fn(),
-    onGrammarSave: jest.fn(),
-    onGrammarUnsave: jest.fn(),
-  }),
-}));
 
 function render(ui: React.ReactElement) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
@@ -102,12 +55,8 @@ function render(ui: React.ReactElement) {
   return tree;
 }
 
-describe('LessonsHistoryScreen', () => {
-  const navigation = {
-    navigate: jest.fn(),
-    getParent: jest.fn(),
-  } as any;
-
+describe('LessonsHistoryScreen (Library hub)', () => {
+  const navigation = {navigate: jest.fn()} as any;
   const route = {
     key: 'LessonsList',
     name: 'LessonsList' as const,
@@ -115,123 +64,56 @@ describe('LessonsHistoryScreen', () => {
   };
 
   beforeEach(() => {
-    mockRefresh.mockClear();
-    navigation.navigate.mockClear();
     jest.clearAllMocks();
+    mockLessons = [
+      card('a', 'learner_text'),
+      card('b', 'learner_ocr'),
+      card('c', 'youtube'),
+    ];
   });
 
-  it('renders three tabs', () => {
-    const tree = render(
-      <LessonsHistoryScreen navigation={navigation} route={route} />,
-    );
-
-    expect(tree.root.findByProps({testID: 'tab-lessons'})).toBeDefined();
-    expect(tree.root.findByProps({testID: 'tab-vocabulary'})).toBeDefined();
-    expect(tree.root.findByProps({testID: 'tab-grammar'})).toBeDefined();
-  });
-
-  it('starts with lessons tab active', () => {
-    const tree = render(
-      <LessonsHistoryScreen navigation={navigation} route={route} />,
-    );
-
-    expect(
-      tree.root.findByProps({testID: 'lessons-tab-content'}),
-    ).toBeDefined();
-    expect(() =>
-      tree.root.findByProps({testID: 'vocabulary-tab-content'}),
-    ).toThrow();
-  });
-
-  it('switches to vocabulary tab', () => {
-    const tree = render(
-      <LessonsHistoryScreen navigation={navigation} route={route} />,
-    );
-
-    const vocabularyTab = tree.root.findByProps({testID: 'tab-vocabulary'});
-
-    act(() => {
-      vocabularyTab.props.onPress();
-    });
-
-    expect(
-      tree.root.findByProps({testID: 'vocabulary-tab-content'}),
-    ).toBeDefined();
-    expect(() =>
-      tree.root.findByProps({testID: 'lessons-tab-content'}),
-    ).toThrow();
-  });
-
-  it('switches to grammar tab', () => {
-    const tree = render(
-      <LessonsHistoryScreen navigation={navigation} route={route} />,
-    );
-
-    const grammarTab = tree.root.findByProps({testID: 'tab-grammar'});
-
-    act(() => {
-      grammarTab.props.onPress();
-    });
-
-    expect(
-      tree.root.findByProps({testID: 'grammar-tab-content'}),
-    ).toBeDefined();
-  });
-
-  it('refreshes segment data on focus', () => {
+  const renderHub = () =>
     render(<LessonsHistoryScreen navigation={navigation} route={route} />);
+  const count = (tree: ReactTestRenderer.ReactTestRenderer, id: string) =>
+    tree.root.findByProps({testID: `library-card-${id}-count`}).props.children;
 
+  it('shows one card per section, with no tab bar', () => {
+    const tree = renderHub();
+    ['mine', 'video', 'samples', 'vocabulary', 'grammar'].forEach(id => {
+      expect(
+        tree.root.findByProps({testID: `library-card-${id}`}),
+      ).toBeDefined();
+    });
+    expect(tree.root.findAllByProps({testID: 'library-tab-bar'})).toHaveLength(
+      0,
+    );
+  });
+
+  it('counts each lesson under exactly one card', () => {
+    const tree = renderHub();
+    expect(count(tree, 'mine')).toBe('2 bài');
+    expect(count(tree, 'video')).toBe('1 bài');
+    expect(count(tree, 'vocabulary')).toBe('1 từ');
+  });
+
+  it('shows an action hint on an empty section', () => {
+    const tree = renderHub();
+    expect(count(tree, 'samples')).toBe('Chưa tải bài mẫu nào');
+    expect(count(tree, 'grammar')).toBe('Bấm ♡ trong bài học để lưu quy tắc');
+  });
+
+  it('opens the section list when a card is pressed', () => {
+    const tree = renderHub();
+    act(() => {
+      tree.root.findByProps({testID: 'library-card-video'}).props.onPress();
+    });
+    expect(navigation.navigate).toHaveBeenCalledWith('LibraryList', {
+      section: 'video',
+    });
+  });
+
+  it('refreshes library data on focus', () => {
+    renderHub();
     expect(mockRefresh).toHaveBeenCalled();
-  });
-
-  it('shows the practice entry row above the segments', () => {
-    const tree = render(
-      <LessonsHistoryScreen navigation={navigation} route={route} />,
-    );
-
-    expect(
-      tree.root.findByProps({testID: 'library-practice-row'}),
-    ).toBeDefined();
-    expect(
-      tree.root.findByProps({testID: 'library-practice-review'}),
-    ).toBeDefined();
-    expect(
-      tree.root.findByProps({testID: 'library-practice-speaking'}),
-    ).toBeDefined();
-  });
-
-  it('opens the full catalog from the "Xem tất cả" section action', () => {
-    const tree = render(
-      <LessonsHistoryScreen navigation={navigation} route={route} />,
-    );
-
-    const target = tree.root
-      .findAll(node => node.props.testID === 'library-catalog-view-all')
-      .find(node => typeof node.props.onPress === 'function');
-    if (!target) {
-      throw new Error('No pressable found for library-catalog-view-all');
-    }
-    act(() => target.props.onPress());
-
-    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
-  });
-
-  it('routes practice chips to DailyReview and SpeakingRoom', () => {
-    const tree = render(
-      <LessonsHistoryScreen navigation={navigation} route={route} />,
-    );
-
-    const press = (testID: string) => {
-      const target = tree.root
-        .findAll(node => node.props.testID === testID)
-        .find(node => typeof node.props.onPress === 'function');
-      if (!target) throw new Error(`No pressable found for ${testID}`);
-      act(() => target.props.onPress());
-    };
-
-    press('library-practice-review');
-    expect(mockAppNavigation.openReview).toHaveBeenCalledTimes(1);
-    press('library-practice-speaking');
-    expect(mockAppNavigation.openSpeakingRoom).toHaveBeenCalledTimes(1);
   });
 });

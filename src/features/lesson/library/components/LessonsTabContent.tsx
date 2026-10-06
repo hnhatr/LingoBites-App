@@ -31,6 +31,8 @@ export interface LessonsTabContentProps {
    * (practice flag off); it only shows on lessons big enough for a quiz.
    */
   onPracticeLesson?: (lessonId: string) => void;
+  /** Title of the downloaded-lessons section; null hides the header. */
+  packagedTitle?: string | null;
 }
 
 /** How many catalog lessons the "Tất cả bài học" section previews. */
@@ -114,6 +116,7 @@ export function LessonsTabContent({
   onViewAllCatalog,
   isFiltered = false,
   onPracticeLesson,
+  packagedTitle = 'Đã tải về',
 }: LessonsTabContentProps) {
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
@@ -140,7 +143,7 @@ export function LessonsTabContent({
       }));
 
       result.push({
-        title: 'Đã tải về',
+        title: packagedTitle ?? '',
         data: packagedItems,
         type: 'packaged',
       });
@@ -163,7 +166,7 @@ export function LessonsTabContent({
     }
 
     return result;
-  }, [packagedLessons, catalogLessons]);
+  }, [packagedLessons, catalogLessons, packagedTitle]);
 
   const handleLessonPress = (item: LessonItem) => {
     navigation.openLesson(item.id);
@@ -235,29 +238,30 @@ export function LessonsTabContent({
     </View>
   );
 
-  const renderSectionHeader = ({section}: {section: LessonSection}) => (
-    <View style={styles.sectionHeader}>
-      <SectionHeader
-        title={section.title}
-        action={
-          section.type === 'catalog' && onViewAllCatalog ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Xem tất cả bài học"
-              accessibilityHint="Mở danh mục đầy đủ"
-              onPress={onViewAllCatalog}
-              style={styles.viewAll}
-              testID="library-catalog-view-all"
-            >
-              <AppText variant="label" color="primary">
-                Xem tất cả
-              </AppText>
-            </Pressable>
-          ) : undefined
-        }
-      />
-    </View>
-  );
+  const renderSectionHeader = ({section}: {section: LessonSection}) =>
+    section.title === '' ? null : (
+      <View style={styles.sectionHeader}>
+        <SectionHeader
+          title={section.title}
+          action={
+            section.type === 'catalog' && onViewAllCatalog ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Xem tất cả bài học"
+                accessibilityHint="Mở danh mục đầy đủ"
+                onPress={onViewAllCatalog}
+                style={styles.viewAll}
+                testID="library-catalog-view-all"
+              >
+                <AppText variant="label" color="primary">
+                  Xem tất cả
+                </AppText>
+              </Pressable>
+            ) : undefined
+          }
+        />
+      </View>
+    );
 
   if (sections.length === 0) {
     return <LibraryEmptyState type={isFiltered ? 'no-results' : 'lessons'} />;

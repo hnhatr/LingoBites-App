@@ -22,7 +22,10 @@ import {
   ImageCaptureScreen,
   PasteTextScreen,
 } from '@features/input';
-import {LessonsHistoryScreen} from '@features/lesson/library';
+import {
+  LessonsHistoryScreen,
+  LibraryListScreen,
+} from '@features/lesson/library';
 import {
   CanonicalLessonCatalogScreen,
   CanonicalLessonPlayerScreen,
@@ -128,6 +131,11 @@ function LessonsStackNavigator() {
       <LessonsStack.Screen
         component={LessonsHistoryScreen}
         name="LessonsList"
+        options={HIDDEN_HEADER}
+      />
+      <LessonsStack.Screen
+        component={LibraryListScreen}
+        name="LibraryList"
         options={HIDDEN_HEADER}
       />
     </LessonsStack.Navigator>
