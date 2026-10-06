@@ -1,6 +1,6 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useMemo} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
+import {InteractionManager, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -47,7 +47,18 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const feedClearance = useFloatingTabBarClearance();
   const appNavigation = useAppNavigation();
   const tileWidth = useGridTileWidth();
-  const {packagedLessons, vocabulary, grammar, refresh} = useLibrarySegments();
+  // Counts come from reading every download; load them after the tab has
+  // painted so the first open shows the tiles right away.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => setReady(true));
+    return () => task.cancel();
+  }, []);
+  const {packagedLessons, vocabulary, grammar, refresh} = useLibrarySegments({
+    lessons: ready,
+    vocabulary: ready,
+    grammar: ready,
+  });
 
   useRefreshOnRefocus(refresh);
 
@@ -73,9 +84,11 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const countLabel = (section: LibrarySectionConfig) =>
     section.catalog
       ? 'Cần kết nối mạng'
-      : counts[section.id] > 0
-        ? `${counts[section.id]} ${section.unit}`
-        : section.emptyHint;
+      : !ready
+        ? 'Đang tải…'
+        : counts[section.id] > 0
+          ? `${counts[section.id]} ${section.unit}`
+          : section.emptyHint;
 
   return (
     <AppScreen>
