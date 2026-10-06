@@ -99,6 +99,11 @@ export function YouTubeLessonStudy({
     () => activeSentenceIndexAt(orderedSentences, playbackPositionMs),
     [orderedSentences, playbackPositionMs],
   );
+  const followIndex = useMemo(
+    () => startedSentenceIndexAt(orderedSentences, playbackPositionMs),
+    [orderedSentences, playbackPositionMs],
+  );
+
   useEffect(() => {
     if (videoPlaying) {
       setFollowVideo(true);
@@ -109,13 +114,13 @@ export function YouTubeLessonStudy({
     if (
       videoPlaying &&
       followVideo &&
-      activeIndex !== null &&
-      activeIndex !== currentIndexRef.current
+      followIndex !== null &&
+      followIndex !== currentIndexRef.current
     ) {
       setCarouselScrollAnimated(true);
-      setCurrentIndex(activeIndex);
+      setCurrentIndex(followIndex);
     }
-  }, [activeIndex, followVideo, videoPlaying]);
+  }, [followIndex, followVideo, videoPlaying]);
 
   const handleOpenAnalysis = useCallback(
     (sentenceId: string) => {
