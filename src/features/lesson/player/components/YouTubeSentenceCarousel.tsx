@@ -227,10 +227,15 @@ export function YouTubeSentenceCarousel({
 
   const listRef = React.useRef<FlatList<LessonSentence>>(null);
   const pendingAnimatedScrollRef = React.useRef(false);
+  // Only a finger drag may change the index from scroll events; animated
+  // programmatic scrolls (video follow) also end in onMomentumScrollEnd and
+  // would otherwise be mistaken for a manual swipe.
+  const userDraggingRef = React.useRef(false);
 
   const scrollToIndex = useCallback(
     (index: number, animated: boolean) => {
       if (sentences.length === 0) return;
+      userDraggingRef.current = false;
       const clamped = Math.max(0, Math.min(index, sentences.length - 1));
       listRef.current?.scrollToIndex({
         index: clamped,
@@ -301,6 +306,8 @@ export function YouTubeSentenceCarousel({
 
   const onMomentumScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (!userDraggingRef.current) return;
+      userDraggingRef.current = false;
       if (cardWidth <= 0) return;
       const offsetX = event.nativeEvent.contentOffset.x;
       const next = Math.round(offsetX / cardWidth);
@@ -345,6 +352,9 @@ export function YouTubeSentenceCarousel({
         snapToInterval={cardWidth}
         decelerationRate="fast"
         onMomentumScrollEnd={onMomentumScrollEnd}
+        onScrollBeginDrag={() => {
+          userDraggingRef.current = true;
+        }}
       />
     </View>
   );

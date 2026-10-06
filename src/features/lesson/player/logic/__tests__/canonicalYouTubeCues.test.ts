@@ -4,6 +4,7 @@ import {
   activeSentenceIndexAt,
   areCuesBoundedByDuration,
   formatCueTimestamp,
+  startedSentenceIndexAt,
 } from '../canonicalYouTubeCues';
 
 function sentence(
@@ -29,6 +30,18 @@ describe('canonical YouTube cues', () => {
     expect(activeSentenceIndexAt(sentences, 1500)).toBe(0);
     expect(activeSentenceIndexAt(sentences, 2000)).toBe(1);
     expect(activeSentenceIndexAt(sentences, 9000)).toBeNull();
+  });
+
+  it('bridges gaps between cues when following the video', () => {
+    const sentences = [
+      sentence({id: 's1', start_ms: 1000, end_ms: 2000}),
+      sentence({id: 's2', position: 1, start_ms: 4000, end_ms: 5000}),
+    ];
+    expect(startedSentenceIndexAt(sentences, 500)).toBeNull();
+    expect(startedSentenceIndexAt(sentences, 1500)).toBe(0);
+    expect(startedSentenceIndexAt(sentences, 3000)).toBe(0);
+    expect(startedSentenceIndexAt(sentences, 4000)).toBe(1);
+    expect(startedSentenceIndexAt(sentences, 99000)).toBe(1);
   });
 
   it('ignores uncued sentences', () => {

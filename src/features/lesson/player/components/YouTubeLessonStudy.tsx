@@ -8,7 +8,10 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
-import {activeSentenceIndexAt} from '../logic/canonicalYouTubeCues';
+import {
+  activeSentenceIndexAt,
+  startedSentenceIndexAt,
+} from '../logic/canonicalYouTubeCues';
 import {sortedBlocks, sortedSentences} from '../logic/lessonHubContent';
 import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
 import {CanonicalBlockView} from './CanonicalBlockView';
