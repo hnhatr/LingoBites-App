@@ -1,6 +1,11 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {InteractionManager, StyleSheet, View} from 'react-native';
+import {
+  ActivityIndicator,
+  InteractionManager,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
@@ -103,9 +108,7 @@ export function LibraryListScreen({navigation, route}: Props) {
             searchQuery={searchQuery}
           />
         ) : !ready ? (
-          <View style={styles.loading}>
-            <LibraryLoadingNotice message="Đang tải dữ liệu, vui lòng đợi…" />
-          </View>
+          <ActivityIndicator style={styles.loading} />
         ) : isOwnLessonSection(section) ? (
           <LessonsTabContent
             packagedLessons={lessons}
@@ -133,6 +136,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loading: {
-    paddingHorizontal: 16,
+    marginTop: 32,
   },
 });
