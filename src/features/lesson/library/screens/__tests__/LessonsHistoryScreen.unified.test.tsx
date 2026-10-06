@@ -210,6 +210,9 @@ describe('LessonsHistoryScreen unified composition (LING-21 TASK-007)', () => {
       ({tree} = renderUnified());
     });
 
+    act(() => {
+      tree.root.findByProps({testID: 'filter-toggle'}).props.onPress();
+    });
     expect(
       tree.root.findByProps({testID: 'filter-chip-youtube'}).props.selected,
     ).toBe(true);

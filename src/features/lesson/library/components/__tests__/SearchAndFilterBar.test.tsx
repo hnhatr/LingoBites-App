@@ -21,6 +21,12 @@ function render(ui: React.ReactElement) {
   return tree;
 }
 
+function openFilters(tree: ReactTestRenderer.ReactTestRenderer) {
+  act(() => {
+    tree.root.findByProps({testID: 'filter-toggle'}).props.onPress();
+  });
+}
+
 describe('SearchAndFilterBar', () => {
   it('renders search input field', () => {
     const tree = render(
@@ -45,6 +51,7 @@ describe('SearchAndFilterBar', () => {
         onFilterChange={jest.fn()}
       />,
     );
+    openFilters(tree);
 
     const textInstances = tree.root.findAllByType(Text);
     const labels = textInstances.map(node => node.props.children);
@@ -97,6 +104,7 @@ describe('SearchAndFilterBar', () => {
         onFilterChange={jest.fn()}
       />,
     );
+    openFilters(tree);
 
     const youtubeChip = tree.root.findByProps({testID: 'filter-chip-youtube'});
     expect(youtubeChip.props.selected).toBe(true);
@@ -115,6 +123,7 @@ describe('SearchAndFilterBar', () => {
         onFilterChange={onFilterChange}
       />,
     );
+    openFilters(tree);
 
     const imageOcrChip = tree.root.findByProps({
       testID: 'filter-chip-learner_ocr',
@@ -136,6 +145,7 @@ describe('SearchAndFilterBar', () => {
       />,
     );
 
+    openFilters(tree);
     ['all', 'admin_text', 'learner_text', 'learner_ocr', 'youtube'].forEach(
       key => {
         expect(
@@ -156,6 +166,7 @@ describe('SearchAndFilterBar', () => {
       />,
     );
 
+    openFilters(tree);
     let allChip = tree.root.findByProps({testID: 'filter-chip-all'});
     expect(allChip.props.selected).toBe(true);
 
@@ -203,6 +214,7 @@ describe('SearchAndFilterBar', () => {
         />,
       );
 
+      openFilters(tree);
       const chip = tree.root.findByProps({testID: `filter-chip-${filter}`});
       expect(chip.props.selected).toBe(true);
     });
@@ -236,5 +248,26 @@ describe('SearchAndFilterBar', () => {
     expect(searchInput.props.accessibilityLabel).toBe(
       'Tìm kiếm trong Thư viện',
     );
+  });
+
+  it('keeps source chips folded until the toggle is pressed', () => {
+    const tree = render(
+      <SearchAndFilterBar
+        searchQuery=""
+        sourceFilter="youtube"
+        onSearchChange={jest.fn()}
+        onFilterChange={jest.fn()}
+      />,
+    );
+
+    expect(
+      tree.root.findAllByProps({testID: 'filter-chip-youtube'}),
+    ).toHaveLength(0);
+    const toggle = tree.root.findByProps({testID: 'filter-toggle'});
+    expect(toggle.props.label).toContain('YouTube');
+    openFilters(tree);
+    expect(
+      tree.root.findAllByProps({testID: 'filter-chip-youtube'}).length,
+    ).toBeGreaterThan(0);
   });
 });
