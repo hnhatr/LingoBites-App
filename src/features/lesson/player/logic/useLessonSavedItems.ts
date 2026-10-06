@@ -4,9 +4,9 @@ import {useTranslation} from 'react-i18next';
 import {
   listBookmarkedGrammar,
   listFlashcards,
+  removeFlashcardFromLesson,
   saveFlashcard,
   saveGrammarBookmark,
-  unsaveFlashcard,
   unsaveGrammarBookmark,
 } from '@features/review';
 
@@ -91,7 +91,7 @@ export function useLessonSavedItems(lessonId: string): LessonSavedItems {
       if (flashcardId) {
         let ok = false;
         try {
-          ok = unsaveFlashcard(flashcardId);
+          ok = removeFlashcardFromLesson(flashcardId, lessonId);
         } catch {
           ok = false;
         }

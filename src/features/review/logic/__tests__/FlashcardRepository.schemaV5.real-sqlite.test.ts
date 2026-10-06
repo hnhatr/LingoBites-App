@@ -11,6 +11,7 @@ import {
   getDueFlashcards,
   listFlashcards,
   listFlashcardSources,
+  removeFlashcardFromLesson,
   saveFlashcard,
   unsaveFlashcard,
 } from '../FlashcardRepository';
@@ -249,5 +250,74 @@ describe('listFlashcardSources', () => {
     ]);
     expect(sources.size).toBe(2);
     expect(sources.has('legacy')).toBe(false);
+  });
+});
+
+describe('removeFlashcardFromLesson', () => {
+  const save = (lessonId: string, id: string, word = 'coffee') => {
+    const result = saveFlashcard({lessonId, vocabulary: vocab(id, word)});
+    if (!result.ok) throw new Error('save failed');
+    return result.flashcardId;
+  };
+
+  it('keeps the card saved while another lesson still sources it', () => {
+    const card = save('L1', 'v1');
+    save('L2', 'v2');
+
+    expect(removeFlashcardFromLesson(card, 'L1')).toBe(true);
+
+    // Gone from L1 (even though L1 is the card's own first lesson) ...
+    expect(listFlashcards({lessonId: 'L1'})).toEqual([]);
+    // ... but still saved, reviewable and listed under L2.
+    expect(listFlashcards({lessonId: 'L2'}).map(c => c.id)).toEqual([card]);
+    expect(listFlashcards()).toHaveLength(1);
+    expect(getDueFlashcards({today: new Date().toISOString()})).toHaveLength(1);
+  });
+
+  it('unsaves the card when its last source is removed, keeping the schedule', () => {
+    const card = save('L1', 'v1');
+    save('L2', 'v2');
+    getDatabase().execute(
+      'UPDATE review_schedule SET interval_days = 7 WHERE card_id = ?;',
+      [card],
+    );
+
+    removeFlashcardFromLesson(card, 'L1');
+    removeFlashcardFromLesson(card, 'L2');
+
+    expect(listFlashcards()).toEqual([]);
+    expect(listFlashcards({includeUnsaved: true})).toHaveLength(1);
+    expect(
+      rows('SELECT interval_days FROM review_schedule WHERE card_id = ?;', [
+        card,
+      ])[0]!.interval_days,
+    ).toBe(7);
+
+    // Saving it again from anywhere brings the same card (and schedule) back.
+    expect(save('L3', 'v3')).toBe(card);
+    expect(listFlashcards({lessonId: 'L3'})).toHaveLength(1);
+  });
+
+  it('unsaves a legacy card with no source rows outright', () => {
+    getDatabase().execute(
+      `INSERT INTO flashcards (id, lesson_id, vocabulary_id, word, meaning_vi,
+         is_saved, created_at, updated_at)
+       VALUES ('legacy', 'L1', 'v1', '...', 'x', 1, 'x', 'x');`,
+    );
+    expect(listFlashcards({lessonId: 'L1'}).map(c => c.id)).toEqual(['legacy']);
+    expect(removeFlashcardFromLesson('legacy', 'L1')).toBe(true);
+    expect(listFlashcards()).toEqual([]);
+  });
+
+  it('removing a lesson that is not a source changes nothing for the others', () => {
+    const card = save('L1', 'v1');
+    save('L2', 'v2');
+    expect(removeFlashcardFromLesson(card, 'L9')).toBe(true);
+    expect(listFlashcards({lessonId: 'L1'})).toHaveLength(1);
+    expect(listFlashcards({lessonId: 'L2'})).toHaveLength(1);
+  });
+
+  it('reports false for an unknown card', () => {
+    expect(removeFlashcardFromLesson('missing', 'L1')).toBe(false);
   });
 });

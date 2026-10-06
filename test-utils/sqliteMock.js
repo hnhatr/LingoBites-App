@@ -1078,6 +1078,26 @@ function createMockDatabase() {
       return {rowsAffected: 1};
     }
 
+    if (normalized.startsWith('delete from flashcard_sources where card_id')) {
+      const before = flashcardSources.length;
+      const keep = flashcardSources.filter(
+        row => !(row.card_id === params[0] && row.lesson_id === params[1]),
+      );
+      flashcardSources.length = 0;
+      flashcardSources.push(...keep);
+      return {rowsAffected: before - keep.length};
+    }
+
+    if (
+      normalized.startsWith(
+        'select count(*) as n from flashcard_sources where card_id',
+      )
+    ) {
+      return toRows([
+        {n: flashcardSources.filter(row => row.card_id === params[0]).length},
+      ]);
+    }
+
     if (normalized.startsWith('insert or ignore into flashcard_sources')) {
       const exists = flashcardSources.some(
         row => row.card_id === params[0] && row.lesson_id === params[1],
@@ -1302,15 +1322,19 @@ function createMockDatabase() {
       if (normalized.includes('lesson_id = ?')) {
         const lessonId = params[params.length - 1];
         const viaSources = normalized.includes('flashcard_sources');
-        rows = rows.filter(
-          row =>
-            row.lesson_id === lessonId ||
-            (viaSources &&
-              flashcardSources.some(
-                source =>
-                  source.card_id === row.id && source.lesson_id === lessonId,
-              )),
-        );
+        rows = rows.filter(row => {
+          if (!viaSources) {
+            return row.lesson_id === lessonId;
+          }
+          // Schema v5: a card belongs to the lessons that source it; its own
+          // `lesson_id` only counts while it has no source rows at all.
+          const own = flashcardSources.filter(
+            source => source.card_id === row.id,
+          );
+          return own.length === 0
+            ? row.lesson_id === lessonId
+            : own.some(source => source.lesson_id === lessonId);
+        });
       }
       rows.sort((a, b) =>
         String(a.created_at).localeCompare(String(b.created_at)),

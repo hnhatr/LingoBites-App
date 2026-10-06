@@ -215,7 +215,9 @@ export function listFlashcards({
     // A card saved from another lesson still belongs to this one when this
     // lesson is one of its sources (schema v5).
     clauses.push(
-      '(lesson_id = ? OR id IN (SELECT card_id FROM flashcard_sources WHERE lesson_id = ?))',
+      `(id IN (SELECT card_id FROM flashcard_sources WHERE lesson_id = ?)
+        OR (lesson_id = ? AND NOT EXISTS (
+          SELECT 1 FROM flashcard_sources s WHERE s.card_id = flashcards.id)))`,
     );
     params.push(lessonId, lessonId);
   }
@@ -272,6 +274,41 @@ export function listFlashcardSources(): Map<string, FlashcardSource[]> {
     }
   }
   return sources;
+}
+
+/**
+ * "Remove from this lesson": drops the lesson from the card's sources. The card
+ * stays saved while any other lesson still sources it and is only unsaved when
+ * the last source goes, so un-saving a word in one lesson never silently
+ * removes it from the others. A card with no source rows (legacy) is unsaved
+ * outright. The library heart keeps using `unsaveFlashcard` (whole card).
+ */
+export function removeFlashcardFromLesson(
+  cardId: string,
+  lessonId: string,
+  updatedAt = new Date().toISOString(),
+): boolean {
+  const db = getDatabase();
+  return withSavepoint(db, () => {
+    db.execute(
+      'DELETE FROM flashcard_sources WHERE card_id = ? AND lesson_id = ?;',
+      [cardId, lessonId],
+    );
+    const remaining = firstRow<{n: number}>(
+      db.execute(
+        'SELECT COUNT(*) AS n FROM flashcard_sources WHERE card_id = ?;',
+        [cardId],
+      ),
+    );
+    if (Number(remaining?.n ?? 0) > 0) {
+      return true;
+    }
+    const result = db.execute(
+      'UPDATE flashcards SET is_saved = 0, updated_at = ? WHERE id = ?;',
+      [updatedAt, cardId],
+    );
+    return (result.rowsAffected ?? 0) > 0;
+  });
 }
 
 export function unsaveFlashcard(

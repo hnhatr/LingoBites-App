@@ -15,6 +15,7 @@ export {
   listFlashcardSources,
   listUpcomingReviewReminders,
   recordFlashcardRating,
+  removeFlashcardFromLesson,
   saveFlashcard,
   unsaveFlashcard,
 } from './logic/FlashcardRepository';

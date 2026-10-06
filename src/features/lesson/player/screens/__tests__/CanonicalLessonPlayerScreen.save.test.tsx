@@ -96,7 +96,11 @@ jest.mock('../../logic/useCanonicalLesson', () => ({
 }));
 
 jest.mock('../../logic/useLessonCompletion', () => ({
-  useLessonCompletion: () => ({state: 'unfinished', complete: jest.fn()}),
+  useLessonCompletion: () => ({
+    state: 'unfinished',
+    complete: jest.fn(),
+    markStarted: jest.fn(),
+  }),
 }));
 
 function renderScreen() {
