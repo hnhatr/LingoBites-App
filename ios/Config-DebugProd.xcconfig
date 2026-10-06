@@ -1,2 +1,2 @@
-#include? "Pods/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.debugprod.xcconfig"
+#include? "Pods/Target Support Files/Pods-LingoBites/Pods-LingoBites.debugprod.xcconfig"
 #include "Config.xcconfig"

@@ -18,9 +18,9 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
                   <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-                     BuildableName = "ScanLearnEnglish.app"
-                     BlueprintName = "ScanLearnEnglish"
-                     ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+                     BuildableName = "LingoBites.app"
+                     BlueprintName = "LingoBites"
+                     ReferencedContainer = "container:LingoBites.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -36,9 +36,9 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "ScanLearnEnglish.app"
-               BlueprintName = "ScanLearnEnglish"
-               ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+               BuildableName = "LingoBites.app"
+               BlueprintName = "LingoBites"
+               ReferencedContainer = "container:LingoBites.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -54,9 +54,9 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "ScanLearnEnglishTests.xctest"
-               BlueprintName = "ScanLearnEnglishTests"
-               ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+               BuildableName = "LingoBitesTests.xctest"
+               BlueprintName = "LingoBitesTests"
+               ReferencedContainer = "container:LingoBites.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -76,9 +76,9 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ScanLearnEnglish.app"
-            BlueprintName = "ScanLearnEnglish"
-            ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+            BuildableName = "LingoBites.app"
+            BlueprintName = "LingoBites"
+            ReferencedContainer = "container:LingoBites.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -93,9 +93,9 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ScanLearnEnglish.app"
-            BlueprintName = "ScanLearnEnglish"
-            ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+            BuildableName = "LingoBites.app"
+            BlueprintName = "LingoBites"
+            ReferencedContainer = "container:LingoBites.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

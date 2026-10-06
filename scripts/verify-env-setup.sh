@@ -19,9 +19,9 @@ echo "== Android cleartext manifest =="
 
 echo "== iOS build settings (requires .env.staging/.env.production locally) =="
 (cd ios && ENVFILE=.env.staging ../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb .. tmp.xcconfig >/dev/null)
-(cd ios && xcodebuild -workspace ScanLearnEnglish.xcworkspace -scheme Staging -configuration DebugStag -showBuildSettings 2>/dev/null | grep PRODUCT_BUNDLE_IDENTIFIER)
+(cd ios && xcodebuild -workspace LingoBites.xcworkspace -scheme Staging -configuration DebugStag -showBuildSettings 2>/dev/null | grep PRODUCT_BUNDLE_IDENTIFIER)
 (cd ios && ENVFILE=.env.development ../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb .. tmp.xcconfig >/dev/null)
-(cd ios && xcodebuild -workspace ScanLearnEnglish.xcworkspace -scheme ScanLearnEnglish -configuration DebugDev -showBuildSettings 2>/dev/null | grep 'PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.lingobites.dev')
+(cd ios && xcodebuild -workspace LingoBites.xcworkspace -scheme LingoBites -configuration DebugDev -showBuildSettings 2>/dev/null | grep 'PRODUCT_BUNDLE_IDENTIFIER = com.lingobites.dev')
 
 echo "== Env file secret scan =="
 if grep -R -E '^(AI_API_KEY|OCR_API_KEY)=' .env.example .env.development .env.staging .env.production 2>/dev/null; then

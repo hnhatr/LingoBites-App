@@ -14,25 +14,25 @@
 		790660A959394128A2616E75 /* Quicksand-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1CFFAB53F474DD49B16DD9E /* Quicksand-Medium.ttf */; };
 		7D11E5032CC04AA100A4B2D1 /* DeviceIdentity.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		C9B162286D0FB58263F0A5F5 /* libPods-ScanLearnEnglish.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D301BF6F38731AE306E9FDBF /* libPods-ScanLearnEnglish.a */; };
+		C9B162286D0FB58263F0A5F5 /* libPods-LingoBites.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D301BF6F38731AE306E9FDBF /* libPods-LingoBites.a */; };
 		D5149D079B854F6C8FD34EFE /* Lexend-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 130DFB3A84AD4CCF98E486E3 /* Lexend-Bold.ttf */; };
 		F17F8B9ACB55453CABFFE16C /* Lexend-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		130DFB3A84AD4CCF98E486E3 /* Lexend-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Lexend-Bold.ttf"; path = "../assets/fonts/Lexend-Bold.ttf"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* ScanLearnEnglish.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScanLearnEnglish.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ScanLearnEnglish/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ScanLearnEnglish/Info.plist; sourceTree = "<group>"; };
-		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = ScanLearnEnglish/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* LingoBites.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LingoBites.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = LingoBites/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = LingoBites/Info.plist; sourceTree = "<group>"; };
+		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = LingoBites/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Lexend-SemiBold.ttf"; path = "../assets/fonts/Lexend-SemiBold.ttf"; sourceTree = "<group>"; };
 		4FAAED88B7834D3FACA9C2F2 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = ../assets/fonts/MaterialIcons.ttf; sourceTree = "<group>"; };
-		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ScanLearnEnglish/AppDelegate.swift; sourceTree = "<group>"; };
-		7D11E5002CC04AA100A4B2D1 /* DeviceIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceIdentity.h; path = ScanLearnEnglish/DeviceIdentity.h; sourceTree = "<group>"; };
-		7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = DeviceIdentity.mm; path = ScanLearnEnglish/DeviceIdentity.mm; sourceTree = "<group>"; };
-		7E13ED69156F846B2AA5A7D6 /* Pods-ScanLearnEnglish.debugstag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScanLearnEnglish.debugstag.xcconfig"; path = "Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.debugstag.xcconfig"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ScanLearnEnglish/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8D9FE27977B472AE85659049 /* Pods-ScanLearnEnglish.releaseprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScanLearnEnglish.releaseprod.xcconfig"; path = "Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.releaseprod.xcconfig"; sourceTree = "<group>"; };
+		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LingoBites/AppDelegate.swift; sourceTree = "<group>"; };
+		7D11E5002CC04AA100A4B2D1 /* DeviceIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceIdentity.h; path = LingoBites/DeviceIdentity.h; sourceTree = "<group>"; };
+		7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = DeviceIdentity.mm; path = LingoBites/DeviceIdentity.mm; sourceTree = "<group>"; };
+		7E13ED69156F846B2AA5A7D6 /* Pods-LingoBites.debugstag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugstag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugstag.xcconfig"; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = LingoBites/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8D9FE27977B472AE85659049 /* Pods-LingoBites.releaseprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releaseprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releaseprod.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000201 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		A00000000000000000000202 /* Config-DebugDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-DebugDev.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000203 /* Config-ReleaseDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseDev.xcconfig"; sourceTree = "<group>"; };
@@ -41,12 +41,12 @@
 		A00000000000000000000206 /* Config-DebugProd.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-DebugProd.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000207 /* Config-ReleaseProd.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseProd.xcconfig"; sourceTree = "<group>"; };
 		B1CFFAB53F474DD49B16DD9E /* Quicksand-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Quicksand-Medium.ttf"; path = "../assets/fonts/Quicksand-Medium.ttf"; sourceTree = "<group>"; };
-		C57538AD2F4569A23D4757CC /* Pods-ScanLearnEnglish.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScanLearnEnglish.debugprod.xcconfig"; path = "Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.debugprod.xcconfig"; sourceTree = "<group>"; };
-		D301BF6F38731AE306E9FDBF /* libPods-ScanLearnEnglish.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ScanLearnEnglish.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DB54EB68EE884B8C1DBCFF62 /* Pods-ScanLearnEnglish.releasedev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScanLearnEnglish.releasedev.xcconfig"; path = "Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.releasedev.xcconfig"; sourceTree = "<group>"; };
+		C57538AD2F4569A23D4757CC /* Pods-LingoBites.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugprod.xcconfig"; sourceTree = "<group>"; };
+		D301BF6F38731AE306E9FDBF /* libPods-LingoBites.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LingoBites.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB54EB68EE884B8C1DBCFF62 /* Pods-LingoBites.releasedev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasedev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasedev.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F219A14E2021E68CD218D854 /* Pods-ScanLearnEnglish.releasestag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScanLearnEnglish.releasestag.xcconfig"; path = "Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.releasestag.xcconfig"; sourceTree = "<group>"; };
-		F7E8877D9229C2E6539AC598 /* Pods-ScanLearnEnglish.debugdev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ScanLearnEnglish.debugdev.xcconfig"; path = "Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.debugdev.xcconfig"; sourceTree = "<group>"; };
+		F219A14E2021E68CD218D854 /* Pods-LingoBites.releasestag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasestag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasestag.xcconfig"; sourceTree = "<group>"; };
+		F7E8877D9229C2E6539AC598 /* Pods-LingoBites.debugdev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugdev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugdev.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,14 +54,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9B162286D0FB58263F0A5F5 /* libPods-ScanLearnEnglish.a in Frameworks */,
+				C9B162286D0FB58263F0A5F5 /* libPods-LingoBites.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* ScanLearnEnglish */ = {
+		13B07FAE1A68108700A75B9A /* LingoBites */ = {
 			isa = PBXGroup;
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -72,14 +72,14 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = ScanLearnEnglish;
+			name = LingoBites;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				D301BF6F38731AE306E9FDBF /* libPods-ScanLearnEnglish.a */,
+				D301BF6F38731AE306E9FDBF /* libPods-LingoBites.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -112,7 +112,7 @@
 				A00000000000000000000205 /* Config-ReleaseStag.xcconfig */,
 				A00000000000000000000206 /* Config-DebugProd.xcconfig */,
 				A00000000000000000000207 /* Config-ReleaseProd.xcconfig */,
-				13B07FAE1A68108700A75B9A /* ScanLearnEnglish */,
+				13B07FAE1A68108700A75B9A /* LingoBites */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -127,7 +127,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* ScanLearnEnglish.app */,
+				13B07F961A680F5B00A75B9A /* LingoBites.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -135,12 +135,12 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				F7E8877D9229C2E6539AC598 /* Pods-ScanLearnEnglish.debugdev.xcconfig */,
-				DB54EB68EE884B8C1DBCFF62 /* Pods-ScanLearnEnglish.releasedev.xcconfig */,
-				7E13ED69156F846B2AA5A7D6 /* Pods-ScanLearnEnglish.debugstag.xcconfig */,
-				F219A14E2021E68CD218D854 /* Pods-ScanLearnEnglish.releasestag.xcconfig */,
-				C57538AD2F4569A23D4757CC /* Pods-ScanLearnEnglish.debugprod.xcconfig */,
-				8D9FE27977B472AE85659049 /* Pods-ScanLearnEnglish.releaseprod.xcconfig */,
+				F7E8877D9229C2E6539AC598 /* Pods-LingoBites.debugdev.xcconfig */,
+				DB54EB68EE884B8C1DBCFF62 /* Pods-LingoBites.releasedev.xcconfig */,
+				7E13ED69156F846B2AA5A7D6 /* Pods-LingoBites.debugstag.xcconfig */,
+				F219A14E2021E68CD218D854 /* Pods-LingoBites.releasestag.xcconfig */,
+				C57538AD2F4569A23D4757CC /* Pods-LingoBites.debugprod.xcconfig */,
+				8D9FE27977B472AE85659049 /* Pods-LingoBites.releaseprod.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -148,9 +148,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* ScanLearnEnglish */ = {
+		13B07F861A680F5B00A75B9A /* LingoBites */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ScanLearnEnglish" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "LingoBites" */;
 			buildPhases = (
 				E4D83D2E5026C621B9359869 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -164,9 +164,9 @@
 			);
 			dependencies = (
 			);
-			name = ScanLearnEnglish;
-			productName = ScanLearnEnglish;
-			productReference = 13B07F961A680F5B00A75B9A /* ScanLearnEnglish.app */;
+			name = LingoBites;
+			productName = LingoBites;
+			productReference = 13B07F961A680F5B00A75B9A /* LingoBites.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -182,7 +182,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ScanLearnEnglish" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "LingoBites" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -195,7 +195,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* ScanLearnEnglish */,
+				13B07F861A680F5B00A75B9A /* LingoBites */,
 			);
 		};
 /* End PBXProject section */
@@ -240,15 +240,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C1233146BC0778205888CD2E /* [CP] Embed Pods Frameworks */ = {
@@ -257,15 +257,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E4D83D2E5026C621B9359869 /* [CP] Check Pods Manifest.lock */ = {
@@ -283,7 +283,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ScanLearnEnglish-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-LingoBites-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -312,7 +312,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = ScanLearnEnglish/Info.plist;
+				INFOPLIST_FILE = LingoBites/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -323,7 +323,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_NAME = ScanLearnEnglish;
+				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -338,7 +338,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
-				INFOPLIST_FILE = ScanLearnEnglish/Info.plist;
+				INFOPLIST_FILE = LingoBites/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -349,7 +349,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_NAME = ScanLearnEnglish;
+				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -364,7 +364,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = ScanLearnEnglish/Info.plist;
+				INFOPLIST_FILE = LingoBites/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -375,7 +375,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_NAME = ScanLearnEnglish;
+				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -390,7 +390,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
-				INFOPLIST_FILE = ScanLearnEnglish/Info.plist;
+				INFOPLIST_FILE = LingoBites/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -401,7 +401,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_NAME = ScanLearnEnglish;
+				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -416,7 +416,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = ScanLearnEnglish/Info.plist;
+				INFOPLIST_FILE = LingoBites/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -427,7 +427,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_NAME = ScanLearnEnglish;
+				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -442,7 +442,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
-				INFOPLIST_FILE = ScanLearnEnglish/Info.plist;
+				INFOPLIST_FILE = LingoBites/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -453,7 +453,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_NAME = ScanLearnEnglish;
+				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -932,7 +932,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ScanLearnEnglish" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "LingoBites" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A00000000000000000000001 /* DebugDev */,
@@ -945,7 +945,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = DebugDev;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ScanLearnEnglish" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "LingoBites" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A00000000000000000000101 /* DebugDev */,
