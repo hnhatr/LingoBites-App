@@ -78,7 +78,10 @@ export {
 export {collectLessonGrammar} from './logic/lessonHubContent';
 export type {LessonGrammarEntry} from './logic/lessonHubContent';
 export {useCanonicalCatalog} from './logic/useCanonicalCatalog';
-export type {CanonicalCatalogState} from './logic/useCanonicalCatalog';
+export type {
+  CanonicalCatalogFilter,
+  CanonicalCatalogState,
+} from './logic/useCanonicalCatalog';
 export {useCreateFlow} from './logic/useCreateFlow';
 export type {CreateFlow} from './logic/useCreateFlow';
 export {useCanonicalLesson} from './logic/useCanonicalLesson';

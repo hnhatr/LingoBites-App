@@ -12,7 +12,7 @@ import {LibraryListScreen} from '../LibraryListScreen';
 
 const mockSetLessonsFilter = jest.fn();
 
-const lesson = (id: string, sourceType: string) => ({
+const lesson = (id: string, sourceType: string, origin = 'learner') => ({
   id,
   title: `Lesson ${id}`,
   blurb: 'blurb',
@@ -20,6 +20,7 @@ const lesson = (id: string, sourceType: string) => ({
   vocabularyCount: 3,
   durationMin: 2,
   sourceType,
+  origin,
 });
 
 jest.mock('../../logic/useLibrarySegments', () => ({
@@ -28,7 +29,8 @@ jest.mock('../../logic/useLibrarySegments', () => ({
     packagedLessons: [
       lesson('own', 'learner_text'),
       lesson('vid', 'youtube'),
-      lesson('sample', 'admin_text'),
+      lesson('sample', 'admin_text', 'admin'),
+      lesson('adminvid', 'youtube', 'admin'),
     ],
     vocabulary: [],
     grammar: [],
@@ -85,6 +87,16 @@ describe('LibraryListScreen', () => {
     const list = tree.root.findByProps({testID: 'lessons-section-list'});
     expect(list.props.sections[0].title).toBe('');
     expect(tree.root.findAllByProps({testID: 'filter-toggle'})).toHaveLength(0);
+  });
+
+  it('keeps public lessons out of the learner’s own video list', () => {
+    const tree = render('video');
+    expect(
+      tree.root.findAllByProps({testID: 'lesson-item-vid'}).length,
+    ).toBeGreaterThan(0);
+    expect(
+      tree.root.findAllByProps({testID: 'lesson-item-adminvid'}),
+    ).toHaveLength(0);
   });
 
   it('forwards the search text to the segment filter', () => {

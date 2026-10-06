@@ -11,7 +11,7 @@ import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
 
-const card = (id: string, sourceType: string) => ({
+const card = (id: string, sourceType: string, origin = 'learner') => ({
   id,
   title: id,
   blurb: '',
@@ -19,12 +19,15 @@ const card = (id: string, sourceType: string) => ({
   vocabularyCount: 3,
   durationMin: 2,
   sourceType,
+  origin,
 });
 
 let mockLessons = [
   card('a', 'learner_text'),
   card('b', 'learner_ocr'),
   card('c', 'youtube'),
+  card('d', 'youtube', 'admin'),
+  card('e', 'admin_text', 'admin'),
 ];
 
 jest.mock('../../logic/useLibrarySegments', () => ({
@@ -81,26 +84,46 @@ describe('LessonsHistoryScreen (Library hub)', () => {
 
   it('shows one card per section, with no tab bar', () => {
     const tree = renderHub();
-    ['mine', 'video', 'samples', 'vocabulary', 'grammar'].forEach(id => {
-      expect(
-        tree.root.findByProps({testID: `library-card-${id}`}),
-      ).toBeDefined();
-    });
+    ['mine', 'video', 'vocabulary', 'grammar', 'public', 'publicVideo'].forEach(
+      id => {
+        expect(
+          tree.root.findByProps({testID: `library-card-${id}`}),
+        ).toBeDefined();
+      },
+    );
     expect(tree.root.findAllByProps({testID: 'library-tab-bar'})).toHaveLength(
       0,
     );
   });
 
-  it('counts each lesson under exactly one card', () => {
+  it('splits the hub into "Của tôi" and "Khám phá"', () => {
     const tree = renderHub();
+    const has = (group: string, id: string) =>
+      tree.root
+        .findByProps({testID: `library-group-${group}`})
+        .findAllByProps({testID: `library-card-${id}`}).length > 0;
+    expect(has('mine', 'video')).toBe(true);
+    expect(has('mine', 'publicVideo')).toBe(false);
+    expect(has('explore', 'publicVideo')).toBe(true);
+    expect(has('explore', 'video')).toBe(false);
+  });
+
+  it('counts only the learner’s own lessons, each under exactly one card', () => {
+    const tree = renderHub();
+    // The downloaded admin video and admin text are public, not "mine".
     expect(count(tree, 'mine')).toBe('2 bài');
     expect(count(tree, 'video')).toBe('1 bài');
     expect(count(tree, 'vocabulary')).toBe('1 từ');
   });
 
+  it('marks public cards as needing a connection', () => {
+    const tree = renderHub();
+    expect(count(tree, 'public')).toBe('Cần kết nối mạng');
+    expect(count(tree, 'publicVideo')).toBe('Cần kết nối mạng');
+  });
+
   it('shows an action hint on an empty section', () => {
     const tree = renderHub();
-    expect(count(tree, 'samples')).toBe('Chưa tải bài mẫu nào');
     expect(count(tree, 'grammar')).toBe('Bấm ♡ trong bài học để lưu quy tắc');
   });
 

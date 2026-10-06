@@ -95,6 +95,7 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
       vocabularyCount: item.snapshot.sentences.length,
       durationMin: item.estimatedDurationMinutes,
       sourceType: item.snapshot.source_type,
+      origin: item.snapshot.origin,
       practiceReady: getPracticeEligibility(buildPracticeSource(item.snapshot))
         .eligible,
     }));

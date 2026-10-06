@@ -11,11 +11,12 @@ import {useFeatureEnabled} from '@core/release';
 
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {LessonsTabContent} from '../components/LessonsTabContent';
+import {PublicLessonsList} from '../components/PublicLessonsList';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
 import {
   getLibrarySection,
-  isLessonSection,
+  isOwnLessonSection,
   lessonBelongsToSection,
 } from '../logic/librarySections';
 import {useLibrarySegments} from '../logic/useLibrarySegments';
@@ -51,7 +52,11 @@ export function LibraryListScreen({navigation, route}: Props) {
     (query: string) => {
       setSearchQuery(query);
       const filter = {searchQuery: query, sourceFilter: 'all' as const};
-      if (isLessonSection(section)) {
+      if (section.catalog) {
+        // Public lessons are searched client-side over the loaded catalog.
+        return;
+      }
+      if (isOwnLessonSection(section)) {
         setLessonsFilter(filter);
       } else if (section.id === 'vocabulary') {
         setVocabularyFilter(filter);
@@ -64,9 +69,7 @@ export function LibraryListScreen({navigation, route}: Props) {
 
   const lessons = useMemo(
     () =>
-      packagedLessons.filter(lesson =>
-        lessonBelongsToSection(section, lesson.sourceType),
-      ),
+      packagedLessons.filter(lesson => lessonBelongsToSection(section, lesson)),
     [packagedLessons, section],
   );
   const isFiltered = searchQuery.trim() !== '';
@@ -83,7 +86,13 @@ export function LibraryListScreen({navigation, route}: Props) {
         onSearchChange={handleSearchChange}
       />
       <View style={styles.content} testID={`library-list-${section.id}`}>
-        {isLessonSection(section) ? (
+        {section.catalog ? (
+          <PublicLessonsList
+            origin={section.catalog.origin}
+            sourceType={section.catalog.sourceType}
+            searchQuery={searchQuery}
+          />
+        ) : isOwnLessonSection(section) ? (
           <LessonsTabContent
             packagedLessons={lessons}
             packagedTitle={null}
