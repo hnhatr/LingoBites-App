@@ -43,6 +43,7 @@ export function CourseListContent() {
     <CurriculumList
       emptyMessage={t('course.courses_empty')}
       onRetry={refresh}
+      layout="grid"
       rows={rows}
       status={state.status}
       testID="course-list"
