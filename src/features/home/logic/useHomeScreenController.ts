@@ -319,6 +319,7 @@ export function useHomeScreenController() {
     pawGoalModel,
     // Shortcuts (DQ-005, D3, P-003)
     shortcutItems,
+    dueFlashcardCount,
     // General
     trimmedDisplayName,
     libraryCount: downloadCount,

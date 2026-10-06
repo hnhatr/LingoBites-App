@@ -22,6 +22,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import {ConfettiOverlay} from '../components/HomeDecorations';
 import {HomeHeader} from '../components/HomeHeader';
 import {HomeHeroCard} from '../components/HomeHeroCard';
+import {HomeReviewBanner} from '../components/HomeReviewBanner';
 import {HomeSavedRail} from '../components/HomeSavedRail';
 import {HomeShortcutsGrid} from '../components/HomeShortcutsGrid';
 import {HomeTodaySuggestion} from '../components/HomeTodaySuggestion';
@@ -37,6 +38,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     weeklyGoalCard,
     pawGoalModel,
     shortcutItems,
+    dueFlashcardCount,
     trimmedDisplayName,
     libraryCount,
     startedLesson,
@@ -101,6 +103,16 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           flame={flameModel}
         />
 
+        {/* Due cards: first thing under the header so it is seen at once */}
+        {dueFlashcardCount != null && dueFlashcardCount > 0 ? (
+          <View style={styles.reviewSection}>
+            <HomeReviewBanner
+              count={dueFlashcardCount}
+              onPress={onNavigateReview}
+            />
+          </View>
+        ) : null}
+
         {/* Hero card (§VS-2) */}
         <View style={styles.heroSection}>
           <HomeHeroCard
@@ -162,6 +174,9 @@ function makeStyles(_theme: AppTheme) {
     scrollContent: {
       flexGrow: 1,
       paddingHorizontal: 16,
+    },
+    reviewSection: {
+      marginBottom: 14,
     },
     heroSection: {
       marginBottom: 18,
