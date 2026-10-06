@@ -11,6 +11,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {
@@ -31,6 +32,11 @@ export type CanonicalLessonHubProps = {
   offline?: boolean;
   hasUpdate?: boolean;
   onOpenSection: (section: LessonHubSection) => void;
+  /**
+   * Opens the quick-practice quiz. Omit to hide the row (practice flag off);
+   * the row also stays hidden while the lesson is too small for a quiz.
+   */
+  onOpenPractice?: () => void;
 };
 
 /**
@@ -45,6 +51,7 @@ export function CanonicalLessonHub({
   offline,
   hasUpdate,
   onOpenSection,
+  onOpenPractice,
 }: CanonicalLessonHubProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -57,6 +64,12 @@ export function CanonicalLessonHub({
   const grammarCount = useMemo(
     () => collectLessonGrammar(snapshot, analyses).length,
     [snapshot, analyses],
+  );
+  const canPractice = useMemo(
+    () =>
+      onOpenPractice !== undefined &&
+      getPracticeEligibility(buildPracticeSource(snapshot, analyses)).eligible,
+    [onOpenPractice, snapshot, analyses],
   );
   const preview = sentences.slice(0, PREVIEW_COUNT);
   const hasMore = sentences.length > PREVIEW_COUNT;
@@ -190,6 +203,16 @@ export function CanonicalLessonHub({
           }
           title={t('lessonPlayer.explore_grammar_title')}
         />
+        {canPractice ? (
+          <LessonExploreRow
+            icon="bolt"
+            medallionTone="teal"
+            onPress={onOpenPractice!}
+            subtitle={t('practice.entry_hint')}
+            testID="canonical-hub-practice"
+            title={t('practice.entry_button')}
+          />
+        ) : null}
       </View>
     </View>
   );

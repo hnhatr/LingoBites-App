@@ -33,6 +33,8 @@ import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {useAppNavigation} from '@core/navigation';
+import {useFeatureEnabled} from '@core/release';
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
 import {
@@ -91,9 +93,14 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {state, open, checkForUpdate, requestAnalysis} =
     useCanonicalLesson(lessonId);
-  const {state: completionState, complete: completeLesson, markStarted} =
-    useLessonCompletion(lessonId);
+  const {
+    state: completionState,
+    complete: completeLesson,
+    markStarted,
+  } = useLessonCompletion(lessonId);
   const savedItems = useLessonSavedItems(lessonId);
+  const appNavigation = useAppNavigation();
+  const practiceEnabled = useFeatureEnabled('shortPractice');
   const reloadSavedItems = savedItems.reload;
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
@@ -397,6 +404,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             offline={state.status === 'ready' ? state.offline : false}
             hasUpdate={state.status === 'ready' ? state.hasUpdate : false}
             onOpenSection={openView}
+            onOpenPractice={
+              practiceEnabled
+                ? () => appNavigation.openPractice(lessonId)
+                : undefined
+            }
           />
         );
       case 'sentences':

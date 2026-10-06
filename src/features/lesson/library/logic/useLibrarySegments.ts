@@ -16,6 +16,7 @@ import {
 } from '@features/review';
 
 import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
+import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
 import type {LessonSourceType} from '@core/schemas/lesson';
 
 export interface SegmentFilterState {
@@ -94,6 +95,8 @@ export function useLibrarySegments(): UseLibrarySegmentsResult {
       vocabularyCount: item.snapshot.sentences.length,
       durationMin: item.estimatedDurationMinutes,
       sourceType: item.snapshot.source_type,
+      practiceReady: getPracticeEligibility(buildPracticeSource(item.snapshot))
+        .eligible,
     }));
     return cards.filter(card =>
       matchesSegmentFilter(lessonsFilter, {

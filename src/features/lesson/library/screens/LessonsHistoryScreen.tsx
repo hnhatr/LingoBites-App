@@ -14,6 +14,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
+import {useFeatureEnabled} from '@core/release';
 
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {LessonsTabContent} from '../components/LessonsTabContent';
@@ -50,6 +51,7 @@ export function LessonsHistoryScreen(_props: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
   const {getDueFlashcards} = useFlashcardLibrary();
+  const practiceEnabled = useFeatureEnabled('shortPractice');
   const [dueCount, setDueCount] = useState(0);
 
   const [activeTab, setActiveTab] = useState<LibraryTabId>('lessons');
@@ -195,6 +197,9 @@ export function LessonsHistoryScreen(_props: Props) {
             catalogLessons={catalogLessons}
             onViewAllCatalog={navigation.openCatalog}
             isFiltered={isFiltered}
+            onPracticeLesson={
+              practiceEnabled ? navigation.openPractice : undefined
+            }
           />
         </View>
       )}
