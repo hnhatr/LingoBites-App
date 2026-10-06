@@ -9,18 +9,18 @@
          <ExecutionAction
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
-               title = "Copy Development env"
+               title = "Copy Production env"
                scriptText = "set -e
-ENV_SOURCE=&quot;${PROJECT_DIR}/../.env.development&quot;
+ENV_SOURCE=&quot;${PROJECT_DIR}/../.env.production&quot;
 cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
 &quot;${SRCROOT}/../../../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb&quot; &quot;${SRCROOT}/..&quot; &quot;${SRCROOT}/tmp.xcconfig&quot;">
                <EnvironmentBuildable>
                                     <BuildableReference
                      BuildableIdentifier = "primary"
                      BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-                     BuildableName = "ScanLearnEnglish.app"
-                     BlueprintName = "ScanLearnEnglish"
-                     ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+                     BuildableName = "LingoBites.app"
+                     BlueprintName = "LingoBites"
+                     ReferencedContainer = "container:LingoBites.xcodeproj">
                   </BuildableReference>
                </EnvironmentBuildable>
             </ActionContent>
@@ -36,15 +36,15 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
                         <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "ScanLearnEnglish.app"
-               BlueprintName = "ScanLearnEnglish"
-               ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+               BuildableName = "LingoBites.app"
+               BlueprintName = "LingoBites"
+               ReferencedContainer = "container:LingoBites.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "DebugDev"
+      buildConfiguration = "DebugProd"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -54,15 +54,15 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
                         <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "ScanLearnEnglishTests.xctest"
-               BlueprintName = "ScanLearnEnglishTests"
-               ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+               BuildableName = "LingoBitesTests.xctest"
+               BlueprintName = "LingoBitesTests"
+               ReferencedContainer = "container:LingoBites.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "DebugDev"
+      buildConfiguration = "DebugProd"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -76,14 +76,14 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
                   <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ScanLearnEnglish.app"
-            BlueprintName = "ScanLearnEnglish"
-            ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+            BuildableName = "LingoBites.app"
+            BlueprintName = "LingoBites"
+            ReferencedContainer = "container:LingoBites.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "ReleaseDev"
+      buildConfiguration = "ReleaseProd"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
@@ -93,17 +93,17 @@ cp &quot;${ENV_SOURCE}&quot; &quot;${PROJECT_DIR}/../.env&quot;
                   <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ScanLearnEnglish.app"
-            BlueprintName = "ScanLearnEnglish"
-            ReferencedContainer = "container:ScanLearnEnglish.xcodeproj">
+            BuildableName = "LingoBites.app"
+            BlueprintName = "LingoBites"
+            ReferencedContainer = "container:LingoBites.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "DebugDev">
+      buildConfiguration = "DebugProd">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "ReleaseDev"
+      buildConfiguration = "ReleaseProd"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

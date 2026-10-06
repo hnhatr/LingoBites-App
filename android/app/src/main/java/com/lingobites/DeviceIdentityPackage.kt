@@ -1,4 +1,4 @@
-package com.scanlearnenglish
+package com.lingobites
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

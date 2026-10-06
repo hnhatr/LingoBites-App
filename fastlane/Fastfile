@@ -5,8 +5,8 @@ require "shellwords"
 require "tempfile"
 require_relative "signing_config"
 
-IOS_XCODEPROJ = "ios/ScanLearnEnglish.xcodeproj"
-IOS_WORKSPACE = "ios/ScanLearnEnglish.xcworkspace"
+IOS_XCODEPROJ = "ios/LingoBites.xcodeproj"
+IOS_WORKSPACE = "ios/LingoBites.xcworkspace"
 IPA_OUTPUT_PREFIX = "LingoBites"
 
 def mobile_project_root

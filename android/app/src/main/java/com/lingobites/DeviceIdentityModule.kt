@@ -1,4 +1,4 @@
-package com.scanlearnenglish
+package com.lingobites
 
 import android.provider.Settings
 import com.facebook.react.bridge.Promise

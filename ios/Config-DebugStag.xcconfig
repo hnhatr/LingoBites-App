@@ -1,2 +1,2 @@
-#include? "Pods/Target Support Files/Pods-ScanLearnEnglish/Pods-ScanLearnEnglish.debugstag.xcconfig"
+#include? "Pods/Target Support Files/Pods-LingoBites/Pods-LingoBites.debugstag.xcconfig"
 #include "Config.xcconfig"

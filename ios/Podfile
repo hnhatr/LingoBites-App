@@ -27,7 +27,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-project 'ScanLearnEnglish',
+project 'LingoBites',
   'DebugDev' => :debug,
   'ReleaseDev' => :release,
   'DebugStag' => :debug,
@@ -35,7 +35,7 @@ project 'ScanLearnEnglish',
   'DebugProd' => :debug,
   'ReleaseProd' => :release
 
-target 'ScanLearnEnglish' do
+target 'LingoBites' do
   config = use_native_modules!
 
   use_react_native!(
@@ -81,8 +81,8 @@ target 'ScanLearnEnglish' do
   # Run after CocoaPods integrates the user project so resource scripts/file lists
   # are final before we strip duplicate vector-icon fonts.
   post_integrate do |installer|
-    support_files = File.join(installer.sandbox.root, 'Target Support Files/Pods-ScanLearnEnglish')
-    resources_script = File.join(support_files, 'Pods-ScanLearnEnglish-resources.sh')
+    support_files = File.join(installer.sandbox.root, 'Target Support Files/Pods-LingoBites')
+    resources_script = File.join(support_files, 'Pods-LingoBites-resources.sh')
     vector_icons_font_pattern = %r{^\s*install_resource "\$\{PODS_ROOT\}/\.\./\.\./\.\./\.\./node_modules/react-native-vector-icons/Fonts/.*\.ttf"\n}
 
     if File.exist?(resources_script)
@@ -91,12 +91,12 @@ target 'ScanLearnEnglish' do
       File.write(resources_script, updated) if updated != contents
     end
 
-    Dir.glob(File.join(support_files, 'Pods-ScanLearnEnglish-resources-*-input-files.xcfilelist')).each do |file|
+    Dir.glob(File.join(support_files, 'Pods-LingoBites-resources-*-input-files.xcfilelist')).each do |file|
       lines = File.readlines(file).reject { |line| line.include?('react-native-vector-icons/Fonts/') }
       File.write(file, lines.join)
     end
 
-    Dir.glob(File.join(support_files, 'Pods-ScanLearnEnglish-resources-*-output-files.xcfilelist')).each do |file|
+    Dir.glob(File.join(support_files, 'Pods-LingoBites-resources-*-output-files.xcfilelist')).each do |file|
       lines = File.readlines(file).reject { |line| line.end_with?(".ttf\n") }
       File.write(file, lines.join)
     end
