@@ -6,8 +6,8 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {LessonExploreRow} from '@ui/components/LessonExploreRow';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
+import {SvgIcon} from '@ui/components/SvgIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
@@ -115,7 +115,7 @@ export function CanonicalLessonHub({
       <AppCard style={themedStyles.contentCard}>
         <View style={styles.cardBody}>
           <View style={styles.sectionTitleRow}>
-            <MaterialIcon
+            <SvgIcon
               color={theme.colors.primary}
               name="description"
               size={22}

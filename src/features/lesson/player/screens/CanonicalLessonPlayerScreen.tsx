@@ -9,7 +9,13 @@ import React, {
   useState,
 } from 'react';
 import {useTranslation} from 'react-i18next';
-import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {speak} from '@features/audio';
 
@@ -32,6 +38,7 @@ import {IconButton} from '@ui/components/IconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {SvgIcon} from '@ui/components/SvgIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
@@ -460,14 +467,16 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               showTranslation={showTranslation}
             />
           ) : showHub && completionState !== 'finished' ? (
-            <IconButton
+            <Pressable
               accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
               accessibilityLabel={t('lessonPlayer.complete_lesson')}
-              icon="check_circle"
+              accessibilityRole="button"
               onPress={completeLesson}
+              style={themedStyles.completeButton}
               testID="canonical-hub-complete"
-              tone="bare"
-            />
+            >
+              <SvgIcon color={theme.colors.primary} name="check_circle" />
+            </Pressable>
           ) : undefined
         }
       />
@@ -490,9 +499,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         </ScrollView>
       )}
       {showHub ? (
-        <BottomActionBar
-          style={[themedStyles.actionBar, {paddingBottom: floatingClearance}]}
-        >
+        <BottomActionBar style={themedStyles.actionBar}>
           {completionState === 'finished' ? (
             <AppText
               color="secondary"
@@ -528,6 +535,12 @@ function makeStyles(theme: AppTheme) {
     actionBar: {
       backgroundColor: theme.colors.background,
       borderTopColor: theme.colors.outlineVariant,
+    },
+    completeButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 44,
+      minWidth: 44,
     },
     centered: {
       alignItems: 'center',
