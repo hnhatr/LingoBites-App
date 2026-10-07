@@ -28,6 +28,7 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
+import {IconButton} from '@ui/components/IconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
@@ -458,6 +459,15 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               showIpa={showIpa}
               showTranslation={showTranslation}
             />
+          ) : showHub && completionState !== 'finished' ? (
+            <IconButton
+              accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
+              accessibilityLabel={t('lessonPlayer.complete_lesson')}
+              icon="check_circle"
+              onPress={completeLesson}
+              testID="canonical-hub-complete"
+              tone="bare"
+            />
           ) : undefined
         }
       />
@@ -468,6 +478,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       ) : (
         <ScrollView
           ref={scrollRef}
+          style={themedStyles.scroll}
           testID="canonical-player-screen"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
@@ -490,27 +501,16 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             >
               {t('lessonPlayer.completed_label')}
             </AppText>
-          ) : (
-            <>
-              {completionState === 'error' ? (
-                <AppText
-                  color="danger"
-                  testID="canonical-hub-complete-error"
-                  variant="body"
-                >
-                  {t('lessonPlayer.complete_error')}
-                </AppText>
-              ) : null}
-              <AppButton
-                accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
-                accessibilityLabel={t('lessonPlayer.complete_lesson')}
-                onPress={completeLesson}
-                testID="canonical-hub-complete"
-                title={t('lessonPlayer.complete_lesson')}
-                variant="secondary"
-              />
-            </>
-          )}
+          ) : null}
+          {completionState === 'error' ? (
+            <AppText
+              color="danger"
+              testID="canonical-hub-complete-error"
+              variant="body"
+            >
+              {t('lessonPlayer.complete_error')}
+            </AppText>
+          ) : null}
           <PrimaryActionButton
             accessibilityLabel={t('lessonPlayer.start_learning')}
             label={t('lessonPlayer.start_learning')}
@@ -539,6 +539,9 @@ function makeStyles(theme: AppTheme) {
       paddingBottom: theme.spacing.lg,
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
+    },
+    scroll: {
+      flex: 1,
     },
     study: {
       flex: 1,
