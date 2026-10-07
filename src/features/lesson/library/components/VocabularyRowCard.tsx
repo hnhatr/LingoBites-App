@@ -2,9 +2,9 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
-import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
+import {WordCard} from '@ui/components/WordCard';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
@@ -33,32 +33,8 @@ function createStyles(theme: AppTheme) {
     container: {
       flex: 1,
     },
-    innerContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: theme.spacing.md,
-    },
-    contentWrapper: {
-      flex: 1,
-    },
-    word: {
-      marginBottom: theme.spacing.xs,
-    },
-    meaning: {
-      marginBottom: theme.spacing.sm,
-    },
-    meaningNoExample: {
-      marginBottom: 0,
-    },
-    example: {
-      marginTop: theme.spacing.sm,
-      fontStyle: 'italic',
-    },
-    phonetic: {
-      marginBottom: theme.spacing.xs,
-    },
-    bookmarkButton: {
-      flexShrink: 0,
+    sources: {
+      flexBasis: '100%',
     },
     sourcesToggle: {
       alignSelf: 'flex-start',
@@ -91,12 +67,6 @@ export function VocabularyRowCard({
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const hasManySources = sources.length > 1;
-  const phonetic = [
-    flashcard.wordType ? `[${flashcard.wordType}]` : '',
-    flashcard.ipa ? flashcard.ipa : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
 
   // One source: the card opens it. Several: the card toggles the list so the
   // learner picks which lesson to open.
@@ -112,123 +82,94 @@ export function VocabularyRowCard({
     }
   };
 
+  const sourcesBlock = hasManySources ? (
+    <View style={styles.sources}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          sourcesOpen
+            ? t('library.vocabulary.sources_toggle_hide_a11y', {
+                word: flashcard.word,
+              })
+            : t('library.vocabulary.sources_toggle_show_a11y', {
+                count: sources.length,
+                word: flashcard.word,
+              })
+        }
+        accessibilityHint={t('library.vocabulary.sources_toggle_hint')}
+        accessibilityState={{expanded: sourcesOpen}}
+        onPress={() => setSourcesOpen(open => !open)}
+        style={styles.sourcesToggle}
+        testID="sources-toggle"
+      >
+        <AppText variant="caption" color="primary">
+          {t('library.vocabulary.sources_count', {count: sources.length})}
+          {' · '}
+          {sourcesOpen
+            ? t('library.vocabulary.sources_hide')
+            : t('library.vocabulary.sources_show')}
+        </AppText>
+      </Pressable>
+      {sourcesOpen ? (
+        <View style={styles.sourcesList} testID="sources-list">
+          {sources.map(source => {
+            const title =
+              source.title ?? t('library.vocabulary.source_untitled');
+            return (
+              <Pressable
+                key={source.lessonId}
+                accessibilityRole="button"
+                accessibilityLabel={t('library.vocabulary.source_open_a11y', {
+                  title,
+                })}
+                accessibilityHint={t('library.vocabulary.source_open_hint')}
+                onPress={() => onOpenSource?.(source.lessonId)}
+                style={styles.sourceRow}
+                testID={`source-row-${source.lessonId}`}
+              >
+                <AppText variant="label" color="secondary">
+                  {title}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
+    </View>
+  ) : undefined;
+
   return (
     <View style={styles.container} testID={testID}>
-      <AppCard>
-        <View style={styles.innerContainer}>
-          {/* Only the text is the card button: the save heart and the source
-              list are siblings, so assistive tech can reach each of them. */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${flashcard.word} - ${flashcard.meaningVi}`}
-            onPress={handleCardPress}
-            testID="vocabulary-card-pressable"
-            style={styles.contentWrapper}
-          >
-            <AppText variant="h3" style={styles.word} testID="word-text">
-              {flashcard.word}
-            </AppText>
-            {phonetic ? (
-              <AppText
-                variant="caption"
-                color="muted"
-                style={styles.phonetic}
-                testID="phonetic-text"
-              >
-                {phonetic}
-              </AppText>
-            ) : null}
-            <AppText
-              variant="label"
-              color="secondary"
-              style={[
-                styles.meaning,
-                !flashcard.example && styles.meaningNoExample,
-              ]}
-              testID="meaning-text"
-            >
-              {flashcard.meaningVi}
-            </AppText>
-            {flashcard.example && (
-              <AppText
-                variant="caption"
-                color="muted"
-                style={styles.example}
-                testID="example-text"
-              >
-                {flashcard.example}
-              </AppText>
-            )}
-          </Pressable>
+      {/* Only the text is the card button: the bookmark and the source list
+          are siblings, so assistive tech can reach each of them. */}
+      <WordCard
+        actions={sourcesBlock}
+        cefr={flashcard.cefrLevel}
+        example={flashcard.example}
+        exampleTranslation={flashcard.exampleTranslation}
+        ipa={flashcard.ipa}
+        meaning={flashcard.meaningVi}
+        onPress={handleCardPress}
+        pos={flashcard.wordType}
+        pressAccessibilityLabel={`${flashcard.word} - ${flashcard.meaningVi}`}
+        pressTestID="vocabulary-card-pressable"
+        trailing={
           <IconButton
             accessibilityLabel={
               isSaved
                 ? t('library.vocabulary.unsave_a11y')
                 : t('library.vocabulary.save_a11y')
             }
-            icon={isSaved ? 'heart' : 'heart_outline'}
+            icon={isSaved ? 'bookmark' : 'bookmark_add'}
             onPress={handleBookmarkPress}
             size={40}
             iconSize={22}
             tone="bare"
             testID="save-button"
-            style={styles.bookmarkButton}
           />
-        </View>
-        {hasManySources ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              sourcesOpen
-                ? t('library.vocabulary.sources_toggle_hide_a11y', {
-                    word: flashcard.word,
-                  })
-                : t('library.vocabulary.sources_toggle_show_a11y', {
-                    count: sources.length,
-                    word: flashcard.word,
-                  })
-            }
-            accessibilityHint={t('library.vocabulary.sources_toggle_hint')}
-            accessibilityState={{expanded: sourcesOpen}}
-            onPress={() => setSourcesOpen(open => !open)}
-            style={styles.sourcesToggle}
-            testID="sources-toggle"
-          >
-            <AppText variant="caption" color="primary">
-              {t('library.vocabulary.sources_count', {count: sources.length})}
-              {' · '}
-              {sourcesOpen
-                ? t('library.vocabulary.sources_hide')
-                : t('library.vocabulary.sources_show')}
-            </AppText>
-          </Pressable>
-        ) : null}
-        {hasManySources && sourcesOpen ? (
-          <View style={styles.sourcesList} testID="sources-list">
-            {sources.map(source => {
-              const title =
-                source.title ?? t('library.vocabulary.source_untitled');
-              return (
-                <Pressable
-                  key={source.lessonId}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('library.vocabulary.source_open_a11y', {
-                    title,
-                  })}
-                  accessibilityHint={t('library.vocabulary.source_open_hint')}
-                  onPress={() => onOpenSource?.(source.lessonId)}
-                  style={styles.sourceRow}
-                  testID={`source-row-${source.lessonId}`}
-                >
-                  <AppText variant="label" color="secondary">
-                    {title}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
-      </AppCard>
+        }
+        word={flashcard.word}
+      />
     </View>
   );
 }

@@ -66,7 +66,7 @@ describe('VocabularyRowCard', () => {
     expect(meaningText.props.children).toBe('quả táo');
   });
 
-  it('shows unsaved heart when not saved', () => {
+  it('shows unsaved bookmark when not saved', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -78,10 +78,10 @@ describe('VocabularyRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart_outline');
+    expect(saveButton.props.icon).toBe('bookmark_add');
   });
 
-  it('shows saved heart when saved', () => {
+  it('shows saved bookmark when saved', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -93,10 +93,10 @@ describe('VocabularyRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart');
+    expect(saveButton.props.icon).toBe('bookmark');
   });
 
-  it('calls onSave when unsaved heart pressed', () => {
+  it('calls onSave when unsaved bookmark pressed', () => {
     const onSave = jest.fn();
     const onUnsave = jest.fn();
     const tree = render(
@@ -118,7 +118,7 @@ describe('VocabularyRowCard', () => {
     expect(onUnsave).not.toHaveBeenCalled();
   });
 
-  it('calls onUnsave when saved heart pressed', () => {
+  it('calls onUnsave when saved bookmark pressed', () => {
     const onSave = jest.fn();
     const onUnsave = jest.fn();
     const tree = render(
@@ -209,7 +209,7 @@ describe('VocabularyRowCard', () => {
     expect(wordText.props.variant).toBe('h3');
   });
 
-  it('applies correct text styling - meaning variant is label with secondary color', () => {
+  it('applies correct text styling - meaning variant is bodyLg with secondary color', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -221,11 +221,11 @@ describe('VocabularyRowCard', () => {
     );
 
     const meaningText = tree.root.findByProps({testID: 'meaning-text'});
-    expect(meaningText.props.variant).toBe('label');
+    expect(meaningText.props.variant).toBe('bodyLg');
     expect(meaningText.props.color).toBe('secondary');
   });
 
-  it('applies correct text styling - example variant is caption with muted color', () => {
+  it('applies correct text styling - example is secondary with its translation below', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -237,11 +237,14 @@ describe('VocabularyRowCard', () => {
     );
 
     const exampleText = tree.root.findByProps({testID: 'example-text'});
-    expect(exampleText.props.variant).toBe('caption');
-    expect(exampleText.props.color).toBe('muted');
+    expect(exampleText.props.color).toBe('secondary');
+    expect(
+      tree.root.findByProps({testID: 'example-translation-text'}).props
+        .children,
+    ).toBe('Cô ấy cho tôi một quả táo đỏ');
   });
 
-  it('heart button has bare tone styling', () => {
+  it('bookmark button has bare tone styling', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -274,7 +277,7 @@ describe('VocabularyRowCard', () => {
     expect(pressable.props.accessibilityRole).toBe('button');
   });
 
-  it('heart button has correct accessibility label when saved', () => {
+  it('bookmark button has correct accessibility label when saved', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -289,7 +292,7 @@ describe('VocabularyRowCard', () => {
     expect(saveButton.props.accessibilityLabel).toBe('Bỏ lưu từ này');
   });
 
-  it('heart button has correct accessibility label when not saved', () => {
+  it('bookmark button has correct accessibility label when not saved', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -304,7 +307,7 @@ describe('VocabularyRowCard', () => {
     expect(saveButton.props.accessibilityLabel).toBe('Lưu từ này');
   });
 
-  it('updates heart icon when isSaved prop changes', () => {
+  it('updates bookmark icon when isSaved prop changes', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -316,7 +319,7 @@ describe('VocabularyRowCard', () => {
     );
 
     let saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart_outline');
+    expect(saveButton.props.icon).toBe('bookmark_add');
 
     act(() => {
       tree.update(
@@ -335,7 +338,7 @@ describe('VocabularyRowCard', () => {
     });
 
     saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart');
+    expect(saveButton.props.icon).toBe('bookmark');
   });
 
   it('handles different flashcard data', () => {
@@ -405,7 +408,7 @@ describe('VocabularyRowCard sources and phonetics', () => {
     {lessonId: 'lesson-c', title: 'At the cafe'},
   ];
 
-  it('shows the part of speech and IPA under the word', () => {
+  it('shows the IPA, part of speech and CEFR level under the word', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -415,15 +418,22 @@ describe('VocabularyRowCard sources and phonetics', () => {
         onPress={jest.fn()}
       />,
     );
-    expect(
-      tree.root.findByProps({testID: 'phonetic-text'}).props.children,
-    ).toBe('[noun] /ˈæpəl/');
+    const texts = tree.root
+      .findAllByProps({testID: 'phonetic-text'})[0]
+      .findAll(node => typeof node.props?.children === 'string')
+      .map(node => node.props.children as string);
+    expect(texts).toEqual(expect.arrayContaining(['/ˈæpəl/', 'noun', 'A1']));
   });
 
   it('omits the phonetic line when there is nothing to show', () => {
     const tree = render(
       <VocabularyRowCard
-        flashcard={{...mockFlashcard, wordType: null, ipa: null}}
+        flashcard={{
+          ...mockFlashcard,
+          wordType: null,
+          ipa: null,
+          cefrLevel: null,
+        }}
         isSaved
         onSave={jest.fn()}
         onUnsave={jest.fn()}
@@ -507,7 +517,7 @@ describe('VocabularyRowCard sources and phonetics', () => {
     expect(tree.root.findAllByProps({testID: 'sources-list'})).toHaveLength(0);
   });
 
-  it('the save heart and the source rows are not inside the card button', () => {
+  it('the bookmark and the source rows are not inside the card button', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}

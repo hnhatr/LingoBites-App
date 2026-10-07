@@ -4,8 +4,8 @@ import {StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {WordCard} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonAnalysis} from '@core/schemas/lesson';
@@ -119,21 +119,10 @@ export function SentenceAnalysisPanel({
             {t('lessonPlayer.analysis_vocabulary')}
           </AppText>
           {vocabulary.map(item => (
-            <View
+            <WordCard
               key={item.id}
-              testID={`analysis-vocab-${item.id}`}
-              style={themedStyles.vocabRow}
-            >
-              <View style={styles.flex1}>
-                <AppText variant="bodyLg">
-                  {item.word}
-                  <AppText color="muted"> · {item.pos}</AppText>
-                </AppText>
-                <AppText color="muted" variant="caption">
-                  /{item.ipa.replace(/^\/|\/$/g, '')}/
-                </AppText>
-                <AppText color="secondary">{item.meaning}</AppText>
-                {vocabularySave ? (
+              actions={
+                vocabularySave ? (
                   <SaveItemButton
                     accessibilityHint={t('lessonPlayer.save_card_hint')}
                     label={t('lessonPlayer.save_card')}
@@ -142,21 +131,21 @@ export function SentenceAnalysisPanel({
                     savedLabel={t('lessonPlayer.saved')}
                     testID={`analysis-save-${item.id}`}
                   />
-                ) : null}
-              </View>
-              {onSpeakText ? (
-                <IconButton
-                  accessibilityLabel={t('lessonPlayer.speak_word', {
-                    word: item.word,
-                  })}
-                  accessibilityHint={t('lessonPlayer.speak_word_hint')}
-                  icon="volume_up"
-                  onPress={() => onSpeakText(item.word)}
-                  testID={`analysis-speak-${item.id}`}
-                  tone="ghost"
-                />
-              ) : null}
-            </View>
+                ) : undefined
+              }
+              ipa={item.ipa}
+              meaning={item.meaning}
+              onSpeak={onSpeakText ? () => onSpeakText(item.word) : undefined}
+              pos={item.pos}
+              speakAccessibilityHint={t('lessonPlayer.speak_word_hint')}
+              speakAccessibilityLabel={t('lessonPlayer.speak_word', {
+                word: item.word,
+              })}
+              speakTestID={`analysis-speak-${item.id}`}
+              testID={`analysis-vocab-${item.id}`}
+              variant="inline"
+              word={item.word}
+            />
           ))}
         </View>
       ) : null}
@@ -218,22 +207,10 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.md,
       padding: theme.spacing.lg,
     },
-    vocabRow: {
-      alignItems: 'center',
-      borderBottomColor: theme.colors.outlineVariant,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-      paddingBottom: theme.spacing.sm,
-    },
   });
 }
 
 const styles = StyleSheet.create({
-  flex1: {
-    flex: 1,
-    gap: 2,
-  },
   group: {
     gap: 8,
   },
