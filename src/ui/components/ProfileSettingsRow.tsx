@@ -8,6 +8,7 @@ import {getStickerFace} from '../theme/hardShadow';
 import {AppText} from './AppText';
 import {Chip, type ChipTone} from './Chip';
 import {MaterialIcon} from './MaterialIcon';
+import {SettingsGroupContext} from './SettingsGroup';
 
 type MedallionTone = 'teal' | 'coral' | 'gold';
 
@@ -17,6 +18,8 @@ type Props = {
   medallionTone?: MedallionTone;
   trailing?: 'chevron' | {text: string} | {chip: string; chipTone?: ChipTone};
   onPress?: () => void;
+  destructive?: boolean;
+  disabled?: boolean;
   accessibilityLabel?: string;
   accessibilityHint?: string;
 };
@@ -43,11 +46,16 @@ export function ProfileSettingsRow({
   medallionTone = 'teal',
   trailing,
   onPress,
+  destructive = false,
+  disabled = false,
   accessibilityLabel,
   accessibilityHint,
 }: Props) {
   const {theme} = useAppTheme();
-  const medallion = medallionColors(theme, medallionTone);
+  const grouped = React.useContext(SettingsGroupContext);
+  const medallion = destructive
+    ? {bg: theme.colors.secondarySoft, fg: theme.colors.danger}
+    : medallionColors(theme, medallionTone);
   const shelf = theme.shelf?.surface;
   const stickerFace = getStickerFace(theme, 3);
   const rowRadius = stickerFace ? 20 : 22;
@@ -97,10 +105,53 @@ export function ProfileSettingsRow({
       >
         <MaterialIcon color={medallion.fg} name={icon} size={22} />
       </View>
-      <AppText style={styles.label}>{label}</AppText>
+      <AppText color={destructive ? 'danger' : undefined} style={styles.label}>
+        {label}
+      </AppText>
       {trailingNode}
     </>
   );
+
+  if (grouped) {
+    const flatContent = (
+      <>
+        <View
+          style={[
+            styles.flatMedallion,
+            {backgroundColor: solidOver(medallion.bg, theme.colors.surface)},
+          ]}
+        >
+          <MaterialIcon color={medallion.fg} name={icon} size={20} />
+        </View>
+        <AppText
+          color={destructive ? 'danger' : undefined}
+          style={styles.label}
+        >
+          {label}
+        </AppText>
+        {trailingNode}
+      </>
+    );
+    if (!onPress) {
+      return <View style={styles.flatRow}>{flatContent}</View>;
+    }
+    return (
+      <Pressable
+        accessibilityHint={accessibilityHint ?? 'Chạm để chọn'}
+        accessibilityLabel={accessibilityLabel ?? label}
+        accessibilityRole="button"
+        accessibilityState={{disabled}}
+        disabled={disabled}
+        onPress={onPress}
+        style={({pressed}) => [
+          styles.flatRow,
+          pressed && {opacity: theme.states.pressedOpacity},
+        ]}
+      >
+        {flatContent}
+      </Pressable>
+    );
+  }
 
   const faceStyle = {
     alignItems: 'center',
@@ -129,6 +180,8 @@ export function ProfileSettingsRow({
       accessibilityHint={accessibilityHint ?? 'Chạm để chọn'}
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
+      accessibilityState={{disabled}}
+      disabled={disabled}
       onPress={onPress}
     >
       {({pressed}) => (
@@ -151,6 +204,21 @@ export function ProfileSettingsRow({
 }
 
 const styles = StyleSheet.create({
+  flatMedallion: {
+    alignItems: 'center',
+    borderRadius: 12,
+    height: 38,
+    justifyContent: 'center',
+    width: 38,
+  },
+  flatRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 56,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
   label: {
     flex: 1,
     fontSize: 16,
