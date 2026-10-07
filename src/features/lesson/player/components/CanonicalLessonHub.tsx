@@ -1,11 +1,10 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
-import {ImagePlaceholder} from '@ui/components/ImagePlaceholder';
 import {LessonExploreRow} from '@ui/components/LessonExploreRow';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SectionHeader} from '@ui/components/SectionHeader';
@@ -23,7 +22,15 @@ import {LessonStatusBanners} from './LessonStatusBanners';
 
 export type LessonHubSection = 'sentences' | 'vocabulary' | 'grammar';
 
-const PREVIEW_COUNT = 3;
+const PREVIEW_COUNT = 2;
+
+type ContentMode = 'original' | 'translation' | 'both';
+
+const CONTENT_MODES: {mode: ContentMode; labelKey: string}[] = [
+  {mode: 'original', labelKey: 'lessonPlayer.original_title'},
+  {mode: 'translation', labelKey: 'lessonPlayer.translation_title'},
+  {mode: 'both', labelKey: 'lessonPlayer.bilingual_title'},
+];
 
 export type CanonicalLessonHubProps = {
   snapshot: LessonSnapshot;
@@ -40,8 +47,8 @@ export type CanonicalLessonHubProps = {
 };
 
 /**
- * Lesson overview in the pre-cutover Lesson Hub layout: hero, original and
- * translation cards, and "Khám phá bài học" rows into the study sections.
+ * Lesson overview: title header, one expandable original/translation card,
+ * and "Khám phá bài học" rows into the study sections.
  * Everything shown is derived from the canonical snapshot; no lesson data is
  * fetched or stored here.
  */
@@ -71,47 +78,41 @@ export function CanonicalLessonHub({
       getPracticeEligibility(buildPracticeSource(snapshot, analyses)).eligible,
     [onOpenPractice, snapshot, analyses],
   );
-  const preview = sentences.slice(0, PREVIEW_COUNT);
+  const [contentMode, setContentMode] = useState<ContentMode>('original');
+  const [expanded, setExpanded] = useState(false);
   const hasMore = sentences.length > PREVIEW_COUNT;
+  const visible = expanded ? sentences : sentences.slice(0, PREVIEW_COUNT);
 
   return (
     <View testID="canonical-lesson-hub" style={styles.container}>
       <LessonStatusBanners offline={offline} hasUpdate={hasUpdate} />
 
-      <View style={themedStyles.heroImage}>
-        <ImagePlaceholder height={170} label={snapshot.title} />
-        <View style={themedStyles.heroOverlay}>
-          <AppText
-            testID="canonical-hub-title"
-            style={themedStyles.heroTitle}
-            numberOfLines={2}
-          >
-            {snapshot.title}
-          </AppText>
-          <View style={styles.heroChips}>
-            {snapshot.unit ? (
-              <Chip label={snapshot.unit.level_title} tone="gold" />
-            ) : null}
-            <Chip
-              label={t('lessonPlayer.hero_sentences', {
-                count: sentences.length,
-              })}
-              tone="accent"
-            />
-            {snapshot.origin === 'learner' ? (
-              <Chip label={t('lessonPlayer.hero_mine')} tone="accentSoft" />
-            ) : null}
-          </View>
+      <View style={styles.header}>
+        <AppText testID="canonical-hub-title" variant="h2" numberOfLines={3}>
+          {snapshot.title}
+        </AppText>
+        <View style={styles.chips}>
+          {snapshot.unit ? (
+            <Chip label={snapshot.unit.level_title} tone="gold" />
+          ) : null}
+          <Chip
+            label={t('lessonPlayer.hero_sentences', {
+              count: sentences.length,
+            })}
+            tone="accent"
+          />
+          {snapshot.origin === 'learner' ? (
+            <Chip label={t('lessonPlayer.hero_mine')} tone="accentSoft" />
+          ) : null}
         </View>
+        {snapshot.description.trim().length > 0 ? (
+          <AppText color="secondary" variant="body">
+            {snapshot.description}
+          </AppText>
+        ) : null}
       </View>
 
-      {snapshot.description.trim().length > 0 ? (
-        <AppText color="secondary" variant="body">
-          {snapshot.description}
-        </AppText>
-      ) : null}
-
-      <AppCard style={themedStyles.originalCard}>
+      <AppCard style={themedStyles.contentCard}>
         <View style={styles.cardBody}>
           <View style={styles.sectionTitleRow}>
             <MaterialIcon
@@ -119,49 +120,51 @@ export function CanonicalLessonHub({
               name="description"
               size={22}
             />
-            <AppText style={themedStyles.originalTitle} variant="h3">
-              {t('lessonPlayer.original_title')}
-            </AppText>
+            <View style={styles.modes}>
+              {CONTENT_MODES.map(({mode, labelKey}) => (
+                <Chip
+                  key={mode}
+                  accessibilityHint={t('lessonPlayer.content_toggle_hint')}
+                  label={t(labelKey)}
+                  onPress={() => setContentMode(mode)}
+                  selected={contentMode === mode}
+                  testID={`canonical-hub-mode-${mode}`}
+                />
+              ))}
+            </View>
           </View>
-          {preview.map(sentence => (
-            <AppText key={sentence.id} color="secondary" variant="bodyLg">
-              {sentence.text_en}
-            </AppText>
+          {visible.map(sentence => (
+            <View key={sentence.id} style={styles.sentence}>
+              {contentMode !== 'translation' ? (
+                <AppText color="secondary" variant="bodyLg">
+                  {sentence.text_en}
+                </AppText>
+              ) : null}
+              {contentMode !== 'original' ? (
+                <AppText
+                  color={contentMode === 'both' ? 'muted' : 'secondary'}
+                  variant={contentMode === 'both' ? 'body' : 'bodyLg'}
+                >
+                  {sentence.text_vi}
+                </AppText>
+              ) : null}
+            </View>
           ))}
           {hasMore ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityHint={t('lessonPlayer.see_all_sentences_hint')}
-              testID="canonical-hub-see-all"
-              onPress={() => onOpenSection('sentences')}
+              accessibilityHint={t('lessonPlayer.content_toggle_hint')}
+              testID="canonical-hub-expand"
+              onPress={() => setExpanded(value => !value)}
+              style={styles.expand}
             >
-              <AppText style={themedStyles.seeAll} variant="label">
-                {t('lessonPlayer.see_all_sentences', {
-                  count: sentences.length,
-                })}
+              <AppText style={themedStyles.expandLabel} variant="label">
+                {expanded
+                  ? `${t('lessonPlayer.content_show_less')} ↑`
+                  : `${t('lessonPlayer.content_show_more')} ↓`}
               </AppText>
             </Pressable>
           ) : null}
-        </View>
-      </AppCard>
-
-      <AppCard style={themedStyles.translationCard}>
-        <View style={styles.cardBody}>
-          <View style={styles.sectionTitleRow}>
-            <MaterialIcon
-              color={theme.colors.secondary}
-              name="translate"
-              size={22}
-            />
-            <AppText style={themedStyles.translationTitle} variant="h3">
-              {t('lessonPlayer.translation_title')}
-            </AppText>
-          </View>
-          {preview.map(sentence => (
-            <AppText key={sentence.id} color="secondary" variant="bodyLg">
-              {sentence.text_vi}
-            </AppText>
-          ))}
         </View>
       </AppCard>
 
@@ -220,43 +223,12 @@ export function CanonicalLessonHub({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    heroImage: {
-      borderRadius: theme.radius.lg,
-      height: 170,
-      overflow: 'hidden',
-      position: 'relative',
-    },
-    heroOverlay: {
-      backgroundColor: theme.colors.overlay,
-      bottom: 0,
-      left: 0,
-      padding: theme.spacing.lg,
-      position: 'absolute',
-      right: 0,
-    },
-    heroTitle: {
-      color: theme.colors.onOverlay,
-      fontSize: theme.typography.presets.h2.fontSize,
-      fontWeight: theme.typography.weight.medium,
-    },
-    originalCard: {
+    contentCard: {
       borderBottomColor: theme.colors.accentSoft,
       borderBottomWidth: 4,
     },
-    originalTitle: {
+    expandLabel: {
       color: theme.colors.primary,
-      fontWeight: theme.typography.weight.medium,
-    },
-    seeAll: {
-      color: theme.colors.primary,
-    },
-    translationCard: {
-      borderBottomColor: theme.colors.secondarySoft,
-      borderBottomWidth: 4,
-    },
-    translationTitle: {
-      color: theme.colors.secondary,
-      fontWeight: theme.typography.weight.medium,
     },
   });
 }
@@ -271,15 +243,31 @@ const styles = StyleSheet.create({
   exploreSection: {
     gap: 10,
   },
-  heroChips: {
+  chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 8,
+  },
+  expand: {
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  header: {
+    gap: 8,
+  },
+  modes: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
   },
   sectionTitleRow: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 8,
+  },
+  sentence: {
+    gap: 2,
   },
 });

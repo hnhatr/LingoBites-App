@@ -134,11 +134,31 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
   it('opens a text lesson on the hub without the retry action', () => {
     const {tree} = renderScreen();
     expect(has(tree, 'canonical-lesson-hub')).toBe(true);
-    expect(has(tree, 'canonical-hub-see-all')).toBe(true);
+    expect(has(tree, 'canonical-hub-expand')).toBe(true);
     expect(has(tree, 'canonical-player')).toBe(false);
     expect(has(tree, 'canonical-player-retry')).toBe(false);
     // F5: opening a ready lesson records its start for Home "Học tiếp".
     expect(mockMarkStarted).toHaveBeenCalled();
+  });
+
+  it('merges original and translation in one card with expand and mode toggle', () => {
+    const {tree} = renderScreen();
+    const text = () => JSON.stringify(tree.toJSON());
+    expect(text()).toContain('Sentence 1 en.');
+    expect(text()).not.toContain('Sentence 2 en.');
+    act(() => {
+      pressable(tree, 'canonical-hub-expand').props.onPress();
+    });
+    expect(text()).toContain('Sentence 3 en.');
+    act(() => {
+      pressable(tree, 'canonical-hub-mode-both').props.onPress();
+    });
+    expect(text()).toContain('Câu 3 vi.');
+    expect(text()).toContain('Sentence 3 en.');
+    act(() => {
+      pressable(tree, 'canonical-hub-mode-translation').props.onPress();
+    });
+    expect(text()).not.toContain('Sentence 3 en.');
   });
 
   it('"Bắt đầu học" shows the sentence study and back returns to the hub', () => {
