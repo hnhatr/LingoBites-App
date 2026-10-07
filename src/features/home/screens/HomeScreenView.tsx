@@ -199,7 +199,7 @@ function makeStyles(_theme: AppTheme) {
       marginBottom: 18,
     },
     goalSection: {
-      marginBottom: 22,
+      marginBottom: 18,
     },
     shortcutsSection: {
       marginBottom: 22,

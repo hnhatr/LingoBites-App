@@ -18,6 +18,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import type {PawGoalModel, WeeklyGoalCardModel} from '../logic/homeScreenModel';
 import {HOME_EMPTY_PAW, HOME_TROPHY} from '../logic/homeScreenModel';
 import {getHardShadow} from './HomeDecorations';
+import {HomeSectionTitle} from './HomeSectionTitle';
 import {HomeIcon} from './HomeSvgIcons';
 
 type Props = {
@@ -53,7 +54,7 @@ export function HomeWeeklyGoal({pawGoal, card, nextStepIsLesson}: Props) {
     >
       {/* Goal text column (§VS-3) */}
       <View style={styles.copy}>
-        <AppText style={styles.label}>{t('home.weekly_goal_label')}</AppText>
+        <HomeSectionTitle title={t('home.weekly_goal_label')} />
 
         {/* Paw row: one 22pt pets icon per lesson of the target */}
         <View
@@ -116,11 +117,6 @@ function makeStyles(theme: AppTheme) {
     copy: {
       flex: 1,
       minWidth: 0,
-    },
-    label: {
-      color: theme.colors.text.secondary,
-      fontSize: 12,
-      fontWeight: '700',
     },
     pawRow: {
       alignItems: 'center',
