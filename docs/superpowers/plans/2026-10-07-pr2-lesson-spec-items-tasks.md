@@ -1,6 +1,6 @@
 # PR 2 – Đặc tả bài, `lesson_items`, nhiệm vụ & tiêu chí (Server)
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE** (2026-10-07), nhánh `claude/optimistic-bell-mfgk44` của LingoBites-Server, 9 commit. D1–D5 đã được duyệt. Các điểm lệch ở §13.
 > Ngày lập: 2026-10-07. Repo: `LingoBites-Server`. Nhánh: `claude/optimistic-bell-mfgk44` (nối tiếp PR 1).
 > Thuộc Stage 1 của `2026-10-07-backward-design-curriculum-plan.md`, mục Server 3–6.
 
@@ -350,3 +350,16 @@ Mỗi lần xoá sẽ được liệt kê lại trong plan của PR đó để d
 - ⚠️ **Publish bài admin khó hơn**: mọi bài admin phải có đủ đặc tả (D1), kể cả bài admin tạo từ YouTube. Bài đang ở trạng thái publish không bị ảnh hưởng (DB sẽ reset; seed tạo bài đúng chuẩn).
 - Khối lượng lớn: khoảng 9 commit, 7 file test mới. Có thể tách thành PR 2a (commit 1–5) và PR 2b (6–9) nếu muốn review nhỏ hơn.
 - `RECYCLED_ITEM_NEW` và `ITEM_SINGLE_USE` truy vấn theo course/unit, nên cần index `lesson_items_item_idx` (đã có trong migration).
+
+## 13. Điểm lệch khi code (so với bản nháp)
+
+| # | Lệch | Lý do |
+|---|---|---|
+| 1 | Publish thiếu đặc tả trả **409** `LESSON_SPEC_INVALID` (không phải 422) | Khớp với `LESSON_BLOCK_PUBLISH_INVALID` đang trả 409; admin-web xử lý hai lỗi như nhau |
+| 2 | **Không cần clone** khi chuyển bài | `POST /lessons/:id/move` thực chất đổi `unit_id`, nên item và task đi theo bài. Bài chuyển sang course khác sẽ **bỏ quan hệ tiên quyết theo cả hai chiều**, và tăng revision các bài từng phụ thuộc nó. Clone chỉ có ở `adopt` (bài người học, không có đặc tả) |
+| 3 | `code`/`can_do` trong catalog chỉ trả khi `include=card_meta` | Catalog parse strict trên app; dùng lại cơ chế opt-in sẵn có |
+| 4 | Item cũng không archive được khi đang nằm trong `task_items` của bài đã publish; mọi chỉnh sửa item (trường, trạng thái, ví dụ, biến thể, lỗi) đều tăng revision của bài dùng nó | Đúng §5.3, mở rộng thêm cho `task_items` |
+| 5 | Lưu block kiểm tra tham chiếu ngay lúc lưu: `item_cards` chỉ chứa item của bài; `activity.task_id` phải là task của bài; `item_refs` phải tồn tại và chưa archive → `400 BLOCK_REF_INVALID` | Phát hiện lỗi sớm thay vì chờ đến lúc publish |
+| 6 | Cờ `LESSON_SNAPSHOT_SPEC_ENABLED` mặc định `true` | Đúng plan. Bản app hiện tại parse strict sẽ không mở được bài cho tới PR 5; nếu cần giữ app dev chạy được thì đặt `false` |
+| 7 | Test có sẵn publish bài được cập nhật: 2 helper `completeLessonSpec` (qua API) và `seedPublishableSpec` (qua SQL) | Theo D1 mọi bài admin cần đặc tả. Test cũ "bài rỗng vẫn publish được" đổi thành "bài rỗng bị chặn bởi đặc tả" |
+| 8 | Nội dung unit mẫu (`scripts/sampleUnit/content.ts`) do nhóm kỹ thuật soạn nháp | Chưa có bản từ nhóm nội dung. Cảnh báo unit hiện có: `ITEM_SINGLE_USE` cho item nghe "What size would you like?" và mẫu gọi đồ ăn (mỗi cái chỉ ở 1 bài) |
