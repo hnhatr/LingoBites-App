@@ -252,8 +252,7 @@ describe('Curriculum screens (F14)', () => {
 
     const completedMarks = (id: string) =>
       tree.root.findAll(
-        node =>
-          node.props.testID === `unit-lessons-row-${id}-chip-progress`,
+        node => node.props.testID === `unit-lessons-row-${id}-chip-progress`,
       );
     expect(completedMarks('a').length).toBeGreaterThan(0);
     expect(completedMarks('b')).toHaveLength(0);
