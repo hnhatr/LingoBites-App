@@ -162,6 +162,7 @@ jobs:
       - name: Build and upload to TestFlight (fastlane ios staging)
         run: bundle exec fastlane ios staging
         env:
+          BUILD_NUMBER: ${{ github.run_number }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.IOS_APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.IOS_APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY }}
