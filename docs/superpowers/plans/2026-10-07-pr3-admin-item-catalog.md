@@ -1,6 +1,6 @@
 # PR 3 – Danh mục item trên admin-web (thay trang Vocabulary)
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE** — đã duyệt E1–E4 và danh sách xoá; xem §9 cho các điểm lệch so với bản nháp.
 > Ngày lập: 2026-10-07. Repo: `LingoBites-Server` (thư mục `admin-web/` và một phần nhỏ server). Nhánh: `claude/optimistic-bell-mfgk44` (nối tiếp PR 1–2).
 > Thuộc Stage 1 của `2026-10-07-backward-design-curriculum-plan.md`, mục Admin-web 1. Dùng API của PR 1 (`/v1/admin/items`).
 
@@ -186,3 +186,31 @@ test/adminVocabularies.test.ts
 - **Trang sửa item khá lớn** (7 panel). Mỗi panel là component riêng, lưu độc lập.
 - Sau E1 không tạo được từ vựng mới cho block `vocabulary` cho tới PR 4. Chấp nhận được vì DB mới, chưa có nội dung thật.
 - Playwright cần build server và DB thật. Đã chạy được trong môi trường hiện tại ở PR 1–2 (Postgres local); phần trình duyệt dùng Chromium cài sẵn.
+
+## 9. Đã code — điểm lệch so với bản nháp
+
+Commit trên `LingoBites-Server`, nhánh `claude/optimistic-bell-mfgk44`:
+
+1. `75c37c7` feat(items): item usage route
+2. `2c4fd2c` feat(admin-web): item API client and shared item helpers
+3. `413ba5b` feat(admin-web): ItemPicker and pattern frame editor
+4. `75165d4` feat(admin-web): item list and edit pages
+5. `158a2bf` refactor: retire the vocabulary catalog pages and write API
+6. `dbcb6e6` test(admin-web): items e2e and nav acceptance update
+
+Điểm lệch:
+
+- **Bộ lọc loại (kind)** là một ô chọn đơn, không phải chọn nhiều. API `kind` chỉ nhận một giá trị.
+- **Cảnh báo thay đổi chưa lưu** chỉ dùng `beforeunload`, tức khi đóng tab hoặc tải lại. Điều hướng trong app không bị chặn, vì `BrowserRouter` không hỗ trợ `useBlocker`.
+- **Mỗi panel có nút Save riêng.** Các panel là thông tin chính, ví dụ, biến thể và lỗi thường gặp. Mỗi panel gọi một API PUT riêng nên không gộp được vào một nút lưu chung.
+- Ô mã item có nhãn **"Item code"** để không trùng nhãn "Code" của các dòng lỗi thường gặp.
+- **Test e2e cũ:** AC-001 trong `ling10-acceptance.spec.ts` trước đây kiểm tra menu "Vocabulary". Nay nó kiểm tra "Items".
+- **Vẫn giữ (dọn ở PR sau):** API chọn từ `GET /v1/admin/vocabularies`, `vocabularyLookup`, và lệnh DELETE vocab của admin. Lesson block `vocabulary` hiện vẫn dùng các phần này.
+- **OpenAPI:** 142 path, 173 operation. Thêm route usage, bỏ các route ghi vocab.
+
+Kiểm tra đã chạy:
+
+- server `yarn test`: 420/420;
+- `yarn test:db` trên DB mới: 241/241, chạy hai lần;
+- admin-web: lint, typecheck, prettier đều sạch; vitest 83/83;
+- Playwright: 15/15, gồm `items.spec.ts` mới.
