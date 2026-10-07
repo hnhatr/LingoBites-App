@@ -31,12 +31,12 @@ import {ProgressRing} from '@ui/components/ProgressRing';
 import {RatingControl} from '@ui/components/RatingControl';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
-import {WordCard} from '@ui/components/WordCard';
 import {useAppTheme} from '@ui/theme';
 
 import type {FlashcardRecord, ReviewRating} from '@core/db/types';
 import {useFeatureEnabled} from '@core/release';
 
+import {ReviewCardBack, ReviewCardFront} from '../components/ReviewCardFaces';
 import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
 
 const DEFAULT_SOFT_CAP = 10;
@@ -71,33 +71,44 @@ function FlashcardFace({
   const {t} = useTranslation();
 
   // SETE-253: the flip must reveal something new. The front is the English
-  // prompt only (recall cue); the back keeps the same word layout and adds the
-  // Vietnamese meaning as the answer. Cards without a translation never reach
-  // this component — they are filtered out of the due queue in
-  // `getDueFlashcards`.
-  const isBack = side === 'back';
+  // prompt only (recall cue); the back adds the Vietnamese meaning as the
+  // answer. Cards without a translation never reach this component — they are
+  // filtered out of the due queue in `getDueFlashcards`.
   // A word saved from an analysis has no curated example, but it does carry
   // the sentence it was found in: show that as context. The example
   // translation belongs to the example only.
+  const content = {
+    word: card.word,
+    meaning: card.meaningVi,
+    ipa: card.ipa,
+    pos: card.wordType,
+    cefr: card.cefrLevel,
+    example: card.example ?? card.sourceSentence,
+    exampleTranslation: card.example ? card.exampleTranslation : null,
+  };
+  const onSpeak = () => {
+    fireAndForget(speak(card.word));
+  };
+  if (side === 'back') {
+    return (
+      <ReviewCardBack
+        card={content}
+        hint={t('review.swipe_hint')}
+        onSpeak={onSpeak}
+        speakAccessibilityLabel={t('review.listen_answer_a11y')}
+        speakTestID="review-speak-back"
+        testID="review-card-back"
+      />
+    );
+  }
   return (
-    <WordCard
-      cefr={card.cefrLevel}
-      example={card.example ?? card.sourceSentence}
-      exampleTranslation={card.example ? card.exampleTranslation : null}
-      hideMeaning={!isBack}
-      ipa={card.ipa}
-      meaning={card.meaningVi}
-      onSpeak={() => {
-        fireAndForget(speak(card.word));
-      }}
-      pos={card.wordType}
-      speakAccessibilityLabel={
-        isBack ? t('review.listen_answer_a11y') : t('review.listen_prompt_a11y')
-      }
-      speakTestID={isBack ? 'review-speak-back' : 'review-speak-front'}
-      testID={isBack ? 'review-card-back' : 'review-card-front'}
-      variant="face"
-      word={card.word}
+    <ReviewCardFront
+      card={content}
+      hint={t('review.show_answer_hint')}
+      onSpeak={onSpeak}
+      speakAccessibilityLabel={t('review.listen_prompt_a11y')}
+      speakTestID="review-speak-front"
+      testID="review-card-front"
     />
   );
 }
@@ -391,7 +402,8 @@ export function DailyReviewScreen({
   }
 
   // Card face height: fill the stage, leaving room for the hint rows.
-  const cardMinHeight = Math.max(260, stageHeight - 150);
+  // Both faces get the stage's exact height, so flipping never resizes the card.
+  const cardHeight = stageHeight > 0 ? Math.max(300, stageHeight) : undefined;
 
   return (
     <AppScreen>
@@ -416,32 +428,32 @@ export function DailyReviewScreen({
         ) : null}
       </View>
 
-      <View
-        onLayout={handleStageLayout}
-        style={[styles.stage, {paddingHorizontal: theme.gutter}]}
-      >
+      <View style={[styles.stage, {paddingHorizontal: theme.gutter}]}>
         {ratingError ? <ErrorCard message={ratingError} /> : null}
-        {activeCard ? (
-          <SwipeCard
-            cardKey={activeCard.id}
-            enabled={flipped}
-            leftLabel={t('rating.forgot_label')}
-            onSwipe={handleSwipe}
-            rightLabel={t('rating.remembered_label')}
-            testID="review-swipe-card"
-          >
-            <FlipCard
-              back={<FlashcardFace card={activeCard} side="back" />}
-              backHint={t('review.swipe_hint')}
-              flipped={flipped}
-              front={<FlashcardFace card={activeCard} side="front" />}
-              frontHint={t('review.show_answer_hint')}
-              minHeight={cardMinHeight}
-              onFlip={() => setFlipped(value => !value)}
-              testID="daily-review-flip-card"
-            />
-          </SwipeCard>
-        ) : null}
+        <View onLayout={handleStageLayout} style={styles.flex1}>
+          {activeCard ? (
+            <SwipeCard
+              cardKey={activeCard.id}
+              enabled={flipped}
+              leftLabel={t('rating.forgot_label')}
+              onSwipe={handleSwipe}
+              rightLabel={t('rating.remembered_label')}
+              testID="review-swipe-card"
+            >
+              <FlipCard
+                back={<FlashcardFace card={activeCard} side="back" />}
+                backHint={t('review.swipe_hint')}
+                flipped={flipped}
+                front={<FlashcardFace card={activeCard} side="front" />}
+                bare
+                frontHint={t('review.show_answer_hint')}
+                height={cardHeight}
+                onFlip={() => setFlipped(value => !value)}
+                testID="daily-review-flip-card"
+              />
+            </SwipeCard>
+          ) : null}
+        </View>
       </View>
 
       <View style={[styles.actions, {paddingHorizontal: theme.gutter}]}>
@@ -502,6 +514,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
+  flex1: {
+    flex: 1,
+  },
   emptyCopy: {
     maxWidth: 280,
     textAlign: 'center',
@@ -522,7 +537,6 @@ const styles = StyleSheet.create({
   stage: {
     flex: 1,
     gap: 12,
-    justifyContent: 'center',
     paddingVertical: 8,
   },
   statCard: {

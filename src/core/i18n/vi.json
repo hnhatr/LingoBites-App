@@ -210,7 +210,8 @@
     "remembered_hint": "lên lịch ôn sau",
     "reveal_label": "Xem nghĩa",
     "reveal_a11y": "Xem nghĩa",
-    "reveal_hint": "Lật thẻ để xem nghĩa và chấm điểm"
+    "reveal_hint": "Lật thẻ để xem nghĩa và chấm điểm",
+    "reveal_tip": "Hãy thử nhớ nghĩa trước khi lật thẻ"
   },
   "common": {
     "retry": "Thử lại",

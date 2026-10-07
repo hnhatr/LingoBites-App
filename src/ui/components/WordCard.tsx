@@ -11,9 +11,8 @@ import {IconButton} from './IconButton';
 /**
  * - `card`: standalone word card in a list (wrapped in `AppCard`).
  * - `inline`: a row inside another surface (analysis panel), hairline divider.
- * - `face`: centered face of a flashcard (`FlipCard` provides the card).
  */
-export type WordCardVariant = 'card' | 'inline' | 'face';
+export type WordCardVariant = 'card' | 'inline';
 
 export type WordCardProps = {
   word: string;
@@ -24,7 +23,7 @@ export type WordCardProps = {
   example?: string | null;
   exampleTranslation?: string | null;
   variant?: WordCardVariant;
-  /** Flashcard front: keep the meaning and example hidden (recall cue). */
+  /** Keep the meaning and example hidden (recall cue). */
   hideMeaning?: boolean;
   /** Speaks the word (TTS); omitted = no speak button. */
   onSpeak?: () => void;
@@ -77,26 +76,18 @@ export function WordCard({
 }: WordCardProps) {
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const isFace = variant === 'face';
   const showMeaning = !hideMeaning && !!meaning;
   const showExample = !hideMeaning && !!example;
 
   const content = (
     <>
-      <AppText
-        style={isFace ? styles.centerText : null}
-        testID="word-text"
-        variant={isFace ? 'h2' : 'h3'}
-      >
+      <AppText testID="word-text" variant="h3">
         {word}
       </AppText>
       {ipa || pos || cefr ? (
-        <View
-          style={[styles.meta, isFace ? styles.metaCentered : null]}
-          testID="phonetic-text"
-        >
+        <View style={styles.meta} testID="phonetic-text">
           {ipa ? (
-            <AppText color="muted" variant={isFace ? 'body' : 'caption'}>
+            <AppText color="muted" variant="caption">
               {formatIpa(ipa)}
             </AppText>
           ) : null}
@@ -105,23 +96,15 @@ export function WordCard({
         </View>
       ) : null}
       {showMeaning ? (
-        <AppText
-          color="secondary"
-          style={isFace ? [styles.centerText, themedStyles.faceMeaning] : null}
-          testID="meaning-text"
-          variant={isFace ? 'h3' : 'bodyLg'}
-        >
+        <AppText color="secondary" testID="meaning-text" variant="bodyLg">
           {meaning}
         </AppText>
       ) : null}
       {showExample ? (
-        <View
-          style={isFace ? styles.faceExample : themedStyles.example}
-          testID="word-example"
-        >
+        <View style={themedStyles.example} testID="word-example">
           <AppText
             color="secondary"
-            style={isFace ? styles.centerText : styles.italic}
+            style={styles.italic}
             testID="example-text"
           >
             {example}
@@ -129,7 +112,6 @@ export function WordCard({
           {exampleTranslation ? (
             <AppText
               color="muted"
-              style={isFace ? styles.centerText : null}
               testID="example-translation-text"
               variant="caption"
             >
@@ -147,13 +129,13 @@ export function WordCard({
       accessibilityLabel={pressAccessibilityLabel}
       accessibilityRole="button"
       onPress={onPress}
-      style={isFace ? styles.faceBody : styles.body}
+      style={styles.body}
       testID={pressTestID}
     >
       {content}
     </Pressable>
   ) : (
-    <View style={isFace ? styles.faceBody : styles.body}>{content}</View>
+    <View style={styles.body}>{content}</View>
   );
 
   const speakButton = onSpeak ? (
@@ -174,17 +156,6 @@ export function WordCard({
         {trailing}
       </View>
     ) : null;
-
-  if (isFace) {
-    return (
-      <View style={styles.face} testID={testID}>
-        {textBlock}
-        {speakButton}
-        {trailing}
-        {actions ? <View style={styles.faceActions}>{actions}</View> : null}
-      </View>
-    );
-  }
 
   const inner = (
     <>
@@ -215,9 +186,6 @@ function makeStyles(theme: AppTheme) {
       marginTop: theme.spacing.xs,
       paddingLeft: theme.spacing.sm,
     },
-    faceMeaning: {
-      color: theme.colors.primary,
-    },
     inline: {
       borderBottomColor: theme.colors.outlineVariant,
       borderBottomWidth: StyleSheet.hairlineWidth,
@@ -239,28 +207,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
-  centerText: {
-    textAlign: 'center',
-  },
-  face: {
-    alignItems: 'center',
-    gap: 8,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-  },
-  faceActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  faceBody: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  faceExample: {
-    gap: 2,
-    marginTop: 4,
-  },
   italic: {
     fontStyle: 'italic',
   },
@@ -269,9 +215,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  metaCentered: {
-    justifyContent: 'center',
   },
   row: {
     alignItems: 'center',

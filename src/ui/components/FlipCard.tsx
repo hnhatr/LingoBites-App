@@ -24,6 +24,12 @@ export interface FlipCardProps {
   style?: ViewStyle;
   /** Minimum height of the card face content (default 320). */
   minHeight?: number;
+  /**
+   * Bare mode: faces draw their own surface (no AppCard, no hint row) and
+   * both get exactly `height`, so flipping never changes the card size.
+   */
+  bare?: boolean;
+  height?: number;
   testID?: string;
 }
 
@@ -36,6 +42,8 @@ export function FlipCard({
   backHint = 'Nhấn để xem mặt trước',
   style,
   minHeight = 320,
+  bare = false,
+  height,
   testID = 'flip-card',
 }: FlipCardProps) {
   const {theme} = useAppTheme();
@@ -88,28 +96,40 @@ export function FlipCard({
       testID={testID}
     >
       <Animated.View style={{transform: [{perspective: 1000}, {rotateY}]}}>
-        <AppCard style={style}>
+        {bare ? (
           <View
-            style={StyleSheet.flatten([styles.contentContainer, {minHeight}])}
+            style={StyleSheet.flatten([
+              styles.contentContainer,
+              height ? {height} : {minHeight},
+              style,
+            ])}
           >
             {flipped ? back : front}
           </View>
-          <View
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            style={styles.hintRow}
-            testID="flip-card-hint"
-          >
-            <MaterialIcon
-              color={theme.colors.text.muted}
-              name="refresh"
-              size={16}
-            />
-            <AppText color="muted" style={styles.hintText} variant="caption">
-              {flipped ? backHint : frontHint}
-            </AppText>
-          </View>
-        </AppCard>
+        ) : (
+          <AppCard style={style}>
+            <View
+              style={StyleSheet.flatten([styles.contentContainer, {minHeight}])}
+            >
+              {flipped ? back : front}
+            </View>
+            <View
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={styles.hintRow}
+              testID="flip-card-hint"
+            >
+              <MaterialIcon
+                color={theme.colors.text.muted}
+                name="refresh"
+                size={16}
+              />
+              <AppText color="muted" style={styles.hintText} variant="caption">
+                {flipped ? backHint : frontHint}
+              </AppText>
+            </View>
+          </AppCard>
+        )}
       </Animated.View>
     </Pressable>
   );
