@@ -150,6 +150,11 @@ describe('DailyReviewScreen - Accessibility', () => {
         <DailyReviewScreen navigation={navigation() as never} />,
       );
 
+      const reveal = tree.root.findByProps({testID: 'rating-reveal'});
+      expect(typeof reveal.props.accessibilityLabel).toBe('string');
+      expect(reveal.props.accessibilityRole).toBe('button');
+      await revealCard(tree);
+
       const ratingButtons = ['rating-forgot', 'rating-remembered'];
       const skipButton = tree.root.findByProps({testID: 'rating-skip'});
 
@@ -174,13 +179,12 @@ describe('DailyReviewScreen - Accessibility', () => {
         'rating-remembered',
         'rating-skip',
       ];
+      // SETE-254: before the flip no rating control exists at all — a single
+      // reveal action stands in, so there is no greyed-but-live affordance.
       for (const testID of ratingButtons) {
-        const button = tree.root.findByProps({testID});
-        expect(button.props.disabled).toBe(true);
-        // SETE-254: the announced state must match the real disabled prop —
-        // a greyed-but-live control is the false affordance this gates.
-        expect(button.props.accessibilityState).toEqual({disabled: true});
+        expect(tree.root.findAllByProps({testID})).toHaveLength(0);
       }
+      expect(tree.root.findByProps({testID: 'rating-reveal'})).toBeTruthy();
 
       await revealCard(tree);
 
@@ -197,13 +201,12 @@ describe('DailyReviewScreen - Accessibility', () => {
         <DailyReviewScreen navigation={navigation() as never} />,
       );
 
-      // A tap on a disabled control never fires on device; invoking the
-      // handler directly proves the screen-level flip gate holds regardless.
+      // No rating button exists pre-flip; a swipe is the only other path, and
+      // the screen-level flip gate must ignore it.
       await act(async () => {
-        tree.root.findByProps({testID: 'rating-remembered'}).props.onPress();
-      });
-      await act(async () => {
-        tree.root.findByProps({testID: 'rating-skip'}).props.onPress();
+        tree.root
+          .findByProps({testID: 'review-swipe-card'})
+          .props.onSwipe('right');
       });
 
       const progress = tree.root.findByProps({testID: 'review-progress'});

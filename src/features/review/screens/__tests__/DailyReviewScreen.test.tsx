@@ -296,27 +296,54 @@ describe('DailyReviewScreen', () => {
     ).toBeGreaterThan(0);
   });
 
-  it('keeps rating controls disabled until the card is revealed', async () => {
+  it('shows only the reveal action until the card is revealed', async () => {
     seedCards(1);
     const tree = await renderScreen(
       <DailyReviewScreen navigation={navigation() as never} />,
     );
 
     expect(
+      tree.root.findAllByProps({testID: 'rating-remembered'}),
+    ).toHaveLength(0);
+    expect(tree.root.findAllByProps({testID: 'rating-forgot'})).toHaveLength(0);
+
+    await act(async () => {
+      tree.root.findByProps({testID: 'rating-reveal'}).props.onPress();
+    });
+
+    expect(tree.root.findAllByProps({testID: 'rating-reveal'})).toHaveLength(0);
+    expect(
       tree.root.findByProps({testID: 'rating-remembered'}).props.disabled,
-    ).toBe(true);
+    ).toBe(false);
     expect(
       tree.root.findByProps({testID: 'rating-forgot'}).props.disabled,
-    ).toBe(true);
+    ).toBe(false);
+  });
+
+  it('rates by swiping once revealed: right = remembered, left = forgot', async () => {
+    seedCards(2);
+    const tree = await renderScreen(
+      <DailyReviewScreen navigation={navigation() as never} />,
+    );
+    const swipe = (direction: 'left' | 'right') =>
+      act(async () => {
+        tree.root
+          .findByProps({testID: 'review-swipe-card'})
+          .props.onSwipe(direction);
+      });
 
     await revealCard(tree);
+    await swipe('right');
+    await revealCard(tree);
+    await swipe('left');
 
     expect(
-      tree.root.findByProps({testID: 'rating-remembered'}).props.disabled,
-    ).toBe(false);
+      tree.root.findByProps({testID: 'summary-remembered-count'}).props
+        .children,
+    ).toBe(1);
     expect(
-      tree.root.findByProps({testID: 'rating-forgot'}).props.disabled,
-    ).toBe(false);
+      tree.root.findByProps({testID: 'summary-forgot-count'}).props.children,
+    ).toBe(1);
   });
 
   it('shows the translated error and does not advance when rating persistence fails', async () => {

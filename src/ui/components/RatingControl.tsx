@@ -13,27 +13,36 @@ type Props = {
   onRate: (rating: ReviewRating) => void;
   onSkip: () => void;
   disabled?: boolean;
+  /**
+   * Pre-flip reveal action. When set and `disabled`, a single "Xem nghĩa"
+   * button replaces the inactive rating buttons.
+   */
+  onReveal?: () => void;
 };
 
 type RatingOption = {
   rating: ReviewRating;
   labelKey: string;
+  hintKey: string;
   accessibilityKey: string;
   icon: 'check_circle' | 'refresh';
 };
 
+// Forgot on the left, remembered on the right (thumb-side "yes").
 const RATING_OPTIONS: RatingOption[] = [
-  {
-    rating: 'remembered',
-    labelKey: 'rating.remembered_label',
-    accessibilityKey: 'rating.remembered_a11y',
-    icon: 'check_circle',
-  },
   {
     rating: 'forgot',
     labelKey: 'rating.forgot_label',
+    hintKey: 'rating.forgot_hint',
     accessibilityKey: 'rating.forgot_a11y',
     icon: 'refresh',
+  },
+  {
+    rating: 'remembered',
+    labelKey: 'rating.remembered_label',
+    hintKey: 'rating.remembered_hint',
+    accessibilityKey: 'rating.remembered_a11y',
+    icon: 'check_circle',
   },
 ];
 
@@ -56,9 +65,9 @@ function ratingTone(
   switch (rating) {
     case 'remembered':
       return {
-        background: theme.colors.accentSoft,
+        background: theme.colors.primary,
         border: theme.colors.primary,
-        ink: theme.colors.primary,
+        ink: theme.colors.text.inverse,
       };
     case 'forgot':
     default:
@@ -70,9 +79,45 @@ function ratingTone(
   }
 }
 
-export function RatingControl({onRate, onSkip, disabled = false}: Props) {
+export function RatingControl({
+  onRate,
+  onSkip,
+  disabled = false,
+  onReveal,
+}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
+
+  if (disabled && onReveal) {
+    return (
+      <View style={styles.container}>
+        <Pressable
+          accessibilityHint={t('rating.reveal_hint')}
+          accessibilityLabel={t('rating.reveal_a11y')}
+          accessibilityRole="button"
+          onPress={onReveal}
+          style={({pressed}) => [
+            styles.revealButton,
+            {
+              backgroundColor: theme.colors.primary,
+              borderColor: theme.colors.primary,
+            },
+            pressed ? {opacity: theme.states.pressedOpacity} : null,
+          ]}
+          testID="rating-reveal"
+        >
+          <MaterialIcon
+            color={theme.colors.text.inverse}
+            name="visibility"
+            size={22}
+          />
+          <AppText style={{color: theme.colors.text.inverse}} variant="label">
+            {t('rating.reveal_label')}
+          </AppText>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -95,9 +140,14 @@ export function RatingControl({onRate, onSkip, disabled = false}: Props) {
             ]}
             testID={`rating-${option.rating}`}
           >
-            <MaterialIcon color={tone.ink} name={option.icon} size={22} />
-            <AppText style={{color: tone.ink}} variant="label">
-              {t(option.labelKey)}
+            <View style={styles.buttonTitle}>
+              <MaterialIcon color={tone.ink} name={option.icon} size={22} />
+              <AppText style={{color: tone.ink}} variant="label">
+                {t(option.labelKey)}
+              </AppText>
+            </View>
+            <AppText style={{color: tone.ink}} variant="caption">
+              {t(option.hintKey)}
             </AppText>
           </Pressable>
         );
@@ -108,29 +158,25 @@ export function RatingControl({onRate, onSkip, disabled = false}: Props) {
         accessibilityRole="button"
         accessibilityState={{disabled}}
         disabled={disabled}
+        hitSlop={8}
         onPress={onSkip}
         style={[
           styles.skipButton,
-          {
-            // SETE-254: same readable-disabled treatment as the rating
-            // buttons — muted fill, full-strength secondary ink, no opacity
-            // wash (which collapsed glyph contrast to ~2:1).
-            backgroundColor: disabled
-              ? theme.colors.surfaceMuted
-              : theme.colors.surface,
-            borderColor: theme.colors.border,
-          },
+          // SETE-254: readable-disabled treatment (muted fill, no opacity wash).
+          disabled
+            ? {backgroundColor: theme.colors.surfaceMuted, borderRadius: 14}
+            : null,
         ]}
         testID="rating-skip"
       >
-        <MaterialIcon
-          color={theme.colors.text.secondary}
-          name="chevron_right"
-          size={22}
-        />
         <AppText color="secondary" variant="label">
           {t('rating.skip_label')}
         </AppText>
+        <MaterialIcon
+          color={theme.colors.text.secondary}
+          name="chevron_right"
+          size={18}
+        />
       </Pressable>
     </View>
   );
@@ -139,30 +185,43 @@ export function RatingControl({onRate, onSkip, disabled = false}: Props) {
 const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1,
+    borderRadius: 18,
+    borderWidth: 2,
     flexBasis: '46%',
     flexGrow: 1,
-    gap: 6,
+    gap: 2,
     justifyContent: 'center',
     minHeight: 72,
     paddingHorizontal: 8,
     paddingVertical: 10,
+  },
+  buttonTitle: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
   },
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
+  revealButton: {
+    alignItems: 'center',
+    borderRadius: 18,
+    borderWidth: 2,
+    flexBasis: '100%',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    minHeight: 64,
+    paddingHorizontal: 16,
+  },
   skipButton: {
     alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1,
     flexBasis: '100%',
-    gap: 6,
+    flexDirection: 'row',
+    gap: 2,
     justifyContent: 'center',
-    minHeight: 56,
-    paddingHorizontal: 8,
-    paddingVertical: 10,
+    minHeight: 44,
   },
 });

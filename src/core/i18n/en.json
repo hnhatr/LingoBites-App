@@ -190,7 +190,14 @@
     "exit_title": "Leave the review session?",
     "exit_body": "Progress {{reviewed}}/{{total}} will not be saved.",
     "exit_stay": "Cancel",
-    "exit_quit": "Leave"
+    "exit_quit": "Leave",
+    "swipe_hint": "Swipe right if you remember, left if you forgot",
+    "summary_great": "Excellent!",
+    "summary_good": "Nice work!",
+    "summary_keep": "Keep going!",
+    "summary_accuracy": "remembered",
+    "summary_accuracy_a11y": "Remembered {{percent}}% of cards",
+    "summary_subtitle": "You just reviewed {{count}} cards"
   },
   "rating": {
     "forgot_label": "Forgot",
@@ -198,7 +205,12 @@
     "remembered_label": "Remembered",
     "remembered_a11y": "Remember - schedule review later",
     "skip_label": "Skip",
-    "skip_a11y": "Skip this card"
+    "skip_a11y": "Skip this card",
+    "forgot_hint": "review again in 1 day",
+    "remembered_hint": "schedule review later",
+    "reveal_label": "Show meaning",
+    "reveal_a11y": "Show meaning",
+    "reveal_hint": "Flip the card to see the meaning and rate it"
   },
   "common": {
     "retry": "Retry",
