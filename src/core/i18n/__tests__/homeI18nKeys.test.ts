@@ -194,7 +194,7 @@ describe('§VS-8 exact copy assertions', () => {
     ).toBe('Học qua video');
     expect(
       resolveKey(vi as Record<string, unknown>, 'home.shortcut_video_sub'),
-    ).toBe('Tạo bài từ YouTube');
+    ).toBe('Xem tiếp, khám phá, tạo bài');
     expect(
       resolveKey(
         vi as Record<string, unknown>,

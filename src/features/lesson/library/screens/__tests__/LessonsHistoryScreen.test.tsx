@@ -111,9 +111,7 @@ describe('LessonsHistoryScreen (Library hub)', () => {
     act(() => {
       tree.root.findByProps({testID: 'library-card-video'}).props.onPress();
     });
-    expect(navigation.navigate).toHaveBeenCalledWith('LibraryList', {
-      section: 'video',
-    });
+    expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith('video');
   });
 
   it('does not reload library data again on the first focus', () => {

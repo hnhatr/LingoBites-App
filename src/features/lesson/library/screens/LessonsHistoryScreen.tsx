@@ -36,7 +36,7 @@ type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
 export type LessonsHistoryScreenProps = Props;
 
 /** The Library hub: one card per section, each opening its own list. */
-export function LessonsHistoryScreen({navigation}: Props) {
+export function LessonsHistoryScreen(_props: Props) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const feedClearance = useFloatingTabBarClearance();
@@ -95,9 +95,7 @@ export function LessonsHistoryScreen({navigation}: Props) {
                     section,
                   )}`}
                   accessibilityHint={section.description}
-                  onPress={() =>
-                    navigation.navigate('LibraryList', {section: section.id})
-                  }
+                  onPress={() => appNavigation.openLibrarySection(section.id)}
                   testID={`library-card-${section.id}`}
                   metaTestID={`library-card-${section.id}-count`}
                 />

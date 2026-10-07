@@ -1,14 +1,9 @@
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
+import type {LibrarySectionKey} from '@core/navigation';
 import type {LessonOrigin, LessonSourceType} from '@core/schemas/lesson';
 
-export type LibrarySectionId =
-  | 'mine'
-  | 'video'
-  | 'vocabulary'
-  | 'grammar'
-  | 'public'
-  | 'publicVideo';
+export type LibrarySectionId = LibrarySectionKey;
 
 /** `mine`: the learner's own data; `explore`: lessons everyone can see. */
 export type LibraryGroup = 'mine' | 'explore';

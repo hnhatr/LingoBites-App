@@ -7,10 +7,13 @@ export type {
   UseLibrarySegmentsResult,
 } from './logic/useLibrarySegments';
 export {LibraryListScreen} from './screens/LibraryListScreen';
+export {VideoHubScreen} from './screens/VideoHubScreen';
 export type {
   LessonsListRouteParams,
+  LibraryFlowParamList,
   LibraryListRouteParams,
   LessonsStackParamList,
+  VideoHubRouteParams,
 } from './screens/navigationTypes';
 export {
   activityCountOf,

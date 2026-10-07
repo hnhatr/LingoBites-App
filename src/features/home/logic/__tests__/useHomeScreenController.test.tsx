@@ -19,7 +19,7 @@ jest.mock('@features/analytics', () => ({
 }));
 
 jest.mock('@core/api/youtubeCapabilities', () => ({
-  useYouTubeServerEnabled: () => false,
+  useYouTubeCapability: () => ({status: 'disabled', refresh: () => {}}),
 }));
 
 jest.mock('@core/release', () => ({

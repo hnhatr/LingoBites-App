@@ -43,7 +43,6 @@ function saveCard(index: number, meaningVi: string) {
 function homeReviewBadgeCount(): number | null {
   const review = buildShortcutItems({
     dueFlashcardCount: getDueFlashcards().length,
-    youtubeEnabled: true,
   }).find(item => item.key === 'review');
   return review?.badgeCount ?? null;
 }

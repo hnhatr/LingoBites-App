@@ -3,7 +3,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {
   fetchYouTubeCapability,
-  useYouTubeServerEnabled,
+  useYouTubeCapability,
 } from '../youtubeCapabilities';
 
 const mockFetch = jest.fn();
@@ -51,22 +51,31 @@ describe('fetchYouTubeCapability (SETE-290 DEV-1)', () => {
   });
 });
 
+let latest!: ReturnType<typeof useYouTubeCapability>;
+
 function Probe() {
-  const enabled = useYouTubeServerEnabled();
-  return <>{enabled ? 'on' : 'off'}</>;
+  latest = useYouTubeCapability();
+  return <>{latest.status}</>;
+}
+
+async function flush() {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
 }
 
 async function renderProbe() {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(<Probe />);
-    await Promise.resolve();
   });
+  await flush();
   return tree;
 }
 
-describe('useYouTubeServerEnabled (SETE-290 DEV-1)', () => {
-  it('starts disabled while the probe is in flight', async () => {
+describe('useYouTubeCapability (SETE-290 DEV-1)', () => {
+  it('is checking while the probe is in flight, then enabled', async () => {
     let resolveFetch!: (value: unknown) => void;
     mockFetch.mockReturnValue(
       new Promise(resolve => {
@@ -74,20 +83,52 @@ describe('useYouTubeServerEnabled (SETE-290 DEV-1)', () => {
       }),
     );
     const tree = await renderProbe();
-    expect(tree.toJSON()).toBe('off');
+    expect(tree.toJSON()).toBe('checking');
     await act(async () => {
       resolveFetch(jsonResponse(true, enabledBody(true)));
-      await Promise.resolve();
     });
-    expect(tree.toJSON()).toBe('on');
+    await flush();
+    expect(tree.toJSON()).toBe('enabled');
   });
 
-  it('stays disabled when the probe fails', async () => {
+  it('is disabled when the probe fails', async () => {
     mockFetch.mockRejectedValue(new Error('offline'));
     const tree = await renderProbe();
+    expect(tree.toJSON()).toBe('disabled');
+  });
+
+  it('probes without an auth header (public endpoint)', async () => {
+    mockFetch.mockResolvedValue(jsonResponse(true, enabledBody(true)));
+    await renderProbe();
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:3000/v1/capabilities',
+      expect.objectContaining({headers: {Accept: 'application/json'}}),
+    );
+  });
+
+  it('recovers on refresh after a failed first probe', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('offline'));
+    const tree = await renderProbe();
+    expect(tree.toJSON()).toBe('disabled');
+
+    mockFetch.mockResolvedValue(jsonResponse(true, enabledBody(true)));
     await act(async () => {
-      await Promise.resolve();
+      latest.refresh();
     });
-    expect(tree.toJSON()).toBe('off');
+    await flush();
+    expect(tree.toJSON()).toBe('enabled');
+  });
+
+  it('keeps enabled when a later refresh fails', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse(true, enabledBody(true)));
+    const tree = await renderProbe();
+    expect(tree.toJSON()).toBe('enabled');
+
+    mockFetch.mockRejectedValue(new Error('offline'));
+    await act(async () => {
+      latest.refresh();
+    });
+    await flush();
+    expect(tree.toJSON()).toBe('enabled');
   });
 });

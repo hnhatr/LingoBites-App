@@ -41,7 +41,10 @@ let mockYouTubeServerEnabled = false;
 let mockReducedMotion = false;
 
 jest.mock('@core/api/youtubeCapabilities', () => ({
-  useYouTubeServerEnabled: () => mockYouTubeServerEnabled,
+  useYouTubeCapability: () => ({
+    status: mockYouTubeServerEnabled ? 'enabled' : 'disabled',
+    refresh: () => {},
+  }),
 }));
 
 jest.mock('@features/engagement', () => ({
@@ -345,13 +348,15 @@ describe('Home shortcuts (§VS-4, DQ-005, D3, P-003)', () => {
     );
   });
 
-  it('video shortcut is disabled when youtube is off', async () => {
+  it('video shortcut stays enabled when youtube is off and opens the video hub', async () => {
     const tree = await renderHome();
     const videoBtn = tree.root
       .findAll(node => node.props.testID === 'home-shortcut-video')
       .find(node => typeof node.props.disabled !== 'undefined');
-    expect(videoBtn?.props.disabled).toBe(true);
-    expect(videoBtn?.props.accessibilityState).toEqual({disabled: true});
+    expect(videoBtn?.props.disabled).toBe(false);
+    await act(async () => videoBtn?.props.onPress());
+    expect(mockAppNavigation.openVideoHub).toHaveBeenCalledTimes(1);
+    expect(mockAppNavigation.startCreate).not.toHaveBeenCalled();
   });
 
   it('video shortcut is enabled when youtube flag + server agree', async () => {

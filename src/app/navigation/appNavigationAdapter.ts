@@ -131,6 +131,8 @@ export function createAppNavigation(
   return {
     openLesson: lessonId => navigate('CanonicalLessonPlayer', {lessonId}),
     openCatalog: () => navigate('CanonicalCatalog', undefined),
+    openLibrarySection: section => navigate('LibraryList', {section}),
+    openVideoHub: () => navigate('VideoHub', undefined),
     openCourse,
     openCreate: () => navigate('CreateHub', undefined),
     startCreate,

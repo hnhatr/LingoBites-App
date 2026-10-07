@@ -25,6 +25,7 @@ import {
 import {
   LessonsHistoryScreen,
   LibraryListScreen,
+  VideoHubScreen,
 } from '@features/lesson/library';
 import {
   CanonicalLessonCatalogScreen,
@@ -97,9 +98,10 @@ const HIDDEN_HEADER = {headerShown: false} as const;
  *   │  └─ Profile      ProfileMain + settings pages
  *   └─ task flows      cover the tab bar; back returns to the opening tab
  *      CreateHub, PasteText, ImageCapture, OCRReview, LessonCreation,
- *      CanonicalCatalog, CanonicalLessonPlayer, CourseLevels,
- *      LevelUnits, UnitLessons, DailyReview, Practice, Today, SpeakingRoom,
- *      ShadowingLessonPicker, ShadowingSession, ShadowingSummary
+ *      CanonicalCatalog, CanonicalLessonPlayer, LibraryList, VideoHub,
+ *      CourseLevels, LevelUnits, UnitLessons, DailyReview, Practice, Today,
+ *      SpeakingRoom, ShadowingLessonPicker, ShadowingSession,
+ *      ShadowingSummary
  *
  * Features navigate through `useAppNavigation()` (see
  * `appNavigationAdapter.ts`), never by reaching into a parent navigator.
@@ -135,11 +137,6 @@ function LessonsStackNavigator() {
       <LessonsStack.Screen
         component={LessonsHistoryScreen}
         name="LessonsList"
-        options={HIDDEN_HEADER}
-      />
-      <LessonsStack.Screen
-        component={LibraryListScreen}
-        name="LibraryList"
         options={HIDDEN_HEADER}
       />
     </LessonsStack.Navigator>
@@ -266,6 +263,8 @@ function AuthenticatedRootStack() {
         name="CanonicalLessonPlayer"
         options={{gestureEnabled: false}}
       />
+      <RootStack.Screen component={LibraryListScreen} name="LibraryList" />
+      <RootStack.Screen component={VideoHubScreen} name="VideoHub" />
       {/* Structured curriculum */}
       <RootStack.Screen component={CourseLevelsScreen} name="CourseLevels" />
       <RootStack.Screen component={LevelUnitsScreen} name="LevelUnits" />

@@ -102,7 +102,7 @@
     "hero_saved_body_one": "Your library has {{count}} lesson, ready offline.",
     "hero_saved_body_other": "Your library has {{count}} lessons, ready offline.",
     "hero_in_progress_body": "About {{minutes}} min left in this lesson.",
-    "shortcut_video_sub": "Make a lesson from YouTube",
+    "shortcut_video_sub": "Continue, explore, create",
     "shortcut_video_unavailable": "This feature is not available yet",
     "shortcut_review_due": "{{count}} cards due",
     "shortcut_review_due_one": "{{count}} card due",
