@@ -1,6 +1,6 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useEffect, useMemo, useState} from 'react';
-import {InteractionManager, ScrollView, StyleSheet, View} from 'react-native';
+import React, {useMemo} from 'react';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -17,19 +17,13 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import {useAppNavigation} from '@core/navigation';
 
 import {CreateLessonHeaderButton} from '../components/CreateLessonHeaderButton';
-import {LibraryLoadingNotice} from '../components/LibraryLoadingNotice';
 import {
-  isOwnLessonSection,
-  lessonBelongsToSection,
   LIBRARY_SECTIONS,
   type LibraryGroup,
   type LibrarySectionConfig,
-  type LibrarySectionId,
 } from '../logic/librarySections';
-import {
-  useLibrarySegments,
-  useRefreshOnRefocus,
-} from '../logic/useLibrarySegments';
+import {useLibraryCounts} from '../logic/useLibraryCounts';
+import {useRefreshOnRefocus} from '../logic/useLibrarySegments';
 import type {LessonsStackParamList} from './navigationTypes';
 
 const GROUPS: {id: LibraryGroup; title: string}[] = [
@@ -48,45 +42,14 @@ export function LessonsHistoryScreen({navigation}: Props) {
   const feedClearance = useFloatingTabBarClearance();
   const appNavigation = useAppNavigation();
   const tileWidth = useGridTileWidth();
-  // Counts come from reading every download; load them after the tab has
-  // painted so the first open shows the tiles right away.
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => setReady(true));
-    return () => task.cancel();
-  }, []);
-  const {packagedLessons, vocabulary, grammar, refresh} = useLibrarySegments({
-    lessons: ready,
-    vocabulary: ready,
-    grammar: ready,
-  });
+  // Only counts are read here; each section loads its items when opened.
+  const {counts, refresh} = useLibraryCounts();
 
   useRefreshOnRefocus(refresh);
-
-  const counts = useMemo(() => {
-    const result = {} as Record<LibrarySectionId, number>;
-    LIBRARY_SECTIONS.forEach(section => {
-      if (isOwnLessonSection(section)) {
-        result[section.id] = packagedLessons.filter(lesson =>
-          lessonBelongsToSection(section, lesson),
-        ).length;
-      } else if (section.id === 'vocabulary') {
-        result[section.id] = vocabulary.length;
-      } else if (section.id === 'grammar') {
-        result[section.id] = grammar.length;
-      } else {
-        // Public sections live on the server: no local count.
-        result[section.id] = 0;
-      }
-    });
-    return result;
-  }, [packagedLessons, vocabulary, grammar]);
 
   const countLabel = (section: LibrarySectionConfig) =>
     section.catalog
       ? 'Cần kết nối mạng'
-      : !ready
-      ? 'Đang tải…'
       : counts[section.id] > 0
       ? `${counts[section.id]} ${section.unit}`
       : section.emptyHint;
@@ -105,12 +68,6 @@ export function LessonsHistoryScreen({navigation}: Props) {
         contentContainerStyle={[styles.content, {paddingBottom: feedClearance}]}
         testID="library-hub"
       >
-        <AppText variant="label" color="secondary" style={styles.subtitle}>
-          Bài đã tải về học được cả khi không có mạng.
-        </AppText>
-        {ready ? null : (
-          <LibraryLoadingNotice message="Đang tải dữ liệu thư viện, vui lòng đợi…" />
-        )}
         {GROUPS.map(group => (
           <View
             key={group.id}
@@ -158,9 +115,6 @@ function makeStyles(theme: AppTheme) {
     content: {
       gap: theme.spacing.sm,
       padding: theme.gutter,
-    },
-    subtitle: {
-      marginBottom: theme.spacing.sm,
     },
     group: {
       gap: theme.spacing.sm,

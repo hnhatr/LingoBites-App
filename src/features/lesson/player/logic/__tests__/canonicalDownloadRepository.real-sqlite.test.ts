@@ -13,9 +13,11 @@ import {
 import {
   applyLessonRevisionStates,
   getLessonDownload,
+  getLessonDownloadsSignature,
   InvalidLessonSnapshotError,
   lessonMediaDirFor,
   type LessonMediaFileSystem,
+  listLessonDownloadKinds,
   listLessonDownloads,
   saveLessonSnapshotBody,
   stageLessonMedia,
@@ -173,6 +175,51 @@ describe('canonical download repository (real SQLite, INV-007)', () => {
     expect(
       getLessonDownload(lessonId, getDatabase())?.snapshot.content_revision,
     ).toBe(9);
+  });
+
+  it('lists each download kind without parsing the body', () => {
+    const body = loadSnapshotBody();
+    saveLessonSnapshotBody({body}, getDatabase());
+    expect(listLessonDownloadKinds(getDatabase())).toEqual([
+      {lessonId: lessonIdOf(body), origin: 'admin', sourceType: 'admin_text'},
+    ]);
+  });
+
+  it('changes the signature only when a download changes', () => {
+    const body = loadSnapshotBody();
+    const lessonId = lessonIdOf(body);
+    const empty = getLessonDownloadsSignature(getDatabase());
+    saveLessonSnapshotBody(
+      {body, now: '2026-10-01T00:00:00.000Z'},
+      getDatabase(),
+    );
+    const saved = getLessonDownloadsSignature(getDatabase());
+    expect(saved).not.toBe(empty);
+    expect(getLessonDownloadsSignature(getDatabase())).toBe(saved);
+
+    applyLessonRevisionStates(
+      [{lessonId, state: 'current', contentRevision: 99}],
+      getDatabase(),
+    );
+    expect(getLessonDownloadsSignature(getDatabase())).not.toBe(saved);
+  });
+
+  it('re-reads a download only after it was re-downloaded', () => {
+    const body = loadSnapshotBody();
+    saveLessonSnapshotBody(
+      {body, now: '2026-10-01T00:00:00.000Z'},
+      getDatabase(),
+    );
+    const first = listLessonDownloads(getDatabase())[0];
+    expect(listLessonDownloads(getDatabase())[0]).toBe(first);
+
+    saveLessonSnapshotBody(
+      {body: bodyWithRevision(body, 9), now: '2026-10-02T00:00:00.000Z'},
+      getDatabase(),
+    );
+    const next = listLessonDownloads(getDatabase())[0];
+    expect(next).not.toBe(first);
+    expect(next.contentRevision).toBe(9);
   });
 
   it('a kill during the media fetch leaves the prior copy readable', async () => {

@@ -107,47 +107,123 @@ export function getLessonDownload(
  * Parsing a snapshot (JSON + strict zod over every sentence) is the costly
  * part of listing downloads, and the Library lists them on each open. A row
  * only changes through a re-download (new `downloaded_at`/revision), so the
- * parsed record is reused while that stamp is unchanged.
+ * parsed record is reused while that stamp is unchanged, and the snapshot
+ * body is only read for rows whose stamp changed.
  */
 const parsedRowCache = new Map<
   string,
   {stamp: string; record: LessonDownloadRecord | null}
 >();
 
-function mapRowCached(row: LessonDownloadRow): LessonDownloadRecord | null {
-  const stamp = `${row.content_revision}|${row.server_revision}|${row.downloaded_at}|${row.snapshot_json.length}`;
-  const hit = parsedRowCache.get(row.lesson_id);
-  if (hit && hit.stamp === stamp) return hit.record;
-  const record = mapRow(row);
-  parsedRowCache.set(row.lesson_id, {stamp, record});
-  return record;
+/** Every column but the snapshot body, plus the body's length. */
+type LessonDownloadStampRow = {
+  lesson_id: string;
+  content_revision: number;
+  server_revision: number | null;
+  downloaded_at: string;
+  snapshot_length: number;
+};
+
+function listLessonDownloadStampRows(
+  db: QuickSQLiteConnection,
+): LessonDownloadStampRow[] {
+  const result = db.execute(
+    `SELECT lesson_id, content_revision, server_revision, downloaded_at,
+            length(snapshot_json) AS snapshot_length
+       FROM lesson_downloads ORDER BY downloaded_at DESC;`,
+  );
+  const rows: LessonDownloadStampRow[] = [];
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    const row = result.rows?.item(index) as LessonDownloadStampRow | undefined;
+    if (row) rows.push(row);
+  }
+  return rows;
+}
+
+function stampOf(row: LessonDownloadStampRow): string {
+  return `${row.content_revision}|${row.server_revision}|${row.downloaded_at}|${row.snapshot_length}`;
 }
 
 /** Every stored download, newest first. Unparseable rows are skipped. */
 export function listLessonDownloads(
   db: QuickSQLiteConnection = getDatabase(),
 ): LessonDownloadRecord[] {
-  const result = db.execute(
-    'SELECT * FROM lesson_downloads ORDER BY downloaded_at DESC;',
-  );
   const records: LessonDownloadRecord[] = [];
   const seen = new Set<string>();
-  const length = result.rows?.length ?? 0;
-  for (let index = 0; index < length; index += 1) {
-    const row = result.rows?.item(index) as LessonDownloadRow | undefined;
-    if (!row) continue;
-    seen.add(row.lesson_id);
+  for (const stampRow of listLessonDownloadStampRows(db)) {
+    seen.add(stampRow.lesson_id);
+    const stamp = stampOf(stampRow);
+    const hit = parsedRowCache.get(stampRow.lesson_id);
+    if (hit && hit.stamp === stamp) {
+      if (hit.record) records.push(hit.record);
+      continue;
+    }
+    let record: LessonDownloadRecord | null = null;
     try {
-      const record = mapRowCached(row);
-      if (record) records.push(record);
+      const row = firstRow<LessonDownloadRow>(
+        db.execute(
+          'SELECT * FROM lesson_downloads WHERE lesson_id = ? LIMIT 1;',
+          [stampRow.lesson_id],
+        ),
+      );
+      record = row ? mapRow(row) : null;
     } catch {
       // Skip a corrupt row without breaking the catalog.
     }
+    parsedRowCache.set(stampRow.lesson_id, {stamp, record});
+    if (record) records.push(record);
   }
   parsedRowCache.forEach((_, id) => {
     if (!seen.has(id)) parsedRowCache.delete(id);
   });
   return records;
+}
+
+/**
+ * Changes whenever a download is added, re-downloaded, marked for update or
+ * removed, without reading any snapshot body.
+ */
+export function getLessonDownloadsSignature(
+  db: QuickSQLiteConnection = getDatabase(),
+): string {
+  return listLessonDownloadStampRows(db)
+    .map(row => `${row.lesson_id}:${stampOf(row)}`)
+    .sort()
+    .join(',');
+}
+
+export type LessonDownloadKind = {
+  lessonId: string;
+  origin: string | null;
+  sourceType: string | null;
+};
+
+/**
+ * Origin and source type of every download, read inside SQLite so counting
+ * lessons per Library section never loads the snapshot bodies.
+ */
+export function listLessonDownloadKinds(
+  db: QuickSQLiteConnection = getDatabase(),
+): LessonDownloadKind[] {
+  const result = db.execute(
+    `SELECT lesson_id,
+            json_extract(snapshot_json, '$.lesson.origin') AS origin,
+            json_extract(snapshot_json, '$.lesson.source_type') AS source_type
+       FROM lesson_downloads;`,
+  );
+  const kinds: LessonDownloadKind[] = [];
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    const row = result.rows?.item(index) as
+      | {lesson_id: string; origin: string | null; source_type: string | null}
+      | undefined;
+    if (!row) continue;
+    kinds.push({
+      lessonId: row.lesson_id,
+      origin: row.origin,
+      sourceType: row.source_type,
+    });
+  }
+  return kinds;
 }
 
 export type SaveLessonSnapshotInput = {

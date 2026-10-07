@@ -11,6 +11,7 @@ export type {DailyReviewRouteParams} from './screens/navigationTypes';
 export {
   getCardDueAt,
   getDueFlashcards,
+  getSavedFlashcardsSignature,
   listFlashcards,
   listFlashcardSources,
   listUpcomingReviewReminders,
@@ -20,6 +21,7 @@ export {
   unsaveFlashcard,
 } from './logic/FlashcardRepository';
 export {
+  getBookmarkedGrammarSignature,
   getGrammarBookmark,
   listAllBookmarkedGrammar,
   listBookmarkedGrammar,

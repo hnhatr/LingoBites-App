@@ -1,5 +1,4 @@
 import React from 'react';
-import {InteractionManager} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
@@ -12,33 +11,10 @@ import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
 
 const mockRefresh = jest.fn();
 
-const card = (id: string, sourceType: string, origin = 'learner') => ({
-  id,
-  title: id,
-  blurb: '',
-  dateLabel: '2026-10-06',
-  vocabularyCount: 3,
-  durationMin: 2,
-  sourceType,
-  origin,
-});
+let mockCounts: Record<string, number> = {};
 
-let mockLessons = [
-  card('a', 'learner_text'),
-  card('b', 'learner_ocr'),
-  card('c', 'youtube'),
-  card('d', 'youtube', 'admin'),
-  card('e', 'admin_text', 'admin'),
-];
-
-jest.mock('../../logic/useLibrarySegments', () => ({
-  ...jest.requireActual('../../logic/useLibrarySegments'),
-  useLibrarySegments: () => ({
-    packagedLessons: mockLessons,
-    vocabulary: [{id: 'v1'}],
-    grammar: [],
-    refresh: mockRefresh,
-  }),
+jest.mock('../../logic/useLibraryCounts', () => ({
+  useLibraryCounts: () => ({counts: mockCounts, refresh: mockRefresh}),
 }));
 
 jest.mock('@react-navigation/native', () => {
@@ -71,18 +47,14 @@ describe('LessonsHistoryScreen (Library hub)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Run the post-paint count load immediately.
-    jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation(((
-      task: () => void,
-    ) => {
-      task();
-      return {then: jest.fn(), done: jest.fn(), cancel: jest.fn()};
-    }) as any);
-    mockLessons = [
-      card('a', 'learner_text'),
-      card('b', 'learner_ocr'),
-      card('c', 'youtube'),
-    ];
+    mockCounts = {
+      mine: 2,
+      video: 1,
+      vocabulary: 1,
+      grammar: 0,
+      public: 0,
+      publicVideo: 0,
+    };
   });
 
   const renderHub = () =>
@@ -116,9 +88,8 @@ describe('LessonsHistoryScreen (Library hub)', () => {
     expect(has('explore', 'video')).toBe(false);
   });
 
-  it('counts only the learner’s own lessons, each under exactly one card', () => {
+  it('shows each section count with its unit', () => {
     const tree = renderHub();
-    // The downloaded admin video and admin text are public, not "mine".
     expect(count(tree, 'mine')).toBe('2 bài');
     expect(count(tree, 'video')).toBe('1 bài');
     expect(count(tree, 'vocabulary')).toBe('1 từ');

@@ -288,6 +288,46 @@ function createMockDatabase() {
       );
     }
 
+    if (
+      normalized.startsWith(
+        'select lesson_id, content_revision, server_revision, downloaded_at, length(snapshot_json) as snapshot_length from lesson_downloads',
+      )
+    ) {
+      return toRows(
+        [...lessonDownloads]
+          .sort((a, b) =>
+            String(b.downloaded_at).localeCompare(String(a.downloaded_at)),
+          )
+          .map(row => ({
+            lesson_id: row.lesson_id,
+            content_revision: row.content_revision,
+            server_revision: row.server_revision ?? null,
+            downloaded_at: row.downloaded_at,
+            snapshot_length: String(row.snapshot_json ?? '').length,
+          })),
+      );
+    }
+
+    if (
+      normalized.startsWith('select lesson_id, json_extract(snapshot_json,')
+    ) {
+      return toRows(
+        lessonDownloads.map(row => {
+          let lesson = null;
+          try {
+            lesson = JSON.parse(row.snapshot_json).lesson ?? null;
+          } catch {
+            lesson = null;
+          }
+          return {
+            lesson_id: row.lesson_id,
+            origin: lesson?.origin ?? null,
+            source_type: lesson?.source_type ?? null,
+          };
+        }),
+      );
+    }
+
     if (normalized.startsWith('select * from lesson_downloads order by')) {
       return toRows(
         [...lessonDownloads].sort((a, b) =>
@@ -1096,6 +1136,10 @@ function createMockDatabase() {
       return toRows([
         {n: flashcardSources.filter(row => row.card_id === params[0]).length},
       ]);
+    }
+
+    if (normalized === 'select count(*) as n from flashcard_sources;') {
+      return toRows([{n: flashcardSources.length}]);
     }
 
     if (normalized.startsWith('insert or ignore into flashcard_sources')) {

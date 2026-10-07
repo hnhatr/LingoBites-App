@@ -181,6 +181,28 @@ export function listBookmarkedGrammar(lessonId: string): GrammarBookmark[] {
   return items;
 }
 
+/**
+ * Changes whenever a grammar point is saved or unsaved, without mapping the
+ * rows. `count` is the number of saved points.
+ */
+export function getBookmarkedGrammarSignature(): {
+  count: number;
+  signature: string;
+} {
+  const db = getDatabase();
+  const result = db.execute(
+    `SELECT lesson_id, grammar_id, updated_at FROM grammar_bookmarks
+     WHERE reactivated_at IS NOT NULL;`,
+    [],
+  );
+  const stamps: string[] = [];
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    const row = result.rows!.item(index) as GrammarBookmarkRow;
+    stamps.push(`${row.lesson_id}:${row.grammar_id}@${row.updated_at}`);
+  }
+  return {count: stamps.length, signature: stamps.sort().join(',')};
+}
+
 export function listAllBookmarkedGrammar(): GrammarBookmark[] {
   const db = getDatabase();
   const result = db.execute(
