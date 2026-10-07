@@ -1,6 +1,6 @@
 # Kế hoạch: curriculum thiết kế ngược (đầu ra → bằng chứng → hoạt động)
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1). Chưa có dòng code nào được sửa.
+> Trạng thái: **ĐÃ DUYỆT** (2026-10-07). Plan chi tiết từng PR nằm ở file riêng, ví dụ `2026-10-07-pr1-db-baseline-and-items.md`.
 > Ngày lập: 2026-10-07. Phạm vi: `LingoBites-Server` (+ `admin-web`) và `LingoBites-App`.
 > Cụ thể hoá Bước 2–6 của `2026-10-07-learning-cycle-requirements-roadmap.md`.
 > Thay thế mô hình `learning_items` suy ra theo bài của `2026-10-06-learning-items-architecture.md`.
