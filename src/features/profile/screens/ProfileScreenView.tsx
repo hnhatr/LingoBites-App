@@ -1,9 +1,6 @@
 import React from 'react';
-import {Modal, ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {AccountProfileSection} from '@features/account';
-
-import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -13,65 +10,47 @@ import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {SettingsGroup} from '@ui/components/SettingsGroup';
 import {StatTile} from '@ui/components/StatTile';
-import {TextField} from '@ui/components/TextField';
-import {ThemePicker} from '@ui/components/ThemePicker';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
 
 import {SettingsOptionSheet} from '../components/SettingsOptionSheet';
 import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
 
-export type ProfileScreenViewProps = ProfileScreenViewModel & {
-  speakingRecordingsSection?: React.ReactNode;
-};
+export type ProfileScreenViewProps = ProfileScreenViewModel;
 
 export function ProfileScreenView({
   accountPhase,
   audioCacheTrailingLabel,
   closeSettingsSheet,
-  handleSyncNow,
-  isSyncing,
+  displayName,
+  gamification,
+  initials,
+  lastSyncedLabel,
+  learningMetrics,
+  openAccountSettings,
+  openAppSettings,
+  openDataSettings,
+  openProgressReport,
   openReminderSheet,
   openSettingsSheet,
+  openSupportAbout,
   openWeeklyGoalSheet,
+  profileSubtitle,
   reminderSelectedKey,
   reminderSheetOptions,
   reminderTrailingLabel,
   selectReminder,
   selectWeeklyGoal,
-  syncTrailingLabel,
-  weeklyGoalSelectedKey,
-  weeklyGoalSheetOptions,
-  weeklyGoalTrailingLabel,
-  clearDataConfirmText,
-  displayName,
-  gamification,
-  initials,
-  isClearDataModalVisible,
-  isLoggingOut,
-  learningMetrics,
-  profileSubtitle,
   showThemePicker,
   statusMessage,
   streakSubtitle,
   streakTitle,
-  confirmClearData,
-  dismissClearDataModal,
-  hideClearDataModal,
-  handleClearSpeakingData,
-  handlePlayCachedAudio,
-  handleSignOut,
-  handleSupport,
-  openClearDataModal,
-  openFeatureStatus,
-  openPrivacyNote,
-  openProgressReport,
-  openTtsSpike,
-  setClearDataConfirmText,
-  t,
-  speakingRecordingsSection,
+  weeklyGoalSelectedKey,
+  weeklyGoalSheetOptions,
+  weeklyGoalTrailingLabel,
 }: ProfileScreenViewProps) {
   const {theme} = useAppTheme();
+  const isAuthenticated = accountPhase === 'authenticated';
   const feedClearance = useFloatingTabBarClearance();
   const themedStyles = React.useMemo(() => makeStyles(theme), [theme]);
 
@@ -88,8 +67,14 @@ export function ProfileScreenView({
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <AppCard>
-          <View style={styles.cardStack}>
+        <Pressable
+          accessibilityHint="Mở trang tài khoản"
+          accessibilityLabel={`Tài khoản của ${displayName}`}
+          accessibilityRole="button"
+          disabled={!isAuthenticated}
+          onPress={openAccountSettings}
+        >
+          <AppCard>
             <View style={styles.profileRow}>
               <View style={themedStyles.avatar}>
                 <AppText style={themedStyles.avatarText}>{initials}</AppText>
@@ -100,10 +85,16 @@ export function ProfileScreenView({
                   {profileSubtitle}
                 </AppText>
               </View>
+              {isAuthenticated ? (
+                <MaterialIcon
+                  color={theme.colors.text.secondary}
+                  name="chevron_right"
+                  size={22}
+                />
+              ) : null}
             </View>
-            <AccountProfileSection />
-          </View>
-        </AppCard>
+          </AppCard>
+        </Pressable>
 
         <View>
           <SectionHeader title="Tiến trình" />
@@ -158,6 +149,7 @@ export function ProfileScreenView({
 
         <SettingsGroup title="Học tập">
           <ProfileSettingsRow
+            accessibilityHint="Chạm để thay đổi"
             accessibilityLabel={`Mục tiêu tuần: ${weeklyGoalTrailingLabel}`}
             icon="flag"
             label="Mục tiêu tuần"
@@ -166,6 +158,7 @@ export function ProfileScreenView({
             trailing={{text: weeklyGoalTrailingLabel}}
           />
           <ProfileSettingsRow
+            accessibilityHint="Chạm để thay đổi"
             accessibilityLabel={`Nhắc nhở: ${reminderTrailingLabel}`}
             icon="notifications"
             label="Nhắc nhở"
@@ -174,6 +167,7 @@ export function ProfileScreenView({
             trailing={{text: reminderTrailingLabel}}
           />
           <ProfileSettingsRow
+            accessibilityHint="Chạm để mở"
             accessibilityLabel="Báo cáo tiến độ và năng lực"
             icon="analytics"
             label="Báo cáo tiến độ & Năng lực"
@@ -183,144 +177,47 @@ export function ProfileScreenView({
           />
         </SettingsGroup>
 
-        <SettingsGroup title="Dữ liệu & đồng bộ">
-          {accountPhase === 'authenticated' ? (
+        <SettingsGroup title="Cài đặt">
+          {isAuthenticated ? (
             <ProfileSettingsRow
-              accessibilityHint="Gửi và nhận dữ liệu học với tài khoản ngay bây giờ"
-              accessibilityLabel={`Đồng bộ ngay. ${syncTrailingLabel}`}
-              icon="refresh"
-              label="Đồng bộ ngay"
-              medallionTone="gold"
-              onPress={isSyncing ? undefined : handleSyncNow}
-              trailing={{text: syncTrailingLabel}}
+              accessibilityHint="Chạm để thay đổi"
+              accessibilityLabel={`Tài khoản. Đồng bộ: ${lastSyncedLabel}`}
+              icon="person"
+              label="Tài khoản"
+              medallionTone="teal"
+              onPress={openAccountSettings}
+              trailing={{text: lastSyncedLabel}}
             />
           ) : null}
           <ProfileSettingsRow
-            accessibilityLabel="Dung lượng âm thanh chương học đã tải về máy — bấm để nghe thử clip đã tải"
-            icon="volume_up"
-            label="Âm thanh chương học"
-            medallionTone="teal"
-            onPress={handlePlayCachedAudio}
+            accessibilityHint="Chạm để thay đổi"
+            accessibilityLabel={`Dữ liệu và bộ nhớ: ${audioCacheTrailingLabel}`}
+            icon="smartphone"
+            label="Dữ liệu & bộ nhớ"
+            medallionTone="gold"
+            onPress={openDataSettings}
             trailing={{text: audioCacheTrailingLabel}}
           />
-        </SettingsGroup>
-
-        {speakingRecordingsSection ? (
-          <SettingsGroup title="Bản ghi giọng nói">
-            {speakingRecordingsSection}
-          </SettingsGroup>
-        ) : null}
-
-        {showThemePicker ? (
-          <SettingsGroup title="Giao diện">
-            <View style={themedStyles.themeBody}>
-              <AppText color="secondary" variant="caption">
-                Chọn theme — áp dụng ngay cho toàn app.
-              </AppText>
-              <ThemePicker />
-            </View>
-          </SettingsGroup>
-        ) : null}
-
-        <SettingsGroup title="Hỗ trợ">
-          <ProfileSettingsRow
-            accessibilityLabel="Quyền riêng tư"
-            icon="visibility"
-            label="Quyền riêng tư"
-            medallionTone="gold"
-            onPress={openPrivacyNote}
-            trailing="chevron"
-          />
-          <ProfileSettingsRow
-            accessibilityLabel="Trợ giúp và góp ý"
-            icon="help"
-            label="Trợ giúp & góp ý"
-            medallionTone="coral"
-            onPress={handleSupport}
-            trailing="chevron"
-          />
-        </SettingsGroup>
-
-        {__DEV__ ? (
-          <SettingsGroup title="Dành cho dev">
+          {showThemePicker ? (
             <ProfileSettingsRow
-              accessibilityLabel={t('settings.feature_status')}
-              icon="bolt"
-              label={t('settings.feature_status')}
-              medallionTone="teal"
-              onPress={openFeatureStatus}
-              trailing="chevron"
-            />
-            <ProfileSettingsRow
-              accessibilityLabel="Mở bản demo native TTS"
-              icon="volume_up"
-              label="Demo native TTS"
+              accessibilityHint="Chạm để mở"
+              accessibilityLabel="Cài đặt ứng dụng"
+              icon="settings"
+              label="Cài đặt ứng dụng"
               medallionTone="coral"
-              onPress={openTtsSpike}
+              onPress={openAppSettings}
               trailing="chevron"
             />
-          </SettingsGroup>
-        ) : null}
-
-        {accountPhase === 'authenticated' ? (
-          <SettingsGroup title="Tài khoản">
-            <View>
-              <ProfileSettingsRow
-                accessibilityHint={t('account.sign_out_hint')}
-                accessibilityLabel={t('account.sign_out')}
-                icon="person"
-                label={t('account.sign_out')}
-                medallionTone="teal"
-                disabled={isLoggingOut}
-                onPress={handleSignOut}
-                trailing="chevron"
-              />
-              <AppText
-                color="secondary"
-                style={themedStyles.rowCaption}
-                variant="caption"
-              >
-                {t('account.sign_out_caption')}
-              </AppText>
-            </View>
-          </SettingsGroup>
-        ) : null}
-
-        <SettingsGroup title="Vùng nguy hiểm">
-          <View>
-            <ProfileSettingsRow
-              accessibilityLabel="Xóa dữ liệu luyện nói"
-              destructive
-              icon="delete"
-              label="Xóa dữ liệu luyện nói & ghi âm"
-              onPress={handleClearSpeakingData}
-              trailing="chevron"
-            />
-            <AppText
-              color="secondary"
-              style={themedStyles.rowCaption}
-              variant="caption"
-            >
-              Xóa toàn bộ bản ghi âm và lịch sử luyện nói. Không thể khôi phục.
-            </AppText>
-          </View>
-          <View>
-            <ProfileSettingsRow
-              accessibilityLabel="Xóa dữ liệu học trên máy"
-              destructive
-              icon="delete"
-              label="Xóa dữ liệu học trên máy"
-              onPress={openClearDataModal}
-              trailing="chevron"
-            />
-            <AppText
-              color="secondary"
-              style={themedStyles.rowCaption}
-              variant="caption"
-            >
-              Xóa toàn bộ tiến trình học, XP, và lịch sử. Không thể khôi phục.
-            </AppText>
-          </View>
+          ) : null}
+          <ProfileSettingsRow
+            accessibilityHint="Chạm để mở"
+            accessibilityLabel="Hỗ trợ và thông tin"
+            icon="help"
+            label="Hỗ trợ & thông tin"
+            medallionTone="teal"
+            onPress={openSupportAbout}
+            trailing="chevron"
+          />
         </SettingsGroup>
 
         {statusMessage ? (
@@ -348,53 +245,6 @@ export function ProfileScreenView({
           title="Nhắc nhở"
         />
       ) : null}
-
-      <Modal
-        animationType="fade"
-        transparent
-        visible={isClearDataModalVisible}
-        onRequestClose={hideClearDataModal}
-      >
-        <View style={themedStyles.modalOverlay}>
-          <AppCard style={themedStyles.modalContent}>
-            <AppText variant="h2" style={themedStyles.mb8}>
-              Xóa dữ liệu học trên máy
-            </AppText>
-            <AppText color="secondary" style={themedStyles.mb16}>
-              Hành động này sẽ xóa toàn bộ tiến trình học, XP, và lịch sử. Không
-              thể khôi phục.
-            </AppText>
-            <AppText style={themedStyles.mb8}>
-              Nhập chữ <AppText style={themedStyles.boldText}>XOA</AppText> để
-              xác nhận:
-            </AppText>
-            <TextField
-              value={clearDataConfirmText}
-              onChangeText={setClearDataConfirmText}
-              placeholder="XOA"
-              autoCapitalize="characters"
-            />
-            <View style={themedStyles.modalActions}>
-              <AppButton
-                title="Hủy"
-                variant="secondary"
-                onPress={dismissClearDataModal}
-                style={themedStyles.flex1}
-              />
-              <AppButton
-                title="Xóa"
-                variant="primary"
-                disabled={clearDataConfirmText !== 'XOA'}
-                onPress={confirmClearData}
-                style={[
-                  themedStyles.flex1,
-                  {backgroundColor: theme.colors.danger},
-                ]}
-              />
-            </View>
-          </AppCard>
-        </View>
-      </Modal>
     </AppScreen>
   );
 }
@@ -444,10 +294,6 @@ function makeStyles(theme: AppTheme) {
       fontSize: theme.typography.size.xl,
       fontWeight: '700',
     },
-    rowCaption: {
-      paddingBottom: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.lg,
-    },
     streakBadge: {
       alignItems: 'center',
       backgroundColor: theme.colors.accent,
@@ -455,10 +301,6 @@ function makeStyles(theme: AppTheme) {
       height: 48,
       justifyContent: 'center',
       width: 48,
-    },
-    themeBody: {
-      gap: theme.spacing.sm,
-      padding: theme.spacing.lg,
     },
     header: {
       alignItems: 'center',
@@ -473,38 +315,11 @@ function makeStyles(theme: AppTheme) {
       fontWeight: theme.typography.weight.bold,
       marginLeft: theme.spacing.xs,
     },
-    modalActions: {
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      marginTop: theme.spacing.md,
-    },
-    modalContent: {
-      gap: theme.spacing.sm,
-      padding: theme.spacing.lg,
-    },
-    modalOverlay: {
-      backgroundColor: theme.colors.overlay,
-      flex: 1,
-      justifyContent: 'center',
-      padding: theme.spacing.xl,
-    },
     scrollContent: {
       gap: theme.spacing.lg,
       paddingBottom: 28,
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
-    },
-    flex1: {
-      flex: 1,
-    },
-    mb8: {
-      marginBottom: 8,
-    },
-    mb16: {
-      marginBottom: 16,
-    },
-    boldText: {
-      fontWeight: 'bold',
     },
   });
 }

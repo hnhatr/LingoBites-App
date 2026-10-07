@@ -34,10 +34,14 @@ import {
 import {OCRReviewScreen} from '@features/ocr';
 import {PracticeScreen} from '@features/practice';
 import {
+  AccountSettingsScreen,
+  AppSettingsScreen,
+  DataSettingsScreen,
   FeatureStatusScreen,
   PrivacyNoteScreen,
   ProfileScreen,
   ProgressReportScreen,
+  SupportAboutScreen,
 } from '@features/profile';
 import {DailyReviewScreen} from '@features/review';
 import {
@@ -148,6 +152,26 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen
         component={ProfileScreen}
         name="ProfileMain"
+        options={HIDDEN_HEADER}
+      />
+      <ProfileStack.Screen
+        component={AccountSettingsScreen}
+        name="AccountSettings"
+        options={HIDDEN_HEADER}
+      />
+      <ProfileStack.Screen
+        component={DataSettingsScreen}
+        name="DataSettings"
+        options={HIDDEN_HEADER}
+      />
+      <ProfileStack.Screen
+        component={AppSettingsScreen}
+        name="AppSettings"
+        options={HIDDEN_HEADER}
+      />
+      <ProfileStack.Screen
+        component={SupportAboutScreen}
+        name="SupportAbout"
         options={HIDDEN_HEADER}
       />
       <ProfileStack.Screen

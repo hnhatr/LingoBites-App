@@ -1,15 +1,10 @@
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useCallback, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
+import {useCallback, useState} from 'react';
 import {Alert, Linking} from 'react-native';
 
 import {useAccountStore} from '@features/account';
-import {
-  formatCacheBytes,
-  playReadyChapterAudio,
-  useAudioLibrary,
-} from '@features/audio';
+import {formatCacheBytes, useAudioLibrary} from '@features/audio';
 import {
   applyReminderSettings,
   DAILY_REMINDER_TIME_OPTIONS,
@@ -22,13 +17,8 @@ import {
   setWeeklyGoalTarget,
   WEEKLY_GOAL_OPTIONS,
 } from '@features/engagement';
-import {
-  clearAllLocalDataWithFiles,
-  clearSpeakingLocalData,
-} from '@features/profile/logic/LocalDataDeletionService';
-import {formatLastSyncedLabel, readLastSyncedAt, syncNow} from '@features/sync';
+import {formatLastSyncedLabel, readLastSyncedAt} from '@features/sync';
 
-import {getSupportEmail} from '@core/api/appConfig';
 import {useFeatureFlags} from '@core/release';
 
 import type {ProfileStackParamList} from '../screens/navigationTypes';
@@ -102,7 +92,6 @@ export type ProfileScreenNavigation = NativeStackNavigationProp<
 export function useProfileScreen(navigation: ProfileScreenNavigation) {
   const accountUser = useAccountStore(state => state.user);
   const accountPhase = useAccountStore(state => state.phase);
-  const accountLogout = useAccountStore(state => state.logout);
   const displayName = accountUser?.display_name ?? PROFILE_PLACEHOLDER.name;
   const initials =
     accountUser?.display_name
@@ -114,15 +103,9 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
       .join('')
       .toUpperCase() || PROFILE_PLACEHOLDER.initials;
   const profileSubtitle = PROFILE_PLACEHOLDER.subtitle;
-  const {t} = useTranslation();
   const {isFeatureEnabled} = useFeatureFlags();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const isLoggingOutRef = useRef(false);
-  const [isClearDataModalVisible, setIsClearDataModalVisible] = useState(false);
-  const [clearDataConfirmText, setClearDataConfirmText] = useState('');
-  const supportEmail = getSupportEmail();
-  const {getAudioCacheStats, listReadyAudioAssets} = useAudioLibrary();
+  const {getAudioCacheStats} = useAudioLibrary();
   const {getCapabilityProgressReport} = useProgressReport();
   const audioCacheStats = getAudioCacheStats();
   const audioCacheTrailingLabel = `${formatCacheBytes(
@@ -142,7 +125,6 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     getReminderSettings(),
   );
   const [lastSyncedAt, setLastSyncedAt] = useState(() => readLastSyncedAt());
-  const [isSyncing, setIsSyncing] = useState(false);
   const [learningMetrics, setLearningMetrics] = useState(() => {
     const report = getCapabilityProgressReport();
     return {
@@ -173,133 +155,25 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
       ? 'Tiếp tục duy trì — học gì đó hôm nay nhé!'
       : 'Học một bài, ôn thẻ hoặc luyện nói để bắt đầu chuỗi.';
 
-  const executeClearData = useCallback(() => {
-    (async () => {
-      const result = await clearAllLocalDataWithFiles();
-      if (!result.dbCleared) {
-        setStatusMessage(t('settings.clear_data_partial_failure'));
-        return;
-      }
-      setStatusMessage(
-        result.ok
-          ? t('settings.clear_data_done')
-          : t('settings.clear_data_partial_failure'),
-      );
-    })();
-  }, [t]);
-
-  function handleClearSpeakingData() {
-    Alert.alert(
-      'Xóa dữ liệu luyện nói',
-      t('settings.clear_speaking_data_confirm'),
-      [
-        {text: 'Hủy', style: 'cancel'},
-        {
-          text: 'Xóa',
-          style: 'destructive',
-          onPress: () => {
-            (async () => {
-              const result = await clearSpeakingLocalData();
-              setStatusMessage(
-                result.ok
-                  ? t('settings.clear_speaking_data_done')
-                  : t('settings.clear_speaking_data_partial_failure'),
-              );
-            })();
-          },
-        },
-      ],
-    );
-  }
-
-  function handleSupport() {
-    const subject = encodeURIComponent('LingoBites — Góp ý / báo lỗi');
-    Linking.openURL(`mailto:${supportEmail}?subject=${subject}`);
-  }
-
-  /**
-   * Confirmed logout (TASK-006): delegates to the single account-store
-   * logout lifecycle. A second confirm while one is pending is rejected so
-   * the UI issues at most one operation; the old token is never retained
-   * or retried here.
-   */
-  async function executeLogout() {
-    if (isLoggingOutRef.current) {
-      return;
-    }
-    isLoggingOutRef.current = true;
-    setIsLoggingOut(true);
-    try {
-      await accountLogout();
-      if (useAccountStore.getState().phase !== 'signed-out') {
-        setStatusMessage(t('account.sign_out_failed'));
-      }
-    } finally {
-      isLoggingOutRef.current = false;
-      setIsLoggingOut(false);
-    }
-  }
-
-  function handleSignOut() {
-    Alert.alert(
-      t('account.sign_out_confirm_title'),
-      t('account.sign_out_confirm_message'),
-      [
-        {text: t('account.sign_out_cancel'), style: 'cancel'},
-        {
-          text: t('account.sign_out_confirm'),
-          style: 'destructive',
-          onPress: () => {
-            executeLogout();
-          },
-        },
-      ],
-    );
-  }
-
-  async function handlePlayCachedAudio() {
-    const ready = listReadyAudioAssets();
-    if (ready.length === 0) {
-      Alert.alert(
-        'Âm thanh chương học',
-        'Chưa có âm thanh được tải về máy. Tải chương học khi có mạng rồi thử lại.',
-      );
-      return;
-    }
-    const result = await playReadyChapterAudio(ready[0].id);
-    if (!result.ok) {
-      Alert.alert('Âm thanh chương học', result.message);
-    }
-  }
-
   const openProgressReport = useCallback(() => {
     navigation.navigate('ProgressReport');
   }, [navigation]);
 
-  const openPrivacyNote = useCallback(() => {
-    navigation.navigate('PrivacyNote');
+  const openAccountSettings = useCallback(() => {
+    navigation.navigate('AccountSettings');
   }, [navigation]);
 
-  const openFeatureStatus = useCallback(() => {
-    navigation.navigate('FeatureStatus');
+  const openDataSettings = useCallback(() => {
+    navigation.navigate('DataSettings');
   }, [navigation]);
 
-  const openTtsSpike = useCallback(() => {
-    navigation.navigate('TtsSpike');
+  const openAppSettings = useCallback(() => {
+    navigation.navigate('AppSettings');
   }, [navigation]);
 
-  const hideClearDataModal = useCallback(() => {
-    setIsClearDataModalVisible(false);
-  }, []);
-
-  const dismissClearDataModal = useCallback(() => {
-    setIsClearDataModalVisible(false);
-    setClearDataConfirmText('');
-  }, []);
-
-  const openClearDataModal = useCallback(() => {
-    setIsClearDataModalVisible(true);
-  }, []);
+  const openSupportAbout = useCallback(() => {
+    navigation.navigate('SupportAbout');
+  }, [navigation]);
 
   const closeSettingsSheet = useCallback(() => {
     setOpenSettingsSheet(null);
@@ -353,85 +227,36 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
       .catch(() => {});
   }, []);
 
-  const handleSyncNow = useCallback(() => {
-    if (isSyncing) {
-      return;
-    }
-    setIsSyncing(true);
-    syncNow()
-      .then(ok => {
-        if (!ok) {
-          setStatusMessage(
-            'Chưa đồng bộ được. Kiểm tra kết nối mạng rồi thử lại.',
-          );
-        }
-      })
-      .catch(() => {
-        setStatusMessage(
-          'Chưa đồng bộ được. Kiểm tra kết nối mạng rồi thử lại.',
-        );
-      })
-      .finally(() => {
-        setLastSyncedAt(readLastSyncedAt());
-        setIsSyncing(false);
-      });
-  }, [isSyncing]);
-
-  const weeklyGoalTrailingLabel = `${weeklyGoalTarget} bài/tuần`;
-  const syncTrailingLabel = isSyncing
-    ? 'Đang đồng bộ…'
-    : `Lần cuối: ${formatLastSyncedLabel(lastSyncedAt)}`;
-
-  const confirmClearData = useCallback(() => {
-    setIsClearDataModalVisible(false);
-    setClearDataConfirmText('');
-    executeClearData();
-  }, [executeClearData]);
-
   return {
     accountPhase,
     audioCacheTrailingLabel,
     closeSettingsSheet,
-    handleSyncNow,
-    isSyncing,
+    displayName,
+    gamification,
+    initials,
+    learningMetrics,
+    lastSyncedLabel: formatLastSyncedLabel(lastSyncedAt),
+    openAccountSettings,
+    openAppSettings,
+    openDataSettings,
+    openProgressReport,
     openReminderSheet,
     openSettingsSheet,
+    openSupportAbout,
     openWeeklyGoalSheet,
+    profileSubtitle,
     reminderSelectedKey: reminderKey(reminderSettings),
     reminderSheetOptions: REMINDER_SHEET_OPTIONS,
     reminderTrailingLabel: reminderTrailingLabel(reminderSettings),
     selectReminder,
     selectWeeklyGoal,
-    syncTrailingLabel,
-    weeklyGoalSelectedKey: String(weeklyGoalTarget),
-    weeklyGoalSheetOptions: WEEKLY_GOAL_SHEET_OPTIONS,
-    weeklyGoalTrailingLabel,
-    clearDataConfirmText,
-    displayName,
-    gamification,
-    initials,
-    isClearDataModalVisible,
-    isLoggingOut,
-    learningMetrics,
-    profileSubtitle,
     showThemePicker,
     statusMessage,
     streakSubtitle,
     streakTitle,
-    confirmClearData,
-    dismissClearDataModal,
-    hideClearDataModal,
-    handleClearSpeakingData,
-    handlePlayCachedAudio,
-    handleSignOut,
-    handleSupport,
-    openClearDataModal,
-    openFeatureStatus,
-    openPrivacyNote,
-    openProgressReport,
-    openTtsSpike,
-    setClearDataConfirmText,
-    t,
+    weeklyGoalSelectedKey: String(weeklyGoalTarget),
+    weeklyGoalSheetOptions: WEEKLY_GOAL_SHEET_OPTIONS,
+    weeklyGoalTrailingLabel: `${weeklyGoalTarget} bài/tuần`,
   };
 }
 

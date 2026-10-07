@@ -14,7 +14,8 @@ RootStack
 │  ├─ Home     HomeMain
 │  ├─ Create   CreateMain
 │  ├─ Lessons  LessonsList
-│  └─ Profile  ProfileMain, PrivacyNote, ProgressReport (+ màn dev)
+│  └─ Profile  ProfileMain (hub), AccountSettings, DataSettings, AppSettings,
+│              SupportAbout, PrivacyNote, ProgressReport (+ màn dev)
 └─ Luồng công việc         phủ lên tab bar; Back quay về tab đã mở luồng
    ├─ Tạo bài  PasteText, ImageCapture, OCRReview, LessonCreation
    ├─ Bài học  CanonicalCatalog, CanonicalLessonPlayer

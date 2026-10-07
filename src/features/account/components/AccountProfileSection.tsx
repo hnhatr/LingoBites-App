@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
+import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {TextField} from '@ui/components/TextField';
@@ -27,9 +28,9 @@ function copyPublicCode(code: string): void {
 }
 
 /**
- * Account section for the Profile screen (SETE-303 / T6), rendered inside the
- * profile identity card: the immutable public code with copy affordance, plus
- * display-name and optional E.164 phone editing behind a collapsed form. The phone is explicitly unverified lookup-only copy — the
+ * Account form for the Account settings page (SETE-303 / T6): the immutable
+ * public code with copy affordance, plus display-name and optional E.164
+ * phone editing. The phone is explicitly unverified lookup-only copy — the
  * app never sends a verification code to it.
  */
 export function AccountProfileSection() {
@@ -46,7 +47,6 @@ export function AccountProfileSection() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false);
 
   // Keep the form in sync when the account hydrates after the screen mounts
   // (boot resolves asynchronously behind the gate).
@@ -94,7 +94,6 @@ export function AccountProfileSection() {
       if (result.ok) {
         useAccountStore.setState({user: result.user});
         setStatus(t('account.saved'));
-        setEditing(false);
         return;
       }
       switch (result.errorCode) {
@@ -120,133 +119,114 @@ export function AccountProfileSection() {
   }
 
   return (
-    <View style={themedStyles.section}>
-      <View style={themedStyles.codeRow}>
-        <View style={styles.codeCopy}>
-          <AppText color="secondary" variant="caption">
-            {t('account.public_code_label')}
-          </AppText>
-          <AppText
-            accessibilityHint={t('account.public_code_hint')}
-            accessibilityLabel={`${t('account.public_code_label')}: ${
-              user.public_code
-            }`}
-            variant="h3"
+    <View style={styles.section}>
+      <AppCard style={styles.card}>
+        <View style={themedStyles.codeRow}>
+          <View style={styles.codeCopy}>
+            <AppText color="secondary" variant="caption">
+              {t('account.public_code_label')}
+            </AppText>
+            <AppText
+              accessibilityHint={t('account.public_code_hint')}
+              accessibilityLabel={`${t('account.public_code_label')}: ${
+                user.public_code
+              }`}
+              variant="h3"
+            >
+              {user.public_code}
+            </AppText>
+          </View>
+          <Pressable
+            accessibilityHint={t('account.copy_code_hint')}
+            accessibilityLabel={t('account.public_code_label')}
+            accessibilityRole="button"
+            onPress={() => {
+              copyPublicCode(user.public_code);
+              setCopied(true);
+            }}
+            style={({pressed}) => [
+              themedStyles.copyButton,
+              pressed && themedStyles.pressed,
+            ]}
           >
-            {user.public_code}
-          </AppText>
+            <MaterialIcon
+              color={theme.colors.accentInk}
+              name="content_copy"
+              size={20}
+            />
+          </Pressable>
         </View>
-        <Pressable
-          accessibilityHint={t('account.copy_code_hint')}
-          accessibilityLabel={t('account.public_code_label')}
-          accessibilityRole="button"
-          onPress={() => {
-            copyPublicCode(user.public_code);
-            setCopied(true);
-          }}
-          style={({pressed}) => [
-            themedStyles.copyButton,
-            pressed && themedStyles.pressed,
-          ]}
-        >
-          <MaterialIcon
-            color={theme.colors.accentInk}
-            name="content_copy"
-            size={20}
-          />
-        </Pressable>
-      </View>
-      {copied ? (
         <AppText color="secondary" variant="caption">
-          {t('account.copied')}
+          {t('account.public_code_hint')}
         </AppText>
-      ) : null}
-      {status && !editing ? (
-        <AppText color="secondary" variant="caption">
-          {status}
-        </AppText>
-      ) : null}
+        {copied ? (
+          <AppText color="secondary" variant="caption">
+            {t('account.copied')}
+          </AppText>
+        ) : null}
+      </AppCard>
 
-      {editing ? (
-        <View style={styles.form}>
-          <AppText color="secondary" variant="caption">
-            {t('account.public_code_hint')}
-          </AppText>
-          <TextField
-            accessibilityHint={t('account.name_field_hint')}
-            accessibilityLabel={t('account.display_name_label')}
-            autoCapitalize="words"
-            autoCorrect={false}
-            editable={!saving}
-            errorMessage={nameError}
-            hasError={nameError !== undefined}
-            label={t('account.display_name_label')}
-            maxLength={160}
-            onChangeText={text => {
-              setName(text);
-              setNameTouched(true);
-            }}
-            value={name}
-          />
-          <TextField
-            accessibilityHint={t('account.phone_field_hint')}
-            accessibilityLabel={t('account.phone_label')}
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={!saving}
-            errorMessage={phoneError}
-            hasError={phoneError !== undefined}
-            keyboardType="phone-pad"
-            label={t('account.phone_label')}
-            onChangeText={text => {
-              setPhone(text);
-              setPhoneTouched(true);
-            }}
-            placeholder="+84"
-            value={phone}
-          />
-          <AppText color="secondary" variant="caption">
-            {t('account.phone_hint')}
-          </AppText>
-          {status ? <AppText color="secondary">{status}</AppText> : null}
-          <AppButton
-            accessibilityHint={t('account.save_hint')}
-            accessibilityLabel={t('account.save')}
-            disabled={!canSave}
-            loading={saving}
-            onPress={handleSave}
-            title={t('account.save')}
-          />
-          <AppButton
-            disabled={saving}
-            onPress={() => setEditing(false)}
-            title={t('account.collapse')}
-            variant="ghost"
-          />
-        </View>
-      ) : (
-        <AppButton
-          accessibilityHint={t('account.edit_hint')}
-          iconLeft="edit"
-          onPress={() => {
-            setStatus(null);
-            setEditing(true);
+      <AppCard style={styles.card}>
+        <TextField
+          accessibilityHint={t('account.name_field_hint')}
+          accessibilityLabel={t('account.display_name_label')}
+          autoCapitalize="words"
+          autoCorrect={false}
+          editable={!saving}
+          errorMessage={nameError}
+          hasError={nameError !== undefined}
+          label={t('account.display_name_label')}
+          maxLength={160}
+          onChangeText={text => {
+            setName(text);
+            setNameTouched(true);
           }}
-          title={t('account.edit')}
-          variant="outline"
+          value={name}
         />
-      )}
+        <TextField
+          accessibilityHint={t('account.phone_field_hint')}
+          accessibilityLabel={t('account.phone_label')}
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!saving}
+          errorMessage={phoneError}
+          hasError={phoneError !== undefined}
+          keyboardType="phone-pad"
+          label={t('account.phone_label')}
+          onChangeText={text => {
+            setPhone(text);
+            setPhoneTouched(true);
+          }}
+          placeholder="+84"
+          value={phone}
+        />
+        <AppText color="secondary" variant="caption">
+          {t('account.phone_hint')}
+        </AppText>
+        {status ? <AppText color="secondary">{status}</AppText> : null}
+        <AppButton
+          accessibilityHint={t('account.save_hint')}
+          accessibilityLabel={t('account.save')}
+          disabled={!canSave}
+          loading={saving}
+          onPress={handleSave}
+          title={t('account.save')}
+        />
+      </AppCard>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    gap: 12,
+  },
   codeCopy: {
     flex: 1,
     gap: 4,
   },
-  form: {
-    gap: 12,
+  section: {
+    gap: 10,
   },
 });
 
@@ -267,12 +247,6 @@ function makeStyles(theme: AppTheme) {
     },
     pressed: {
       opacity: 0.7,
-    },
-    section: {
-      borderTopColor: theme.colors.outlineVariant,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      gap: 12,
-      paddingTop: 12,
     },
   });
 }
