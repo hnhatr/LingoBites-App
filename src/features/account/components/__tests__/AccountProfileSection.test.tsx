@@ -34,6 +34,13 @@ function renderSection() {
   );
 }
 
+async function expandEditForm(tree: ReactTestRenderer.ReactTestRenderer) {
+  const edit = tree.root.findByProps({title: 'Chỉnh sửa thông tin'});
+  await ReactTestRenderer.act(async () => {
+    edit.props.onPress();
+  });
+}
+
 beforeEach(() => {
   resetAccountStoreForTests();
   jest.restoreAllMocks();
@@ -54,8 +61,10 @@ describe('AccountProfileSection (SETE-303 / T6)', () => {
     await ReactTestRenderer.act(async () => {
       tree = renderSection();
     });
+    expect(JSON.stringify(tree.toJSON())).toContain('LB-AB12CD34');
+    expect(tree.root.findAllByType(TextInput)).toHaveLength(0);
+    await expandEditForm(tree);
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('LB-AB12CD34');
     expect(text).toContain('không bao giờ đổi');
     expect(text).toContain('không gửi mã xác minh');
   });
@@ -72,6 +81,7 @@ describe('AccountProfileSection (SETE-303 / T6)', () => {
     await ReactTestRenderer.act(async () => {
       tree = renderSection();
     });
+    await expandEditForm(tree);
     const inputs = tree.root.findAllByType(TextInput);
     await ReactTestRenderer.act(async () => {
       inputs[0].props.onChangeText('Bình');
@@ -96,6 +106,7 @@ describe('AccountProfileSection (SETE-303 / T6)', () => {
     await ReactTestRenderer.act(async () => {
       tree = renderSection();
     });
+    await expandEditForm(tree);
     const inputs = tree.root.findAllByType(TextInput);
     await ReactTestRenderer.act(async () => {
       inputs[1].props.onChangeText('0901234567');

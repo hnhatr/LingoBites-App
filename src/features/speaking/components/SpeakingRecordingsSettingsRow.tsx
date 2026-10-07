@@ -4,7 +4,6 @@ import {Alert, Switch, View} from 'react-native';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
-import {SectionHeader} from '@ui/components/SectionHeader';
 import {useAppTheme} from '@ui/theme';
 
 import {getDatabase, withTransaction} from '@core/db/database';
@@ -108,7 +107,6 @@ export function SpeakingRecordingsSettingsRow() {
 
   return (
     <View testID="speaking-recordings-settings">
-      <SectionHeader title="Bản ghi giọng nói" />
       <ProfileSettingsRow
         accessibilityLabel="Tải bản ghi lên tài khoản"
         icon="upload_file"
