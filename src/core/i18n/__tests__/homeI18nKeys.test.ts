@@ -30,6 +30,8 @@ const HOME_KEYS = [
   'home.weekly_goal_hint_badge',
   'home.weekly_goal_hint_met',
   'home.weekly_goal_hint_kept',
+  'home.weekly_goal_hint_last',
+  'home.weekly_goal_link',
   'home.weekly_goal_a11y',
   // Hero states (§VS-2, §VS-8)
   'home.hero_eyebrow_no_lessons',

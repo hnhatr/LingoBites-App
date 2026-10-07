@@ -49,6 +49,8 @@
     "weekly_goal_hint_badge": "Thêm {{k}} bài để nhận huy hiệu Chăm chỉ.",
     "weekly_goal_hint_met": "Bạn đã đạt mục tiêu tuần!",
     "weekly_goal_hint_kept": "Thêm {{k}} bài để đạt mục tiêu tuần.",
+    "weekly_goal_hint_last": "Còn 1 bài nữa là đạt mục tiêu tuần!",
+    "weekly_goal_link": "Xong bài này → +1 🐾",
     "weekly_goal_a11y": "{{line}}. Tiến độ {{ring}} phần trăm. {{hint}}",
     "greeting_morning": "Chào buổi sáng!",
     "greeting_morning_named": "Chào buổi sáng, {{name}}!",

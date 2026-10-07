@@ -49,6 +49,8 @@
     "weekly_goal_hint_badge": "Complete {{k}} more lessons to earn the Diligent badge.",
     "weekly_goal_hint_met": "You hit this week's goal!",
     "weekly_goal_hint_kept": "Complete {{k}} more lessons to hit this week's goal.",
+    "weekly_goal_hint_last": "One more lesson to hit this week's goal!",
+    "weekly_goal_link": "Finish this lesson → +1 🐾",
     "weekly_goal_a11y": "{{line}}. Progress {{ring}} percent. {{hint}}",
     "greeting_morning": "Good morning!",
     "greeting_morning_named": "Good morning, {{name}}!",

@@ -5,7 +5,7 @@
  * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
  * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8)
  * 3. HomeTodaySuggestion — "Gợi ý hôm nay" under "Học tiếp" (F12)
- * 4. HomeWeeklyGoal — 5-paw goal (I3, P-004)
+ * 4. HomeWeeklyGoal — one paw per target lesson (I3, P-004)
  * 5. HomeShortcutsGrid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003)
  * 6. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
  *
@@ -146,7 +146,11 @@ export function HomeScreenView(props: HomeScreenViewModel) {
 
         {/* Weekly goal (§VS-3) */}
         <View style={styles.goalSection}>
-          <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
+          <HomeWeeklyGoal
+            pawGoal={pawGoalModel}
+            card={weeklyGoalCard}
+            nextStepIsLesson={heroState === 'in_progress'}
+          />
         </View>
 
         {/* Shortcuts grid (§VS-4) */}

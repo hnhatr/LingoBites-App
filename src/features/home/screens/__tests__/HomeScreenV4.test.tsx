@@ -184,6 +184,32 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
     expect(continueBtn).toBeDefined();
   });
 
+  it('weekly goal links the in-progress lesson to the next paw', async () => {
+    seedCanonicalLessonDownload();
+    recordLessonEvent({
+      lessonId: '33333333-3333-4333-8333-333333333301',
+      event: 'start',
+    });
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('home-weekly-goal-link');
+    expect(text).toContain('Xong bài này → +1 🐾');
+    expect(
+      tree.root.findAll(node => node.props.testID === 'home-paw-5').length,
+    ).toBeGreaterThan(0);
+    expect(
+      tree.root.findAll(node => node.props.testID === 'home-paw-6').length,
+    ).toBe(0);
+  });
+
+  it('weekly goal hides the lesson link when no lesson is the next step', async () => {
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    expect(JSON.stringify(tree.toJSON())).not.toContain(
+      'home-weekly-goal-link',
+    );
+  });
+
   it('state S4 youtube_disabled: renders disabled hero state', async () => {
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());

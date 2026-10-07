@@ -6,7 +6,7 @@
  *   youtube_disabled, goal_met
  * - Time-of-day greeting (I5, DQ-008)
  * - Streak flame tiers 0..7+ (I4, P-001, §VS-1.3)
- * - 5-paw weekly goal model (I3, P-004, §VS-3)
+ * - Paw weekly goal model, one paw per target lesson (I3, P-004, §VS-3)
  * - Due-flashcard count for review shortcut badge (P-003, §VS-4)
  * - 4-shortcut item configurations (DQ-005, D3, §VS-4)
  * - Saved-rail label (DQ-006, §VS-5)
@@ -238,16 +238,17 @@ export function buildFlameModel(streak: number): FlameModel {
 }
 
 // ---------------------------------------------------------------------------
-// 5-paw weekly goal (I3, P-004, §VS-3)
+// Paw weekly goal: one paw per lesson of the target (I3, P-004, §VS-3)
 // ---------------------------------------------------------------------------
-export const PAW_COUNT = 5;
+/** Upper bound for drawn paws, so a bad stored target cannot flood the row. */
+export const MAX_PAWS = 10;
 
 export type PawGoalModel = {
-  /** How many paws are filled (0-5) */
+  /** How many paws are filled (0..totalPaws) */
   filledPaws: number;
-  /** Total paws always 5 */
-  totalPaws: 5;
-  /** True when all 5 paws are filled */
+  /** One paw per lesson of the weekly target */
+  totalPaws: number;
+  /** True when every paw is filled */
   goalMet: boolean;
 };
 
@@ -255,14 +256,11 @@ export function buildPawGoalModel(
   completedThisWeek: number,
   target: number,
 ): PawGoalModel {
-  const perPaw = Math.max(1, target / PAW_COUNT);
-  const filledPaws = Math.min(
-    PAW_COUNT,
-    Math.floor(completedThisWeek / perPaw),
-  );
+  const totalPaws = Math.min(MAX_PAWS, Math.max(1, Math.round(target)));
+  const filledPaws = Math.min(totalPaws, Math.max(0, completedThisWeek));
   return {
     filledPaws,
-    totalPaws: 5,
+    totalPaws,
     goalMet: completedThisWeek >= target,
   };
 }
@@ -415,7 +413,8 @@ export type WeeklyGoalCardModel = {
   hintKey:
     | 'home.weekly_goal_hint_badge'
     | 'home.weekly_goal_hint_met'
-    | 'home.weekly_goal_hint_kept';
+    | 'home.weekly_goal_hint_kept'
+    | 'home.weekly_goal_hint_last';
   hintParams?: {k: number};
 };
 
@@ -436,8 +435,12 @@ export function buildWeeklyGoalCard(
     hintKey = 'home.weekly_goal_hint_met';
   } else if (badgeEarned || target !== badgeTarget) {
     // The badge hint only fits when finishing the goal also earns the badge.
-    hintKey = 'home.weekly_goal_hint_kept';
-    hintParams = {k: remaining};
+    if (remaining === 1) {
+      hintKey = 'home.weekly_goal_hint_last';
+    } else {
+      hintKey = 'home.weekly_goal_hint_kept';
+      hintParams = {k: remaining};
+    }
   } else {
     hintKey = 'home.weekly_goal_hint_badge';
     hintParams = {k: remaining};
