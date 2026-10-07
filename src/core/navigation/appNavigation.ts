@@ -20,6 +20,15 @@ import {createContext, useContext} from 'react';
 
 export type AppTabName = 'Home' | 'Courses' | 'Lessons' | 'Profile';
 
+/** One Library list: the learner's own sections, then the public catalog. */
+export type LibrarySectionKey =
+  | 'mine'
+  | 'video'
+  | 'vocabulary'
+  | 'grammar'
+  | 'public'
+  | 'publicVideo';
+
 export type CreateEntry =
   /** Open the paste-text composer. */
   | {kind: 'paste'}
@@ -47,6 +56,13 @@ export interface AppNavigation {
   openLesson(lessonId: string): void;
   /** Open the lesson catalog. */
   openCatalog(): void;
+  /** Open one Library section's list (own lessons, words, or public). */
+  openLibrarySection(section: LibrarySectionKey): void;
+  /**
+   * Open the "Học qua video" hub: the video in progress, own and public
+   * videos, and creating a lesson from a YouTube link.
+   */
+  openVideoHub(): void;
   /**
    * Open the structured curriculum: the course list without a target,
    * otherwise one course, level or unit.

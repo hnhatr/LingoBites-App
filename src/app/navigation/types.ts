@@ -17,7 +17,11 @@ import type {
   ImageCaptureRouteParams,
   PasteTextRouteParams,
 } from '@features/input';
-import type {LessonsStackParamList} from '@features/lesson/library';
+import type {
+  LessonsStackParamList,
+  LibraryListRouteParams,
+  VideoHubRouteParams,
+} from '@features/lesson/library';
 import type {
   CanonicalCatalogRouteParams,
   CanonicalLessonPlayerRouteParams,
@@ -68,6 +72,8 @@ export type RootStackParamList = {
   // Lessons
   CanonicalCatalog: CanonicalCatalogRouteParams;
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
+  LibraryList: LibraryListRouteParams;
+  VideoHub: VideoHubRouteParams;
   // Structured curriculum (Course → Level → Unit → Lesson)
   CourseLevels: CourseLevelsRouteParams;
   LevelUnits: LevelUnitsRouteParams;

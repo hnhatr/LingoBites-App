@@ -43,7 +43,6 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     libraryCount,
     startedLesson,
     railItems,
-    youtubeEnabled,
     todayMode,
     todayPlan,
     onTodayModeChange,
@@ -67,9 +66,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
   const handleShortcutPress = (key: (typeof shortcutItems)[0]['key']) => {
     switch (key) {
       case 'video':
-        if (youtubeEnabled) {
-          openVideoCell();
-        }
+        openVideoCell();
         break;
       case 'review':
         onNavigateReview();

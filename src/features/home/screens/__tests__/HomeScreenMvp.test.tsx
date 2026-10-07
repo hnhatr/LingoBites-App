@@ -24,7 +24,10 @@ jest.mock('react-native-reanimated', () => {
 let mockYouTubeServerEnabled = false;
 
 jest.mock('@core/api/youtubeCapabilities', () => ({
-  useYouTubeServerEnabled: () => mockYouTubeServerEnabled,
+  useYouTubeCapability: () => ({
+    status: mockYouTubeServerEnabled ? 'enabled' : 'disabled',
+    refresh: () => {},
+  }),
 }));
 
 jest.mock('@features/engagement', () => ({

@@ -7,3 +7,11 @@ export type {
   ImageCaptureRouteParams,
   CreateFlowParamList,
 } from './screens/navigationTypes';
+export {
+  resolveYouTubeLessonCreationStatus,
+  useYouTubeLessonCreation,
+} from './logic/useYouTubeLessonCreation';
+export type {
+  YouTubeLessonCreation,
+  YouTubeLessonCreationStatus,
+} from './logic/useYouTubeLessonCreation';

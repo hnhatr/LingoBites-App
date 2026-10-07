@@ -7,7 +7,7 @@
  * - Time-of-day greeting (I5, DQ-008)
  * - Streak flame model (I4, P-001)
  * - 5-paw weekly goal (I3, P-004)
- * - 4-shortcut grid with Video locked when YouTube is off (DQ-005, D3)
+ * - 4-shortcut grid; Video opens the video hub (DQ-005, D3)
  * - Saved rail with renamed label (DQ-006)
  * - Graceful degradation when progress percent unavailable (A-009)
  * - "Gợi ý hôm nay" card from the Today study-block engine (F12)
@@ -18,6 +18,7 @@ import {useCallback, useMemo, useState} from 'react';
 import {useAccountStore} from '@features/account';
 import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
+import {useYouTubeLessonCreation} from '@features/input';
 import {
   type LessonCardLocalState,
   readLessonCardLocalState,
@@ -39,9 +40,7 @@ import {
   type TodayMode,
 } from '@features/today';
 
-import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
-import {useFeatureFlags} from '@core/release';
 import {removeLessonBookmark} from '@core/sync/lessonBookmarks';
 import {listInProgressLessonIds} from '@core/sync/lessonProgress';
 
@@ -81,11 +80,8 @@ function findStartedDownload(
 }
 
 export function useHomeScreenController() {
-  const {config} = useFeatureFlags();
   const navigation = useAppNavigation();
-  const youtubeServerEnabled = useYouTubeServerEnabled();
-  const youtubeEnabled =
-    config.features.youtubeLearning && youtubeServerEnabled;
+  const youtubeEnabled = useYouTubeLessonCreation().status === 'available';
   const canonicalCatalog = useCanonicalCatalog();
   const canonicalRefresh = canonicalCatalog.refresh;
   const displayName = useAccountStore(state => state.user?.display_name);
@@ -215,9 +211,8 @@ export function useHomeScreenController() {
     () =>
       buildShortcutItems({
         dueFlashcardCount,
-        youtubeEnabled,
       }),
-    [dueFlashcardCount, youtubeEnabled],
+    [dueFlashcardCount],
   );
 
   // "Gợi ý hôm nay" study block, same engine as the Today screen (F12)
@@ -282,7 +277,7 @@ export function useHomeScreenController() {
   );
 
   const openVideoCell = useCallback(
-    () => navigation.startCreate({kind: 'youtube'}),
+    () => navigation.openVideoHub(),
     [navigation],
   );
 

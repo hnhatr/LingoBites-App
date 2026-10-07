@@ -11,10 +11,10 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {getHardShadow} from '@ui/theme/hardShadow';
 
-import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 
+import {useYouTubeLessonCreation} from '../logic/useYouTubeLessonCreation';
 import type {CreateFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<CreateFlowParamList, 'CreateHub'>;
@@ -48,13 +48,8 @@ export function CreateScreen(_props: Props) {
   // SETE-290 (DEV-1): the creation tile needs the server capability too —
   // without it the tile is hidden so no transcript request can start here.
   // The history link stays flag-gated: saved lessons are local data.
-  const youtubeServerEnabled = useYouTubeServerEnabled();
-  const youtubeEnabled =
-    config.features.youtubeLearning && youtubeServerEnabled;
-  const openYoutubeCreation = useCallback(
-    () => appNavigation.startCreate({kind: 'youtube'}),
-    [appNavigation],
-  );
+  const youtubeCreation = useYouTubeLessonCreation();
+  const youtubeEnabled = youtubeCreation.status === 'available';
   const pasteEnabled = config.features.pasteTextInput;
 
   const openCamera = useCallback(
@@ -83,7 +78,7 @@ export function CreateScreen(_props: Props) {
       labelKey: 'home.youtube',
       descKey: 'create.source_youtube_desc',
       a11yKey: 'home.youtube_a11y',
-      onPress: openYoutubeCreation,
+      onPress: youtubeCreation.start,
       testID: 'create-tile-youtube',
     });
   }

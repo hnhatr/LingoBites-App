@@ -27,9 +27,9 @@ import {
   useLibrarySegments,
   useRefreshOnRefocus,
 } from '../logic/useLibrarySegments';
-import type {LessonsStackParamList} from './navigationTypes';
+import type {LibraryFlowParamList} from './navigationTypes';
 
-type Props = NativeStackScreenProps<LessonsStackParamList, 'LibraryList'>;
+type Props = NativeStackScreenProps<LibraryFlowParamList, 'LibraryList'>;
 
 export type LibraryListScreenProps = Props;
 

@@ -245,7 +245,6 @@ describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
   it('returns exactly 4 shortcuts in specified order: video, review, speaking, create', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 0,
-      youtubeEnabled: true,
     });
     expect(items).toHaveLength(4);
     expect(items.map(i => i.key)).toEqual([
@@ -259,7 +258,6 @@ describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
   it('review shortcut has badge and badgeText when dueFlashcardCount > 0', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 12,
-      youtubeEnabled: true,
     });
     const review = items.find(i => i.key === 'review');
     expect(review?.badgeCount).toBe(12);
@@ -270,7 +268,6 @@ describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
   it('review shortcut caps badgeText at 99+ when dueFlashcardCount > 99 (EC-005)', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 150,
-      youtubeEnabled: true,
     });
     const review = items.find(i => i.key === 'review');
     expect(review?.badgeCount).toBe(150);
@@ -280,7 +277,6 @@ describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
   it('review shortcut has no badge when dueFlashcardCount is 0 or null', () => {
     const items0 = buildShortcutItems({
       dueFlashcardCount: 0,
-      youtubeEnabled: true,
     });
     const review0 = items0.find(i => i.key === 'review');
     expect(review0?.badgeCount).toBeNull();
@@ -289,26 +285,14 @@ describe('buildShortcutItems (§VS-4, DQ-005, D3, P-003)', () => {
 
     const itemsNull = buildShortcutItems({
       dueFlashcardCount: null,
-      youtubeEnabled: true,
     });
     const reviewNull = itemsNull.find(i => i.key === 'review');
     expect(reviewNull?.badgeCount).toBeNull();
   });
 
-  it('video shortcut is disabled when youtubeEnabled is false with unavailable sub-line', () => {
+  it('video shortcut is always enabled and opens the video hub sub-line', () => {
     const items = buildShortcutItems({
       dueFlashcardCount: 0,
-      youtubeEnabled: false,
-    });
-    const video = items.find(i => i.key === 'video');
-    expect(video?.disabled).toBe(true);
-    expect(video?.subKey).toBe('home.shortcut_video_unavailable');
-  });
-
-  it('video shortcut is enabled when youtubeEnabled is true with youtube sub-line', () => {
-    const items = buildShortcutItems({
-      dueFlashcardCount: 0,
-      youtubeEnabled: true,
     });
     const video = items.find(i => i.key === 'video');
     expect(video?.disabled).toBe(false);

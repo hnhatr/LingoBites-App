@@ -16,13 +16,15 @@ import {
 
 import {CreateScreen} from '../CreateScreen';
 
-const mockUseYouTubeServerEnabled = jest.fn();
+const mockCapabilityStatus = jest.fn(() => 'disabled');
 
 // SETE-290: the creation tile needs the server capability too — control it
 // here so tile tests stay deterministic without network.
 jest.mock('@core/api/youtubeCapabilities', () => ({
-  useYouTubeServerEnabled: (...args: unknown[]) =>
-    mockUseYouTubeServerEnabled(...args),
+  useYouTubeCapability: () => ({
+    status: mockCapabilityStatus(),
+    refresh: () => {},
+  }),
 }));
 
 function navigation() {
@@ -99,7 +101,7 @@ describe('CreateScreen (SETE-247)', () => {
   });
 
   it('shows YouTube entry points only when the flag is on', async () => {
-    mockUseYouTubeServerEnabled.mockReturnValue(true);
+    mockCapabilityStatus.mockReturnValue('enabled');
     const flaggedOff = await renderCreate();
     expect(
       flaggedOff.root.findAll(
@@ -124,7 +126,7 @@ describe('CreateScreen (SETE-247)', () => {
   });
 
   it('hides YouTube entry points when the server capability is off (SETE-290)', async () => {
-    mockUseYouTubeServerEnabled.mockReturnValue(false);
+    mockCapabilityStatus.mockReturnValue('disabled');
     const tree = await renderCreate(
       navigation(),
       makeTestReleaseConfig(ALL_IMPLEMENTED_FEATURES),

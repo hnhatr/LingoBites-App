@@ -11,6 +11,8 @@ export const ROOT_FLOW_ROUTES = [
   'LessonCreation',
   'CanonicalCatalog',
   'CanonicalLessonPlayer',
+  'LibraryList',
+  'VideoHub',
   'CourseLevels',
   'LevelUnits',
   'UnitLessons',

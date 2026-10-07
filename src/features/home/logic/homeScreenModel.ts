@@ -295,12 +295,10 @@ export type ShortcutItem = {
 
 export type ShortcutItemsInput = {
   dueFlashcardCount: number | null;
-  youtubeEnabled: boolean;
 };
 
 export function buildShortcutItems({
   dueFlashcardCount,
-  youtubeEnabled,
 }: ShortcutItemsInput): ShortcutItem[] {
   const hasDue = dueFlashcardCount != null && dueFlashcardCount > 0;
   const reviewSubKey = hasDue
@@ -317,16 +315,14 @@ export function buildShortcutItems({
       key: 'video',
       icon: 'play_circle',
       titleKey: 'home.shortcut_video',
-      subKey: youtubeEnabled
-        ? 'home.shortcut_video_sub'
-        : 'home.shortcut_video_unavailable',
-      metaKey: youtubeEnabled
-        ? 'home.shortcut_video_sub'
-        : 'home.shortcut_video_unavailable',
+      // Always enabled: the video hub lists videos to watch even when
+      // creating a lesson from a link is unavailable.
+      subKey: 'home.shortcut_video_sub',
+      metaKey: 'home.shortcut_video_sub',
       testID: 'home-shortcut-video',
       badgeCount: null,
       badgeText: null,
-      disabled: !youtubeEnabled,
+      disabled: false,
     },
     {
       key: 'review',
