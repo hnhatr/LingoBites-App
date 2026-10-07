@@ -1,6 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {Alert, ScrollView, StyleSheet, View} from 'react-native';
 
 import {speak} from '@features/audio';
 import {
@@ -18,10 +18,11 @@ import {Banner} from '@ui/components/Banner';
 import {ErrorCard} from '@ui/components/ErrorCard';
 import {FlipCard} from '@ui/components/FlipCard';
 import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {IconButton} from '@ui/components/IconButton';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
 import {RatingControl} from '@ui/components/RatingControl';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
 import type {FlashcardRecord, ReviewRating} from '@core/db/types';
@@ -280,21 +281,19 @@ export function DailyReviewScreen({
     );
   }
 
+  const closeButton = (
+    <HeaderIconButton
+      accessibilityLabel={t('review.close_a11y')}
+      icon="close"
+      onPress={requestExit}
+      testID="review-close"
+    />
+  );
+
   if (sessionCards.length === 0) {
     return (
       <AppScreen>
-        <View style={[styles.header, {paddingHorizontal: theme.gutter}]}>
-          <AppText variant="h2">{t('review.title')}</AppText>
-          <Pressable
-            accessibilityLabel={t('review.close_a11y')}
-            accessibilityRole="button"
-            onPress={requestExit}
-            style={styles.closeButton}
-            testID="review-close"
-          >
-            <MaterialIcon name="close" size={22} />
-          </Pressable>
-        </View>
+        <ScreenHeader rightAction={closeButton} title={t('review.title')} />
         <View style={styles.emptyState}>
           <Medallion label={savedCardCount === 0 ? '0' : '✓'} />
           <AppText style={styles.emptyTitle} variant="h2">
@@ -387,27 +386,15 @@ export function DailyReviewScreen({
 
   return (
     <AppScreen>
-      <View style={[styles.header, {paddingHorizontal: theme.gutter}]}>
-        <View style={styles.headerText}>
-          <AppText color="secondary" variant="label">
-            {t('review.title')}
-          </AppText>
-          <View testID="review-progress">
-            <HandoffProgressTrack
-              label={`${currentIndex + 1} / ${sessionCards.length}`}
-              progress={(currentIndex + 1) / sessionCards.length}
-            />
-          </View>
-        </View>
-        <Pressable
-          accessibilityLabel={t('review.close_a11y')}
-          accessibilityRole="button"
-          onPress={requestExit}
-          style={styles.closeButton}
-          testID="review-close"
-        >
-          <MaterialIcon name="close" size={22} />
-        </Pressable>
+      <ScreenHeader rightAction={closeButton} title={t('review.title')} />
+      <View
+        style={[styles.progress, {paddingHorizontal: theme.gutter}]}
+        testID="review-progress"
+      >
+        <HandoffProgressTrack
+          label={`${currentIndex + 1} / ${sessionCards.length}`}
+          progress={(currentIndex + 1) / sessionCards.length}
+        />
       </View>
 
       <ScrollView
@@ -471,12 +458,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
-  closeButton: {
-    alignItems: 'center',
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
-  },
   contextWord: {
     textAlign: 'center',
   },
@@ -502,20 +483,11 @@ const styles = StyleSheet.create({
   example: {
     textAlign: 'center',
   },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 64,
-    paddingVertical: 8,
-  },
-  headerText: {
-    flex: 1,
-    gap: 6,
-    marginRight: 12,
-  },
   meaning: {
     textAlign: 'center',
+  },
+  progress: {
+    paddingBottom: 8,
   },
   statRow: {
     alignItems: 'center',

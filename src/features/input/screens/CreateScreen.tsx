@@ -101,11 +101,7 @@ export function CreateScreen(_props: Props) {
 
   return (
     <AppScreen>
-      <ScreenHeader
-        title={t('create.title')}
-        onBack={appNavigation.goBack}
-        numberOfLines={1}
-      />
+      <ScreenHeader title={t('create.title')} onBack={appNavigation.goBack} />
       <View style={styles.header}>
         <AppText color="secondary">{t('create.subtitle')}</AppText>
       </View>

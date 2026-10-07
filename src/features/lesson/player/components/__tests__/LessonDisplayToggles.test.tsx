@@ -56,6 +56,7 @@ describe('LessonDisplayToggles', () => {
     const toggle = tree.root.findAll(
       node =>
         node.props.testID === 'youtube-toggle-ipa' &&
+        node.props.accessibilityState !== undefined &&
         typeof node.props.onPress === 'function',
     )[0];
     expect(toggle.props.accessibilityState?.selected).toBe(false);

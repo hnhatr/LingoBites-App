@@ -4,6 +4,7 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {IconButton} from '@ui/components/IconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
@@ -87,12 +88,11 @@ export function ShadowingSummaryScreen({
     <AppScreen testID="shadowing-summary-screen">
       <ScreenHeader
         rightAction={
-          <IconButton
+          <HeaderIconButton
             accessibilityLabel="Đóng"
             icon="close"
             onPress={handleDone}
             testID="shadowing-summary-close"
-            tone="bare"
           />
         }
         title="Hoàn thành bài"

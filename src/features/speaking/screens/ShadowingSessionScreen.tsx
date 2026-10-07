@@ -5,7 +5,7 @@ import {recordShadowingSessionActivity} from '@features/engagement';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
@@ -119,12 +119,11 @@ export function ShadowingSessionScreen({
   }, [exitWithoutConfirm, session]);
 
   const closeAction = (
-    <IconButton
+    <HeaderIconButton
       accessibilityLabel="Đóng buổi luyện nói"
       icon="close"
       onPress={handleClose}
       testID="shadowing-close"
-      tone="bare"
     />
   );
 

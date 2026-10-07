@@ -90,11 +90,7 @@ export function LibraryListScreen({navigation, route}: Props) {
 
   return (
     <AppScreen>
-      <ScreenHeader
-        title={section.title}
-        onBack={() => navigation.goBack()}
-        numberOfLines={1}
-      />
+      <ScreenHeader title={section.title} onBack={() => navigation.goBack()} />
       <SearchAndFilterBar
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
