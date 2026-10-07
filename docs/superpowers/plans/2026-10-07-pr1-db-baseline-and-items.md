@@ -1,6 +1,6 @@
 # PR 1 – DB baseline + danh mục `items` (Server)
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE** (2026-10-07), nhánh `claude/optimistic-bell-mfgk44` của LingoBites-Server, 4 commit. Các điểm lệch so với bản nháp ở §9.
 > Ngày lập: 2026-10-07. Repo: `LingoBites-Server`. Nhánh: `claude/optimistic-bell-mfgk44`.
 > Thuộc Stage 1 của `2026-10-07-backward-design-curriculum-plan.md` (plan tổng đã được duyệt).
 
@@ -305,3 +305,15 @@ test/helpers/resourceMigrationTestHelpers.ts
 - Bước diff baseline cần Docker và Postgres trên máy chạy. Nếu môi trường làm PR không có, sẽ báo lại và không push commit 1.
 - `items` và `vocabularies` cùng tồn tại cho tới PR 2. Hai bên chưa đồng bộ với nhau, đây là có chủ đích.
 - Giới hạn độ dài và số lượng (4 slot, 30 giá trị, 20 biến thể, 20 lỗi) là phỏng đoán ban đầu. Dễ nới về sau.
+
+## 9. Điểm lệch khi code (so với bản nháp)
+
+| # | Lệch | Lý do |
+|---|---|---|
+| 1 | Baseline có thêm 4 cột của `courses` (`is_locked`, `product_id`, `price_amount`, `price_currency`) và bảng `user_course_entitlements` | PR #111 chỉ thêm các phần này vào Prisma và đưa lên DB bằng `prisma db push`, không có migration SQL. DB tạo thuần từ migration (kể cả chuỗi cũ) thiếu chúng, nên 22 test DB fail và 1 test treo ngay trên code gốc. Sau khi thêm vào baseline, `prisma migrate diff` rỗng |
+| 2 | Không xoá `canonicalLessonMigration.test.ts` / `recordingsMigration.test.ts`, mà đổi thành `canonicalLessonConstraints.test.ts` / `recordingsSchema.test.ts` | Giữ các test về constraint còn giá trị; chỉ bỏ các test nâng cấp 024/027/029 |
+| 3 | Không xoá `resourceMigrationTestHelpers.ts`; chỉ bỏ các hàm đọc file migration | Các hàm insert trong file vẫn được 5 test dùng |
+| 4 | Cursor danh sách item tự viết trong `itemService.ts`, không dùng `globalListCursor` | `globalListCursor` gắn với `created_at` và với các entity của curriculum |
+| 5 | `draft → archived` không được phép; draft chỉ có thể publish | Constraint DB yêu cầu mọi dòng không phải draft có `published_at` |
+| 6 | CHECK mã item ở DB: tiền tố đúng kind, phần thân 1–150 ký tự, chữ thường, không có khoảng trắng đầu/cuối (không dùng regex ký tự) | Cho phép chữ có dấu/Unicode giống `normalizeItemKey` |
+| 7 | Sửa thêm `prismaPoolBudget.test.ts` (key của course) và `openApiDocument.test.ts` (+6 path, +8 operation) | Test cũ chưa cập nhật theo PR #111; route mới làm tăng số path và operation |
