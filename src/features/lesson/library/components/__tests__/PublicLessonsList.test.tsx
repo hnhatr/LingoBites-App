@@ -27,7 +27,12 @@ jest.mock('@features/lesson/player', () => ({
     mockUseCanonicalCatalog(filter);
     return {state: mockState, refresh: mockRefresh, loadMore: mockLoadMore};
   },
-  listDownloadedLessonSummaries: () => [{lessonId: 'downloaded'}],
+  listDownloadedLessonSummaries: () => [
+    {
+      lessonId: 'downloaded',
+      snapshot: {source_type: 'youtube', sentences: [], blocks: []},
+    },
+  ],
 }));
 
 const item = (id: string, title: string, description = '') => ({

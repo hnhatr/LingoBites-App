@@ -205,6 +205,8 @@ export async function fetchLessonCatalog(
   if (query.sourceType !== undefined) {
     params.set('source_type', query.sourceType);
   }
+  // Lesson-card fields (duration, exercise count); older servers ignore it.
+  params.set('include', 'card_meta');
   const suffix = params.size > 0 ? `?${params.toString()}` : '';
   const answered = await send(
     `${LESSONS_PATH}${suffix}`,

@@ -1,15 +1,20 @@
 import {useFocusEffect} from '@react-navigation/native';
 import React from 'react';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView} from 'react-native';
 
+import {useLessonBookmarks} from '@features/lesson/library';
 import {hasDownloadedLessons} from '@features/lesson/player';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {
+  LessonCard,
+  lessonCardKind,
+  type LessonCardProgress,
+  splitLessonTitle,
+} from '@ui/components/LessonCard';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
@@ -28,16 +33,22 @@ export type ShadowingLessonPickerScreenProps = {
   };
 };
 
-function statusTone(
-  status: ShadowingLessonProgressSummary['statusChip'],
-): 'default' | 'gold' | 'primary' {
-  if (status === 'Xong') {
-    return 'primary';
+/** Shadowing progress as the card's progress chip; "Chưa luyện" shows none. */
+function shadowingProgress(
+  lesson: ShadowingLessonProgressSummary,
+): LessonCardProgress | null {
+  if (lesson.statusChip === 'Xong') {
+    return {state: 'completed', label: 'Đã luyện xong'};
   }
-  if (status === 'Đang dở') {
-    return 'gold';
+  if (lesson.statusChip === 'Đang dở') {
+    return {
+      state: 'in_progress',
+      done: lesson.practicedSentenceCount,
+      total: lesson.sentenceCount,
+      label: `Đã luyện ${lesson.practicedSentenceCount}/${lesson.sentenceCount}`,
+    };
   }
-  return 'default';
+  return null;
 }
 
 export function ShadowingLessonPickerScreen({
@@ -45,6 +56,7 @@ export function ShadowingLessonPickerScreen({
 }: ShadowingLessonPickerScreenProps) {
   const {theme} = useAppTheme();
   const floatingClearance = useFloatingTabBarClearance();
+  const {isBookmarked, toggleBookmark} = useLessonBookmarks();
   const [lessons, setLessons] = React.useState<
     ShadowingLessonProgressSummary[]
   >(() => listShadowingLessonProgressSummaries());
@@ -92,65 +104,39 @@ export function ShadowingLessonPickerScreen({
             </AppText>
           </AppCard>
         ) : null}
-        {lessons.map(lesson => (
-          <Pressable
-            key={lesson.lessonId}
-            accessibilityRole="button"
-            onPress={() => openLesson(lesson)}
-            testID={`shadowing-lesson-${lesson.lessonId}`}
-          >
-            <AppCard style={{gap: theme.spacing.sm}}>
-              <View
-                style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <AppText variant="h3">{lesson.titleVi}</AppText>
-                <Chip
-                  label={lesson.statusChip}
-                  tone={statusTone(lesson.statusChip)}
-                />
-              </View>
-              <AppText color="secondary" variant="body">
-                {lesson.sentenceCount} câu · ~{lesson.estimatedMinutes} phút
-              </AppText>
-              {lesson.statusChip === 'Đang dở' ? (
-                <AppText
-                  testID={`shadowing-lesson-progress-${lesson.lessonId}`}
-                  variant="body"
-                >
-                  Đã luyện {lesson.practicedSentenceCount}/
-                  {lesson.sentenceCount} câu
-                </AppText>
-              ) : null}
-              {lesson.reviewSentenceCount > 0 ? (
-                <AppText
-                  color="secondary"
-                  testID={`shadowing-lesson-review-${lesson.lessonId}`}
-                  variant="caption"
-                >
-                  {lesson.reviewSentenceCount} câu cần ôn
-                </AppText>
-              ) : null}
-              <View style={styles.chevronRow}>
-                <MaterialIcon
-                  color={theme.colors.text.secondary}
-                  name="chevron_right"
-                  size={22}
-                />
-              </View>
-            </AppCard>
-          </Pressable>
-        ))}
+        {lessons.map(lesson => {
+          const {title, subtitle} = splitLessonTitle(lesson.titleVi);
+          const sourceType = lesson.sourceType ?? 'admin_text';
+          return (
+            <LessonCard
+              key={lesson.lessonId}
+              accessibilityHint="Mở phiên luyện shadowing"
+              bookmarked={isBookmarked(lesson.lessonId)}
+              context={lesson.contextLabel}
+              downloaded
+              durationLabel={`~${lesson.estimatedMinutes} phút`}
+              kind={lessonCardKind(sourceType)}
+              onPress={() => openLesson(lesson)}
+              onToggleBookmark={() =>
+                toggleBookmark({
+                  lessonId: lesson.lessonId,
+                  title: lesson.titleVi,
+                  sourceType,
+                  sentenceCount: lesson.sentenceCount,
+                  estimatedMinutes: lesson.estimatedMinutes,
+                  contextLabel: lesson.contextLabel ?? null,
+                })
+              }
+              progress={shadowingProgress(lesson)}
+              reviewDueCount={lesson.reviewSentenceCount}
+              sentenceCount={lesson.sentenceCount}
+              subtitle={subtitle}
+              testID={`shadowing-lesson-${lesson.lessonId}`}
+              title={title}
+            />
+          );
+        })}
       </ScrollView>
     </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  chevronRow: {
-    alignItems: 'flex-end',
-  },
-});

@@ -105,23 +105,36 @@ describe('LessonsTabContent', () => {
 
   it('displays packaged lesson cards', () => {
     const tree = render(
-      <LessonsTabContent packagedLessons={[mockPackagedLesson]} />,
+      <LessonsTabContent
+        packagedLessons={[
+          {
+            ...mockPackagedLesson,
+            title: 'Seeing an Old Friend Again · Gặp lại người bạn cũ',
+            contextLabel: 'Getting Started',
+            activityCount: 2,
+          },
+        ]}
+      />,
     );
 
-    const titleText = tree.root.findByProps({
-      testID: 'lesson-title-packaged-1',
-    });
-    expect(titleText.props.children).toBe('Tiếng Anh Giao Tiếp');
-
-    const summaryText = tree.root.findByProps({
-      testID: 'lesson-summary-packaged-1',
-    });
-    expect(summaryText.props.children).toBe('Khóa học giao tiếp tiếng Anh');
-
-    const meta = tree.root.findByProps({testID: 'lesson-meta-packaged-1'});
-    expect(meta.props.children).toBe('12 câu · ~6 phút · Tải 2026-10-06');
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Seeing an Old Friend Again');
+    expect(text).toContain('Gặp lại người bạn cũ');
+    expect(text).toContain('Getting Started');
+    expect(text).toContain('6 phút');
+    expect(text).toContain('12 câu');
+    for (const chip of ['downloaded', 'exercises']) {
+      expect(
+        tree.root.findAllByProps({
+          testID: `lesson-item-packaged-1-chip-${chip}`,
+        }).length,
+      ).toBeGreaterThan(0);
+    }
+    expect(text).toContain('2 bài tập');
+    // A bookmark toggle sits on every card.
     expect(
-      tree.root.findAllByProps({children: 'Bài mẫu'}).length,
+      tree.root.findAllByProps({testID: 'lesson-item-packaged-1-bookmark'})
+        .length,
     ).toBeGreaterThan(0);
   });
 
@@ -203,11 +216,13 @@ describe('LessonsTabContent', () => {
     expect(() =>
       tree.root.findByProps({testID: 'empty-state-message-lessons'}),
     ).toThrow();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('4 câu');
     expect(
-      tree.root.findAllByProps({testID: 'lesson-summary-catalog-4'}),
+      tree.root.findAllByProps({
+        testID: 'lesson-item-catalog-4-chip-downloaded',
+      }),
     ).toHaveLength(0);
-    const meta = tree.root.findByProps({testID: 'lesson-meta-catalog-4'});
-    expect(meta.props.children).toBe('4 câu');
   });
 
   it('renders "Xem tất cả" only on the catalog section header', () => {
@@ -278,7 +293,12 @@ describe('LessonsTabContent', () => {
       expect(buttons[0]!.props.accessibilityLabel).toContain(
         'Tiếng Anh Giao Tiếp',
       );
-      const card = tree.root.findByProps({testID: 'lesson-item-ready'});
+      // The card's open button, not the whole card component.
+      const card = tree.root.find(
+        node =>
+          node.props.testID === 'lesson-item-ready' &&
+          node.props.accessibilityRole === 'button',
+      );
       expect(
         card.findAllByProps({testID: 'lesson-practice-ready'}),
       ).toHaveLength(0);

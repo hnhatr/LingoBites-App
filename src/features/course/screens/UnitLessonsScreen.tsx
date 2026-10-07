@@ -4,8 +4,18 @@ import React, {useCallback, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
+import {
+  readLessonCardLocalState,
+  useLessonBookmarks,
+} from '@features/lesson/library';
+
 import {AppScreen} from '@ui/components/AppScreen';
-import {Chip} from '@ui/components/Chip';
+import {
+  LessonCard,
+  lessonCardDurationLabel,
+  lessonCardKind,
+  splitLessonTitle,
+} from '@ui/components/LessonCard';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -29,6 +39,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {unitId, title} = route.params;
   const {state, refresh} = useUnitLessons(unitId);
+  const {isBookmarked, toggleBookmark} = useLessonBookmarks();
 
   useFocusEffect(
     useCallback(() => {
@@ -37,36 +48,59 @@ export function UnitLessonsScreen({navigation, route}: Props) {
   );
 
   const ready = state.status === 'ready' ? state.data : null;
+  // Re-read on every load: a lesson may have been downloaded or started.
+  const localState = useMemo(
+    () => (ready ? readLessonCardLocalState() : null),
+    [ready],
+  );
   const rows = ready
     ? ready.lessons.map((lesson, index) => {
         const completed = ready.completedIds.has(lesson.id);
+        const download = localState?.downloads.get(lesson.id);
+        const sourceType = download?.sourceType ?? 'admin_text';
+        const sentenceCount = download?.sentenceCount ?? null;
+        const lessonNumber = t('course.lesson_number', {number: index + 1});
+        const split = splitLessonTitle(lesson.title);
+        const onPress = () => appNavigation.openLesson(lesson.id);
         return {
           id: lesson.id,
-          eyebrow: t('course.lesson_number', {number: index + 1}),
           title: lesson.title,
-          description: lesson.description,
-          footer:
-            completed || lesson.estimatedMinutes !== null ? (
-              <View style={styles.chipRow}>
-                {completed ? (
-                  <Chip
-                    label={t('course.lesson_completed')}
-                    testID={`unit-lesson-completed-${lesson.id}`}
-                    tone="accentSoft"
-                  />
-                ) : null}
-                {lesson.estimatedMinutes !== null ? (
-                  <Chip
-                    label={t('course.lesson_minutes', {
-                      count: lesson.estimatedMinutes,
-                    })}
-                    tone="neutral"
-                  />
-                ) : null}
-              </View>
-            ) : null,
           accessibilityHint: t('course.lesson_row_hint'),
-          onPress: () => appNavigation.openLesson(lesson.id),
+          onPress,
+          card: (
+            <LessonCard
+              accessibilityHint={t('course.lesson_row_hint')}
+              bookmarked={isBookmarked(lesson.id)}
+              contextLead={lessonNumber}
+              downloaded={localState?.downloadedIds.has(lesson.id)}
+              durationLabel={lessonCardDurationLabel({
+                estimatedMinutes: lesson.estimatedMinutes,
+                sentenceCount,
+              })}
+              exerciseCount={localState?.activityCounts.get(lesson.id)}
+              kind={lessonCardKind(sourceType)}
+              onPress={onPress}
+              onToggleBookmark={() =>
+                toggleBookmark({
+                  lessonId: lesson.id,
+                  title: lesson.title,
+                  sourceType,
+                  sentenceCount: sentenceCount ?? 0,
+                  estimatedMinutes: lesson.estimatedMinutes,
+                  contextLabel: title ?? null,
+                })
+              }
+              progress={
+                completed
+                  ? {state: 'completed'}
+                  : localState?.progress.get(lesson.id)
+              }
+              sentenceCount={sentenceCount}
+              subtitle={split.subtitle}
+              testID={`unit-lessons-row-${lesson.id}`}
+              title={split.title}
+            />
+          ),
         };
       })
     : [];
@@ -105,11 +139,3 @@ function makeStyles(theme: AppTheme) {
     },
   });
 }
-
-const styles = StyleSheet.create({
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-});

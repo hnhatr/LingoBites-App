@@ -1,28 +1,29 @@
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useMemo} from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
 
-import {
-  listDownloadedLessonSummaries,
-  useCanonicalCatalog,
-} from '@features/lesson/player';
+import {useCanonicalCatalog} from '@features/lesson/player';
 
 import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {
+  LessonCard,
+  lessonCardDurationLabel,
+  lessonCardKind,
+  splitLessonTitle,
+} from '@ui/components/LessonCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 import type {LessonOrigin, LessonSourceType} from '@core/schemas/lesson';
 
+import {
+  EMPTY_LESSON_CARD_STATE,
+  lessonContextLabel,
+  readLessonCardLocalState,
+  useLessonBookmarks,
+} from '../logic/lessonCardData';
 import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface PublicLessonsListProps {
@@ -34,7 +35,8 @@ export interface PublicLessonsListProps {
 
 /**
  * Lessons everyone can see, listed from the server catalog (needs a
- * connection). A lesson already on this phone is marked "Đã tải".
+ * connection), as the shared lesson card: a lesson already on this phone is
+ * marked "Đã tải", and each card can be saved for later.
  */
 export function PublicLessonsList({
   origin,
@@ -53,13 +55,14 @@ export function PublicLessonsList({
     }, [refresh]),
   );
 
-  const downloadedIds = useMemo(
+  const {isBookmarked, toggleBookmark} = useLessonBookmarks();
+  const localState = useMemo(
     () =>
       // Skip the local read while the catalog is still loading, so opening
       // the list is not held up by it.
       state.status === 'ready'
-        ? new Set(listDownloadedLessonSummaries().map(item => item.lessonId))
-        : new Set<string>(),
+        ? readLessonCardLocalState()
+        : EMPTY_LESSON_CARD_STATE,
     // Re-read once the catalog has (re)loaded: a lesson may have been saved.
     [state.status],
   );
@@ -126,40 +129,44 @@ export function PublicLessonsList({
           />
         ) : null
       }
-      renderItem={({item}) => (
-        <Pressable
-          accessibilityHint="Mở bài học"
-          accessibilityLabel={item.title}
-          accessibilityRole="button"
-          onPress={() => navigation.openLesson(item.id)}
-          testID={`public-lesson-${item.id}`}
-        >
-          <AppCard>
-            <View style={styles.card}>
-              <AppText variant="h3">{item.title}</AppText>
-              {item.description.trim().length > 0 ? (
-                <AppText
-                  color="secondary"
-                  ellipsizeMode="tail"
-                  numberOfLines={2}
-                  variant="label"
-                >
-                  {item.description}
-                </AppText>
-              ) : null}
-              <View style={styles.chips}>
-                {item.unit ? (
-                  <Chip label={item.unit.level_title} tone="gold" />
-                ) : null}
-                <Chip label={`${item.sentence_count} câu`} tone="neutral" />
-                {downloadedIds.has(item.id) ? (
-                  <Chip label="Đã tải" tone="accentSoft" />
-                ) : null}
-              </View>
-            </View>
-          </AppCard>
-        </Pressable>
-      )}
+      renderItem={({item}) => {
+        const {title, subtitle} = splitLessonTitle(item.title);
+        const contextLabel = lessonContextLabel(item.unit);
+        const durationLabel = lessonCardDurationLabel({
+          estimatedMinutes: item.estimated_minutes,
+          youtubeDurationMs: item.youtube_duration_ms,
+          sentenceCount: item.sentence_count,
+        });
+        return (
+          <LessonCard
+            accessibilityHint="Mở bài học"
+            bookmarked={isBookmarked(item.id)}
+            context={contextLabel}
+            downloaded={localState.downloadedIds.has(item.id)}
+            durationLabel={durationLabel}
+            exerciseCount={
+              item.activity_count ?? localState.activityCounts.get(item.id)
+            }
+            kind={lessonCardKind(item.source_type)}
+            onPress={() => navigation.openLesson(item.id)}
+            onToggleBookmark={() =>
+              toggleBookmark({
+                lessonId: item.id,
+                title: item.title,
+                sourceType: item.source_type,
+                sentenceCount: item.sentence_count,
+                estimatedMinutes: item.estimated_minutes ?? null,
+                contextLabel,
+              })
+            }
+            progress={localState.progress.get(item.id)}
+            sentenceCount={item.sentence_count}
+            subtitle={subtitle}
+            testID={`public-lesson-${item.id}`}
+            title={title}
+          />
+        );
+      }}
     />
   );
 }
@@ -169,15 +176,6 @@ function makeStyles(theme: AppTheme) {
     list: {
       gap: theme.spacing.md,
       padding: theme.gutter,
-    },
-    card: {
-      gap: theme.spacing.xs,
-    },
-    chips: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs,
-      marginTop: theme.spacing.xs,
     },
     loading: {
       marginTop: theme.spacing.xl,

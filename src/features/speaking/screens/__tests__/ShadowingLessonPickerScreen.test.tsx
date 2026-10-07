@@ -88,13 +88,19 @@ describe('ShadowingLessonPickerScreen', () => {
     listShadowingLessonProgressSummaries.mockClear();
   });
 
-  it('AC-003 S1: shows lesson status chips and in-progress counts', async () => {
+  it('AC-003 S1: shows the in-progress count and no chip for an unpractised lesson', async () => {
     const tree = await renderPicker();
-    expect(tree.root.findByProps({children: 'Chưa luyện'})).toBeTruthy();
     expect(
-      tree.root.findByProps({testID: `shadowing-lesson-progress-${LESSON_B}`})
-        .props.children,
-    ).toEqual(expect.arrayContaining([4, 12]));
+      tree.root.findAllByProps({
+        testID: `shadowing-lesson-${LESSON_A}-chip-progress`,
+      }),
+    ).toHaveLength(0);
+    expect(
+      tree.root.findByProps({
+        testID: `shadowing-lesson-${LESSON_B}-chip-progress`,
+      }),
+    ).toBeTruthy();
+    expect(tree.root.findByProps({children: 'Đã luyện 4/12'})).toBeTruthy();
   });
 
   it('AC-004 S1: opens session at resume sentence for in-progress lesson', async () => {

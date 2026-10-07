@@ -2,34 +2,63 @@ import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {
+  LessonCard,
+  lessonCardDurationLabel,
+  lessonCardKind,
+  type LessonCardProgress,
+  lessonContextLabel,
+  splitLessonTitle,
+} from '@ui/components/LessonCard';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
+import {
+  listCompletedLessons,
+  listInProgressLessonIds,
+} from '@core/sync/lessonProgress';
+import {useLessonBookmarks} from '@core/sync/useLessonBookmarks';
 
+import {listLessonDownloads} from '../logic/canonicalDownloadRepository';
 import {useCanonicalCatalog} from '../logic/useCanonicalCatalog';
 import type {LessonFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<LessonFlowParamList, 'CanonicalCatalog'>;
 
+type LocalCardState = {
+  downloadedIds: ReadonlySet<string>;
+  progress: ReadonlyMap<string, LessonCardProgress>;
+};
+
+/** Downloads and progress on this phone; empty if the database is not open. */
+function readLocalCardState(): LocalCardState {
+  try {
+    const progress = new Map<string, LessonCardProgress>();
+    for (const lessonId of listInProgressLessonIds()) {
+      progress.set(lessonId, {state: 'in_progress'});
+    }
+    for (const row of listCompletedLessons()) {
+      progress.set(row.lessonId, {state: 'completed'});
+    }
+    return {
+      downloadedIds: new Set(listLessonDownloads().map(d => d.lessonId)),
+      progress,
+    };
+  } catch {
+    return {downloadedIds: new Set(), progress: new Map()};
+  }
+}
+
 /**
  * Canonical catalog: every visible lesson (admin and learner sources) in one
- * list; each row opens the same player. Rows use the Library lesson card
- * layout (title, summary, small chips) instead of contract field names.
+ * list; each row opens the same player. Rows are the shared lesson card.
  */
 export function CanonicalLessonCatalogScreen({navigation}: Props) {
   const appNavigation = useAppNavigation();
@@ -38,6 +67,14 @@ export function CanonicalLessonCatalogScreen({navigation}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const floatingClearance = useFloatingTabBarClearance();
   const {state, refresh, loadMore} = useCanonicalCatalog();
+  const {isBookmarked, toggleBookmark} = useLessonBookmarks();
+  const local = useMemo(
+    () =>
+      state.status === 'ready'
+        ? readLocalCardState()
+        : {downloadedIds: new Set<string>(), progress: new Map()},
+    [state.status],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -75,53 +112,43 @@ export function CanonicalLessonCatalogScreen({navigation}: Props) {
           testID="canonical-catalog-list"
           data={state.lessons}
           keyExtractor={item => item.id}
-          renderItem={({item}) => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={item.title}
-              accessibilityHint={t('lessonPlayer.catalog_row_hint')}
-              testID={`canonical-catalog-row-${item.id}`}
-              onPress={() => appNavigation.openLesson(item.id)}
-            >
-              <AppCard>
-                <View style={styles.cardContent}>
-                  <AppText
-                    testID={`canonical-catalog-title-${item.id}`}
-                    variant="h3"
-                  >
-                    {item.title}
-                  </AppText>
-                  {item.description.trim().length > 0 ? (
-                    <AppText
-                      color="secondary"
-                      ellipsizeMode="tail"
-                      numberOfLines={2}
-                      variant="label"
-                    >
-                      {item.description}
-                    </AppText>
-                  ) : null}
-                  <View style={styles.chipRow}>
-                    {item.unit ? (
-                      <Chip label={item.unit.level_title} tone="gold" />
-                    ) : null}
-                    <Chip
-                      label={t('lessonPlayer.catalog_sentences', {
-                        count: item.sentence_count,
-                      })}
-                      tone="neutral"
-                    />
-                    {item.origin === 'learner' ? (
-                      <Chip
-                        label={t('lessonPlayer.hero_mine')}
-                        tone="accentSoft"
-                      />
-                    ) : null}
-                  </View>
-                </View>
-              </AppCard>
-            </Pressable>
-          )}
+          renderItem={({item}) => {
+            const {title, subtitle} = splitLessonTitle(item.title);
+            const contextLabel =
+              lessonContextLabel(item.unit) ??
+              (item.origin === 'learner' ? t('lessonPlayer.hero_mine') : null);
+            return (
+              <LessonCard
+                accessibilityHint={t('lessonPlayer.catalog_row_hint')}
+                bookmarked={isBookmarked(item.id)}
+                context={contextLabel}
+                downloaded={local.downloadedIds.has(item.id)}
+                durationLabel={lessonCardDurationLabel({
+                  estimatedMinutes: item.estimated_minutes,
+                  youtubeDurationMs: item.youtube_duration_ms,
+                  sentenceCount: item.sentence_count,
+                })}
+                exerciseCount={item.activity_count}
+                kind={lessonCardKind(item.source_type)}
+                onPress={() => appNavigation.openLesson(item.id)}
+                onToggleBookmark={() =>
+                  toggleBookmark({
+                    lessonId: item.id,
+                    title: item.title,
+                    sourceType: item.source_type,
+                    sentenceCount: item.sentence_count,
+                    estimatedMinutes: item.estimated_minutes ?? null,
+                    contextLabel,
+                  })
+                }
+                progress={local.progress.get(item.id)}
+                sentenceCount={item.sentence_count}
+                subtitle={subtitle}
+                testID={`canonical-catalog-row-${item.id}`}
+                title={title}
+              />
+            );
+          }}
           onEndReached={state.nextCursor ? loadMore : undefined}
           contentContainerStyle={[
             themedStyles.list,
@@ -152,14 +179,3 @@ function makeStyles(theme: AppTheme) {
     },
   });
 }
-
-const styles = StyleSheet.create({
-  cardContent: {
-    gap: 6,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-});

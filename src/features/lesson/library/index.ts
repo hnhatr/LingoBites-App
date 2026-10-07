@@ -12,3 +12,15 @@ export type {
   LibraryListRouteParams,
   LessonsStackParamList,
 } from './screens/navigationTypes';
+export {
+  activityCountOf,
+  EMPTY_LESSON_CARD_STATE,
+  lessonContextLabel,
+  readLessonCardLocalState,
+  useLessonBookmarks,
+  useSavedLessons,
+} from './logic/lessonCardData';
+export type {
+  LessonCardLocalState,
+  UseLessonBookmarksResult,
+} from './logic/lessonCardData';
