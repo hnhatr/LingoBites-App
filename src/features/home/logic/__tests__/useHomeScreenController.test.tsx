@@ -11,6 +11,7 @@ import {useHomeScreenController} from '../useHomeScreenController';
 
 jest.mock('@features/engagement', () => ({
   getGamificationSnapshot: jest.fn(),
+  listStudyEventsOn: jest.fn(() => []),
 }));
 
 jest.mock('@features/analytics', () => ({

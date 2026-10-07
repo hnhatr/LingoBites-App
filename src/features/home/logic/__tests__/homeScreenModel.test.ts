@@ -2,11 +2,11 @@
  * homeScreenModel unit tests (LING-256, LING-267)
  *
  * Covers:
- * - deriveHeroState: all 5 hero states (DQ-002, P-004)
+ * - deriveHeroState: all 6 hero states (DQ-002, P-004)
  * - getTimeOfDay: morning/afternoon/night boundaries (I5, DQ-008)
  * - buildGreeting: prefix keys and named variants
  * - buildFlameModel: tiers 0..7+ (I4, P-001, §VS-1.3)
- * - buildPawGoalModel: filled paw count (I3, P-004, §VS-3)
+ * - buildPawGoalModel: one paw per target lesson (I3, P-004, §VS-3)
  * - buildShortcutItems: review badge, video locked, order (DQ-005, D3, P-003, §VS-4)
  * - visual constants (§VS-0)
  */
@@ -25,6 +25,7 @@ import {
   HOME_HEART,
   HOME_HIGHLIGHT,
   HOME_TROPHY,
+  MAX_PAWS,
 } from '../homeScreenModel';
 
 // ---------------------------------------------------------------------------
@@ -53,7 +54,43 @@ describe('deriveHeroState (DQ-002, P-004)', () => {
     ).toBe('in_progress');
   });
 
-  it('returns saved_only when downloads exist but none in progress', () => {
+  it('returns next_activity when downloads exist and the plan has an open step', () => {
+    expect(
+      deriveHeroState({
+        downloadCount: 3,
+        hasInProgress: false,
+        hasNextActivity: true,
+        weeklyGoalMet: false,
+        youtubeEnabled: true,
+      }),
+    ).toBe('next_activity');
+  });
+
+  it('keeps in_progress above next_activity', () => {
+    expect(
+      deriveHeroState({
+        downloadCount: 3,
+        hasInProgress: true,
+        hasNextActivity: true,
+        weeklyGoalMet: false,
+        youtubeEnabled: true,
+      }),
+    ).toBe('in_progress');
+  });
+
+  it('keeps the onboarding states when nothing is downloaded', () => {
+    expect(
+      deriveHeroState({
+        downloadCount: 0,
+        hasInProgress: false,
+        hasNextActivity: true,
+        weeklyGoalMet: false,
+        youtubeEnabled: true,
+      }),
+    ).toBe('no_lessons');
+  });
+
+  it('returns saved_only when downloads exist but none in progress and the plan is done', () => {
     expect(
       deriveHeroState({
         downloadCount: 3,
@@ -211,13 +248,25 @@ describe('buildFlameModel (I4, P-001, §VS-1.3)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildPawGoalModel — 5-paw weekly goal (I3, P-004, §VS-3)
+// buildPawGoalModel — one paw per target lesson (I3, P-004, §VS-3)
 // ---------------------------------------------------------------------------
 describe('buildPawGoalModel (I3, P-004, §VS-3)', () => {
-  it('returns 5 filled paws when goal is met (6/6)', () => {
+  it('draws one paw per lesson of the target', () => {
+    expect(buildPawGoalModel(0, 3).totalPaws).toBe(3);
+    expect(buildPawGoalModel(0, 5).totalPaws).toBe(5);
+    expect(buildPawGoalModel(0, 6).totalPaws).toBe(6);
+    expect(buildPawGoalModel(0, 7).totalPaws).toBe(7);
+  });
+
+  it('fills exactly one paw per completed lesson', () => {
+    const m = buildPawGoalModel(3, 6);
+    expect(m.filledPaws).toBe(3);
+    expect(m.goalMet).toBe(false);
+  });
+
+  it('fills every paw when the goal is met (6/6)', () => {
     const m = buildPawGoalModel(6, 6);
-    expect(m.filledPaws).toBe(5);
-    expect(m.totalPaws).toBe(5);
+    expect(m.filledPaws).toBe(6);
     expect(m.goalMet).toBe(true);
   });
 
@@ -227,14 +276,15 @@ describe('buildPawGoalModel (I3, P-004, §VS-3)', () => {
     expect(m.goalMet).toBe(false);
   });
 
-  it('returns totalPaws always 5', () => {
-    expect(buildPawGoalModel(3, 6).totalPaws).toBe(5);
+  it('caps filledPaws at the target when completedThisWeek > target', () => {
+    const m = buildPawGoalModel(10, 6);
+    expect(m.filledPaws).toBe(6);
+    expect(m.goalMet).toBe(true);
   });
 
-  it('caps filledPaws at 5 even if completedThisWeek > target', () => {
-    const m = buildPawGoalModel(10, 6);
-    expect(m.filledPaws).toBeLessThanOrEqual(5);
-    expect(m.goalMet).toBe(true);
+  it('clamps the paw row for out-of-range targets', () => {
+    expect(buildPawGoalModel(0, 0).totalPaws).toBe(1);
+    expect(buildPawGoalModel(0, 50).totalPaws).toBe(MAX_PAWS);
   });
 });
 
@@ -365,6 +415,15 @@ describe('buildWeeklyGoalCard with a custom goal (F6)', () => {
     });
     expect(custom.hintKey).toBe('home.weekly_goal_hint_kept');
     expect(custom.hintParams).toEqual({k: 2});
+
+    const lastOne = buildWeeklyGoalCard({
+      completedThisWeek: 2,
+      target: 3,
+      badgeEarned: false,
+      badgeTarget: 6,
+    });
+    expect(lastOne.hintKey).toBe('home.weekly_goal_hint_last');
+    expect(lastOne.hintParams).toBeUndefined();
 
     const matching = buildWeeklyGoalCard({
       completedThisWeek: 1,

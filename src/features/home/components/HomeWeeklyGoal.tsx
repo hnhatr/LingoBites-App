@@ -1,8 +1,12 @@
 /**
- * HomeWeeklyGoal — 5-paw weekly goal card (LING-256, LING-267, §VS-3).
+ * HomeWeeklyGoal — paw weekly goal card (LING-256, LING-267, §VS-3).
  *
  * Layout:
- *   [Label -> 5 paws row -> Count line -> Hint] ... [26pt plain trophy]
+ *   [Label -> paw row (one per target lesson) -> Count line -> Hint
+ *    -> "Finish this lesson → +1" link] ... [26pt plain trophy]
+ *
+ * The link line ties the card to the hero: it shows only while the next
+ * step on Home is a lesson and the goal is not met yet.
  */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -14,14 +18,17 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import type {PawGoalModel, WeeklyGoalCardModel} from '../logic/homeScreenModel';
 import {HOME_EMPTY_PAW, HOME_TROPHY} from '../logic/homeScreenModel';
 import {getHardShadow} from './HomeDecorations';
+import {HomeSectionTitle} from './HomeSectionTitle';
 import {HomeIcon} from './HomeSvgIcons';
 
 type Props = {
   pawGoal: PawGoalModel;
   card: WeeklyGoalCardModel;
+  /** True when the hero's next step is a lesson that counts toward the goal. */
+  nextStepIsLesson?: boolean;
 };
 
-export function HomeWeeklyGoal({pawGoal, card}: Props) {
+export function HomeWeeklyGoal({pawGoal, card, nextStepIsLesson}: Props) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -30,10 +37,11 @@ export function HomeWeeklyGoal({pawGoal, card}: Props) {
   const hint = card.hintParams
     ? t(card.hintKey, card.hintParams)
     : t(card.hintKey);
+  const showLink = nextStepIsLesson === true && !pawGoal.goalMet;
   const accessibilityLabel = t('home.weekly_goal_a11y', {
     line: countLine,
     ring: card.ringPercent,
-    hint,
+    hint: showLink ? `${hint} ${t('home.weekly_goal_link')}` : hint,
   });
 
   return (
@@ -46,9 +54,9 @@ export function HomeWeeklyGoal({pawGoal, card}: Props) {
     >
       {/* Goal text column (§VS-3) */}
       <View style={styles.copy}>
-        <AppText style={styles.label}>{t('home.weekly_goal_label')}</AppText>
+        <HomeSectionTitle title={t('home.weekly_goal_label')} />
 
-        {/* 5-paw row: 22pt pets icons */}
+        {/* Paw row: one 22pt pets icon per lesson of the target */}
         <View
           style={styles.pawRow}
           testID="home-paw-goal-row"
@@ -71,6 +79,13 @@ export function HomeWeeklyGoal({pawGoal, card}: Props) {
 
         <AppText style={styles.countLine}>{countLine}</AppText>
         <AppText style={styles.hint}>{hint}</AppText>
+        {showLink ? (
+          <View style={styles.link} testID="home-weekly-goal-link">
+            <AppText style={styles.linkText}>
+              {t('home.weekly_goal_link')}
+            </AppText>
+          </View>
+        ) : null}
       </View>
 
       {/* Right: Plain 26pt trophy (#d39b00), no background tile */}
@@ -103,14 +118,10 @@ function makeStyles(theme: AppTheme) {
       flex: 1,
       minWidth: 0,
     },
-    label: {
-      color: theme.colors.text.secondary,
-      fontSize: 12,
-      fontWeight: '700',
-    },
     pawRow: {
       alignItems: 'center',
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 4,
       marginBottom: 2,
       marginTop: 4,
@@ -124,6 +135,19 @@ function makeStyles(theme: AppTheme) {
       color: theme.colors.text.muted,
       fontSize: 12,
       fontWeight: '600',
+    },
+    link: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 999,
+      marginTop: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+    },
+    linkText: {
+      color: theme.colors.text.primary,
+      fontSize: 12,
+      fontWeight: '700',
     },
     trophyWrap: {
       alignItems: 'center',

@@ -1,5 +1,5 @@
 /**
- * HomeHeroCard — paper-cut hero card for the 5 Home states (LING-256, LING-267, §VS-2).
+ * HomeHeroCard — paper-cut hero card for the 6 Home states (LING-256, LING-267, §VS-2).
  *
  * Motion (§VS-7):
  *   - I1 (bubble pop-in): scale 0 -> 1 with overshoot, 400ms, delay 500ms; static under RM
@@ -46,8 +46,18 @@ type Props = {
   startedLessonTitle?: string;
   startedLessonMinutes?: number;
   libraryCount?: number | null;
+  /** Today's next plan step, shown in the `next_activity` state. */
+  nextStep?: HeroNextStep | null;
   onPrimary: () => void;
   testID?: string;
+};
+
+export type HeroNextStep = {
+  title: string;
+  minutes: number;
+  /** 1-based position of the step in today's plan. */
+  step: number;
+  total: number;
 };
 
 type StateContent = {
@@ -68,6 +78,7 @@ function getStateContent(
   startedLessonTitle: string | undefined,
   startedLessonMinutes: number | undefined,
   libraryCount: number | null | undefined,
+  nextStep: HeroNextStep | null | undefined,
 ): StateContent {
   switch (heroState) {
     case 'no_lessons':
@@ -115,6 +126,19 @@ function getStateContent(
             : undefined,
         ctaIconName: 'play_arrow',
       };
+    case 'next_activity':
+      return {
+        eyebrowKey: 'home.hero_eyebrow_next',
+        explicitTitle: nextStep?.title,
+        titleKey: nextStep ? undefined : 'home.hero_saved_title',
+        bodyKey: nextStep ? 'home.hero_next_body' : undefined,
+        bodyParams: nextStep
+          ? {step: nextStep.step, total: nextStep.total}
+          : undefined,
+        ctaKey: nextStep ? 'home.hero_next_cta' : 'home.hero_saved_cta',
+        ctaParams: nextStep ? {minutes: nextStep.minutes} : undefined,
+        ctaIconName: 'play_arrow',
+      };
     case 'goal_met':
       return {
         eyebrowKey: 'home.hero_eyebrow_goal_met',
@@ -139,6 +163,7 @@ function getMascotSpeech(heroState: HeroState): string {
     no_lessons: 'home.mascot_no_lessons',
     saved_only: 'home.mascot_saved',
     in_progress: 'home.mascot_in_progress',
+    next_activity: 'home.mascot_next',
     goal_met: 'home.mascot_goal_met',
     youtube_disabled: 'home.mascot_youtube_disabled',
   };
@@ -150,6 +175,7 @@ export function HomeHeroCard({
   startedLessonTitle,
   startedLessonMinutes,
   libraryCount,
+  nextStep,
   onPrimary,
   testID,
 }: Props) {
@@ -280,6 +306,7 @@ export function HomeHeroCard({
     startedLessonTitle,
     startedLessonMinutes,
     libraryCount,
+    nextStep,
   );
   const eyebrowText = t(content.eyebrowKey);
   const titleText = content.explicitTitle
@@ -356,6 +383,8 @@ export function HomeHeroCard({
             testID={
               heroState === 'in_progress'
                 ? 'home-continue-action'
+                : heroState === 'next_activity'
+                ? 'home-next-action'
                 : heroState === 'saved_only'
                 ? 'home-starter-pick'
                 : heroState === 'no_lessons'
