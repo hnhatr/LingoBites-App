@@ -1,5 +1,5 @@
 import React from 'react';
-import {Modal, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {Modal, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AccountProfileSection} from '@features/account';
 
@@ -11,10 +11,11 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
 import {SectionHeader} from '@ui/components/SectionHeader';
+import {SettingsGroup} from '@ui/components/SettingsGroup';
+import {StatTile} from '@ui/components/StatTile';
 import {TextField} from '@ui/components/TextField';
 import {ThemePicker} from '@ui/components/ThemePicker';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {solidOver} from '@ui/theme/colorUtils';
 import {getStickerFace} from '@ui/theme/hardShadow';
 
 import {SettingsOptionSheet} from '../components/SettingsOptionSheet';
@@ -87,76 +88,75 @@ export function ProfileScreenView({
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <AppCard style={styles.profileCard}>
-          <View style={themedStyles.avatar}>
-            <AppText style={themedStyles.avatarText}>{initials}</AppText>
-          </View>
-          <View style={styles.profileCopy}>
-            <AppText variant="h3">{displayName}</AppText>
-            <AppText color="secondary" variant="caption">
-              {profileSubtitle}
-            </AppText>
+        <AppCard>
+          <View style={styles.cardStack}>
+            <View style={styles.profileRow}>
+              <View style={themedStyles.avatar}>
+                <AppText style={themedStyles.avatarText}>{initials}</AppText>
+              </View>
+              <View style={styles.profileCopy}>
+                <AppText variant="h3">{displayName}</AppText>
+                <AppText color="secondary" variant="caption">
+                  {profileSubtitle}
+                </AppText>
+              </View>
+            </View>
+            <AccountProfileSection />
           </View>
         </AppCard>
 
-        <AccountProfileSection />
-
-        <View style={themedStyles.streakCard}>
-          <MaterialIcon
-            color={theme.colors.accentInk}
-            name="local_fire_department"
-            size={42}
-          />
-          <View style={styles.streakCopy}>
-            <AppText style={themedStyles.streakTitle}>{streakTitle}</AppText>
-            <AppText style={themedStyles.streakSubtitle}>
-              {streakSubtitle}
-            </AppText>
-          </View>
+        <View>
+          <SectionHeader title="Tiến trình" />
+          <AppCard>
+            <View style={styles.cardStack}>
+              <View style={styles.streakRow}>
+                <View style={themedStyles.streakBadge}>
+                  <MaterialIcon
+                    color={theme.colors.accentInk}
+                    name="local_fire_department"
+                    size={28}
+                  />
+                </View>
+                <View style={styles.streakCopy}>
+                  <AppText variant="h3">{streakTitle}</AppText>
+                  <AppText color="secondary" variant="caption">
+                    {streakSubtitle}
+                  </AppText>
+                </View>
+              </View>
+              <View style={styles.statsRow}>
+                <StatTile
+                  icon="bolt"
+                  label="XP đã đạt"
+                  tone="gold"
+                  value={gamification.totalXp}
+                />
+                <StatTile
+                  icon="emoji_events"
+                  label="Huy hiệu"
+                  tone="coral"
+                  value={gamification.badges.length}
+                />
+              </View>
+              <View style={styles.statsRow}>
+                <StatTile
+                  icon="menu_book"
+                  label="Từ đã biết"
+                  tone="teal"
+                  value={learningMetrics.wordsKnownLabel}
+                />
+                <StatTile
+                  icon="check_circle"
+                  label="Độ chính xác"
+                  tone="teal"
+                  value={learningMetrics.accuracyLabel}
+                />
+              </View>
+            </View>
+          </AppCard>
         </View>
 
-        <View style={styles.metricsContainer}>
-          <View style={styles.metricsRow}>
-            <View style={[styles.metricCard, themedStyles.metricTertiary]}>
-              <AppText style={themedStyles.metricValueTertiary}>
-                {gamification.totalXp}
-              </AppText>
-              <AppText style={themedStyles.metricLabelTertiary}>
-                XP đã đạt
-              </AppText>
-            </View>
-            <View style={[styles.metricCard, themedStyles.metricSecondary]}>
-              <AppText style={themedStyles.metricValueSecondary}>
-                {gamification.badges.length}
-              </AppText>
-              <AppText style={themedStyles.metricLabelSecondary}>
-                Huy hiệu
-              </AppText>
-            </View>
-          </View>
-
-          <View style={styles.metricsRow}>
-            <View style={[styles.metricCard, themedStyles.metricTertiary]}>
-              <AppText style={themedStyles.metricValueTertiary}>
-                {learningMetrics.wordsKnownLabel}
-              </AppText>
-              <AppText style={themedStyles.metricLabelTertiary}>
-                Từ đã biết
-              </AppText>
-            </View>
-            <View style={[styles.metricCard, themedStyles.metricSecondary]}>
-              <AppText style={themedStyles.metricValueSecondary}>
-                {learningMetrics.accuracyLabel}
-              </AppText>
-              <AppText style={themedStyles.metricLabelSecondary}>
-                Độ chính xác
-              </AppText>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.settingsSection}>
-          <SectionHeader title="Cài đặt" />
+        <SettingsGroup title="Học tập">
           <ProfileSettingsRow
             accessibilityLabel={`Mục tiêu tuần: ${weeklyGoalTrailingLabel}`}
             icon="flag"
@@ -173,6 +173,17 @@ export function ProfileScreenView({
             onPress={openReminderSheet}
             trailing={{text: reminderTrailingLabel}}
           />
+          <ProfileSettingsRow
+            accessibilityLabel="Báo cáo tiến độ và năng lực"
+            icon="analytics"
+            label="Báo cáo tiến độ & Năng lực"
+            medallionTone="teal"
+            onPress={openProgressReport}
+            trailing="chevron"
+          />
+        </SettingsGroup>
+
+        <SettingsGroup title="Dữ liệu & đồng bộ">
           {accountPhase === 'authenticated' ? (
             <ProfileSettingsRow
               accessibilityHint="Gửi và nhận dữ liệu học với tài khoản ngay bây giờ"
@@ -192,15 +203,26 @@ export function ProfileScreenView({
             onPress={handlePlayCachedAudio}
             trailing={{text: audioCacheTrailingLabel}}
           />
-          {speakingRecordingsSection}
-          <ProfileSettingsRow
-            accessibilityLabel="Báo cáo tiến độ và năng lực"
-            icon="analytics"
-            label="Báo cáo tiến độ & Năng lực"
-            medallionTone="teal"
-            onPress={openProgressReport}
-            trailing="chevron"
-          />
+        </SettingsGroup>
+
+        {speakingRecordingsSection ? (
+          <SettingsGroup title="Bản ghi giọng nói">
+            {speakingRecordingsSection}
+          </SettingsGroup>
+        ) : null}
+
+        {showThemePicker ? (
+          <SettingsGroup title="Giao diện">
+            <View style={themedStyles.themeBody}>
+              <AppText color="secondary" variant="caption">
+                Chọn theme — áp dụng ngay cho toàn app.
+              </AppText>
+              <ThemePicker />
+            </View>
+          </SettingsGroup>
+        ) : null}
+
+        <SettingsGroup title="Hỗ trợ">
           <ProfileSettingsRow
             accessibilityLabel="Quyền riêng tư"
             icon="visibility"
@@ -217,7 +239,10 @@ export function ProfileScreenView({
             onPress={handleSupport}
             trailing="chevron"
           />
-          {__DEV__ ? (
+        </SettingsGroup>
+
+        {__DEV__ ? (
+          <SettingsGroup title="Dành cho dev">
             <ProfileSettingsRow
               accessibilityLabel={t('settings.feature_status')}
               icon="bolt"
@@ -226,8 +251,6 @@ export function ProfileScreenView({
               onPress={openFeatureStatus}
               trailing="chevron"
             />
-          ) : null}
-          {__DEV__ ? (
             <ProfileSettingsRow
               accessibilityLabel="Mở bản demo native TTS"
               icon="volume_up"
@@ -236,95 +259,69 @@ export function ProfileScreenView({
               onPress={openTtsSpike}
               trailing="chevron"
             />
-          ) : null}
-        </View>
-
-        {showThemePicker ? (
-          <AppCard style={themedStyles.themeCard}>
-            <AppText variant="h3">Giao diện</AppText>
-            <AppText color="secondary" variant="caption">
-              Chọn theme — áp dụng ngay cho toàn app.
-            </AppText>
-            <ThemePicker />
-          </AppCard>
+          </SettingsGroup>
         ) : null}
 
-        <View style={styles.settingsSection}>
-          <SectionHeader title="Vùng nguy hiểm" />
-
-          <View style={styles.dangerActionContainer}>
-            <Pressable
-              accessibilityLabel="Xóa dữ liệu luyện nói"
-              accessibilityRole="button"
-              onPress={handleClearSpeakingData}
-              style={({pressed}) => [
-                themedStyles.dangerButton,
-                pressed && themedStyles.pressed,
-              ]}
-            >
-              <AppText color="danger" style={themedStyles.dangerButtonText}>
-                Xóa dữ liệu luyện nói & ghi âm
-              </AppText>
-            </Pressable>
-            <AppText
-              color="secondary"
-              variant="caption"
-              style={styles.dangerCaption}
-            >
-              Xóa toàn bộ bản ghi âm và lịch sử luyện nói. Không thể khôi phục.
-            </AppText>
-          </View>
-
-          <View style={styles.dangerActionContainer}>
-            <Pressable
-              accessibilityLabel="Xóa dữ liệu học trên máy"
-              accessibilityRole="button"
-              onPress={openClearDataModal}
-              style={({pressed}) => [
-                themedStyles.dangerButton,
-                pressed && themedStyles.pressed,
-              ]}
-            >
-              <AppText color="danger" style={themedStyles.dangerButtonText}>
-                Xóa dữ liệu học trên máy
-              </AppText>
-            </Pressable>
-            <AppText
-              color="secondary"
-              variant="caption"
-              style={styles.dangerCaption}
-            >
-              Xóa toàn bộ tiến trình học, XP, và lịch sử. Không thể khôi phục.
-            </AppText>
-          </View>
-
-          {accountPhase === 'authenticated' ? (
-            <View style={styles.dangerActionContainer}>
-              <Pressable
+        {accountPhase === 'authenticated' ? (
+          <SettingsGroup title="Tài khoản">
+            <View>
+              <ProfileSettingsRow
                 accessibilityHint={t('account.sign_out_hint')}
                 accessibilityLabel={t('account.sign_out')}
-                accessibilityRole="button"
+                icon="person"
+                label={t('account.sign_out')}
+                medallionTone="teal"
                 disabled={isLoggingOut}
                 onPress={handleSignOut}
-                style={({pressed}) => [
-                  themedStyles.dangerButton,
-                  pressed && themedStyles.pressed,
-                ]}
-              >
-                <AppText color="danger" style={themedStyles.dangerButtonText}>
-                  {t('account.sign_out')}
-                </AppText>
-              </Pressable>
+                trailing="chevron"
+              />
               <AppText
                 color="secondary"
+                style={themedStyles.rowCaption}
                 variant="caption"
-                style={styles.dangerCaption}
               >
                 {t('account.sign_out_caption')}
               </AppText>
             </View>
-          ) : null}
-        </View>
+          </SettingsGroup>
+        ) : null}
+
+        <SettingsGroup title="Vùng nguy hiểm">
+          <View>
+            <ProfileSettingsRow
+              accessibilityLabel="Xóa dữ liệu luyện nói"
+              destructive
+              icon="delete"
+              label="Xóa dữ liệu luyện nói & ghi âm"
+              onPress={handleClearSpeakingData}
+              trailing="chevron"
+            />
+            <AppText
+              color="secondary"
+              style={themedStyles.rowCaption}
+              variant="caption"
+            >
+              Xóa toàn bộ bản ghi âm và lịch sử luyện nói. Không thể khôi phục.
+            </AppText>
+          </View>
+          <View>
+            <ProfileSettingsRow
+              accessibilityLabel="Xóa dữ liệu học trên máy"
+              destructive
+              icon="delete"
+              label="Xóa dữ liệu học trên máy"
+              onPress={openClearDataModal}
+              trailing="chevron"
+            />
+            <AppText
+              color="secondary"
+              style={themedStyles.rowCaption}
+              variant="caption"
+            >
+              Xóa toàn bộ tiến trình học, XP, và lịch sử. Không thể khôi phục.
+            </AppText>
+          </View>
+        </SettingsGroup>
 
         {statusMessage ? (
           <AppText color="secondary">{statusMessage}</AppText>
@@ -403,43 +400,31 @@ export function ProfileScreenView({
 }
 
 const styles = StyleSheet.create({
-  dangerActionContainer: {
-    gap: 6,
-    marginBottom: 8,
-  },
-  dangerCaption: {
-    textAlign: 'center',
-  },
-  metricCard: {
-    alignItems: 'center',
-    borderRadius: 20,
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-  },
-  metricsContainer: {
+  cardStack: {
     gap: 12,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  profileCard: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 16,
   },
   profileCopy: {
     flex: 1,
     gap: 4,
     minWidth: 0,
   },
-  settingsSection: {
-    gap: 10,
+  profileRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
   },
   streakCopy: {
     flex: 1,
-    gap: 4,
+    gap: 2,
+  },
+  streakRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
   },
 });
 
@@ -459,19 +444,21 @@ function makeStyles(theme: AppTheme) {
       fontSize: theme.typography.size.xl,
       fontWeight: '700',
     },
-    dangerButton: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.danger,
-      borderRadius: 20,
-      borderWidth: 2,
-      justifyContent: 'center',
-      minHeight: 48,
-      opacity: 1,
+    rowCaption: {
+      paddingBottom: theme.spacing.sm,
       paddingHorizontal: theme.spacing.lg,
     },
-    dangerButtonText: {
-      fontWeight: theme.typography.weight.bold,
+    streakBadge: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accent,
+      borderRadius: theme.radius.pill,
+      height: 48,
+      justifyContent: 'center',
+      width: 48,
+    },
+    themeBody: {
+      gap: theme.spacing.sm,
+      padding: theme.spacing.lg,
     },
     header: {
       alignItems: 'center',
@@ -485,40 +472,6 @@ function makeStyles(theme: AppTheme) {
       fontSize: theme.typography.presets.h2.fontSize,
       fontWeight: theme.typography.weight.bold,
       marginLeft: theme.spacing.xs,
-    },
-    metricLabelSecondary: {
-      color: theme.colors.secondary,
-      fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.weight.medium,
-    },
-    metricLabelTertiary: {
-      color: theme.colors.tertiary,
-      fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.weight.medium,
-    },
-    metricSecondary: {
-      backgroundColor: solidOver(
-        theme.colors.secondarySoft,
-        theme.colors.surface,
-      ),
-      ...getStickerFace(theme, 3),
-    },
-    metricTertiary: {
-      backgroundColor: solidOver(
-        theme.colors.tertiarySoft,
-        theme.colors.surface,
-      ),
-      ...getStickerFace(theme, 3),
-    },
-    metricValueSecondary: {
-      color: theme.colors.secondary,
-      fontSize: 26,
-      fontWeight: '700',
-    },
-    metricValueTertiary: {
-      color: theme.colors.tertiary,
-      fontSize: 26,
-      fontWeight: '700',
     },
     modalActions: {
       flexDirection: 'row',
@@ -535,41 +488,11 @@ function makeStyles(theme: AppTheme) {
       justifyContent: 'center',
       padding: theme.spacing.xl,
     },
-    petMetricValue: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.size.lg,
-      fontWeight: '700',
-    },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
-    },
     scrollContent: {
       gap: theme.spacing.lg,
       paddingBottom: 28,
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
-    },
-    streakCard: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.accent,
-      borderRadius: theme.radius.lg,
-      flexDirection: 'row',
-      gap: 14,
-      padding: theme.spacing.lg,
-      ...(getStickerFace(theme, 4) ?? theme.shadow.medium),
-    },
-    streakSubtitle: {
-      color: theme.colors.accentInk,
-      fontSize: theme.typography.size.xs,
-      opacity: 0.85,
-    },
-    streakTitle: {
-      color: theme.colors.accentInk,
-      fontSize: theme.typography.presets.h2.fontSize,
-      fontWeight: theme.typography.weight.medium,
-    },
-    themeCard: {
-      gap: theme.spacing.sm,
     },
     flex1: {
       flex: 1,
