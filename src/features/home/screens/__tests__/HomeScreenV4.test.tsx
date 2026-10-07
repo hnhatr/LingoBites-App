@@ -12,7 +12,7 @@ import {StyleSheet} from 'react-native';
 import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
-import {getGamificationSnapshot} from '@features/engagement';
+import {getGamificationSnapshot, listStudyEventsOn} from '@features/engagement';
 
 import {AppThemeProvider} from '@ui/theme';
 
@@ -30,6 +30,8 @@ import {
 import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {writeStoredTodayPlan} from '../../logic/data/TodayPlanRepository';
+import {localDayKey} from '../../logic/todayProgress';
 import {HomeScreen} from '../HomeScreen';
 
 // ---------------------------------------------------------------------------
@@ -48,6 +50,7 @@ jest.mock('@features/engagement', () => ({
     weeklyGoal: {completedThisWeek: 0, target: 6},
     badges: [],
   })),
+  listStudyEventsOn: jest.fn(() => []),
 }));
 
 jest.mock('react-native-reanimated', () => {
@@ -99,6 +102,7 @@ afterEach(async () => {
     }
     activeRenderers = [];
   });
+  (listStudyEventsOn as jest.Mock).mockReturnValue([]);
   mockReducedMotion = false;
   mockYouTubeServerEnabled = false;
 });
@@ -126,6 +130,40 @@ async function renderHome(
 // ---------------------------------------------------------------------------
 // Five hero states (AC-002, §VS-2.4)
 // ---------------------------------------------------------------------------
+
+/** Stores a one-step plan for today and marks that step done (plan finished). */
+function seedFinishedTodayPlan() {
+  writeStoredTodayPlan({
+    dayKey: localDayKey(new Date()),
+    mode: 'normal',
+    plan: {
+      mode: 'normal',
+      isConsolidation: false,
+      totalEstimatedMinutes: 5,
+      reasonCodes: [],
+      explanationVi: '',
+      activities: [
+        {
+          id: 'activity-due-review',
+          type: 'due_review',
+          titleVi: 'Ôn tập',
+          subtitleVi: '',
+          estimatedMinutes: 5,
+          targetId: 'due_review',
+          navigationTarget: {screen: 'DailyReview'},
+        },
+      ],
+    },
+  });
+  (listStudyEventsOn as jest.Mock).mockReturnValue([
+    {
+      eventType: 'review_session_completed',
+      sourceEventId: 'session-1',
+      createdAt: new Date().toISOString(),
+    },
+  ]);
+}
+
 describe('Home hero states (AC-002, §VS-2.4)', () => {
   beforeEach(() => {
     __resetMockDatabases();
@@ -158,12 +196,35 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
 
   it('state S2 saved_only: renders S2 copy, count and CTA', async () => {
     seedCanonicalLessonDownload();
+    seedFinishedTodayPlan();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('home-hero-saved_only');
     expect(text).toContain('Chọn bài để học');
     expect(text).toContain('Chọn bài');
     expect(text).toContain('Hôm nay học 5 phút thôi!');
+  });
+
+  it("next_activity: the hero starts the first open step of today's plan", async () => {
+    seedCanonicalLessonDownload();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('home-hero-next_activity');
+    expect(text).toContain('Việc tiếp theo');
+    expect(text).toContain('Từng bước nhỏ thôi, meo!');
+    const cta = tree.root
+      .findAll(node => node.props.testID === 'home-next-action')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!cta) throw new Error('No next-step CTA found');
+    await act(async () => cta.props.onPress());
+    const calls = [
+      mockAppNavigation.openLesson,
+      mockAppNavigation.openCatalog,
+      mockAppNavigation.openReview,
+      mockAppNavigation.openSpeakingRoom,
+      mockAppNavigation.openShadowing,
+    ].reduce((sum, fn) => sum + (fn as jest.Mock).mock.calls.length, 0);
+    expect(calls).toBe(1);
   });
 
   it('state S3 in_progress: renders lesson title, minutes body and CTA without progress bar', async () => {

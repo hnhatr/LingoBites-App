@@ -3,7 +3,7 @@ import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {trackEvent} from '@features/analytics';
-import {getGamificationSnapshot} from '@features/engagement';
+import {getGamificationSnapshot, listStudyEventsOn} from '@features/engagement';
 
 import {AppThemeProvider} from '@ui/theme';
 
@@ -17,6 +17,8 @@ import {mockAppNavigation} from '@test/support';
 import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
+import {writeStoredTodayPlan} from '../../logic/data/TodayPlanRepository';
+import {localDayKey} from '../../logic/todayProgress';
 import {HomeScreen} from '../HomeScreen';
 
 jest.mock('react-native-reanimated', () => {
@@ -33,6 +35,7 @@ jest.mock('@features/engagement', () => ({
     weeklyGoal: {completedThisWeek: 0, target: 6},
     badges: [],
   })),
+  listStudyEventsOn: jest.fn(() => []),
 }));
 
 jest.mock('@features/analytics', () => ({
@@ -148,6 +151,7 @@ afterEach(async () => {
     }
     activeRenderers = [];
   });
+  (listStudyEventsOn as jest.Mock).mockReturnValue([]);
 });
 
 async function renderHome(nav = navigation()) {
@@ -190,6 +194,39 @@ function railPressables(tree: ReactTestRenderer.ReactTestRenderer) {
     }
   }
   return [...byId.values()];
+}
+
+/** Stores a one-step plan for today and marks that step done (plan finished). */
+function seedFinishedTodayPlan() {
+  writeStoredTodayPlan({
+    dayKey: localDayKey(new Date()),
+    mode: 'normal',
+    plan: {
+      mode: 'normal',
+      isConsolidation: false,
+      totalEstimatedMinutes: 5,
+      reasonCodes: [],
+      explanationVi: '',
+      activities: [
+        {
+          id: 'activity-due-review',
+          type: 'due_review',
+          titleVi: 'Ôn tập',
+          subtitleVi: '',
+          estimatedMinutes: 5,
+          targetId: 'due_review',
+          navigationTarget: {screen: 'DailyReview'},
+        },
+      ],
+    },
+  });
+  (listStudyEventsOn as jest.Mock).mockReturnValue([
+    {
+      eventType: 'review_session_completed',
+      sourceEventId: 'session-1',
+      createdAt: new Date().toISOString(),
+    },
+  ]);
 }
 
 describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
@@ -310,6 +347,7 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
 
   it('routes home-starter-pick to Today and keeps its Vietnamese label', async () => {
     seedCanonicalLessonDownload();
+    seedFinishedTodayPlan();
     const {tree, nav} = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('Chọn bài để học');

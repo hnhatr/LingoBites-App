@@ -46,6 +46,8 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     youtubeEnabled,
     todayMode,
     todayPlan,
+    heroNextStep,
+    nextStepIsLesson,
     onTodayModeChange,
     onStartTodayActivity,
     onViewTodayDetails,
@@ -56,6 +58,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
+    onStartNextActivity,
     onNavigateReview,
     onNavigateSpeaking,
   } = props;
@@ -123,9 +126,12 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             startedLessonTitle={startedLesson?.titleVi}
             startedLessonMinutes={startedLesson?.estimatedDurationMinutes}
             libraryCount={libraryCount}
+            nextStep={heroNextStep}
             onPrimary={
               heroState === 'in_progress'
                 ? onContinueStartedLesson
+                : heroState === 'next_activity'
+                ? onStartNextActivity
                 : heroState === 'saved_only'
                 ? onNavigateLessonList
                 : onNavigateCreate
@@ -149,7 +155,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           <HomeWeeklyGoal
             pawGoal={pawGoalModel}
             card={weeklyGoalCard}
-            nextStepIsLesson={heroState === 'in_progress'}
+            nextStepIsLesson={nextStepIsLesson}
           />
         </View>
 

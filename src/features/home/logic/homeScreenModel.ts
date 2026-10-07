@@ -2,8 +2,8 @@
  * homeScreenModel — pure presentation logic for Home screen (LING-256, LING-267).
  *
  * Covers:
- * - 5 hero states (DQ-002, P-004): no_lessons, saved_only, in_progress,
- *   youtube_disabled, goal_met
+ * - 6 hero states (DQ-002, P-004): no_lessons, saved_only, in_progress,
+ *   next_activity, youtube_disabled, goal_met
  * - Time-of-day greeting (I5, DQ-008)
  * - Streak flame tiers 0..7+ (I4, P-001, §VS-1.3)
  * - Paw weekly goal model, one paw per target lesson (I3, P-004, §VS-3)
@@ -52,25 +52,30 @@ export const CONFETTI_COLORS = [
 // Hero states (DQ-002, P-004)
 // ---------------------------------------------------------------------------
 /**
- * Five deterministic hero states derived from local SQLite + store state.
+ * Six deterministic hero states derived from local SQLite + store state.
  *
  * State precedence (highest first):
  * 1. goal_met     — weekly goal is completed (completedThisWeek >= target)
  * 2. in_progress  — a downloaded lesson is in progress
- * 3. youtube_disabled — YouTube flag is off and user has no downloads
- * 4. saved_only   — downloads exist but none in progress
- * 5. no_lessons   — no downloads at all
+ * 3. next_activity — downloads exist and today's plan has an open step;
+ *    the hero is the single primary action for that step
+ * 4. saved_only   — downloads exist, nothing in progress, plan finished
+ * 5. youtube_disabled — YouTube flag is off and user has no downloads
+ * 6. no_lessons   — no downloads at all
  */
 export type HeroState =
   | 'no_lessons'
   | 'saved_only'
   | 'in_progress'
+  | 'next_activity'
   | 'youtube_disabled'
   | 'goal_met';
 
 export type HeroStateInput = {
   downloadCount: number;
   hasInProgress: boolean;
+  /** Today's plan still has a step that is not done. */
+  hasNextActivity?: boolean;
   weeklyGoalMet: boolean;
   youtubeEnabled: boolean;
 };
@@ -78,11 +83,13 @@ export type HeroStateInput = {
 export function deriveHeroState({
   downloadCount,
   hasInProgress,
+  hasNextActivity,
   weeklyGoalMet,
   youtubeEnabled,
 }: HeroStateInput): HeroState {
   if (weeklyGoalMet) return 'goal_met';
   if (hasInProgress) return 'in_progress';
+  if (downloadCount > 0 && hasNextActivity) return 'next_activity';
   if (downloadCount > 0) return 'saved_only';
   if (!youtubeEnabled) return 'youtube_disabled';
   return 'no_lessons';

@@ -2,7 +2,7 @@
  * homeScreenModel unit tests (LING-256, LING-267)
  *
  * Covers:
- * - deriveHeroState: all 5 hero states (DQ-002, P-004)
+ * - deriveHeroState: all 6 hero states (DQ-002, P-004)
  * - getTimeOfDay: morning/afternoon/night boundaries (I5, DQ-008)
  * - buildGreeting: prefix keys and named variants
  * - buildFlameModel: tiers 0..7+ (I4, P-001, §VS-1.3)
@@ -54,7 +54,43 @@ describe('deriveHeroState (DQ-002, P-004)', () => {
     ).toBe('in_progress');
   });
 
-  it('returns saved_only when downloads exist but none in progress', () => {
+  it('returns next_activity when downloads exist and the plan has an open step', () => {
+    expect(
+      deriveHeroState({
+        downloadCount: 3,
+        hasInProgress: false,
+        hasNextActivity: true,
+        weeklyGoalMet: false,
+        youtubeEnabled: true,
+      }),
+    ).toBe('next_activity');
+  });
+
+  it('keeps in_progress above next_activity', () => {
+    expect(
+      deriveHeroState({
+        downloadCount: 3,
+        hasInProgress: true,
+        hasNextActivity: true,
+        weeklyGoalMet: false,
+        youtubeEnabled: true,
+      }),
+    ).toBe('in_progress');
+  });
+
+  it('keeps the onboarding states when nothing is downloaded', () => {
+    expect(
+      deriveHeroState({
+        downloadCount: 0,
+        hasInProgress: false,
+        hasNextActivity: true,
+        weeklyGoalMet: false,
+        youtubeEnabled: true,
+      }),
+    ).toBe('no_lessons');
+  });
+
+  it('returns saved_only when downloads exist but none in progress and the plan is done', () => {
     expect(
       deriveHeroState({
         downloadCount: 3,
