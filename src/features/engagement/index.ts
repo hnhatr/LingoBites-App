@@ -20,3 +20,5 @@ export {
   recordPracticeSessionActivity,
   recordShadowingSessionActivity,
 } from './logic/studyActivity';
+export {listStudyEventsOn} from './logic/todayStudyEvents';
+export type {StudyEvent} from './logic/todayStudyEvents';

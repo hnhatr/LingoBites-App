@@ -3,22 +3,28 @@
  *
  * Wires:
  * - getDueFlashcards() for review shortcut badge (AD-003, P-003, D2)
- * - 5 hero states from local downloads/progress/goal (DQ-002, P-004)
+ * - 6 hero states from local downloads/progress/plan/goal (DQ-002, P-004)
  * - Time-of-day greeting (I5, DQ-008)
  * - Streak flame model (I4, P-001)
  * - 5-paw weekly goal (I3, P-004)
  * - 4-shortcut grid; Video opens the video hub (DQ-005, D3)
  * - Saved rail with renamed label (DQ-006)
  * - Graceful degradation when progress percent unavailable (A-009)
- * - "Gợi ý hôm nay" card from the Today study-block engine (F12)
+ * - "Kế hoạch hôm nay" checklist from the Today study-block engine (F12),
+ *   kept per day and ticked off from local study events
  */
 import {useFocusEffect} from '@react-navigation/native';
-import {useCallback, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {useAccountStore} from '@features/account';
 import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
 import {useYouTubeLessonCreation} from '@features/input';
+import {
+  getGamificationSnapshot,
+  listStudyEventsOn,
+  type StudyEvent,
+} from '@features/engagement';
 import {
   type LessonCardLocalState,
   readLessonCardLocalState,
@@ -44,6 +50,11 @@ import {useAppNavigation} from '@core/navigation';
 import {removeLessonBookmark} from '@core/sync/lessonBookmarks';
 import {listInProgressLessonIds} from '@core/sync/lessonProgress';
 
+import type {HeroNextStep} from '../components/HomeHeroCard';
+import {
+  readStoredTodayPlan,
+  writeStoredTodayPlan,
+} from './data/TodayPlanRepository';
 import {
   buildFlameModel,
   buildGreeting,
@@ -63,6 +74,13 @@ import {
   typeLabelKeyForSource,
   type WeeklyGoalCardModel,
 } from './homeScreenModel';
+import {
+  buildTodayProgress,
+  isLessonStep,
+  localDayKey,
+  reusableTodayPlan,
+  type TodayProgressModel,
+} from './todayProgress';
 
 /**
  * Most recently started downloaded lesson that is not finished, from local
@@ -113,7 +131,12 @@ export function useHomeScreenController() {
   const [dueFlashcardCount, setDueFlashcardCount] = useState<number | null>(
     null,
   );
-  const [todayMode, setTodayMode] = useState<TodayMode>('normal');
+  // Same-day mode survives a restart because the day's plan stores it.
+  const [todayMode, setTodayMode] = useState<TodayMode>(() => {
+    const stored = readStoredTodayPlan();
+    return stored?.dayKey === localDayKey(new Date()) ? stored.mode : 'normal';
+  });
+  const [todayEvents, setTodayEvents] = useState<StudyEvent[]>([]);
   const [learnerSnapshot, setLearnerSnapshot] =
     useState<LearnerStateSnapshot | null>(null);
 
@@ -153,40 +176,16 @@ export function useHomeScreenController() {
       } catch {
         setDueFlashcardCount(null);
       }
-      // Learner snapshot for the "Gợi ý hôm nay" card (F12)
+      // Learner snapshot for the "Kế hoạch hôm nay" card (F12)
       try {
         setLearnerSnapshot(getLearnerStateSnapshot());
       } catch {
         setLearnerSnapshot(null);
       }
+      // Finished sessions today tick the plan's steps off
+      setTodayEvents(listStudyEventsOn(new Date()));
     }, [canonicalRefresh]),
   );
-
-  // 5 hero states (DQ-002, P-004)
-  const heroState: HeroState = useMemo(
-    () =>
-      deriveHeroState({
-        downloadCount: downloadCount ?? 0,
-        hasInProgress: startedDownload != null,
-        weeklyGoalMet: completedThisWeek >= weeklyTarget,
-        youtubeEnabled,
-      }),
-    [
-      downloadCount,
-      startedDownload,
-      completedThisWeek,
-      weeklyTarget,
-      youtubeEnabled,
-    ],
-  );
-
-  // Legacy flags preserved for existing HomeScreenView logic
-  const showStarter =
-    heroState === 'no_lessons' ||
-    heroState === 'youtube_disabled' ||
-    heroState === 'saved_only';
-  const starterBare = heroState === 'no_lessons';
-  const heroPick = heroState === 'saved_only';
 
   // Time-of-day greeting (I5, DQ-008)
   const greetingModel: GreetingModel = useMemo(
@@ -215,15 +214,94 @@ export function useHomeScreenController() {
     [dueFlashcardCount],
   );
 
-  // "Gợi ý hôm nay" study block, same engine as the Today screen (F12)
+  // "Kế hoạch hôm nay" study block, same engine as the Today screen (F12).
+  // The day's plan is reused so done steps stay listed as done.
   const todayPlan: StudyBlockPlan | null = useMemo(() => {
     if (!learnerSnapshot) return null;
+    const reused = reusableTodayPlan(
+      readStoredTodayPlan(),
+      localDayKey(new Date()),
+      todayMode,
+    );
+    if (reused) return reused;
     try {
       return generateStudyBlock(learnerSnapshot, todayMode);
     } catch {
       return null;
     }
   }, [learnerSnapshot, todayMode]);
+
+  useEffect(() => {
+    if (todayPlan && todayPlan.activities.length > 0) {
+      writeStoredTodayPlan({
+        dayKey: localDayKey(new Date()),
+        mode: todayMode,
+        plan: todayPlan,
+      });
+    }
+  }, [todayPlan, todayMode]);
+
+  const todayProgress: TodayProgressModel | null = useMemo(
+    () => (todayPlan ? buildTodayProgress(todayPlan, todayEvents) : null),
+    [todayPlan, todayEvents],
+  );
+  const nextActivity = todayProgress?.nextActivity ?? null;
+
+  // 6 hero states (DQ-002, P-004)
+  const heroState: HeroState = useMemo(
+    () =>
+      deriveHeroState({
+        downloadCount: downloadCount ?? 0,
+        hasInProgress: startedDownload != null,
+        hasNextActivity: nextActivity != null,
+        weeklyGoalMet: completedThisWeek >= weeklyTarget,
+        youtubeEnabled,
+      }),
+    [
+      downloadCount,
+      startedDownload,
+      nextActivity,
+      completedThisWeek,
+      weeklyTarget,
+      youtubeEnabled,
+    ],
+  );
+
+  const heroNextStep: HeroNextStep | null = useMemo(() => {
+    if (!todayPlan || !nextActivity) return null;
+    return {
+      title: nextActivity.titleVi,
+      minutes: nextActivity.estimatedMinutes,
+      step: todayPlan.activities.indexOf(nextActivity) + 1,
+      total: todayPlan.activities.length,
+    };
+  }, [todayPlan, nextActivity]);
+
+  // Id of the plan step the hero is pointing at, if any.
+  const currentStepId: string | null = useMemo(() => {
+    if (heroState === 'next_activity') return nextActivity?.id ?? null;
+    if (heroState === 'in_progress' && startedDownload && todayPlan) {
+      return (
+        todayPlan.activities.find(
+          step => step.targetId === startedDownload.lessonId,
+        )?.id ?? null
+      );
+    }
+    return null;
+  }, [heroState, nextActivity, startedDownload, todayPlan]);
+
+  // The weekly-goal link line shows while the hero's step finishes a lesson
+  const nextStepIsLesson =
+    heroState === 'in_progress' ||
+    (heroState === 'next_activity' && isLessonStep(nextActivity));
+
+  // Legacy flags preserved for existing HomeScreenView logic
+  const showStarter =
+    heroState === 'no_lessons' ||
+    heroState === 'youtube_disabled' ||
+    heroState === 'saved_only';
+  const starterBare = heroState === 'no_lessons';
+  const heroPick = heroState === 'saved_only';
 
   // Saved rail items (DQ-006): the lessons the learner bookmarked.
   const savedLessons = useSavedLessons();
@@ -311,6 +389,11 @@ export function useHomeScreenController() {
     [navigation],
   );
 
+  const onStartNextActivity = useCallback(() => {
+    if (!nextActivity) return;
+    openStudyActivity(navigation, nextActivity);
+  }, [navigation, nextActivity]);
+
   const onViewTodayDetails = useCallback(
     () => navigation.openToday({mode: todayMode}),
     [navigation, todayMode],
@@ -345,9 +428,13 @@ export function useHomeScreenController() {
       : null,
     railItems,
     youtubeEnabled,
-    // "Gợi ý hôm nay" (F12)
+    // "Kế hoạch hôm nay" (F12)
     todayMode,
     todayPlan,
+    todayProgress,
+    heroNextStep,
+    currentStepId,
+    nextStepIsLesson,
     onTodayModeChange: setTodayMode,
     onStartTodayActivity,
     onViewTodayDetails,
@@ -359,6 +446,7 @@ export function useHomeScreenController() {
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
+    onStartNextActivity,
     onNavigateReview,
     onNavigateSpeaking,
   };

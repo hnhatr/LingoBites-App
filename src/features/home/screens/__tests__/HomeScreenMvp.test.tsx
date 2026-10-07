@@ -36,6 +36,7 @@ jest.mock('@features/engagement', () => ({
     weeklyGoal: {completedThisWeek: 0, target: 6},
     badges: [],
   })),
+  listStudyEventsOn: jest.fn(() => []),
 }));
 
 function navigation(tabNavigate = jest.fn(), rootNavigate = jest.fn()) {

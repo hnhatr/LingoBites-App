@@ -4,8 +4,8 @@
  * Renders in mockup v4 order (AC-1, FR-001):
  * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
  * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8)
- * 3. HomeTodaySuggestion — "Gợi ý hôm nay" under "Học tiếp" (F12)
- * 4. HomeWeeklyGoal — 5-paw goal (I3, P-004)
+ * 3. HomeTodaySuggestion — "Kế hoạch hôm nay" checklist under the hero (F12)
+ * 4. HomeWeeklyGoal — one paw per target lesson (I3, P-004)
  * 5. HomeShortcutsGrid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003)
  * 6. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
  *
@@ -44,7 +44,10 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     startedLesson,
     railItems,
     todayMode,
-    todayPlan,
+    todayProgress,
+    currentStepId,
+    heroNextStep,
+    nextStepIsLesson,
     onTodayModeChange,
     onStartTodayActivity,
     onViewTodayDetails,
@@ -55,6 +58,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
+    onStartNextActivity,
     onNavigateReview,
     onNavigateSpeaking,
   } = props;
@@ -120,9 +124,12 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             startedLessonTitle={startedLesson?.titleVi}
             startedLessonMinutes={startedLesson?.estimatedDurationMinutes}
             libraryCount={libraryCount}
+            nextStep={heroNextStep}
             onPrimary={
               heroState === 'in_progress'
                 ? onContinueStartedLesson
+                : heroState === 'next_activity'
+                ? onStartNextActivity
                 : heroState === 'saved_only'
                 ? onNavigateLessonList
                 : onNavigateCreate
@@ -130,11 +137,12 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           />
         </View>
 
-        {/* "Gợi ý hôm nay" (F12) directly under the "Học tiếp" hero */}
+        {/* "Kế hoạch hôm nay" (F12): the hero's step is one row of this plan */}
         <View style={styles.todaySection}>
           <HomeTodaySuggestion
             mode={todayMode}
-            plan={todayPlan}
+            progress={todayProgress}
+            currentStepId={currentStepId}
             onModeChange={onTodayModeChange}
             onStartActivity={onStartTodayActivity}
             onViewDetails={onViewTodayDetails}
@@ -143,7 +151,11 @@ export function HomeScreenView(props: HomeScreenViewModel) {
 
         {/* Weekly goal (§VS-3) */}
         <View style={styles.goalSection}>
-          <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
+          <HomeWeeklyGoal
+            pawGoal={pawGoalModel}
+            card={weeklyGoalCard}
+            nextStepIsLesson={nextStepIsLesson}
+          />
         </View>
 
         {/* Shortcuts grid (§VS-4) */}
@@ -184,7 +196,7 @@ function makeStyles(_theme: AppTheme) {
       marginBottom: 18,
     },
     goalSection: {
-      marginBottom: 22,
+      marginBottom: 18,
     },
     shortcutsSection: {
       marginBottom: 22,

@@ -151,7 +151,7 @@ describe('HomeWeeklyGoal contrast (BUG-002, §VS-3)', () => {
   for (const id of themeIds) {
     it(`weekly-goal count line is readable on surface in ${id} theme (≥ 4.5:1)`, () => {
       mockTheme = themes[id];
-      const pawGoal = {totalPaws: 5 as const, filledPaws: 2, goalMet: false};
+      const pawGoal = {totalPaws: 5, filledPaws: 2, goalMet: false};
       const card = {
         completedThisWeek: 2,
         target: 5,
