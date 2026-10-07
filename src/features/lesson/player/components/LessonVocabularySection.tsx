@@ -2,10 +2,8 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
-import {IconButton} from '@ui/components/IconButton';
+import {WordCard} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonVocabularyEntry} from '../logic/lessonHubContent';
@@ -41,50 +39,32 @@ export function LessonVocabularySection({
   return (
     <View testID="lesson-vocabulary-section" style={styles.list}>
       {entries.map(entry => (
-        <AppCard key={entry.key} testID={`lesson-vocabulary-${entry.key}`}>
-          <View style={styles.row}>
-            <View style={styles.body}>
-              <AppText variant="h3">{entry.word}</AppText>
-              <View style={styles.meta}>
-                {entry.ipa ? (
-                  <AppText color="muted" variant="caption">
-                    /{entry.ipa.replace(/^\/|\/$/g, '')}/
-                  </AppText>
-                ) : null}
-                {entry.pos ? (
-                  <Chip label={entry.pos} tone="accentSoft" />
-                ) : null}
-              </View>
-              <AppText color="secondary" variant="bodyLg">
-                {entry.meaning}
-              </AppText>
-              {saveControl ? (
-                <SaveItemButton
-                  accessibilityHint={t('lessonPlayer.save_card_hint')}
-                  label={t('lessonPlayer.save_card')}
-                  onPress={() =>
-                    saveControl.onToggle({...entry, id: entry.key})
-                  }
-                  saved={saveControl.isSaved(entry.word)}
-                  savedLabel={t('lessonPlayer.saved')}
-                  testID={`lesson-vocabulary-save-${entry.key}`}
-                />
-              ) : null}
-            </View>
-            {onSpeakText ? (
-              <IconButton
-                accessibilityLabel={t('lessonPlayer.speak_word', {
-                  word: entry.word,
-                })}
-                accessibilityHint={t('lessonPlayer.speak_word_hint')}
-                icon="volume_up"
-                onPress={() => onSpeakText(entry.word)}
-                testID={`lesson-vocabulary-speak-${entry.key}`}
-                tone="accent"
+        <WordCard
+          key={entry.key}
+          actions={
+            saveControl ? (
+              <SaveItemButton
+                accessibilityHint={t('lessonPlayer.save_card_hint')}
+                label={t('lessonPlayer.save_card')}
+                onPress={() => saveControl.onToggle({...entry, id: entry.key})}
+                saved={saveControl.isSaved(entry.word)}
+                savedLabel={t('lessonPlayer.saved')}
+                testID={`lesson-vocabulary-save-${entry.key}`}
               />
-            ) : null}
-          </View>
-        </AppCard>
+            ) : undefined
+          }
+          ipa={entry.ipa}
+          meaning={entry.meaning}
+          onSpeak={onSpeakText ? () => onSpeakText(entry.word) : undefined}
+          pos={entry.pos}
+          speakAccessibilityHint={t('lessonPlayer.speak_word_hint')}
+          speakAccessibilityLabel={t('lessonPlayer.speak_word', {
+            word: entry.word,
+          })}
+          speakTestID={`lesson-vocabulary-speak-${entry.key}`}
+          testID={`lesson-vocabulary-${entry.key}`}
+          word={entry.word}
+        />
       ))}
     </View>
   );
@@ -101,22 +81,7 @@ function makeStyles(theme: AppTheme) {
 }
 
 const styles = StyleSheet.create({
-  body: {
-    flex: 1,
-    gap: 4,
-  },
   list: {
-    gap: 12,
-  },
-  meta: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  row: {
-    alignItems: 'center',
-    flexDirection: 'row',
     gap: 12,
   },
 });

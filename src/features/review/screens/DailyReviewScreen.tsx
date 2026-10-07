@@ -19,10 +19,10 @@ import {ErrorCard} from '@ui/components/ErrorCard';
 import {FlipCard} from '@ui/components/FlipCard';
 import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
-import {IconButton} from '@ui/components/IconButton';
 import {Medallion} from '@ui/components/Medallion';
 import {RatingControl} from '@ui/components/RatingControl';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {WordCard} from '@ui/components/WordCard';
 import {useAppTheme} from '@ui/theme';
 
 import type {FlashcardRecord, ReviewRating} from '@core/db/types';
@@ -62,67 +62,34 @@ function FlashcardFace({
   const {t} = useTranslation();
 
   // SETE-253: the flip must reveal something new. The front is the English
-  // prompt only (recall cue); the back leads with the Vietnamese meaning as
-  // the answer and repeats the English smaller as context. Cards without a
-  // translation never reach this component — they are filtered out of the due
-  // queue in `getDueFlashcards`.
-  if (side === 'back') {
-    return (
-      <View style={styles.cardFace} testID="review-card-back">
-        <AppText color="primary" style={styles.meaning} variant="h2">
-          {card.meaningVi}
-        </AppText>
-        <AppText color="muted" style={styles.contextWord}>
-          {card.word}
-        </AppText>
-        <IconButton
-          accessibilityLabel={t('review.listen_answer_a11y')}
-          icon="play_circle"
-          onPress={() => {
-            fireAndForget(speak(card.word));
-          }}
-          testID="review-speak-back"
-        />
-        {/* A word saved from an analysis has no curated example, but it does
-            carry the sentence it was found in: show that as context. */}
-        {card.example || card.sourceSentence ? (
-          <AppText
-            color="secondary"
-            style={styles.example}
-            testID="review-card-example"
-          >
-            {card.example ?? card.sourceSentence}
-          </AppText>
-        ) : null}
-        {card.example && card.exampleTranslation ? (
-          <AppText color="secondary" style={styles.example}>
-            {card.exampleTranslation}
-          </AppText>
-        ) : null}
-      </View>
-    );
-  }
-
+  // prompt only (recall cue); the back keeps the same word layout and adds the
+  // Vietnamese meaning as the answer. Cards without a translation never reach
+  // this component — they are filtered out of the due queue in
+  // `getDueFlashcards`.
+  const isBack = side === 'back';
+  // A word saved from an analysis has no curated example, but it does carry
+  // the sentence it was found in: show that as context. The example
+  // translation belongs to the example only.
   return (
-    <View style={styles.cardFace} testID="review-card-front">
-      <AppText style={styles.word} variant="h2">
-        {card.word}
-      </AppText>
-      {card.wordType || card.ipa ? (
-        <AppText color="secondary">
-          {card.wordType ? `[${card.wordType}] ` : ''}
-          {card.ipa ? `/${card.ipa}/` : ''}
-        </AppText>
-      ) : null}
-      <IconButton
-        accessibilityLabel={t('review.listen_prompt_a11y')}
-        icon="play_circle"
-        onPress={() => {
-          fireAndForget(speak(card.word));
-        }}
-        testID="review-speak-front"
-      />
-    </View>
+    <WordCard
+      cefr={card.cefrLevel}
+      example={card.example ?? card.sourceSentence}
+      exampleTranslation={card.example ? card.exampleTranslation : null}
+      hideMeaning={!isBack}
+      ipa={card.ipa}
+      meaning={card.meaningVi}
+      onSpeak={() => {
+        fireAndForget(speak(card.word));
+      }}
+      pos={card.wordType}
+      speakAccessibilityLabel={
+        isBack ? t('review.listen_answer_a11y') : t('review.listen_prompt_a11y')
+      }
+      speakTestID={isBack ? 'review-speak-back' : 'review-speak-front'}
+      testID={isBack ? 'review-card-back' : 'review-card-front'}
+      variant="face"
+      word={card.word}
+    />
   );
 }
 
@@ -447,19 +414,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     gap: 4,
   },
-  cardFace: {
-    alignItems: 'center',
-    gap: 8,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-  },
   centered: {
     flex: 1,
     justifyContent: 'center',
     padding: 16,
-  },
-  contextWord: {
-    textAlign: 'center',
   },
   content: {
     gap: 16,
@@ -480,12 +438,6 @@ const styles = StyleSheet.create({
   emptyTitle: {
     textAlign: 'center',
   },
-  example: {
-    textAlign: 'center',
-  },
-  meaning: {
-    textAlign: 'center',
-  },
   progress: {
     paddingBottom: 8,
   },
@@ -500,9 +452,6 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     gap: 16,
-  },
-  word: {
-    textAlign: 'center',
   },
   xpRow: {
     alignItems: 'center',
