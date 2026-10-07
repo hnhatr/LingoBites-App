@@ -57,13 +57,12 @@ describe('WordCard', () => {
     );
   });
 
-  it('hides meaning and example on a flashcard front', () => {
+  it('hides meaning and example as a recall cue', () => {
     const tree = render(
       <WordCard
         example="One morning, Anna saw Ben."
         hideMeaning
         meaning="Một buổi sáng"
-        variant="face"
         word="one morning"
       />,
     );

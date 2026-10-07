@@ -115,6 +115,13 @@ export function RatingControl({
             {t('rating.reveal_label')}
           </AppText>
         </Pressable>
+        {/* Same footprint as the skip row, so the card above never resizes
+            when the rating buttons replace the reveal action. */}
+        <View style={styles.skipButton}>
+          <AppText color="muted" variant="caption">
+            {t('rating.reveal_tip')}
+          </AppText>
+        </View>
       </View>
     );
   }
@@ -213,7 +220,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     justifyContent: 'center',
-    minHeight: 64,
+    minHeight: 72,
     paddingHorizontal: 16,
   },
   skipButton: {
