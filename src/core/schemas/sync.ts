@@ -1,5 +1,7 @@
 import {z} from 'zod';
 
+import {LessonSourceTypeSchema} from './lesson';
+
 /**
  * Learner-state sync contract (SETE-292 T4 / SETE-294).
  *
@@ -61,6 +63,7 @@ export const SyncCollectionSchema = z.enum([
   'passed_situations',
   'speaking_attempts',
   'activity_attempts',
+  'lesson_bookmarks',
 ]);
 
 export type SyncCollection = z.infer<typeof SyncCollectionSchema>;
@@ -275,3 +278,21 @@ export const ActivityAttemptPayloadSchema = z
 export type ActivityAttemptPayload = z.infer<
   typeof ActivityAttemptPayloadSchema
 >;
+
+/**
+ * `lesson_bookmarks` payloads (Server `LessonBookmarkPushPayloadSchema`): the
+ * learner's "save for later" list. `entity_id` is the lesson id; unsaving is a
+ * tombstone with `{}`. The payload is just enough to draw the saved lesson's
+ * card on a device that has not downloaded it.
+ */
+export const LessonBookmarkPayloadSchema = z
+  .object({
+    title: z.string().trim().min(1).max(500),
+    source_type: LessonSourceTypeSchema,
+    sentence_count: z.number().int().min(0).max(100_000),
+    estimated_minutes: z.number().int().min(1).max(1_000).nullable(),
+    context_label: z.string().trim().min(1).max(255).nullable(),
+  })
+  .strict();
+
+export type LessonBookmarkPayload = z.infer<typeof LessonBookmarkPayloadSchema>;

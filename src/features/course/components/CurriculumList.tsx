@@ -34,6 +34,8 @@ export type CurriculumRow = {
   locked?: boolean;
   accessibilityHint: string;
   onPress: () => void;
+  /** Replaces the default list card (e.g. a `LessonCard` for lessons). */
+  card?: React.ReactElement;
 };
 
 type Props = {
@@ -116,7 +118,9 @@ export function CurriculumList({
       numColumns={isGrid ? 2 : 1}
       columnWrapperStyle={isGrid ? {gap: GRID_TILE_GAP} : undefined}
       renderItem={({item, index}) =>
-        isGrid ? (
+        item.card && !isGrid ? (
+          item.card
+        ) : isGrid ? (
           <GridTile
             icon="menu_book"
             title={item.title}
