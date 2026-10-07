@@ -105,9 +105,6 @@ export function LessonsHistoryScreen({navigation}: Props) {
         contentContainerStyle={[styles.content, {paddingBottom: feedClearance}]}
         testID="library-hub"
       >
-        <AppText variant="label" color="secondary" style={styles.subtitle}>
-          Bài đã tải về học được cả khi không có mạng.
-        </AppText>
         {ready ? null : (
           <LibraryLoadingNotice message="Đang tải dữ liệu thư viện, vui lòng đợi…" />
         )}
@@ -158,9 +155,6 @@ function makeStyles(theme: AppTheme) {
     content: {
       gap: theme.spacing.sm,
       padding: theme.gutter,
-    },
-    subtitle: {
-      marginBottom: theme.spacing.sm,
     },
     group: {
       gap: theme.spacing.sm,
