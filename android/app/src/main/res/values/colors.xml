@@ -1,0 +1,7 @@
+<resources>
+    <!-- Launch screen palette, sampled from the app icon. Keep in sync with
+         src/ui/components/LaunchSplash.tsx and the iOS LaunchBackground. -->
+    <color name="launch_gradient_top">#3BBDA6</color>
+    <color name="launch_gradient_center">#0F9387</color>
+    <color name="launch_gradient_bottom">#0A5E5A</color>
+</resources>

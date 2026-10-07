@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static first frame of the animated JS LaunchSplash: same gradient and
+     150dp logo tile centred on the window, so the hand-off is seamless. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:centerColor="@color/launch_gradient_center"
+                android:endColor="@color/launch_gradient_bottom"
+                android:startColor="@color/launch_gradient_top"
+                android:type="linear" />
+        </shape>
+    </item>
+    <item
+        android:width="150dp"
+        android:height="150dp"
+        android:drawable="@drawable/launch_logo"
+        android:gravity="center" />
+</layer-list>

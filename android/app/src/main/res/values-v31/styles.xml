@@ -1,0 +1,12 @@
+<resources>
+
+    <!-- Android 12+ variant of AppTheme; keep in sync with values/styles.xml. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <!-- The system splash only allows a solid colour plus a masked icon. -->
+        <item name="android:windowSplashScreenBackground">@color/launch_gradient_center</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/launch_splash_icon</item>
+    </style>
+
+</resources>
