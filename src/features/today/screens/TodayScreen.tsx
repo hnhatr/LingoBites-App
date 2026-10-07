@@ -8,6 +8,7 @@ import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -69,16 +70,7 @@ export function TodayScreen({route}: Props = {}) {
 
   return (
     <AppScreen testID="today-screen">
-      <View style={themedStyles.header}>
-        <View style={styles.headerTitleRow}>
-          <MaterialIcon
-            color={theme.colors.primary}
-            name="event_note"
-            size={26}
-          />
-          <AppText style={themedStyles.headerTitle}>Hôm nay</AppText>
-        </View>
-      </View>
+      <ScreenHeader onBack={navigation.goBack} title="Hôm nay" />
 
       <ScrollView
         contentContainerStyle={themedStyles.scrollContent}
@@ -278,11 +270,6 @@ const styles = StyleSheet.create({
   explainCard: {
     gap: 10,
   },
-  headerTitleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
   inlineHeader: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -336,18 +323,6 @@ function makeStyles(theme: AppTheme) {
       borderWidth: 1.5,
       gap: theme.spacing.sm,
       padding: theme.spacing.lg,
-    },
-    header: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      height: 56,
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.gutter,
-    },
-    headerTitle: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.size.lg,
-      fontWeight: theme.typography.weight.medium,
     },
     pressedActivityItem: {
       opacity: theme.states.pressedOpacity,

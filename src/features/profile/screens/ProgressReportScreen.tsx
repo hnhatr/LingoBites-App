@@ -7,8 +7,8 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {useAppTheme} from '@ui/theme';
 
@@ -52,17 +52,10 @@ export function ProgressReportScreen({navigation}: Props) {
 
   return (
     <AppScreen>
-      <View style={styles.headerRow}>
-        <IconButton
-          accessibilityLabel="Quay lại"
-          icon="arrow_back"
-          onPress={() => navigation.goBack()}
-          tone="surface"
-        />
-        <AppText style={[styles.headerTitle, {color: theme.colors.primary}]}>
-          Báo cáo tiến độ & Năng lực
-        </AppText>
-      </View>
+      <ScreenHeader
+        onBack={() => navigation.goBack()}
+        title="Báo cáo tiến độ & Năng lực"
+      />
 
       <ScrollView
         contentContainerStyle={[
@@ -279,17 +272,6 @@ export function ProgressReportScreen({navigation}: Props) {
 const styles = StyleSheet.create({
   contentContainer: {
     paddingTop: 8,
-  },
-  headerRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-    height: 56,
-    paddingHorizontal: 16,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
   },
   metricCard: {
     gap: 8,

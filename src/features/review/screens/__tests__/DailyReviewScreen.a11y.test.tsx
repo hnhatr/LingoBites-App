@@ -97,7 +97,10 @@ describe('DailyReviewScreen - Accessibility', () => {
         <DailyReviewScreen navigation={navigation() as never} />,
       );
 
-      const closeButton = tree.root.findByProps({testID: 'review-close'});
+      const closeButton = tree.root.find(
+        node =>
+          typeof node.type === 'string' && node.props.testID === 'review-close',
+      );
       expect(getAnnouncedText(closeButton)).toBe('Đóng phiên ôn tập');
       expect(closeButton.props.accessibilityRole).toBe('button');
     });

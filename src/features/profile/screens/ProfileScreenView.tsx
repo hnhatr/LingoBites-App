@@ -7,6 +7,7 @@ import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {SettingsGroup} from '@ui/components/SettingsGroup';
 import {StatTile} from '@ui/components/StatTile';
@@ -56,9 +57,7 @@ export function ProfileScreenView({
 
   return (
     <AppScreen>
-      <View style={themedStyles.header}>
-        <AppText style={themedStyles.headerTitle}>Hồ sơ</AppText>
-      </View>
+      <ScreenHeader title="Hồ sơ" />
 
       <ScrollView
         contentContainerStyle={[
@@ -301,19 +300,6 @@ function makeStyles(theme: AppTheme) {
       height: 48,
       justifyContent: 'center',
       width: 48,
-    },
-    header: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      height: 56,
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.gutter,
-    },
-    headerTitle: {
-      color: theme.colors.text.primary,
-      fontSize: theme.typography.presets.h2.fontSize,
-      fontWeight: theme.typography.weight.bold,
-      marginLeft: theme.spacing.xs,
     },
     scrollContent: {
       gap: theme.spacing.lg,

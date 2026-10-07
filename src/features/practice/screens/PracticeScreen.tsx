@@ -7,7 +7,7 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
-import {IconButton} from '@ui/components/IconButton';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {QuizOption, type QuizOptionState} from '@ui/components/QuizOption';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
@@ -34,13 +34,12 @@ export function PracticeScreen({navigation, route}: PracticeScreenProps) {
 
   const close = () => navigation.goBack();
   const closeButton = (
-    <IconButton
+    <HeaderIconButton
       accessibilityHint={t('practice.close_hint')}
       accessibilityLabel={t('practice.close_a11y')}
       icon="close"
       onPress={close}
       testID="practice-close"
-      tone="bare"
     />
   );
 

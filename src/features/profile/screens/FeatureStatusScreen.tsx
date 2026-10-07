@@ -1,24 +1,33 @@
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {featureRegistry, useFeatureFlags} from '@core/release';
 import type {FeatureRegistryEntry} from '@core/release/types';
 
-export function FeatureStatusScreen() {
+import type {ProfileStackParamList} from './navigationTypes';
+
+type Props = Partial<
+  NativeStackScreenProps<ProfileStackParamList, 'FeatureStatus'>
+>;
+
+export function FeatureStatusScreen({navigation}: Props = {}) {
   const {theme} = useAppTheme();
   const themedStyles = makeStyles(theme);
   const {isFeatureEnabled} = useFeatureFlags();
 
   return (
     <AppScreen>
-      <View style={themedStyles.header}>
-        <AppText style={themedStyles.headerTitle}>Feature Status</AppText>
-      </View>
+      <ScreenHeader
+        onBack={navigation ? () => navigation.goBack() : undefined}
+        title="Feature Status"
+      />
       <ScrollView contentContainerStyle={themedStyles.scrollContent}>
         {featureRegistry.map(item => {
           const entry = item as unknown as FeatureRegistryEntry;
@@ -80,17 +89,6 @@ export function FeatureStatusScreen() {
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    header: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      height: 56,
-      paddingHorizontal: theme.gutter,
-    },
-    headerTitle: {
-      color: theme.colors.primary,
-      fontSize: theme.typography.size.lg,
-      fontWeight: theme.typography.weight.medium,
-    },
     scrollContent: {
       gap: theme.spacing.md,
       paddingBottom: 28,

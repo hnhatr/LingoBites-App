@@ -9,13 +9,7 @@ import React, {
   useState,
 } from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
 
 import {speak} from '@features/audio';
 
@@ -34,10 +28,10 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {SvgIcon} from '@ui/components/SvgIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
@@ -234,12 +228,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   );
 
   const showHub = snapshot !== null && !isYouTube && view === 'hub';
-  const title =
-    isYouTubeStudy && snapshot
-      ? snapshot.title
-      : inSection
-      ? t(SECTION_TITLE_KEYS[view as LessonHubSection])
-      : t('lessonPlayer.player_title');
+  // Lesson names can be long: the header keeps a short generic title and
+  // the full lesson name is rendered in the page body.
+  const title = inSection
+    ? t(SECTION_TITLE_KEYS[view as LessonHubSection])
+    : t('lessonPlayer.player_title');
 
   const handleSeek = useCallback((ms: number) => {
     seekHoldMsRef.current = ms;
@@ -455,7 +448,6 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     <AppScreen>
       <ScreenHeader
         title={title}
-        titleNumberOfLines={studyReady ? 1 : undefined}
         onBack={() => (inSection ? openView('hub') : navigation.goBack())}
         rightAction={
           studyReady ? (
@@ -466,16 +458,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               showTranslation={showTranslation}
             />
           ) : showHub && completionState !== 'finished' ? (
-            <Pressable
+            <HeaderIconButton
               accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
               accessibilityLabel={t('lessonPlayer.complete_lesson')}
-              accessibilityRole="button"
+              icon="check_circle"
               onPress={completeLesson}
-              style={themedStyles.completeButton}
               testID="canonical-hub-complete"
-            >
-              <SvgIcon color={theme.colors.primary} name="check_circle" />
-            </Pressable>
+            />
           ) : undefined
         }
       />
@@ -534,12 +523,6 @@ function makeStyles(theme: AppTheme) {
     actionBar: {
       backgroundColor: theme.colors.background,
       borderTopColor: theme.colors.outlineVariant,
-    },
-    completeButton: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 44,
-      minWidth: 44,
     },
     centered: {
       alignItems: 'center',

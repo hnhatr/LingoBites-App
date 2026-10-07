@@ -225,6 +225,9 @@ export function YouTubeLessonStudy({
         style={styles.scroll}
         testID="youtube-study-scroll"
       >
+        <AppText testID="youtube-study-title" variant="h3">
+          {snapshot.title}
+        </AppText>
         <LessonStatusBanners offline={offline} hasUpdate={hasUpdate} />
 
         <YouTubeSentenceCarousel
