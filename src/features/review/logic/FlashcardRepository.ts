@@ -242,6 +242,34 @@ export function listFlashcards({
 }
 
 /**
+ * Changes whenever the saved vocabulary does: a card saved, unsaved or edited
+ * (`id@updated_at` of every saved card), or a card gaining or losing a source
+ * lesson. `count` is the number of saved cards.
+ */
+export function getSavedFlashcardsSignature(): {
+  count: number;
+  signature: string;
+} {
+  const db = getDatabase();
+  const cards = db.execute(
+    'SELECT id, updated_at FROM flashcards WHERE is_saved = 1;',
+  );
+  const stamps: string[] = [];
+  for (let index = 0; index < (cards.rows?.length ?? 0); index += 1) {
+    const row = cards.rows!.item(index) as {id: string; updated_at: string};
+    stamps.push(`${row.id}@${row.updated_at}`);
+  }
+  const sources = db.execute('SELECT COUNT(*) AS n FROM flashcard_sources;');
+  const sourceCount = Number(
+    (sources.rows?.item(0) as {n?: number} | undefined)?.n ?? 0,
+  );
+  return {
+    count: stamps.length,
+    signature: `${stamps.sort().join(',')}#${sourceCount}`,
+  };
+}
+
+/**
  * Every lesson each card was saved from, oldest first, keyed by card id. A card
  * with no source rows (legacy, or a word with no usable key) is absent: callers
  * fall back to the card's own `lessonId`.

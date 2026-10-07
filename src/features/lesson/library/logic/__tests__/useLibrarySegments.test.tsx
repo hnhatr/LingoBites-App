@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
-import {listDownloadedLessonSummaries} from '@features/lesson/player';
+import {
+  getLessonDownloadsSignature,
+  listDownloadedLessonSummaries,
+} from '@features/lesson/player';
 import {
   listAllBookmarkedGrammar,
   listFlashcards,
@@ -18,10 +21,13 @@ import {makeFlashcard, makeGrammarBookmark} from './fixtures/libraryTestData';
 
 jest.mock('@features/lesson/player', () => ({
   listDownloadedLessonSummaries: jest.fn(),
+  getLessonDownloadsSignature: jest.fn(() => 'downloads-v1'),
   collectLessonGrammar: jest.fn(() => []),
 }));
 
 jest.mock('@features/review', () => ({
+  getSavedFlashcardsSignature: jest.fn(() => ({count: 0, signature: ''})),
+  getBookmarkedGrammarSignature: jest.fn(() => ({count: 0, signature: ''})),
   listFlashcards: jest.fn(() => []),
   listFlashcardSources: jest.fn(() => new Map()),
   listAllBookmarkedGrammar: jest.fn(() => []),
@@ -224,6 +230,35 @@ describe('useLibrarySegments word sources', () => {
     });
 
     expect(latest.vocabulary.map(card => card.id)).toEqual(['shared']);
+  });
+});
+
+describe('useLibrarySegments refresh', () => {
+  const mockedSignature = getLessonDownloadsSignature as jest.Mock;
+
+  beforeEach(() => {
+    mockedDownloads.mockReset().mockReturnValue([]);
+    mockedSignature.mockReset().mockReturnValue('downloads-v1');
+  });
+
+  it('does not reload when nothing changed since the last load', async () => {
+    await renderProbe();
+    expect(mockedDownloads).toHaveBeenCalledTimes(1);
+
+    act(() => latest.refresh());
+
+    expect(mockedDownloads).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads once something new was downloaded', async () => {
+    await renderProbe();
+    mockedDownloads.mockReturnValue([download('lesson-new', 'learner_text')]);
+    mockedSignature.mockReturnValue('downloads-v2');
+
+    act(() => latest.refresh());
+
+    expect(mockedDownloads).toHaveBeenCalledTimes(2);
+    expect(latest.packagedLessons.map(card => card.id)).toEqual(['lesson-new']);
   });
 });
 

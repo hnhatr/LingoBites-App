@@ -50,8 +50,10 @@ export type {
 export {
   applyLessonRevisionStates,
   getLessonDownload,
+  getLessonDownloadsSignature,
   InvalidLessonSnapshotError,
   lessonMediaDirFor,
+  listLessonDownloadKinds,
   listLessonDownloads,
   removeLessonDownload,
   saveLessonSnapshotBody,
@@ -60,6 +62,7 @@ export {
   LESSON_MEDIA_ROOT_SEGMENT,
 } from './logic/canonicalDownloadRepository';
 export type {
+  LessonDownloadKind,
   LessonDownloadRecord,
   LessonMediaFileSystem,
   RevisionApplication,

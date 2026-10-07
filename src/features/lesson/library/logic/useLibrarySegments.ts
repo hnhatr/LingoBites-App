@@ -21,6 +21,7 @@ import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
 import type {LessonSourceType} from '@core/schemas/lesson';
 
 import {activityCountOf, lessonContextLabel} from './lessonCardData';
+import {readLibrarySignature} from './librarySignature';
 
 export interface SegmentFilterState {
   searchQuery: string;
@@ -107,7 +108,26 @@ export function useLibrarySegments(
     sourceFilter: 'all',
   });
 
+  // Fingerprint of the data the loaded segments were read from; a refresh
+  // only reloads them when it moved (something saved, downloaded, removed).
+  const signatureNeeds = useMemo(
+    () => ({vocabulary: needsVocabulary, grammar: needsGrammar}),
+    [needsVocabulary, needsGrammar],
+  );
+  const signature = useMemo(
+    () => (needsDownloads ? readLibrarySignature(signatureNeeds) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [needsDownloads, signatureNeeds, refreshVersion],
+  );
+  const loadedRef = useRef({signature, signatureNeeds});
+  loadedRef.current = {signature, signatureNeeds};
+
   const refresh = useCallback(() => {
+    const loaded = loadedRef.current;
+    if (loaded.signature === null) return;
+    if (readLibrarySignature(loaded.signatureNeeds) === loaded.signature) {
+      return;
+    }
     setRefreshVersion(v => v + 1);
   }, []);
 
