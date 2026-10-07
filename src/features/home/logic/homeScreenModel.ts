@@ -12,6 +12,7 @@
  * - Saved-rail label (DQ-006, §VS-5)
  * - Graceful degradation when progress percent unavailable (A-009)
  */
+import type {LessonCardProgress} from '@ui/components/LessonCard';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
 import type {LessonSourceType} from '@core/schemas/lesson';
@@ -376,6 +377,11 @@ export type RecentItem = {
   isDownloaded: boolean;
   /** HandoffIconName for the legacy HomeScreenView rail (retained for view compatibility) */
   icon: HandoffIconName;
+  /** Lesson-card fields for the saved rail. */
+  sourceType?: LessonSourceType;
+  sentenceCount?: number;
+  progress?: LessonCardProgress;
+  exerciseCount?: number;
 };
 
 export function typeLabelKeyForSource(sourceType: LessonSourceType): string {

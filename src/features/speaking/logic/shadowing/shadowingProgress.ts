@@ -1,7 +1,10 @@
 import {listDownloadedLessonSummaries} from '@features/lesson/player';
 
+import {lessonContextLabel} from '@ui/components/LessonCard';
+
 import {getDatabase} from '@core/db/database';
 import type {SpeakingAttemptRecord, SpeakingMode} from '@core/db/types';
+import type {LessonSourceType} from '@core/schemas/lesson';
 
 import {
   orderShadowingSentences,
@@ -25,6 +28,9 @@ export type ShadowingLessonProgressSummary = {
   /** 1-based display index for "Tiếp tục" / progress (câu x/n). */
   resumeSentenceNumber: number;
   lastPracticedAt: string | null;
+  /** Lesson-card fields, set when the summary comes from a download. */
+  sourceType?: LessonSourceType;
+  contextLabel?: string | null;
 };
 
 export type ShadowingEntryTarget =
@@ -226,7 +232,7 @@ export function summarizeShadowingLessonProgress(
     return null;
   }
   const attempts = listShadowingAttemptsForLesson(lessonId);
-  return computeShadowingLessonProgress(
+  const summary = computeShadowingLessonProgress(
     lessonId,
     lesson.title,
     sentences,
@@ -234,6 +240,13 @@ export function summarizeShadowingLessonProgress(
     lesson.estimatedDurationMinutes ??
       Math.max(1, Math.ceil(sentences.length / 3)),
   );
+  return summary
+    ? {
+        ...summary,
+        sourceType: lesson.snapshot.source_type,
+        contextLabel: lessonContextLabel(lesson.snapshot.unit),
+      }
+    : null;
 }
 
 export function listShadowingLessonProgressSummaries(): ShadowingLessonProgressSummary[] {

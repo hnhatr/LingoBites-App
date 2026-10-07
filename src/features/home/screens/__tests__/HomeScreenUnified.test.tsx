@@ -39,6 +39,37 @@ jest.mock('@features/analytics', () => ({
   trackEvent: jest.fn(),
 }));
 
+const mockSavedLessons = jest.fn((): unknown[] => []);
+jest.mock('@core/sync/useLessonBookmarks', () => ({
+  useSavedLessons: () => mockSavedLessons(),
+  useLessonBookmarks: () => ({
+    isBookmarked: () => false,
+    toggleBookmark: jest.fn(),
+  }),
+}));
+
+const mockRemoveLessonBookmark = jest.fn();
+jest.mock('@core/sync/lessonBookmarks', () => ({
+  ...jest.requireActual('@core/sync/lessonBookmarks'),
+  removeLessonBookmark: (lessonId: string) =>
+    mockRemoveLessonBookmark(lessonId),
+}));
+
+function savedLesson(index: number) {
+  return {
+    lessonId: `33333333-3333-4333-8333-3333333333${String(index).padStart(
+      2,
+      '0',
+    )}`,
+    title: `Saved ${index} · Bài đã lưu ${index}`,
+    sourceType: 'admin_text',
+    sentenceCount: 10,
+    estimatedMinutes: null,
+    contextLabel: 'Getting Started',
+    savedAt: '2026-10-06T10:00:00.000Z',
+  };
+}
+
 const validSession = {
   status: 'valid' as const,
   session: {
@@ -145,17 +176,25 @@ async function renderHome(nav = navigation()) {
   return {tree, nav};
 }
 
+/** One open-button per rail card (not its bookmark or chips). */
 function railPressables(tree: ReactTestRenderer.ReactTestRenderer) {
-  return tree.root.findAll(
-    node =>
-      typeof node.props.testID === 'string' &&
-      node.props.testID.startsWith('home-recent-item-') &&
-      typeof node.props.onPress === 'function',
-  );
+  const byId = new Map<string, ReactTestRenderer.ReactTestInstance>();
+  for (const node of tree.root.findAll(
+    candidate =>
+      typeof candidate.props.testID === 'string' &&
+      /^home-recent-item-[0-9a-f-]{36}$/.test(candidate.props.testID) &&
+      typeof candidate.props.onPress === 'function',
+  )) {
+    if (!byId.has(node.props.testID)) {
+      byId.set(node.props.testID, node);
+    }
+  }
+  return [...byId.values()];
 }
 
 describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
   beforeEach(() => {
+    mockSavedLessons.mockReturnValue([]);
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.clearAllMocks();
@@ -178,16 +217,16 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     jest.restoreAllMocks();
   });
 
-  it('renders the rail from canonical catalog summaries with no local lessons', async () => {
+  it('shows the empty state when nothing is saved, even with a catalog', async () => {
     const {tree} = await renderHome();
-    expect(
-      tree.root.findByProps({
-        testID: 'home-recent-item-33333333-3333-4333-8333-333333333331',
-      }),
-    ).toBeDefined();
+    expect(railPressables(tree)).toHaveLength(0);
+    expect(JSON.stringify(tree.toJSON())).toContain(
+      'Chạm biểu tượng lưu trên thẻ bài học để giữ bài ở đây.',
+    );
   });
 
-  it('caps the rail at three lessons', async () => {
+  it('renders saved lessons as lesson cards, capped at three', async () => {
+    mockSavedLessons.mockReturnValue([31, 32, 33, 34].map(savedLesson));
     const {tree} = await renderHome();
     expect(railPressables(tree)).toHaveLength(3);
     expect(() =>
@@ -195,24 +234,18 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
         testID: 'home-recent-item-33333333-3333-4333-8333-333333333334',
       }),
     ).toThrow();
-  });
-
-  it('shows the reading type label for catalog items without minutes', async () => {
-    const {tree} = await renderHome();
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Đọc');
+    // The bilingual title is split into title and subtitle.
+    expect(text).toContain('Saved 31');
+    expect(text).toContain('Bài đã lưu 31');
+    expect(text).toContain('5 phút');
   });
 
   it('opens the canonical player and tracks the open', async () => {
+    mockSavedLessons.mockReturnValue([savedLesson(31)]);
     const {tree, nav} = await renderHome();
-    const target = tree.root
-      .findAll(
-        node =>
-          node.props.testID ===
-          'home-recent-item-33333333-3333-4333-8333-333333333331',
-      )
-      .find(node => typeof node.props.onPress === 'function');
-    if (!target) throw new Error('No pressable found for canonical rail item');
+    const [target] = railPressables(tree);
+    if (!target) throw new Error('No pressable found for saved rail item');
     await act(async () => {
       target.props.onPress();
     });
@@ -226,15 +259,37 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     });
   });
 
-  it('prefers downloaded lessons over the catalog fallback', async () => {
+  it('unsaves a lesson from its card bookmark', async () => {
+    mockSavedLessons.mockReturnValue([savedLesson(31)]);
+    const {tree} = await renderHome();
+    const bookmark = tree.root
+      .findAll(
+        node =>
+          node.props.testID ===
+          'home-recent-item-33333333-3333-4333-8333-333333333331-bookmark',
+      )
+      .find(node => typeof node.props.onPress === 'function');
+    if (!bookmark) throw new Error('No bookmark button on the saved card');
+    expect(bookmark.props.accessibilityLabel).toBe('Bỏ lưu bài');
+    await act(async () => {
+      bookmark.props.onPress();
+    });
+    expect(mockRemoveLessonBookmark).toHaveBeenCalledWith(
+      '33333333-3333-4333-8333-333333333331',
+    );
+  });
+
+  it('marks a saved lesson that is on the phone as downloaded', async () => {
     seedCanonicalLessonDownload();
+    mockSavedLessons.mockReturnValue([
+      {...savedLesson(1), lessonId: SEEDED_LESSON_ID},
+    ]);
     const {tree} = await renderHome();
     expect(
-      tree.root.findByProps({
-        testID: `home-recent-item-${SEEDED_LESSON_ID}`,
-      }),
-    ).toBeDefined();
-    expect(railPressables(tree)).toHaveLength(1);
+      tree.root.findAllByProps({
+        testID: `home-recent-item-${SEEDED_LESSON_ID}-chip-downloaded`,
+      }).length,
+    ).toBeGreaterThan(0);
   });
 
   it('opens the downloaded lesson from the Continue action', async () => {

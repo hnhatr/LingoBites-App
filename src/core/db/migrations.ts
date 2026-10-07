@@ -1,7 +1,8 @@
 import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
 
 import {APP_SCHEMA_VERSION_V3, ensureSchemaV4Upgrade} from './schemaV4';
-import {APP_SCHEMA_VERSION_V5, ensureSchemaV5Upgrade} from './schemaV5';
+import {ensureSchemaV5Upgrade} from './schemaV5';
+import {APP_SCHEMA_VERSION_V6, ensureSchemaV6Upgrade} from './schemaV6';
 
 const MIGRATIONS = [
   `CREATE TABLE IF NOT EXISTS app_settings (
@@ -538,6 +539,16 @@ export function runMigrations(db: QuickSQLiteConnection): void {
   ensureSchemaV3Upgrade(db);
   ensureSchemaV4Upgrade(db);
   ensureSchemaV5Upgrade(db);
+  ensureSchemaV6Upgrade(db);
+}
+
+/**
+ * Migrate through schema v5 only (no v6). Used by the v6 upgrade tests as
+ * their starting point.
+ */
+export function runMigrationsThroughSchemaV5(db: QuickSQLiteConnection): void {
+  runMigrationsThroughSchemaV4(db);
+  ensureSchemaV5Upgrade(db);
 }
 
 /**
@@ -592,7 +603,7 @@ function runLegacyBaselineMigrations(db: QuickSQLiteConnection): void {
  * every `lesson_progress` row and every live transport row (`review`,
  * `practice`): only retired-collection rows are deleted.
  */
-export const APP_SCHEMA_VERSION = APP_SCHEMA_VERSION_V5;
+export const APP_SCHEMA_VERSION = APP_SCHEMA_VERSION_V6;
 
 export {APP_SCHEMA_VERSION_V3} from './schemaV4';
 

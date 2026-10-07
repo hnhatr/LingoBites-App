@@ -33,4 +33,10 @@ export type LibraryLessonCardView = {
   origin: LessonOrigin;
   /** The lesson is big enough for a quick-practice quiz. */
   practiceReady?: boolean;
+  /** Course placement for the card's context line; null for own lessons. */
+  contextLabel?: string | null;
+  /** Activity blocks in the lesson (the card's exercise chip). */
+  activityCount?: number;
+  /** Video length, shown instead of the estimate for YouTube lessons. */
+  youtubeDurationMs?: number | null;
 };

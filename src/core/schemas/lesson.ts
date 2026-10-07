@@ -169,6 +169,10 @@ export const LessonCatalogItemSchema = z
     youtube_video_id: z.string().min(1).nullable(),
     unit: LessonUnitSchema.nullable(),
     updated_at: z.string(),
+    /** Sent with `include=card_meta`; absent on older servers. */
+    estimated_minutes: z.number().int().min(0).nullable().optional(),
+    youtube_duration_ms: z.number().int().min(0).nullable().optional(),
+    activity_count: z.number().int().min(0).optional(),
   })
   .strict();
 

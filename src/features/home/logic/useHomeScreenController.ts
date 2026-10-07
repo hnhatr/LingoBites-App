@@ -19,6 +19,11 @@ import {useAccountStore} from '@features/account';
 import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot} from '@features/engagement';
 import {
+  type LessonCardLocalState,
+  readLessonCardLocalState,
+  useSavedLessons,
+} from '@features/lesson/library';
+import {
   type DownloadedLessonSummary,
   listDownloadedLessonSummaries,
   useCanonicalCatalog,
@@ -37,6 +42,7 @@ import {
 import {useYouTubeServerEnabled} from '@core/api/youtubeCapabilities';
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
+import {removeLessonBookmark} from '@core/sync/lessonBookmarks';
 import {listInProgressLessonIds} from '@core/sync/lessonProgress';
 
 import {
@@ -82,7 +88,6 @@ export function useHomeScreenController() {
     config.features.youtubeLearning && youtubeServerEnabled;
   const canonicalCatalog = useCanonicalCatalog();
   const canonicalRefresh = canonicalCatalog.refresh;
-  const catalogState = canonicalCatalog.state;
   const displayName = useAccountStore(state => state.user?.display_name);
   const trimmedDisplayName = useMemo(
     () => trimDisplayName(displayName),
@@ -90,6 +95,10 @@ export function useHomeScreenController() {
   );
 
   const [downloadCount, setDownloadCount] = useState<number | null>(null);
+  // Downloads and progress for the saved rail's cards, re-read on focus.
+  const [lessonCardState, setLessonCardState] = useState<LessonCardLocalState>(
+    readLessonCardLocalState,
+  );
   const [startedDownload, setStartedDownload] =
     useState<DownloadedLessonSummary | null>(null);
   const [streak, setStreak] = useState<number>(
@@ -115,6 +124,7 @@ export function useHomeScreenController() {
   useFocusEffect(
     useCallback(() => {
       canonicalRefresh();
+      setLessonCardState(readLessonCardLocalState());
       const snapshot = getGamificationSnapshot();
       setStreak(snapshot.currentStreak);
       const completed = snapshot.weeklyGoal.completedThisWeek;
@@ -220,32 +230,32 @@ export function useHomeScreenController() {
     }
   }, [learnerSnapshot, todayMode]);
 
-  // Saved rail items (DQ-006)
+  // Saved rail items (DQ-006): the lessons the learner bookmarked.
+  const savedLessons = useSavedLessons();
   const railItems: RecentItem[] = useMemo(() => {
-    const downloaded = listDownloadedLessonSummaries().slice(0, RAIL_LIMIT);
-    if (downloaded.length > 0) {
-      return downloaded.map(item => ({
-        id: item.lessonId,
-        title: item.title,
-        levelTitle: item.snapshot.unit?.level_title,
-        typeLabelKey: typeLabelKeyForSource(item.snapshot.source_type),
-        minutes: item.estimatedDurationMinutes,
-        isDownloaded: true,
-        icon: railIconForSource(item.snapshot.source_type),
-      }));
+    const saved = savedLessons.slice(0, RAIL_LIMIT);
+    if (saved.length === 0) {
+      return [];
     }
-    const canonicalItems =
-      catalogState.status === 'ready' ? catalogState.lessons : [];
-    return canonicalItems.slice(0, RAIL_LIMIT).map(item => ({
-      id: item.id,
+    const local = lessonCardState;
+    return saved.map(item => ({
+      id: item.lessonId,
       title: item.title,
-      levelTitle: item.unit?.level_title ?? undefined,
-      typeLabelKey: typeLabelKeyForSource(item.source_type),
-      minutes: undefined,
-      isDownloaded: false,
-      icon: railIconForSource(item.source_type),
+      levelTitle: item.contextLabel ?? undefined,
+      typeLabelKey: typeLabelKeyForSource(item.sourceType),
+      minutes:
+        item.estimatedMinutes ??
+        (item.sentenceCount > 0
+          ? Math.max(1, Math.ceil(item.sentenceCount * 0.5))
+          : undefined),
+      isDownloaded: local.downloadedIds.has(item.lessonId),
+      icon: railIconForSource(item.sourceType),
+      sourceType: item.sourceType,
+      sentenceCount: item.sentenceCount,
+      progress: local.progress.get(item.lessonId),
+      exerciseCount: local.activityCounts.get(item.lessonId),
     }));
-  }, [catalogState]);
+  }, [savedLessons, lessonCardState]);
 
   const openRecentItem = useCallback(
     (item: RecentItem) => {
@@ -257,6 +267,14 @@ export function useHomeScreenController() {
     },
     [navigation],
   );
+
+  const unsaveRecentItem = useCallback((item: RecentItem) => {
+    try {
+      removeLessonBookmark(item.id);
+    } catch {
+      // Database not ready: the card stays saved.
+    }
+  }, []);
 
   const goLessonsTab = useCallback(
     () => navigation.goToTab('Lessons'),
@@ -342,6 +360,7 @@ export function useHomeScreenController() {
     goLessonsTab,
     openVideoCell,
     openRecentItem,
+    unsaveRecentItem,
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
