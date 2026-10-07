@@ -3,7 +3,7 @@ import {Pressable, type PressableProps} from 'react-native';
 
 import {useAppTheme} from '../theme';
 import {AppText} from './AppText';
-import {MaterialIcon} from './MaterialIcon';
+import {SvgIcon} from './SvgIcon';
 
 type Props = Pick<PressableProps, 'disabled' | 'onPress' | 'testID'> & {
   accessibilityLabel: string;
@@ -44,7 +44,7 @@ export function PrimaryActionButton({
         },
       ]}
     >
-      <MaterialIcon
+      <SvgIcon
         color={theme.colors.text.inverse}
         name="auto_stories"
         size={22}
