@@ -27,9 +27,9 @@ function copyPublicCode(code: string): void {
 }
 
 /**
- * Account section for the Profile screen (SETE-303 / T6), rendered inside the
- * profile identity card: the immutable public code with copy affordance, plus
- * display-name and optional E.164 phone editing behind a collapsed form. The phone is explicitly unverified lookup-only copy — the
+ * Account form for the Account settings page (SETE-303 / T6): the immutable
+ * public code with copy affordance, plus display-name and optional E.164
+ * phone editing. The phone is explicitly unverified lookup-only copy — the
  * app never sends a verification code to it.
  */
 export function AccountProfileSection() {
@@ -120,18 +120,35 @@ export function AccountProfileSection() {
   }
 
   return (
-    <View style={themedStyles.section}>
-      <View style={themedStyles.codeRow}>
-        <View style={styles.codeCopy}>
-          <AppText color="secondary" variant="caption">
-            {t('account.public_code_label')}
-          </AppText>
-          <AppText
-            accessibilityHint={t('account.public_code_hint')}
-            accessibilityLabel={`${t('account.public_code_label')}: ${
-              user.public_code
-            }`}
-            variant="h3"
+    <View style={styles.section}>
+      <AppCard style={styles.card}>
+        <View style={themedStyles.codeRow}>
+          <View style={styles.codeCopy}>
+            <AppText color="secondary" variant="caption">
+              {t('account.public_code_label')}
+            </AppText>
+            <AppText
+              accessibilityHint={t('account.public_code_hint')}
+              accessibilityLabel={`${t('account.public_code_label')}: ${
+                user.public_code
+              }`}
+              variant="h3"
+            >
+              {user.public_code}
+            </AppText>
+          </View>
+          <Pressable
+            accessibilityHint={t('account.copy_code_hint')}
+            accessibilityLabel={t('account.public_code_label')}
+            accessibilityRole="button"
+            onPress={() => {
+              copyPublicCode(user.public_code);
+              setCopied(true);
+            }}
+            style={({pressed}) => [
+              themedStyles.copyButton,
+              pressed && themedStyles.pressed,
+            ]}
           >
             {user.public_code}
           </AppText>
