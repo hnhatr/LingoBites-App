@@ -94,13 +94,18 @@ const HOME_KEYS = [
   'home.today_mode_20',
   'home.today_mode_45',
   'home.today_mode_a11y',
-  'home.today_summary',
   'home.today_details',
   'home.today_details_a11y',
   'home.today_details_hint',
   'home.today_empty',
   'home.today_start_a11y',
   'home.today_start_hint',
+  'home.today_step_current',
+  'home.today_step_done_a11y',
+  'home.today_progress',
+  'home.today_progress_a11y',
+  'home.today_more',
+  'home.today_all_done',
 ];
 
 function resolveKey(

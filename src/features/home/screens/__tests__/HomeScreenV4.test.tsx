@@ -131,6 +131,15 @@ async function renderHome(
 // Five hero states (AC-002, §VS-2.4)
 // ---------------------------------------------------------------------------
 
+function stepRows(tree: ReactTestRenderer.ReactTestRenderer) {
+  return tree.root.findAll(
+    node =>
+      typeof node.props.testID === 'string' &&
+      node.props.testID.startsWith('home-today-step-') &&
+      typeof node.type !== 'string',
+  );
+}
+
 /** Stores a one-step plan for today and marks that step done (plan finished). */
 function seedFinishedTodayPlan() {
   writeStoredTodayPlan({
@@ -414,11 +423,11 @@ describe('Home today suggestion card (F12)', () => {
     }));
   });
 
-  it('renders the suggestion between the hero and the weekly goal', async () => {
+  it('renders the plan checklist between the hero and the weekly goal', async () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Gợi ý hôm nay');
+    expect(text).toContain('Kế hoạch hôm nay');
     expect(text).toContain('⚡ 5 phút');
     expect(text).toContain('🎯 20 phút');
     expect(text).toContain('🔥 45 phút');
@@ -428,18 +437,29 @@ describe('Home today suggestion card (F12)', () => {
     expect(heroAt).toBeGreaterThan(-1);
     expect(suggestionAt).toBeGreaterThan(heroAt);
     expect(goalAt).toBeGreaterThan(suggestionAt);
-    expect(
-      tree.root.findAll(
-        node => node.props.testID === 'home-today-first-activity',
-      ).length,
-    ).toBeGreaterThan(0);
+    expect(stepRows(tree).length).toBeGreaterThan(0);
+    expect(text).toContain('home-today-progress');
+    expect(text).toContain('0/');
   });
 
-  it('starts the first suggested activity from Home', async () => {
+  it('tags the step the hero points at as "Tiếp theo"', async () => {
+    seedCanonicalLessonDownload();
+    (getGamificationSnapshot as jest.Mock).mockReturnValue({
+      currentStreak: 0,
+      weeklyGoal: {completedThisWeek: 0, target: 6},
+      badges: [],
+    });
     const tree = await renderHome();
-    const activity = tree.root
-      .findAll(node => node.props.testID === 'home-today-first-activity')
-      .find(node => typeof node.props.onPress === 'function');
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('home-hero-next_activity');
+    expect(text).toContain('Tiếp theo');
+  });
+
+  it('starts an open step from the checklist', async () => {
+    const tree = await renderHome();
+    const activity = stepRows(tree).find(
+      node => typeof node.props.onPress === 'function',
+    );
     if (!activity) throw new Error('No suggested activity found');
     await act(async () => activity.props.onPress());
     const calls = [
@@ -451,6 +471,22 @@ describe('Home today suggestion card (F12)', () => {
     ].reduce((sum, fn) => sum + (fn as jest.Mock).mock.calls.length, 0);
     expect(calls).toBe(1);
     expect(mockAppNavigation.openToday).not.toHaveBeenCalled();
+  });
+
+  it('shows a done step as ticked and not tappable', async () => {
+    seedCanonicalLessonDownload();
+    seedFinishedTodayPlan();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('home-today-all-done');
+    expect(text).toContain('Xong kế hoạch hôm nay 🎉');
+    const row = stepRows(tree).find(
+      node => node.props.testID === 'home-today-step-activity-due-review',
+    );
+    expect(row).toBeDefined();
+    expect(
+      stepRows(tree).some(node => typeof node.props.onPress === 'function'),
+    ).toBe(false);
   });
 
   it('"Xem chi tiết" opens Today with the selected mode', async () => {
