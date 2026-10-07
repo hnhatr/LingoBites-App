@@ -18,13 +18,12 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {useAccountStore} from '@features/account';
 import {trackEvent} from '@features/analytics';
-import {getGamificationSnapshot} from '@features/engagement';
-import {useYouTubeLessonCreation} from '@features/input';
 import {
   getGamificationSnapshot,
   listStudyEventsOn,
   type StudyEvent,
 } from '@features/engagement';
+import {useYouTubeLessonCreation} from '@features/input';
 import {
   type LessonCardLocalState,
   readLessonCardLocalState,
