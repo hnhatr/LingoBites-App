@@ -1,6 +1,12 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+import {
+  Alert,
+  type LayoutChangeEvent,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {speak} from '@features/audio';
 import {
@@ -19,9 +25,12 @@ import {ErrorCard} from '@ui/components/ErrorCard';
 import {FlipCard} from '@ui/components/FlipCard';
 import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
+import {ProgressRing} from '@ui/components/ProgressRing';
 import {RatingControl} from '@ui/components/RatingControl';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
 import {WordCard} from '@ui/components/WordCard';
 import {useAppTheme} from '@ui/theme';
 
@@ -117,6 +126,7 @@ export function DailyReviewScreen({
     forgot: 0,
   });
   const [complete, setComplete] = useState(false);
+  const [stageHeight, setStageHeight] = useState(0);
   // Engagement session (SETE-89): records the rated cards and, when the session
   // ends, writes the gamification events that drive streak/XP/badges/pet state.
   const [session] = useState<ReviewSession>(() => startReviewSession());
@@ -209,6 +219,14 @@ export function DailyReviewScreen({
     });
   }
 
+  function handleSwipe(direction: SwipeDirection) {
+    handleRate(direction === 'right' ? 'remembered' : 'forgot');
+  }
+
+  function handleStageLayout(event: LayoutChangeEvent) {
+    setStageHeight(event.nativeEvent.layout.height);
+  }
+
   function exitSession() {
     // Leaving after rating at least one card still closes the session.
     finalizeSession();
@@ -279,59 +297,52 @@ export function DailyReviewScreen({
   }
 
   if (complete) {
+    const rated = summary.remembered + summary.forgot;
+    const accuracy = rated > 0 ? summary.remembered / rated : 0;
+    const percent = Math.round(accuracy * 100);
+    const headline =
+      rated === 0
+        ? t('review.summary_title')
+        : percent >= 80
+        ? t('review.summary_great')
+        : percent >= 50
+        ? t('review.summary_good')
+        : t('review.summary_keep');
     return (
       <AppScreen>
         <ScrollView
           contentContainerStyle={[
-            styles.content,
+            styles.summaryContent,
             {paddingHorizontal: theme.gutter},
           ]}
           testID="review-summary"
         >
-          <AppText variant="h1">{t('review.summary_title')}</AppText>
-          {carryOverCount > 0 ? (
-            <Banner
-              message={t('review.carry_over', {count: carryOverCount})}
-              variant="neutral"
+          <View style={styles.summaryHero}>
+            <ProgressRing
+              accessibilityLabel={t('review.summary_accuracy_a11y', {percent})}
+              caption={t('review.summary_accuracy')}
+              progress={accuracy}
+              testID="summary-accuracy"
+              value={`${percent}%`}
             />
-          ) : null}
-          <AppCard style={styles.summaryCard}>
-            <View style={styles.statRow}>
-              <Medallion label={`${summary.reviewed}`} size={76} />
-              <View style={styles.statText}>
-                <AppText color="secondary" variant="label">
-                  {t('review.summary_reviewed_label')}
-                </AppText>
-                <AppText testID="summary-reviewed-count" variant="h2">
-                  {summary.reviewed}
-                </AppText>
-              </View>
-            </View>
-            <View style={styles.breakdown}>
-              <View style={styles.breakdownItem}>
-                <AppText color="secondary" variant="label">
-                  {t('review.summary_remembered_label')}
-                </AppText>
-                <AppText testID="summary-remembered-count" variant="h3">
-                  {summary.remembered}
-                </AppText>
-              </View>
-              <View style={styles.breakdownItem}>
-                <AppText color="secondary" variant="label">
-                  {t('review.summary_forgot_label')}
-                </AppText>
-                <AppText testID="summary-forgot-count" variant="h3">
-                  {summary.forgot}
-                </AppText>
-              </View>
-            </View>
+            <AppText style={styles.centerText} variant="h1">
+              {headline}
+            </AppText>
+            <AppText color="secondary" style={styles.centerText}>
+              {t('review.summary_subtitle', {count: summary.reviewed})}
+            </AppText>
             {sessionXpEarned != null && sessionXpEarned > 0 ? (
               <View
                 style={[
-                  styles.xpRow,
+                  styles.xpPill,
                   {backgroundColor: theme.colors.accentSoft},
                 ]}
               >
+                <MaterialIcon
+                  color={theme.colors.primary}
+                  name="bolt"
+                  size={18}
+                />
                 <AppText
                   style={[styles.xpText, {color: theme.colors.primary}]}
                   testID="summary-xp-earned"
@@ -340,7 +351,35 @@ export function DailyReviewScreen({
                 </AppText>
               </View>
             ) : null}
-          </AppCard>
+          </View>
+
+          <View style={styles.statGrid}>
+            <SummaryStat
+              color={theme.colors.text.primary}
+              label={t('review.summary_reviewed_label')}
+              valueTestID="summary-reviewed-count"
+              value={summary.reviewed}
+            />
+            <SummaryStat
+              color={theme.colors.primary}
+              label={t('review.summary_remembered_label')}
+              valueTestID="summary-remembered-count"
+              value={summary.remembered}
+            />
+            <SummaryStat
+              color={theme.colors.danger}
+              label={t('review.summary_forgot_label')}
+              valueTestID="summary-forgot-count"
+              value={summary.forgot}
+            />
+          </View>
+
+          {carryOverCount > 0 ? (
+            <Banner
+              message={t('review.carry_over', {count: carryOverCount})}
+              variant="neutral"
+            />
+          ) : null}
           <AppButton
             accessibilityLabel={t('review.back_to_home_a11y')}
             onPress={() => navigation?.popToTop?.() ?? navigation?.goBack?.()}
@@ -350,6 +389,9 @@ export function DailyReviewScreen({
       </AppScreen>
     );
   }
+
+  // Card face height: fill the stage, leaving room for the hint rows.
+  const cardMinHeight = Math.max(260, stageHeight - 150);
 
   return (
     <AppScreen>
@@ -362,67 +404,103 @@ export function DailyReviewScreen({
           label={`${currentIndex + 1} / ${sessionCards.length}`}
           progress={(currentIndex + 1) / sessionCards.length}
         />
+        {carryOverCount > 0 ? (
+          <AppText
+            color="muted"
+            style={styles.carryOver}
+            testID="review-banner"
+            variant="caption"
+          >
+            {t('review.carry_over', {count: carryOverCount})}
+          </AppText>
+        ) : null}
       </View>
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          {
-            flexGrow: 1,
-            justifyContent: 'center',
-            paddingHorizontal: theme.gutter,
-          },
-        ]}
-        style={styles.flex1}
+      <View
+        onLayout={handleStageLayout}
+        style={[styles.stage, {paddingHorizontal: theme.gutter}]}
       >
-        {carryOverCount > 0 ? (
-          <Banner
-            message={t('review.carry_over', {count: carryOverCount})}
-            variant="neutral"
-          />
-        ) : null}
         {ratingError ? <ErrorCard message={ratingError} /> : null}
         {activeCard ? (
-          <FlipCard
-            back={<FlashcardFace card={activeCard} side="back" />}
-            backHint={t('review.show_prompt_hint')}
-            flipped={flipped}
-            front={<FlashcardFace card={activeCard} side="front" />}
-            frontHint={t('review.show_answer_hint')}
-            onFlip={() => setFlipped(value => !value)}
-            testID="daily-review-flip-card"
-          />
+          <SwipeCard
+            cardKey={activeCard.id}
+            enabled={flipped}
+            leftLabel={t('rating.forgot_label')}
+            onSwipe={handleSwipe}
+            rightLabel={t('rating.remembered_label')}
+            testID="review-swipe-card"
+          >
+            <FlipCard
+              back={<FlashcardFace card={activeCard} side="back" />}
+              backHint={t('review.swipe_hint')}
+              flipped={flipped}
+              front={<FlashcardFace card={activeCard} side="front" />}
+              frontHint={t('review.show_answer_hint')}
+              minHeight={cardMinHeight}
+              onFlip={() => setFlipped(value => !value)}
+              testID="daily-review-flip-card"
+            />
+          </SwipeCard>
         ) : null}
+      </View>
+
+      <View style={[styles.actions, {paddingHorizontal: theme.gutter}]}>
         <RatingControl
           disabled={!flipped}
           onRate={handleRate}
+          onReveal={() => setFlipped(true)}
           onSkip={handleSkip}
         />
-      </ScrollView>
+      </View>
     </AppScreen>
   );
 }
 
+function SummaryStat({
+  label,
+  value,
+  color,
+  valueTestID,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  valueTestID: string;
+}) {
+  return (
+    <AppCard style={styles.statCard}>
+      <View accessible accessibilityLabel={`${label}: ${value}`}>
+        <AppText
+          style={[styles.statValue, {color}]}
+          testID={valueTestID}
+          variant="h2"
+        >
+          {value}
+        </AppText>
+        <AppText color="secondary" style={styles.centerText} variant="label">
+          {label}
+        </AppText>
+      </View>
+    </AppCard>
+  );
+}
+
 const styles = StyleSheet.create({
-  breakdown: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+  actions: {
+    paddingBottom: 12,
+    paddingTop: 8,
   },
-  breakdownItem: {
-    flexBasis: '46%',
-    flexGrow: 1,
-    gap: 4,
+  carryOver: {
+    marginTop: 4,
+    textAlign: 'right',
+  },
+  centerText: {
+    textAlign: 'center',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     padding: 16,
-  },
-  content: {
-    gap: 16,
-    paddingBottom: 32,
-    paddingTop: 8,
   },
   emptyCopy: {
     maxWidth: 280,
@@ -441,28 +519,41 @@ const styles = StyleSheet.create({
   progress: {
     paddingBottom: 8,
   },
-  statRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 14,
-  },
-  statText: {
+  stage: {
     flex: 1,
-    gap: 4,
+    gap: 12,
+    justifyContent: 'center',
+    paddingVertical: 8,
   },
-  summaryCard: {
-    gap: 16,
+  statCard: {
+    flex: 1,
   },
-  xpRow: {
+  statGrid: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  statValue: {
+    textAlign: 'center',
+  },
+  summaryContent: {
+    gap: 20,
+    paddingBottom: 32,
+    paddingTop: 32,
+  },
+  summaryHero: {
     alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    gap: 8,
+  },
+  xpPill: {
+    alignItems: 'center',
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 4,
+    paddingHorizontal: 14,
     paddingVertical: 8,
   },
   xpText: {
     fontWeight: '700',
-  },
-  flex1: {
-    flex: 1,
   },
 });

@@ -132,10 +132,10 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
     );
 
     // === STEP 5: Rate the card as "remembered" ===
+    await revealCard(reviewTree);
     const rememberedButton = reviewTree.root.findByProps({
       testID: 'rating-remembered',
     });
-    await revealCard(reviewTree);
     await act(async () => {
       rememberedButton.props.onPress();
     });

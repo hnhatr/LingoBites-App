@@ -190,7 +190,14 @@
     "exit_title": "Thoát buổi ôn tập?",
     "exit_body": "Tiến độ {{reviewed}}/{{total}} sẽ không được lưu.",
     "exit_stay": "Huỷ",
-    "exit_quit": "Thoát"
+    "exit_quit": "Thoát",
+    "swipe_hint": "Vuốt phải nếu nhớ, vuốt trái nếu quên",
+    "summary_great": "Tuyệt vời!",
+    "summary_good": "Làm tốt lắm!",
+    "summary_keep": "Cố lên nhé!",
+    "summary_accuracy": "đã nhớ",
+    "summary_accuracy_a11y": "Đã nhớ {{percent}}% số thẻ",
+    "summary_subtitle": "Bạn vừa ôn {{count}} thẻ"
   },
   "rating": {
     "forgot_label": "Quên",
@@ -198,7 +205,12 @@
     "remembered_label": "Nhớ",
     "remembered_a11y": "Đã nhớ - lên lịch ôn sau",
     "skip_label": "Bỏ qua",
-    "skip_a11y": "Bỏ qua thẻ này"
+    "skip_a11y": "Bỏ qua thẻ này",
+    "forgot_hint": "ôn lại sau 1 ngày",
+    "remembered_hint": "lên lịch ôn sau",
+    "reveal_label": "Xem nghĩa",
+    "reveal_a11y": "Xem nghĩa",
+    "reveal_hint": "Lật thẻ để xem nghĩa và chấm điểm"
   },
   "common": {
     "retry": "Thử lại",

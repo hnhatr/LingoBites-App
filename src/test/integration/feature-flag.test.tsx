@@ -122,10 +122,11 @@ describe('Feature Flag: reviewSystem', () => {
       );
       expect(flipCards.length).toBeGreaterThan(0);
 
-      const ratingButtons = tree.root.findAll(
-        node => node.props.testID === 'rating-remembered',
+      // Pre-flip the rating row is a single reveal action.
+      const revealButtons = tree.root.findAll(
+        node => node.props.testID === 'rating-reveal',
       );
-      expect(ratingButtons.length).toBeGreaterThan(0);
+      expect(revealButtons.length).toBeGreaterThan(0);
 
       // Should NOT show disabled message
       const errorMessages = tree.root.findAll(
