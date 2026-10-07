@@ -20,6 +20,8 @@ import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
 import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
 import type {LessonSourceType} from '@core/schemas/lesson';
 
+import {activityCountOf, lessonContextLabel} from './lessonCardData';
+
 export interface SegmentFilterState {
   searchQuery: string;
   sourceFilter: LibrarySourceFilter;
@@ -139,6 +141,9 @@ export function useLibrarySegments(
       sourceType: item.snapshot.source_type,
       origin: item.snapshot.origin,
       practiceReady: isPracticeReady(item.snapshot),
+      contextLabel: lessonContextLabel(item.snapshot.unit),
+      activityCount: activityCountOf(item.snapshot),
+      youtubeDurationMs: item.snapshot.youtube?.duration_ms ?? null,
     }));
   }, [needsLessons, downloads]);
 

@@ -95,11 +95,11 @@ beforeEach(() => {
 });
 
 describe('schema v5 upgrade', () => {
-  it('moves a v4 database to v5 and is the current app schema', () => {
+  it('moves a v4 database to v5, below the current app schema', () => {
     expect(readAppSchemaVersion(db)).toBe(4);
     ensureSchemaV5Upgrade(db, NOW);
     expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION_V5);
-    expect(APP_SCHEMA_VERSION).toBe(APP_SCHEMA_VERSION_V5);
+    expect(APP_SCHEMA_VERSION).toBeGreaterThan(APP_SCHEMA_VERSION_V5);
   });
 
   it('merges cards of one lemma into the best card and keeps every source', () => {
@@ -262,10 +262,10 @@ describe('schema v5 upgrade', () => {
     expect(readAppSchemaVersion(older)).toBe(3);
   });
 
-  it('reaches v5 through the full runMigrations chain', () => {
+  it('passes v5 on the full runMigrations chain', () => {
     seedCard({id: 'a', lesson: 'L1', word: 'coffee'});
     runMigrations(db);
-    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION_V5);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
     expect(card('a').item_key).toBe('word:coffee');
   });
 

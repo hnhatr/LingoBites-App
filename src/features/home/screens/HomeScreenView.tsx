@@ -52,6 +52,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     goLessonsTab,
     openVideoCell,
     openRecentItem,
+    unsaveRecentItem,
     onNavigateCreate,
     onNavigateLessonList,
     onContinueStartedLesson,
@@ -161,6 +162,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           <HomeSavedRail
             items={railItems}
             onItem={openRecentItem}
+            onUnsave={unsaveRecentItem}
             onViewAll={goLessonsTab}
           />
         </View>

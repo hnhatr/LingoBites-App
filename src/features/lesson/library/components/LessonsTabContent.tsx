@@ -2,10 +2,15 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 
-import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {
+  LessonCard,
+  lessonCardDurationLabel,
+  lessonCardKind,
+  type LessonCardProgress,
+  splitLessonTitle,
+} from '@ui/components/LessonCard';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
@@ -13,10 +18,13 @@ import type {AppTheme} from '@ui/theme/types';
 import {useAppNavigation} from '@core/navigation';
 import type {LessonCatalogItem, LessonSourceType} from '@core/schemas/lesson';
 
+import type {LibraryLessonCardView} from '../logic/lesson';
 import {
-  LIBRARY_SOURCE_FILTER_OPTIONS,
-  type LibraryLessonCardView,
-} from '../logic/lesson';
+  EMPTY_LESSON_CARD_STATE,
+  lessonContextLabel,
+  readLessonCardLocalState,
+  useLessonBookmarks,
+} from '../logic/lessonCardData';
 import {LibraryEmptyState} from './LibraryEmptyState';
 
 export interface LessonsTabContentProps {
@@ -42,13 +50,16 @@ type LessonType = 'packaged' | 'catalog';
 
 interface LessonItem {
   id: string;
+  /** Raw title; the card splits "English · Tiếng Việt". */
   title: string;
-  summary: string | null;
-  /** "12 câu · ~6 phút · Tải 2026-10-06": what the lesson contains. */
-  meta: string;
   sourceType: LessonSourceType;
   type: LessonType;
   practiceReady: boolean;
+  sentenceCount: number;
+  estimatedMinutes: number | null;
+  durationLabel: string | null;
+  contextLabel: string | null;
+  exerciseCount: number;
 }
 
 interface LessonSection {
@@ -62,14 +73,6 @@ const LESSON_HINTS: Record<LessonType, string> = {
   catalog: 'Bài học trong danh mục. Chạm để mở bài.',
 };
 
-const SOURCE_LABELS = Object.fromEntries(
-  LIBRARY_SOURCE_FILTER_OPTIONS.map(option => [option.key, option.label]),
-) as Record<string, string>;
-
-function buildMeta(parts: (string | null)[]): string {
-  return parts.filter(Boolean).join(' · ');
-}
-
 function createStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
@@ -78,18 +81,6 @@ function createStyles(theme: AppTheme) {
     contentContainer: {
       gap: theme.spacing.md,
       padding: theme.gutter,
-    },
-    pressable: {
-      flex: 1,
-    },
-    cardContent: {
-      gap: theme.spacing.xs,
-    },
-    badgeRow: {
-      alignItems: 'flex-start',
-    },
-    lessonTitle: {
-      marginBottom: theme.spacing.xs,
     },
     viewAll: {
       paddingVertical: theme.spacing.xs,
@@ -124,6 +115,15 @@ export function LessonsTabContent({
   const {t} = useTranslation();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  const {isBookmarked, toggleBookmark} = useLessonBookmarks();
+  const localState = useMemo(
+    () =>
+      (packagedLessons?.length ?? 0) + (catalogLessons?.length ?? 0) > 0
+        ? readLessonCardLocalState()
+        : EMPTY_LESSON_CARD_STATE,
+    [packagedLessons, catalogLessons],
+  );
+
   const sections = useMemo((): LessonSection[] => {
     const result: LessonSection[] = [];
 
@@ -131,15 +131,17 @@ export function LessonsTabContent({
       const packagedItems: LessonItem[] = packagedLessons.map(lesson => ({
         id: lesson.id,
         title: lesson.title,
-        summary: lesson.blurb || null,
-        meta: buildMeta([
-          lesson.vocabularyCount > 0 ? `${lesson.vocabularyCount} câu` : null,
-          lesson.durationMin > 0 ? `~${lesson.durationMin} phút` : null,
-          lesson.dateLabel ? `Tải ${lesson.dateLabel}` : null,
-        ]),
         sourceType: lesson.sourceType,
         type: 'packaged' as const,
         practiceReady: lesson.practiceReady === true,
+        sentenceCount: lesson.vocabularyCount,
+        estimatedMinutes: null,
+        durationLabel: lessonCardDurationLabel({
+          youtubeDurationMs: lesson.youtubeDurationMs,
+          estimatedMinutes: lesson.durationMin,
+        }),
+        contextLabel: lesson.contextLabel ?? null,
+        exerciseCount: lesson.activityCount ?? 0,
       }));
 
       result.push({
@@ -155,11 +157,18 @@ export function LessonsTabContent({
         data: catalogLessons.slice(0, CATALOG_PREVIEW_LIMIT).map(lesson => ({
           id: lesson.id,
           title: lesson.title,
-          summary: lesson.description || null,
-          meta: buildMeta([`${lesson.sentence_count} câu`]),
           sourceType: lesson.source_type,
           type: 'catalog' as const,
           practiceReady: false,
+          sentenceCount: lesson.sentence_count,
+          estimatedMinutes: lesson.estimated_minutes ?? null,
+          durationLabel: lessonCardDurationLabel({
+            estimatedMinutes: lesson.estimated_minutes,
+            youtubeDurationMs: lesson.youtube_duration_ms,
+            sentenceCount: lesson.sentence_count,
+          }),
+          contextLabel: lessonContextLabel(lesson.unit),
+          exerciseCount: lesson.activity_count ?? 0,
         })),
         type: 'catalog',
       });
@@ -168,75 +177,62 @@ export function LessonsTabContent({
     return result;
   }, [packagedLessons, catalogLessons, packagedTitle]);
 
-  const handleLessonPress = (item: LessonItem) => {
-    navigation.openLesson(item.id);
-  };
-
-  const renderLessonItem = ({item}: {item: LessonItem}) => (
-    <View style={styles.pressable}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={item.title}
+  const renderLessonItem = ({item}: {item: LessonItem}) => {
+    const {title, subtitle} = splitLessonTitle(item.title);
+    const downloaded =
+      item.type === 'packaged' || localState.downloadedIds.has(item.id);
+    const progress: LessonCardProgress | undefined = localState.progress.get(
+      item.id,
+    );
+    return (
+      <LessonCard
         accessibilityHint={LESSON_HINTS[item.type]}
-        onPress={() => handleLessonPress(item)}
-        testID={`lesson-item-${item.id}`}
-        style={styles.pressable}
-      >
-        <AppCard>
-          <View style={styles.cardContent}>
-            <View style={styles.badgeRow}>
-              <Chip
-                label={SOURCE_LABELS[item.sourceType] ?? item.sourceType}
-                tone="accentSoft"
-              />
-            </View>
-            <AppText
-              variant="h3"
-              style={styles.lessonTitle}
-              testID={`lesson-title-${item.id}`}
+        bookmarked={isBookmarked(item.id)}
+        context={item.contextLabel}
+        downloaded={downloaded}
+        durationLabel={item.durationLabel}
+        exerciseCount={
+          item.exerciseCount || localState.activityCounts.get(item.id)
+        }
+        footer={
+          // Outside the card's open button, so it stays reachable.
+          onPracticeLesson && item.practiceReady ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('library.practice_a11y', {
+                title: item.title,
+              })}
+              accessibilityHint={t('practice.entry_hint')}
+              onPress={() => onPracticeLesson(item.id)}
+              style={styles.practice}
+              testID={`lesson-practice-${item.id}`}
             >
-              {item.title}
-            </AppText>
-            {item.summary && (
-              <AppText
-                variant="label"
-                color="secondary"
-                numberOfLines={2}
-                ellipsizeMode="tail"
-                testID={`lesson-summary-${item.id}`}
-              >
-                {item.summary}
+              <AppText variant="label" color="primary">
+                {t('practice.entry_button')}
               </AppText>
-            )}
-            {item.meta ? (
-              <AppText
-                variant="caption"
-                color="muted"
-                testID={`lesson-meta-${item.id}`}
-              >
-                {item.meta}
-              </AppText>
-            ) : null}
-          </View>
-        </AppCard>
-      </Pressable>
-      {/* A sibling of the card button (not nested) so it stays reachable. */}
-      {onPracticeLesson && item.practiceReady ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('library.practice_a11y', {title: item.title})}
-          accessibilityHint={t('practice.entry_hint')}
-          onPress={() => onPracticeLesson(item.id)}
-          style={styles.practice}
-          testID={`lesson-practice-${item.id}`}
-        >
-          <AppText variant="label" color="primary">
-            {t('practice.entry_button')}
-          </AppText>
-        </Pressable>
-      ) : null}
-    </View>
-  );
+            </Pressable>
+          ) : undefined
+        }
+        kind={lessonCardKind(item.sourceType)}
+        onPress={() => navigation.openLesson(item.id)}
+        onToggleBookmark={() =>
+          toggleBookmark({
+            lessonId: item.id,
+            title: item.title,
+            sourceType: item.sourceType,
+            sentenceCount: item.sentenceCount,
+            estimatedMinutes: item.estimatedMinutes,
+            contextLabel: item.contextLabel,
+          })
+        }
+        progress={progress}
+        sentenceCount={item.sentenceCount}
+        subtitle={subtitle}
+        testID={`lesson-item-${item.id}`}
+        title={title}
+      />
+    );
+  };
 
   const renderSectionHeader = ({section}: {section: LessonSection}) =>
     section.title === '' ? null : (

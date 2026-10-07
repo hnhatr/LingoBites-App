@@ -204,10 +204,10 @@ describe('§VS-8 exact copy assertions', () => {
   it('saved_rail_empty matches approved copy', () => {
     expect(
       resolveKey(vi as Record<string, unknown>, 'home.saved_rail_empty'),
-    ).toBe('Bài bạn tạo hoặc tải về sẽ hiện ở đây.');
+    ).toBe('Chạm biểu tượng lưu trên thẻ bài học để giữ bài ở đây.');
     expect(
       resolveKey(en as Record<string, unknown>, 'home.saved_rail_empty'),
-    ).toBe('Lessons you create or download will show up here.');
+    ).toBe('Tap the bookmark on a lesson card to keep it here.');
   });
 
   it('streak_unit plural forms have correct values in vi and en', () => {

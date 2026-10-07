@@ -9,6 +9,10 @@ import {
   type SyncRecord,
 } from '@core/schemas/sync';
 import {
+  applyLessonBookmarkRecord,
+  LESSON_BOOKMARKS_EVENT_TYPE,
+} from '@core/sync/lessonBookmarks';
+import {
   LESSON_PROGRESS_EVENT_TYPE,
   lessonProgressRank,
 } from '@core/sync/lessonProgress';
@@ -238,6 +242,10 @@ export function applySyncRecord(
   }
   if (record.collection === SPEAKING_ATTEMPTS_EVENT_TYPE) {
     applySpeakingAttemptRecord(record, pendingUnlinks);
+    return;
+  }
+  if (record.collection === LESSON_BOOKMARKS_EVENT_TYPE) {
+    applyLessonBookmarkRecord(record);
     return;
   }
   if (!SyncCollectionSchema.safeParse(record.collection).success) {

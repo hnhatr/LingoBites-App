@@ -3,6 +3,7 @@ import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
 import {clearLessonTokens} from '../security/lessonTokenStore';
 import {getDatabase, withTransaction} from './database';
 import {SCHEMA_V5_TABLES} from './schemaV5';
+import {SCHEMA_V6_TABLES} from './schemaV6';
 
 const CURRENT_ACCOUNT_ID_KEY = 'current_account_id';
 
@@ -27,7 +28,7 @@ function deleteLearnerOwnedRows(db: QuickSQLiteConnection): void {
   db.execute('DELETE FROM review_sessions;');
   db.execute('DELETE FROM review_schedule;');
   db.execute('DELETE FROM flashcards;');
-  for (const table of SCHEMA_V5_TABLES) {
+  for (const table of [...SCHEMA_V5_TABLES, ...SCHEMA_V6_TABLES]) {
     db.execute(`DELETE FROM ${table};`);
   }
   try {
