@@ -34,7 +34,6 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
-import {IconButton} from '@ui/components/IconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
