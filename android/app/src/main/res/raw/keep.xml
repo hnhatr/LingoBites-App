@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  React Native copies JS-required images into res/drawable-* and loads them by
+  name at runtime, so the resource shrinker cannot see they are used.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/src_*,@drawable/node_modules_*,@raw/src_*,@raw/node_modules_*" />
