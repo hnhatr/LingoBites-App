@@ -11,7 +11,6 @@
 
 # react-native-config reads the generated BuildConfig fields via reflection.
 -keep class com.lingobites.BuildConfig { *; }
--keepresources string/build_config_package
 
 # react-native-quick-sqlite registers JNI natives against this class name.
 -keep class com.margelo.rnquicksqlite.** { *; }
