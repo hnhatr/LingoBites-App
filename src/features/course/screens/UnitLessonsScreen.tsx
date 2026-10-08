@@ -10,6 +10,7 @@ import {
 } from '@features/lesson/library';
 
 import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
 import {
   LessonCard,
   lessonCardDurationLabel,
@@ -78,6 +79,17 @@ export function UnitLessonsScreen({navigation, route}: Props) {
                 sentenceCount,
               })}
               exerciseCount={localState?.activityCounts.get(lesson.id)}
+              footer={
+                lesson.canDo[0] ? (
+                  <AppText
+                    color="secondary"
+                    numberOfLines={2}
+                    testID={`unit-lessons-can-do-${lesson.id}`}
+                  >
+                    {t('course.unit_can_do', {text: lesson.canDo[0]})}
+                  </AppText>
+                ) : undefined
+              }
               kind={lessonCardKind(sourceType)}
               onPress={onPress}
               onToggleBookmark={() =>

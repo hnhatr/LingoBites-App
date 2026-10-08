@@ -711,6 +711,7 @@
     "lesson_number": "Bài {{number}}",
     "lesson_completed": "Đã hoàn thành",
     "lesson_minutes": "{{count}} phút",
+    "unit_can_do": "Bạn sẽ: {{text}}",
     "load_failed": "Không tải được giáo trình.",
     "retry_hint": "Tải lại giáo trình"
   },

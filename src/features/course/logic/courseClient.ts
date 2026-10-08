@@ -39,6 +39,8 @@ const LevelSchema = z.object({
   position: z.number().int(),
 });
 
+const AudienceSchema = z.enum(['all', 'kids', 'adults']);
+
 const UnitSchema = z.object({
   id: z.string(),
   levelId: z.string(),
@@ -46,6 +48,9 @@ const UnitSchema = z.object({
   title: z.string(),
   description: z.string(),
   position: z.number().int(),
+  /** What the learner can do after the unit; absent on older servers. */
+  canDo: z.array(z.string()).default([]),
+  audience: AudienceSchema.default('all'),
 });
 
 const CurriculumLessonSchema = z.object({
@@ -56,6 +61,9 @@ const CurriculumLessonSchema = z.object({
   description: z.string(),
   position: z.number().int(),
   estimatedMinutes: z.number().int().nullable(),
+  /** What the learner can do after the lesson; absent on older servers. */
+  canDo: z.array(z.string()).default([]),
+  audience: AudienceSchema.default('all'),
 });
 
 const EntitlementsResponseSchema = z.object({course_ids: z.array(z.string())});

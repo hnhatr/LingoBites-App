@@ -711,6 +711,7 @@
     "lesson_number": "Lesson {{number}}",
     "lesson_completed": "Completed",
     "lesson_minutes": "{{count}} min",
+    "unit_can_do": "You will: {{text}}",
     "load_failed": "The curriculum failed to load.",
     "retry_hint": "Reload the curriculum"
   },

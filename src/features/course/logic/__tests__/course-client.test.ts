@@ -149,6 +149,9 @@ describe('courseClient (F14 curriculum routes)', () => {
       `https://api.example/v1/units/${UNIT_ID}/lessons`,
     ]);
     expect(units.ok && units.value[0].id).toBe(UNIT_ID);
+    // Older servers send no specification: it reads as empty.
+    expect(units.ok && units.value[0].canDo).toEqual([]);
+    expect(units.ok && units.value[0].audience).toBe('all');
     expect(lessons.ok && lessons.value.map(item => item.id)).toEqual([
       'first',
       'second',
