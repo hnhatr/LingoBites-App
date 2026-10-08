@@ -1,7 +1,9 @@
 import React from 'react';
+import {act} from 'react-test-renderer';
 
-import {resetDatabaseForTests} from '@core/db/database';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+import {LessonActivityAttemptPayloadSchema} from '@core/schemas/sync';
 
 import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 import {
@@ -18,7 +20,10 @@ jest.mock('@features/audio', () => ({
   speak: jest.fn(() => Promise.resolve({ok: true})),
 }));
 
-jest.mock('@features/sync', () => ({requestSync: jest.fn()}));
+const mockRequestSync = jest.fn();
+jest.mock('@features/sync', () => ({requestSync: () => mockRequestSync()}));
+
+jest.mock('@features/speaking', () => ({loadLessonRecorder: () => null}));
 
 const snapshot = seedSnapshot();
 let mockState: {status: string; [key: string]: unknown};
@@ -92,5 +97,55 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     };
     const {tree} = renderScreen();
     expect(has(tree, 'lesson-flow-not-curriculum')).toBe(true);
+  });
+
+  it('records one attempt per finished activity and resumes after them', () => {
+    const {tree} = renderScreen();
+    press(tree, 'lesson-flow-step-3');
+    for (let i = 0; i < 3; i += 1) {
+      press(tree, 'lesson-flow-self-pass');
+      press(tree, 'lesson-flow-entry-next');
+    }
+    expect(textOf(tree, 'lesson-flow-activity-outcome')).toBe(
+      'Đạt, tự làm được',
+    );
+    press(tree, 'lesson-flow-next');
+    press(tree, 'lesson-flow-self-fail');
+    press(tree, 'lesson-flow-entry-next');
+    for (let i = 0; i < 3; i += 1) {
+      press(tree, 'lesson-flow-self-pass');
+      press(tree, 'lesson-flow-entry-next');
+    }
+    press(tree, 'lesson-flow-step-6');
+    expect(textOf(tree, 'lesson-flow-practice-status')).toBe(
+      'Đã hoàn thành phần luyện',
+    );
+    expect(mockRequestSync).toHaveBeenCalledTimes(2);
+
+    const rows = getDatabase().execute(
+      `SELECT payload_json FROM sync_outbox
+        WHERE event_type = 'activity_attempts' ORDER BY created_at;`,
+    ).rows!;
+    const payloads = [0, 1].map(i =>
+      LessonActivityAttemptPayloadSchema.parse(
+        JSON.parse(
+          String((rows.item(i) as {payload_json: string}).payload_json),
+        ),
+      ),
+    );
+    expect(
+      payloads.map(p => [p.activity, p.step, p.outcome, p.assessed_by]),
+    ).toEqual([
+      ['listen_and_repeat', 3, 'pass_independent', 'self'],
+      ['speaking_drill', 4, 'fail', 'self'],
+    ]);
+    expect(payloads[1]!.item_keys).toContain('pattern:can-i-have');
+    expect(payloads[0]!.session_id).toBe(payloads[1]!.session_id);
+
+    act(() => {
+      tree.unmount();
+    });
+    const again = renderScreen();
+    expect(textOf(again.tree, 'lesson-flow-step-title')).toContain('Bước 5');
   });
 });

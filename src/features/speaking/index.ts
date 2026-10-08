@@ -42,6 +42,28 @@ export async function sweepSpeakingRecordingsDirectory(): Promise<void> {
   }
   await sweepRecordingsDirectory();
 }
+/**
+ * PR 10: the recorder for the lesson player's speaking self-check. Files stay
+ * on the device (the caller deletes them); nothing is uploaded or stored in
+ * `speaking_recordings`. Loaded lazily like the helpers above, so screens
+ * that never record do not need the native module; `null` when unavailable.
+ */
+export type LessonRecorder = Pick<
+  typeof import('./logic/recordingService'),
+  | 'startRecording'
+  | 'stopRecording'
+  | 'playRecording'
+  | 'stopPlayback'
+  | 'deleteRecordingFile'
+>;
+
+export function loadLessonRecorder(): LessonRecorder | null {
+  try {
+    return require('./logic/recordingService') as typeof import('./logic/recordingService');
+  } catch {
+    return null;
+  }
+}
 export {saveShadowingAttempt} from './logic/shadowing/saveShadowingAttempt';
 export {
   initRecordingUploadQueue,
