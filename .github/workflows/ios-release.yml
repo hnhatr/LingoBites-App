@@ -1,26 +1,48 @@
-name: iOS Staging TestFlight
+name: iOS Release TestFlight
 
-# Manual dispatch only. There is intentionally no push/PR/tag trigger and no
-# input that can select a production scheme/bundle id — this workflow only
-# ever builds the Staging scheme via `fastlane ios staging`.
+# Manual dispatch only. Builds the selected scheme via the existing Fastlane
+# lane `fastlane ios <env>` (see fastlane/Fastfile) and uploads to TestFlight.
+# The GitHub Environment matching `env` supplies the secrets (including the
+# whole .env.<env> file as APP_ENV_FILE), so give the `production` environment
+# required reviewers.
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      env:
+        description: App environment (scheme)
+        type: choice
+        options: [staging, production]
+        default: staging
 
 concurrency:
-  group: ios-staging-testflight
+  group: ios-release-${{ inputs.env }}
   cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   build-and-upload:
-    name: Build Staging & upload to TestFlight
+    name: Build ${{ inputs.env }} & upload to TestFlight
     runs-on: macos-latest
     timeout-minutes: 60
-    environment: staging
+    environment: ${{ inputs.env }}
     env:
-      ENVFILE: .env.staging
+      ENVFILE: .env.${{ inputs.env }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve scheme for environment
+        run: |
+          set -euo pipefail
+          case "${{ inputs.env }}" in
+            staging)    scheme=Staging;    configuration=ReleaseStag ;;
+            production) scheme=Production; configuration=ReleaseProd ;;
+            *) echo "Unknown env: ${{ inputs.env }}" >&2; exit 1 ;;
+          esac
+          printf 'IOS_SCHEME=%s\n' "$scheme" >> "$GITHUB_ENV"
+          printf 'IOS_CONFIGURATION=%s\n' "$configuration" >> "$GITHUB_ENV"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -61,22 +83,23 @@ jobs:
       - name: Test
         run: yarn test --passWithNoTests
 
-      - name: Verify required secrets and vars are present
+      - name: Verify required secrets are present
         run: |
           set -euo pipefail
           missing=()
-          for var_name in APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_API_KEY IOS_DEVELOPMENT_TEAM IOS_DISTRIBUTION_CERTIFICATE_BASE64 IOS_DISTRIBUTION_CERTIFICATE_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 STAGING_API_BASE_URL STAGING_IOS_BUNDLE_ID; do
+          for var_name in APP_ENV_FILE APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_API_KEY IOS_DEVELOPMENT_TEAM IOS_DISTRIBUTION_CERTIFICATE_BASE64 IOS_DISTRIBUTION_CERTIFICATE_PASSWORD IOS_PROVISIONING_PROFILE_BASE64; do
             if [ -z "${!var_name:-}" ]; then
               missing+=("$var_name")
             fi
           done
           if [ "${#missing[@]}" -gt 0 ]; then
-            echo "Missing required secrets/vars:" >&2
+            echo "Missing required secrets in the '${{ inputs.env }}' environment:" >&2
             printf '  - %s\n' "${missing[@]}" >&2
             exit 1
           fi
-          echo "All required secrets/vars are present."
+          echo "All required secrets are present."
         env:
+          APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.IOS_APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.IOS_APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY }}
@@ -84,58 +107,50 @@ jobs:
           IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
           IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-          STAGING_API_BASE_URL: ${{ vars.STAGING_API_BASE_URL }}
-          STAGING_IOS_BUNDLE_ID: ${{ vars.STAGING_IOS_BUNDLE_ID }}
 
-      - name: Materialize .env.staging
-        # .env.staging is gitignored and never committed (see .gitignore). It is
-        # rebuilt every run from the already-committed .env.example template so its
-        # key set/format can't drift from what react-native-config expects, with
-        # only the staging-specific values overridden. None of these overrides are
-        # credentials (bundle id, app name, icon, API base URL are all visible in
-        # the shipped app / its network traffic), so they come from repository
-        # *variables* (vars.*, unmasked) rather than secrets — masking them would
-        # only make build logs harder to debug for no confidentiality benefit.
-        # Real credentials (App Store Connect key, signing team) stay in secrets.*
-        # and are never written to this file.
+      - name: Materialize env file
+        # The whole .env.<env> file is stored as the APP_ENV_FILE secret of the
+        # matching GitHub Environment (update it with `yarn env:push:<env>`).
+        # Everything in it is bundled into the app by react-native-config, so it
+        # must never contain signing material or other credentials; those stay
+        # in their own secrets.* and are never written to this file.
         run: |
           set -euo pipefail
-          cp .env.example .env.staging
-          sed -i '' \
-            -e "s|^APP_ENV=.*|APP_ENV=staging|" \
-            -e "s|^APP_NAME=.*|APP_NAME=LingoBites Staging|" \
-            -e "s|^API_BASE_URL=.*|API_BASE_URL=${STAGING_API_BASE_URL}|" \
-            -e "s|^USE_MOCK_AI=.*|USE_MOCK_AI=false|" \
-            -e "s|^USE_MOCK_OCR=.*|USE_MOCK_OCR=false|" \
-            -e "s|^IOS_BUNDLE_ID=.*|IOS_BUNDLE_ID=${STAGING_IOS_BUNDLE_ID}|" \
-            -e "s|^IOS_APP_ICON_NAME=.*|IOS_APP_ICON_NAME=AppIconStaging|" \
-            .env.staging
+          printf '%s\n' "$APP_ENV_FILE" | tr -d '\r' > "$ENVFILE"
+          for key in IOS_BUNDLE_ID IOS_APP_VERSION_NAME APP_NAME; do
+            if ! grep -q "^${key}=" "$ENVFILE"; then
+              echo "Missing ${key} in APP_ENV_FILE for '${{ inputs.env }}'." >&2
+              exit 1
+            fi
+          done
+          bundle_id="$(grep '^IOS_BUNDLE_ID=' "$ENVFILE" | cut -d= -f2-)"
+          echo "Bundle id: $bundle_id"
+          printf 'EXPECTED_IOS_BUNDLE_ID=%s\n' "$bundle_id" >> "$GITHUB_ENV"
         env:
-          STAGING_API_BASE_URL: ${{ vars.STAGING_API_BASE_URL }}
-          STAGING_IOS_BUNDLE_ID: ${{ vars.STAGING_IOS_BUNDLE_ID }}
+          APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
 
-      - name: Generate Xcode build config from .env.staging
+      - name: Generate Xcode build config from env file
         run: |
           set -euo pipefail
           ruby ./node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb . ios/tmp.xcconfig
 
-      - name: Preflight - assert staging bundle id (not production)
+      - name: Preflight - assert resolved bundle id matches env file
         run: |
           set -euo pipefail
-          resolved="$(xcodebuild -workspace ios/LingoBites.xcworkspace -scheme Staging -configuration ReleaseStag -showBuildSettings 2>/dev/null | awk -F ' = ' '$1 ~ /^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER$/ {print $2}')"
+          resolved="$(xcodebuild -workspace ios/LingoBites.xcworkspace -scheme "$IOS_SCHEME" -configuration "$IOS_CONFIGURATION" -showBuildSettings 2>/dev/null | awk -F ' = ' '$1 ~ /^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER$/ {print $2}')"
           echo "Resolved bundle id: $resolved"
-          if [ "$resolved" != "$STAGING_IOS_BUNDLE_ID" ]; then
-            echo "Resolved bundle id '$resolved' does not match expected staging bundle id '$STAGING_IOS_BUNDLE_ID'. Aborting." >&2
+          if [ "$resolved" != "$EXPECTED_IOS_BUNDLE_ID" ]; then
+            echo "Resolved bundle id '$resolved' does not match IOS_BUNDLE_ID '$EXPECTED_IOS_BUNDLE_ID' from APP_ENV_FILE. Aborting." >&2
             exit 1
           fi
-          case "$resolved" in
-            *prod*|*Production*)
-              echo "Resolved bundle id '$resolved' looks like a production identifier. Aborting." >&2
-              exit 1
-              ;;
-          esac
-        env:
-          STAGING_IOS_BUNDLE_ID: ${{ vars.STAGING_IOS_BUNDLE_ID }}
+          if [ "${{ inputs.env }}" = "staging" ]; then
+            case "$resolved" in
+              *prod*|*Production*)
+                echo "Resolved bundle id '$resolved' looks like a production identifier for a staging build. Aborting." >&2
+                exit 1
+                ;;
+            esac
+          fi
 
       - name: Materialize iOS signing files
         run: |
@@ -143,7 +158,7 @@ jobs:
           umask 077
           signing_dir="$RUNNER_TEMP/lingobites-signing"
           certificate_path="$RUNNER_TEMP/lingobites-signing/distribution.p12"
-          profile_path="$RUNNER_TEMP/lingobites-signing/staging.mobileprovision"
+          profile_path="$RUNNER_TEMP/lingobites-signing/app-store.mobileprovision"
           mkdir -p "$signing_dir"
 
           printf '%s' "$IOS_DISTRIBUTION_CERTIFICATE_BASE64" | base64 --decode > "$certificate_path"
@@ -159,8 +174,8 @@ jobs:
           IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
 
-      - name: Build and upload to TestFlight (fastlane ios staging)
-        run: bundle exec fastlane ios staging
+      - name: Build and upload to TestFlight (fastlane ios ${{ inputs.env }})
+        run: bundle exec fastlane ios ${{ inputs.env }}
         env:
           BUILD_NUMBER: ${{ github.run_number }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.IOS_APP_STORE_CONNECT_KEY_ID }}
@@ -175,9 +190,9 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          rm -f .env.staging ios/tmp.xcconfig ios/.xcode.env.local
+          rm -f "$ENVFILE" ios/tmp.xcconfig ios/.xcode.env.local
           rm -f "$RUNNER_TEMP/lingobites-signing/distribution.p12"
-          rm -f "$RUNNER_TEMP/lingobites-signing/staging.mobileprovision"
+          rm -f "$RUNNER_TEMP/lingobites-signing/app-store.mobileprovision"
           rmdir "$RUNNER_TEMP/lingobites-signing" 2>/dev/null || true
           if security list-keychains | grep -q fastlane_tmp_keychain; then
             security delete-keychain fastlane_tmp_keychain || true
