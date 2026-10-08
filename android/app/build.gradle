@@ -89,6 +89,14 @@ def enableProguardInReleaseBuilds = true
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 /**
+ * versionCode: fastlane passes -PlingobitesVersionCode (latest Google Play version code + 1)
+ * so store builds never reuse a code; other builds use ANDROID_APP_VERSION_CODE from the env file.
+ */
+def resolveVersionCode = {
+    (project.findProperty("lingobitesVersionCode") ?: project.env.get("ANDROID_APP_VERSION_CODE")).toString().toInteger()
+}
+
+/**
  * Release signing: read from environment variables (see
  * scripts/android-local-build.env.example) or ~/.gradle/gradle.properties.
  * Never commit the keystore or its passwords.
@@ -118,7 +126,7 @@ android {
             dimension "env"
             applicationId project.env.get("ANDROID_BUNDLE_ID")
             versionName project.env.get("ANDROID_APP_VERSION_NAME")
-            versionCode project.env.get("ANDROID_APP_VERSION_CODE").toInteger()
+            versionCode resolveVersionCode()
             resValue "string", "app_name", project.env.get("APP_NAME")
             manifestPlaceholders = [usesCleartextTraffic: "true", expoChannel: "development"]
         }
@@ -126,7 +134,7 @@ android {
             dimension "env"
             applicationId project.env.get("ANDROID_BUNDLE_ID")
             versionName project.env.get("ANDROID_APP_VERSION_NAME")
-            versionCode project.env.get("ANDROID_APP_VERSION_CODE").toInteger()
+            versionCode resolveVersionCode()
             resValue "string", "app_name", project.env.get("APP_NAME")
             manifestPlaceholders = [usesCleartextTraffic: "false", expoChannel: "staging"]
         }
@@ -134,7 +142,7 @@ android {
             dimension "env"
             applicationId project.env.get("ANDROID_BUNDLE_ID")
             versionName project.env.get("ANDROID_APP_VERSION_NAME")
-            versionCode project.env.get("ANDROID_APP_VERSION_CODE").toInteger()
+            versionCode resolveVersionCode()
             resValue "string", "app_name", project.env.get("APP_NAME")
             manifestPlaceholders = [usesCleartextTraffic: "false", expoChannel: "production"]
         }
