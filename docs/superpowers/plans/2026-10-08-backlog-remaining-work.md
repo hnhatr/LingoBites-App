@@ -3,6 +3,7 @@
 > Lập ngày 2026-10-08, sau khi xong **Stage 1 và Stage 2** (PR 1–11) của `2026-10-07-backward-design-curriculum-plan.md`.
 > Mục đích: một chỗ duy nhất liệt kê mọi việc còn lại, để làm tiếp không bị sót.
 > Cập nhật file này mỗi khi xong hoặc thêm một việc.
+> **Khi quay lại làm tiếp, mở `2026-10-08-remaining-work-plan.md` trước** (thứ tự làm, checklist tiến độ).
 
 **Trạng thái hiện tại:**
 - Code PR 1–11 **đã merge vào `develop`** (server #114, app #221). Phát triển tiếp trên nền `develop`; `main` giữ bản ổn định.
