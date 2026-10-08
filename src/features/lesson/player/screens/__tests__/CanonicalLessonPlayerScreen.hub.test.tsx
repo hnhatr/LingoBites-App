@@ -1,10 +1,16 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
-import type {LessonSnapshot} from '@core/schemas/lesson';
+import {
+  type LessonSnapshot,
+  LessonSnapshotResponseSchema,
+} from '@core/schemas/lesson';
 
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
 
@@ -206,6 +212,51 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
       // The list keys a word by its item code (PR 5).
       has(tree, 'lesson-vocabulary-phrase:wake up'),
     ).toBe(true);
+  });
+
+  it('opens the pattern section of a curriculum lesson and speaks it', () => {
+    const raw = JSON.parse(
+      fs.readFileSync(
+        path.join(
+          __dirname,
+          '../../../../../core/schemas/__tests__/fixtures',
+          'valid-lesson-snapshot-with-spec-response.json',
+        ),
+        'utf8',
+      ),
+    );
+    const curriculum = LessonSnapshotResponseSchema.parse(raw).lesson;
+    mockState = {
+      status: 'ready',
+      snapshot: curriculum,
+      offline: false,
+      hasUpdate: false,
+    };
+    const {tree} = renderScreen();
+    expect(has(tree, 'lesson-outcome-card')).toBe(true);
+    act(() => {
+      pressable(tree, 'canonical-hub-explore-patterns').props.onPress();
+    });
+    expect(has(tree, 'lesson-pattern-section')).toBe(true);
+    expect(
+      tree.root.findAll(node => node.props.title === 'Mẫu câu').length,
+    ).toBeGreaterThan(0);
+    act(() => {
+      pressable(
+        tree,
+        'lesson-pattern-pattern:can-i-have-speak',
+      ).props.onPress();
+    });
+    expect(mockSpeak).toHaveBeenCalledWith(
+      'Can I have a small coffee, please?',
+    );
+    const header = tree.root
+      .findAll(node => typeof node.props.onBack === 'function')
+      .at(0);
+    act(() => {
+      header!.props.onBack();
+    });
+    expect(has(tree, 'canonical-lesson-hub')).toBe(true);
   });
 
   it('shows retry only for a load error', () => {

@@ -46,7 +46,9 @@ import {
 import {CanonicalLessonPlayer} from '../components/CanonicalLessonPlayer';
 import {LessonDisplayToggles} from '../components/LessonDisplayToggles';
 import {LessonGrammarSection} from '../components/LessonGrammarSection';
+import {LessonListeningSection} from '../components/LessonListeningSection';
 import {LessonPatternSection} from '../components/LessonPatternSection';
+import {LessonPronunciationSection} from '../components/LessonPronunciationSection';
 import {LessonVocabularySection} from '../components/LessonVocabularySection';
 import type {
   SentenceAnalysisPanelError,
@@ -55,7 +57,9 @@ import type {
 import type {YouTubePlayerRef} from '../components/YouTubePlayer';
 import {
   collectLessonGrammar,
+  collectLessonListening,
   collectLessonPatterns,
+  collectLessonPronunciation,
   collectLessonVocabulary,
   mergeAnalyses,
 } from '../logic/lessonHubContent';
@@ -225,6 +229,14 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   );
   const patterns = useMemo(
     () => (snapshot ? collectLessonPatterns(snapshot) : []),
+    [snapshot],
+  );
+  const pronunciation = useMemo(
+    () => (snapshot ? collectLessonPronunciation(snapshot) : []),
+    [snapshot],
+  );
+  const listening = useMemo(
+    () => (snapshot ? collectLessonListening(snapshot) : []),
     [snapshot],
   );
 
@@ -450,8 +462,20 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         return (
           <LessonPatternSection entries={patterns} onSpeakText={handleSpeak} />
         );
-      default:
-        return null;
+      case 'pronunciation':
+        return (
+          <LessonPronunciationSection
+            entries={pronunciation}
+            onSpeakText={handleSpeak}
+          />
+        );
+      case 'listening':
+        return (
+          <LessonListeningSection
+            entries={listening}
+            onSpeakText={handleSpeak}
+          />
+        );
     }
   };
 
