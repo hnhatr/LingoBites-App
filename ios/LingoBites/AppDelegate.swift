@@ -23,7 +23,7 @@ class AppDelegate: ExpoAppDelegate {
     reactNativeFactory = factory
 
     window = UIWindow(frame: UIScreen.main.bounds)
-ss
+
     factory.startReactNative(
       withModuleName: "main",
       in: window,
