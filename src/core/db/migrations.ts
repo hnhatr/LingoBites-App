@@ -8,9 +8,68 @@ import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
  * version is reset: every app table is dropped and the baseline is created
  * again, so downloads, flashcards and unsynced local progress on that device
  * are lost. New schema changes after this point are versioned upgrade steps
- * on top of `APP_SCHEMA_VERSION`.
+ * (`UPGRADE_STEPS`) on top of the baseline version; the baseline statements
+ * always create the latest shape.
  */
-export const APP_SCHEMA_VERSION = 7;
+export const APP_SCHEMA_VERSION = 8;
+
+/** The version the baseline was folded at; older databases are reset. */
+export const BASELINE_SCHEMA_VERSION = 7;
+
+/**
+ * `activity_attempts` (v8, PR 10): `result` may be NULL and the curriculum
+ * player's lesson attempts (PR 8 payload) get their own columns;
+ * `item_keys_json` is the JSON array of catalog codes practised.
+ */
+function activityAttemptsTable(name: string): string {
+  return `CREATE TABLE IF NOT EXISTS ${name} (
+    id TEXT PRIMARY KEY NOT NULL,
+    kind TEXT NOT NULL,
+    activity TEXT NOT NULL,
+    lesson_id TEXT,
+    item_key TEXT,
+    session_id TEXT,
+    result TEXT,
+    score REAL,
+    duration_ms INTEGER NOT NULL,
+    occurred_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    revision INTEGER NOT NULL DEFAULT 0,
+    tombstone INTEGER NOT NULL DEFAULT 0,
+    block_id TEXT,
+    content_revision INTEGER,
+    step INTEGER,
+    task_id TEXT,
+    item_keys_json TEXT,
+    support_level TEXT,
+    outcome TEXT,
+    assessed_by TEXT
+  );`;
+}
+
+const ACTIVITY_ATTEMPTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_activity_attempts_lesson
+    ON activity_attempts (lesson_id, occurred_at DESC);`;
+
+/**
+ * Upgrade steps keyed by the version they start from; each runs in the
+ * migration transaction and must keep the rows it touches.
+ */
+const UPGRADE_STEPS: Record<number, readonly string[]> = {
+  // v7 → v8: rebuild `activity_attempts` (SQLite cannot drop NOT NULL).
+  7: [
+    activityAttemptsTable('activity_attempts_v8'),
+    `INSERT INTO activity_attempts_v8 (
+      id, kind, activity, lesson_id, item_key, session_id, result, score,
+      duration_ms, occurred_at, updated_at, revision, tombstone
+    ) SELECT
+      id, kind, activity, lesson_id, item_key, session_id, result, score,
+      duration_ms, occurred_at, updated_at, revision, tombstone
+    FROM activity_attempts;`,
+    'DROP TABLE activity_attempts;',
+    'ALTER TABLE activity_attempts_v8 RENAME TO activity_attempts;',
+    ACTIVITY_ATTEMPTS_INDEX,
+  ],
+};
 
 /** Every table the baseline creates, in creation order. */
 export const BASELINE_TABLES = [
@@ -241,23 +300,8 @@ export const BASELINE_STATEMENTS: string[] = [
   `CREATE INDEX IF NOT EXISTS idx_speaking_attempts_lesson_practiced_at
     ON speaking_attempts (lesson_id, practiced_at DESC);`,
   // `item_key` carries the catalog item code (sync payload name unchanged).
-  `CREATE TABLE IF NOT EXISTS activity_attempts (
-    id TEXT PRIMARY KEY NOT NULL,
-    kind TEXT NOT NULL,
-    activity TEXT NOT NULL,
-    lesson_id TEXT,
-    item_key TEXT,
-    session_id TEXT,
-    result TEXT NOT NULL,
-    score REAL,
-    duration_ms INTEGER NOT NULL,
-    occurred_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    revision INTEGER NOT NULL DEFAULT 0,
-    tombstone INTEGER NOT NULL DEFAULT 0
-  );`,
-  `CREATE INDEX IF NOT EXISTS idx_activity_attempts_lesson
-    ON activity_attempts (lesson_id, occurred_at DESC);`,
+  activityAttemptsTable('activity_attempts'),
+  ACTIVITY_ATTEMPTS_INDEX,
   `CREATE TABLE IF NOT EXISTS lesson_bookmarks (
     lesson_id TEXT PRIMARY KEY NOT NULL,
     title TEXT NOT NULL,
@@ -302,12 +346,17 @@ function appTableNames(db: QuickSQLiteConnection): string[] {
 
 /**
  * Creates the baseline on a new database, resets any database from the old
- * chain, versioned (v1–v6) or not (decision G2), and leaves a current one
- * untouched. A database newer than this build is left alone as well.
+ * chain, versioned (v1–v6) or not (decision G2), upgrades a baseline database
+ * step by step, and leaves a current one untouched. A database newer than
+ * this build is left alone as well.
  */
 export function runMigrations(db: QuickSQLiteConnection): void {
   const version = readAppSchemaVersion(db);
   if (version >= APP_SCHEMA_VERSION) {
+    return;
+  }
+  if (version >= BASELINE_SCHEMA_VERSION) {
+    upgrade(db, version);
     return;
   }
   db.execute('BEGIN;');
@@ -319,6 +368,22 @@ export function runMigrations(db: QuickSQLiteConnection): void {
     }
     for (const statement of BASELINE_STATEMENTS) {
       db.execute(statement);
+    }
+    db.execute(`PRAGMA user_version = ${APP_SCHEMA_VERSION};`);
+    db.execute('COMMIT;');
+  } catch (error) {
+    db.execute('ROLLBACK;');
+    throw error;
+  }
+}
+
+function upgrade(db: QuickSQLiteConnection, from: number): void {
+  db.execute('BEGIN;');
+  try {
+    for (let version = from; version < APP_SCHEMA_VERSION; version += 1) {
+      for (const statement of UPGRADE_STEPS[version] ?? []) {
+        db.execute(statement);
+      }
     }
     db.execute(`PRAGMA user_version = ${APP_SCHEMA_VERSION};`);
     db.execute('COMMIT;');

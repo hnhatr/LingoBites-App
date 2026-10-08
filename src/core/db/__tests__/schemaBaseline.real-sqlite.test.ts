@@ -11,7 +11,10 @@ import {
   type RealSqliteConnection,
 } from '@test/support/adversarial/realSqlite';
 
-/** Baseline schema v7 on real SQLite (PR 5, decisions G2 and G3). */
+/**
+ * Baseline schema on real SQLite (PR 5, decisions G2 and G3) and the upgrade
+ * steps after it (v8, PR 10).
+ */
 
 let db: RealSqliteConnection;
 
@@ -104,5 +107,53 @@ describe('baseline schema', () => {
          VALUES ('c5', 'L1', 'c5', 'tea', 'trà', 1, 'x', 'x');`,
       ),
     ).toThrow(/NOT NULL/);
+  });
+
+  it('upgrades a v7 database to v8 and keeps its attempts (PR 10)', () => {
+    runMigrations(db);
+    // Put back the v7 shape of `activity_attempts` with one row.
+    db.execute('DROP TABLE activity_attempts;');
+    db.execute(`CREATE TABLE activity_attempts (
+      id TEXT PRIMARY KEY NOT NULL,
+      kind TEXT NOT NULL,
+      activity TEXT NOT NULL,
+      lesson_id TEXT,
+      item_key TEXT,
+      session_id TEXT,
+      result TEXT NOT NULL,
+      score REAL,
+      duration_ms INTEGER NOT NULL,
+      occurred_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      revision INTEGER NOT NULL DEFAULT 0,
+      tombstone INTEGER NOT NULL DEFAULT 0
+    );`);
+    db.execute(
+      `INSERT INTO activity_attempts (id, kind, activity, item_key, result,
+         duration_ms, occurred_at, updated_at, revision)
+       VALUES ('a1', 'practice', 'meaning_choice', 'word:coffee', 'correct',
+         900, 'x', 'x', 2);`,
+    );
+    insertCard('c1', 'word:coffee');
+    db.execute('PRAGMA user_version = 7;');
+
+    runMigrations(db);
+
+    expect(readAppSchemaVersion(db)).toBe(8);
+    expect(names('table')).toEqual([...BASELINE_TABLES].sort());
+    expect(names('index')).toContain('idx_activity_attempts_lesson');
+    expect(
+      db
+        .execute('SELECT id, result, revision, outcome FROM activity_attempts;')
+        .rows?.item(0),
+    ).toEqual({id: 'a1', result: 'correct', revision: 2, outcome: null});
+    expect(
+      db.execute('SELECT COUNT(*) AS n FROM flashcards;').rows?.item(0),
+    ).toEqual({n: 1});
+    db.execute(
+      `INSERT INTO activity_attempts (id, kind, activity, duration_ms,
+         occurred_at, updated_at, block_id, outcome)
+       VALUES ('a2', 'lesson', 'fill_blank', 1, 'x', 'x', 'b1', 'fail');`,
+    );
   });
 });

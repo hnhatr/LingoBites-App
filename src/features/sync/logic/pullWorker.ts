@@ -300,6 +300,10 @@ export function applySyncRecord(
   } else if (record.collection === 'activity_attempts') {
     payload.id = payload.id ?? record.entity_id;
     payload.occurred_at = payload.occurred_at ?? record.occurred_at;
+    // Lesson attempts (PR 8) carry their catalog codes as an array.
+    if (Array.isArray(payload.item_keys)) {
+      payload.item_keys_json = JSON.stringify(payload.item_keys);
+    }
   } else if (record.collection === 'flashcards') {
     // Cards are keyed by item code (baseline v7). A record without one gets
     // the code derived from its word; one with no usable word is skipped so it
