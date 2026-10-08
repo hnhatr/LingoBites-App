@@ -14,8 +14,9 @@
 | Chấm ở đâu | **Trên server.** App chỉ ghi âm, gửi lên và hiện kết quả. |
 | Lượt nào được chấm máy | **Bước 5 (vận dụng độc lập)** và **nhiệm vụ tổng hợp của unit**: các lượt quyết định "đạt bài" / "đạt unit". Bước 2–4 giữ như hiện nay (tự chấm + gợi ý). |
 | Câu viết ở bước 5 | Chấm bằng cùng bộ chấm, bỏ bước nhận dạng. |
-| Nhận dạng giọng nói (STT) | Dịch vụ **OpenAI Speech-to-Text**. Server đã có tích hợp OpenAI (`AI_PROVIDER=openai`), và dịch vụ này nhận thẳng file `.m4a` app đang ghi. Đặt sau một cổng `SpeechToText` để đổi nhà cung cấp được. Model cụ thể đặt bằng env, chọn sau khi đo (mục 6). |
+| Nhận dạng giọng nói (STT) | Dịch vụ **OpenAI Speech-to-Text**. Server đã có tích hợp OpenAI (`AI_PROVIDER=openai`), và dịch vụ này nhận thẳng file `.m4a` app đang ghi. Đặt sau một cổng `SpeechToText` để đổi nhà cung cấp được. Model mặc định **`gpt-4o-mini-transcribe`** (đặt bằng env); Google Speech-to-Text chế độ chấm ngay đắt hơn khoảng 5 lần nên chỉ là phương án dự phòng (xem mục 5.7.3 của `2026-10-08-remaining-work-plan.md`). **OpenAI chỉ nhận dạng ra chữ; việc chấm do bộ chấm của LingoBites làm.** |
 | Lỗi hoặc không nghe được | `unscorable`: không tính là sai, người học làm lại. |
+| Không đồng ý / không tiện nói | Không đồng ý consent: tự đánh giá như hiện nay, bản ghi không rời máy. Không tiện nói: nút "Không nói được lúc này" chuyển bước 5 sang viết, ghi "đạt (viết thay nói)", chưa tính đạt bài (A13–A14 trong Bảng chốt). |
 | Quyền riêng tư | Consent riêng "Cho phép chấm bài nói". Bản ghi chấm xong **tự xoá sau 30 ngày**. **Không lưu nguyên văn transcript.** |
 
 ---

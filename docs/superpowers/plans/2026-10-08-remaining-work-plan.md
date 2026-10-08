@@ -108,7 +108,7 @@ Trước đây cả 3 bài mẫu chỉ có nói và nghe. Seed (`scripts/sampleU
 ### Giai đoạn 1 – Stage 3: âm thanh và chấm bài (6 PR)
 
 Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evaluation-analysis.md`. Tóm tắt:
-- Chấm **trên server**, dựa trên **transcript** của OpenAI Speech-to-Text (sau cổng `SpeechToText`).
+- **OpenAI chỉ làm speech-to-text** (nghe → ra chữ). **Việc chấm do bộ chấm của LingoBites trên server** làm theo luật, không dùng AI. Nhận dạng nằm sau cổng `SpeechToText`, đổi nhà cung cấp chỉ cần thêm adapter.
 - Chấm 4 tiêu chí: content 0.80, clarity 0.60, purpose = đủ item bắt buộc, independence = không dùng gợi ý.
 - **Không** chấm âm vị.
 - Chỉ chấm **bước 5** và **nhiệm vụ tổng hợp của unit**.
@@ -125,7 +125,8 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
   - migration `007`: bảng `evaluations`;
   - `POST /v1/evaluations/text` (câu viết, không lưu chữ);
   - `GET /v1/evaluations/:attemptId`;
-  - sync nhận lượt `outcome = pending`, `assessed_by = service`; collection pull `evaluations`.
+  - sync nhận lượt `outcome = pending`, `assessed_by = service`; collection pull `evaluations`;
+  - lượt **viết thay nói** (A13): chấm như câu viết, lưu `source = text` kèm đánh dấu `substitute = true`.
 - **Test:**
   - bảng câu đúng / sai / thiếu / có lỗi `blocking` / có lỗi `tolerated`;
   - route;
@@ -139,7 +140,7 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
 - **Cần trước:** PR 12, **API key OpenAI** (T1).
 - **Phạm vi:**
   - recordings thêm mode `lesson_task` + `attempt_id` / `block_id` / `evaluate_by` (migration);
-  - cổng `SpeechToText` với adapter `openai` + `mock`;
+  - cổng `SpeechToText` với adapter `openai` (mặc định `gpt-4o-mini-transcribe`) + `mock`. Adapter `google` chỉ viết nếu team muốn so khi đo (A1);
   - env `STT_PROVIDER` / `STT_MODEL` / `STT_API_KEY`;
   - job `evaluation` (retry 2 lần);
   - `EVAL_DAILY_LIMIT`; chống chấm lại cùng file bằng SHA-256;
@@ -159,8 +160,9 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
 - **Cần trước:** PR 12–13, câu consent đã duyệt (T4).
 - **Phạm vi:**
   - ghi âm AAC mono 16 kHz ~32 kbps;
-  - consent "Chấm bài nói bằng máy" (`speaking.evaluation_consent`);
-  - `IndependentTaskView`: có consent thì "Gửi chấm", không có thì giữ tự đánh giá;
+  - consent "Chấm bài nói bằng máy" (`speaking.evaluation_consent`), **tách riêng** consent tải bản ghi hiện có (`speaking.recording_upload_consent`). Nội dung theo T4. Từ chối thì hỏi lại tối đa 1 lần / 7 ngày (A12). Bật / tắt được trong Cài đặt;
+  - `IndependentTaskView`: có consent thì "Gửi chấm", không có thì giữ tự đánh giá (ghi âm và nghe lại trên máy, không gửi đi);
+  - nút **"Không nói được lúc này"** (A13): tắt hoạt động nói ở bước 3–4 trong 15 phút; bước 5 chuyển sang viết và gửi chấm như câu viết;
   - giữ file cho hàng đợi upload (mode `lesson_task`);
   - màn "Đang chấm…" (hỏi kết quả mỗi 2 giây, tối đa ~20 giây);
   - phản hồi 4 trạng thái;
@@ -175,7 +177,7 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
 
 - **Cần trước:** PR 12; khoảng ôn đã chốt (T3); Q7.
 - **Phạm vi:**
-  - `lesson_outcomes.passed_at`: xong phần luyện + bước 5 `pass_independent`;
+  - `lesson_outcomes.passed_at`: xong phần luyện + bước 5 `pass_independent` (máy chấm, hoặc tự đánh giá có ghi `assessed_by = self`, theo B3). Lượt **viết thay nói** (A13) chưa tính là đạt bài. Bỏ qua bước 5 thì bài dừng ở "đã xong phần luyện" (A14);
   - bảng `unit_outcomes`;
   - `item_memory` + lịch ôn 1–3–7–14–30;
   - pull về app;
@@ -271,15 +273,15 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | # | Cần gì | Đề xuất | Cần cho | Chốt |
 |---|---|---|---|---|
 | T1 ⚠️ | API key OpenAI cho STT (đặt trong env server, không đưa vào repo) | Dùng chung `AI_API_KEY` hiện có | PR 13 | |
-| T2 ⚠️ | ~40 bản ghi mẫu có nhãn "người chấm: đạt / chưa" | 20 người lớn + 20 trẻ em; bài L01 (nói) + 10 câu viết của L03; mỗi nhóm có câu đúng, sai mẫu, thiếu món, ấp úng | Bật flag sau PR 13 | |
-| T4 ⚠️ | Câu consent "Chấm bài nói bằng máy" + mục giọng nói trong chính sách quyền riêng tư | Câu ở §5 file thiết kế Stage 3; bên xử lý: OpenAI; xoá sau 30 ngày | PR 14 | |
+| T2 ⚠️ | ~40 bản ghi mẫu có nhãn "người chấm: đạt / chưa": **bộ đề kiểm tra máy chấm**, không dùng để huấn luyện AI (xem mục 5.7.1) | 20 người lớn + 20 trẻ em trên bài L01, chia 4 nhóm: đúng rõ / đúng nhưng ấp úng / sai mẫu, thiếu món / lạc đề, im lặng, ồn. Thêm 10 câu viết cho L03. Kèm bảng nhãn. | Bật flag sau PR 13 (PR 12–13 code được khi chưa có) | OK – 2026-10-08 |
+| T4 ⚠️ | Câu consent "Chấm bài nói bằng máy" + mục giọng nói trong chính sách quyền riêng tư + khai báo dữ liệu trên store (xem mục 5.7.2) | Câu consent ở mục 5.7.2; bên xử lý: OpenAI; xoá sau 30 ngày; người hiểu luật xem lại trước khi phát hành | PR 14 (câu consent); bật flag (chính sách, store) | OK – 2026-10-08 (câu chữ team có thể sửa) |
 | T5 ⚠️ | Người duyệt nội dung (ai bấm publish bài / unit) | 1 người phụ trách nội dung; dev không publish nội dung thật | Giai đoạn 2 | |
 
 ### 5.2 Stage 3 – chấm bài (PR 12–14)
 
 | # | Câu hỏi | Đề xuất | Cần cho | Chốt |
 |---|---|---|---|---|
-| A1 | Model STT | Đo cả `gpt-4o-mini-transcribe` và `gpt-4o-transcribe` trên bộ T2; chọn bản rẻ hơn nếu chấm oan < 10%. Đặt bằng env `STT_MODEL`. | PR 13 | |
+| A1 | Nhà cung cấp và model STT | **OpenAI `gpt-4o-mini-transcribe`** (~$0.003/phút, nhận thẳng `.m4a`). Khi đo bằng bộ T2 chạy thêm `gpt-4o-transcribe`; chỉ chuyển nếu bản mini chấm oan ≥ 10%. Google Speech-to-Text chế độ chấm ngay đắt hơn ~5 lần (~$0.016/phút): chỉ đo thêm nếu team muốn giữ dữ liệu trong Google Cloud. Đặt bằng env `STT_PROVIDER` / `STT_MODEL`. Giá tham khảo, kiểm lại trang giá chính thức (mục 5.7.3). | PR 13 | OK – 2026-10-08 |
 | A2 | Ngưỡng content / clarity mặc định | 0.80 / 0.60; purpose = đủ item bắt buộc; independence = không dùng gợi ý | PR 12 | |
 | A3 | Ngưỡng để bật cho người dùng | Chấm oan < 10% **và** chấm lọt < 15%; `unscorable` < 10% | Bật flag | |
 | A4 | Giới hạn lượt chấm nói | 30 lượt / user / ngày, tính theo giờ Việt Nam | PR 13 | |
@@ -290,7 +292,9 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | A9 | Số lần làm lại bước 5 | Không giới hạn (đã có giới hạn A4); lấy **kết quả tốt nhất** | PR 12, 15 | |
 | A10 | Bật cho ai trước | Flag `speechEvaluation` tắt mặc định → bật cho tài khoản nội bộ → bật cho mọi người lớn khi đạt A3 | PR 13–14 | |
 | A11 | Tài khoản trẻ em | Không chấm máy cho tới khi có consent phụ huynh (Bước 1); trẻ dùng tự đánh giá | PR 14 | |
-| A12 | Người học không đồng ý consent | Giữ tự đánh giá như hiện nay; hỏi lại tối đa 1 lần / 7 ngày | PR 14 | |
+| A12 | Người học không đồng ý consent | Giữ tự đánh giá như hiện nay: vẫn ghi âm và nghe lại **trên máy**, không gửi đi. Không cho micro thì nói thành tiếng rồi tự tick. Hỏi lại tối đa 1 lần / 7 ngày; đổi được trong Cài đặt. | PR 14 | OK – 2026-10-08 |
+| A13 | Người học **không tiện nói** lúc này | Nút **"Không nói được lúc này"**: tắt hoạt động nói bước 3–4 trong 15 phút; bước 5 chuyển sang **viết**, server chấm như câu viết (chữ chỉ lên server LingoBites, không gửi bên thứ ba). Kết quả ghi "đạt (viết thay nói)", **chưa tính đạt bài**; nói lại sau mới tính. | PR 12 (server), PR 14 (app), PR 15 | OK – 2026-10-08 |
+| A14 | Có cho **bỏ hẳn** bước 5 không | Không. Bỏ qua thì bài dừng ở "đã xong phần luyện", chưa "đạt bài". | PR 15–16 | OK – 2026-10-08 |
 
 ### 5.3 Stage 3 – đạt bài, đạt unit, ôn (PR 15–17)
 
@@ -349,6 +353,88 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | E3 | Thanh toán | Mua trong app qua App Store / Google Play (thư viện thanh toán sẽ hỏi duyệt riêng) | 8.6 | |
 | E4 | Xoá khoá i18n `lessonFlow.show_model` / `show_model_hint` | Đồng ý xoá | Dọn dẹp | |
 
+### 5.7 Giải thích các mục đã chốt
+
+#### 5.7.1 Bộ 40 bản ghi mẫu (T2) dùng làm gì
+
+- **Mục đích:** đo xem máy chấm có đúng không **trước khi** bật cho người dùng. Bộ này không dùng để huấn luyện AI; máy chấm chạy theo luật.
+- **Máy có thể sai ở hai chỗ:**
+  - nhận dạng nghe sai, ví dụ trẻ nói "small tea" thành "smart tea";
+  - ngưỡng chấm chưa hợp lý, ví dụ quá khắt khe với câu ấp úng mà vẫn đúng.
+- **Cách làm:**
+  1. Team ghi khoảng 40 câu **bằng chính app**, trên bài L01.
+  2. Một người nghe lại và ghi nhãn "đạt / chưa" theo 4 tiêu chí.
+  3. Script (PR 13) cho cả bộ chạy qua máy chấm, so với nhãn của người rồi in:
+     - **chấm oan:** máy chưa đạt, người đạt;
+     - **chấm lọt:** máy đạt, người chưa đạt;
+     - độ trễ;
+     - tỷ lệ `unscorable`.
+  4. Đạt ngưỡng A3 thì bật flag. Chưa đạt thì chỉnh ngưỡng rồi chạy lại trên **cùng bộ cũ**.
+- **Nội dung cần ghi:**
+
+  | Nhóm | Số câu | Ví dụ |
+  |---|---|---|
+  | Nói đúng, rõ | 10 | "Can I have a large coffee, please?" |
+  | Đúng nhưng ấp úng, chậm, giọng Việt | 10 | "Can I… have a… small tea please" |
+  | Sai mẫu hoặc thiếu món | 10 | "I want coffee", "Can I have a large, please?" |
+  | Lạc đề, im lặng, ồn | 10 | Nói câu khác, ghi ở chỗ ồn |
+
+  - Khoảng nửa người lớn, nửa trẻ em.
+  - Thêm khoảng 10 câu **viết** cho L03.
+- **Bảng nhãn**, mỗi dòng một câu: `tên file | người nói (lớn / trẻ) | câu định nói | nhãn đạt / chưa | ghi chú`.
+- **Lưu ý:**
+  - Người được ghi phải đồng ý; trẻ em thì cần phụ huynh đồng ý.
+  - Bản ghi để nội bộ, **không đưa vào repo**.
+  - 40 câu chỉ cho ước lượng thô (mỗi câu sai ≈ 2,5%). Số liệu thật lấy từ thống kê admin (PR 17).
+
+#### 5.7.2 Consent và chính sách quyền riêng tư (T4)
+
+- **Vì sao cần consent riêng:**
+  - Giọng nói là dữ liệu cá nhân.
+  - Khi chấm máy, bản ghi rời điện thoại, lên server rồi tới **bên thứ ba** (OpenAI).
+  - Consent ghi âm hiện có (`speaking.recording_upload_consent`) được hỏi cho mục đích khác (lưu bản ghi luyện tập), nên không dùng lại được.
+- **Câu consent** (hỏi lần đầu ở bước 5):
+  > "Để chấm bài nói, LingoBites gửi bản ghi của bạn tới máy chủ và dịch vụ nhận dạng giọng nói. Bản ghi tự xoá sau 30 ngày và không dùng cho mục đích khác."
+  >
+  > **[Đồng ý]** **[Tự đánh giá]**
+- **Mục giọng nói cần thêm** vào `docs/01-ba/07-release/02-privacy-policy-draft.md` (repo server). Bản nháp hiện chưa nói gì về ghi âm. Nội dung:
+
+  | Câu hỏi | Nội dung |
+  |---|---|
+  | Thu gì | Bản ghi giọng nói ở bước 5 và nhiệm vụ tổng hợp, khi người học đồng ý |
+  | Để làm gì | Chấm bài nói. Không dùng cho quảng cáo, không bán, không dùng để nhận diện người. |
+  | Gửi cho ai | Server LingoBites và nhà cung cấp nhận dạng giọng nói (OpenAI). Chỉ gửi file âm thanh và từ vựng của bài, không gửi tên / email / mã người học. |
+  | Giữ bao lâu | Bản ghi tự xoá sau 30 ngày. Không lưu chữ nhận dạng được. Chỉ giữ kết quả chấm. |
+  | Trẻ em | Không chấm máy cho tài khoản trẻ khi chưa có đồng ý của phụ huynh |
+  | Rút lại | Tắt trong Cài đặt bất kỳ lúc nào, quay về tự đánh giá |
+
+- **Việc kèm theo:**
+  - Cập nhật khai báo dữ liệu trên store (App Store "App Privacy", Google Play "Data safety"): thêm dòng **Audio / Voice recordings**.
+  - Điền tên nhà cung cấp thật vào chỗ `[tên provider/model]` trong bản nháp.
+  - Kiểm lại chính sách lưu dữ liệu API của OpenAI. Theo thông tin hiện biết: dữ liệu API không dùng để huấn luyện mặc định, có thể lưu tạm tới 30 ngày để chống lạm dụng, và có thể xin chế độ không lưu.
+  - Người hiểu luật bảo vệ dữ liệu cá nhân ở Việt Nam xem lại trước khi phát hành, nhất là phần trẻ em.
+
+#### 5.7.3 Chi phí nhận dạng giọng nói (A1)
+
+Giá tham khảo tháng 10/2026, lấy từ trang tổng hợp giá. Kiểm lại trang giá chính thức trước khi lập ngân sách.
+
+| Dịch vụ | Giá / phút | Trả kết quả ngay |
+|---|---|---|
+| OpenAI `gpt-4o-mini-transcribe` | ~$0.003 | Có |
+| OpenAI `gpt-4o-transcribe` | ~$0.006 | Có |
+| Google Speech-to-Text V2 thường (gồm Chirp) | ~$0.016 | Có |
+| Google V2 dynamic batch | ~$0.003–0.004 | Không (có thể chờ tới 24 giờ) |
+
+**Ước tính:** 1.000 người hoạt động × 5 lượt / ngày × 15 giây ≈ 37.500 phút / tháng.
+
+| Dịch vụ | Chi phí / tháng |
+|---|---|
+| OpenAI mini | ~$110 |
+| OpenAI bản lớn | ~$225 |
+| Google thường | ~$600 |
+
+Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính tiền khi không nhận ra chữ nào.
+
 ---
 
 ## 6. Theo dõi tiến độ
@@ -364,6 +450,7 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 **Giai đoạn 1 – Stage 3**
 - [ ] PR 12 – bộ chấm + kết quả (server)
 - [ ] PR 13 – âm thanh vào server
+- [ ] Team: ghi bộ 40 bản ghi có nhãn (T2), viết mục giọng nói trong chính sách + khai báo store (T4)
 - [ ] Đo độ chính xác: chấm oan < 10%, bật flag `speechEvaluation`
 - [ ] PR 14 – app chấm bước 5
 - [ ] PR 15 – đạt bài, đạt unit, ghi nhớ (server)
