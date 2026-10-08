@@ -63,6 +63,11 @@ react {
 
     /* Autolinking */
     autolinkLibrariesWithApp()
+    //
+    // Added by install-expo-modules
+    entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", rootDir.getAbsoluteFile().getParentFile().getAbsolutePath(), "android", "absolute"].execute(null, rootDir).text.trim())
+    cliFile = new File(["node", "--print", "require.resolve('@expo/cli')"].execute(null, rootDir).text.trim())
+    bundleCommand = "export:embed"
 }
 
 /**
@@ -115,7 +120,7 @@ android {
             versionName project.env.get("ANDROID_APP_VERSION_NAME")
             versionCode project.env.get("ANDROID_APP_VERSION_CODE").toInteger()
             resValue "string", "app_name", project.env.get("APP_NAME")
-            manifestPlaceholders = [usesCleartextTraffic: "true"]
+            manifestPlaceholders = [usesCleartextTraffic: "true", expoChannel: "development"]
         }
         staging {
             dimension "env"
@@ -123,7 +128,7 @@ android {
             versionName project.env.get("ANDROID_APP_VERSION_NAME")
             versionCode project.env.get("ANDROID_APP_VERSION_CODE").toInteger()
             resValue "string", "app_name", project.env.get("APP_NAME")
-            manifestPlaceholders = [usesCleartextTraffic: "false"]
+            manifestPlaceholders = [usesCleartextTraffic: "false", expoChannel: "staging"]
         }
         production {
             dimension "env"
@@ -131,7 +136,7 @@ android {
             versionName project.env.get("ANDROID_APP_VERSION_NAME")
             versionCode project.env.get("ANDROID_APP_VERSION_CODE").toInteger()
             resValue "string", "app_name", project.env.get("APP_NAME")
-            manifestPlaceholders = [usesCleartextTraffic: "false"]
+            manifestPlaceholders = [usesCleartextTraffic: "false", expoChannel: "production"]
         }
     }
     signingConfigs {
@@ -157,6 +162,7 @@ android {
         release {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
