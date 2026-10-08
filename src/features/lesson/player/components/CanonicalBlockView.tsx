@@ -7,7 +7,11 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import type {LessonBlock} from '@core/schemas/lesson';
+import {
+  type CatalogItem,
+  itemCardIds,
+  type LessonBlock,
+} from '@core/schemas/lesson';
 
 function blockTestId(type: string): string {
   return `canonical-block-${type}`;
@@ -17,8 +21,7 @@ const BLOCK_ICONS: Record<LessonBlock['type'], HandoffIconName> = {
   text: 'article',
   example: 'format_quote',
   context: 'lightbulb',
-  vocabulary: 'style',
-  grammar: 'rule',
+  item_cards: 'style',
   activity: 'bolt',
   media: 'auto_stories',
 };
@@ -27,8 +30,16 @@ function textOf(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
+/** Lesson items by id, to name the cards of an `item_cards` block. */
+export type BlockItemLookup = ReadonlyMap<
+  string,
+  Pick<CatalogItem, 'text' | 'meaning_vi'>
+>;
+
+const NO_ITEMS: BlockItemLookup = new Map();
+
 /** Readable body for a block, never the raw JSON of its data. */
-function blockBody(block: LessonBlock): string {
+function blockBody(block: LessonBlock, items: BlockItemLookup): string {
   const data = block.data as Record<string, unknown>;
   switch (block.type) {
     case 'text':
@@ -43,14 +54,13 @@ function blockBody(block: LessonBlock): string {
       ]
         .filter(part => part.length > 0)
         .join('\n');
-    case 'grammar':
-      return [
-        textOf(data.nameEn ?? data.name),
-        textOf(data.nameVi),
-        textOf(data.pattern),
-        textOf(data.explanationVi ?? data.description),
-      ]
-        .filter(part => part.length > 0)
+    case 'item_cards':
+      // A plain list until the item cards UI lands (PR 6).
+      return itemCardIds(block)
+        .flatMap(id => {
+          const item = items.get(id);
+          return item ? [`${item.text} · ${item.meaning_vi}`] : [];
+        })
         .join('\n');
     default:
       return textOf(
@@ -87,12 +97,18 @@ function activityLines(block: LessonBlock): ActivityLine[] {
 }
 
 /**
- * Canonical lesson-level block renderer (7 kept types; `exercise` was
- * removed by FR-014). Unknown types render the unsupported fallback instead
+ * Canonical lesson-level block renderer (6 kept types: FR-014 removed
+ * `exercise`, and `item_cards` replaced `vocabulary` and `grammar`). Unknown types render the unsupported fallback instead
  * of crashing the player. `activity` blocks are read-only: the App has no
  * interaction for them yet and never submits attempts.
  */
-export function CanonicalBlockView({block}: {block: LessonBlock}) {
+export function CanonicalBlockView({
+  block,
+  items = NO_ITEMS,
+}: {
+  block: LessonBlock;
+  items?: BlockItemLookup;
+}) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
@@ -106,7 +122,7 @@ export function CanonicalBlockView({block}: {block: LessonBlock}) {
       </View>
     );
   }
-  const body = blockBody(block);
+  const body = blockBody(block, items);
   const lines = activityLines(block);
   return (
     <View testID={blockTestId(block.type)} style={themedStyles.card}>

@@ -1,44 +1,59 @@
-import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
+import type {
+  LessonAnalysis,
+  LessonItemEntry,
+  LessonSnapshot,
+} from '@core/schemas/lesson';
 
 import {normalizeItemKey, vocabularyItemKey, vocabularyKind} from './itemKey';
 
 /**
- * The learning items of one lesson: the stable unit that practice, review and
- * games work on. `itemKey` is the cross-lesson identity (`word:coffee`,
- * `phrase:wake up`, `grammar:present simple`).
+ * Where an item comes from: the shared catalog (`lesson_items` of a curriculum
+ * lesson) or the sentence analyses of a learner-made lesson. Catalog items
+ * carry their `itemId`, role and how the lesson introduces them.
  */
-export type WordLearningItem = {
-  kind: 'word' | 'phrase';
+type LearningItemOrigin = {
+  /**
+   * Cross-lesson identity: the catalog item code (`word:coffee`,
+   * `pattern:can-i-have`). Analysis words get the code the Server derives for
+   * the same text, so a card saved today matches the catalog item later.
+   */
   itemKey: string;
+  itemId: string | null;
+  source: 'catalog' | 'analysis';
+  role: LessonItemEntry['role'] | null;
+  introduction: LessonItemEntry['introduction'] | null;
+  /** Current sentence ids of this lesson that carry or contain the item. */
+  sentenceIds: string[];
+};
+
+export type WordLearningItem = LearningItemOrigin & {
+  kind: 'word' | 'phrase';
   word: string;
   meaningVi: string;
   ipa: string | null;
   pos: string | null;
-  /** Current sentence ids of this lesson that carry or contain the word. */
-  sentenceIds: string[];
 };
 
-export type GrammarLearningItem = {
-  kind: 'grammar';
-  itemKey: string;
-  name: string;
-  nameVi: string | null;
-  formula: string | null;
-  description: string | null;
-  sentenceIds: string[];
+/** Patterns, pronunciation points and listening items (catalog only). */
+export type CatalogLearningItem = LearningItemOrigin & {
+  kind: 'pattern' | 'pronunciation' | 'listening';
+  text: string;
+  meaningVi: string;
+  ipa: string | null;
+  payload: Record<string, unknown>;
 };
 
-export type LearningItem = WordLearningItem | GrammarLearningItem;
+export type LearningItem = WordLearningItem | CatalogLearningItem;
+
+export function isWordLearningItem(
+  item: LearningItem,
+): item is WordLearningItem {
+  return item.kind === 'word' || item.kind === 'phrase';
+}
 
 function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0
     ? value.trim()
-    : null;
-}
-
-function record(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
     : null;
 }
 
@@ -69,136 +84,77 @@ export function sentenceIdsContaining(
     .map(sentence => sentence.id);
 }
 
-function fromServerItems(snapshot: LessonSnapshot): LearningItem[] {
-  const current = new Set(snapshot.sentences.map(sentence => sentence.id));
-  const items: LearningItem[] = [];
-  for (const raw of snapshot.items ?? []) {
-    const payload = record(raw.payload);
-    if (!payload) {
-      continue;
-    }
-    const sentenceIds = (raw.sentence_ids ?? []).filter(id => current.has(id));
-    if (raw.kind === 'grammar') {
-      const name = text(payload.name);
-      if (!name) {
-        continue;
+function fromLessonItems(snapshot: LessonSnapshot): LearningItem[] {
+  return [...(snapshot.lesson_items ?? [])]
+    .sort((a, b) => a.position - b.position)
+    .map(entry => {
+      const {item} = entry;
+      const origin = {
+        itemKey: item.code,
+        itemId: item.id,
+        source: 'catalog' as const,
+        role: entry.role,
+        introduction: entry.introduction,
+      };
+      if (item.kind === 'word' || item.kind === 'phrase') {
+        const key = normalizeItemKey(item.text);
+        return {
+          ...origin,
+          kind: item.kind,
+          word: item.text,
+          meaningVi: item.meaning_vi,
+          ipa: item.ipa,
+          pos: item.part_of_speech,
+          sentenceIds: key
+            ? sentenceIdsContaining(key, snapshot.sentences)
+            : [],
+        };
       }
-      items.push({
-        kind: 'grammar',
-        itemKey: `grammar:${raw.item_key}`,
-        name,
-        nameVi: text(payload.name_vi),
-        formula: text(payload.formula),
-        description: text(payload.description),
-        sentenceIds,
-      });
-    } else {
-      const word = text(payload.word);
-      const meaningVi = text(payload.meaning_vi);
-      if (!word || !meaningVi) {
-        continue;
-      }
-      items.push({
-        kind: raw.kind,
-        itemKey: `${raw.kind}:${raw.item_key}`,
-        word,
-        meaningVi,
-        ipa: text(payload.ipa),
-        pos: text(payload.pos),
-        sentenceIds,
-      });
-    }
-  }
-  return items;
+      return {
+        ...origin,
+        kind: item.kind,
+        text: item.text,
+        meaningVi: item.meaning_vi,
+        ipa: item.ipa,
+        payload: item.payload,
+        sentenceIds: [],
+      };
+    });
 }
 
 /**
- * Downloads made before the Server sent `items[]` still carry the same
- * knowledge in `vocabulary` blocks and stored analyses; derive words and
- * grammar from those with the same keys the Server would have produced.
+ * Learner-made lessons have no catalog items yet: derive words and phrases
+ * from the sentence analyses, keyed like the Server would code them. Analysis
+ * grammar is not a pattern frame and stays out (decision G5).
  */
-function fromBlocksAndAnalyses(
+function fromAnalyses(
   snapshot: LessonSnapshot,
   analyses: Record<string, LessonAnalysis>,
 ): LearningItem[] {
-  const byKey = new Map<string, LearningItem>();
-  const addWord = (
-    word: string | null,
-    meaningVi: string | null,
-    ipa: string | null,
-    pos: string | null,
-  ) => {
-    if (!word || !meaningVi) {
-      return;
-    }
-    const itemKey = vocabularyItemKey(word);
-    if (!itemKey || byKey.has(itemKey)) {
-      return; // blocks come first and win, like the Server's derivation
-    }
-    const key = normalizeItemKey(word);
-    byKey.set(itemKey, {
-      kind: vocabularyKind(key),
-      itemKey,
-      word,
-      meaningVi,
-      ipa,
-      pos,
-      sentenceIds: sentenceIdsContaining(key, snapshot.sentences),
-    });
-  };
-
-  [...snapshot.blocks]
-    .sort((a, b) => a.position - b.position)
-    .filter(block => block.type === 'vocabulary')
-    .forEach(block => {
-      const rawItems = Array.isArray(block.data.items) ? block.data.items : [];
-      rawItems.forEach(raw => {
-        const item = record(raw);
-        if (!item) {
-          return;
-        }
-        addWord(
-          text(item.word) ?? text(item.lemma),
-          text(item.meaningVi) ?? text(item.meaning),
-          text(item.ipa) ?? text(item.pronunciation),
-          text(item.pos),
-        );
-      });
-    });
-
+  const byKey = new Map<string, WordLearningItem>();
   [...snapshot.sentences]
     .sort((a, b) => a.position - b.position)
     .forEach(sentence => {
-      const analysis = analyses[sentence.id];
-      analysis?.vocabulary.forEach(item =>
-        addWord(
-          text(item.word),
-          text(item.meaning),
-          text(item.ipa),
-          text(item.pos),
-        ),
-      );
-      analysis?.grammar.forEach(item => {
-        const key = normalizeItemKey(item.name);
-        const itemKey = key ? `grammar:${key}` : null;
-        if (!itemKey) {
+      analyses[sentence.id]?.vocabulary.forEach(item => {
+        const word = text(item.word);
+        const meaningVi = text(item.meaning);
+        const itemKey = word ? vocabularyItemKey(word) : null;
+        if (!word || !meaningVi || !itemKey || byKey.has(itemKey)) {
           return;
         }
-        const existing = byKey.get(itemKey);
-        if (existing) {
-          if (!existing.sentenceIds.includes(sentence.id)) {
-            existing.sentenceIds.push(sentence.id);
-          }
-          return;
-        }
+        const key = normalizeItemKey(word);
         byKey.set(itemKey, {
-          kind: 'grammar',
+          kind: vocabularyKind(key),
           itemKey,
-          name: item.name.trim(),
-          nameVi: null,
-          formula: text(item.formula),
-          description: text(item.description),
-          sentenceIds: [sentence.id],
+          itemId: null,
+          source: 'analysis',
+          role: null,
+          introduction: null,
+          word,
+          meaningVi,
+          ipa: text(item.ipa),
+          pos: text(item.pos),
+          sentenceIds: sentenceIdsContaining(key, snapshot.sentences),
         });
       });
     });
@@ -206,16 +162,14 @@ function fromBlocksAndAnalyses(
 }
 
 /**
- * Learning items of a downloaded lesson: the Server's `items[]` when the
- * snapshot has them, otherwise derived on the device. `analyses` lets a caller
- * add analyses fetched after the download (display-only, never stored).
+ * Learning items of a downloaded lesson: its catalog items when it has any
+ * (curriculum lessons), otherwise derived from the analyses. `analyses` lets a
+ * caller add analyses fetched after the download (display-only, never stored).
  */
 export function learningItemsFromSnapshot(
   snapshot: LessonSnapshot,
   analyses: Record<string, LessonAnalysis> = snapshot.analyses,
 ): LearningItem[] {
-  const fromServer = fromServerItems(snapshot);
-  return fromServer.length > 0
-    ? fromServer
-    : fromBlocksAndAnalyses(snapshot, analyses);
+  const catalog = fromLessonItems(snapshot);
+  return catalog.length > 0 ? catalog : fromAnalyses(snapshot, analyses);
 }

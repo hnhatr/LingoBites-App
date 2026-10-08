@@ -1,3 +1,4 @@
+import {isWordLearningItem, learningItemsFromSnapshot} from '@core/learning';
 import type {
   LessonAnalysis,
   LessonBlock,
@@ -26,18 +27,6 @@ export type LessonGrammarEntry = {
   examples: {en: string; vi: string | null}[];
 };
 
-function textOf(value: unknown): string | null {
-  return typeof value === 'string' && value.trim().length > 0
-    ? value.trim()
-    : null;
-}
-
-function recordOf(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-
 export function sortedSentences(snapshot: LessonSnapshot): LessonSentence[] {
   return [...snapshot.sentences].sort((a, b) => a.position - b.position);
 }
@@ -57,57 +46,10 @@ export function mergeAnalyses(
   return {...stored, ...late};
 }
 
-function vocabularyFromBlock(block: LessonBlock): LessonVocabularyEntry[] {
-  const data = block.data;
-  const rawItems = Array.isArray(data.items) ? data.items : [data];
-  const entries: LessonVocabularyEntry[] = [];
-  rawItems.forEach((raw, index) => {
-    const item = recordOf(raw);
-    if (!item) return;
-    const word = textOf(item.word) ?? textOf(item.lemma) ?? textOf(item.nameEn);
-    const meaning =
-      textOf(item.meaningVi) ?? textOf(item.meaning) ?? textOf(item.nameVi);
-    if (!word || !meaning) return;
-    entries.push({
-      // The Server snapshot embeds the catalog vocabulary id; fall back to the
-      // block position only for hand-written / legacy items without one.
-      key: textOf(item.id) ?? `${block.id}-${index}`,
-      word,
-      meaning,
-      // Snapshot items carry `pronunciation`; `ipa` is the analysis spelling.
-      ipa: textOf(item.ipa) ?? textOf(item.pronunciation),
-      pos: textOf(item.pos),
-    });
-  });
-  return entries;
-}
-
-function grammarFromBlock(block: LessonBlock): LessonGrammarEntry | null {
-  const data = block.data;
-  const name = textOf(data.nameEn) ?? textOf(data.name) ?? textOf(block.title);
-  if (!name) return null;
-  const examples = Array.isArray(data.examples)
-    ? data.examples.flatMap(raw => {
-        const example = recordOf(raw);
-        const en = example ? textOf(example.en) : null;
-        return en ? [{en, vi: example ? textOf(example.vi) : null}] : [];
-      })
-    : [];
-  return {
-    key: block.id,
-    name,
-    nameVi: textOf(data.nameVi),
-    formula: textOf(data.pattern) ?? textOf(data.formula),
-    explanation: textOf(data.explanationVi) ?? textOf(data.description),
-    inText: null,
-    examples,
-  };
-}
-
 /**
- * Lesson-level vocabulary: `vocabulary` blocks first, then words from the
- * per-sentence analyses in sentence order. Duplicate words (case-insensitive)
- * keep the first occurrence.
+ * Lesson-level vocabulary: the words and phrases among the lesson's learning
+ * items (catalog items of a curriculum lesson, else the analysed words) in
+ * lesson order. Duplicate words (case-insensitive) keep the first occurrence.
  */
 export function collectLessonVocabulary(
   snapshot: LessonSnapshot,
@@ -115,33 +57,27 @@ export function collectLessonVocabulary(
 ): LessonVocabularyEntry[] {
   const seen = new Set<string>();
   const result: LessonVocabularyEntry[] = [];
-  const push = (entry: LessonVocabularyEntry) => {
-    const id = entry.word.toLowerCase();
-    if (seen.has(id)) return;
-    seen.add(id);
-    result.push(entry);
-  };
-  sortedBlocks(snapshot)
-    .filter(block => block.type === 'vocabulary')
-    .forEach(block => vocabularyFromBlock(block).forEach(push));
-  sortedSentences(snapshot).forEach(sentence => {
-    analyses[sentence.id]?.vocabulary.forEach(item =>
-      push({
-        key: item.id,
+  learningItemsFromSnapshot(snapshot, analyses)
+    .filter(isWordLearningItem)
+    .forEach(item => {
+      const id = item.word.toLowerCase();
+      if (seen.has(id)) return;
+      seen.add(id);
+      result.push({
+        key: item.itemKey,
         word: item.word,
-        meaning: item.meaning,
+        meaning: item.meaningVi,
         ipa: item.ipa,
         pos: item.pos,
-      }),
-    );
-  });
+      });
+    });
   return result;
 }
 
 /**
- * Lesson-level grammar: `grammar` blocks first, then points from the
- * per-sentence analyses. A point already listed by a block gains the
- * sentence analysis as its "in your text" note instead of a second card.
+ * Lesson-level grammar from the per-sentence analyses (learner-made lessons).
+ * Curriculum lessons teach sentence patterns as items instead; the pattern
+ * section replaces this one in PR 6.
  */
 export function collectLessonGrammar(
   snapshot: LessonSnapshot,
@@ -149,21 +85,9 @@ export function collectLessonGrammar(
 ): LessonGrammarEntry[] {
   const byName = new Map<string, LessonGrammarEntry>();
   const result: LessonGrammarEntry[] = [];
-  sortedBlocks(snapshot)
-    .filter(block => block.type === 'grammar')
-    .forEach(block => {
-      const entry = grammarFromBlock(block);
-      if (!entry || byName.has(entry.name.toLowerCase())) return;
-      byName.set(entry.name.toLowerCase(), entry);
-      result.push(entry);
-    });
   sortedSentences(snapshot).forEach(sentence => {
     analyses[sentence.id]?.grammar.forEach(item => {
-      const existing = byName.get(item.name.toLowerCase());
-      if (existing) {
-        if (!existing.inText) existing.inText = item.analysis;
-        return;
-      }
+      if (byName.has(item.name.toLowerCase())) return;
       const entry: LessonGrammarEntry = {
         key: item.id,
         name: item.name,

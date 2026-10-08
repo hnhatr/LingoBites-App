@@ -1,17 +1,34 @@
+export {type ItemKind, ItemKindValues} from './catalogItem';
+export {deriveItemCode, parseItemCode, type ParsedItemCode} from './itemCode';
 export {
-  grammarItemKey,
+  type ItemPayload,
+  type ListeningPayload,
+  parseItemPayload,
+  type PatternPayload,
+  payloadItemRefs,
+  type PronunciationPayload,
+} from './itemPayload';
+export {
   type LearningItemKind,
   normalizeItemKey,
   vocabularyItemKey,
   vocabularyKind,
 } from './itemKey';
 export {
-  type GrammarLearningItem,
+  type CatalogLearningItem,
+  isWordLearningItem,
   type LearningItem,
   learningItemsFromSnapshot,
   sentenceIdsContaining,
   type WordLearningItem,
 } from './items';
+export {
+  expandPattern,
+  type FrameSegment,
+  parseFrame,
+  type ParsedFrame,
+  type PatternSlot,
+} from './patternFrame';
 export {
   buildPracticeSource,
   CLOZE_BLANK,

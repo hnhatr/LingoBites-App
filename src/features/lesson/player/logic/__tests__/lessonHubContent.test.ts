@@ -1,4 +1,8 @@
-import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
+import type {
+  LessonAnalysis,
+  LessonItemEntry,
+  LessonSnapshot,
+} from '@core/schemas/lesson';
 
 import {
   collectLessonGrammar,
@@ -65,28 +69,7 @@ const snapshot: LessonSnapshot = {
       end_ms: null,
     },
   ],
-  blocks: [
-    {
-      id: '22222222-2222-4222-8222-222222222201',
-      type: 'vocabulary',
-      position: 0,
-      title: null,
-      data: {items: [{lemma: 'Coffee', meaning: 'cà phê', ipa: 'ˈkɒfi'}]},
-    },
-    {
-      id: '22222222-2222-4222-8222-222222222202',
-      type: 'grammar',
-      position: 1,
-      title: null,
-      data: {
-        nameEn: 'Present simple',
-        nameVi: 'Thì hiện tại đơn',
-        pattern: 'S + V(s/es)',
-        explanationVi: 'Thói quen hằng ngày.',
-        examples: [{en: 'I wake up at six.', vi: 'Tôi thức dậy lúc sáu giờ.'}],
-      },
-    },
-  ],
+  blocks: [],
   analyses: {},
 };
 
@@ -103,83 +86,86 @@ describe('lessonHubContent', () => {
     expect(stored[S1].vocabulary[0].word).toBe('old');
   });
 
-  it('lists block vocabulary first, then analysis words, deduplicated', () => {
+  it('lists analysis words in sentence order, deduplicated', () => {
     const entries = collectLessonVocabulary(snapshot, {
       [S2]: analysis(S2, ['coffee', 'make'], []),
-      [S1]: analysis(S1, ['wake up'], []),
+      [S1]: analysis(S1, ['wake up', 'Coffee'], []),
     });
     expect(entries.map(entry => entry.word)).toEqual([
-      'Coffee',
       'wake up',
+      'Coffee',
       'make',
     ]);
-    expect(entries[0]).toMatchObject({meaning: 'cà phê', ipa: 'ˈkɒfi'});
+    expect(entries[0]).toMatchObject({
+      key: 'phrase:wake up',
+      meaning: 'nghĩa wake up',
+      ipa: 'ipa',
+    });
   });
 
-  it('reads Server snapshot items: catalog id as key, pronunciation as ipa', () => {
-    const catalogId = '44444444-4444-4444-8444-444444444401';
+  it('reads the catalog words and phrases of a curriculum lesson', () => {
+    const catalogItem = (
+      n: number,
+      kind: 'word' | 'pattern',
+      code: string,
+      text: string,
+      meaning: string,
+      ipa: string | null,
+    ): LessonItemEntry => ({
+      role: 'required',
+      introduction: 'new',
+      position: n,
+      item: {
+        id: `44444444-4444-4444-8444-44444444440${n}`,
+        code,
+        kind,
+        text,
+        meaning_vi: meaning,
+        ipa,
+        part_of_speech: null,
+        note_vi: null,
+        audience: 'all',
+        payload: {},
+        audio: null,
+        image: null,
+        examples: [],
+        variants: [],
+        errors: [],
+      },
+    });
     const entries = collectLessonVocabulary(
       {
         ...snapshot,
-        blocks: [
-          {
-            id: '22222222-2222-4222-8222-222222222208',
-            type: 'vocabulary',
-            position: 0,
-            title: null,
-            data: {
-              items: [
-                {
-                  id: catalogId,
-                  word: 'brew',
-                  meaning: 'pha',
-                  pronunciation: 'bruː',
-                  position: 0,
-                },
-              ],
-            },
-          },
+        lesson_items: [
+          catalogItem(
+            1,
+            'pattern',
+            'pattern:can-i-have',
+            'Can I have a {x}?',
+            'Cho tôi',
+            null,
+          ),
+          catalogItem(0, 'word', 'word:brew', 'brew', 'pha', 'bruː'),
         ],
       },
-      {},
+      {[S1]: analysis(S1, ['ignored'], [])},
     );
     expect(entries).toEqual([
-      {key: catalogId, word: 'brew', meaning: 'pha', ipa: 'bruː', pos: null},
+      {key: 'word:brew', word: 'brew', meaning: 'pha', ipa: 'bruː', pos: null},
     ]);
   });
 
-  it('skips vocabulary block items without a word or meaning', () => {
-    const entries = collectLessonVocabulary(
-      {
-        ...snapshot,
-        blocks: [
-          {
-            id: '22222222-2222-4222-8222-222222222209',
-            type: 'vocabulary',
-            position: 0,
-            title: null,
-            data: {items: [{lemma: 'orphan'}, 'not an object', null]},
-          },
-        ],
-      },
-      {},
-    );
-    expect(entries).toEqual([]);
-  });
-
-  it('merges a sentence analysis into the matching grammar block', () => {
+  it('lists analysis grammar once, with the sentence it was found in', () => {
     const entries = collectLessonGrammar(snapshot, {
+      [S2]: analysis(S2, [], ['Present simple']),
       [S1]: analysis(S1, [], ['present simple', 'Adverb of time']),
     });
-    expect(entries).toHaveLength(2);
-    expect(entries[0]).toMatchObject({
-      name: 'Present simple',
-      nameVi: 'Thì hiện tại đơn',
-      formula: 'S + V(s/es)',
-      inText: 'dùng present simple ở câu này',
-    });
+    expect(entries.map(entry => entry.name)).toEqual([
+      'present simple',
+      'Adverb of time',
+    ]);
     expect(entries[1]).toMatchObject({
-      name: 'Adverb of time',
+      inText: 'dùng Adverb of time ở câu này',
       examples: [{en: 'I wake up at six.', vi: 'Tôi thức dậy lúc sáu giờ.'}],
     });
   });

@@ -97,6 +97,13 @@ export function CanonicalLessonPlayer({
   );
   const orderedSentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const orderedBlocks = useMemo(() => sortedBlocks(snapshot), [snapshot]);
+  const blockItems = useMemo(
+    () =>
+      new Map(
+        (snapshot.lesson_items ?? []).map(entry => [entry.item.id, entry.item]),
+      ),
+    [snapshot],
+  );
   if (archived) {
     return (
       <View testID="canonical-player-archived" style={styles.container}>
@@ -241,7 +248,7 @@ export function CanonicalLessonPlayer({
         );
       })}
       {orderedBlocks.map(block => (
-        <CanonicalBlockView key={block.id} block={block} />
+        <CanonicalBlockView key={block.id} block={block} items={blockItems} />
       ))}
     </View>
   );

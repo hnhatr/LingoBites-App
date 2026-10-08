@@ -60,10 +60,10 @@ function snapshotOf(source: LessonSnapshot['source_type']): LessonSnapshot {
       },
       {
         id: '22222222-2222-4222-8222-222222222202',
-        type: 'grammar',
+        type: 'item_cards',
         position: 1,
         title: null,
-        data: {nameEn: 'Present simple'},
+        data: {item_ids: ['44444444-4444-4444-8444-444444444401']},
       },
     ],
     analyses: {
@@ -146,7 +146,7 @@ describe('CanonicalLessonPlayer', () => {
       tree.root.findByProps({testID: 'canonical-block-text'}),
     ).toBeDefined();
     expect(
-      tree.root.findByProps({testID: 'canonical-block-grammar'}),
+      tree.root.findByProps({testID: 'canonical-block-item_cards'}),
     ).toBeDefined();
   });
 

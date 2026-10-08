@@ -203,7 +203,8 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
       vocabularyRow!.props.onPress();
     });
     expect(
-      has(tree, 'lesson-vocabulary-55555555-5555-4555-8555-555555555501'),
+      // The list keys a word by its item code (PR 5).
+      has(tree, 'lesson-vocabulary-phrase:wake up'),
     ).toBe(true);
   });
 

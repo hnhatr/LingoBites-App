@@ -24,7 +24,9 @@ import {CanonicalLessonPlayerScreen} from '../CanonicalLessonPlayerScreen';
 const LESSON_ID = '33333333-3333-4333-8333-333333333301';
 const S1 = '11111111-1111-4111-8111-111111111101';
 const WORD_ID = '55555555-5555-4555-8555-555555555501';
-const GRAMMAR_BLOCK_ID = '66666666-6666-4666-8666-666666666601';
+const GRAMMAR_ID = '66666666-6666-4666-8666-666666666601';
+/** The vocabulary list keys a word by its item code; analyses by their id. */
+const WORD_KEY = 'phrase:wake up';
 
 jest.mock('@features/audio', () => ({
   speak: () => Promise.resolve({ok: true}),
@@ -51,21 +53,7 @@ const snapshot: LessonSnapshot = {
       end_ms: null,
     },
   ],
-  blocks: [
-    {
-      id: GRAMMAR_BLOCK_ID,
-      type: 'grammar',
-      position: 0,
-      title: null,
-      data: {
-        nameEn: 'Present simple',
-        nameVi: 'Thì hiện tại đơn',
-        pattern: 'S + V(s/es)',
-        explanationVi: 'Diễn tả thói quen.',
-        examples: [],
-      },
-    },
-  ],
+  blocks: [],
   analyses: {
     [S1]: {
       sentence_id: S1,
@@ -78,7 +66,15 @@ const snapshot: LessonSnapshot = {
           meaning: 'thức dậy',
         },
       ],
-      grammar: [],
+      grammar: [
+        {
+          id: GRAMMAR_ID,
+          name: 'Present simple',
+          description: 'Diễn tả thói quen.',
+          formula: 'S + V(s/es)',
+          analysis: 'Thói quen hằng ngày.',
+        },
+      ],
       created_at: '2026-10-01T00:00:00.000Z',
     },
   },
@@ -161,14 +157,14 @@ describe('CanonicalLessonPlayerScreen save actions', () => {
   it('"Lưu thẻ" saves a flashcard that is due in review and stays saved on reopen', () => {
     const tree = renderScreen();
     openSection(tree, 'Từ vựng chính');
-    const button = pressable(tree, `lesson-vocabulary-save-${WORD_ID}`);
-    expect(label(tree, `lesson-vocabulary-save-${WORD_ID}`)).toBe('Lưu thẻ');
+    const button = pressable(tree, `lesson-vocabulary-save-${WORD_KEY}`);
+    expect(label(tree, `lesson-vocabulary-save-${WORD_KEY}`)).toBe('Lưu thẻ');
 
     act(() => {
       button.props.onPress();
     });
 
-    expect(label(tree, `lesson-vocabulary-save-${WORD_ID}`)).toBe('Đã lưu');
+    expect(label(tree, `lesson-vocabulary-save-${WORD_KEY}`)).toBe('Đã lưu');
     expect(listFlashcards({lessonId: LESSON_ID})).toEqual([
       expect.objectContaining({word: 'wake up', meaningVi: 'thức dậy'}),
     ]);
@@ -177,17 +173,19 @@ describe('CanonicalLessonPlayerScreen save actions', () => {
     act(() => tree.unmount());
     const reopened = renderScreen();
     openSection(reopened, 'Từ vựng chính');
-    expect(label(reopened, `lesson-vocabulary-save-${WORD_ID}`)).toBe('Đã lưu');
+    expect(label(reopened, `lesson-vocabulary-save-${WORD_KEY}`)).toBe(
+      'Đã lưu',
+    );
   });
 
   it('a second press on "Đã lưu" removes the card', () => {
     const tree = renderScreen();
     openSection(tree, 'Từ vựng chính');
     act(() => {
-      pressable(tree, `lesson-vocabulary-save-${WORD_ID}`).props.onPress();
+      pressable(tree, `lesson-vocabulary-save-${WORD_KEY}`).props.onPress();
     });
     act(() => {
-      pressable(tree, `lesson-vocabulary-save-${WORD_ID}`).props.onPress();
+      pressable(tree, `lesson-vocabulary-save-${WORD_KEY}`).props.onPress();
     });
     expect(listFlashcards({lessonId: LESSON_ID})).toHaveLength(0);
   });
@@ -195,10 +193,8 @@ describe('CanonicalLessonPlayerScreen save actions', () => {
   it('"Đánh dấu" bookmarks a grammar point and stays saved on reopen', () => {
     const tree = renderScreen();
     openSection(tree, 'Ngữ pháp trong ngữ cảnh');
-    const button = pressable(tree, `lesson-grammar-save-${GRAMMAR_BLOCK_ID}`);
-    expect(label(tree, `lesson-grammar-save-${GRAMMAR_BLOCK_ID}`)).toBe(
-      'Đánh dấu',
-    );
+    const button = pressable(tree, `lesson-grammar-save-${GRAMMAR_ID}`);
+    expect(label(tree, `lesson-grammar-save-${GRAMMAR_ID}`)).toBe('Đánh dấu');
 
     act(() => {
       button.props.onPress();
@@ -207,23 +203,21 @@ describe('CanonicalLessonPlayerScreen save actions', () => {
     expect(listAllBookmarkedGrammar()).toEqual([
       expect.objectContaining({
         lessonId: LESSON_ID,
-        grammarId: GRAMMAR_BLOCK_ID,
+        grammarId: GRAMMAR_ID,
       }),
     ]);
 
     act(() => tree.unmount());
     const reopened = renderScreen();
     openSection(reopened, 'Ngữ pháp trong ngữ cảnh');
-    expect(label(reopened, `lesson-grammar-save-${GRAMMAR_BLOCK_ID}`)).toBe(
-      'Đã lưu',
-    );
+    expect(label(reopened, `lesson-grammar-save-${GRAMMAR_ID}`)).toBe('Đã lưu');
   });
 
   it('the sentence analysis word shares the saved state', () => {
     const tree = renderScreen();
     openSection(tree, 'Từ vựng chính');
     act(() => {
-      pressable(tree, `lesson-vocabulary-save-${WORD_ID}`).props.onPress();
+      pressable(tree, `lesson-vocabulary-save-${WORD_KEY}`).props.onPress();
     });
     act(() => tree.unmount());
 
