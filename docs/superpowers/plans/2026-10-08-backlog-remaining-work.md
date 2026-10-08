@@ -5,7 +5,7 @@
 > Cập nhật file này mỗi khi xong hoặc thêm một việc.
 
 **Trạng thái hiện tại:**
-- Code PR 1–11 nằm trên nhánh `claude/optimistic-bell-mfgk44` của cả hai repo (`LingoBites-App`, `LingoBites-Server`), **chưa merge vào main, chưa mở pull request**.
+- Code PR 1–11 **đã merge vào `develop`** (server #114, app #221). Phát triển tiếp trên nền `develop`; `main` giữ bản ổn định.
 - Plan chi tiết từng PR (kèm phần "điểm lệch") nằm trong thư mục này: `2026-10-07-pr1-…` → `2026-10-08-pr11-…`.
 - Lộ trình 8 bước gốc: `2026-10-07-learning-cycle-requirements-roadmap.md`. Stage 0–3 của plan curriculum ứng với bước 2–6 của lộ trình này.
 
@@ -37,44 +37,45 @@
 
 ---
 
-## P1 – Quyết định và chuẩn bị trước Stage 3
+## P1 – Chuẩn bị trước Stage 3
 
-| # | Việc | Ai | Chặn |
+Hướng làm âm thanh và chấm bài **đã chốt** trong `2026-10-08-stage3-audio-evaluation-analysis.md`: chấm trên server bằng transcript (OpenAI STT), không chấm âm vị, chỉ chấm bước 5 và nhiệm vụ tổng hợp. Spec MVP cũ (2026-09-06) không còn hiệu lực cho phần này.
+
+| # | Việc | Ai | Cần cho |
 |---|---|---|---|
-| 1.1 | **Q4: chọn nhà cung cấp STT và chấm phát âm**, ngân sách mỗi lượt. ⚠️ Dependency và chi phí mới, cần duyệt. | Team | Spike, PR 12b |
-| 1.2 | **Spike STT**: so sánh 2–3 nhà cung cấp trên câu của unit mẫu, giọng Việt, người lớn và trẻ em. Đo độ chính xác, độ trễ, chi phí. Cần API key thật. | Code | PR 12b |
-| 1.3 | **Q1: ngưỡng đạt từng tiêu chí**; lỗi nào mặc định là `blocking` hay `tolerated`. | Team | PR 12, 13 |
-| 1.4 | **Q3: khoảng ôn và điều kiện "ghi nhớ ổn định"**, cách điều chỉnh khi quên. | Team | PR 13, 15 |
-| 1.5 | **Q7: bài `extended`** (người học tự tạo) có tính vào lịch ôn item không. | Team | PR 13 |
-| 1.6 | **Chính sách dữ liệu giọng nói và dữ liệu trẻ em**: consent của phụ huynh, thời hạn lưu, không log nội dung. App đã có luồng upload bản ghi kèm consent của shadowing để tái dùng. | Team | Spike, PR 12b, 14 |
-| 1.7 | **Q5: item `draft` do AI tạo** từ bài người học: admin có duyệt để đưa vào danh mục chung không. | Team | Không chặn Stage 3; cần trước khi mở rộng danh mục |
-| 1.8 | **Q6: một item dùng chung** cho trẻ em và người lớn, hay tách theo đối tượng (ảnh, ví dụ khác nhau). | Team | Bước 1 của lộ trình |
+| 1.1 | API key OpenAI dùng cho STT (có thể dùng chung key AI hiện tại). | Team | PR 13 |
+| 1.2 | Khoảng 40 bản ghi mẫu có nhãn "người chấm: đạt / chưa" (người lớn + trẻ em, bài L01) để đo độ chính xác. | Team | Bật tính năng sau PR 13 |
+| 1.3 | Xác nhận khoảng ôn đề xuất 1 – 3 – 7 – 14 – 30 ngày, "ghi nhớ ổn định" = đạt 2 lần liên tiếp ở mức ≥ 7 ngày. | Team | PR 15 |
+| 1.4 | Q7: bài `extended` (người học tự tạo) có tính vào lịch ôn item không. Mặc định: **không**. | Team | PR 15 |
+| 1.5 | Duyệt câu consent "Chấm bài nói bằng máy" và cập nhật chính sách quyền riêng tư (bên xử lý giọng nói, xoá sau 30 ngày). | Team | PR 14 |
+| 1.6 | Q5: item `draft` do AI tạo có được duyệt vào danh mục chung không. | Team | Stage 4 |
+| 1.7 | Q6: một item dùng chung cho trẻ em và người lớn, hay tách theo đối tượng. | Team | Bước 1 của lộ trình |
 
 ---
 
-## P2 – Stage 3 (khoảng 7 PR)
+## P2 – Stage 3 (6 PR, chi tiết ở file thiết kế §6)
 
 Mỗi PR cần plan chi tiết riêng được duyệt trước (VibeGuard).
 
-| # | PR | Repo | Nội dung | Phụ thuộc |
+| # | PR | Repo | Nội dung | Cần trước |
 |---|---|---|---|---|
-| 2.1 | **PR 12a** – `evaluationService` phần luật | server | Chấm câu viết và câu chọn theo tiêu chí:<br>- content: khớp mẫu câu hoặc biến thể (đã có `acceptedAnswers`);<br>- purpose: dùng luật;<br>- independence: lấy từ `support_level`;<br>- khớp lỗi thường gặp: lỗi `tolerated` không làm trượt.<br>Lượt lỗi → `unscorable`. Payload lượt làm thêm `assessed_by: service`, mã lỗi và tiêu chí. | 1.3 |
-| 2.2 | **PR 12b** – chấm nói | server | STT + chấm phát âm (clarity); purpose dùng AI khi luật không đủ; nhận bản ghi âm. | 1.1, 1.2, 1.6 |
-| 2.3 | **PR 13** – mức hoàn thành và ghi nhớ | server | - `lesson_outcomes.passed_at` = xong phần luyện **và** có lượt `pass_independent` ở task `independent`;<br>- `unit_outcomes` = đạt các bài bắt buộc **và** nhiệm vụ tổng hợp;<br>- bảng `item_memory` và lịch ôn theo item: quên → `needs_review`, giữ `passed_at`;<br>- collection pull `lesson_outcomes` / `item_memory` về app. | 2.1, 1.4, 1.5 |
-| 2.4 | **PR 14** – phản hồi và kết quả | app | - Màn vận dụng gửi bản ghi hoặc câu viết để chấm;<br>- **phản hồi 4 trạng thái**: Đạt / Đạt có gợi ý / Chưa đạt (chỉ lỗi chính, dẫn về bài luyện) / Không chấm được;<br>- màn kết quả bài thật sự;<br>- tiến độ unit tách "đã học" với "đã đạt";<br>- màn nhiệm vụ tổng hợp của unit. | 2.1–2.3 |
-| 2.5 | **PR 15** – ôn tập và gợi ý học tiếp | app | - Ôn theo item: với mẫu câu, người học nói và được chấm;<br>- `today/adaptationEngine` đọc kết quả chấm và `item_memory` thay cho số bài đã làm;<br>- bước 1 "Ôn liên quan" dùng `item_memory`. | 2.3 |
-| 2.6 | **PR 16** – admin cấu hình và thống kê | admin | - Cấu hình ngưỡng đạt, khoảng ôn, điều kiện ghi nhớ;<br>- xem lượt làm của từng user (tiêu chí, lỗi, mức hỗ trợ, nghe lại bản ghi);<br>- thống kê theo bài: tỷ lệ đạt độc lập, lỗi hay gặp. | 2.1–2.3 |
+| 2.1 | **PR 12** – bộ chấm + kết quả (chưa âm thanh) | server | `evaluateUtterance`, so khớp theo từ, bảng `evaluations`, chấm câu viết, API kết quả, collection `evaluations`, lượt `pending` / `service`. | — (làm được ngay) |
+| 2.2 | **PR 13** – âm thanh vào server | server | Recordings `lesson_task` + `attempt_id`, cổng `SpeechToText` + adapter OpenAI, job `evaluation`, giới hạn 30 lượt/ngày, xoá sau 30 ngày, script đo độ chính xác, feature flag `speechEvaluation`. | PR 12, 1.1 |
+| 2.3 | **PR 14** – app chấm bước 5 | app | Cấu hình ghi âm (AAC mono 16 kHz), consent mới, gửi chấm nói / viết, màn "Đang chấm…", phản hồi 4 trạng thái. | PR 12–13, 1.5 |
+| 2.4 | **PR 15** – đạt bài, đạt unit, ghi nhớ | server | `passed_at`, `unit_outcomes`, `item_memory` + lịch ôn, pull về app. | PR 12, 1.3, 1.4 |
+| 2.5 | **PR 16** – app kết quả, tiến độ, ôn | app | Bước 6 "đạt bài", tiến độ unit "đã học / đã đạt", nhiệm vụ tổng hợp, ôn theo item, Today đọc `item_memory`. | PR 15 |
+| 2.6 | **PR 17** – admin | admin | Cấu hình ngưỡng và khoảng ôn, xem lượt làm và kết quả chấm (nghe lại bản ghi trong 30 ngày), thống kê. | PR 12–15 |
 
 **Việc nhỏ dời sang Stage 3** (ghi trong phần "điểm lệch" của các plan):
 
 | # | Việc | Nguồn | Gộp vào |
 |---|---|---|---|
-| 2.7 | Lượt làm **kéo về từ máy khác** chưa tự ghi "complete" cho bài; nên dựa vào `lesson_outcomes` pull từ server. | PR 10 §13 | PR 13 / 14 |
+| 2.7 | Lượt làm **kéo về từ máy khác** chưa tự ghi "complete" cho bài; nên dựa vào `lesson_outcomes` pull từ server. | PR 10 §13 | PR 15 / 16 |
 | 2.8 | Task bước 5 có `response_mode = choose` vẫn chạy như hoạt động luyện (còn gợi ý). Seed chưa có trường hợp này. | PR 11 §11 | PR 14 |
 | 2.9 | Màn vận dụng: phần nói chỉ ghi âm **một lần cho cả tình huống**, chưa ghi từng lượt. | PR 11 §11 | PR 14 (khi chấm nói) |
-| 2.10 | Preview admin dùng nhãn kết quả riêng (`independent` / `with_hint` / `not_yet`), khác enum `outcome` của lượt làm (`pass_independent` …). Nên thống nhất khi preview hiện kết quả chấm thật. | PR 9 | PR 16 |
-| 2.11 | Ghi âm và chấm nói trong preview admin. | PR 9 | PR 16 |
-| 2.12 | Nhiệm vụ tổng hợp của unit chưa chặn publish unit, mới chỉ cảnh báo (D5). | PR 2 | PR 13 |
+| 2.10 | Preview admin dùng nhãn kết quả riêng (`independent` / `with_hint` / `not_yet`), khác enum `outcome` của lượt làm (`pass_independent` …). Nên thống nhất khi preview hiện kết quả chấm thật. | PR 9 | PR 17 |
+| 2.11 | Ghi âm và chấm nói trong preview admin. | PR 9 | PR 17 |
+| 2.12 | Nhiệm vụ tổng hợp của unit chưa chặn publish unit, mới chỉ cảnh báo (D5). | PR 2 | PR 15 |
 
 **Stage 3 xong khi:** unit mẫu đi trọn vòng Học → Vận dụng → Đánh giá → Ghi nhận → Ôn; lượt `unscorable` không bị tính là sai; quên một item không xoá trạng thái đã đạt bài.
 
@@ -90,7 +91,7 @@ Mỗi PR cần plan chi tiết riêng được duyệt trước (VibeGuard).
 | 3.4 | **Bài tự tạo chạy được 6 bước:** chuyển sang **Stage 4** (mục S4 bên dưới). | — | Xem S4 |
 | 3.5 | **Bước 7 – Báo cáo tiến độ, phụ huynh / giáo viên** (khoảng 3–4 PR):<br>- báo cáo theo tuần: hoạt động, mục tiêu đã đạt, lỗi hay gặp, phần cần luyện;<br>- tách "học đều" với "dùng tốt"; câu mô tả năng lực;<br>- tài khoản phụ huynh / giáo viên, liên kết, quyền xem, đề xuất bài. | Code | Cần Stage 3 và 3.1 |
 | 3.6 | **8.6 – Kinh doanh**: gói thuê bao, gói gia đình (gắn vai trò phụ huynh), referral, ưu đãi, thanh toán qua store. | Code | ⚠️ Dependency thanh toán, cần duyệt; hiện mới có quyền theo từng khoá |
-| 3.7 | **8.7 – Thông báo push từ server** dẫn thẳng tới bài hoặc lượt ôn đến hạn, tách khỏi thông báo marketing. Hiện mới là thông báo local. | Code | Cần PR 13 (`item_memory`) |
+| 3.7 | **8.7 – Thông báo push từ server** dẫn thẳng tới bài hoặc lượt ôn đến hạn, tách khỏi thông báo marketing. Hiện mới là thông báo local. | Code | Cần PR 15 (`item_memory`) |
 
 ---
 

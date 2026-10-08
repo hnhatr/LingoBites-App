@@ -1,197 +1,188 @@
-# Phân tích Stage 3: âm thanh và chấm bài
+# Stage 3 – Âm thanh và chấm bài: thiết kế chốt
 
-> Ngày lập: 2026-10-08. Trạng thái: **PHÂN TÍCH — chờ chốt quyết định** (chưa phải plan code).
-> Phạm vi: phần **thu âm → nhận dạng → chấm → phản hồi** của Stage 3 trong `2026-10-07-backward-design-curriculum-plan.md` (bước 4 của lộ trình `2026-10-07-learning-cycle-requirements-roadmap.md`).
-> Kết luận ở cuối file là đầu vào để viết plan chi tiết cho PR 12a / spike / 12b.
-
----
-
-## 1. Hiện trạng (đã khảo sát code ngày 2026-10-08)
-
-| Phần | Đang có | Chưa có |
-|---|---|---|
-| **Ghi âm trên app** | `react-native-audio-recorder-player` ghi file `.m4a` (AAC, cấu hình mặc định, chưa đặt sample rate hay bitrate). Quyền micro iOS / Android đã khai báo. | Thư viện nhận dạng giọng nói trên máy (`@react-native-voice/voice`…); khai báo `NSSpeechRecognitionUsageDescription`. |
-| **Bản ghi trong player 6 bước** | Ghi tạm để tự nghe lại; xoá khi rời câu. | **Không upload**, không lưu vào `speaking_recordings`. |
-| **Upload bản ghi** (của shadowing) | Hàng đợi upload trong SQLite: retry có backoff, có cổng consent. API `POST /v1/recordings` rồi `PUT …/content` (server kiểm SHA-256, tối đa 35 giây, 25 MB). Lưu ở GCS hoặc thư mục local. Xoá lẻ, xoá hàng loạt, dọn file rác mỗi giờ. | Liên kết bản ghi với **lượt làm** (hiện chỉ gắn `lesson_id`, `sentence_id`). Bản ghi đã hoàn tất không có thời hạn lưu. |
-| **Consent** | Câu hỏi "Lưu bản ghi lên tài khoản?". Lưu theo từng máy, chỉ kiểm ở app. | Consent cho **xử lý bằng AI / bên thứ ba**; consent của **phụ huynh**. |
-| **AI provider** | `openai`, `gemini`, `mock`. Chỉ nhận **text** và trả JSON. Có hàng đợi job trên Postgres (lease, retry 2 lần), rate limit theo cửa sổ thời gian. | Giao diện nhận **âm thanh** / STT. Đo chi phí, ngân sách theo user / ngày. |
-| **Dữ liệu để chấm** | `acceptedAnswers` / `normalizeAnswer` (khung câu × biến thể × giá trị chỗ trống). `item_errors` có `wrong_example`, `severity blocking/tolerated`. Task có 4 tiêu chí + `threshold`. Từ điển IPA (CMUdict). Mỗi câu của bài có IPA. | So khớp theo từng từ (diff / Levenshtein). Code dùng `threshold`. |
-| **Lượt làm** | `activity_attempts` loại `lesson`: `outcome`, `support_level`, `assessed_by: rule \| self`. Server tính `practice_completed_at`. | `assessed_by: service`. Bảng kết quả chấm. `passed_at`. Lượt làm chưa có id của **câu / lượt** cụ thể trong block. |
-
-Nhận xét chính:
-- Vòng thu âm → upload → lưu trữ đã có và chạy ổn (từ shadowing), **tái dùng được**.
-- Thiếu hẳn khâu **nhận dạng** và **chấm**.
-- Thiếu **consent cho AI** và **consent của phụ huynh**.
+> Ngày lập: 2026-10-08. Nền code: nhánh **`develop`** (đã merge Stage 1–2: server #114, app #221).
+> Thay cho bản phân tích nhiều phương án trước đó. Spec MVP cũ `docs/superpowers/specs/2026-09-06-…` **không còn hiệu lực** cho phần này (DEC-4, REQ-22 bỏ).
+> Mỗi PR dưới đây vẫn cần plan chi tiết riêng trước khi code (VibeGuard), nhưng hướng làm đã chốt ở đây.
 
 ---
 
-## 2. ⚠️ Mâu thuẫn cần chốt trước
+## 1. Chốt hướng
 
-Spec MVP cũ (`docs/superpowers/specs/2026-09-06-english-fullstack-learning-app-final-spec.md`), đang ở trạng thái **Approved**, ghi:
-- **DEC-4:** STT của hệ điều hành chỉ là **hỗ trợ tuỳ chọn**, **không dùng để quyết định đạt / chưa đạt**.
-- **REQ-22:** không tuyên bố **chấm giọng chính xác**. Phản hồi nói tập trung vào hoàn thành nhiệm vụ, dùng đúng cụm từ, thời gian phản hồi, tự kiểm, gợi ý STT.
-- **Non-goal:** chấm phát âm ở mức âm vị (phoneme).
-- **RISK-3:** chấm nói "nói quá" độ chính xác → mất lòng tin, rủi ro pháp lý.
-
-Plan Stage 3 lại muốn máy chấm 4 tiêu chí, trong đó có **clarity = điểm phát âm**, và dùng kết quả để quyết định **đạt bài** (`passed_at`).
-
-Cần chọn một trong ba hướng:
-
-| Hướng | Ý nghĩa | Đánh giá |
-|---|---|---|
-| **A. Giữ DEC-4** | Máy chỉ đưa **gợi ý** (transcript, từ còn thiếu). Đạt / chưa đạt vẫn do người học tự chấm, kèm checklist tiêu chí. | An toàn, rẻ. Nhưng "đạt bài" vẫn dựa trên tự đánh giá. |
-| **B. Máy chấm nội dung, không chấm giọng** (đề xuất) | Máy chấm **content** và **purpose** dựa trên transcript (nói đúng mẫu câu, đủ ý, đúng mục đích); **independence** lấy từ `support_level`. **Clarity** chỉ là "máy nghe ra được câu" (STT nhận được đủ từ khoá), **không** chấm âm vị. Thay DEC-4 bằng một quyết định mới. | Cân bằng: đủ tin cậy để quyết định đạt bài, không hứa hẹn chấm giọng, chi phí vừa phải. |
-| **C. Chấm phát âm đầy đủ** | Thêm **pronunciation assessment** (điểm theo từ / âm vị, độ trôi chảy), ví dụ dịch vụ có tính năng này như Azure Speech. | Phản hồi chi tiết nhất. Nhưng đắt hơn, phụ thuộc một nhà cung cấp, độ chính xác với giọng Việt và trẻ em chưa rõ. Rủi ro đúng như RISK-3. |
-
-**Đề xuất:** làm **B** trước. C để sau, như một tính năng "luyện phát âm" riêng (mục 8.1 của backlog), **không** dùng làm điều kiện đạt bài. Hướng nào cũng phải **cập nhật spec** (DEC-4, REQ-22) để hai tài liệu không còn mâu thuẫn.
+| Chủ đề | Chốt |
+|---|---|
+| Máy chấm cái gì | **Nội dung, mục đích, độ rõ, độc lập** (4 tiêu chí của task), dựa trên **chữ nhận dạng được (transcript)**. **Không chấm phát âm theo âm vị.** |
+| Chấm ở đâu | **Trên server.** App chỉ ghi âm, gửi lên và hiện kết quả. |
+| Lượt nào được chấm máy | **Bước 5 (vận dụng độc lập)** và **nhiệm vụ tổng hợp của unit**: các lượt quyết định "đạt bài" / "đạt unit". Bước 2–4 giữ như hiện nay (tự chấm + gợi ý). |
+| Câu viết ở bước 5 | Chấm bằng cùng bộ chấm, bỏ bước nhận dạng. |
+| Nhận dạng giọng nói (STT) | Dịch vụ **OpenAI Speech-to-Text**. Server đã có tích hợp OpenAI (`AI_PROVIDER=openai`), và dịch vụ này nhận thẳng file `.m4a` app đang ghi. Đặt sau một cổng `SpeechToText` để đổi nhà cung cấp được. Model cụ thể đặt bằng env, chọn sau khi đo (mục 6). |
+| Lỗi hoặc không nghe được | `unscorable`: không tính là sai, người học làm lại. |
+| Quyền riêng tư | Consent riêng "Cho phép chấm bài nói". Bản ghi chấm xong **tự xoá sau 30 ngày**. **Không lưu nguyên văn transcript.** |
 
 ---
 
-## 3. Chấm cái gì, ở đâu, khi nào
+## 2. Phần âm thanh đưa vào bằng cách nào
 
-### 3.1 Theo loại hoạt động
-
-| Loại | Hiện nay | Stage 3 (hướng B) |
-|---|---|---|
-| Chọn, điền, dịch (gõ) | App chấm theo luật | **Giữ trên app** (offline, tức thì). Server **chấm lại** bằng đúng luật đó khi nhận lượt làm (PR 12a), để kết quả đáng tin. |
-| Nghe nhắc lại, luyện mẫu câu (bước 2–4) | Tự chấm | **STT trên máy (tuỳ chọn)** làm gợi ý: hiện transcript và từ còn thiếu; người học vẫn tự chấm. **Không** gửi lên server, không tốn tiền. |
-| Nhập vai luyện tập (bước 4) | Tự chấm | Như trên. |
-| **Vận dụng độc lập (bước 5)** và **nhiệm vụ tổng hợp của unit** | Tự chấm theo tiêu chí | **Server chấm** (STT trên cloud + bộ chấm). Đây là các lượt quyết định "đạt bài" / "đạt unit". |
-| Ôn mẫu câu (PR 15) | — | Mặc định STT trên máy; chỉ gửi server khi đó là lượt kiểm tra ghi nhớ quan trọng (tuỳ cấu hình). |
-
-Lý do chỉ chấm trên server ở bước 5 và nhiệm vụ tổng hợp:
-- **Chi phí:** khoảng 1–3 lượt mỗi bài, thay vì 20–30 lượt.
-- **Quyền riêng tư:** ít bản ghi phải rời khỏi máy.
-- **Offline:** phần luyện vẫn chạy được khi không có mạng.
-
-### 3.2 Bộ chấm cho một lượt nói (hướng B)
-
-**Đầu vào:**
-- transcript (kèm confidence từng từ nếu nhà cung cấp trả về);
-- task: tiêu chí, ngưỡng, `item_codes`;
-- câu chấp nhận (`acceptedAnswers` của mẫu câu, câu mẫu của lượt);
-- lỗi thường gặp của item;
-- `support_level`.
-
-**Chấm từng tiêu chí:**
-
-| Tiêu chí | Cách chấm | Kết quả |
-|---|---|---|
-| **content** | Chuẩn hoá transcript (`normalizeAnswer`) rồi so với tập câu chấp nhận: khớp đúng, hoặc khớp gần (tỷ lệ từ trùng ≥ ngưỡng, các giá trị chỗ trống hợp lệ). | đạt / chưa |
-| **purpose** | Luật trước: có đủ item bắt buộc và đúng loại câu (ví dụ câu hỏi gọi món). Chỉ gọi AI text khi luật không đủ, bằng prompt ngắn và trả JSON theo schema. | đạt / chưa |
-| **clarity** | Tỷ lệ từ khoá của câu mẫu mà STT nhận ra, kèm confidence trung bình. Không chấm âm vị. | đạt / chưa |
-| **independence** | `support_level = none` → đạt. | đạt / chưa |
-
-**Lỗi thường gặp:** so khớp gần transcript với `wrong_example` của từng lỗi. Lỗi `blocking` làm trượt; lỗi `tolerated` chỉ hiện nhắc nhở.
-
-**Gộp kết quả:**
-- Đủ các tiêu chí **bắt buộc** → `pass_independent`, hoặc `pass_with_support` nếu đã dùng gợi ý.
-- Thiếu tiêu chí → `fail`, kèm **lỗi chính** để hiện cho người học.
-- Không chấm được → `unscorable`.
-
-**Các trường hợp `unscorable`** (không tính là sai):
-- im lặng hoặc quá ngắn (dưới khoảng 0,5 giây có tiếng);
-- STT không trả chữ hoặc confidence quá thấp;
-- nhà cung cấp lỗi hoặc quá thời gian chờ;
-- định dạng file hỏng.
-
----
-
-## 4. Luồng kỹ thuật đề xuất
+### 2.1 Luồng
 
 ```
-App (bước 5)                    Server                                 Nhà cung cấp STT
-───────────                     ──────                                 ────────────────
-ghi âm .m4a ──► hàng đợi upload ──► POST /v1/recordings (mode=lesson_task, attempt_id)
-                                    PUT  …/content  (SHA-256, ≤35s)
-ghi lượt làm (outcome=pending) ─► sync push ─► tạo job "evaluation" (bảng job sẵn có)
-                                               worker ──► STT ──────────► transcript
-                                               bộ chấm (luật + AI text khi cần)
-                                               ghi `evaluations`, cập nhật outcome,
-                                               passed_at / unit_outcomes / item_memory
-app kéo kết quả (pull `evaluations` hoặc gọi GET khi đang mở màn) ◄──
-hiện phản hồi 4 trạng thái
+APP (bước 5 / nhiệm vụ tổng hợp)
+ 1. Ghi âm (RecorderControls hiện có), giữ file sau khi người học bấm "Xong".
+ 2. Ghi lượt làm: outcome = pending, assessed_by = service, recording_client_id.
+ 3. Lưu vào speaking_recordings (mode = lesson_task, activity_id = attempt id).
+ 4. Hàng đợi upload hiện có đẩy file lên (kiểm consent "chấm bài nói").
+SERVER
+ 5. POST /v1/recordings (mode = lesson_task, attempt_id, block_id) → PUT …/content
+ 6. Upload xong → tạo job "evaluation" (hàng đợi job Postgres hiện có).
+ 7. Worker: lấy file → STT → bộ chấm → ghi `evaluations` → cập nhật lesson_outcomes.
+APP
+ 8. Đang mở màn: hỏi GET /v1/evaluations/:attemptId (mỗi 2 giây, tối đa ~20 giây).
+    Đã rời màn / offline: kết quả về qua sync pull (collection `evaluations`).
+ 9. Hiện phản hồi 4 trạng thái.
 ```
 
-**Chi tiết:**
-- **Tái dùng hạ tầng sẵn có:**
-  - API recordings và hàng đợi upload (thêm `mode = lesson_task` và trường `attempt_id`);
-  - hàng đợi job trên Postgres (thêm loại job `evaluation`);
-  - pattern provider (thêm giao diện `SpeechToTextProvider`, độc lập với `AIProvider` text).
-- **Khi đang online:** app mở một màn chờ ngắn ("Đang chấm…", mục tiêu dưới 5–8 giây).
-- **Khi offline hoặc quá lâu:** lượt làm hiện "Đang chờ chấm"; người học vẫn đi tiếp được. Kết quả đến sau, qua sync. Hết thời gian chờ (ví dụ 24 giờ) thì thành `unscorable`.
-- **Server là nơi quyết định kết quả cuối** cho lượt nói ở bước 5. Lượt làm thêm `assessed_by: service`; `outcome` có thể là `pending` lúc đầu (thay đổi contract nhỏ, cần cập nhật schema cả hai phía).
-- **Câu viết ở bước 5** (task `write`) đi cùng luồng, chỉ bỏ bước STT. Câu viết cần được **gửi lên** để chấm; hiện chữ người học viết không rời máy, nên đây là thay đổi chính sách cần ghi rõ.
+### 2.2 Thay đổi cụ thể
 
-**Dữ liệu mới (server):**
-- `evaluations(id, user_id, attempt_id, recording_id?, task_id, criteria_json, errors_json, outcome, assessed_by, provider, model, latency_ms, cost_units, transcript?, created_at)`.
-- Có lưu `transcript` hay không: xem mục 5.
-- Collection sync `evaluations`, chỉ pull (server → app).
+**App** (`LingoBites-App`):
 
----
-
-## 5. Quyền riêng tư và dữ liệu trẻ em (bắt buộc trước khi gửi giọng nói ra ngoài)
-
-| Việc | Đề xuất |
+| File / chỗ | Thay đổi |
 |---|---|
-| Consent | Thêm consent mới **"Cho phép chấm bài nói bằng máy"**: ghi rõ giọng nói được gửi tới server và nhà cung cấp nhận dạng giọng nói, giữ trong N ngày rồi xoá. Tách khỏi consent "lưu bản ghi lên tài khoản" hiện có. Không đồng ý thì bước 5 quay về tự đánh giá. |
-| Trẻ em | Tài khoản trẻ (sau khi có hồ sơ người học, bước 1 của lộ trình) cần **consent của phụ huynh** trước khi bật chấm máy. Kiểm tra lại cấu hình "Made for Kids" trên store. |
-| Thời hạn lưu | Bản ghi dùng để chấm: xoá sau **30 ngày** (đề xuất), hoặc ngay sau khi chấm nếu không cần cho admin xem lại. Thêm job dọn theo thời hạn (hiện chưa có). |
-| Transcript | Mặc định **không lưu nguyên văn**, chỉ lưu kết quả từng tiêu chí và mã lỗi. Nếu cần để admin kiểm tra chất lượng chấm (PR 16), lưu có thời hạn và chỉ admin xem. |
-| Log | Không log nội dung âm thanh hay transcript (theo quy tắc hiện có `LOG_SENSITIVE_CONTENT=false`). |
-| Nhà cung cấp | Chọn nhà cung cấp cam kết **không dùng dữ liệu để huấn luyện** và cho chọn vùng lưu trữ. Ghi vào chính sách quyền riêng tư (`02-privacy-policy-draft.md`). |
+| `features/speaking/logic/recordingService.ts` | `startRecorder` đặt cấu hình ghi: **AAC, mono, 16 kHz, ~32 kbps**. Đủ cho nhận dạng giọng nói và cho file nhỏ: 35 giây khoảng 140 KB, thay vì mặc định của thư viện. |
+| `features/lesson/flow/components/IndependentTaskView.tsx` | Khi người học có consent "chấm bài nói": ghi âm → "Gửi chấm", **không** hiện checklist tự đánh giá. Không có consent, hoặc tài khoản trẻ chưa có consent phụ huynh: giữ tự đánh giá như hiện nay. |
+| `features/lesson/flow/logic/useSelfCheckRecorder.ts` | Thêm chế độ "giữ file": không xoá khi rời màn nếu file đã được giao cho hàng đợi upload. |
+| `speaking_recordings` (SQLite) + `recordingUploadQueue` | Dùng lại nguyên. Thêm mode `lesson_task` và cổng consent mới cho mode này. Không cần nâng schema, vì `mode` và `activity_id` đều là cột text sẵn có. |
+| `features/speaking/logic/upload/recordingConsent.ts` | Thêm khoá `speaking.evaluation_consent` (`on` / `off` / chưa hỏi) và màn hỏi consent riêng (nội dung ở mục 5). |
+| `core/schemas/sync.ts` | `LessonAttemptOutcome` thêm `pending`; `assessed_by` thêm `service`; payload thêm `recording_client_id?`. Collection pull mới `evaluations`. |
 
----
+**Server** (`LingoBites-Server`):
 
-## 6. Chi phí và kiểm soát
-
-- Chấm server chỉ ở bước 5 và nhiệm vụ tổng hợp: khoảng **1–3 lượt × ≤35 giây** mỗi bài.
-- **Giới hạn theo user / ngày** (ví dụ 30 lượt chấm), rate limit sẵn có, và trần ngân sách theo tháng (bảng đếm `cost_units`).
-- **Không gửi lại** cùng một file đã chấm (khoá theo SHA-256 của bản ghi).
-- Giá cụ thể của từng nhà cung cấp: **đo trong spike**, không ước từ trí nhớ.
-
----
-
-## 7. Spike nhà cung cấp STT (làm trước PR 12b)
-
-**Mục tiêu:** chọn nhà cung cấp và xác định ngưỡng chấm, bằng số liệu thật.
-
-| Bước | Nội dung |
+| File / chỗ | Thay đổi |
 |---|---|
-| Bộ dữ liệu | 60–100 bản ghi theo câu của unit "Gọi đồ uống": người lớn và trẻ em giọng Việt, cả câu đúng, câu sai (thiếu "a", "I want…", sai đồ uống), câu ấp úng, môi trường ồn. Ghi bằng chính app (`.m4a`). Người ghi phải đồng ý cho dùng giọng. |
-| Nhà cung cấp | 2–3 lựa chọn. Ví dụ:<br>- STT trên máy (iOS / Android) qua thư viện React Native;<br>- một dịch vụ cloud phổ biến cho tiếng Anh;<br>- một dịch vụ có thêm chấm phát âm (để so sánh nếu sau này chọn hướng C). |
-| Đo | - Tỷ lệ lỗi từ (WER).<br>- **Độ khớp với người chấm** (máy đạt/chưa so với người chấm đạt/chưa: tỷ lệ đúng, tỷ lệ chấm oan).<br>- Độ trễ.<br>- Chi phí mỗi lượt.<br>- Tỷ lệ `unscorable`. |
-| Tiêu chí chọn | Chấm oan (máy nói "chưa đạt" khi người chấm nói "đạt") **dưới 10%**; độ trễ **dưới 5 giây**; chi phí trong ngân sách Q4. |
-| Đầu ra | Báo cáo ngắn, ngưỡng mặc định cho `content` / `clarity`, quyết định nhà cung cấp. |
-
-Cần: API key thật của nhà cung cấp cần thử, ngân sách nhỏ cho spike, người ghi âm mẫu (có consent).
-
----
-
-## 8. Chia PR (thay cho dòng PR 12 trong backlog)
-
-| PR | Nội dung | Phụ thuộc |
-|---|---|---|
-| **12a** | Server: bảng `evaluations`, chấm lại theo luật các lượt chọn / điền / dịch, `assessed_by: service`, collection pull `evaluations`, app nhận và hiện kết quả. **Chưa có âm thanh.** | Chốt ngưỡng (Q1) |
-| **Spike** | Mục 7. | Q4, API key, consent người ghi mẫu |
-| **12b** | Server:<br>- `SpeechToTextProvider`;<br>- job `evaluation`;<br>- recordings thêm `mode = lesson_task` và `attempt_id`;<br>- bộ chấm transcript (content, purpose, clarity, lỗi);<br>- thời hạn lưu bản ghi. | Spike, hướng ở mục 2, consent mục 5 |
-| **12c** | App:<br>- upload bản ghi bước 5 qua hàng đợi sẵn có;<br>- consent mới;<br>- màn "Đang chấm…";<br>- lượt `pending`. | 12b |
-| **12d** (tuỳ chọn) | App: STT trên máy làm **gợi ý** ở bước 2–4 (transcript, từ còn thiếu), không quyết định kết quả. | Dependency mới (thư viện STT), cần duyệt |
-| 13–16 | Như backlog: `passed_at`, `item_memory`, phản hồi 4 trạng thái, ôn, admin. | 12a–12c |
+| `recordings/model/recordings.ts` | `mode` thêm `lesson_task`. Với mode này: `sentence_id` không bắt buộc; thêm `attempt_id` và `block_id` (uuid, bắt buộc). |
+| `prisma/schema.prisma` + migration `007_…` | Bảng `recordings` thêm cột `attempt_id`, `block_id`, `evaluate_by` (hạn xoá). Thêm bảng `evaluations` (mục 3.4). |
+| `recordings/controller/recordings.ts` | PUT content xong mà mode là `lesson_task` thì tạo job `evaluation`. |
+| `common/jobs/` | Thêm loại job `evaluation`, dùng lease / retry sẵn có (thử tối đa 2 lần). |
+| `app/service/cleanup.ts` | Job dọn: xoá file + dòng `recordings` mode `lesson_task` sau **30 ngày**. |
+| `sync/model/sync.ts` + `sync/repository/store.ts` | Nhận lượt `pending`; không tính lượt `pending` vào kết quả cho tới khi có `evaluations`. |
 
 ---
 
-## 9. Quyết định cần anh/chị chốt
+## 3. Phần chấm cần gì
 
-| # | Câu hỏi | Đề xuất |
+### 3.1 Thành phần
+
+| Thành phần | Nội dung | Kiểm thử |
 |---|---|---|
-| D1 | Hướng chấm nói: A (chỉ gợi ý), B (máy chấm nội dung, không chấm giọng), hay C (chấm phát âm)? | **B**; C để sau làm tính năng luyện phát âm riêng. Cập nhật DEC-4 / REQ-22. |
-| D2 | Chấm server ở những lượt nào? | Bước 5 + nhiệm vụ tổng hợp của unit. Bước 2–4 vẫn tự chấm, có thể kèm STT trên máy làm gợi ý. |
-| D3 | Có lưu transcript không, lưu bao lâu? | Không lưu nguyên văn. Nếu cần cho admin thì tối đa 30 ngày. |
-| D4 | Thời hạn lưu bản ghi dùng để chấm? | 30 ngày, rồi xoá tự động. |
-| D5 | Câu viết ở bước 5 có được gửi lên server để chấm không? | Có, cùng consent "chấm bằng máy". |
-| D6 | Danh sách nhà cung cấp đưa vào spike, ngân sách spike và ngân sách mỗi lượt (Q4). | Team chọn; tôi chuẩn bị khung đo. |
-| D7 | Ngưỡng mặc định của từng tiêu chí (Q1), và lỗi nào mặc định `blocking`. | Lấy từ kết quả spike; lỗi mặc định `tolerated`, chỉ lỗi làm sai ý mới `blocking`. |
-| D8 | Người dùng trẻ em: bật chấm máy khi nào? | Chỉ khi có consent phụ huynh (cần hồ sơ người học trước). Trước đó, tài khoản trẻ dùng tự đánh giá. |
+| **Cổng `SpeechToText`** | `transcribe({audio, mimeType, language: 'en', prompt?}) → {text, durationMs}`. Prompt là gợi ý từ vựng: câu mẫu và item của task, giúp nhận đúng tên đồ uống… | Adapter `mock` trả transcript theo fixture |
+| **Adapter OpenAI** | Gọi API transcription bằng file `.m4a`; timeout 20 giây; env `STT_PROVIDER`, `STT_MODEL`, `STT_API_KEY` (mặc định dùng `AI_API_KEY`). | Test tích hợp tắt mặc định, bật bằng env khi có key |
+| **Bộ chấm `evaluateUtterance`** | Hàm thuần: transcript + dữ liệu task → điểm từng tiêu chí, lỗi, kết quả (mục 3.2). Dùng chung cho câu nói và câu viết. | Test bảng với nhiều câu đúng / sai / thiếu |
+| **So khớp theo từ** | Chuẩn hoá bằng `normalizeAnswer` sẵn có, tách từ, tính **độ trùng từ** (khoảng cách chỉnh sửa theo từ) giữa transcript và từng câu chấp nhận; trả về từ thiếu / từ thừa để làm phản hồi. | Test riêng |
+| **Job `evaluation`** | Lấy bản ghi → STT → chấm → ghi `evaluations` → cập nhật `lesson_outcomes` → xoá tạm. Lỗi STT sau 2 lần thì thành `unscorable`. | Test DB với STT mock |
+| **API kết quả** | `GET /v1/evaluations/:attemptId` (chủ lượt làm mới xem được); `POST /v1/evaluations/text` cho câu viết (chữ không được lưu). | Test route |
+| **Giới hạn chi phí** | Tối đa **30 lượt chấm / user / ngày** (env `EVAL_DAILY_LIMIT`); không chấm lại cùng một file (theo SHA-256). Vượt giới hạn thì trả `unscorable` với lý do `limit`. | Test |
 
-**Có thể bắt đầu ngay mà không cần chốt D1–D8:** PR 12a (chấm lại theo luật, bảng `evaluations`). Nó không đụng âm thanh và là nền cho 12b.
+### 3.2 Luật chấm (phiên bản 1, không dùng AI ngoài STT)
+
+**Dữ liệu đầu vào lấy từ bài** (đã có trong DB):
+- **câu chấp nhận** = `acceptedAnswers` của các mẫu câu trong `task.item_codes` ∪ câu mẫu của lượt người học trong block (`role_play` / `modelEn`…);
+- **item bắt buộc** của task;
+- **lỗi thường gặp** của các item đó;
+- **ngưỡng** trong `task_criteria.threshold`, rỗng thì dùng mặc định bên dưới.
+
+| Tiêu chí | Đạt khi | Ngưỡng mặc định |
+|---|---|---|
+| **content** | Độ trùng từ với câu chấp nhận gần nhất ≥ ngưỡng **và** giá trị chỗ trống là giá trị hợp lệ của mẫu câu. | 0.80 |
+| **purpose** | Có đủ **item bắt buộc** của task trong câu (mẫu câu khớp khung; từ / cụm từ có mặt). | tất cả |
+| **clarity** | Máy nhận ra ≥ ngưỡng số **từ khoá** của câu chấp nhận gần nhất (từ khoá là từ không phải hư từ: a / the / please…). | 0.60 |
+| **independence** | `support_level = none`. | — |
+
+**Lỗi thường gặp:** transcript giống `wrong_example` của một lỗi (độ trùng từ ≥ 0.85) thì ghi mã lỗi đó. Lỗi `blocking` làm trượt; lỗi `tolerated` chỉ hiện nhắc nhở.
+
+**Kết quả:**
+
+| Điều kiện | Kết quả |
+|---|---|
+| Đủ mọi tiêu chí **bắt buộc**, không có lỗi `blocking` | `pass_independent` (hoặc `pass_with_support` nếu đã dùng gợi ý) |
+| Thiếu tiêu chí bắt buộc hoặc có lỗi `blocking` | `fail` + **lỗi chính** (tiêu chí trượt đầu tiên hoặc lỗi `blocking`) + từ còn thiếu |
+| Bản ghi dưới 1 giây, STT trả rỗng, quá giới hạn, hoặc STT lỗi sau 2 lần | `unscorable` + lý do |
+
+**Phản hồi cho người học** (dữ liệu để app hiện):
+- tiêu chí đạt / chưa;
+- lỗi chính kèm `feedback_vi` của lỗi;
+- các từ còn thiếu so với câu chấp nhận gần nhất;
+- câu tham khảo.
+
+**Hướng mở rộng, không làm trong phiên bản 1:** tiêu chí `purpose` dùng AI text khi luật không đủ (câu nói đúng ý nhưng không dùng mẫu câu của bài). Chỉ làm nếu số liệu thật cho thấy bị chấm oan nhiều.
+
+### 3.3 Đo độ chính xác trước khi bật cho người dùng
+
+Không cần spike riêng; làm trong PR server âm thanh:
+1. Team ghi khoảng **40 câu** bằng app, gồm người lớn và trẻ em, câu đúng / sai / ấp úng, trên bài L01. Mỗi câu kèm nhãn "người chấm: đạt / chưa".
+2. Script chạy cả bộ qua STT + bộ chấm, in ra:
+   - tỷ lệ **chấm oan** (máy chưa đạt, người đạt);
+   - tỷ lệ **chấm lọt** (máy đạt, người chưa đạt);
+   - độ trễ, tỷ lệ `unscorable`.
+3. Bật cho người dùng khi chấm oan **dưới 10%**; nếu chưa đạt thì chỉnh ngưỡng mặc định rồi đo lại.
+4. Toàn bộ tính năng nằm sau feature flag `speechEvaluation`, mặc định tắt.
+
+### 3.4 Dữ liệu lưu
+
+Bảng `evaluations` (server):
+
+| Cột | Ghi chú |
+|---|---|
+| `id`, `user_id`, `attempt_id` (unique), `lesson_id`, `block_id`, `task_id` | |
+| `source` | `speech` \| `text` |
+| `outcome` | `pass_independent` \| `pass_with_support` \| `fail` \| `unscorable` |
+| `criteria` | JSON: tiêu chí → `{passed, score}` |
+| `errors` | JSON: danh sách mã lỗi |
+| `missing_words` | JSON |
+| `unscorable_reason` | |
+| `stt_provider`, `stt_model`, `latency_ms`, `audio_ms` | `audio_ms` dùng để tính chi phí |
+| `created_at` | |
+
+- **Không có cột transcript.**
+- Collection sync `evaluations`: chỉ chiều server → app.
+
+---
+
+## 4. App hiện kết quả
+
+| Trạng thái | Màn hình |
+|---|---|
+| Đang chấm | "Đang chấm…" (tối đa ~20 giây), rồi "Kết quả sẽ có khi có mạng" nếu chưa xong |
+| Đạt | "Bạn đã tự làm được" + tiêu chí đạt |
+| Đạt có gợi ý | "Đạt, nhưng còn cần gợi ý" + nút "Luyện lại" (về bước 3–4) và "Thử lại không gợi ý" |
+| Chưa đạt | Lỗi chính (`feedback_vi`), từ còn thiếu, câu tham khảo + nút "Luyện phần liên quan" và "Thử lại" |
+| Không chấm được | "Chưa nghe rõ, thử lại nhé" (kèm lý do) + "Thử lại"; **không** tính là sai |
+
+---
+
+## 5. Consent và dữ liệu trẻ em
+
+- **Màn consent "Chấm bài nói bằng máy"**, hỏi lần đầu ở bước 5. Nội dung chốt:
+  > "Để chấm bài nói, LingoBites gửi bản ghi của bạn tới máy chủ và dịch vụ nhận dạng giọng nói. Bản ghi tự xoá sau 30 ngày và không dùng cho mục đích khác."
+
+  Hai nút: "Đồng ý" / "Tự đánh giá".
+- **Tài khoản trẻ em:** cho tới khi có hồ sơ người học và consent phụ huynh (Bước 1 của lộ trình), tài khoản đánh dấu là trẻ **không** bật chấm máy. Hiện chưa có trường đối tượng, nên mặc định coi mọi tài khoản là người lớn. Ghi rõ điều này trong chính sách quyền riêng tư trước khi phát hành cho trẻ.
+- Cập nhật `docs/01-ba/07-release/02-privacy-policy-draft.md` (repo server): mục giọng nói, bên xử lý (OpenAI), thời hạn 30 ngày.
+
+---
+
+## 6. Việc còn lại sau khi merge `develop` (thứ tự làm)
+
+| # | PR | Repo | Nội dung | Cần trước |
+|---|---|---|---|---|
+| 0 | — | cả hai | **Test tay** bản `develop` (Phụ lục A của backlog), sửa lỗi phát sinh. | — |
+| 12 | **Bộ chấm + kết quả (chưa âm thanh)** | server | `evaluateUtterance`, so khớp theo từ, bảng `evaluations`, `POST /v1/evaluations/text`, `GET /v1/evaluations/:attemptId`, collection `evaluations`, lượt `pending` / `service`. | — |
+| 13 | **Âm thanh vào server** | server | recordings `lesson_task` + `attempt_id`, cổng `SpeechToText` + adapter OpenAI + mock, job `evaluation`, giới hạn / ngày, xoá sau 30 ngày, script đo độ chính xác, feature flag. | PR 12, API key OpenAI |
+| 14 | **App chấm bước 5** | app | Cấu hình ghi âm, consent mới, gửi chấm (nói / viết), màn "Đang chấm…", phản hồi 4 trạng thái, nhận `evaluations` qua sync. | PR 12, 13 |
+| 15 | **Đạt bài, đạt unit, ghi nhớ** | server | `passed_at` (xong phần luyện + bước 5 `pass_independent` từ `evaluations`), `unit_outcomes`, `item_memory` + lịch ôn, pull về app. | PR 12; chốt khoảng ôn |
+| 16 | **App kết quả, tiến độ, ôn** | app | Bước 6 hiện "đạt bài"; tiến độ unit "đã học / đã đạt"; màn nhiệm vụ tổng hợp; ôn theo item; Today đọc `item_memory`. | PR 15 |
+| 17 | **Admin** | admin | Cấu hình ngưỡng mặc định và khoảng ôn; xem lượt làm + kết quả chấm của user (nghe lại bản ghi trong 30 ngày); thống kê tỷ lệ đạt, lỗi hay gặp. | PR 12–15 |
+
+**Số liệu còn cần team cung cấp:**
+1. **API key OpenAI** dùng cho STT (có thể dùng chung key AI hiện tại).
+2. **Bộ khoảng 40 bản ghi mẫu có nhãn** để đo (mục 3.3).
+3. **Khoảng ôn:** đề xuất 1 – 3 – 7 – 14 – 30 ngày; "ghi nhớ ổn định" = đạt 2 lần liên tiếp ở mức ≥ 7 ngày.
+
+Ngoài ba thứ trên, các ngưỡng và quy tắc trong file này là **mặc định đã chốt**. Chỉnh sau bằng admin (PR 17) hoặc theo số liệu đo, không cần quyết định thêm để bắt đầu code.

@@ -1,7 +1,7 @@
 # Specification: English Full-stack Learning App
 
 Date: 2026-09-06
-Status: Ready; implementation planning intentionally not started
+Status: **Superseded (2026-10-08)** by `docs/superpowers/plans/2026-10-07-backward-design-curriculum-plan.md` and `docs/superpowers/plans/2026-10-08-stage3-audio-evaluation-analysis.md`. Kept for history only; its decisions (incl. DEC-4, REQ-22) no longer apply.
 Audience: Product owner, planning agent, implementation agents, mobile/backend engineers, content designer
 
 ## Source Inventory
