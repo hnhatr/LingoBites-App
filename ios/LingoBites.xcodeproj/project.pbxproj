@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E7A0C0DE00000000000000A2 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = E7A0C0DE00000000000000A1 /* Expo.plist */; };
 		0A169C7D8271152CAA812B84 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		319E764998BF47AF950FC02F /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4FAAED88B7834D3FACA9C2F2 /* MaterialIcons.ttf */; };
@@ -24,6 +25,7 @@
 		130DFB3A84AD4CCF98E486E3 /* Lexend-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Lexend-Bold.ttf"; path = "../assets/fonts/Lexend-Bold.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* LingoBites.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LingoBites.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = LingoBites/Images.xcassets; sourceTree = "<group>"; };
+		E7A0C0DE00000000000000A1 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Expo.plist; path = LingoBites/Supporting/Expo.plist; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = LingoBites/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = LingoBites/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Lexend-SemiBold.ttf"; path = "../assets/fonts/Lexend-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				E7A0C0DE00000000000000A1 /* Expo.plist */,
 			);
 			name = LingoBites;
 			sourceTree = "<group>";
@@ -228,6 +231,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				0A169C7D8271152CAA812B84 /* PrivacyInfo.xcprivacy in Resources */,
+				E7A0C0DE00000000000000A2 /* Expo.plist in Resources */,
 				F17F8B9ACB55453CABFFE16C /* Lexend-SemiBold.ttf in Resources */,
 				790660A959394128A2616E75 /* Quicksand-Medium.ttf in Resources */,
 				D5149D079B854F6C8FD34EFE /* Lexend-Bold.ttf in Resources */,
