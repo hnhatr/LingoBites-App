@@ -130,7 +130,7 @@ Một bài **đủ điều kiện publish** theo validator hiện có (0 vi ph�
 
 | # | Việc | Repo | Ghi chú |
 |---|---|---|---|
-| S4.1 | `lessonComposer` phần lõi: từ một bài đã có câu và phân tích, sinh đặc tả, mẫu câu, task, tiêu chí; ghép với bộ sinh nháp hoạt động; chạy validator. | server | Có test bằng AI mock và fixture |
+| S4.1 | `lessonComposer` phần lõi: từ một bài đã có câu và phân tích, sinh đặc tả, mẫu câu, task, tiêu chí; ghép với bộ sinh nháp hoạt động; chạy validator. Dùng lại kết quả phân tích sẵn có (hoặc gộp một lần gọi AI), không phân tích lại. | server | Có test bằng AI mock và fixture |
 | S4.2 | **Admin:** nút "Sinh bài 6 bước" trên bài tạo từ text / transcript YouTube / bài nhận từ người học. Kết quả là bài nháp, sửa được trên các tab có sẵn. Bước 2 có thể phát đúng đoạn video. | server + admin | Làm trước, giúp có nhiều nội dung curriculum nhanh |
 | S4.3 | **Người học:** bài tự tạo (text, OCR, YouTube) có nút "Học theo 6 bước". Snapshot trả `lesson_items` / spec / tasks cho bài người học. Player mở cho bài tự tạo có đủ đặc tả (bỏ điều kiện `origin = admin` của `isFlowLesson`). | server + app | Gộp mục 4.7 |
 | S4.4 | **Ảnh không có chữ** (ảnh cảnh vật, đồ vật): AI mô tả ảnh thành một tình huống, rồi đi theo đường của Stage 5. | server + app | Phụ thuộc Stage 5; có thể để cuối |
@@ -187,6 +187,7 @@ Một bài **đủ điều kiện publish** theo validator hiện có (0 vi ph�
 | 5.2 | Ba bản copy logic `acceptedAnswers` (server, admin, app) và luật gợi ý cố định (admin preview, app): giữ đồng bộ bằng fixture `accepted-answers.json`. Cân nhắc gom vào một package dùng chung nếu sau này có monorepo. | PR 8–11 |
 | 5.3 | `getDueFlashcardsByItemKeys` đang lọc trong bộ nhớ; chuyển sang SQL nếu hàng đợi ôn lớn. | PR 10 §13 |
 | 5.4 | Giảm dần ngân sách warning lint của app (đang 178/281) khi đụng tới file cũ. | Quy ước code |
+| 5.5 | Route cũ `/v1/ai/analyses` (module `aiAnalysis`): chưa thấy app / admin gọi. Kiểm tra client và log production, xoá khi được duyệt. Luồng tạo bài và phân tích câu khi bấm **giữ nguyên** (Stage 4 cần). | Rà soát AI 2026-10-08 |
 
 ---
 

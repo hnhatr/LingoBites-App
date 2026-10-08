@@ -228,7 +228,7 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
 | PR | Repo | Nội dung | Xong khi |
 |---|---|---|---|
-| S4.1 | server | `lessonComposer` lõi + test bằng AI mock và fixture | Bài mẫu qua validator |
+| S4.1 | server | `lessonComposer` lõi + test bằng AI mock và fixture. **Dùng lại** kết quả dịch / phân tích từ, ngữ pháp / IPA mà luồng tạo bài hiện có đã sinh, hoặc gộp vào cùng một lần gọi AI. Không gọi AI phân tích lại câu. | Bài mẫu qua validator; số lần gọi AI mỗi bài ghi trong plan S4.1 |
 | S4.2 | server + admin | Nút "Sinh bài 6 bước" trên bài từ text / YouTube / bài nhận từ người học. Kết quả là **bài nháp**; bước 2 phát đúng đoạn video. | Admin sửa được rồi publish |
 | S4.3 | server + app | Bài tự tạo có nút "Học theo 6 bước". Snapshot trả `lesson_items` / spec / tasks. Bỏ điều kiện `origin = admin` của `isFlowLesson`. Gộp hub bài tự tạo (4.7). | Người học chạy trọn 6 bước trên bài tự tạo |
 | S4.4 | server + app | Ảnh không chữ → AI mô tả thành tình huống → đi đường Stage 5 | Làm sau S5.3 |
@@ -256,7 +256,7 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | **Kinh doanh 8.6**: thuê bao, gói gia đình, referral, thanh toán store | ⚠️ Dependency thanh toán, cần duyệt |
 | **Push từ server 8.7**: dẫn tới bài / lượt ôn đến hạn | Cần PR 15 |
 | 8.1 sửa phát âm, tốc độ nghe · 8.2 động lực gắn "đạt bài" · 8.3 mini game (flag đã có, chưa UI), nhập vai AI · 8.4 nguồn mới · 8.5 quản lý việc học · vận hành | Làm dần theo ưu tiên sản phẩm |
-| Dọn dẹp:<br>- xoá khoá i18n `lessonFlow.show_model*` (cần duyệt);<br>- giữ đồng bộ 3 bản `acceptedAnswers` bằng fixture;<br>- `getDueFlashcardsByItemKeys` chuyển sang SQL;<br>- giảm warning lint;<br>- ma trận lặp item cấp level. | Không gấp |
+| Dọn dẹp:<br>- xoá khoá i18n `lessonFlow.show_model*` (cần duyệt);<br>- giữ đồng bộ 3 bản `acceptedAnswers` bằng fixture;<br>- `getDueFlashcardsByItemKeys` chuyển sang SQL;<br>- giảm warning lint;<br>- ma trận lặp item cấp level;<br>- kiểm tra route cũ `/v1/ai/analyses` (module `aiAnalysis`, pipeline nhiều giai đoạn): chưa thấy app / admin gọi tới. Xác nhận không còn client nào dùng, rồi **xoá khi được duyệt** (E5). | Không gấp |
 
 ---
 
@@ -352,6 +352,7 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | E2 | Thông báo push | Tối đa 1 thông báo học / ngày, theo giờ người học chọn; không gửi 21:00–07:00 | 8.7 | |
 | E3 | Thanh toán | Mua trong app qua App Store / Google Play (thư viện thanh toán sẽ hỏi duyệt riêng) | 8.6 | |
 | E4 | Xoá khoá i18n `lessonFlow.show_model` / `show_model_hint` | Đồng ý xoá | Dọn dẹp | |
+| E5 | Xoá route cũ `/v1/ai/analyses` và module `aiAnalysis` nếu không còn client nào gọi | Kiểm tra trước (app các bản đã phát hành, admin, log truy cập production); chỉ xoá khi 30 ngày không có lượt gọi. Luồng tạo bài và phân tích câu **giữ nguyên**, vì Stage 4 xây trên chúng. | Dọn dẹp | |
 
 ### 5.7 Giải thích các mục đã chốt
 
