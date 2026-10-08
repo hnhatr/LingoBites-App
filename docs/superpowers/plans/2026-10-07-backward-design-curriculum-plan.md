@@ -284,6 +284,7 @@ Chưa có chấm tự động trong stage này. Bước nói dùng **tự đánh
 7. `server`: map item từ AI, seed unit mẫu. → **Hết Stage 1.**
 8. PR 8–11 (Stage 2): server activity và attempts → admin editor và preview → app player và hoạt động → app gợi ý và vận dụng.
 9. PR 12–16 (Stage 3): server evaluation → outcomes và `item_memory` → app phản hồi và kết quả → app ôn và adaptation → admin cấu hình và thống kê.
+10. **Stage 4–5** (thêm 2026-10-08): sinh bài 6 bước tự động từ video / text / OCR / ảnh (Stage 4) và từ tình huống (Stage 5), dùng chung bộ sinh `lessonComposer`. Phạm vi, phụ thuộc và cách chia PR ghi trong `2026-10-08-backlog-remaining-work.md`.
 
 Mỗi PR có test riêng và chạy được độc lập. Theo VibeGuard, mỗi PR cần plan chi tiết riêng được duyệt trước khi code.
 

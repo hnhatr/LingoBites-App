@@ -17,6 +17,7 @@
 | **P1** | Việc chặn Stage 3 (cần quyết định hoặc chuẩn bị trước) |
 | **P2** | Stage 3: khép kín vòng Học → Vận dụng → Đánh giá → Ghi nhận → Ôn |
 | **P3** | Ra được sản phẩm cho người dùng thật |
+| **Stage 4–5** | Sinh bài 6 bước tự động từ nội dung có sẵn và từ tình huống (sau khi xong P0–P2) |
 | **P4** | Tính năng bổ trợ, làm dần |
 
 Ở các mục còn việc, cột "Ai" chỉ người làm: **Team** = sản phẩm / nội dung, **Code** = lập trình, **Team + Code** = cả hai.
@@ -86,10 +87,78 @@ Mỗi PR cần plan chi tiết riêng được duyệt trước (VibeGuard).
 | 3.1 | **Bước 0 của lộ trình – chốt cấu hình:**<br>- danh mục trình độ;<br>- nội dung bắt buộc từng bài;<br>- cách áp 70/25/5;<br>- quyền xem của phụ huynh / giáo viên;<br>- quy tắc thưởng;<br>- các gói kinh doanh. | Team | Chặn nhiều mục bên dưới |
 | 3.2 | **Soạn nội dung thật** trên admin: đủ course → level → unit → lesson. Hiện mới có **một unit mẫu "Gọi đồ uống"**. | Team | Dùng "Sinh nháp từ mẫu câu" để tiết kiệm công |
 | 3.3 | **Bước 1 – Hồ sơ người học và kiểm tra đầu vào** (khoảng 2–3 PR):<br>- nhóm đối tượng (trẻ 6–11 / người lớn), trình độ, mục tiêu, sở thích, khả năng đọc/viết;<br>- onboarding hỏi các thông tin trên + bài kiểm tra đầu vào ngắn → đề xuất điểm bắt đầu;<br>- course / unit gắn với nhóm đối tượng. | Code | ⚠️ Migration DB, đổi API profile; cần 1.8 |
-| 3.4 | **8.4 – Bài tự tạo có mục tiêu và tiêu chí**: pipeline AI (text, ảnh, YouTube) sinh thêm can-do, item trọng tâm, nhiệm vụ vận dụng, tiêu chí, để bài tự tạo cũng chạy được player 6 bước. | Code | Cần 1.7; có thể làm song song Stage 3 |
+| 3.4 | **Bài tự tạo chạy được 6 bước:** chuyển sang **Stage 4** (mục S4 bên dưới). | — | Xem S4 |
 | 3.5 | **Bước 7 – Báo cáo tiến độ, phụ huynh / giáo viên** (khoảng 3–4 PR):<br>- báo cáo theo tuần: hoạt động, mục tiêu đã đạt, lỗi hay gặp, phần cần luyện;<br>- tách "học đều" với "dùng tốt"; câu mô tả năng lực;<br>- tài khoản phụ huynh / giáo viên, liên kết, quyền xem, đề xuất bài. | Code | Cần Stage 3 và 3.1 |
 | 3.6 | **8.6 – Kinh doanh**: gói thuê bao, gói gia đình (gắn vai trò phụ huynh), referral, ưu đãi, thanh toán qua store. | Code | ⚠️ Dependency thanh toán, cần duyệt; hiện mới có quyền theo từng khoá |
 | 3.7 | **8.7 – Thông báo push từ server** dẫn thẳng tới bài hoặc lượt ôn đến hạn, tách khỏi thông báo marketing. Hiện mới là thông báo local. | Code | Cần PR 13 (`item_memory`) |
+
+---
+
+## Stage 4 và Stage 5 – Sinh bài 6 bước tự động (làm sau khi xong phần nợ P0–P2)
+
+Cả hai stage dùng **một bộ sinh bài 6 bước chung** (gọi là `lessonComposer`) và chỉ khác **đầu vào**:
+- **Stage 4** xây bộ sinh, đầu vào là nội dung có sẵn (video, text, ảnh có chữ).
+- **Stage 5** tái dùng bộ sinh, đầu vào là một tình huống.
+
+### Đầu ra chung của `lessonComposer`
+
+Một bài **đủ điều kiện publish** theo validator hiện có (0 vi phạm spec-check):
+
+| Phần | Nguồn |
+|---|---|
+| Đặc tả: can-do, tình huống (ai / với ai / ở đâu / để làm gì), đối tượng, thời lượng | AI |
+| Item trọng tâm: từ, cụm từ, **1–2 mẫu câu có chỗ trống** | Map vào danh mục có sẵn (PR 7) và rút mẫu câu mới bằng AI |
+| Task hướng dẫn (bước 3–4) và task độc lập (bước 5) kèm 4 tiêu chí, `hint_levels` | AI viết, tiêu chí mặc định theo D4 |
+| Hoạt động bước 2–4 | Bộ sinh nháp theo luật có sẵn (PR 8), không tốn AI |
+| Bước 2 "Nghe hiểu" | Câu / đoạn gốc của nguồn; với video là đúng đoạn có mốc thời gian |
+| Bước 5 nhập vai | AI viết hội thoại ngắn theo tình huống đã đổi chi tiết |
+| Cảnh báo cân bằng 70/25/5 | Tự tính như hiện nay |
+
+### Quy tắc chung
+
+| Chủ đề | Quy tắc |
+|---|---|
+| Không phù hợp | AI được kết luận "không phù hợp" (nội dung không có tình huống giao tiếp rõ: bài hát, tin tức…). Khi đó bài giữ dạng hub như hiện nay, không ép thành 6 bước. |
+| Kiểm duyệt | Bài do **admin** sinh thì vào trạng thái **nháp**: admin sửa trên các tab có sẵn rồi mới publish. Bài do **người học** sinh thì dùng ngay cho riêng người đó, có nhãn "AI tạo". |
+| Item mới do AI tạo | Ở trạng thái `draft`. Có vào danh mục chung hay không do **Q5** quyết định. |
+| Chi phí | Chỉ sinh khi bấm (admin "Sinh bài 6 bước" / người học "Học theo 6 bước"), có giới hạn lượt và cache. |
+| Chấm bước 5 | Tự đánh giá cho tới khi Stage 3 xong; sau Stage 3 dùng chấm tự động như bài thường. |
+
+### S4 – Stage 4: từ video, text, OCR, ảnh → bài 6 bước
+
+| # | Việc | Repo | Ghi chú |
+|---|---|---|---|
+| S4.1 | `lessonComposer` phần lõi: từ một bài đã có câu và phân tích, sinh đặc tả, mẫu câu, task, tiêu chí; ghép với bộ sinh nháp hoạt động; chạy validator. | server | Có test bằng AI mock và fixture |
+| S4.2 | **Admin:** nút "Sinh bài 6 bước" trên bài tạo từ text / transcript YouTube / bài nhận từ người học. Kết quả là bài nháp, sửa được trên các tab có sẵn. Bước 2 có thể phát đúng đoạn video. | server + admin | Làm trước, giúp có nhiều nội dung curriculum nhanh |
+| S4.3 | **Người học:** bài tự tạo (text, OCR, YouTube) có nút "Học theo 6 bước". Snapshot trả `lesson_items` / spec / tasks cho bài người học. Player mở cho bài tự tạo có đủ đặc tả (bỏ điều kiện `origin = admin` của `isFlowLesson`). | server + app | Gộp mục 4.7 |
+| S4.4 | **Ảnh không có chữ** (ảnh cảnh vật, đồ vật): AI mô tả ảnh thành một tình huống, rồi đi theo đường của Stage 5. | server + app | Phụ thuộc Stage 5; có thể để cuối |
+
+- **Phụ thuộc:** P0 xong; Q5 đã chốt; chính sách chi phí AI. Không bắt buộc chờ Stage 3, nhưng nên làm sau để bước 5 được chấm thật.
+- **Ước lượng:** 4–5 PR.
+- **Xong khi:** một video YouTube và một đoạn text bất kỳ sinh ra được bài qua validator, chạy đủ 6 bước trên app, và admin sửa được trước khi publish.
+
+### S5 – Stage 5: từ tình huống → bài 6 bước
+
+| # | Việc | Repo | Ghi chú |
+|---|---|---|---|
+| S5.1 | **Danh mục tình huống chuẩn** (quán cà phê, sân bay, đi khám bệnh…), có nhãn trình độ và đối tượng; gắn nhãn cho bài / unit hiện có. | server + admin | Việc nội dung + 1 PR |
+| S5.2 | **Màn "Học theo tình huống"** trên app: duyệt / tìm tình huống, mở bài có sẵn của tình huống đó. | app | Chưa cần AI |
+| S5.3 | **Sinh bài từ tình huống:** đầu vào là tình huống (chọn từ danh mục, hoặc người học tự gõ "tôi sắp đi phỏng vấn xin việc") + trình độ + đối tượng. AI viết đoạn hội thoại mẫu làm "nguồn" cho bước 2, rồi `lessonComposer` sinh phần còn lại. Ưu tiên tái dùng item đã có trong danh mục. | server + app + admin | Tái dùng S4.1 |
+| S5.4 | **Gợi ý tình huống** theo mục tiêu và sở thích của người học. | app + server | Cần Bước 1 của lộ trình (hồ sơ người học, mục 3.3) |
+| S5.5 | **Luyện lại tình huống:** chỉ chạy bước 5 hoặc nhiệm vụ tổng hợp của tình huống đã học, đổi chi tiết mỗi lần, theo lịch ôn. Nối với nhập vai AI (mục 4.3) nếu đã có. | app + server | Cần Stage 3 (`item_memory`) |
+
+- **Phụ thuộc:** S4.1; Q5; danh mục tình huống do team nội dung chốt.
+- **Ước lượng:** 4–6 PR.
+- **Xong khi:** người học chọn hoặc gõ một tình huống, nhận được bài 6 bước phù hợp trình độ và học trọn được; admin sinh được bài nháp từ tình huống để đưa vào curriculum.
+
+### Quyết định cần chốt trước Stage 4–5
+
+| # | Câu hỏi |
+|---|---|
+| Q8 | Bài người học tự sinh: ai được tạo (mọi gói hay gói trả phí), giới hạn bao nhiêu bài mỗi ngày? |
+| Q9 | Bài do AI sinh từ người học có được admin "nhận về" làm nội dung chung không (giống chức năng chuyển bài hiện có)? |
+| Q10 | Danh mục tình huống chuẩn gồm những gì, chia theo trình độ và đối tượng ra sao? |
+| Q11 | Nhà cung cấp AI và ngân sách cho việc sinh bài (khác với ngân sách chấm nói ở Q4). |
 
 ---
 
@@ -100,10 +169,10 @@ Mỗi PR cần plan chi tiết riêng được duyệt trước (VibeGuard).
 | 4.1 | **8.1 Hỗ trợ học:** sửa phát âm tự động, chỉnh tốc độ nghe. Mọi lần dùng hỗ trợ ghi vào mức hỗ trợ. | Dùng lại STT của Stage 3 |
 | 4.2 | **8.2 Động lực:** nhiệm vụ, câu chuyện có nhân vật đồng hành (cho trẻ), mở khoá nội dung; thưởng gắn với "đạt bài", không chỉ với số lượt làm. | Hiện có pet, XP, badge, streak, weekly goal |
 | 4.3 | **8.3 Thực hành mở rộng:**<br>- mini game: các flag `wordMatchGame`, `fillBlankGame`, `tenseQuizGame`, `sentenceOrderGame` đã có nhưng chưa có UI;<br>- nhập vai với AI theo tình huống bài;<br>- chế độ đấu, nhiệm vụ đội. | ⚠️ Chi phí AI |
-| 4.4 | **8.4 Nguồn mới:** bài hát, phim, nhân vật, nguồn lời nói. | Sau 3.4 |
+| 4.4 | **8.4 Nguồn mới:** bài hát, phim, nhân vật, nguồn lời nói. | Sau Stage 4 |
 | 4.5 | **8.5 Quản lý việc học:** dùng sở thích, lịch sử, báo cáo để định hướng học tiếp; phụ huynh / giáo viên giao bài. | Cần 3.3, 3.5 |
 | 4.6 | **8.7 Vận hành:** admin cấu hình quy tắc thưởng và nội dung thông báo. | |
-| 4.7 | **Hub bài tự tạo** hiện các hàng như bài curriculum (snapshot của bài người học đang trả `lesson_items: []`, G1 của PR 7). | Làm cùng 3.4 |
+| 4.7 | **Hub bài tự tạo** hiện các hàng như bài curriculum (snapshot của bài người học đang trả `lesson_items: []`, G1 của PR 7). | Làm cùng Stage 4 |
 | 4.8 | **Ma trận lặp lại item ở cấp level** (hiện mới có ở cấp unit). | Khi có nhu cầu thật (F3 của PR 4) |
 
 ---
@@ -128,6 +197,7 @@ corepack enable && yarn install --frozen-lockfile
 cp .env.example .env            # đặt ADMIN_USERNAME, ADMIN_CODE; AI_PROVIDER=mock
 docker compose up -d db
 export DATABASE_URL=postgresql://lingobites:lingobites@localhost:5432/lingobites
+yarn prisma generate            # sinh lại Prisma client theo schema mới (bắt buộc sau khi đổi nhánh)
 yarn db:reset                   # ⚠️ xoá sạch DB local
 yarn admin-web:build
 yarn dev                        # tự chạy migration khi khởi động
