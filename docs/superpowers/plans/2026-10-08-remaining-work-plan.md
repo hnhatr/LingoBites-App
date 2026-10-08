@@ -144,6 +144,7 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
   - env `STT_PROVIDER` / `STT_MODEL` / `STT_API_KEY`;
   - job `evaluation` (retry 2 lần);
   - `EVAL_DAILY_LIMIT`; chống chấm lại cùng file bằng SHA-256;
+  - trần phút STT mỗi tháng `STT_MONTHLY_BUDGET_MINUTES` (A15): 80% cảnh báo admin, 100% chuyển về tự đánh giá;
   - job dọn bản ghi sau 30 ngày;
   - script đo độ chính xác;
   - flag `speechEvaluation`.
@@ -295,6 +296,7 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | A12 | Người học không đồng ý consent | Giữ tự đánh giá như hiện nay: vẫn ghi âm và nghe lại **trên máy**, không gửi đi. Không cho micro thì nói thành tiếng rồi tự tick. Hỏi lại tối đa 1 lần / 7 ngày; đổi được trong Cài đặt. | PR 14 | OK – 2026-10-08 |
 | A13 | Người học **không tiện nói** lúc này | Nút **"Không nói được lúc này"**: tắt hoạt động nói bước 3–4 trong 15 phút; bước 5 chuyển sang **viết**, server chấm như câu viết (chữ chỉ lên server LingoBites, không gửi bên thứ ba). Kết quả ghi "đạt (viết thay nói)", **chưa tính đạt bài**; nói lại sau mới tính. | PR 12 (server), PR 14 (app), PR 15 | OK – 2026-10-08 |
 | A14 | Có cho **bỏ hẳn** bước 5 không | Không. Bỏ qua thì bài dừng ở "đã xong phần luyện", chưa "đạt bài". | PR 15–16 | OK – 2026-10-08 |
+| A15 | Trần chi phí nhận dạng giọng nói mỗi tháng (ngoài giới hạn từng người ở A4) | Env `STT_MONTHLY_BUDGET_MINUTES`. Dùng tới 80% thì cảnh báo admin; tới 100% thì tự chuyển mọi người về tự đánh giá tới hết tháng (không lỗi, không mất dữ liệu). Con số cụ thể do team đặt theo ngân sách (ví dụ 40.000 phút ≈ $120 với OpenAI mini). | PR 13 | OK – 2026-10-08 (con số team điền) |
 
 ### 5.3 Stage 3 – đạt bài, đạt unit, ôn (PR 15–17)
 
