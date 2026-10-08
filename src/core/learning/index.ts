@@ -1,3 +1,9 @@
+export {
+  ACCEPTED_ANSWERS_LIMIT,
+  acceptedAnswers,
+  acceptedForValues,
+  normalizeAnswer,
+} from './acceptedAnswers';
 export {type ItemKind, ItemKindValues} from './catalogItem';
 export {deriveItemCode, parseItemCode, type ParsedItemCode} from './itemCode';
 export {

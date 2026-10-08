@@ -19,6 +19,12 @@ export const LESSON_CONTRACT_FIXTURE_SHA256 = {
   /** PR 8: lesson player attempts; the app sends these from PR 10. */
   'valid-sync-activity-attempt-lesson-push-request.json':
     '9f2ae916990aadcd386e3192eac203173b6fa8ecea980bc073701d5b914c13ed',
+  /**
+   * PR 10: accepted answers of a pattern; a copy of the Server's
+   * `test/fixtures/accepted-answers.json` (read by `@core/learning` tests).
+   */
+  'accepted-answers.json':
+    '80fcb648d9994c76d7a16fbd29e7d238e0c3c20dc3e873ae16132dea4287faef',
 } as const;
 
 export type LessonContractFixtureFile =

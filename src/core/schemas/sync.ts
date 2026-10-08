@@ -1,5 +1,7 @@
 import {z} from 'zod';
 
+import {parseItemCode} from '../learning/itemCode';
+import {ActivityKindValues} from './activityContent';
 import {LessonSourceTypeSchema} from './lesson';
 
 /**
@@ -278,6 +280,73 @@ export const ActivityAttemptPayloadSchema = z
 export type ActivityAttemptPayload = z.infer<
   typeof ActivityAttemptPayloadSchema
 >;
+
+/**
+ * PR 8 (written by the app from PR 10): one answered activity block of a
+ * curriculum lesson's player. Still only identifiers, the outcome and timing:
+ * never what the learner said or wrote. `assessed_by` is `rule` when the app
+ * grades a choice or a typed answer and `self` when the learner judges their
+ * own speaking. Mirror of the Server's `LessonActivityAttemptSchema`.
+ */
+export const LessonSupportLevelValues = [
+  'none',
+  'hint_1',
+  'hint_2',
+  'model',
+] as const;
+
+export const LessonAttemptOutcomeValues = [
+  'pass_independent',
+  'pass_with_support',
+  'fail',
+  'unscorable',
+] as const;
+
+export const LessonAttemptAssessorValues = ['rule', 'self'] as const;
+
+export const LESSON_ATTEMPT_ITEM_KEYS_MAX = 20;
+
+export const LessonActivityAttemptPayloadSchema = z
+  .object({
+    kind: z.literal('lesson'),
+    activity: z.enum(ActivityKindValues),
+    lesson_id: z.string().uuid(),
+    block_id: z.string().uuid(),
+    content_revision: z.number().int().min(1),
+    step: z.number().int().min(1).max(6),
+    task_id: z.string().uuid().nullable(),
+    item_keys: z
+      .array(
+        z
+          .string()
+          .refine(code => parseItemCode(code) !== null, 'not an item code'),
+      )
+      .max(LESSON_ATTEMPT_ITEM_KEYS_MAX),
+    session_id: z.string().uuid().nullable(),
+    support_level: z.enum(LessonSupportLevelValues),
+    outcome: z.enum(LessonAttemptOutcomeValues),
+    assessed_by: z.enum(LessonAttemptAssessorValues),
+    duration_ms: z.number().int().min(0).max(3_600_000),
+  })
+  .strict()
+  .refine(
+    attempt =>
+      attempt.support_level === 'none' ||
+      attempt.outcome !== 'pass_independent',
+    {message: 'a supported attempt cannot pass independently'},
+  );
+
+export type LessonActivityAttemptPayload = z.infer<
+  typeof LessonActivityAttemptPayloadSchema
+>;
+export type LessonSupportLevel = LessonActivityAttemptPayload['support_level'];
+export type LessonAttemptOutcome = LessonActivityAttemptPayload['outcome'];
+
+/** Every `activity_attempts` payload the Server accepts. */
+export const ActivityAttemptPushPayloadSchema = z.union([
+  ActivityAttemptPayloadSchema,
+  LessonActivityAttemptPayloadSchema,
+]);
 
 /**
  * `lesson_bookmarks` payloads (Server `LessonBookmarkPushPayloadSchema`): the
