@@ -92,6 +92,19 @@ PR 15 chỉ cần PR 12, nên có thể làm song song với PR 13–14 nếu c�
 | Sửa lỗi tìm được. Kèm hai lỗi có sẵn của server: lint `test/ipa.test.ts:84`, test cascade trong `test/adminContentDelete.test.ts`. | Code | Kiểm xanh, lỗi đóng |
 | ⚠️ Migration staging: `db:reset:staging` + `seed:sample-unit:staging`. **Mất dữ liệu cũ.** App SQLite v7 → v8. | Team + Code | Staging chạy được unit mẫu |
 
+### 4.1 Phần viết trong unit mẫu (đã thêm 2026-10-08)
+
+Trước đây cả 3 bài mẫu chỉ có nói và nghe. Seed (`scripts/sampleUnit/content.ts`, repo server) nay có thêm:
+
+| Bài | Bước | Hoạt động viết |
+|---|---|---|
+| L02 | 4 | `translation` "Viết câu gọi đồ uống": dịch 2 câu Việt → Anh theo mẫu `Can I have a {size} {drink}, please?` (60 giây, kỹ năng `write`) |
+| L03 | 5 | Nhiệm vụ độc lập **viết**: "Nhắn tin gọi đồ ăn" (`response_mode = write`, kỹ năng `write`); app hiện ô nhập thay cho ghi âm |
+
+- Tỷ lệ kỹ năng của unit sau khi thêm: nói ~63% / nghe ~27% / viết ~10%, vẫn trong ngưỡng 70/25/5 ± 10.
+- Seed **không ghi đè** bài đã có. Muốn thấy nội dung mới trên DB local phải `yarn db:reset` rồi `yarn seed:sample-unit`. ⚠️ Lệnh reset xoá sạch DB local.
+- Hiện thiếu viết **không bị cảnh báo** (0% vẫn nằm trong dung sai). Nếu muốn bắt buộc có phần viết thì làm trong PR 17 (admin chỉnh tỷ lệ).
+
 ### Giai đoạn 1 – Stage 3: âm thanh và chấm bài (6 PR)
 
 Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evaluation-analysis.md`. Tóm tắt:
@@ -117,7 +130,8 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
   - bảng câu đúng / sai / thiếu / có lỗi `blocking` / có lỗi `tolerated`;
   - route;
   - DB.
-- **Xong khi:** gửi câu viết của bước 5 bài L01 thì nhận về kết quả đúng luật chấm (§3.2 của file thiết kế).
+- **Dữ liệu test câu viết:** nhiệm vụ bước 5 của **bài L03** "Nhắn tin gọi đồ ăn" (`response_mode = write`, mẫu `pattern:can-i-have-food`). Seed mẫu đã có từ 2026-10-08, xem mục 4.1.
+- **Xong khi:** gửi tin nhắn viết ở bước 5 bài L03 thì nhận về kết quả đúng luật chấm (§3.2 của file thiết kế). Thử cả câu đúng ("Can I have a sandwich, please?"), câu thiếu món, câu sai mẫu.
 - ⚠️ Có migration; contract sync thay đổi (app cần cập nhật schema ở PR 14).
 
 #### PR 13 – Server: âm thanh vào server

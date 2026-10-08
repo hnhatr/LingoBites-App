@@ -60,7 +60,7 @@ Mỗi PR cần plan chi tiết riêng được duyệt trước (VibeGuard).
 
 | # | PR | Repo | Nội dung | Cần trước |
 |---|---|---|---|---|
-| 2.1 | **PR 12** – bộ chấm + kết quả (chưa âm thanh) | server | `evaluateUtterance`, so khớp theo từ, bảng `evaluations`, chấm câu viết, API kết quả, collection `evaluations`, lượt `pending` / `service`. | — (làm được ngay) |
+| 2.1 | **PR 12** – bộ chấm + kết quả (chưa âm thanh) | server | `evaluateUtterance`, so khớp theo từ, bảng `evaluations`, chấm câu viết (test bằng nhiệm vụ viết bước 5 của bài L03), API kết quả, collection `evaluations`, lượt `pending` / `service`. | — (làm được ngay) |
 | 2.2 | **PR 13** – âm thanh vào server | server | Recordings `lesson_task` + `attempt_id`, cổng `SpeechToText` + adapter OpenAI, job `evaluation`, giới hạn 30 lượt/ngày, xoá sau 30 ngày, script đo độ chính xác, feature flag `speechEvaluation`. | PR 12, 1.1 |
 | 2.3 | **PR 14** – app chấm bước 5 | app | Cấu hình ghi âm (AAC mono 16 kHz), consent mới, gửi chấm nói / viết, màn "Đang chấm…", phản hồi 4 trạng thái. | PR 12–13, 1.5 |
 | 2.4 | **PR 15** – đạt bài, đạt unit, ghi nhớ | server | `passed_at`, `unit_outcomes`, `item_memory` + lịch ôn, pull về app. | PR 12, 1.3, 1.4 |
