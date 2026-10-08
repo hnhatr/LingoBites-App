@@ -1,6 +1,6 @@
 # PR 11 – App: gợi ý mở dần và màn vận dụng độc lập (bước 5)
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE**: G1–G8 đã duyệt; app `c6533aa` → `684fb8d` (xem §11 cho các điểm lệch).
 > Ngày lập: 2026-10-08. Repo: `LingoBites-App` (không đổi server). Nhánh: `claude/optimistic-bell-mfgk44`.
 > PR cuối của Stage 2 trong `2026-10-07-backward-design-curriculum-plan.md`, mục App 3 và 4. Dựng trên player của PR 10 và contract của PR 8 (`support_level`, `hint_levels` của task).
 
@@ -127,3 +127,33 @@ Stage 2 xong sau PR này: học trọn unit mẫu theo 6 bước; mọi lượt 
 - **Tự đánh giá theo tiêu chí** dễ dãi hơn chấm máy. Chấp nhận trong Stage 2; Stage 3 thay bằng chấm tự động, giữ nguyên tiêu chí.
 - **Câu viết ở màn vận dụng không được lưu.** Thoát giữa chừng là mất, và không ghi lượt làm (giống G3 của PR 10).
 - **Ba nơi có luật gợi ý** (admin preview, app, sau này là server chấm): mức cố định giống preview admin, có test cùng ví dụ.
+
+## 11. Kết quả và điểm lệch so với plan
+
+**Commit (app, nhánh `claude/optimistic-bell-mfgk44`):**
+
+| Commit | Nội dung |
+|---|---|
+| `c6533aa` | §3: thang gợi ý, mức hỗ trợ, luật vận dụng độc lập. |
+| `eb36581` | §4: gợi ý trong các hoạt động luyện. |
+| `75c3a77` | §5: màn vận dụng độc lập ở bước 5. |
+| `684fb8d` | §6: bước 6 tách "Luyện tập" / "Vận dụng". |
+
+**Kiểm tra cuối:**
+- `yarn -s tsc` sạch;
+- `yarn -s lint`: 0 lỗi, giữ 178/281 warning, module boundary sạch;
+- `yarn -s format:check` sạch;
+- Jest toàn bộ: 2198 pass, 3 skipped.
+
+**Chưa kiểm được:** ghi âm, phát lại và TTS (kể cả TTS đọc ở gợi ý mức 1) trên máy thật; Jest dùng bản giả lập.
+
+**Điểm lệch:**
+1. **Không thêm `EntryResult = 'with_support'`.** Mỗi câu báo `{result, support}`; hàm `blockAttempt` thay `blockOutcome` và tính cả `outcome` lẫn `support_level` của block. Kết quả đúng như G2.
+2. **Thang gợi ý của câu điền gõ tay** lấy đáp án của chỗ trống (không phải cả câu) làm câu mẫu.
+3. **Task `response_mode = choose` ở bước 5** vẫn chạy như hoạt động luyện (còn gợi ý "loại bớt phương án"). Seed không có trường hợp này; sẽ làm riêng nếu cần.
+4. **Nói ở màn vận dụng:**
+   - một lần ghi âm cho cả tình huống;
+   - với nhập vai: lượt bên kia hiện chữ và có nút nghe, lượt người học chỉ hiện "Lượt của bạn", không có chữ.
+5. **Tách `RecorderControls`** dùng chung cho tự đánh giá phần nói và màn vận dụng.
+6. **Checklist tiêu chí** dùng icon có sẵn `check_circle` / `circle` (không thêm icon mới vào registry).
+7. **Khoá i18n `lessonFlow.show_model` / `show_model_hint`** của PR 10 không còn dùng. Vẫn giữ lại, chưa xoá khi chưa được duyệt.
