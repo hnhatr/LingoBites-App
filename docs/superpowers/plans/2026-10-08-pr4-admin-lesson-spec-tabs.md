@@ -1,6 +1,6 @@
 # PR 4 – Soạn bài theo đặc tả trên admin-web (tab Đặc tả / Item / Nhiệm vụ / Hoạt động, ma trận lặp lại)
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE** — đã duyệt F1–F6 và danh sách xoá ở §6; xem §10 cho các điểm lệch so với bản nháp.
 > Ngày lập: 2026-10-08. Repo: `LingoBites-Server` (thư mục `admin-web/`, cộng phần xoá block cũ ở server). Nhánh: `claude/optimistic-bell-mfgk44` (nối tiếp PR 1–3).
 > Thuộc Stage 1 của `2026-10-07-backward-design-curriculum-plan.md`, mục Admin-web 2–5. Dùng API của PR 2 (`/spec`, `/prerequisites`, `/items`, `/spec-check`, `/tasks`, `/item-map`) và `ItemPicker` của PR 3.
 
@@ -262,3 +262,44 @@ Commit 1–6 chỉ **thêm**; block `vocabulary`/`grammar` vẫn chạy cho tớ
 - **Thanh kiểm tra có thể lệch** khi hai người cùng sửa một bài. Server vẫn chặn khi publish (409), nên không publish nhầm được.
 - **Lặp logic với server** ở `lessonCode` và cờ ma trận. Giảm thiểu bằng test trên cùng dữ liệu unit mẫu, server vẫn là nơi kiểm cuối.
 - Khối lượng: 8 commit. Có thể tách **PR 4a** (commit 1–5: soạn bài) và **PR 4b** (commit 6–8: unit, xoá block cũ, e2e) nếu muốn review nhỏ hơn.
+
+## 10. Đã code — điểm lệch so với bản nháp
+
+Commit trên `LingoBites-Server`, nhánh `claude/optimistic-bell-mfgk44`:
+
+1. `3b698fb` feat(admin-web): lesson spec, task and unit map API client
+2. `5cf6203` feat(admin-web): lesson editor tabs and spec check bar
+3. `30e698e` feat(admin-web): lesson items tab with suggestions
+4. `2bf7f47` feat(admin-web): lesson tasks tab and task editor
+5. `e9655bc` feat(admin-web): block steps, skills, durations and item cards
+6. `a69d8a3` feat(admin-web): unit outcome, summative tasks and item matrix; audience on course and level
+7. `0b32550` refactor: retire vocabulary and grammar blocks
+8. `6a4dbce` test(admin-web): lesson spec e2e
+
+Điểm lệch:
+
+| # | Lệch | Lý do |
+|---|---|---|
+| 1 | Nhãn trên thanh kiểm tra viết **tiếng Anh**, không phải tiếng Việt | Giữ đúng quyết định E2 của PR 3: toàn bộ admin dùng tiếng Anh |
+| 2 | Không thêm `valueMode` cho `ItemPicker`. Thay vào đó tách ô tìm thành component **`ItemSearch`**, trả về item đầy đủ; `ItemPicker` vẫn trả mã và dựa trên `ItemSearch` | Ít nhánh điều kiện hơn; tab Item cần cả bảng riêng, không cần chip |
+| 3 | Can-do và đối tượng của unit nằm ở panel **Outcome** riêng; đối tượng của course/level nằm ở panel **Audience** riêng. Không sửa các form metadata | Form metadata dùng chung với trang tạo mới; tách panel giữ trang tạo mới như cũ |
+| 4 | Thứ tự thẻ trong block `item_cards` theo thứ tự item ở tab Item; dialog chỉ có checkbox, không có nút ↑↓ riêng | Một nơi sắp thứ tự là đủ; muốn đổi thứ tự thẻ thì đổi ở tab Item |
+| 5 | Gợi ý "lặp lại" chỉ lấy item đã là `new` ở bài **đứng trước** trong unit | Bài sau chưa dạy thì chưa thể "lặp lại" |
+| 6 | Server thêm `payload` cho item tóm tắt ở **cả** `GET /spec` và `GET /item-map` | Cùng một hàm tóm tắt; ma trận và nhiệm vụ tổng hợp cũng dùng |
+| 7 | Client admin giữ `details` của lỗi ở **mọi** loại lỗi | Trước đây chỉ lỗi publish có `details`, nên danh sách bài khi `ITEM_IN_USE` (PR 3) không hiện được ngoài test. Đã sửa luôn |
+| 8 | Block đặt ở bước 6 hiện chung nhóm **"Not on a step yet"** | Bước 6 không được có block; gom chung để người soạn chuyển đi |
+| 9 | Test e2e AC-020 (LING-11) viết lại: không còn kiểm tra tô đỏ vi phạm block lúc publish, mà kiểm tra nút Publish bị khoá và checklist báo thiếu mã bài | Theo F5, Publish bị khoá khi còn vi phạm đặc tả, nên không bấm được để thấy vi phạm block. Server vẫn trả 409 như cũ |
+| 10 | Xoá thêm `vocabularyLookup.ts` và test của nó; bỏ `vocabularies` khỏi `DeleteCounts` trong response xoá | Không còn nơi dùng sau khi bỏ route xoá vocabulary |
+| 11 | `learning_items` của bài admin không còn lấy từ block | Block `vocabulary`/`grammar` không còn; bảng này bị xoá ở PR 7 |
+| 12 | Hai fixture snapshot: block `grammar` đổi thành block **`example`** (không phải `item_cards`), rồi pin lại SHA | Hai fixture này không có `lesson_items`, nên `item_cards` không có item để trỏ tới |
+| 13 | Tab Đặc tả và panel Outcome của unit gắn `key` theo id, không theo `updatedAt` | Gắn theo `updatedAt` làm panel mount lại sau khi lưu và mất dòng "Saved." (e2e phát hiện) |
+
+**OpenAPI:** 139 path, 170 operation (bỏ 3 route vocabulary).
+
+Kiểm tra đã chạy:
+
+- server `yarn test`: 420/420;
+- `yarn test:db` trên DB mới: 240/240, chạy hai lần;
+- `prisma migrate diff` rỗng; migration 004 chạy được cả chiều down lẫn up;
+- admin-web: lint, typecheck, prettier sạch; vitest 122/122;
+- Playwright 16/16, gồm `lesson-spec.spec.ts` mới: soạn trọn một bài trên admin rồi publish.
