@@ -4,13 +4,13 @@ import {AppText} from '@ui/components/AppText';
 
 import type {MultipleChoiceContent} from '@core/schemas/activityContent';
 
-import type {EntryResult} from '../../logic/activityOutcome';
+import type {EntryReport} from '../../logic/activityOutcome';
 import {ChoiceEntry} from '../ChoiceEntry';
 import {EntrySequence} from '../EntrySequence';
 
 export type MultipleChoiceActivityProps = {
   content: MultipleChoiceContent;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 /** Each question: the prompt (VI, optional EN) and its options. */

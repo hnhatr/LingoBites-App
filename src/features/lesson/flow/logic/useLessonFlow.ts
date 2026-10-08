@@ -8,7 +8,10 @@ import {requestSync} from '@features/sync';
 
 import {createRequestId} from '@core/api/requestId';
 import type {LessonBlock, LessonSnapshot} from '@core/schemas/lesson';
-import type {LessonAttemptOutcome} from '@core/schemas/sync';
+import type {
+  LessonAttemptOutcome,
+  LessonSupportLevel,
+} from '@core/schemas/sync';
 import {
   type LessonActivityAttemptRow,
   listLessonActivityAttempts,
@@ -35,6 +38,7 @@ function readAttempts(lessonId: string): LessonActivityAttemptRow[] {
 export type FinishedActivity = {
   block: LessonBlock;
   outcome: LessonAttemptOutcome;
+  supportLevel: LessonSupportLevel;
   durationMs: number;
 };
 
@@ -71,7 +75,7 @@ export function useLessonFlow(
   }, [snapshot, step, attempts]);
 
   const finishActivity = useCallback(
-    ({block, outcome, durationMs}: FinishedActivity) => {
+    ({block, outcome, supportLevel, durationMs}: FinishedActivity) => {
       const activity = flowActivity(block);
       if (!snapshot || !activity || block.step == null) return false;
       const result = recordLessonActivityAttempt({
@@ -83,7 +87,7 @@ export function useLessonFlow(
         taskId: activity.taskId,
         itemKeys: blockItemKeys(block, flowItems(snapshot)),
         sessionId,
-        supportLevel: 'none',
+        supportLevel,
         outcome,
         assessedBy: SELF_ASSESSED.has(activity.kind) ? 'self' : 'rule',
         durationMs,

@@ -10,13 +10,13 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {RolePlayContent} from '@core/schemas/activityContent';
 
-import type {EntryResult} from '../../logic/activityOutcome';
+import type {EntryReport} from '../../logic/activityOutcome';
 import {EntrySequence} from '../EntrySequence';
 import {SpeakSelfCheck} from '../SpeakSelfCheck';
 
 export type RolePlayActivityProps = {
   content: RolePlayContent;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 /**

@@ -4,13 +4,13 @@ import {AppText} from '@ui/components/AppText';
 
 import type {ListenAndRepeatContent} from '@core/schemas/activityContent';
 
-import type {EntryResult} from '../../logic/activityOutcome';
+import type {EntryReport} from '../../logic/activityOutcome';
 import {EntrySequence} from '../EntrySequence';
 import {SpeakSelfCheck} from '../SpeakSelfCheck';
 
 export type ListenRepeatActivityProps = {
   content: ListenAndRepeatContent;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 /** Hear each sentence, say it back, judge yourself. */

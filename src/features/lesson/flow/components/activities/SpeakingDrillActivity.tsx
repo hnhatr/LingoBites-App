@@ -8,7 +8,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {SpeakingDrillContent} from '@core/schemas/activityContent';
 
-import type {EntryResult} from '../../logic/activityOutcome';
+import type {EntryReport} from '../../logic/activityOutcome';
 import {comboSentence, type FlowItems} from '../../logic/flowContent';
 import {EntrySequence} from '../EntrySequence';
 import {SpeakSelfCheck} from '../SpeakSelfCheck';
@@ -16,7 +16,7 @@ import {SpeakSelfCheck} from '../SpeakSelfCheck';
 export type SpeakingDrillActivityProps = {
   content: SpeakingDrillContent;
   items: FlowItems;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 /**

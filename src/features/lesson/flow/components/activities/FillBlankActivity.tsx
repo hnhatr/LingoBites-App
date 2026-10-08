@@ -5,14 +5,14 @@ import {AppText} from '@ui/components/AppText';
 import {normalizeAnswer} from '@core/learning';
 import type {FillBlankContent} from '@core/schemas/activityContent';
 
-import type {EntryResult} from '../../logic/activityOutcome';
+import type {EntryReport} from '../../logic/activityOutcome';
 import {ChoiceEntry} from '../ChoiceEntry';
 import {EntrySequence} from '../EntrySequence';
 import {TypedEntry} from '../TypedEntry';
 
 export type FillBlankActivityProps = {
   content: FillBlankContent;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 const BLANK = '_____';

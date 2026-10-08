@@ -100,6 +100,7 @@ describe('rule-graded activities', () => {
     next(tree);
     expect(onFinished).toHaveBeenCalledWith(
       'pass_with_support',
+      'none',
       expect.any(Number),
     );
     expect(has(tree, 'lesson-flow-activity-redo')).toBe(true);
@@ -113,6 +114,7 @@ describe('rule-graded activities', () => {
     next(tree);
     expect(onFinished).toHaveBeenCalledWith(
       'pass_independent',
+      'none',
       expect.any(Number),
     );
   });
@@ -160,7 +162,7 @@ describe('rule-graded activities', () => {
     press(tree, 'lesson-flow-show-answer');
     expect(textOf(tree, 'lesson-flow-model-answer')).toBe('Câu mẫu: Coffee');
     next(tree);
-    expect(onFinished).toHaveBeenCalledWith('fail', expect.any(Number));
+    expect(onFinished).toHaveBeenCalledWith('fail', 'none', expect.any(Number));
   });
 
   it('translation: accepts a variant of the pattern, a wrong answer can be fixed', () => {
@@ -189,6 +191,7 @@ describe('rule-graded activities', () => {
     next(tree);
     expect(onFinished).toHaveBeenCalledWith(
       'pass_with_support',
+      'none',
       expect.any(Number),
     );
   });

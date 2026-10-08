@@ -6,7 +6,10 @@ import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonBlock, LessonSnapshot} from '@core/schemas/lesson';
-import type {LessonAttemptOutcome} from '@core/schemas/sync';
+import type {
+  LessonAttemptOutcome,
+  LessonSupportLevel,
+} from '@core/schemas/sync';
 import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 
 import {CanonicalBlockView} from '../../player/components/CanonicalBlockView';
@@ -23,6 +26,7 @@ export type StepViewProps = {
   onFinished: (
     block: LessonBlock,
     outcome: LessonAttemptOutcome,
+    supportLevel: LessonSupportLevel,
     durationMs: number,
   ) => boolean;
 };
@@ -73,8 +77,8 @@ export function StepView({
             items={items}
             key={block.id}
             latestOutcome={latest.get(block.id) ?? null}
-            onFinished={(outcome, durationMs) =>
-              onFinished(block, outcome, durationMs)
+            onFinished={(outcome, supportLevel, durationMs) =>
+              onFinished(block, outcome, supportLevel, durationMs)
             }
           />
         ) : (

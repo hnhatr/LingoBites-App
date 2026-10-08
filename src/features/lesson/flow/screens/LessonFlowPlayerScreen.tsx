@@ -14,7 +14,10 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 import type {LessonBlock} from '@core/schemas/lesson';
-import type {LessonAttemptOutcome} from '@core/schemas/sync';
+import type {
+  LessonAttemptOutcome,
+  LessonSupportLevel,
+} from '@core/schemas/sync';
 
 import {useCanonicalLesson} from '../../player/logic/useCanonicalLesson';
 import type {LessonFlowParamList} from '../../player/screens/navigationTypes';
@@ -82,8 +85,12 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
 
   const finishActivity = flow.finishActivity;
   const handleFinished = useCallback(
-    (block: LessonBlock, outcome: LessonAttemptOutcome, durationMs: number) =>
-      finishActivity({block, outcome, durationMs}),
+    (
+      block: LessonBlock,
+      outcome: LessonAttemptOutcome,
+      supportLevel: LessonSupportLevel,
+      durationMs: number,
+    ) => finishActivity({block, outcome, supportLevel, durationMs}),
     [finishActivity],
   );
 

@@ -4,7 +4,7 @@ import {AppText} from '@ui/components/AppText';
 
 import type {TranslationContent} from '@core/schemas/activityContent';
 
-import type {EntryResult} from '../../logic/activityOutcome';
+import type {EntryReport} from '../../logic/activityOutcome';
 import {acceptedFor, type FlowItems} from '../../logic/flowContent';
 import {EntrySequence} from '../EntrySequence';
 import {TypedEntry} from '../TypedEntry';
@@ -12,7 +12,7 @@ import {TypedEntry} from '../TypedEntry';
 export type TranslationActivityProps = {
   content: TranslationContent;
   items: FlowItems;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 /**

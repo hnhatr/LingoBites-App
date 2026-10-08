@@ -76,6 +76,7 @@ describe('speaking activities (self-check)', () => {
     }
     expect(first.onFinished).toHaveBeenCalledWith(
       'pass_independent',
+      'none',
       expect.any(Number),
     );
 
@@ -86,7 +87,11 @@ describe('speaking activities (self-check)', () => {
     press(second.tree, 'lesson-flow-entry-next');
     press(second.tree, 'lesson-flow-self-pass');
     press(second.tree, 'lesson-flow-entry-next');
-    expect(second.onFinished).toHaveBeenCalledWith('fail', expect.any(Number));
+    expect(second.onFinished).toHaveBeenCalledWith(
+      'fail',
+      'none',
+      expect.any(Number),
+    );
   });
 
   it('records a local take, plays it back and deletes it afterwards', async () => {
@@ -146,6 +151,7 @@ describe('speaking activities (self-check)', () => {
     press(tree, 'lesson-flow-entry-next');
     expect(onFinished).toHaveBeenCalledWith(
       'pass_independent',
+      'none',
       expect.any(Number),
     );
   });

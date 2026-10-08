@@ -13,7 +13,7 @@ import type {
   TranslationContent,
 } from '@core/schemas/activityContent';
 
-import type {EntryResult} from '../logic/activityOutcome';
+import type {EntryReport} from '../logic/activityOutcome';
 import type {FlowActivity, FlowItems} from '../logic/flowContent';
 import {FillBlankActivity} from './activities/FillBlankActivity';
 import {ListenRepeatActivity} from './activities/ListenRepeatActivity';
@@ -26,7 +26,7 @@ export type ActivityBodyProps = {
   activity: FlowActivity;
   content: ActivityContent;
   items: FlowItems;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 /** The interactive part of an activity, chosen by its kind. */

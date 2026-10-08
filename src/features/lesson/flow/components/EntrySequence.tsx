@@ -6,16 +6,21 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import type {EntryResult} from '../logic/activityOutcome';
+import type {LessonSupportLevel} from '@core/schemas/sync';
+
+import type {EntryReport, EntryResult} from '../logic/activityOutcome';
 
 export type EntrySequenceProps = {
   count: number;
-  /** Renders entry `index`; it calls `report` once with its result. */
+  /**
+   * Renders entry `index`; it calls `report` once with its result and the
+   * highest hint it opened.
+   */
   renderEntry: (
     index: number,
-    report: (result: EntryResult) => void,
+    report: (result: EntryResult, support?: LessonSupportLevel) => void,
   ) => React.ReactNode;
-  onComplete: (results: EntryResult[]) => void;
+  onComplete: (reports: EntryReport[]) => void;
 };
 
 /**
@@ -31,13 +36,16 @@ export function EntrySequence({
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [index, setIndex] = useState(0);
-  const [results, setResults] = useState<EntryResult[]>([]);
+  const [results, setResults] = useState<EntryReport[]>([]);
   const reported = results.length > index;
   const last = index + 1 >= count;
 
-  const report = (result: EntryResult) => {
+  const report = (
+    result: EntryResult,
+    support: LessonSupportLevel = 'none',
+  ) => {
     setResults(previous =>
-      previous.length > index ? previous : [...previous, result],
+      previous.length > index ? previous : [...previous, {result, support}],
     );
   };
 

@@ -9,9 +9,12 @@ import {Chip} from '@ui/components/Chip';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonBlock} from '@core/schemas/lesson';
-import type {LessonAttemptOutcome} from '@core/schemas/sync';
+import type {
+  LessonAttemptOutcome,
+  LessonSupportLevel,
+} from '@core/schemas/sync';
 
-import {blockOutcome, type EntryResult} from '../logic/activityOutcome';
+import {blockAttempt, type EntryReport} from '../logic/activityOutcome';
 import {type FlowActivity, type FlowItems} from '../logic/flowContent';
 import {ActivityBody} from './ActivityBody';
 
@@ -22,7 +25,11 @@ export type ActivityRunnerProps = {
   /** Outcome of the newest attempt on this block, if any. */
   latestOutcome: LessonAttemptOutcome | null;
   /** Saves the attempt; false when it could not be stored. */
-  onFinished: (outcome: LessonAttemptOutcome, durationMs: number) => boolean;
+  onFinished: (
+    outcome: LessonAttemptOutcome,
+    supportLevel: LessonSupportLevel,
+    durationMs: number,
+  ) => boolean;
 };
 
 /**
@@ -52,9 +59,11 @@ export function ActivityRunner({
     setRunning(true);
   };
 
-  const complete = (results: EntryResult[]) => {
+  const complete = (reports: EntryReport[]) => {
+    const {outcome, supportLevel} = blockAttempt(reports);
     const saved = onFinished(
-      blockOutcome(results),
+      outcome,
+      supportLevel,
       Date.now() - startedAt.current,
     );
     setSaveFailed(!saved);
