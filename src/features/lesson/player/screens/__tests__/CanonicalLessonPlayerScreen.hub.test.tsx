@@ -12,7 +12,12 @@ import {
   LessonSnapshotResponseSchema,
 } from '@core/schemas/lesson';
 
-import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
+import {
+  makeTestReleaseConfig,
+  mockAppNavigation,
+  THEME_UI_FLAGS,
+} from '@test/support';
+import {seedSnapshot} from '@test/support/lessonFlow';
 
 import {CanonicalLessonPlayerScreen} from '../CanonicalLessonPlayerScreen';
 
@@ -289,5 +294,20 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     const {tree} = renderScreen();
     expect(has(tree, 'canonical-hub-complete-error')).toBe(true);
     expect(has(tree, 'canonical-hub-complete')).toBe(true);
+  });
+
+  it('starts the six-step player for a curriculum lesson (PR 10)', () => {
+    mockState = {
+      status: 'ready',
+      snapshot: seedSnapshot(),
+      offline: false,
+      hasUpdate: false,
+    };
+    const {tree} = renderScreen();
+    expect(has(tree, 'canonical-hub-start')).toBe(false);
+    act(() => {
+      pressable(tree, 'canonical-hub-start-flow').props.onPress();
+    });
+    expect(mockAppNavigation.openLessonFlow).toHaveBeenCalledWith(LESSON_ID);
   });
 });

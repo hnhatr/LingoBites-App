@@ -3,6 +3,7 @@ export type {
   CanonicalLessonPlayerRouteParams,
   LessonCreationRouteParams,
   LessonFlowParamList,
+  LessonFlowPlayerRouteParams,
 } from './screens/navigationTypes';
 export {CanonicalLessonCatalogScreen} from './screens/CanonicalLessonCatalogScreen';
 export {CanonicalLessonPlayerScreen} from './screens/CanonicalLessonPlayerScreen';

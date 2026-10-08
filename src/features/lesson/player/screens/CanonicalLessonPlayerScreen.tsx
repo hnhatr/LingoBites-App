@@ -38,6 +38,7 @@ import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
+import {useFlowEntry} from '../../flow/logic/useFlowEntry';
 import {
   CanonicalLessonHub,
   type LessonHubSection,
@@ -144,6 +145,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   useFocusEffect(reloadSavedItems);
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
+  const flowEntry = useFlowEntry(lessonId, snapshot);
   const isYouTubeStudy = snapshot?.source_type === 'youtube';
   const isYouTubeLegacy =
     snapshot !== null &&
@@ -484,6 +486,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   };
 
   const studyReady = isYouTubeStudy && state.status === 'ready';
+  // Curriculum lessons start the six-step player (PR 10, decision G1).
+  const startLabel = !flowEntry.available
+    ? t('lessonPlayer.start_learning')
+    : flowEntry.resumeAt !== null
+    ? t('lessonFlow.continue_at', {step: flowEntry.resumeAt})
+    : t('lessonFlow.start');
 
   return (
     <AppScreen>
@@ -548,10 +556,18 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             </AppText>
           ) : null}
           <PrimaryActionButton
-            accessibilityLabel={t('lessonPlayer.start_learning')}
-            label={t('lessonPlayer.start_learning')}
-            onPress={() => openView('sentences')}
-            testID="canonical-hub-start"
+            accessibilityLabel={startLabel}
+            label={startLabel}
+            onPress={() =>
+              flowEntry.available
+                ? appNavigation.openLessonFlow(lessonId)
+                : openView('sentences')
+            }
+            testID={
+              flowEntry.available
+                ? 'canonical-hub-start-flow'
+                : 'canonical-hub-start'
+            }
           />
         </BottomActionBar>
       ) : null}

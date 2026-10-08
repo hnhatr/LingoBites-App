@@ -1,0 +1,111 @@
+import {useCallback, useEffect, useMemo, useState} from 'react';
+
+import {requestSync} from '@features/sync';
+
+import {createRequestId} from '@core/api/requestId';
+import type {LessonBlock, LessonSnapshot} from '@core/schemas/lesson';
+import type {LessonAttemptOutcome} from '@core/schemas/sync';
+import {
+  type LessonActivityAttemptRow,
+  listLessonActivityAttempts,
+  recordLessonActivityAttempt,
+} from '@core/sync/activityAttempts';
+
+import {blockItemKeys, flowActivity, flowItems} from './flowContent';
+import {
+  type FlowStep,
+  practiceCompleted,
+  remainingPracticeCount,
+  resumeStep,
+} from './practiceCompletion';
+
+function readAttempts(lessonId: string): LessonActivityAttemptRow[] {
+  try {
+    return listLessonActivityAttempts(lessonId);
+  } catch {
+    return [];
+  }
+}
+
+export type FinishedActivity = {
+  block: LessonBlock;
+  outcome: LessonAttemptOutcome;
+  durationMs: number;
+};
+
+export type UseLessonFlowResult = {
+  /** `null` until the snapshot is ready. */
+  step: FlowStep | null;
+  goTo: (step: FlowStep) => void;
+  attempts: LessonActivityAttemptRow[];
+  practiceDone: boolean;
+  practiceRemaining: number;
+  /** Records one finished activity block; false when it could not be saved. */
+  finishActivity: (finished: FinishedActivity) => boolean;
+};
+
+/**
+ * State of one run of the six-step player: the step on screen (opened where
+ * the learner left off, decision G2), the lesson's attempts and the writer
+ * for a finished activity (one attempt per block, decision G3).
+ */
+export function useLessonFlow(
+  lessonId: string,
+  snapshot: LessonSnapshot | null,
+): UseLessonFlowResult {
+  const [attempts, setAttempts] = useState<LessonActivityAttemptRow[]>(() =>
+    readAttempts(lessonId),
+  );
+  const [step, setStep] = useState<FlowStep | null>(null);
+  const sessionId = useMemo(() => createRequestId(), []);
+
+  useEffect(() => {
+    if (snapshot && step === null) {
+      setStep(resumeStep(snapshot, attempts));
+    }
+  }, [snapshot, step, attempts]);
+
+  const finishActivity = useCallback(
+    ({block, outcome, durationMs}: FinishedActivity) => {
+      const activity = flowActivity(block);
+      if (!snapshot || !activity || block.step == null) return false;
+      const result = recordLessonActivityAttempt({
+        activity: activity.kind,
+        lessonId,
+        blockId: block.id,
+        contentRevision: snapshot.content_revision,
+        step: block.step,
+        taskId: activity.taskId,
+        itemKeys: blockItemKeys(block, flowItems(snapshot)),
+        sessionId,
+        supportLevel: 'none',
+        outcome,
+        assessedBy: SELF_ASSESSED.has(activity.kind) ? 'self' : 'rule',
+        durationMs,
+      });
+      if (!result.ok) return false;
+      setAttempts(readAttempts(lessonId));
+      requestSync();
+      return true;
+    },
+    [lessonId, sessionId, snapshot],
+  );
+
+  return {
+    step,
+    goTo: setStep,
+    attempts,
+    practiceDone: snapshot ? practiceCompleted(snapshot, attempts) : false,
+    practiceRemaining: snapshot
+      ? remainingPracticeCount(snapshot, attempts)
+      : 0,
+    finishActivity,
+  };
+}
+
+/** Speaking activities are judged by the learner in Stage 2. */
+const SELF_ASSESSED: ReadonlySet<string> = new Set([
+  'listen_and_repeat',
+  'speaking_drill',
+  'role_play',
+]);

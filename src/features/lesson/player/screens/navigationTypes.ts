@@ -5,6 +5,11 @@ export type CanonicalLessonPlayerRouteParams = {
   lessonId: string;
 };
 
+/** PR 10: the six-step player of a curriculum lesson. */
+export type LessonFlowPlayerRouteParams = {
+  lessonId: string;
+};
+
 export type LessonCreationRouteParams = {
   /** Stable id for the persisted idempotency key (one per draft). */
   submissionId: string;
@@ -16,5 +21,6 @@ export type LessonCreationRouteParams = {
 export type LessonFlowParamList = {
   CanonicalCatalog: CanonicalCatalogRouteParams;
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
+  LessonFlowPlayer: LessonFlowPlayerRouteParams;
   LessonCreation: LessonCreationRouteParams;
 };
