@@ -40,6 +40,8 @@
     "open:android": "open -a '/Applications/Android Studio.app' android",
     "assets:link": "react-native-asset",
     "icons:subset": "node scripts/subset-material-icons.mjs",
+    "eas:update:staging": "eas update --channel staging -m ",
+    "eas:update:production": "eas update --channel production -m ",
     "postinstall": "patch-package"
   },
   "dependencies": {
