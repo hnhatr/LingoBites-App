@@ -190,6 +190,7 @@ export function usePracticeSession(lessonId: string): UsePracticeSessionResult {
           wordType: word.pos,
           sourceSentence: sentence?.textEn ?? null,
         },
+        item: {itemKey: word.itemKey, itemId: word.itemId, kind: word.kind},
       });
       if (result.ok) {
         setSavedItemKeys(previous => new Set(previous).add(itemKey));

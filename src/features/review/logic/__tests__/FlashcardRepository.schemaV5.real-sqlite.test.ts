@@ -17,8 +17,9 @@ import {
 } from '../FlashcardRepository';
 
 /**
- * Schema v5 behaviour of the repository on real SQLite: one card per lemma,
- * lessons as sources.
+ * Repository behaviour on real SQLite: one card per item code (decision G3),
+ * lessons as sources. Rows inserted by hand without sources stand for cards
+ * synced from another device.
  */
 
 type Row = Record<string, any>;
@@ -48,7 +49,7 @@ beforeEach(() => {
   getDatabase();
 });
 
-describe('saveFlashcard (schema v5)', () => {
+describe('saveFlashcard (item codes)', () => {
   it('stores the lemma key and the lesson as a source', () => {
     const result = saveFlashcard({
       lessonId: 'L1',
@@ -150,41 +151,47 @@ describe('saveFlashcard (schema v5)', () => {
     }
   });
 
-  it('adopts a legacy card without a key when the same lesson saves it again', () => {
-    getDatabase().execute(
-      `INSERT INTO flashcards (id, lesson_id, vocabulary_id, word, meaning_vi,
-         is_saved, created_at, updated_at)
-       VALUES ('legacy', 'L1', 'v1', 'Coffee', 'cà phê', 0, 'x', 'x');`,
-    );
-    const result = saveFlashcard({
+  it('fills in the catalog item id when the item is saved again with it', () => {
+    const first = saveFlashcard({
       lessonId: 'L1',
-      vocabulary: vocab('v1', 'Coffee'),
+      vocabulary: vocab('a1', 'Coffee'),
     });
-    expect(result).toMatchObject({
-      ok: true,
-      flashcardId: 'legacy',
-      duplicate: true,
+    const second = saveFlashcard({
+      lessonId: 'L2',
+      vocabulary: vocab('word:coffee', 'coffee'),
+      item: {itemKey: 'word:coffee', itemId: 'item-coffee', kind: 'word'},
     });
-    const [card] = rows(
-      "SELECT item_key, is_saved FROM flashcards WHERE id = 'legacy';",
-    );
-    expect(card).toEqual({item_key: 'word:coffee', is_saved: 1});
+    expect(first.ok && second.ok).toBe(true);
+    if (first.ok && second.ok) {
+      expect(second).toMatchObject({
+        flashcardId: first.flashcardId,
+        duplicate: true,
+      });
+    }
+    expect(rows('SELECT item_key, item_id, kind FROM flashcards;')).toEqual([
+      {item_key: 'word:coffee', item_id: 'item-coffee', kind: 'word'},
+    ]);
   });
 
-  it('saves a word with no usable key as a plain per-lesson card', () => {
+  it('keys a pattern card by its catalog code', () => {
     const result = saveFlashcard({
       lessonId: 'L1',
-      vocabulary: vocab('v1', '...'),
+      vocabulary: vocab('pattern:can-i-have', 'Can I have a {drink}?'),
+      item: {itemKey: 'pattern:can-i-have', itemId: 'item-p', kind: 'pattern'},
     });
     expect(result).toMatchObject({ok: true, duplicate: false});
-    expect(rows('SELECT item_key FROM flashcards;')[0]!.item_key).toBeNull();
-    // Saving it again from the same lesson is still a duplicate of that card.
+    expect(listFlashcards()[0]).toMatchObject({
+      itemKey: 'pattern:can-i-have',
+      itemId: 'item-p',
+      kind: 'pattern',
+    });
+  });
+
+  it('refuses a word with no usable item code', () => {
     expect(
       saveFlashcard({lessonId: 'L1', vocabulary: vocab('v1', '...')}),
-    ).toMatchObject({
-      ok: true,
-      duplicate: true,
-    });
+    ).toEqual({ok: false, errorCode: 'INVALID_ITEM'});
+    expect(rows('SELECT id FROM flashcards;')).toEqual([]);
   });
 
   it('works inside a caller transaction and rolls back with it', () => {
@@ -230,8 +237,8 @@ describe('listFlashcardSources', () => {
     });
     getDatabase().execute(
       `INSERT INTO flashcards (id, lesson_id, vocabulary_id, word, meaning_vi,
-         is_saved, created_at, updated_at)
-       VALUES ('legacy', 'L9', 'v9', '...', 'x', 1, 'x', 'x');`,
+         is_saved, created_at, updated_at, item_key)
+       VALUES ('legacy', 'L9', 'v9', 'x', 'x', 1, 'x', 'x', 'word:x');`,
     );
 
     const sources = listFlashcardSources();
@@ -301,8 +308,8 @@ describe('removeFlashcardFromLesson', () => {
   it('unsaves a legacy card with no source rows outright', () => {
     getDatabase().execute(
       `INSERT INTO flashcards (id, lesson_id, vocabulary_id, word, meaning_vi,
-         is_saved, created_at, updated_at)
-       VALUES ('legacy', 'L1', 'v1', '...', 'x', 1, 'x', 'x');`,
+         is_saved, created_at, updated_at, item_key)
+       VALUES ('legacy', 'L1', 'v1', 'x', 'x', 1, 'x', 'x', 'word:x');`,
     );
     expect(listFlashcards({lessonId: 'L1'}).map(c => c.id)).toEqual(['legacy']);
     expect(removeFlashcardFromLesson('legacy', 'L1')).toBe(true);

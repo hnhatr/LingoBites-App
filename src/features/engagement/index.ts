@@ -16,6 +16,7 @@ export type {ReminderSettings} from './logic/reminderSettingsPolicy';
 export {getWeeklyGoalTarget, setWeeklyGoalTarget} from './logic/weeklyGoal';
 export {WEEKLY_GOAL_OPTIONS} from './logic/weeklyGoalPolicy';
 export {
+  recordLessonActivityCompleted,
   recordLessonCompletedActivity,
   recordPracticeSessionActivity,
   recordShadowingSessionActivity,

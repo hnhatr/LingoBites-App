@@ -22,6 +22,7 @@ import {
   ImageCaptureScreen,
   PasteTextScreen,
 } from '@features/input';
+import {LessonFlowPlayerScreen} from '@features/lesson';
 import {
   LessonsHistoryScreen,
   LibraryListScreen,
@@ -261,6 +262,11 @@ function AuthenticatedRootStack() {
       <RootStack.Screen
         component={CanonicalLessonPlayerScreen}
         name="CanonicalLessonPlayer"
+        options={{gestureEnabled: false}}
+      />
+      <RootStack.Screen
+        component={LessonFlowPlayerScreen}
+        name="LessonFlowPlayer"
         options={{gestureEnabled: false}}
       />
       <RootStack.Screen component={LibraryListScreen} name="LibraryList" />

@@ -66,3 +66,25 @@ export function recordPracticeSessionActivity(
     return false;
   }
 }
+
+/**
+ * Records one finished activity block of the six-step lesson player (PR 10,
+ * decision G7), keyed by its attempt id.
+ */
+export function recordLessonActivityCompleted(
+  attemptId: string,
+  completedAt = new Date().toISOString(),
+): boolean {
+  try {
+    insertGamificationEvent({
+      eventType: 'lesson_activity_completed',
+      sourceEventId: attemptId,
+      points: 0,
+      createdAt: completedAt,
+    });
+    return true;
+  } catch (error) {
+    console.log('[studyActivity] lesson activity event write failed', error);
+    return false;
+  }
+}

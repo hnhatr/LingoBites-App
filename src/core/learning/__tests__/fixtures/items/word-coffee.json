@@ -1,0 +1,33 @@
+{
+  "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000001",
+  "code": "word:coffee",
+  "kind": "word",
+  "language": "en",
+  "text": "coffee",
+  "meaning_vi": "cà phê",
+  "ipa": "/ˈkɒfi/",
+  "part_of_speech": "noun",
+  "note_vi": null,
+  "audio_media_id": null,
+  "image_media_id": null,
+  "audience": "all",
+  "payload": {},
+  "source": "admin",
+  "status": "published",
+  "published_at": "2026-10-07T00:00:00.000Z",
+  "created_at": "2026-10-07T00:00:00.000Z",
+  "updated_at": "2026-10-07T00:00:00.000Z",
+  "examples": [
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000101",
+      "text_en": "A coffee, please.",
+      "text_vi": "Cho tôi một cà phê.",
+      "audio_media_id": null,
+      "audience": "all",
+      "position": 0
+    }
+  ],
+  "variants": [],
+  "errors": [],
+  "preview": []
+}

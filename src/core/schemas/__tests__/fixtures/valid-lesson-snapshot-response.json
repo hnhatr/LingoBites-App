@@ -61,20 +61,12 @@
       },
       {
         "id": "22222222-2222-4222-8222-222222222202",
-        "type": "grammar",
+        "type": "example",
         "position": 1,
         "title": null,
         "data": {
-          "nameEn": "Present simple",
-          "nameVi": "Thì hiện tại đơn",
-          "pattern": "S + V(s/es) + O",
-          "explanationVi": "Dùng cho thói quen hằng ngày.",
-          "examples": [
-            {
-              "en": "I wake up at six.",
-              "vi": "Tôi thức dậy lúc sáu giờ."
-            }
-          ]
+          "text": "I wake up at six.",
+          "translation": "Tôi thức dậy lúc sáu giờ."
         }
       }
     ],

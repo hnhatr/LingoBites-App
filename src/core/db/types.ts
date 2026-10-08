@@ -26,8 +26,12 @@ export type VocabularyItem = {
 export type ReviewRating = 'remembered' | 'forgot';
 
 export type FlashcardRecord = {
-  /** `word:coffee` / `phrase:wake up`; null/absent for a card with no usable key. */
+  /** Catalog item code (`word:coffee`, `pattern:can-i-have`): the card identity. */
   itemKey?: string | null;
+  /** Catalog item id, when the card came from a catalog item. */
+  itemId?: string | null;
+  /** Item kind (`word`, `phrase`, `pattern`…), when known. */
+  kind?: string | null;
   revision: number;
   tombstone: boolean;
   id: string;
@@ -67,15 +71,27 @@ export type ReviewScheduleRecord = {
   updatedAt: string;
 };
 
+/**
+ * The learning item a card is for (decision G3). Callers holding a
+ * `LearningItem` pass its code, catalog id and kind; otherwise the code is
+ * derived from `vocabulary.word` like the Server derives word/phrase codes.
+ */
+export type FlashcardItemRef = {
+  itemKey: string;
+  itemId?: string | null;
+  kind?: string | null;
+};
+
 export type SaveFlashcardInput = {
   lessonId: string;
   vocabulary: VocabularyItem;
+  item?: FlashcardItemRef;
   now?: string;
 };
 
 export type SaveFlashcardResult =
   | {ok: true; flashcardId: string; duplicate: boolean}
-  | {ok: false; errorCode: 'LOCAL_DB_ERROR'};
+  | {ok: false; errorCode: 'LOCAL_DB_ERROR' | 'INVALID_ITEM'};
 
 export type ListFlashcardsOptions = {
   lessonId?: string;
@@ -148,13 +164,17 @@ export type AudioCacheStats = {
  *   points; only marks the local day as a streak day.
  * `practice_session_completed` - one per finished quick-practice quiz. Zero
  *   points; only marks the local day as a streak day.
+ * `lesson_activity_completed` - one per finished activity block of the
+ *   six-step lesson player (PR 10). Zero points; only marks the local day as
+ *   a streak day.
  */
 export type GamificationEventType =
   | 'review_session_completed'
   | 'review_on_time'
   | 'lesson_completed'
   | 'shadowing_session_completed'
-  | 'practice_session_completed';
+  | 'practice_session_completed'
+  | 'lesson_activity_completed';
 
 /** Input for appending a single row to the gamification event log. */
 export type GamificationEventInput = {

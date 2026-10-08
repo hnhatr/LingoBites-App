@@ -26,6 +26,7 @@ import type {
   CanonicalCatalogRouteParams,
   CanonicalLessonPlayerRouteParams,
   LessonCreationRouteParams,
+  LessonFlowPlayerRouteParams,
 } from '@features/lesson/player';
 import type {OCRReviewRouteParams} from '@features/ocr';
 import type {PracticeRouteParams} from '@features/practice';
@@ -72,6 +73,7 @@ export type RootStackParamList = {
   // Lessons
   CanonicalCatalog: CanonicalCatalogRouteParams;
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
+  LessonFlowPlayer: LessonFlowPlayerRouteParams;
   LibraryList: LibraryListRouteParams;
   VideoHub: VideoHubRouteParams;
   // Structured curriculum (Course → Level → Unit → Lesson)

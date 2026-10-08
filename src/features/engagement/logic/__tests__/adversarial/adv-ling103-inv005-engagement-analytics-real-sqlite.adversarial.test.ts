@@ -12,7 +12,6 @@ import {getGamificationSnapshot} from '@features/engagement/logic/gamification';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 
-import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
@@ -53,15 +52,9 @@ function count(sql: string, params: string[] = []): number {
 }
 
 function seedPriorInstall(raw: RealSqliteConnection) {
-  for (const sql of PRIOR_SCHEMA_403BC52) {
-    try {
-      raw.execute(sql);
-    } catch (error) {
-      if (!String((error as Error).message).includes('duplicate column')) {
-        throw error;
-      }
-    }
-  }
+  // Earlier launches now always run on the baseline schema (PR 5 reset a
+  // pre-baseline install instead of upgrading it; see schemaBaseline test).
+  runMigrations(raw);
   const recordingPath = writeFile('recordings/rec-prior.m4a', 'M4A');
   raw.execute(
     `INSERT INTO speaking_recordings (id, activity_id, lesson_id, mode,

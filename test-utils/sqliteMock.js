@@ -1050,6 +1050,8 @@ function createMockDatabase() {
         created_at: params[14],
         updated_at: params[15],
         item_key: params[16] ?? null,
+        item_id: params[17] ?? null,
+        kind: params[18] ?? null,
       });
       return {rowsAffected: 1, insertId: flashcards.length};
     }
@@ -1103,8 +1105,8 @@ function createMockDatabase() {
 
     if (normalized.startsWith('update flashcards set is_saved = 1')) {
       const updatedAt = params[0];
-      // `... item_key = coalesce(item_key, ?) where id = ?` (schema v5) carries
-      // the key before the id; the legacy form carries only the id.
+      // `... item_id = coalesce(item_id, ?) where id = ?` (baseline v7)
+      // carries the catalog item id before the card id.
       const id = params[params.length - 1];
       const row = flashcards.find(card => card.id === id);
       if (!row) {
@@ -1112,8 +1114,8 @@ function createMockDatabase() {
       }
       row.is_saved = 1;
       row.updated_at = updatedAt;
-      if (params.length === 3 && (row.item_key ?? null) === null) {
-        row.item_key = params[1] ?? null;
+      if (params.length === 3 && (row.item_id ?? null) === null) {
+        row.item_id = params[1] ?? null;
       }
       return {rowsAffected: 1};
     }

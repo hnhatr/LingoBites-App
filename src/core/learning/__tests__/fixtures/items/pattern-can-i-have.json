@@ -1,0 +1,92 @@
+{
+  "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000003",
+  "code": "pattern:can-i-have",
+  "kind": "pattern",
+  "language": "en",
+  "text": "Can I have a {size} {drink}, please?",
+  "meaning_vi": "Cho tôi một [đồ uống] [cỡ] được không?",
+  "ipa": null,
+  "part_of_speech": null,
+  "note_vi": "Mẫu gọi đồ lịch sự. Nhớ có \"a\" trước cỡ và \"please\" ở cuối.",
+  "audio_media_id": null,
+  "image_media_id": null,
+  "audience": "all",
+  "payload": {
+    "slots": {
+      "size": {"label_vi": "cỡ", "values": ["small", "medium", "large"]},
+      "drink": {
+        "label_vi": "đồ uống",
+        "item_refs": ["word:coffee", "phrase:orange juice"]
+      }
+    }
+  },
+  "source": "admin",
+  "status": "published",
+  "published_at": "2026-10-07T00:00:00.000Z",
+  "created_at": "2026-10-07T00:00:00.000Z",
+  "updated_at": "2026-10-07T00:00:00.000Z",
+  "examples": [
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000301",
+      "text_en": "Can I have a large coffee, please?",
+      "text_vi": "Cho tôi một cà phê cỡ lớn được không?",
+      "audio_media_id": null,
+      "audience": "all",
+      "position": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000311",
+      "text": "I'd like a {size} {drink}, please.",
+      "note_vi": "Lịch sự, hơi trang trọng.",
+      "position": 0
+    },
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000312",
+      "text": "Could I get a {size} {drink}?",
+      "note_vi": "Thân mật, hay dùng ở quán.",
+      "position": 1
+    }
+  ],
+  "errors": [
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000321",
+      "code": "missing_article",
+      "description_vi": "Thiếu \"a\" trước cỡ hoặc đồ uống.",
+      "feedback_vi": "Thêm \"a\": Can I have a large coffee?",
+      "severity": "tolerated",
+      "wrong_example": "Can I have large coffee?",
+      "right_example": "Can I have a large coffee?",
+      "position": 0
+    },
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000322",
+      "code": "blunt_i_want",
+      "description_vi": "Dùng \"I want…\" nghe cộc lốc với người bán.",
+      "feedback_vi": "Thử \"Can I have…\" hoặc \"I'd like…\" cho lịch sự hơn.",
+      "severity": "tolerated",
+      "wrong_example": "I want coffee.",
+      "right_example": "I'd like a coffee, please.",
+      "position": 1
+    },
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000323",
+      "code": "missing_drink",
+      "description_vi": "Không nói tên đồ uống.",
+      "feedback_vi": "Nói rõ bạn muốn uống gì: Can I have a small coffee?",
+      "severity": "blocking",
+      "wrong_example": "Can I have a large, please?",
+      "right_example": "Can I have a large coffee, please?",
+      "position": 2
+    }
+  ],
+  "preview": [
+    "Can I have a small coffee, please?",
+    "Can I have a small orange juice, please?",
+    "Can I have a medium coffee, please?",
+    "Can I have a medium orange juice, please?",
+    "Can I have a large coffee, please?",
+    "Can I have a large orange juice, please?"
+  ]
+}

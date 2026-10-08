@@ -38,7 +38,10 @@ function sessionEvent(
 
 function activityEvent(
   dayKey: string,
-  eventType: 'lesson_completed' | 'shadowing_session_completed',
+  eventType:
+    | 'lesson_completed'
+    | 'shadowing_session_completed'
+    | 'lesson_activity_completed',
   sourceEventId = 'lesson-1',
 ): GamificationEventRecord {
   return {
@@ -128,6 +131,14 @@ describe('gamificationPolicy', () => {
         onTimeEvent('2026-09-03'),
       ];
       expect(streakActivityDays(events)).toEqual(['2026-09-04', '2026-09-05']);
+    });
+
+    it('counts a finished lesson-player activity as a streak day (PR 10)', () => {
+      expect(
+        streakActivityDays([
+          activityEvent('2026-09-06', 'lesson_activity_completed', 'attempt-1'),
+        ]),
+      ).toEqual(['2026-09-06']);
     });
 
     it('counts completed lessons and Shadowing sessions as streak days', () => {

@@ -19,7 +19,6 @@ import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import type {FileDeleter} from '@core/localData/types';
 
-import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
@@ -79,17 +78,11 @@ function count(sql: string, params: string[] = []): number {
   return Number(row.n);
 }
 
-/** Pre-move install: 403bc52 schema plus audio + speaking rows and their files. */
+/** Pre-move install: audio + speaking rows and their files on the baseline schema. */
 function seedPriorInstall(raw: RealSqliteConnection) {
-  for (const sql of PRIOR_SCHEMA_403BC52) {
-    try {
-      raw.execute(sql);
-    } catch (error) {
-      if (!String((error as Error).message).includes('duplicate column')) {
-        throw error;
-      }
-    }
-  }
+  // Earlier launches now always run on the baseline schema (PR 5 reset a
+  // pre-baseline install instead of upgrading it; see schemaBaseline test).
+  runMigrations(raw);
   const audioPath = writeFile('LingoBitesAudio/ch-prior/a-prior.mp3', 'MP3');
   const recordingPath = writeFile('recordings/rec-prior.m4a', 'M4A');
   raw.execute(

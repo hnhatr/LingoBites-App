@@ -1,0 +1,54 @@
+{
+  "pattern": {
+    "text": "Can I have a {size} {drink}, please?",
+    "payload": {
+      "slots": {
+        "size": { "label_vi": "cỡ", "values": ["small", "large"] },
+        "drink": {
+          "label_vi": "đồ uống",
+          "item_refs": ["word:coffee", "phrase:orange juice", "word:unknown"]
+        }
+      }
+    }
+  },
+  "variants": [
+    { "text": "I'd like a {size} {drink}, please." },
+    { "text": "Could I get a {size} {drink}?" }
+  ],
+  "refs": { "word:coffee": "coffee", "phrase:orange juice": "orange juice" },
+  "accepted": [
+    "can i have a small coffee, please",
+    "can i have a small orange juice, please",
+    "can i have a large coffee, please",
+    "can i have a large orange juice, please",
+    "i'd like a small coffee, please",
+    "i'd like a small orange juice, please",
+    "i'd like a large coffee, please",
+    "i'd like a large orange juice, please",
+    "could i get a small coffee",
+    "could i get a small orange juice",
+    "could i get a large coffee",
+    "could i get a large orange juice"
+  ],
+  "limited": {
+    "limit": 3,
+    "accepted": [
+      "can i have a small coffee, please",
+      "can i have a small orange juice, please",
+      "can i have a large coffee, please"
+    ]
+  },
+  "forValues": {
+    "values": { "size": "large", "drink": "tea" },
+    "accepted": [
+      "can i have a large tea, please",
+      "i'd like a large tea, please",
+      "could i get a large tea"
+    ]
+  },
+  "normalize": [
+    ["  Can I have a LARGE coffee , please?  ", "can i have a large coffee, please"],
+    ["I’d like tea.", "i'd like tea"],
+    ["...Sure!", "sure"]
+  ]
+}

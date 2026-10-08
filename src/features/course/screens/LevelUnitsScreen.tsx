@@ -37,7 +37,10 @@ export function LevelUnitsScreen({navigation, route}: Props) {
           id: unit.id,
           eyebrow: t('course.unit_number', {number: index + 1}),
           title: unit.title,
-          description: unit.description,
+          // The unit's first can-do says what it is for; else its blurb.
+          description: unit.canDo[0]
+            ? t('course.unit_can_do', {text: unit.canDo[0]})
+            : unit.description,
           footer: progress ? (
             <UnitProgressBar
               progress={progress}

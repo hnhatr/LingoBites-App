@@ -9,25 +9,21 @@ import {z} from 'zod';
  * `LESSON_CONTRACT_VERSION` only together with the Server. A `contract_version`
  * mismatch surfaces an "update the app" state and is never parsed leniently.
  *
- * Pinned fixture revision: `ling-149-task-001-r1` (TASK-001). The contract
- * tests under `__tests__` parse byte-identical copies of the Server fixtures,
- * so any drift fails the build.
+ * The contract tests under `__tests__` parse byte-identical copies of the
+ * Server fixtures and check their SHA-256 pins (`./fixtures.ts`), so any drift
+ * fails the build.
+ *
+ * Backward-design curriculum (PR 5): one version. The snapshot carries the
+ * lesson specification, its catalog items and tasks; the retired v2
+ * `items[]` (derived learning items) is rejected, so the Server must keep
+ * `LESSON_SNAPSHOT_ITEMS_ENABLED` off until it drops that field.
  */
 
 export const LESSON_CONTRACT_VERSION = 1;
 
-export const LESSON_CONTRACT_FIXTURE_REVISION = 'ling-149-task-001-r1';
+export const LESSON_CONTRACT_FIXTURE_REVISION = 'backward-design-pr5';
 
-/**
- * Versions this build can read. v2 (Server snapshot with `items`) is additive
- * over v1, so the app accepts both and a rollout of v2 never forces an update.
- */
-export const LESSON_CONTRACT_SUPPORTED_VERSIONS = [1, 2] as const;
-
-export const LessonContractVersionSchema = z.union([
-  z.literal(1),
-  z.literal(2),
-]);
+export const LessonContractVersionSchema = z.literal(LESSON_CONTRACT_VERSION);
 
 export const LessonOriginValues = ['admin', 'learner'] as const;
 
@@ -46,14 +42,14 @@ export const LessonSourceTypeSchema = z.enum(LessonSourceTypeValues);
 
 export type LessonSourceType = z.infer<typeof LessonSourceTypeSchema>;
 
+/** `item_cards` replaced the `vocabulary` and `grammar` blocks (Server PR 4). */
 export const CanonicalLessonBlockTypeValues = [
   'text',
   'example',
-  'vocabulary',
   'media',
   'context',
-  'grammar',
   'activity',
+  'item_cards',
 ] as const;
 
 export const CanonicalLessonBlockTypeSchema = z.enum(
@@ -115,10 +111,24 @@ export const LessonBlockSchema = z
     position: z.number().int().min(0),
     title: z.string().nullable(),
     data: z.record(z.string(), z.unknown()),
+    /** Lesson step 1–6 (6 is the result screen), skill and duration. */
+    step: z.number().int().min(1).max(6).nullable().optional(),
+    skill: z.enum(['speak', 'listen', 'write']).nullable().optional(),
+    duration_sec: z.number().int().positive().nullable().optional(),
   })
   .strict();
 
 export type LessonBlock = z.infer<typeof LessonBlockSchema>;
+
+/** Item ids an `item_cards` block shows; `[]` for any other block. */
+export function itemCardIds(block: LessonBlock): string[] {
+  if (block.type !== 'item_cards' || !Array.isArray(block.data.item_ids)) {
+    return [];
+  }
+  return block.data.item_ids.filter(
+    (id): id is string => typeof id === 'string',
+  );
+}
 
 export const AnalysisVocabularyItemSchema = z
   .object({
@@ -173,6 +183,9 @@ export const LessonCatalogItemSchema = z
     estimated_minutes: z.number().int().min(0).nullable().optional(),
     youtube_duration_ms: z.number().int().min(0).nullable().optional(),
     activity_count: z.number().int().min(0).optional(),
+    /** Sent with `include=card_meta`: lesson code and can-do statements. */
+    code: z.string().nullable().optional(),
+    can_do: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -188,24 +201,159 @@ export const LessonCatalogResponseSchema = z
 
 export type LessonCatalogResponse = z.infer<typeof LessonCatalogResponseSchema>;
 
-/**
- * Normalised learning item (Server snapshot v2, `learning_items`). Accepted as
- * optional and non-strict ahead of the Server rollout so a snapshot that starts
- * carrying `items` never trips the strict parse of an older app build.
- */
-export const LessonItemKindValues = ['word', 'phrase', 'grammar'] as const;
+const AudienceValues = ['all', 'kids', 'adults'] as const;
 
-export const LessonItemSchema = z
+export const AudienceSchema = z.enum(AudienceValues);
+
+export type Audience = z.infer<typeof AudienceSchema>;
+
+/** Media embedded in a snapshot (the shape a media block carries). */
+export const SnapshotMediaSchema = z
   .object({
     id: z.string().uuid(),
-    kind: z.enum(LessonItemKindValues),
-    item_key: NonBlankTextSchema,
-    payload: z.record(z.string(), z.unknown()),
-    sentence_ids: z.array(z.string().uuid()).optional(),
+    title: z.string(),
+    mime_type: z.string(),
+    object_key: z.string(),
   })
-  .passthrough();
+  .strict();
 
-export type LessonItem = z.infer<typeof LessonItemSchema>;
+export type SnapshotMedia = z.infer<typeof SnapshotMediaSchema>;
+
+export const LessonSituationSchema = z
+  .object({
+    speaker: z.string(),
+    listener: z.string(),
+    place: z.string(),
+    purpose: z.string(),
+  })
+  .strict();
+
+export type LessonSituation = z.infer<typeof LessonSituationSchema>;
+
+/** Lesson specification: outcome, situation, prerequisites. Null for learner lessons. */
+export const LessonSpecSchema = z
+  .object({
+    code: z.string().nullable(),
+    audience: AudienceSchema,
+    can_do: z.array(z.string()),
+    situation: LessonSituationSchema.nullable(),
+    estimated_minutes: z.number().int().nullable(),
+    prerequisites: z.array(
+      z
+        .object({
+          lesson_id: z.string().uuid(),
+          code: z.string().nullable(),
+          title: z.string(),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
+export type LessonSpec = z.infer<typeof LessonSpecSchema>;
+
+export const CatalogItemKindValues = [
+  'word',
+  'phrase',
+  'pattern',
+  'pronunciation',
+  'listening',
+] as const;
+
+export const CatalogItemKindSchema = z.enum(CatalogItemKindValues);
+
+export type CatalogItemKind = z.infer<typeof CatalogItemKindSchema>;
+
+/**
+ * A catalog item as the learner downloads it. `payload` is kind-specific and
+ * read through `@core/learning` (`parseItemPayload`), like the Server does.
+ */
+export const CatalogItemSchema = z
+  .object({
+    id: z.string().uuid(),
+    code: z.string(),
+    kind: CatalogItemKindSchema,
+    text: z.string(),
+    meaning_vi: z.string(),
+    ipa: z.string().nullable(),
+    part_of_speech: z.string().nullable(),
+    note_vi: z.string().nullable(),
+    audience: AudienceSchema,
+    payload: z.record(z.string(), z.unknown()),
+    audio: SnapshotMediaSchema.nullable(),
+    image: SnapshotMediaSchema.nullable(),
+    examples: z.array(
+      z
+        .object({
+          text_en: z.string(),
+          text_vi: z.string(),
+          audience: AudienceSchema,
+          audio: SnapshotMediaSchema.nullable(),
+        })
+        .strict(),
+    ),
+    variants: z.array(
+      z.object({text: z.string(), note_vi: z.string().nullable()}).strict(),
+    ),
+    errors: z.array(
+      z
+        .object({
+          code: z.string(),
+          description_vi: z.string(),
+          feedback_vi: z.string(),
+          severity: z.enum(['blocking', 'tolerated']),
+          wrong_example: z.string().nullable(),
+          right_example: z.string().nullable(),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
+export type CatalogItem = z.infer<typeof CatalogItemSchema>;
+
+export const LessonItemRoleValues = ['required', 'extended'] as const;
+export const LessonItemIntroductionValues = [
+  'new',
+  'recycled',
+  'prerequisite',
+] as const;
+
+export const LessonItemEntrySchema = z
+  .object({
+    role: z.enum(LessonItemRoleValues),
+    introduction: z.enum(LessonItemIntroductionValues),
+    position: z.number().int().min(0),
+    item: CatalogItemSchema,
+  })
+  .strict();
+
+export type LessonItemEntry = z.infer<typeof LessonItemEntrySchema>;
+
+export const LessonTaskSchema = z
+  .object({
+    id: z.string().uuid(),
+    kind: z.enum(['guided', 'variation', 'independent']),
+    title_vi: z.string(),
+    prompt_vi: z.string(),
+    situation: LessonSituationSchema.nullable(),
+    response_mode: z.enum(['speak', 'write', 'choose']),
+    hint_levels: z.array(z.record(z.string(), z.unknown())),
+    position: z.number().int().min(0),
+    item_codes: z.array(z.string()),
+    criteria: z.array(
+      z
+        .object({
+          criterion: z.enum(['purpose', 'content', 'clarity', 'independence']),
+          required: z.boolean(),
+          threshold: z.number().nullable(),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
+export type LessonTask = z.infer<typeof LessonTaskSchema>;
 
 export const LessonSnapshotSchema = z
   .object({
@@ -221,7 +369,14 @@ export const LessonSnapshotSchema = z
     sentences: z.array(LessonSentenceSchema),
     blocks: z.array(LessonBlockSchema),
     analyses: z.record(z.string(), LessonAnalysisSchema),
-    items: z.array(LessonItemSchema).optional(),
+    /**
+     * Lesson specification, focus items and tasks. Learner lessons carry
+     * null / []; a Server running with LESSON_SNAPSHOT_SPEC_ENABLED=false omits
+     * them, which reads as the same.
+     */
+    spec: LessonSpecSchema.nullable().optional(),
+    lesson_items: z.array(LessonItemEntrySchema).optional(),
+    tasks: z.array(LessonTaskSchema).optional(),
   })
   .strict();
 

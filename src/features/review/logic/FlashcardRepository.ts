@@ -39,6 +39,8 @@ type FlashcardRow = {
   created_at: string;
   updated_at: string;
   item_key?: string | null;
+  item_id?: string | null;
+  kind?: string | null;
   revision?: number;
   tombstone?: number;
 };
@@ -56,6 +58,8 @@ type ReviewScheduleRow = {
 function mapFlashcardRow(row: FlashcardRow): FlashcardRecord {
   return {
     itemKey: row.item_key ?? null,
+    itemId: row.item_id ?? null,
+    kind: row.kind ?? null,
     id: row.id,
     lessonId: row.lesson_id,
     vocabularyId: row.vocabulary_id,
@@ -84,17 +88,24 @@ function firstRow<T>(result: {
 }
 
 /**
- * Saves a word as a flashcard. One card per lemma across lessons (schema v5):
- * a word already saved from another lesson reuses that card, keeps its review
- * schedule and just gains this lesson as a source. Lookup and write share one
- * savepoint (so it also works inside a caller's transaction), and `idx_flashcards_item_key_live` rejects a second live card
- * with the same key at the database level.
+ * Saves a learning item as a flashcard. One card per item code across lessons
+ * (decision G3): an item already saved from another lesson reuses that card,
+ * keeps its review schedule and just gains this lesson as a source. Lookup and
+ * write share one savepoint (so it also works inside a caller's transaction),
+ * and `idx_flashcards_item_key_live` rejects a second live card with the same
+ * code at the database level.
  */
 export function saveFlashcard(input: SaveFlashcardInput): SaveFlashcardResult {
   try {
     const db = getDatabase();
     const now = input.now ?? new Date().toISOString();
-    const itemKey = vocabularyItemKey(input.vocabulary.word);
+    const itemKey =
+      input.item?.itemKey ?? vocabularyItemKey(input.vocabulary.word);
+    if (!itemKey) {
+      return {ok: false, errorCode: 'INVALID_ITEM'};
+    }
+    const itemId = input.item?.itemId ?? null;
+    const kind = input.item?.kind ?? itemKey.slice(0, itemKey.indexOf(':'));
     const sourceSentence =
       input.vocabulary.source_sentence ??
       input.vocabulary.sourceSentence ??
@@ -110,30 +121,20 @@ export function saveFlashcard(input: SaveFlashcardInput): SaveFlashcardResult {
     };
 
     return withSavepoint(db, (): SaveFlashcardResult => {
-      const sameLemma = itemKey
-        ? firstRow<FlashcardRow>(
-            db.execute(
-              `SELECT * FROM flashcards
-                WHERE item_key = ? AND COALESCE(tombstone, 0) = 0 LIMIT 1;`,
-              [itemKey],
-            ),
-          )
-        : null;
-      const existing =
-        sameLemma ??
-        firstRow<FlashcardRow>(
-          db.execute(
-            'SELECT * FROM flashcards WHERE lesson_id = ? AND vocabulary_id = ? LIMIT 1;',
-            [input.lessonId, input.vocabulary.id],
-          ),
-        );
+      const existing = firstRow<FlashcardRow>(
+        db.execute(
+          `SELECT * FROM flashcards
+            WHERE item_key = ? AND COALESCE(tombstone, 0) = 0 LIMIT 1;`,
+          [itemKey],
+        ),
+      );
 
       if (existing) {
         db.execute(
           `UPDATE flashcards
-              SET is_saved = 1, updated_at = ?, item_key = COALESCE(item_key, ?)
+              SET is_saved = 1, updated_at = ?, item_id = COALESCE(item_id, ?)
             WHERE id = ?;`,
-          [now, itemKey, existing.id],
+          [now, itemId, existing.id],
         );
         addSource(existing.id);
         return {ok: true, flashcardId: existing.id, duplicate: true};
@@ -145,8 +146,8 @@ export function saveFlashcard(input: SaveFlashcardInput): SaveFlashcardResult {
           id, lesson_id, vocabulary_id, word, phrase_from_text, word_type,
           meaning_vi, pronunciation_guide_vi, ipa, cefr_level, source_sentence,
           example, example_translation, is_saved, created_at, updated_at,
-          item_key
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+          item_key, item_id, kind
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
         [
           flashcardId,
           input.lessonId,
@@ -171,6 +172,8 @@ export function saveFlashcard(input: SaveFlashcardInput): SaveFlashcardResult {
           now,
           now,
           itemKey,
+          itemId,
+          kind,
         ],
       );
       db.execute(
@@ -389,6 +392,21 @@ export function getDueFlashcards({
   }
 
   return due;
+}
+
+/**
+ * PR 10: the due cards of some catalog items (the lesson player's "related
+ * review" step), in due order.
+ */
+export function getDueFlashcardsByItemKeys(
+  itemKeys: readonly string[],
+  options: GetDueFlashcardsOptions = {},
+): FlashcardRecord[] {
+  const keys = new Set(itemKeys);
+  if (keys.size === 0) return [];
+  return getDueFlashcards({today: options.today}).filter(
+    card => card.itemKey != null && keys.has(card.itemKey),
+  );
 }
 
 /**

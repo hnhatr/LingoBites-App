@@ -1,0 +1,449 @@
+{
+  "contract_version": 1,
+  "lesson": {
+    "id": "5739bc5c-e509-4f57-a082-f9184fa9f882",
+    "slug": "goi-do-uong",
+    "title": "Gọi đồ uống",
+    "description": "",
+    "origin": "admin",
+    "source_type": "admin_text",
+    "content_revision": 12,
+    "unit": {
+      "course_id": "d84c088c-2c3e-47cc-89d7-6171ef111aed",
+      "course_title": "A1 Giao tiếp",
+      "level_id": "838b95a0-fc6c-44dc-adce-9cfb8aa06ce1",
+      "level_title": "A1",
+      "unit_id": "6d093504-a759-4947-9774-0111a1316691",
+      "unit_title": "Gọi đồ uống",
+      "unit_position": 1,
+      "lesson_position": 1
+    },
+    "youtube": null,
+    "sentences": [],
+    "blocks": [
+      {
+        "id": "643128e3-1c72-44bc-93a1-03fd95c41b11",
+        "type": "item_cards",
+        "position": 0,
+        "title": null,
+        "data": {
+          "item_ids": [
+            "a4446cc0-0a5a-4deb-934f-254368314797",
+            "940f2909-9c3d-49d2-981b-1e52b1981d99",
+            "1fff6487-5e01-4b0c-9966-2a7bc52f3d5d",
+            "56d98371-506b-40e6-b21b-88abd3df01a7",
+            "63faf8b0-524a-4ef4-abb1-97a71da41ca6"
+          ]
+        },
+        "step": 2,
+        "skill": "listen",
+        "duration_sec": 120
+      },
+      {
+        "id": "414a561f-0cae-412e-af3a-cc31bc5b78f9",
+        "type": "activity",
+        "position": 1,
+        "title": "Nghe và nhắc lại",
+        "data": {
+          "content": {
+            "prompts": [
+              {
+                "id": "p1",
+                "itemId": "a4446cc0-0a5a-4deb-934f-254368314797",
+                "textEn": "Can I have a small coffee, please?",
+                "textVi": "Cho tôi một cà phê cỡ nhỏ được không?"
+              },
+              {
+                "id": "p2",
+                "itemId": "a4446cc0-0a5a-4deb-934f-254368314797",
+                "textEn": "Can I have a large tea, please?",
+                "textVi": "Cho tôi một trà cỡ lớn được không?"
+              },
+              {
+                "id": "p3",
+                "itemId": "a4446cc0-0a5a-4deb-934f-254368314797",
+                "textEn": "Can I have a medium milk, please?",
+                "textVi": "Cho tôi một sữa cỡ vừa được không?"
+              }
+            ]
+          },
+          "titleVi": "Nghe và nhắc lại",
+          "item_refs": [
+            "a4446cc0-0a5a-4deb-934f-254368314797"
+          ],
+          "activityKind": "listen_and_repeat"
+        },
+        "step": 3,
+        "skill": "speak",
+        "duration_sec": 180
+      },
+      {
+        "id": "bbb22a03-2e8d-42d8-8ec6-218394d9a88d",
+        "type": "activity",
+        "position": 2,
+        "title": "Đổi cỡ, đổi đồ uống",
+        "data": {
+          "content": {
+            "combos": [
+              {
+                "id": "c1",
+                "values": {
+                  "size": "small",
+                  "drink": "coffee"
+                }
+              },
+              {
+                "id": "c2",
+                "values": {
+                  "size": "large",
+                  "drink": "tea"
+                }
+              },
+              {
+                "id": "c3",
+                "values": {
+                  "size": "medium",
+                  "drink": "milk"
+                }
+              },
+              {
+                "id": "c4",
+                "values": {
+                  "size": "large",
+                  "drink": "orange juice"
+                }
+              }
+            ],
+            "patternItemId": "a4446cc0-0a5a-4deb-934f-254368314797"
+          },
+          "task_id": "c0cc98b1-5530-4786-96b0-8c1ddbbb5d19",
+          "titleVi": "Đổi cỡ, đổi đồ uống",
+          "item_refs": [
+            "a4446cc0-0a5a-4deb-934f-254368314797"
+          ],
+          "activityKind": "speaking_drill"
+        },
+        "step": 4,
+        "skill": "speak",
+        "duration_sec": 180
+      },
+      {
+        "id": "305e2cef-4562-4580-92a4-6fb3b5fe0d3d",
+        "type": "activity",
+        "position": 3,
+        "title": "Tự gọi đồ uống",
+        "data": {
+          "content": {
+            "turns": [
+              {
+                "id": "t1",
+                "textEn": "Hi! What can I get you?",
+                "textVi": "Chào bạn! Bạn dùng gì?",
+                "speaker": "B"
+              },
+              {
+                "id": "t2",
+                "textEn": "Can I have a large orange juice, please?",
+                "textVi": "Cho tôi một nước cam cỡ lớn được không?",
+                "speaker": "A",
+                "patternItemId": "a4446cc0-0a5a-4deb-934f-254368314797"
+              }
+            ],
+            "learnerSpeaker": "A"
+          },
+          "task_id": "966dc71a-d0a8-44fa-ac1a-44aed06ce5fd",
+          "titleVi": "Tự gọi đồ uống",
+          "item_refs": [
+            "a4446cc0-0a5a-4deb-934f-254368314797"
+          ],
+          "activityKind": "role_play"
+        },
+        "step": 5,
+        "skill": "speak",
+        "duration_sec": 120
+      }
+    ],
+    "analyses": {},
+    "spec": {
+      "code": "A1-DRINKS-L01",
+      "audience": "all",
+      "can_do": [
+        "Tự gọi một đồ uống kèm cỡ bằng mẫu \"Can I have…?\"."
+      ],
+      "situation": {
+        "speaker": "khách",
+        "listener": "người bán",
+        "place": "quán cà phê",
+        "purpose": "gọi đồ uống"
+      },
+      "estimated_minutes": 10,
+      "prerequisites": []
+    },
+    "lesson_items": [
+      {
+        "role": "required",
+        "introduction": "new",
+        "position": 0,
+        "item": {
+          "id": "a4446cc0-0a5a-4deb-934f-254368314797",
+          "code": "pattern:can-i-have",
+          "kind": "pattern",
+          "text": "Can I have a {size} {drink}, please?",
+          "meaning_vi": "Cho tôi một [đồ uống] cỡ [cỡ] được không?",
+          "ipa": null,
+          "part_of_speech": null,
+          "note_vi": "Mẫu gọi đồ lịch sự. Nhớ có \"a\" trước cỡ và \"please\" ở cuối.",
+          "audience": "all",
+          "payload": {
+            "slots": {
+              "size": {
+                "values": [
+                  "small",
+                  "medium",
+                  "large"
+                ],
+                "label_vi": "cỡ"
+              },
+              "drink": {
+                "label_vi": "đồ uống",
+                "item_refs": [
+                  "word:coffee",
+                  "word:tea",
+                  "word:milk",
+                  "phrase:orange juice"
+                ]
+              }
+            }
+          },
+          "audio": null,
+          "image": null,
+          "examples": [
+            {
+              "text_en": "Can I have a large coffee, please?",
+              "text_vi": "Cho tôi một cà phê cỡ lớn được không?",
+              "audience": "all",
+              "audio": null
+            }
+          ],
+          "variants": [
+            {
+              "text": "I'd like a {size} {drink}, please.",
+              "note_vi": "Lịch sự, hơi trang trọng."
+            },
+            {
+              "text": "Could I get a {size} {drink}?",
+              "note_vi": "Thân mật, hay dùng ở quán."
+            }
+          ],
+          "errors": [
+            {
+              "code": "missing_article",
+              "description_vi": "Thiếu \"a\" trước cỡ hoặc đồ uống.",
+              "feedback_vi": "Thêm \"a\": Can I have a large coffee?",
+              "severity": "tolerated",
+              "wrong_example": "Can I have large coffee?",
+              "right_example": "Can I have a large coffee?"
+            },
+            {
+              "code": "blunt_i_want",
+              "description_vi": "Dùng \"I want…\" nghe cộc lốc với người bán.",
+              "feedback_vi": "Thử \"Can I have…\" hoặc \"I'd like…\" cho lịch sự hơn.",
+              "severity": "tolerated",
+              "wrong_example": "I want coffee.",
+              "right_example": "I'd like a coffee, please."
+            },
+            {
+              "code": "missing_drink",
+              "description_vi": "Không nói tên đồ uống.",
+              "feedback_vi": "Nói rõ bạn muốn uống gì: Can I have a small coffee?",
+              "severity": "blocking",
+              "wrong_example": null,
+              "right_example": null
+            }
+          ]
+        }
+      },
+      {
+        "role": "extended",
+        "introduction": "new",
+        "position": 1,
+        "item": {
+          "id": "940f2909-9c3d-49d2-981b-1e52b1981d99",
+          "code": "word:coffee",
+          "kind": "word",
+          "text": "coffee",
+          "meaning_vi": "cà phê",
+          "ipa": "/ˈkɒfi/",
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      },
+      {
+        "role": "extended",
+        "introduction": "new",
+        "position": 2,
+        "item": {
+          "id": "1fff6487-5e01-4b0c-9966-2a7bc52f3d5d",
+          "code": "word:tea",
+          "kind": "word",
+          "text": "tea",
+          "meaning_vi": "trà",
+          "ipa": "/tiː/",
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      },
+      {
+        "role": "extended",
+        "introduction": "new",
+        "position": 3,
+        "item": {
+          "id": "56d98371-506b-40e6-b21b-88abd3df01a7",
+          "code": "word:milk",
+          "kind": "word",
+          "text": "milk",
+          "meaning_vi": "sữa",
+          "ipa": "/mɪlk/",
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      },
+      {
+        "role": "extended",
+        "introduction": "new",
+        "position": 4,
+        "item": {
+          "id": "63faf8b0-524a-4ef4-abb1-97a71da41ca6",
+          "code": "phrase:orange juice",
+          "kind": "phrase",
+          "text": "orange juice",
+          "meaning_vi": "nước cam",
+          "ipa": "/ˈɒrɪndʒ dʒuːs/",
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "id": "c0cc98b1-5530-4786-96b0-8c1ddbbb5d19",
+        "kind": "guided",
+        "title_vi": "Gọi theo mẫu",
+        "prompt_vi": "Nghe và gọi một ly cà phê cỡ nhỏ.",
+        "situation": null,
+        "response_mode": "speak",
+        "hint_levels": [
+          {
+            "type": "replay",
+            "level": 1,
+            "content_vi": "Nghe lại câu mẫu."
+          },
+          {
+            "type": "keyword",
+            "level": 2,
+            "content_vi": "Can I have… small… coffee"
+          },
+          {
+            "type": "model",
+            "level": 3,
+            "content_vi": "Can I have a small coffee, please?"
+          }
+        ],
+        "position": 0,
+        "item_codes": [
+          "pattern:can-i-have"
+        ],
+        "criteria": [
+          {
+            "criterion": "purpose",
+            "required": false,
+            "threshold": null
+          },
+          {
+            "criterion": "content",
+            "required": true,
+            "threshold": null
+          },
+          {
+            "criterion": "clarity",
+            "required": false,
+            "threshold": null
+          },
+          {
+            "criterion": "independence",
+            "required": false,
+            "threshold": null
+          }
+        ]
+      },
+      {
+        "id": "966dc71a-d0a8-44fa-ac1a-44aed06ce5fd",
+        "kind": "independent",
+        "title_vi": "Tự gọi đồ uống",
+        "prompt_vi": "Bạn khát và muốn một ly nước cam cỡ lớn. Hãy gọi người bán.",
+        "situation": {
+          "speaker": "khách",
+          "listener": "người bán",
+          "place": "quán cà phê",
+          "purpose": "gọi nước cam cỡ lớn"
+        },
+        "response_mode": "speak",
+        "hint_levels": [],
+        "position": 1,
+        "item_codes": [
+          "pattern:can-i-have"
+        ],
+        "criteria": [
+          {
+            "criterion": "purpose",
+            "required": true,
+            "threshold": null
+          },
+          {
+            "criterion": "content",
+            "required": true,
+            "threshold": null
+          },
+          {
+            "criterion": "clarity",
+            "required": true,
+            "threshold": null
+          },
+          {
+            "criterion": "independence",
+            "required": true,
+            "threshold": null
+          }
+        ]
+      }
+    ]
+  }
+}

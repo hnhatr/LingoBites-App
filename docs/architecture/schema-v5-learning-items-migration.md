@@ -1,5 +1,7 @@
 # Schema v5: flashcard theo lemma, `activity_attempts`, `core/learning`
 
+> **Đã thay thế (PR 5, 2026-10-08):** chuỗi migration v1–v6 được gộp thành schema baseline v7 (`src/core/db/migrations.ts`). Máy có DB cũ bị reset thay vì nâng cấp, flashcard định danh theo mã item và không còn gộp thẻ theo lemma. Tài liệu dưới đây chỉ còn giá trị lịch sử.
+
 > Trạng thái: thiết kế cho PR-6 của `docs/superpowers/plans/2026-10-06-learning-items-architecture.md`.
 > Đây là **migration dữ liệu trên máy người dùng**: đọc kỹ mục 5 (rollback) và 6 (rủi ro).
 

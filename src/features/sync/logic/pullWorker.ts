@@ -1,6 +1,7 @@
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {getDatabase, withTransaction} from '@core/db/database';
+import {vocabularyItemKey} from '@core/learning';
 import {deleteLocalFiles} from '@core/localData/localFileCleanup';
 import {
   LessonProgressStatePayloadSchema,
@@ -299,6 +300,22 @@ export function applySyncRecord(
   } else if (record.collection === 'activity_attempts') {
     payload.id = payload.id ?? record.entity_id;
     payload.occurred_at = payload.occurred_at ?? record.occurred_at;
+    // Lesson attempts (PR 8) carry their catalog codes as an array.
+    if (Array.isArray(payload.item_keys)) {
+      payload.item_keys_json = JSON.stringify(payload.item_keys);
+    }
+  } else if (record.collection === 'flashcards') {
+    // Cards are keyed by item code (baseline v7). A record without one gets
+    // the code derived from its word; one with no usable word is skipped so it
+    // can never stall paging on the NOT NULL column.
+    payload.item_key =
+      payload.item_key ??
+      (typeof payload.word === 'string'
+        ? vocabularyItemKey(payload.word)
+        : null);
+    if (!payload.item_key) {
+      return;
+    }
   }
 
   // Extract PK values
