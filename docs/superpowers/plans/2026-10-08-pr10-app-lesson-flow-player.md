@@ -1,6 +1,6 @@
 # PR 10 – App: player 6 bước (`LessonFlowPlayer`), 6 hoạt động tương tác, lượt làm trong bài
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE**: G1–G9 đã duyệt; app `0f3126b` → `fc468ea` (xem §13 cho các điểm lệch).
 > Ngày lập: 2026-10-08. Repo: `LingoBites-App` (không đổi server). Nhánh: `claude/optimistic-bell-mfgk44`.
 > PR 3 của Stage 2 trong `2026-10-07-backward-design-curriculum-plan.md`, mục App 1, 2, 5, 6, 7. Dựng trên contract của PR 8: `data.content`, `acceptedAnswers`, lượt làm `kind: 'lesson'`, luật "hoàn thành phần luyện".
 > PR 11 làm tiếp phần còn lại của Stage 2 trên app: **gợi ý** mở dần và **màn vận dụng độc lập** (bước 5 không có đáp án).
@@ -177,3 +177,40 @@ Thêm `components/SpeakSelfCheck` dùng chung cho 3 loại nói: ghi âm, nghe l
 - **Ghi âm trên máy thật** (quyền, file tạm) khó test trong Jest: mock `recordingService`; cần thử tay trên thiết bị. Tôi sẽ ghi rõ phần chưa kiểm được.
 - **Khối lượng UI lớn** (player + 6 hoạt động). Có thể tách **PR 10a** (commit 1–4: contract, DB, player, 3 loại chấm luật) và **PR 10b** (commit 5–7: nói, bước 1, hoàn thành).
 - **Bước 5 trong PR 10 vẫn hiện câu mẫu** của `role_play` (chưa phải vận dụng độc lập thật). PR 11 sửa.
+
+## 13. Kết quả và điểm lệch so với plan
+
+**Commit (app, nhánh `claude/optimistic-bell-mfgk44`):**
+
+| Commit | Nội dung |
+|---|---|
+| `0f3126b` | §3: schema `content`, lượt làm `lesson`, `acceptedAnswers` + fixture. |
+| `a08b218` | §4: SQLite v8, ghi / pull lượt làm `lesson`, luật hoàn thành và học tiếp. |
+| `139404b` | §5: route và màn `LessonFlowPlayer`, nút trên hub. |
+| `8f2770c` | §6 commit 4: chọn, điền, dịch. |
+| `2b0f7e7` | §6 commit 5: 3 loại nói, ghi âm tạm và tự đánh giá. |
+| `fc468ea` | §7: bước 1, tự hoàn thành bài, streak theo hoạt động. |
+
+**Kiểm tra cuối:**
+- `yarn -s tsc` sạch;
+- `yarn -s lint`: 0 lỗi, giữ 178/281 warning, module boundary sạch;
+- `yarn -s format:check` sạch;
+- Jest toàn bộ: 2184 pass, 3 skipped.
+
+**Chưa kiểm được:** ghi âm, phát lại và TTS trên máy thật (trong Jest đã mock `recordingService` / `speak`). Cần thử tay trên thiết bị.
+
+**Điểm lệch:**
+1. **Fixture `accepted-answers.json`** nằm ở `core/schemas/__tests__/fixtures/` (cùng chỗ các fixture contract), khoá SHA trong `fixtures.ts`. Thư mục này vốn được Prettier bỏ qua, nên file giữ đúng byte của server mà không phải sửa cấu hình Prettier.
+2. **Không đổi tên schema cũ:** `ActivityAttemptPayloadSchema` (review / practice / game) giữ nguyên. Thêm `LessonActivityAttemptPayloadSchema` và union `ActivityAttemptPushPayloadSchema`.
+3. **Luật hoàn thành và "học tiếp" không lọc theo `content_revision`.** Lý do: luật của server (`recordLessonAttempts`) chỉ xét `block_id`, nên app làm giống hệt để hai phía không lệch nhau.
+4. **Route và nút trên hub:**
+   - Route tên `LessonFlowPlayer`; `AppNavigation` có thêm `openLessonFlow`.
+   - Nút chính ở `CanonicalLessonPlayerScreen` (không phải trong `CanonicalLessonHub`) đổi nhãn và đích theo loại bài. Dùng một nút duy nhất để không tăng ngân sách warning a11y.
+5. **Ghi âm:**
+   - Barrel `@features/speaking` export hàm nạp lười `loadLessonRecorder()`, không export thẳng `recordingService` và `RecorderPanel`. Lý do: `RecorderPanel` gắn với state của shadowing, còn module native phải nạp lười như các helper sẵn có.
+   - File tạm nằm trong thư mục ghi âm hiện có. Rời câu thì xoá; đang ghi dở thì dừng ghi rồi mới xoá.
+6. **`getDueFlashcardsByItemKeys`** lọc kết quả của `getDueFlashcards` trong bộ nhớ, không thêm câu SQL mới (hàng đợi đến hạn nhỏ).
+7. **Bước 1:** hiện `StepReview`. Block gắn bước 1 (nếu có) hiện bên dưới; không có thì không hiện dòng "bước trống".
+8. **Tự hoàn thành bài (G6)** chạy ngay sau khi ghi một lượt làm trên máy này. Lượt pull từ máy khác không tự ghi `complete`; sẽ xử lý khi pull `lesson_outcomes` (PR 13).
+9. **Test hoạt động** gộp theo nhóm: `ruleActivities.test.tsx`, `speakingActivities.test.tsx`. Helper test chung nằm ở `src/test/support/lessonFlow.tsx`.
+10. **`outcome = unscorable`** chỉ xảy ra khi block không có câu nào. Thực tế PR 10 không ghi lượt `unscorable`.
