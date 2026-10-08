@@ -12,6 +12,8 @@ import {
 
 import {showToast} from '@ui/components/toast';
 
+import {parseItemCode} from '@core/learning';
+
 /** A word the learner can turn into a flashcard from the lesson. */
 export type SavableVocabulary = {
   id: string;
@@ -106,6 +108,8 @@ export function useLessonSavedItems(lessonId: string): LessonSavedItems {
         });
         return;
       }
+      // Vocabulary list entries are keyed by their item code; analysis words
+      // carry an analysis id, and the repository derives their code instead.
       const result = saveFlashcard({
         lessonId,
         vocabulary: {
@@ -116,6 +120,7 @@ export function useLessonSavedItems(lessonId: string): LessonSavedItems {
           wordType: item.pos,
           sourceSentence: item.sourceSentence ?? null,
         },
+        item: parseItemCode(item.id) ? {itemKey: item.id} : undefined,
       });
       if (!result.ok) {
         showToast(t('lessonPlayer.save_error'));
