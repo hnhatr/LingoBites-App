@@ -189,7 +189,7 @@ platform :ios do
 end
 
 platform :android do
-  desc "Build Staging APK/AAB and upload the AAB to Google Play"
+  desc "Build Staging AAB and upload it to Google Play"
   lane :staging do
     envfile = ".env.staging"
     build_android_for_play(
@@ -199,7 +199,7 @@ platform :android do
     )
   end
 
-  desc "Build Production APK/AAB and upload the AAB to Google Play"
+  desc "Build Production AAB and upload it to Google Play"
   lane :production do
     envfile = ".env.production"
     build_android_for_play(
@@ -248,13 +248,6 @@ platform :android do
     gradle(
       task: "clean",
       project_dir: "android"
-    )
-
-    gradle(
-      task: "assemble",
-      build_type: options[:build_type],
-      project_dir: "android",
-      properties: gradle_properties
     )
 
     gradle(
