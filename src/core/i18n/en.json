@@ -739,7 +739,20 @@
     "open_unfinished": "Do the unfinished activities",
     "open_unfinished_hint": "Opens the step with an unfinished activity",
     "back_to_lesson": "Back to the lesson",
-    "back_to_lesson_hint": "Closes the step-by-step lesson"
+    "back_to_lesson_hint": "Closes the step-by-step lesson",
+    "option_a11y": "Option {{key}}: {{text}}",
+    "option_hint": "Chooses this option",
+    "feedback_right": "Right!",
+    "feedback_wrong_choice": "Not quite. Try another option.",
+    "feedback_wrong_typed": "Not quite. Edit your answer and check again.",
+    "show_answer": "Show the answer",
+    "show_answer_hint": "Shows the answer; this item counts as not yet",
+    "answer_label": "Your answer",
+    "answer_hint": "Type your answer in English",
+    "answer_placeholder": "Type in English",
+    "check": "Check",
+    "check_hint": "Checks your answer",
+    "model_answer": "Model answer: {{answer}}"
   },
   "course": {
     "courses_title": "Courses",

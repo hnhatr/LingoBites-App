@@ -739,7 +739,20 @@
     "open_unfinished": "Làm hoạt động chưa đạt",
     "open_unfinished_hint": "Mở bước có hoạt động chưa đạt",
     "back_to_lesson": "Về bài học",
-    "back_to_lesson_hint": "Đóng phần học theo bước"
+    "back_to_lesson_hint": "Đóng phần học theo bước",
+    "option_a11y": "Phương án {{key}}: {{text}}",
+    "option_hint": "Chọn phương án này",
+    "feedback_right": "Đúng rồi!",
+    "feedback_wrong_choice": "Chưa đúng, chọn lại nhé.",
+    "feedback_wrong_typed": "Chưa đúng, sửa lại rồi kiểm tra nhé.",
+    "show_answer": "Xem đáp án",
+    "show_answer_hint": "Hiện đáp án; câu này tính là chưa đạt",
+    "answer_label": "Câu trả lời",
+    "answer_hint": "Gõ câu trả lời bằng tiếng Anh",
+    "answer_placeholder": "Gõ bằng tiếng Anh",
+    "check": "Kiểm tra",
+    "check_hint": "Kiểm tra câu trả lời",
+    "model_answer": "Câu mẫu: {{answer}}"
   },
   "course": {
     "courses_title": "Khóa học",
