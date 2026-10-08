@@ -1,6 +1,6 @@
 # PR 6 – App: hub bài theo đặc tả, mẫu câu, phát âm / nghe hiểu, flashcard mẫu câu
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE**: G1–G6 đã duyệt; commit `407d045` → `1b8e6c1` (xem §9 cho các điểm lệch).
 > Ngày lập: 2026-10-08. Repo: `LingoBites-App` (React Native CLI 0.85, Jest). Nhánh: `claude/optimistic-bell-mfgk44`.
 > Thuộc Stage 1 của `2026-10-07-backward-design-curriculum-plan.md`, mục App 4 (UI). Dựng trên dữ liệu PR 5 đã đưa vào app: `spec`, `lesson_items`, `tasks` trong snapshot; `core/learning` có 5 kind; flashcard theo mã item.
 
@@ -217,3 +217,34 @@ Mỗi commit tự chạy được, typecheck và test đều xanh.
 - **Khung câu dài** (4 chỗ trống, giá trị dài) có thể xuống dòng xấu trên màn nhỏ. Chip chỗ trống dùng `flexWrap` và cần xem tay trên thiết bị.
 - **`patternFrame.ts` là file copy của server.** Hàm mới thêm ở cuối kèm ghi chú app-only; phần copy không đổi để còn so được với server.
 - **Khối lượng:** khoảng 20 file sửa, 4 component mới, không xoá file. Có thể tách **PR 6a** (commit 1–6: hub, section, course) và **PR 6b** (commit 7: flashcard mẫu câu).
+
+## 9. Kết quả code và điểm lệch so với plan
+
+**Kiểm tra cuối:**
+- `tsc` sạch.
+- Lint 0 lỗi, budget 178/281, không nâng.
+- `format:check` sạch.
+- Jest: 298 suite, 2147 test pass (3 skip).
+- **Chưa chạy trên simulator hay thiết bị.**
+
+Commit đúng thứ tự §6 (1–7), cộng commit docs này.
+
+**Điểm lệch so với plan:**
+- **Mặt thẻ ôn mẫu câu:**
+  - Phân nhánh theo `kind` ngay trong `ReviewCardFront` / `ReviewCardBack`, không tách thành `ReviewPatternFront` / `ReviewPatternBack`, để không nhân đôi khung, blob và kệ thẻ.
+  - Mặt trước hiện nghĩa tiếng Việt và lời nhắc "Nói câu tiếng Anh cho ý này". **Mặt trước không có tình huống**, vì bảng `flashcards` không có cột cho tình huống của bài.
+  - **Mặt trước không có nút nghe**, vì nghe câu sẽ lộ đáp án.
+  - Mặt sau hiện khung câu với chỗ trống là `…`. Thẻ không lưu payload nên không có nhãn chỗ trống.
+- **Section Mẫu câu:**
+  - Dưới khung câu là nghĩa tiếng Việt; câu ghép từ các giá trị đang chọn được đọc bằng nút nghe.
+  - Mỗi đoạn chữ của khung là một `AppText` riêng nằm trong hàng `flexWrap`. Khung dài có thể xuống dòng theo từng đoạn chứ không theo từng từ, cần xem trên máy.
+- **Item hỏng bị bỏ qua, không báo lỗi:** payload sai, khung sai, chỗ trống không có giá trị, hoặc bài nghe không có đáp án.
+- **Kiểu `LessonHubSection`** chuyển sang `lessonHubContent.ts`; `CanonicalLessonHub` re-export lại.
+- **Tiêu đề header** của từng section lấy từ `lessonSectionTitleKey`, nên bài curriculum hiện "Từ & cụm".
+- **Hàng khám phá có testID** `canonical-hub-explore-<section>`.
+- **Commit 2 là bước trung gian:** màn player trả `null` cho `patterns` / `pronunciation` / `listening` cho tới commit 3–4.
+- **Can-do của bài** nằm trong `footer` của `LessonCard` và dùng chung key `course.unit_can_do` ("Bạn sẽ: …") với can-do của unit.
+- **Nhãn "Bài tự tạo"** (G5) cũng hiện ở danh sách bài (`CanonicalLessonCatalogScreen`), vì màn đó dùng chung key `hero_mine`.
+- **Thư viện:** tag "Mẫu câu" của thẻ mẫu câu đặt vào chỗ `pos` của `WordCard`, nên không sửa `WordCard`.
+- **Block `item_cards`:** có nút nghe cho mọi kind trừ mẫu câu. Item nghe hiểu đọc `text`.
+- **Icon:** `record_voice_over`, `hearing`, `flag`, `schedule`, `check_circle` đều đã có trong `iconRegistry`, không thêm icon mới.
