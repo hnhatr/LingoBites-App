@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import React from 'react';
 import {open as openSqlite} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
@@ -14,7 +17,10 @@ import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import {FeatureFlagProvider} from '@core/release';
-import type {LessonSnapshot} from '@core/schemas/lesson';
+import {
+  type LessonSnapshot,
+  LessonSnapshotResponseSchema,
+} from '@core/schemas/lesson';
 
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
 
@@ -80,8 +86,29 @@ const snapshot: LessonSnapshot = {
   },
 };
 
+function curriculumSnapshot(): LessonSnapshot {
+  const raw = JSON.parse(
+    fs.readFileSync(
+      path.join(
+        __dirname,
+        '../../../../../core/schemas/__tests__/fixtures',
+        'valid-lesson-snapshot-with-spec-response.json',
+      ),
+      'utf8',
+    ),
+  );
+  return {...LessonSnapshotResponseSchema.parse(raw).lesson, id: LESSON_ID};
+}
+
+const PATTERN_KEY = 'pattern:can-i-have';
+
 const mockLesson = {
-  state: {status: 'ready', snapshot, offline: false, hasUpdate: false},
+  state: {
+    status: 'ready',
+    snapshot,
+    offline: false,
+    hasUpdate: false,
+  } as {status: string; snapshot: LessonSnapshot; [key: string]: unknown},
   open: jest.fn(),
   checkForUpdate: jest.fn(),
   requestAnalysis: jest.fn(),
@@ -152,6 +179,12 @@ describe('CanonicalLessonPlayerScreen save actions', () => {
     __resetMockDatabases();
     resetDatabaseForTests(openSqlite({name: DB_NAME}));
     runMigrations(getDatabase());
+    mockLesson.state = {
+      status: 'ready',
+      snapshot,
+      offline: false,
+      hasUpdate: false,
+    };
   });
 
   it('"Lưu thẻ" saves a flashcard that is due in review and stays saved on reopen', () => {
@@ -226,5 +259,47 @@ describe('CanonicalLessonPlayerScreen save actions', () => {
       pressable(reopened, 'canonical-hub-start').props.onPress();
     });
     expect(label(reopened, `analysis-save-${WORD_ID}`)).toBe('Đã lưu');
+  });
+
+  it('saves a sentence pattern as a pattern flashcard and unsaves it', () => {
+    mockLesson.state = {...mockLesson.state, snapshot: curriculumSnapshot()};
+    const tree = renderScreen();
+    openSection(tree, 'Mẫu câu');
+    const saveId = `lesson-pattern-${PATTERN_KEY}-save`;
+    expect(label(tree, saveId)).toBe('Lưu thẻ');
+
+    act(() => {
+      pressable(tree, saveId).props.onPress();
+    });
+
+    expect(label(tree, saveId)).toBe('Đã lưu');
+    expect(listFlashcards({lessonId: LESSON_ID})).toEqual([
+      expect.objectContaining({
+        itemKey: PATTERN_KEY,
+        kind: 'pattern',
+        word: 'Can I have a {size} {drink}, please?',
+        example: 'Can I have a large coffee, please?',
+      }),
+    ]);
+
+    act(() => tree.unmount());
+    const reopened = renderScreen();
+    openSection(reopened, 'Mẫu câu');
+    expect(label(reopened, saveId)).toBe('Đã lưu');
+    act(() => {
+      pressable(reopened, saveId).props.onPress();
+    });
+    expect(listFlashcards({lessonId: LESSON_ID})).toHaveLength(0);
+  });
+
+  it('marks a catalog word saved by its item code', () => {
+    mockLesson.state = {...mockLesson.state, snapshot: curriculumSnapshot()};
+    const tree = renderScreen();
+    openSection(tree, 'Từ & cụm');
+    act(() => {
+      pressable(tree, 'lesson-vocabulary-save-word:coffee').props.onPress();
+    });
+    expect(label(tree, 'lesson-vocabulary-save-word:coffee')).toBe('Đã lưu');
+    expect(label(tree, 'lesson-vocabulary-save-word:tea')).toBe('Lưu thẻ');
   });
 });

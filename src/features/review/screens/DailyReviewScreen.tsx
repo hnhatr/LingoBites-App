@@ -34,6 +34,7 @@ import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
 import {useAppTheme} from '@ui/theme';
 
 import type {FlashcardRecord, ReviewRating} from '@core/db/types';
+import {renderFrameWithLabels} from '@core/learning';
 import {useFeatureEnabled} from '@core/release';
 
 import {ReviewCardBack, ReviewCardFront} from '../components/ReviewCardFaces';
@@ -77,17 +78,22 @@ function FlashcardFace({
   // A word saved from an analysis has no curated example, but it does carry
   // the sentence it was found in: show that as context. The example
   // translation belongs to the example only.
+  // Pattern cards (PR 6) are reviewed Vietnamese → English: the stored frame
+  // shows with its slots blanked and the example sentence is read aloud.
+  const pattern = card.kind === 'pattern';
+  const word = pattern ? renderFrameWithLabels(card.word) : card.word;
   const content = {
-    word: card.word,
+    word,
     meaning: card.meaningVi,
     ipa: card.ipa,
     pos: card.wordType,
     cefr: card.cefrLevel,
     example: card.example ?? card.sourceSentence,
     exampleTranslation: card.example ? card.exampleTranslation : null,
+    kind: card.kind,
   };
   const onSpeak = () => {
-    fireAndForget(speak(card.word));
+    fireAndForget(speak(pattern ? card.example ?? word : card.word));
   };
   if (side === 'back') {
     return (
@@ -95,7 +101,11 @@ function FlashcardFace({
         card={content}
         hint={t('review.swipe_hint')}
         onSpeak={onSpeak}
-        speakAccessibilityLabel={t('review.listen_answer_a11y')}
+        speakAccessibilityLabel={
+          pattern
+            ? t('review.pattern_listen_a11y')
+            : t('review.listen_answer_a11y')
+        }
         speakTestID="review-speak-back"
         testID="review-card-back"
       />
@@ -104,7 +114,13 @@ function FlashcardFace({
   return (
     <ReviewCardFront
       card={content}
-      hint={t('review.show_answer_hint')}
+      hint={
+        pattern
+          ? t('review.pattern_show_answer_hint')
+          : t('review.show_answer_hint')
+      }
+      patternLabel={t('review.pattern_chip')}
+      patternPrompt={t('review.pattern_prompt')}
       onSpeak={onSpeak}
       speakAccessibilityLabel={t('review.listen_prompt_a11y')}
       speakTestID="review-speak-front"

@@ -55,7 +55,7 @@ export function LessonVocabularySection({
         accessibilityHint={t('lessonPlayer.save_card_hint')}
         label={t('lessonPlayer.save_card')}
         onPress={() => saveControl.onToggle({...entry, id: entry.key})}
-        saved={saveControl.isSaved(entry.word)}
+        saved={saveControl.isSaved(entry.key)}
         savedLabel={t('lessonPlayer.saved')}
         testID={`lesson-vocabulary-save-${entry.key}`}
       />

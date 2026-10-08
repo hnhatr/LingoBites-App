@@ -8,6 +8,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {WordCard} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {vocabularyItemKey} from '@core/learning';
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
 import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
@@ -127,7 +128,9 @@ export function SentenceAnalysisPanel({
                     accessibilityHint={t('lessonPlayer.save_card_hint')}
                     label={t('lessonPlayer.save_card')}
                     onPress={() => vocabularySave.onToggle(item)}
-                    saved={vocabularySave.isSaved(item.word)}
+                    saved={vocabularySave.isSaved(
+                      vocabularyItemKey(item.word) ?? '',
+                    )}
                     savedLabel={t('lessonPlayer.saved')}
                     testID={`analysis-save-${item.id}`}
                   />

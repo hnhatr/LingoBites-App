@@ -460,7 +460,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         );
       case 'patterns':
         return (
-          <LessonPatternSection entries={patterns} onSpeakText={handleSpeak} />
+          <LessonPatternSection
+            entries={patterns}
+            onSpeakText={handleSpeak}
+            saveControl={savedItems.patterns}
+          />
         );
       case 'pronunciation':
         return (
