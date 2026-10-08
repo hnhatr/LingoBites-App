@@ -39,6 +39,20 @@ if [ ! -f "$PLAY_STORE_JSON_KEY_FILE" ]; then
   exit 1
 fi
 
+for var_name in ANDROID_KEYSTORE_FILE ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+  if [ -z "${!var_name:-}" ]; then
+    echo "Missing required Android signing variable: $var_name" >&2
+    echo "" >&2
+    echo "Add it to $LOCAL_ENV_FILE (see scripts/android-local-build.env.example)." >&2
+    exit 1
+  fi
+done
+
+if [ ! -f "$ANDROID_KEYSTORE_FILE" ]; then
+  echo "ANDROID_KEYSTORE_FILE does not exist: $ANDROID_KEYSTORE_FILE" >&2
+  exit 1
+fi
+
 if [ ! -f "$ROOT_DIR/$RN_ENV_FILE" ]; then
   echo "Missing React Native env file: $ROOT_DIR/$RN_ENV_FILE" >&2
   exit 1
