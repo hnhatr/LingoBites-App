@@ -76,6 +76,7 @@ local.properties
 *.keystore
 !debug.keystore
 *.jks
+/android/app/play-service-account.json
 *.apk
 *.aab
 

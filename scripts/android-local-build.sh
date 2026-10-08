@@ -34,6 +34,14 @@ if [ -z "${PLAY_STORE_JSON_KEY_FILE:-}" ]; then
   exit 1
 fi
 
+# Relative paths resolve against android/app (same as ANDROID_KEYSTORE_FILE);
+# export the absolute path so fastlane finds it regardless of its working dir.
+case "$PLAY_STORE_JSON_KEY_FILE" in
+  /*) ;;
+  *) PLAY_STORE_JSON_KEY_FILE="$ROOT_DIR/android/app/$PLAY_STORE_JSON_KEY_FILE" ;;
+esac
+export PLAY_STORE_JSON_KEY_FILE
+
 if [ ! -f "$PLAY_STORE_JSON_KEY_FILE" ]; then
   echo "PLAY_STORE_JSON_KEY_FILE does not exist: $PLAY_STORE_JSON_KEY_FILE" >&2
   exit 1
