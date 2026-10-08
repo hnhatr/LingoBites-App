@@ -1,6 +1,6 @@
 # PR 5 – App: contract bài học mới, SQLite baseline, `core/learning` theo item
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE** — G1–G5 đã duyệt; commit `8874f35`, `5092a6c` (xem §12 cho các điểm lệch).
 > Ngày lập: 2026-10-08. Repo: `LingoBites-App` (React Native CLI 0.85, `react-native-quick-sqlite`, Jest). Nhánh: `claude/optimistic-bell-mfgk44`.
 > Thuộc Stage 1 của `2026-10-07-backward-design-curriculum-plan.md`, mục App 1–3. Đọc snapshot theo fixture của PR 2 (đã sửa ở PR 4).
 
@@ -203,3 +203,20 @@ Commit 1–2 chưa đụng DB. Commit 3–4 phải đi cùng nhau mới chạy �
 - **Giai đoạn chuyển tiếp UI:** từ PR 5 tới PR 6, hub bài curriculum hiện từ và cụm theo `lesson_items` nhưng chưa có mẫu câu, thẻ `item_cards` chỉ là danh sách đơn giản, và phần ngữ pháp chỉ còn từ phân tích câu. Chức năng không hỏng, chỉ chưa đẹp.
 - **Logic nhân đôi** giữa server và app (`itemCode`, `patternFrame`, `itemPayload`). Giảm thiểu bằng test trên cùng fixture, SHA pin và ghi chú đầu file.
 - **Khối lượng:** đụng khoảng 25 file và xoá 9 file. Có thể tách **PR 5a** (commit 1–2, không đụng DB) và **PR 5b** (commit 3–5).
+
+## 12. Kết quả code và điểm lệch so với plan
+
+Kiểm tra cuối: `tsc` sạch, lint 0 lỗi (budget 178/281, không nâng), `format:check` sạch, Jest 292 suite / 2113 test pass (3 skip). Chưa chạy trên simulator/thiết bị.
+
+- **Gộp commit:** commit 1–2 và phần UI tối thiểu của commit 5 gộp thành `8874f35` vì tách riêng thì `tsc` đỏ. Commit 3–4 (SQLite + flashcard) là `5092a6c`.
+- **Cột `flashcards` giữ tên cũ** (`word`, `item_key`, `vocabulary_id`, `lesson_id`) thay vì đổi sang `text`/`item_code`, để không phải viết lại mock SQLite đọc tham số theo vị trí. `item_key` giờ chứa mã item của danh mục, `NOT NULL`, với index unique trên thẻ còn sống (`tombstone = 0`). Thêm `item_id` và `kind`. Bỏ `UNIQUE(lesson_id, vocabulary_id)` và đường tìm dự phòng theo cặp đó.
+- **Kiểm tra payload item** nằm trong `core/learning/itemPayload.ts`; contract vẫn để payload là `record`, giống server.
+- **`spec`, `lesson_items`, `tasks` là tuỳ chọn** trong schema app, khớp với cờ `LESSON_SNAPSHOT_SPEC_ENABLED` của server.
+- **Reset cũng áp dụng cho bản cài chưa có version** (`user_version = 0` nhưng đã có bảng): mọi bảng bị xoá rồi dựng baseline v7 trong một transaction.
+- **Test characterization/adversarial nâng cấp** (audio cache, engagement, speaking) giờ seed dữ liệu cũ trên baseline thay vì schema 403bc52.
+- **Assertion `content_packages` trong test today** chuyển sang `schemaBaseline.real-sqlite.test.ts`, vì mock không mô phỏng được bảng đã xoá.
+- **Thư mục media của bài đã tải** không bị xoá chủ động khi reset; chỉ bảng `lesson_downloads` bị xoá. File mồ côi sẽ được dọn khi tải lại.
+- **`localDataWipe`** dùng danh sách bảng tường minh (`flashcard_sources`, `activity_attempts`, `lesson_bookmarks`) thay cho `SCHEMA_V5/V6_TABLES`.
+- **Lưu từ hub** gửi mã item nhưng chưa có `item_id`; `item_id` được điền sau (`COALESCE`) khi lưu từ luyện tập.
+- **Thêm adapter pull cho `flashcards`:** bản ghi thiếu `item_key` được suy ra từ `word`; không suy ra được thì bỏ qua, để không làm kẹt phân trang. Có test `pullWorker.flashcards.real-sqlite.test.ts`.
+- **Fixture contract** (`src/core/schemas/__tests__/fixtures/`) được loại khỏi Prettier để giữ đúng từng byte theo SHA pin của server.
