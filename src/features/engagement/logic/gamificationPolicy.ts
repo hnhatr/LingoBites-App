@@ -114,6 +114,7 @@ export const STREAK_EVENT_TYPES: ReadonlySet<GamificationEventType> = new Set([
   'lesson_completed',
   'shadowing_session_completed',
   'practice_session_completed',
+  'lesson_activity_completed',
 ]);
 
 /** Local calendar days that contain at least one streak event. */

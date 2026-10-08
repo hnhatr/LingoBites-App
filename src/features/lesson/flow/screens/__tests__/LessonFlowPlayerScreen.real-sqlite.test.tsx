@@ -88,6 +88,12 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(navigation.goBack).toHaveBeenCalled();
   });
 
+  it('step 1 says when there is nothing to review', () => {
+    const {tree} = renderScreen();
+    expect(has(tree, 'lesson-flow-review-empty')).toBe(true);
+    expect(has(tree, 'lesson-flow-step-empty')).toBe(false);
+  });
+
   it('says when the lesson has no steps', () => {
     mockState = {
       status: 'ready',
@@ -141,6 +147,23 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     ]);
     expect(payloads[1]!.item_keys).toContain('pattern:can-i-have');
     expect(payloads[0]!.session_id).toBe(payloads[1]!.session_id);
+
+    // G6/G7: the lesson completes once and each activity marks a streak day.
+    expect(
+      getDatabase()
+        .execute('SELECT status FROM lesson_progress WHERE lesson_id = ?;', [
+          snapshot.id,
+        ])
+        .rows?.item(0),
+    ).toEqual({status: 'completed'});
+    const events = getDatabase().execute(
+      `SELECT event_type, COUNT(*) AS n FROM gamification_events
+        GROUP BY event_type ORDER BY event_type;`,
+    ).rows?._array;
+    expect(events).toEqual([
+      {event_type: 'lesson_activity_completed', n: 2},
+      {event_type: 'lesson_completed', n: 1},
+    ]);
 
     act(() => {
       tree.unmount();

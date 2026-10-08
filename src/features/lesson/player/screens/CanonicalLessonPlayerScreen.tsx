@@ -506,7 +506,9 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               showIpa={showIpa}
               showTranslation={showTranslation}
             />
-          ) : showHub && completionState !== 'finished' ? (
+          ) : showHub &&
+            completionState !== 'finished' &&
+            !flowEntry.available ? (
             <HeaderIconButton
               accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
               accessibilityLabel={t('lessonPlayer.complete_lesson')}
@@ -537,7 +539,18 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       )}
       {showHub ? (
         <BottomActionBar style={themedStyles.actionBar}>
-          {completionState === 'finished' ? (
+          {flowEntry.available ? (
+            // Curriculum lessons complete through their practice (G6).
+            flowEntry.practiceDone ? (
+              <AppText
+                color="secondary"
+                testID="canonical-hub-practice-done"
+                variant="label"
+              >
+                {t('lessonFlow.practice_done')}
+              </AppText>
+            ) : null
+          ) : completionState === 'finished' ? (
             <AppText
               color="secondary"
               testID="canonical-hub-completed"

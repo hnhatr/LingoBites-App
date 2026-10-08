@@ -774,7 +774,17 @@
     "drill_say_with": "Nói câu theo mẫu với:",
     "your_turn": "Lượt của bạn ({{speaker}}): {{text}}",
     "listen_line": "Nghe câu này",
-    "listen_line_hint": "Đọc to câu của người kia"
+    "listen_line_hint": "Đọc to câu của người kia",
+    "review_empty": "Bài này không có gì cần ôn. Sang bước 2 nhé.",
+    "review_prerequisites": "Bài nên học trước",
+    "open_prerequisite_hint": "Mở bài học này",
+    "reveal_meaning": "Chạm để xem nghĩa",
+    "reveal_meaning_hint": "Hiện hoặc ẩn nghĩa tiếng Việt",
+    "review_remembered": "Nhớ",
+    "review_remembered_hint": "Ghi là bạn còn nhớ thẻ này",
+    "review_forgot": "Quên",
+    "review_forgot_hint": "Ghi là bạn đã quên thẻ này",
+    "review_rated": "Đã ôn thẻ này"
   },
   "course": {
     "courses_title": "Khóa học",

@@ -11,6 +11,7 @@ export type {DailyReviewRouteParams} from './screens/navigationTypes';
 export {
   getCardDueAt,
   getDueFlashcards,
+  getDueFlashcardsByItemKeys,
   getSavedFlashcardsSignature,
   listFlashcards,
   listFlashcardSources,

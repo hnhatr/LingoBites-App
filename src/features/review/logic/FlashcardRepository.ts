@@ -395,6 +395,21 @@ export function getDueFlashcards({
 }
 
 /**
+ * PR 10: the due cards of some catalog items (the lesson player's "related
+ * review" step), in due order.
+ */
+export function getDueFlashcardsByItemKeys(
+  itemKeys: readonly string[],
+  options: GetDueFlashcardsOptions = {},
+): FlashcardRecord[] {
+  const keys = new Set(itemKeys);
+  if (keys.size === 0) return [];
+  return getDueFlashcards({today: options.today}).filter(
+    card => card.itemKey != null && keys.has(card.itemKey),
+  );
+}
+
+/**
  * Records a two-rating review outcome on a schedule row.
  *
  * The MVP contract (SETE-92) is a fixed-interval two-rating model:

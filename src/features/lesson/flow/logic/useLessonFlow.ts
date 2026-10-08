@@ -1,5 +1,9 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 
+import {
+  recordLessonActivityCompleted,
+  recordLessonCompletedActivity,
+} from '@features/engagement';
 import {requestSync} from '@features/sync';
 
 import {createRequestId} from '@core/api/requestId';
@@ -10,6 +14,7 @@ import {
   listLessonActivityAttempts,
   recordLessonActivityAttempt,
 } from '@core/sync/activityAttempts';
+import {getLessonProgress, recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {blockItemKeys, flowActivity, flowItems} from './flowContent';
 import {
@@ -84,7 +89,12 @@ export function useLessonFlow(
         durationMs,
       });
       if (!result.ok) return false;
-      setAttempts(readAttempts(lessonId));
+      recordLessonActivityCompleted(result.id);
+      const next = readAttempts(lessonId);
+      setAttempts(next);
+      if (practiceCompleted(snapshot, next)) {
+        completeLessonOnce(lessonId);
+      }
       requestSync();
       return true;
     },
@@ -101,6 +111,19 @@ export function useLessonFlow(
       : 0,
     finishActivity,
   };
+}
+
+/**
+ * Decision G6: the first time the practice part is done, the lesson moves to
+ * completed (unit progress, Home and streak keep working as before). It is
+ * written once; a lesson already completed is left as it is.
+ */
+function completeLessonOnce(lessonId: string): void {
+  if (getLessonProgress(lessonId)?.status === 'completed') return;
+  const result = recordLessonEvent({lessonId, event: 'complete'});
+  if (result.ok && result.advanced) {
+    recordLessonCompletedActivity(lessonId);
+  }
 }
 
 /** Speaking activities are judged by the learner in Stage 2. */

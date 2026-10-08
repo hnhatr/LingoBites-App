@@ -305,6 +305,8 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     };
     const {tree} = renderScreen();
     expect(has(tree, 'canonical-hub-start')).toBe(false);
+    // G6: no manual "complete" for a curriculum lesson.
+    expect(has(tree, 'canonical-hub-complete')).toBe(false);
     act(() => {
       pressable(tree, 'canonical-hub-start-flow').props.onPress();
     });

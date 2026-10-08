@@ -12,6 +12,7 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {useAppNavigation} from '@core/navigation';
 import type {LessonBlock} from '@core/schemas/lesson';
 import type {LessonAttemptOutcome} from '@core/schemas/sync';
 
@@ -19,9 +20,14 @@ import {useCanonicalLesson} from '../../player/logic/useCanonicalLesson';
 import type {LessonFlowParamList} from '../../player/screens/navigationTypes';
 import {StepRail} from '../components/StepRail';
 import {StepResult} from '../components/StepResult';
+import {StepReview} from '../components/StepReview';
 import {StepView} from '../components/StepView';
 import {flowActivity, flowItems} from '../logic/flowContent';
-import {type FlowStep, isFlowLesson} from '../logic/practiceCompletion';
+import {
+  blocksOfStep,
+  type FlowStep,
+  isFlowLesson,
+} from '../logic/practiceCompletion';
 import {useLessonFlow} from '../logic/useLessonFlow';
 
 type Props = NativeStackScreenProps<LessonFlowParamList, 'LessonFlowPlayer'>;
@@ -48,6 +54,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
   const floatingClearance = useFloatingTabBarClearance();
   const scrollRef = useRef<ScrollView>(null);
   const {state, open} = useCanonicalLesson(lessonId);
+  const appNavigation = useAppNavigation();
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const runnable = snapshot !== null && isFlowLesson(snapshot);
   const flow = useLessonFlow(lessonId, runnable ? snapshot : null);
@@ -156,6 +163,13 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             label: t(STEP_LABEL_KEYS[step]),
           })}
         </AppText>
+        {step === 1 ? (
+          <StepReview
+            onOpenLesson={appNavigation.openLesson}
+            onSpeakText={handleSpeak}
+            snapshot={snapshot}
+          />
+        ) : null}
         {step === 6 ? (
           <StepResult
             attempts={flow.attempts}
@@ -165,7 +179,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             practiceRemaining={flow.practiceRemaining}
             snapshot={snapshot}
           />
-        ) : (
+        ) : step === 1 && blocksOfStep(snapshot, 1).length === 0 ? null : (
           <StepView
             attempts={flow.attempts}
             items={items}

@@ -774,7 +774,17 @@
     "drill_say_with": "Say the pattern with:",
     "your_turn": "Your turn ({{speaker}}): {{text}}",
     "listen_line": "Hear this line",
-    "listen_line_hint": "Plays the other speaker's line"
+    "listen_line_hint": "Plays the other speaker's line",
+    "review_empty": "Nothing to review for this lesson. Go on to step 2.",
+    "review_prerequisites": "Lessons to know first",
+    "open_prerequisite_hint": "Opens this lesson",
+    "reveal_meaning": "Tap to see the meaning",
+    "reveal_meaning_hint": "Shows or hides the Vietnamese meaning",
+    "review_remembered": "Remembered",
+    "review_remembered_hint": "Records that you remembered this card",
+    "review_forgot": "Forgot",
+    "review_forgot_hint": "Records that you forgot this card",
+    "review_rated": "Card reviewed"
   },
   "course": {
     "courses_title": "Courses",
