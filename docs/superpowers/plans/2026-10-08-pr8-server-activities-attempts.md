@@ -1,6 +1,6 @@
 # PR 8 – Server: nội dung hoạt động theo loại, sinh nháp từ mẫu câu, lượt làm, mức "hoàn thành phần luyện", cân bằng 70/25/5
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE**: G1–G9 đã duyệt; server `c077dd7` → `3ee62e9`, app `4a0d949` (xem §14 cho các điểm lệch).
 > Ngày lập: 2026-10-08. Repo: `LingoBites-Server` (+ nhãn nhỏ ở `admin-web`, + 1 commit chỉ chép fixture sang `LingoBites-App`). Nhánh: `claude/optimistic-bell-mfgk44`.
 > PR đầu tiên của Stage 2 trong `2026-10-07-backward-design-curriculum-plan.md`, mục Server 1–4. PR 9 (admin editor, preview) và PR 10–11 (app player, gợi ý, vận dụng) code theo contract và fixture của PR này.
 
@@ -240,3 +240,25 @@ Không có route đọc trong PR 8 (G6). Có hàm store `getLessonOutcome(userId
 - **Chi phí tính "hoàn thành phần luyện" khi push:** mỗi bài trong batch tốn 2 truy vấn (block bước 2–4 và lượt của user cho bài đó). Batch push vốn nhỏ, và khoá chính `sync_records (user_id, collection, entity_id)` đã lọc được theo user + collection. Lọc thêm theo `payload->>'lesson_id'` là quét trong tập lượt của một user. Nếu chậm, Stage 3 chuyển sang bảng attempts riêng.
 - **Luật "hoàn thành phần luyện" phải giống hệt ở app** (PR 10). Giảm thiểu bằng việc ghi luật ở một chỗ (§7), có test hai phía, và đưa ca biên vào fixture attempt.
 - **Tự đánh giá (`assessed_by: self`)** dễ "đạt" ảo. Chấp nhận trong Stage 2; Stage 3 chấm máy và không dùng lượt `self` để tính `passed_at`.
+
+## 14. Kết quả code và điểm lệch so với plan
+
+**Kiểm tra cuối:**
+- Server:
+  - `tsc` sạch;
+  - unit 429 pass (726 test; phần cần DB tự skip);
+  - `test:db` 245/245;
+  - `prisma migrate diff` (DB đã migrate → schema): rỗng;
+  - OpenAPI +1 path / +1 operation.
+- admin-web: lint / typecheck / format sạch, Vitest `specRules` 13/13, Playwright 16/16.
+- App: `tsc` sạch, lint 178/281 (không nâng budget), format sạch, Jest 2148 pass. Fixture with-spec và fixture lượt làm trùng byte với server.
+
+**Điểm lệch so với plan:**
+- **Nội dung hoạt động trong seed viết tay, không gọi generator.** Shape vẫn đúng `activityContent.ts`, và seed test kiểm tra mọi hoạt động đều có `content`. Generator được kiểm riêng trên fixture item dùng chung.
+- **Đổi skill một block của seed để unit đạt 70/25/5:** bài L02, bước 3 (`listen_and_repeat`) đổi `listen` → `speak`, vì nghe và nhắc lại là nói. Unit đạt 72/28/0, không cảnh báo.
+- **Spec-check chưa kiểm `values` của `speaking_drill`** (đủ chỗ trống, đúng lựa chọn). Để PR 9 làm cùng editor, vì cần đưa payload của pattern vào input của validator. Hiện chỉ kiểm item có trong bài và đúng kind pattern.
+- **`ACTIVITY_ITEM_NOT_IN_LESSON` với `reason: not_pattern`** chỉ được báo khi biết kind của item. Input của validator có thêm `kind` cho item của bài.
+- **Lượt làm của bài admin luôn được tính vào `lesson_outcomes`, bất kể trạng thái bài.** Plan nói "bài không còn hiển thị với user thì không ghi"; thực tế chỉ loại bài `origin = learner`. Vì sync không bao giờ bỏ lượt làm, lượt đến từ bài đã archive vẫn đóng dấu `last_attempt_at`.
+- **Spec-check của unit dùng schema response riêng** (`UnitSpecCheckResponseSchema`, có `skill_balance`); spec-check của bài không đổi.
+- **Route sinh nháp dùng admin session + CSRF**, như mọi POST admin.
+- **Admin-web:** ngoài nhãn rule, kiểu `SpecFinding` có thêm `reason` và `shares`.
