@@ -41,6 +41,7 @@ import type {LessonAnalysis} from '@core/schemas/lesson';
 import {
   CanonicalLessonHub,
   type LessonHubSection,
+  lessonSectionTitleKey,
 } from '../components/CanonicalLessonHub';
 import {CanonicalLessonPlayer} from '../components/CanonicalLessonPlayer';
 import {LessonDisplayToggles} from '../components/LessonDisplayToggles';
@@ -67,12 +68,6 @@ type Props = NativeStackScreenProps<
 >;
 
 type PlayerView = 'hub' | LessonHubSection;
-
-const SECTION_TITLE_KEYS: Record<LessonHubSection, string> = {
-  sentences: 'lessonPlayer.explore_sentences_title',
-  vocabulary: 'lessonPlayer.explore_vocabulary_title',
-  grammar: 'lessonPlayer.explore_grammar_title',
-};
 
 function fireAndForget(task: Promise<unknown>): void {
   task.catch(() => undefined);
@@ -231,7 +226,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   // Lesson names can be long: the header keeps a short generic title and
   // the full lesson name is rendered in the page body.
   const title = inSection
-    ? t(SECTION_TITLE_KEYS[view as LessonHubSection])
+    ? t(
+        lessonSectionTitleKey(
+          view as LessonHubSection,
+          (snapshot?.lesson_items ?? []).length > 0,
+        ),
+      )
     : t('lessonPlayer.player_title');
 
   const handleSeek = useCallback((ms: number) => {
@@ -415,6 +415,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             offline={state.status === 'ready' ? state.offline : false}
             hasUpdate={state.status === 'ready' ? state.hasUpdate : false}
             onOpenSection={openView}
+            onOpenLesson={appNavigation.openLesson}
             onOpenPractice={
               practiceEnabled
                 ? () => appNavigation.openPractice(lessonId)
@@ -439,6 +440,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             saveControl={savedItems.grammar}
           />
         );
+      default:
+        return null;
     }
   };
 
