@@ -1,0 +1,4 @@
+# Generated per build/machine; must not change the expo-updates fingerprint.
+ios/tmp.xcconfig
+ios/.xcode.env.local
+android/local.properties

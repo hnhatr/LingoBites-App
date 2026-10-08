@@ -179,6 +179,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				E7A0C0DE00000000000000A3 /* [Expo] Set updates channel */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				C1233146BC0778205888CD2E /* [CP] Embed Pods Frameworks */,
 				82D10371419DD61ED01018AF /* [CP] Copy Pods Resources */,
@@ -242,6 +243,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		E7A0C0DE00000000000000A3 /* [Expo] Set updates channel */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Set updates channel";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n# Sets the expo-updates channel in the bundled Expo.plist based on the build configuration.\nPLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Expo.plist\"\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Expo.plist not found in app bundle: $PLIST\"\n  exit 1\nfi\ncase \"$CONFIGURATION\" in\n  *Prod) CHANNEL=production ;;\n  *Stag) CHANNEL=staging ;;\n  *) CHANNEL=development ;;\nesac\n/usr/libexec/PlistBuddy -c \"Set :EXUpdatesRequestHeaders:expo-channel-name $CHANNEL\" \"$PLIST\"\necho \"expo-updates channel: $CHANNEL\"\n";
+		};
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
