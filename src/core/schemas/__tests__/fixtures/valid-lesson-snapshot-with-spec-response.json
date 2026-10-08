@@ -1,7 +1,7 @@
 {
   "contract_version": 1,
   "lesson": {
-    "id": "86ecf37c-57e4-4d41-9417-ad57416f896c",
+    "id": "5739bc5c-e509-4f57-a082-f9184fa9f882",
     "slug": "goi-do-uong",
     "title": "Gọi đồ uống",
     "description": "",
@@ -9,11 +9,11 @@
     "source_type": "admin_text",
     "content_revision": 12,
     "unit": {
-      "course_id": "f04b5984-ec5b-4b87-8f06-f2235cd9d551",
+      "course_id": "d84c088c-2c3e-47cc-89d7-6171ef111aed",
       "course_title": "A1 Giao tiếp",
-      "level_id": "f3beca85-0878-4d1f-873f-f221a3f64817",
+      "level_id": "838b95a0-fc6c-44dc-adce-9cfb8aa06ce1",
       "level_title": "A1",
-      "unit_id": "1b20e7ca-1790-4dae-addd-402ef687f7dc",
+      "unit_id": "6d093504-a759-4947-9774-0111a1316691",
       "unit_title": "Gọi đồ uống",
       "unit_position": 1,
       "lesson_position": 1
@@ -22,17 +22,17 @@
     "sentences": [],
     "blocks": [
       {
-        "id": "fc9fb090-238c-4eee-8e15-92b51bf71f18",
+        "id": "643128e3-1c72-44bc-93a1-03fd95c41b11",
         "type": "item_cards",
         "position": 0,
         "title": null,
         "data": {
           "item_ids": [
-            "4adcafcb-7fb7-4fc3-9c7d-128c3fca17ca",
-            "fc536df8-18c6-43b8-8285-65a9e2c97e97",
-            "e551a939-7892-4789-978b-170aec90e5e0",
-            "db17a4cc-65d9-41cf-95f8-cc4738301a1f",
-            "cae03d45-c211-47a2-9348-eff959029d82"
+            "a4446cc0-0a5a-4deb-934f-254368314797",
+            "940f2909-9c3d-49d2-981b-1e52b1981d99",
+            "1fff6487-5e01-4b0c-9966-2a7bc52f3d5d",
+            "56d98371-506b-40e6-b21b-88abd3df01a7",
+            "63faf8b0-524a-4ef4-abb1-97a71da41ca6"
           ]
         },
         "step": 2,
@@ -40,14 +40,36 @@
         "duration_sec": 120
       },
       {
-        "id": "88076f42-99bb-472b-9926-e330e3667713",
+        "id": "414a561f-0cae-412e-af3a-cc31bc5b78f9",
         "type": "activity",
         "position": 1,
         "title": "Nghe và nhắc lại",
         "data": {
+          "content": {
+            "prompts": [
+              {
+                "id": "p1",
+                "itemId": "a4446cc0-0a5a-4deb-934f-254368314797",
+                "textEn": "Can I have a small coffee, please?",
+                "textVi": "Cho tôi một cà phê cỡ nhỏ được không?"
+              },
+              {
+                "id": "p2",
+                "itemId": "a4446cc0-0a5a-4deb-934f-254368314797",
+                "textEn": "Can I have a large tea, please?",
+                "textVi": "Cho tôi một trà cỡ lớn được không?"
+              },
+              {
+                "id": "p3",
+                "itemId": "a4446cc0-0a5a-4deb-934f-254368314797",
+                "textEn": "Can I have a medium milk, please?",
+                "textVi": "Cho tôi một sữa cỡ vừa được không?"
+              }
+            ]
+          },
           "titleVi": "Nghe và nhắc lại",
           "item_refs": [
-            "4adcafcb-7fb7-4fc3-9c7d-128c3fca17ca"
+            "a4446cc0-0a5a-4deb-934f-254368314797"
           ],
           "activityKind": "listen_and_repeat"
         },
@@ -56,15 +78,48 @@
         "duration_sec": 180
       },
       {
-        "id": "f344ff5f-4257-4913-b55d-e7acc2fae361",
+        "id": "bbb22a03-2e8d-42d8-8ec6-218394d9a88d",
         "type": "activity",
         "position": 2,
         "title": "Đổi cỡ, đổi đồ uống",
         "data": {
-          "task_id": "5f16ff4f-f0b6-45c8-aeb2-c511d6f4c060",
+          "content": {
+            "combos": [
+              {
+                "id": "c1",
+                "values": {
+                  "size": "small",
+                  "drink": "coffee"
+                }
+              },
+              {
+                "id": "c2",
+                "values": {
+                  "size": "large",
+                  "drink": "tea"
+                }
+              },
+              {
+                "id": "c3",
+                "values": {
+                  "size": "medium",
+                  "drink": "milk"
+                }
+              },
+              {
+                "id": "c4",
+                "values": {
+                  "size": "large",
+                  "drink": "orange juice"
+                }
+              }
+            ],
+            "patternItemId": "a4446cc0-0a5a-4deb-934f-254368314797"
+          },
+          "task_id": "c0cc98b1-5530-4786-96b0-8c1ddbbb5d19",
           "titleVi": "Đổi cỡ, đổi đồ uống",
           "item_refs": [
-            "4adcafcb-7fb7-4fc3-9c7d-128c3fca17ca"
+            "a4446cc0-0a5a-4deb-934f-254368314797"
           ],
           "activityKind": "speaking_drill"
         },
@@ -73,23 +128,33 @@
         "duration_sec": 180
       },
       {
-        "id": "9239c5c8-9cfe-4b20-8124-4c9f3a3678ed",
+        "id": "305e2cef-4562-4580-92a4-6fb3b5fe0d3d",
         "type": "activity",
         "position": 3,
         "title": "Tự gọi đồ uống",
         "data": {
-          "lines": [
-            {
-              "id": "line-1",
-              "textEn": "Hi! What can I get you?",
-              "textVi": "Chào bạn! Bạn dùng gì?",
-              "speaker": "B"
-            }
-          ],
-          "task_id": "ec871647-e3f4-4021-b195-91f71ae80146",
+          "content": {
+            "turns": [
+              {
+                "id": "t1",
+                "textEn": "Hi! What can I get you?",
+                "textVi": "Chào bạn! Bạn dùng gì?",
+                "speaker": "B"
+              },
+              {
+                "id": "t2",
+                "textEn": "Can I have a large orange juice, please?",
+                "textVi": "Cho tôi một nước cam cỡ lớn được không?",
+                "speaker": "A",
+                "patternItemId": "a4446cc0-0a5a-4deb-934f-254368314797"
+              }
+            ],
+            "learnerSpeaker": "A"
+          },
+          "task_id": "966dc71a-d0a8-44fa-ac1a-44aed06ce5fd",
           "titleVi": "Tự gọi đồ uống",
           "item_refs": [
-            "4adcafcb-7fb7-4fc3-9c7d-128c3fca17ca"
+            "a4446cc0-0a5a-4deb-934f-254368314797"
           ],
           "activityKind": "role_play"
         },
@@ -120,7 +185,7 @@
         "introduction": "new",
         "position": 0,
         "item": {
-          "id": "4adcafcb-7fb7-4fc3-9c7d-128c3fca17ca",
+          "id": "a4446cc0-0a5a-4deb-934f-254368314797",
           "code": "pattern:can-i-have",
           "kind": "pattern",
           "text": "Can I have a {size} {drink}, please?",
@@ -203,7 +268,7 @@
         "introduction": "new",
         "position": 1,
         "item": {
-          "id": "fc536df8-18c6-43b8-8285-65a9e2c97e97",
+          "id": "940f2909-9c3d-49d2-981b-1e52b1981d99",
           "code": "word:coffee",
           "kind": "word",
           "text": "coffee",
@@ -225,7 +290,7 @@
         "introduction": "new",
         "position": 2,
         "item": {
-          "id": "e551a939-7892-4789-978b-170aec90e5e0",
+          "id": "1fff6487-5e01-4b0c-9966-2a7bc52f3d5d",
           "code": "word:tea",
           "kind": "word",
           "text": "tea",
@@ -247,7 +312,7 @@
         "introduction": "new",
         "position": 3,
         "item": {
-          "id": "db17a4cc-65d9-41cf-95f8-cc4738301a1f",
+          "id": "56d98371-506b-40e6-b21b-88abd3df01a7",
           "code": "word:milk",
           "kind": "word",
           "text": "milk",
@@ -269,7 +334,7 @@
         "introduction": "new",
         "position": 4,
         "item": {
-          "id": "cae03d45-c211-47a2-9348-eff959029d82",
+          "id": "63faf8b0-524a-4ef4-abb1-97a71da41ca6",
           "code": "phrase:orange juice",
           "kind": "phrase",
           "text": "orange juice",
@@ -289,7 +354,7 @@
     ],
     "tasks": [
       {
-        "id": "5f16ff4f-f0b6-45c8-aeb2-c511d6f4c060",
+        "id": "c0cc98b1-5530-4786-96b0-8c1ddbbb5d19",
         "kind": "guided",
         "title_vi": "Gọi theo mẫu",
         "prompt_vi": "Nghe và gọi một ly cà phê cỡ nhỏ.",
@@ -340,7 +405,7 @@
         ]
       },
       {
-        "id": "ec871647-e3f4-4021-b195-91f71ae80146",
+        "id": "966dc71a-d0a8-44fa-ac1a-44aed06ce5fd",
         "kind": "independent",
         "title_vi": "Tự gọi đồ uống",
         "prompt_vi": "Bạn khát và muốn một ly nước cam cỡ lớn. Hãy gọi người bán.",
