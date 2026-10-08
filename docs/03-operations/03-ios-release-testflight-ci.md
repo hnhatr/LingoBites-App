@@ -59,20 +59,27 @@ Via the CLI:
 gh workflow run ios-release.yml -f env=staging
 ```
 
+## Build number
+
+Automatic. Before archiving, fastlane reads the latest build number uploaded to
+TestFlight for the app (any version) via the App Store Connect API and uses it + 1.
+It is passed to Xcode as `CURRENT_PROJECT_VERSION`, so no project file is modified.
+Set `IOS_APP_BUILD_NUMBER` to force a specific value. `IOS_APP_VERSION_NAME` still
+comes from `APP_ENV_FILE`; bump it yourself for a new release version.
+
 ## How to verify a run succeeded
 
 - The job's "Build and upload to TestFlight" step logs the fastlane summary,
-  including the build number (`BUILD_NUMBER` = `github.run_number`) and the IPA
-  name `LingoBites-<Scheme>.ipa`.
+  including the build number and the IPA name `LingoBites-<Scheme>.ipa`.
 - App Store Connect → TestFlight → the app shows the new build once Apple
   finishes processing it (the job does not wait for processing —
   `skip_waiting_for_build_processing: true`).
 
 ## Recovery if a run fails partway
 
-Dispatch the workflow again rather than using "Re-run jobs": a new dispatch gets a
-new `github.run_number`, so its build number never collides with a previous
-upload, while a re-run keeps the old number. No manual cleanup is required
+Re-dispatching or re-running the workflow is safe: the build number is looked up
+from TestFlight on every run, so a retry never collides with a previous upload.
+No manual cleanup is required
 between attempts — the job's cleanup step runs `if: always()` and removes the
 materialized env file, Xcode config, certificate, provisioning profile, and
 temporary keychain regardless of how the job ended.

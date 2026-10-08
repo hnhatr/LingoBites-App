@@ -78,7 +78,7 @@ export ENVFILE="$RN_ENV_FILE"
 export PLAY_STORE_TRACK="${PLAY_STORE_TRACK:-internal}"
 export PLAY_STORE_RELEASE_STATUS="${PLAY_STORE_RELEASE_STATUS:-completed}"
 
-echo "Building Android $ENVIRONMENT APK/AAB and uploading AAB to Google Play track: $PLAY_STORE_TRACK"
+echo "Building Android $ENVIRONMENT AAB and uploading it to Google Play track: $PLAY_STORE_TRACK"
 
 bundle check || bundle install
 yarn install --frozen-lockfile
