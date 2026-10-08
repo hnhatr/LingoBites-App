@@ -215,7 +215,7 @@ Kiểm tra cuối: `tsc` sạch, lint 0 lỗi (budget 178/281, không nâng), `f
 - **Reset cũng áp dụng cho bản cài chưa có version** (`user_version = 0` nhưng đã có bảng): mọi bảng bị xoá rồi dựng baseline v7 trong một transaction.
 - **Test characterization/adversarial nâng cấp** (audio cache, engagement, speaking) giờ seed dữ liệu cũ trên baseline thay vì schema 403bc52.
 - **Assertion `content_packages` trong test today** chuyển sang `schemaBaseline.real-sqlite.test.ts`, vì mock không mô phỏng được bảng đã xoá.
-- **Thư mục media của bài đã tải** không bị xoá chủ động khi reset; chỉ bảng `lesson_downloads` bị xoá. File mồ côi sẽ được dọn khi tải lại.
+- **Thư mục media của bài đã tải** không bị xoá chủ động khi reset; chỉ bảng `lesson_downloads` bị xoá. File media cũ có thể còn trên máy dev (mồ côi); chưa có bước dọn.
 - **`localDataWipe`** dùng danh sách bảng tường minh (`flashcard_sources`, `activity_attempts`, `lesson_bookmarks`) thay cho `SCHEMA_V5/V6_TABLES`.
 - **Lưu từ hub** gửi mã item nhưng chưa có `item_id`; `item_id` được điền sau (`COALESCE`) khi lưu từ luyện tập.
 - **Thêm adapter pull cho `flashcards`:** bản ghi thiếu `item_key` được suy ra từ `word`; không suy ra được thì bỏ qua, để không làm kẹt phân trang. Có test `pullWorker.flashcards.real-sqlite.test.ts`.
