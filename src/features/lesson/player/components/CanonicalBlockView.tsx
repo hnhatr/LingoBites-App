@@ -3,10 +3,13 @@ import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
+import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {renderFrameWithLabels} from '@core/learning';
 import {
   type CatalogItem,
   itemCardIds,
@@ -33,13 +36,39 @@ function textOf(value: unknown): string {
 /** Lesson items by id, to name the cards of an `item_cards` block. */
 export type BlockItemLookup = ReadonlyMap<
   string,
-  Pick<CatalogItem, 'text' | 'meaning_vi'>
+  Pick<CatalogItem, 'text' | 'meaning_vi' | 'kind' | 'payload'>
 >;
+
+type BlockItem = BlockItemLookup extends ReadonlyMap<string, infer V>
+  ? V
+  : never;
+
+/** Slot labels of a pattern payload (`{size: 'cỡ'}`), ignoring bad shapes. */
+function slotLabels(payload: Record<string, unknown>): Record<string, string> {
+  const slots = payload.slots;
+  if (slots === null || typeof slots !== 'object') return {};
+  return Object.fromEntries(
+    Object.entries(slots as Record<string, unknown>).flatMap(([name, slot]) => {
+      const label =
+        slot !== null && typeof slot === 'object'
+          ? (slot as {label_vi?: unknown}).label_vi
+          : undefined;
+      return typeof label === 'string' ? [[name, label]] : [];
+    }),
+  );
+}
+
+/** What an item card shows: a pattern's frame with its slot labels. */
+function itemCardText(item: BlockItem): string {
+  return item.kind === 'pattern'
+    ? renderFrameWithLabels(item.text, slotLabels(item.payload))
+    : item.text;
+}
 
 const NO_ITEMS: BlockItemLookup = new Map();
 
 /** Readable body for a block, never the raw JSON of its data. */
-function blockBody(block: LessonBlock, items: BlockItemLookup): string {
+function blockBody(block: LessonBlock): string {
   const data = block.data as Record<string, unknown>;
   switch (block.type) {
     case 'text':
@@ -55,13 +84,8 @@ function blockBody(block: LessonBlock, items: BlockItemLookup): string {
         .filter(part => part.length > 0)
         .join('\n');
     case 'item_cards':
-      // A plain list until the item cards UI lands (PR 6).
-      return itemCardIds(block)
-        .flatMap(id => {
-          const item = items.get(id);
-          return item ? [`${item.text} · ${item.meaning_vi}`] : [];
-        })
-        .join('\n');
+      // Rendered as item cards below the title.
+      return '';
     default:
       return textOf(
         data.nameEn ??
@@ -105,9 +129,12 @@ function activityLines(block: LessonBlock): ActivityLine[] {
 export function CanonicalBlockView({
   block,
   items = NO_ITEMS,
+  onSpeakText,
 }: {
   block: LessonBlock;
   items?: BlockItemLookup;
+  /** Speaks a word or sentence (TTS); omitted = no play buttons. */
+  onSpeakText?: (text: string) => void;
 }) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -122,7 +149,14 @@ export function CanonicalBlockView({
       </View>
     );
   }
-  const body = blockBody(block, items);
+  const body = blockBody(block);
+  const cards =
+    block.type === 'item_cards'
+      ? itemCardIds(block).flatMap(id => {
+          const item = items.get(id);
+          return item ? [{id, item}] : [];
+        })
+      : [];
   const lines = activityLines(block);
   return (
     <View testID={blockTestId(block.type)} style={themedStyles.card}>
@@ -149,6 +183,32 @@ export function CanonicalBlockView({
           {body}
         </AppText>
       ) : null}
+      {cards.map(({id, item}) => (
+        <View
+          key={id}
+          testID={`${blockTestId(block.type)}-item-${id}`}
+          style={themedStyles.line}
+        >
+          <View style={styles.itemRow}>
+            <View style={styles.flex1}>
+              <AppText variant="bodyLg">{itemCardText(item)}</AppText>
+              <AppText color="secondary">{item.meaning_vi}</AppText>
+            </View>
+            <Chip label={t(`lessonPlayer.item_kind_${item.kind}`)} />
+            {onSpeakText && item.kind !== 'pattern' ? (
+              <IconButton
+                accessibilityHint={t('lessonPlayer.pattern_speak_hint')}
+                accessibilityLabel={t('lessonPlayer.pattern_speak', {
+                  text: item.text,
+                })}
+                icon="volume_up"
+                onPress={() => onSpeakText(item.text)}
+                testID={`${blockTestId(block.type)}-speak-${id}`}
+              />
+            ) : null}
+          </View>
+        </View>
+      ))}
       {lines.map(line => (
         <View
           key={line.id}
@@ -209,6 +269,11 @@ function makeStyles(theme: AppTheme) {
 const styles = StyleSheet.create({
   flex1: {
     flex: 1,
+  },
+  itemRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
   titleRow: {
     alignItems: 'center',

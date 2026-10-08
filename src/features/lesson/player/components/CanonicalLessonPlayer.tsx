@@ -248,7 +248,12 @@ export function CanonicalLessonPlayer({
         );
       })}
       {orderedBlocks.map(block => (
-        <CanonicalBlockView key={block.id} block={block} items={blockItems} />
+        <CanonicalBlockView
+          key={block.id}
+          block={block}
+          items={blockItems}
+          onSpeakText={onSpeakText}
+        />
       ))}
     </View>
   );
