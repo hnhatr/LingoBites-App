@@ -7,6 +7,8 @@ import {AppText} from '@ui/components/AppText';
 import {QuizOption, type QuizOptionState} from '@ui/components/QuizOption';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import type {LessonSupportLevel} from '@core/schemas/sync';
+
 import type {EntryResult} from '../logic/activityOutcome';
 
 const OPTION_KEYS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
@@ -14,7 +16,7 @@ const OPTION_KEYS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 export type ChoiceEntryProps = {
   options: ReadonlyArray<{id: string; text: string}>;
   rightId: string;
-  onReport: (result: EntryResult) => void;
+  onReport: (result: EntryResult, support: LessonSupportLevel) => void;
 };
 
 /**
@@ -28,12 +30,18 @@ export function ChoiceEntry({options, rightId, onReport}: ChoiceEntryProps) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [wrong, setWrong] = useState<ReadonlySet<string>>(new Set());
   const [finished, setFinished] = useState<'right' | 'shown' | null>(null);
+  /** The one hint of a choice (PR 11 G3): a wrong option taken away. */
+  const [removed, setRemoved] = useState<string | null>(null);
+  const support: LessonSupportLevel = removed ? 'hint_1' : 'none';
+  const canEliminate =
+    removed === null &&
+    options.filter(o => o.id !== rightId && !wrong.has(o.id)).length > 1;
 
   const choose = (id: string) => {
     if (finished) return;
     if (id === rightId) {
       setFinished('right');
-      onReport(wrong.size === 0 ? 'first_try' : 'after_retry');
+      onReport(wrong.size === 0 ? 'first_try' : 'after_retry', support);
     } else {
       setWrong(previous => new Set(previous).add(id));
     }
@@ -41,7 +49,7 @@ export function ChoiceEntry({options, rightId, onReport}: ChoiceEntryProps) {
 
   const optionState = (id: string): QuizOptionState => {
     if (finished && id === rightId) return 'correct';
-    return wrong.has(id) ? 'wrong' : 'default';
+    return wrong.has(id) || removed === id ? 'wrong' : 'default';
   };
 
   return (
@@ -55,7 +63,9 @@ export function ChoiceEntry({options, rightId, onReport}: ChoiceEntryProps) {
               key,
               text: option.text,
             })}
-            disabled={finished !== null || wrong.has(option.id)}
+            disabled={
+              finished !== null || wrong.has(option.id) || removed === option.id
+            }
             key={option.id}
             label={option.text}
             onPress={() => choose(option.id)}
@@ -75,12 +85,27 @@ export function ChoiceEntry({options, rightId, onReport}: ChoiceEntryProps) {
           {t('lessonFlow.feedback_wrong_choice')}
         </AppText>
       ) : null}
+      {finished === null && canEliminate ? (
+        <AppButton
+          accessibilityHint={t('lessonFlow.hint_eliminate_hint')}
+          iconLeft="lightbulb"
+          onPress={() =>
+            setRemoved(
+              options.find(o => o.id !== rightId && !wrong.has(o.id))?.id ??
+                null,
+            )
+          }
+          testID="lesson-flow-hint-eliminate"
+          title={t('lessonFlow.hint_eliminate')}
+          variant="ghost"
+        />
+      ) : null}
       {finished === null ? (
         <AppButton
           accessibilityHint={t('lessonFlow.show_answer_hint')}
           onPress={() => {
             setFinished('shown');
-            onReport('not_yet');
+            onReport('not_yet', support);
           }}
           testID="lesson-flow-show-answer"
           title={t('lessonFlow.show_answer')}

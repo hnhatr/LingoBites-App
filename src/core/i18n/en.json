@@ -784,7 +784,16 @@
     "review_remembered_hint": "Records that you remembered this card",
     "review_forgot": "Forgot",
     "review_forgot_hint": "Records that you forgot this card",
-    "review_rated": "Card reviewed"
+    "review_rated": "Card reviewed",
+    "hint": "Hint ({{opened}}/{{total}})",
+    "hint_hint": "Opens the next hint; using hints counts as support",
+    "hint_type_replay": "Listen again",
+    "hint_type_keyword": "Key words",
+    "hint_type_pattern": "Pattern",
+    "hint_type_model": "Model",
+    "hint_type_eliminate": "Taken away",
+    "hint_eliminate": "Hint: take away a wrong option",
+    "hint_eliminate_hint": "Removes one wrong option; counts as support"
   },
   "course": {
     "courses_title": "Courses",

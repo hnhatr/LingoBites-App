@@ -8,15 +8,23 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import type {LessonSupportLevel} from '@core/schemas/sync';
+
 import type {EntryResult} from '../logic/activityOutcome';
+import type {HintStep} from '../logic/hints';
 import {useSelfCheckRecorder} from '../logic/useSelfCheckRecorder';
+import {HintLadder} from './HintLadder';
 
 export type SpeakSelfCheckProps = {
   /** The model sentence (spoken with TTS, shown when revealed). */
   model: string;
-  /** Show the model text from the start; otherwise "Xem câu mẫu" shows it. */
-  modelVisible: boolean;
-  onReport: (result: EntryResult) => void;
+  /**
+   * `null`: the model is the content (listen and repeat): its text shows and
+   * "Nghe câu mẫu" is free. A ladder: the model only comes through the hints
+   * (PR 11 G3), which raise the support level.
+   */
+  hints: readonly HintStep[] | null;
+  onReport: (result: EntryResult, support: LessonSupportLevel) => void;
 };
 
 /**
@@ -24,52 +32,46 @@ export type SpeakSelfCheckProps = {
  * judge it "Đạt" or "Chưa đạt" (decision G4). Without a microphone the
  * learner still judges; only the record buttons go away.
  */
-export function SpeakSelfCheck({
-  model,
-  modelVisible,
-  onReport,
-}: SpeakSelfCheckProps) {
+export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const recorder = useSelfCheckRecorder();
-  const [revealed, setRevealed] = useState(modelVisible);
+  const [support, setSupport] = useState<LessonSupportLevel>('none');
   const [judged, setJudged] = useState<EntryResult | null>(null);
 
   const judge = (result: EntryResult) => {
     if (judged) return;
     setJudged(result);
-    onReport(result);
+    onReport(result, support);
   };
 
   return (
     <View style={themedStyles.container}>
-      {revealed ? (
-        <AppText testID="lesson-flow-model-sentence" variant="bodyLg">
-          {model}
-        </AppText>
-      ) : null}
-      <View style={themedStyles.row}>
-        <AppButton
-          accessibilityHint={t('lessonFlow.listen_model_hint')}
-          iconLeft="volume_up"
-          onPress={() => {
-            speak(model).catch(() => undefined);
-          }}
-          testID="lesson-flow-listen-model"
-          title={t('lessonFlow.listen_model')}
-          variant="secondary"
-        />
-        {revealed ? null : (
+      {hints === null ? (
+        <>
+          <AppText testID="lesson-flow-model-sentence" variant="bodyLg">
+            {model}
+          </AppText>
           <AppButton
-            accessibilityHint={t('lessonFlow.show_model_hint')}
-            onPress={() => setRevealed(true)}
-            testID="lesson-flow-show-model"
-            title={t('lessonFlow.show_model')}
-            variant="ghost"
+            accessibilityHint={t('lessonFlow.listen_model_hint')}
+            iconLeft="volume_up"
+            onPress={() => {
+              speak(model).catch(() => undefined);
+            }}
+            style={themedStyles.start}
+            testID="lesson-flow-listen-model"
+            title={t('lessonFlow.listen_model')}
+            variant="secondary"
           />
-        )}
-      </View>
+        </>
+      ) : (
+        <HintLadder
+          disabled={judged !== null}
+          onSupportChange={setSupport}
+          steps={hints}
+        />
+      )}
       {recorder.state === 'unavailable' ? (
         <AppText color="secondary" testID="lesson-flow-recorder-unavailable">
           {t('lessonFlow.recorder_unavailable')}
@@ -142,6 +144,9 @@ function makeStyles(theme: AppTheme) {
     },
     flex: {
       flex: 1,
+    },
+    start: {
+      alignSelf: 'flex-start',
     },
     row: {
       flexDirection: 'row',

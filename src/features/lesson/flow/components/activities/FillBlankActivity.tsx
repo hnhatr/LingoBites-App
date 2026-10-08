@@ -4,14 +4,17 @@ import {AppText} from '@ui/components/AppText';
 
 import {normalizeAnswer} from '@core/learning';
 import type {FillBlankContent} from '@core/schemas/activityContent';
+import type {LessonTask} from '@core/schemas/lesson';
 
 import type {EntryReport} from '../../logic/activityOutcome';
+import {hintLadder} from '../../logic/hints';
 import {ChoiceEntry} from '../ChoiceEntry';
 import {EntrySequence} from '../EntrySequence';
 import {TypedEntry} from '../TypedEntry';
 
 export type FillBlankActivityProps = {
   content: FillBlankContent;
+  task: LessonTask | null;
   onComplete: (reports: EntryReport[]) => void;
 };
 
@@ -20,6 +23,7 @@ const BLANK = '_____';
 /** A sentence with one blank: pick from the choices, or type the words. */
 export function FillBlankActivity({
   content,
+  task,
   onComplete,
 }: FillBlankActivityProps) {
   return (
@@ -43,6 +47,7 @@ export function FillBlankActivity({
             ) : (
               <TypedEntry
                 accepted={[normalizeAnswer(question.answer)]}
+                hints={hintLadder({task, model: question.answer})}
                 modelAnswer={question.answer}
                 onReport={report}
               />

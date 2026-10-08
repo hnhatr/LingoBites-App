@@ -7,15 +7,21 @@ import {AppText} from '@ui/components/AppText';
 import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import type {LessonSupportLevel} from '@core/schemas/sync';
+
 import type {EntryResult} from '../logic/activityOutcome';
 import {isAccepted} from '../logic/flowContent';
+import type {HintStep} from '../logic/hints';
+import {HintLadder} from './HintLadder';
 
 export type TypedEntryProps = {
   /** Normalised accepted answers (`acceptedFor` / `normalizeAnswer`). */
   accepted: readonly string[];
   /** Shown once the entry ends. */
   modelAnswer: string;
-  onReport: (result: EntryResult) => void;
+  /** Hints for this entry (PR 11); a right answer after one is supported. */
+  hints: readonly HintStep[];
+  onReport: (result: EntryResult, support: LessonSupportLevel) => void;
 };
 
 /**
@@ -23,19 +29,25 @@ export type TypedEntryProps = {
  * G9); a wrong answer can be corrected, which then counts as a retry. The
  * typed text never leaves this component.
  */
-export function TypedEntry({accepted, modelAnswer, onReport}: TypedEntryProps) {
+export function TypedEntry({
+  accepted,
+  modelAnswer,
+  hints,
+  onReport,
+}: TypedEntryProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [value, setValue] = useState('');
   const [wrongTries, setWrongTries] = useState(0);
   const [finished, setFinished] = useState<'right' | 'shown' | null>(null);
+  const [support, setSupport] = useState<LessonSupportLevel>('none');
 
   const check = () => {
     if (finished || value.trim() === '') return;
     if (isAccepted(value, accepted)) {
       setFinished('right');
-      onReport(wrongTries === 0 ? 'first_try' : 'after_retry');
+      onReport(wrongTries === 0 ? 'first_try' : 'after_retry', support);
     } else {
       setWrongTries(tries => tries + 1);
     }
@@ -69,7 +81,7 @@ export function TypedEntry({accepted, modelAnswer, onReport}: TypedEntryProps) {
             accessibilityHint={t('lessonFlow.show_answer_hint')}
             onPress={() => {
               setFinished('shown');
-              onReport('not_yet');
+              onReport('not_yet', support);
             }}
             testID="lesson-flow-show-answer"
             title={t('lessonFlow.show_answer')}
@@ -77,6 +89,11 @@ export function TypedEntry({accepted, modelAnswer, onReport}: TypedEntryProps) {
           />
         </View>
       ) : null}
+      <HintLadder
+        disabled={finished !== null}
+        onSupportChange={setSupport}
+        steps={hints}
+      />
       {finished === null && wrongTries > 0 ? (
         <AppText color="secondary" testID="lesson-flow-feedback-wrong">
           {t('lessonFlow.feedback_wrong_typed')}

@@ -9,13 +9,18 @@ import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {RolePlayContent} from '@core/schemas/activityContent';
+import type {LessonTask} from '@core/schemas/lesson';
 
 import type {EntryReport} from '../../logic/activityOutcome';
+import type {FlowItems} from '../../logic/flowContent';
+import {hintLadder} from '../../logic/hints';
 import {EntrySequence} from '../EntrySequence';
 import {SpeakSelfCheck} from '../SpeakSelfCheck';
 
 export type RolePlayActivityProps = {
   content: RolePlayContent;
+  items: FlowItems;
+  task: LessonTask | null;
   onComplete: (reports: EntryReport[]) => void;
 };
 
@@ -25,7 +30,12 @@ export type RolePlayActivityProps = {
  * model line hidden until asked for. (PR 11 turns step 5 into independent
  * use without a model.)
  */
-export function RolePlayActivity({content, onComplete}: RolePlayActivityProps) {
+export function RolePlayActivity({
+  content,
+  items,
+  task,
+  onComplete,
+}: RolePlayActivityProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
@@ -79,8 +89,14 @@ export function RolePlayActivity({content, onComplete}: RolePlayActivityProps) {
               })}
             </AppText>
             <SpeakSelfCheck
+              hints={hintLadder({
+                task,
+                model: turn.textEn,
+                frame: turn.patternItemId
+                  ? items.get(turn.patternItemId)?.text
+                  : null,
+              })}
               model={turn.textEn}
-              modelVisible={false}
               onReport={report}
             />
           </>

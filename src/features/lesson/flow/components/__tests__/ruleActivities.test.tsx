@@ -12,7 +12,7 @@ import {
   textOf,
 } from '@test/support/lessonFlow';
 
-import {flowActivity, flowItems} from '../../logic/flowContent';
+import {flowActivity, flowItems, flowTask} from '../../logic/flowContent';
 import {ActivityRunner} from '../ActivityRunner';
 
 const snapshot = seedSnapshot();
@@ -42,6 +42,7 @@ function run(block: LessonBlock) {
       block={block}
       items={items}
       latestOutcome={null}
+      task={flowTask(snapshot, flowActivity(block)!.taskId)}
       onFinished={onFinished}
     />,
   );
@@ -201,5 +202,67 @@ describe('rule-graded activities', () => {
       activityBlock({activityKind: 'translation', content: {prompts: []}}),
     );
     expect(has(tree, 'lesson-flow-activity-empty')).toBe(true);
+  });
+
+  it('multiple choice: taking away a wrong option is a first-level hint', () => {
+    const {tree, onFinished} = run(
+      activityBlock({
+        activityKind: 'multiple_choice',
+        content: {
+          questions: [
+            {
+              id: 'q1',
+              promptVi: 'Chọn "trà"',
+              options: [
+                {id: 'o1', text: 'tea'},
+                {id: 'o2', text: 'milk'},
+                {id: 'o3', text: 'juice'},
+              ],
+              correctOptionId: 'o1',
+            },
+          ],
+        },
+      }),
+    );
+    press(tree, 'lesson-flow-hint-eliminate');
+    expect(has(tree, 'lesson-flow-hint-eliminate')).toBe(false);
+    press(tree, 'lesson-flow-option-0');
+    next(tree);
+    expect(onFinished).toHaveBeenCalledWith(
+      'pass_with_support',
+      'hint_1',
+      expect.any(Number),
+    );
+  });
+
+  it('translation: a right answer after two hints passes with hint_2', () => {
+    const {tree, onFinished} = run(
+      activityBlock({
+        activityKind: 'translation',
+        content: {
+          sentences: [
+            {
+              id: 's1',
+              textVi: 'Cho tôi một trà cỡ lớn.',
+              modelEn: 'Can I have a large tea, please?',
+              patternItemId: pattern.id,
+            },
+          ],
+        },
+      }),
+    );
+    press(tree, 'lesson-flow-hint');
+    expect(textOf(tree, 'lesson-flow-hint-1')).toContain('Can …');
+    press(tree, 'lesson-flow-hint');
+    expect(textOf(tree, 'lesson-flow-hint-2')).toContain(
+      'Can I have a {size} {drink}, please?',
+    );
+    type(tree, 'can I have a large tea, please');
+    next(tree);
+    expect(onFinished).toHaveBeenCalledWith(
+      'pass_with_support',
+      'hint_2',
+      expect.any(Number),
+    );
   });
 });

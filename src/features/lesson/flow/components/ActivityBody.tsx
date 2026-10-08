@@ -12,6 +12,7 @@ import type {
   SpeakingDrillContent,
   TranslationContent,
 } from '@core/schemas/activityContent';
+import type {LessonTask} from '@core/schemas/lesson';
 
 import type {EntryReport} from '../logic/activityOutcome';
 import type {FlowActivity, FlowItems} from '../logic/flowContent';
@@ -26,6 +27,8 @@ export type ActivityBodyProps = {
   activity: FlowActivity;
   content: ActivityContent;
   items: FlowItems;
+  /** The task the block runs, for its hint levels. */
+  task: LessonTask | null;
   onComplete: (reports: EntryReport[]) => void;
 };
 
@@ -34,6 +37,7 @@ export function ActivityBody({
   activity,
   content,
   items,
+  task,
   onComplete,
 }: ActivityBodyProps) {
   const {t} = useTranslation();
@@ -48,6 +52,7 @@ export function ActivityBody({
     case 'speaking_drill':
       return (
         <SpeakingDrillActivity
+          task={task}
           content={content as SpeakingDrillContent}
           items={items}
           onComplete={onComplete}
@@ -56,6 +61,8 @@ export function ActivityBody({
     case 'role_play':
       return (
         <RolePlayActivity
+          task={task}
+          items={items}
           content={content as RolePlayContent}
           onComplete={onComplete}
         />
@@ -70,6 +77,7 @@ export function ActivityBody({
     case 'fill_blank':
       return (
         <FillBlankActivity
+          task={task}
           content={content as FillBlankContent}
           onComplete={onComplete}
         />
@@ -77,6 +85,7 @@ export function ActivityBody({
     case 'translation':
       return (
         <TranslationActivity
+          task={task}
           content={content as TranslationContent}
           items={items}
           onComplete={onComplete}

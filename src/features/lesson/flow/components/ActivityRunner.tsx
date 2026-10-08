@@ -8,7 +8,7 @@ import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import type {LessonBlock} from '@core/schemas/lesson';
+import type {LessonBlock, LessonTask} from '@core/schemas/lesson';
 import type {
   LessonAttemptOutcome,
   LessonSupportLevel,
@@ -22,6 +22,7 @@ export type ActivityRunnerProps = {
   block: LessonBlock;
   activity: FlowActivity;
   items: FlowItems;
+  task: LessonTask | null;
   /** Outcome of the newest attempt on this block, if any. */
   latestOutcome: LessonAttemptOutcome | null;
   /** Saves the attempt; false when it could not be stored. */
@@ -41,6 +42,7 @@ export function ActivityRunner({
   block,
   activity,
   items,
+  task,
   latestOutcome,
   onFinished,
 }: ActivityRunnerProps) {
@@ -96,6 +98,7 @@ export function ActivityRunner({
             items={items}
             key={runKey}
             onComplete={complete}
+            task={task}
           />
         ) : (
           <View style={themedStyles.result}>

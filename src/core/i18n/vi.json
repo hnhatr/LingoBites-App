@@ -784,7 +784,16 @@
     "review_remembered_hint": "Ghi là bạn còn nhớ thẻ này",
     "review_forgot": "Quên",
     "review_forgot_hint": "Ghi là bạn đã quên thẻ này",
-    "review_rated": "Đã ôn thẻ này"
+    "review_rated": "Đã ôn thẻ này",
+    "hint": "Gợi ý ({{opened}}/{{total}})",
+    "hint_hint": "Mở mức gợi ý tiếp theo; dùng gợi ý thì tính là có hỗ trợ",
+    "hint_type_replay": "Nghe lại",
+    "hint_type_keyword": "Từ khoá",
+    "hint_type_pattern": "Mẫu câu",
+    "hint_type_model": "Câu mẫu",
+    "hint_type_eliminate": "Loại bớt",
+    "hint_eliminate": "Gợi ý: loại một phương án sai",
+    "hint_eliminate_hint": "Bỏ đi một phương án sai; tính là có hỗ trợ"
   },
   "course": {
     "courses_title": "Khóa học",

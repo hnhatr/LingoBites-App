@@ -7,15 +7,18 @@ import {Chip} from '@ui/components/Chip';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {SpeakingDrillContent} from '@core/schemas/activityContent';
+import type {LessonTask} from '@core/schemas/lesson';
 
 import type {EntryReport} from '../../logic/activityOutcome';
 import {comboSentence, type FlowItems} from '../../logic/flowContent';
+import {hintLadder} from '../../logic/hints';
 import {EntrySequence} from '../EntrySequence';
 import {SpeakSelfCheck} from '../SpeakSelfCheck';
 
 export type SpeakingDrillActivityProps = {
   content: SpeakingDrillContent;
   items: FlowItems;
+  task: LessonTask | null;
   onComplete: (reports: EntryReport[]) => void;
 };
 
@@ -26,6 +29,7 @@ export type SpeakingDrillActivityProps = {
 export function SpeakingDrillActivity({
   content,
   items,
+  task,
   onComplete,
 }: SpeakingDrillActivityProps) {
   const {theme} = useAppTheme();
@@ -44,6 +48,11 @@ export function SpeakingDrillActivity({
         onComplete={onComplete}
         renderEntry={(index, report) => {
           const combo = content.combos[index]!;
+          const model = comboSentence(
+            items,
+            content.patternItemId,
+            combo.values,
+          );
           return (
             <>
               <AppText color="secondary">
@@ -58,12 +67,8 @@ export function SpeakingDrillActivity({
                 ))}
               </View>
               <SpeakSelfCheck
-                model={comboSentence(
-                  items,
-                  content.patternItemId,
-                  combo.values,
-                )}
-                modelVisible={false}
+                hints={hintLadder({task, model, frame})}
+                model={model}
                 onReport={report}
               />
             </>

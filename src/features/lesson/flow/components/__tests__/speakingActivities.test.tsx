@@ -11,7 +11,7 @@ import {
   textOf,
 } from '@test/support/lessonFlow';
 
-import {flowActivity, flowItems} from '../../logic/flowContent';
+import {flowActivity, flowItems, flowTask} from '../../logic/flowContent';
 import {ActivityRunner} from '../ActivityRunner';
 
 const mockSpeak = jest.fn((_text: string) => Promise.resolve({ok: true}));
@@ -50,6 +50,7 @@ function run(block: LessonBlock) {
       block={block}
       items={items}
       latestOutcome={null}
+      task={flowTask(snapshot, flowActivity(block)!.taskId)}
       onFinished={onFinished}
     />,
   );
@@ -127,18 +128,32 @@ describe('speaking activities (self-check)', () => {
     expect(has(tree, 'lesson-flow-entry-next')).toBe(true);
   });
 
-  it('speaking drill: the model sentence is the frame filled in, hidden at first', () => {
-    const {tree} = run(blockOn(4));
+  it("speaking drill: the guided task's hints open one by one and count as support", () => {
+    const {tree, onFinished} = run(blockOn(4));
     expect(has(tree, 'lesson-flow-model-sentence')).toBe(false);
-    press(tree, 'lesson-flow-listen-model');
+    expect(has(tree, 'lesson-flow-listen-model')).toBe(false);
+    press(tree, 'lesson-flow-hint');
+    expect(textOf(tree, 'lesson-flow-hint-1')).toContain('Nghe lại câu mẫu.');
     expect(mockSpeak).toHaveBeenCalledWith(
       'Can I have a small coffee, please?',
     );
-    press(tree, 'lesson-flow-show-model');
-    expect(textOf(tree, 'lesson-flow-model-sentence')).toBe(
+    press(tree, 'lesson-flow-hint');
+    press(tree, 'lesson-flow-hint');
+    expect(textOf(tree, 'lesson-flow-hint-3')).toContain(
       'Can I have a small coffee, please?',
     );
-    expect(textOf(tree, 'lesson-flow-entry-count')).toBe('Câu 1/4');
+    expect(has(tree, 'lesson-flow-hint')).toBe(false);
+    press(tree, 'lesson-flow-self-pass');
+    press(tree, 'lesson-flow-entry-next');
+    for (let i = 0; i < 3; i += 1) {
+      press(tree, 'lesson-flow-self-pass');
+      press(tree, 'lesson-flow-entry-next');
+    }
+    expect(onFinished).toHaveBeenCalledWith(
+      'pass_with_support',
+      'model',
+      expect.any(Number),
+    );
   });
 
   it('role play: shows the other speaker, then the learner turn', () => {

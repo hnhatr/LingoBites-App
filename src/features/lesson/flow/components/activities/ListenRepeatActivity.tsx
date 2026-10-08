@@ -30,8 +30,8 @@ export function ListenRepeatActivity({
               {prompt.textVi}
             </AppText>
             <SpeakSelfCheck
+              hints={null}
               model={prompt.textEn}
-              modelVisible
               onReport={report}
             />
           </>

@@ -13,7 +13,7 @@ import type {
 import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 
 import {CanonicalBlockView} from '../../player/components/CanonicalBlockView';
-import {flowActivity, type FlowItems} from '../logic/flowContent';
+import {flowActivity, type FlowItems, flowTask} from '../logic/flowContent';
 import {blocksOfStep} from '../logic/practiceCompletion';
 import {ActivityRunner} from './ActivityRunner';
 
@@ -77,6 +77,7 @@ export function StepView({
             items={items}
             key={block.id}
             latestOutcome={latest.get(block.id) ?? null}
+            task={flowTask(snapshot, activity.taskId)}
             onFinished={(outcome, supportLevel, durationMs) =>
               onFinished(block, outcome, supportLevel, durationMs)
             }
