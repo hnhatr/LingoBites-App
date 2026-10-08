@@ -1,6 +1,6 @@
 # PR 7 – Server: map item AI vào danh mục, dọn mô hình cũ, bỏ versioning contract
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE**: G1–G8 đã duyệt; commit server `900f6d5` → `d898ea6` (xem §12 cho các điểm lệch).
 > Ngày lập: 2026-10-08. Repo: `LingoBites-Server` (+ một phần nhỏ `admin-web`). Nhánh: `claude/optimistic-bell-mfgk44`.
 > Đây là PR cuối của Stage 1 trong `2026-10-07-backward-design-curriculum-plan.md`, gồm mục Server 7–8 và lịch xoá ở §9 của plan PR 2 / §6.4 của plan PR 4.
 
@@ -189,3 +189,31 @@ export async function mapAnalysesToCatalog(
 - **Chất lượng item AI:** nghĩa hoặc IPA sai sẽ vào danh mục dưới dạng nháp. Bài curriculum chỉ dùng được sau khi admin publish (validator chặn), nên lỗi không tới người học bài curriculum.
 - **`lesson_items` cũ sau khi sửa câu:** từ không còn trong câu vẫn gắn với bài. Với bài người học, dữ liệu này không lên snapshot (G1). Với bài admin, admin gỡ ở tab Item.
 - **Chi phí AI:** không đổi. Mapping chỉ dùng kết quả enrich và phân tích sẵn có, không gọi AI thêm.
+
+## 12. Kết quả code và điểm lệch so với plan
+
+**Kiểm tra cuối (server):**
+- `tsc` sạch.
+- Unit 413 pass (707 test; phần cần DB tự skip).
+- `test:db` 241/241 pass.
+- `prisma migrate diff` (DB đã migrate → schema): rỗng.
+- admin-web: lint / typecheck / prettier sạch, Vitest 123/123, Playwright 16/16.
+
+**Bên app:** 3 fixture khoá SHA vẫn trùng byte với server; test contract của app 43/43.
+
+**Điểm lệch so với plan:**
+- **Thứ tự commit:**
+  - Commit "bỏ contract v2" (§9 mục 5) làm **trước** commit xoá bảng (mục 4), vì phần giao bài còn đọc `learning_items` cho `items[]`.
+  - Thêm một commit e2e (`d898ea6`).
+- **`test/learningItems.test.ts` xoá sớm ở commit 2**, vì các nơi gọi `rebuildLearningItems` đã bỏ ở đó. Hai test thuần còn lại xoá ở commit 4.
+- **Phân tích câu theo yêu cầu chỉ map cho bài `origin = learner`.** Plan chưa nói rõ điểm này. Nếu map cả bài curriculum thì một người học bấm phân tích là đã gắn được item AI nháp vào bài đã publish.
+- **Bài admin tạo bằng pipeline:** thanh kiểm tra liệt kê các item AI nháp ("Publish X before publishing the lesson."), đúng G4. Hai test Playwright được sửa theo:
+  - `lesson-spec` gỡ các item AI trước khi thêm pattern;
+  - nút Publish so khớp chính xác (`exact: true`), vì giờ có thêm các nút "Publish X…".
+- **`prisma/schema.prisma` sửa tay, không chạy `prisma format`**, để không căn lề lại các model không liên quan. Validate pass, diff với DB rỗng.
+- **Trường `spec`, `lesson_items`, `tasks` trong schema snapshot vẫn để `optional`**, để fixture cũ không có các trường này vẫn parse được. Server luôn gửi đủ.
+- **`test/adminContentDelete.test.ts`** (không nằm trong `test:db`):
+  - Test "vocabulary and media deletes" đổi thành "media deletes" vì không còn vocabulary.
+  - Test "admin hard deletes cascade…" **vẫn fail như trước PR này** (lỗi có sẵn từ PR 4, không thuộc phạm vi).
+- **`yarn lint` của server vẫn báo 1 lỗi có sẵn** ở `test/ipa.test.ts:84` (`no-explicit-any`). Lỗi này có từ trước, file không đổi.
+- **Fixture `test/fixtures/learning-item-keys.json` giữ nguyên tên.** Nó vẫn khoá quy tắc `normalizeItemKey`, dùng chung với app.
