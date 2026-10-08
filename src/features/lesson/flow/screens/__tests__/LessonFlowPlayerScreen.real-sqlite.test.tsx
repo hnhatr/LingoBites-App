@@ -170,5 +170,31 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     });
     const again = renderScreen();
     expect(textOf(again.tree, 'lesson-flow-step-title')).toContain('Bước 5');
+
+    // Step 5: independent use, judged against the task's criteria (PR 11).
+    expect(has(again.tree, 'lesson-flow-situation')).toBe(true);
+    press(again.tree, 'lesson-flow-independent-done');
+    for (const criterion of ['purpose', 'content', 'clarity', 'independence']) {
+      press(again.tree, `lesson-flow-criterion-${criterion}`);
+    }
+    press(again.tree, 'lesson-flow-criteria-save');
+    const last = getDatabase().execute(
+      `SELECT payload_json FROM sync_outbox
+        WHERE event_type = 'activity_attempts'
+        ORDER BY created_at DESC LIMIT 1;`,
+    ).rows!;
+    expect(
+      LessonActivityAttemptPayloadSchema.parse(
+        JSON.parse(
+          String((last.item(0) as {payload_json: string}).payload_json),
+        ),
+      ),
+    ).toMatchObject({
+      activity: 'role_play',
+      step: 5,
+      support_level: 'none',
+      outcome: 'pass_independent',
+      assessed_by: 'self',
+    });
   });
 });

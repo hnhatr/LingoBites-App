@@ -12,8 +12,8 @@ import type {LessonSupportLevel} from '@core/schemas/sync';
 
 import type {EntryResult} from '../logic/activityOutcome';
 import type {HintStep} from '../logic/hints';
-import {useSelfCheckRecorder} from '../logic/useSelfCheckRecorder';
 import {HintLadder} from './HintLadder';
+import {RecorderControls} from './RecorderControls';
 
 export type SpeakSelfCheckProps = {
   /** The model sentence (spoken with TTS, shown when revealed). */
@@ -36,7 +36,6 @@ export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const recorder = useSelfCheckRecorder();
   const [support, setSupport] = useState<LessonSupportLevel>('none');
   const [judged, setJudged] = useState<EntryResult | null>(null);
 
@@ -72,45 +71,7 @@ export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
           steps={hints}
         />
       )}
-      {recorder.state === 'unavailable' ? (
-        <AppText color="secondary" testID="lesson-flow-recorder-unavailable">
-          {t('lessonFlow.recorder_unavailable')}
-        </AppText>
-      ) : (
-        <View style={themedStyles.row}>
-          {recorder.state === 'recording' ? (
-            <AppButton
-              accessibilityHint={t('lessonFlow.stop_recording_hint')}
-              onPress={recorder.stop}
-              testID="lesson-flow-stop-recording"
-              title={t('lessonFlow.stop_recording')}
-              variant="secondary-coral"
-            />
-          ) : (
-            <AppButton
-              accessibilityHint={t('lessonFlow.record_hint')}
-              iconLeft="mic"
-              onPress={recorder.start}
-              testID="lesson-flow-record"
-              title={
-                recorder.state === 'recorded'
-                  ? t('lessonFlow.record_again')
-                  : t('lessonFlow.record')
-              }
-              variant="outline"
-            />
-          )}
-          {recorder.state === 'recorded' ? (
-            <AppButton
-              accessibilityHint={t('lessonFlow.play_recording_hint')}
-              onPress={recorder.play}
-              testID="lesson-flow-play-recording"
-              title={t('lessonFlow.play_recording')}
-              variant="outline"
-            />
-          ) : null}
-        </View>
-      )}
+      <RecorderControls />
       <AppText color="secondary" variant="label">
         {t('lessonFlow.self_check_question')}
       </AppText>

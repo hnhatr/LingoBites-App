@@ -14,8 +14,10 @@ import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 
 import {CanonicalBlockView} from '../../player/components/CanonicalBlockView';
 import {flowActivity, type FlowItems, flowTask} from '../logic/flowContent';
+import {isIndependentBlock} from '../logic/independent';
 import {blocksOfStep} from '../logic/practiceCompletion';
 import {ActivityRunner} from './ActivityRunner';
+import {IndependentTaskView} from './IndependentTaskView';
 
 export type StepViewProps = {
   snapshot: LessonSnapshot;
@@ -70,6 +72,28 @@ export function StepView({
     <View style={themedStyles.container}>
       {blocks.map(block => {
         const activity = flowActivity(block);
+        const task = activity ? flowTask(snapshot, activity.taskId) : null;
+        if (
+          activity &&
+          task &&
+          task.response_mode !== 'choose' &&
+          isIndependentBlock(block, task)
+        ) {
+          return (
+            <IndependentTaskView
+              activity={activity}
+              block={block}
+              items={items}
+              key={block.id}
+              latestOutcome={latest.get(block.id) ?? null}
+              onFinished={(outcome, supportLevel, durationMs) =>
+                onFinished(block, outcome, supportLevel, durationMs)
+              }
+              snapshot={snapshot}
+              task={task}
+            />
+          );
+        }
         return activity ? (
           <ActivityRunner
             activity={activity}
@@ -77,7 +101,7 @@ export function StepView({
             items={items}
             key={block.id}
             latestOutcome={latest.get(block.id) ?? null}
-            task={flowTask(snapshot, activity.taskId)}
+            task={task}
             onFinished={(outcome, supportLevel, durationMs) =>
               onFinished(block, outcome, supportLevel, durationMs)
             }
