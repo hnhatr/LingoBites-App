@@ -109,3 +109,23 @@ export function expandPattern(
   }
   return results;
 }
+
+/**
+ * App-only (not in the Server copy): the frame with each slot shown as its
+ * label (`Can I have a … …, please?` without labels). A malformed frame is
+ * returned unchanged.
+ */
+export function renderFrameWithLabels(
+  text: string,
+  labels: Record<string, string> = {},
+): string {
+  const parsed = parseFrame(text);
+  if (!parsed.ok) {
+    return text;
+  }
+  return parsed.segments
+    .map(segment =>
+      segment.type === 'text' ? segment.value : labels[segment.name] ?? '…',
+    )
+    .join('');
+}

@@ -14,6 +14,8 @@ import {showToast} from '@ui/components/toast';
 
 import {parseItemCode} from '@core/learning';
 
+import type {LessonPatternEntry} from './lessonHubContent';
+
 /** A word the learner can turn into a flashcard from the lesson. */
 export type SavableVocabulary = {
   id: string;
@@ -28,6 +30,12 @@ export type SavableVocabulary = {
 export type VocabularySaveControl = {
   isSaved: (word: string) => boolean;
   onToggle: (item: SavableVocabulary) => void;
+};
+
+/** Save state + toggle for the lesson's sentence patterns (by item code). */
+export type PatternSaveControl = {
+  isSaved: (itemKey: string) => boolean;
+  onToggle: (pattern: LessonPatternEntry) => void;
 };
 
 /** Save state + toggle for the lesson's grammar points. */

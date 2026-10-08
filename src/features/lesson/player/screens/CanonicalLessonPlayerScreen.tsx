@@ -46,6 +46,7 @@ import {
 import {CanonicalLessonPlayer} from '../components/CanonicalLessonPlayer';
 import {LessonDisplayToggles} from '../components/LessonDisplayToggles';
 import {LessonGrammarSection} from '../components/LessonGrammarSection';
+import {LessonPatternSection} from '../components/LessonPatternSection';
 import {LessonVocabularySection} from '../components/LessonVocabularySection';
 import type {
   SentenceAnalysisPanelError,
@@ -54,6 +55,7 @@ import type {
 import type {YouTubePlayerRef} from '../components/YouTubePlayer';
 import {
   collectLessonGrammar,
+  collectLessonPatterns,
   collectLessonVocabulary,
   mergeAnalyses,
 } from '../logic/lessonHubContent';
@@ -220,6 +222,10 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const grammar = useMemo(
     () => (snapshot ? collectLessonGrammar(snapshot, analyses) : []),
     [snapshot, analyses],
+  );
+  const patterns = useMemo(
+    () => (snapshot ? collectLessonPatterns(snapshot) : []),
+    [snapshot],
   );
 
   const showHub = snapshot !== null && !isYouTube && view === 'hub';
@@ -439,6 +445,10 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             entries={grammar}
             saveControl={savedItems.grammar}
           />
+        );
+      case 'patterns':
+        return (
+          <LessonPatternSection entries={patterns} onSpeakText={handleSpeak} />
         );
       default:
         return null;

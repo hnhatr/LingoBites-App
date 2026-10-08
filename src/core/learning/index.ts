@@ -28,6 +28,7 @@ export {
   parseFrame,
   type ParsedFrame,
   type PatternSlot,
+  renderFrameWithLabels,
 } from './patternFrame';
 export {
   buildPracticeSource,
