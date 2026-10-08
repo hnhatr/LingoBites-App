@@ -48,8 +48,14 @@ for var_name in ANDROID_KEYSTORE_FILE ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIA
   fi
 done
 
-if [ ! -f "$ANDROID_KEYSTORE_FILE" ]; then
-  echo "ANDROID_KEYSTORE_FILE does not exist: $ANDROID_KEYSTORE_FILE" >&2
+# Relative keystore paths resolve against android/app, the same way Gradle's file() does.
+case "$ANDROID_KEYSTORE_FILE" in
+  /*) KEYSTORE_PATH="$ANDROID_KEYSTORE_FILE" ;;
+  *) KEYSTORE_PATH="$ROOT_DIR/android/app/$ANDROID_KEYSTORE_FILE" ;;
+esac
+
+if [ ! -f "$KEYSTORE_PATH" ]; then
+  echo "ANDROID_KEYSTORE_FILE does not exist: $KEYSTORE_PATH" >&2
   exit 1
 fi
 
