@@ -810,7 +810,12 @@
     "criterion_clarity": "The listener could understand me",
     "criterion_independence": "I did it without looking at a model",
     "show_reference": "See reference sentences",
-    "show_reference_hint": "Shows model sentences to learn from; does not change the result"
+    "show_reference_hint": "Shows model sentences to learn from; does not change the result",
+    "result_practice": "Practice",
+    "result_independent": "Use it on your own",
+    "support_hint_1": "hint level 1",
+    "support_hint_2": "hint level 2",
+    "support_model": "saw the model"
   },
   "course": {
     "courses_title": "Courses",

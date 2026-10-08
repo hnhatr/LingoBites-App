@@ -196,5 +196,18 @@ describe('LessonFlowPlayerScreen (shell)', () => {
       outcome: 'pass_independent',
       assessed_by: 'self',
     });
+
+    // Step 6 keeps practice and independent use apart (G7).
+    press(again.tree, 'lesson-flow-step-6');
+    expect(has(again.tree, 'lesson-flow-result-practice')).toBe(true);
+    const stepFive = snapshot.blocks.find(
+      block => block.type === 'activity' && block.step === 5,
+    )!;
+    expect(textOf(again.tree, 'lesson-flow-result-independent')).toContain(
+      'Vận dụng',
+    );
+    expect(textOf(again.tree, `lesson-flow-result-${stepFive.id}`)).toContain(
+      'Đạt, tự làm được',
+    );
   });
 });

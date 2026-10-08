@@ -39,6 +39,16 @@ export function StepResult({
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const latest = useMemo(() => latestOutcomes(attempts), [attempts]);
+  /** Support level of the newest attempt per block (newest first). */
+  const support = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const attempt of attempts) {
+      if (!map.has(attempt.blockId)) {
+        map.set(attempt.blockId, attempt.supportLevel);
+      }
+    }
+    return map;
+  }, [attempts]);
   const rows = useMemo(
     () =>
       snapshot.blocks
@@ -68,26 +78,46 @@ export function StepResult({
             : t('lessonFlow.practice_remaining', {count: practiceRemaining})}
         </AppText>
       </AppCard>
-      {rows.map(({block, activity}) => {
-        const outcome = latest.get(block.id);
-        return (
+      {(
+        [
+          ['practice', rows.filter(({block}) => (block.step ?? 0) < 5)],
+          ['independent', rows.filter(({block}) => block.step === 5)],
+        ] as const
+      ).map(([part, partRows]) =>
+        partRows.length === 0 ? null : (
           <View
-            key={block.id}
-            style={themedStyles.row}
-            testID={`lesson-flow-result-${block.id}`}
+            key={part}
+            style={themedStyles.container}
+            testID={`lesson-flow-result-${part}`}
           >
-            <AppText style={themedStyles.flex} variant="body">
-              {block.step}.{' '}
-              {activity.titleVi || t(`lessonFlow.kind_${activity.kind}`)}
-            </AppText>
-            <AppText color="secondary" variant="label">
-              {outcome
-                ? t(`lessonFlow.outcome_${outcome}`)
-                : t('lessonFlow.outcome_none')}
-            </AppText>
+            <AppText variant="h3">{t(`lessonFlow.result_${part}`)}</AppText>
+            {partRows.map(({block, activity}) => {
+              const outcome = latest.get(block.id);
+              const level = support.get(block.id);
+              return (
+                <View
+                  key={block.id}
+                  style={themedStyles.row}
+                  testID={`lesson-flow-result-${block.id}`}
+                >
+                  <AppText style={themedStyles.flex} variant="body">
+                    {block.step}.{' '}
+                    {activity.titleVi || t(`lessonFlow.kind_${activity.kind}`)}
+                  </AppText>
+                  <AppText color="secondary" variant="label">
+                    {outcome
+                      ? t(`lessonFlow.outcome_${outcome}`)
+                      : t('lessonFlow.outcome_none')}
+                    {level && level !== 'none'
+                      ? ` · ${t(`lessonFlow.support_${level}`)}`
+                      : ''}
+                  </AppText>
+                </View>
+              );
+            })}
           </View>
-        );
-      })}
+        ),
+      )}
       {firstOpen?.block.step != null ? (
         <AppButton
           accessibilityHint={t('lessonFlow.open_unfinished_hint')}

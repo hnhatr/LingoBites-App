@@ -810,7 +810,12 @@
     "criterion_clarity": "Người nghe hiểu được mình",
     "criterion_independence": "Mình không nhìn câu mẫu",
     "show_reference": "Xem câu tham khảo",
-    "show_reference_hint": "Hiện câu mẫu để học; không đổi kết quả"
+    "show_reference_hint": "Hiện câu mẫu để học; không đổi kết quả",
+    "result_practice": "Luyện tập",
+    "result_independent": "Vận dụng",
+    "support_hint_1": "có gợi ý mức 1",
+    "support_hint_2": "có gợi ý mức 2",
+    "support_model": "đã xem câu mẫu"
   },
   "course": {
     "courses_title": "Khóa học",
