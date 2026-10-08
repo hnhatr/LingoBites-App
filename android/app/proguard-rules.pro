@@ -19,3 +19,6 @@
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
+
+# Move renamed classes into one package for smaller DEX (Play Console "Repackage Classes").
+-repackageclasses
