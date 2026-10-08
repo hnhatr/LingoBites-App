@@ -5,7 +5,7 @@
 > - Thiết kế chốt cho âm thanh và chấm bài: `2026-10-08-stage3-audio-evaluation-analysis.md`.
 > - Plan tổng: `2026-10-07-backward-design-curriculum-plan.md`. Lộ trình 8 bước: `2026-10-07-learning-cycle-requirements-roadmap.md`.
 >
-> Cập nhật mục 6 "Theo dõi tiến độ" mỗi khi xong một việc.
+> Cập nhật mục 6 "Theo dõi tiến độ" mỗi khi xong một việc. Mục 5 "Bảng chốt" là nơi team ghi quyết định; ô trống thì dùng đề xuất.
 
 ---
 
@@ -152,7 +152,7 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
   - dọn bản ghi;
   - test tích hợp OpenAI tắt mặc định.
 - **Xong khi:** upload file `.m4a` thì có `evaluations` trong khoảng 20 giây (STT mock); script đo chạy được trên bộ mẫu.
-- **Trước khi bật flag:** chạy script trên ~40 bản ghi có nhãn (T2). Tỷ lệ **chấm oan phải dưới 10%**.
+- **Trước khi bật flag:** chạy script trên ~40 bản ghi có nhãn (T2). Phải đạt ngưỡng A3 (mục 5.2): **chấm oan dưới 10%**, chấm lọt dưới 15%.
 
 #### PR 14 – App: chấm bước 5
 
@@ -258,22 +258,96 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
 ---
 
-## 5. Team cần cung cấp / chốt
+## 5. Bảng chốt (team điền trước khi làm)
 
-| # | Việc | Cần cho | Mặc định nếu chưa chốt |
-|---|---|---|---|
-| T1 | API key OpenAI cho STT (đặt trong env, không đưa vào repo) | PR 13 | Dùng chung `AI_API_KEY` |
-| T2 | ~40 bản ghi mẫu có nhãn "đạt / chưa": người lớn + trẻ em, bài L01 | Bật flag sau PR 13 | Flag tắt |
-| T3 | Khoảng ôn 1–3–7–14–30 ngày; "ổn định" = đạt 2 lần liên tiếp ở mức ≥ 7 ngày | PR 15 | Dùng đề xuất này |
-| T4 | Duyệt câu consent + cập nhật chính sách quyền riêng tư (bên xử lý giọng nói, xoá sau 30 ngày) | PR 14 | Câu ở §5 file thiết kế |
-| Q5 | Item `draft` do AI tạo có vào danh mục chung không | Stage 4 | Không, chờ admin duyệt |
-| Q6 | Item dùng chung trẻ em / người lớn hay tách | Bước 1 | Dùng chung |
-| Q7 | Bài `extended` có tính vào lịch ôn item không | PR 15 | Không |
-| Q8 | Ai được tự sinh bài, giới hạn / ngày | S4.3 | — |
-| Q9 | Admin có "nhận về" bài AI sinh từ người học không | S4.2 | — |
-| Q10 | Danh mục tình huống chuẩn | S5.1 | — |
-| Q11 | Nhà cung cấp AI + ngân sách sinh bài | Stage 4 | — |
-| Bước 0 | Cấu hình sản phẩm (mục Giai đoạn 2) | Bước 1, 7, kinh doanh | — |
+**Cách dùng:**
+- Mỗi dòng là một điều sẽ phải hỏi khi code. Cột **"Đề xuất"** là phương án tôi khuyên.
+- Team ghi vào cột **"Chốt"**: `OK` (theo đề xuất) hoặc ghi phương án khác.
+- **Ô "Chốt" còn trống lúc bắt đầu PR thì dùng "Đề xuất"**, không dừng lại để hỏi. Ghi lại phương án đã dùng vào phần "điểm lệch" của plan PR.
+- Dòng có ⚠️ là việc chỉ team cung cấp được (key, dữ liệu, chữ pháp lý). Thiếu thì PR vẫn code được, nhưng chưa bật cho người dùng.
+
+### 5.1 Dữ liệu và đầu vào team cung cấp
+
+| # | Cần gì | Đề xuất | Cần cho | Chốt |
+|---|---|---|---|---|
+| T1 ⚠️ | API key OpenAI cho STT (đặt trong env server, không đưa vào repo) | Dùng chung `AI_API_KEY` hiện có | PR 13 | |
+| T2 ⚠️ | ~40 bản ghi mẫu có nhãn "người chấm: đạt / chưa" | 20 người lớn + 20 trẻ em; bài L01 (nói) + 10 câu viết của L03; mỗi nhóm có câu đúng, sai mẫu, thiếu món, ấp úng | Bật flag sau PR 13 | |
+| T4 ⚠️ | Câu consent "Chấm bài nói bằng máy" + mục giọng nói trong chính sách quyền riêng tư | Câu ở §5 file thiết kế Stage 3; bên xử lý: OpenAI; xoá sau 30 ngày | PR 14 | |
+| T5 ⚠️ | Người duyệt nội dung (ai bấm publish bài / unit) | 1 người phụ trách nội dung; dev không publish nội dung thật | Giai đoạn 2 | |
+
+### 5.2 Stage 3 – chấm bài (PR 12–14)
+
+| # | Câu hỏi | Đề xuất | Cần cho | Chốt |
+|---|---|---|---|---|
+| A1 | Model STT | Đo cả `gpt-4o-mini-transcribe` và `gpt-4o-transcribe` trên bộ T2; chọn bản rẻ hơn nếu chấm oan < 10%. Đặt bằng env `STT_MODEL`. | PR 13 | |
+| A2 | Ngưỡng content / clarity mặc định | 0.80 / 0.60; purpose = đủ item bắt buộc; independence = không dùng gợi ý | PR 12 | |
+| A3 | Ngưỡng để bật cho người dùng | Chấm oan < 10% **và** chấm lọt < 15%; `unscorable` < 10% | Bật flag | |
+| A4 | Giới hạn lượt chấm nói | 30 lượt / user / ngày, tính theo giờ Việt Nam | PR 13 | |
+| A5 | Câu viết có tính vào giới hạn A4 không | Không (không tốn STT); giới hạn riêng 100 lượt / ngày để chống spam | PR 12 | |
+| A6 | Độ dài tối đa một bản ghi | Bước 5: 45 giây; nhiệm vụ tổng hợp: 90 giây. Dưới 1 giây thì `unscorable`. | PR 13–14 | |
+| A7 | Thời gian giữ bản ghi | 30 ngày rồi tự xoá; không lưu transcript | PR 13 | |
+| A8 | Chờ kết quả trên màn | Hỏi mỗi 2 giây, tối đa 20 giây; quá thì "Kết quả sẽ có khi có mạng" | PR 14 | |
+| A9 | Số lần làm lại bước 5 | Không giới hạn (đã có giới hạn A4); lấy **kết quả tốt nhất** | PR 12, 15 | |
+| A10 | Bật cho ai trước | Flag `speechEvaluation` tắt mặc định → bật cho tài khoản nội bộ → bật cho mọi người lớn khi đạt A3 | PR 13–14 | |
+| A11 | Tài khoản trẻ em | Không chấm máy cho tới khi có consent phụ huynh (Bước 1); trẻ dùng tự đánh giá | PR 14 | |
+| A12 | Người học không đồng ý consent | Giữ tự đánh giá như hiện nay; hỏi lại tối đa 1 lần / 7 ngày | PR 14 | |
+
+### 5.3 Stage 3 – đạt bài, đạt unit, ôn (PR 15–17)
+
+| # | Câu hỏi | Đề xuất | Cần cho | Chốt |
+|---|---|---|---|---|
+| T3 | Khoảng ôn và "ghi nhớ ổn định" | 1 – 3 – 7 – 14 – 30 ngày; "ổn định" = đạt 2 lần liên tiếp ở mức ≥ 7 ngày | PR 15 | |
+| B1 | Thế nào là "đạt bài" | Xong phần luyện (bước 2–4) **và** bước 5 `pass_independent` | PR 15 | |
+| B2 | `pass_with_support` ở bước 5 có tính là đạt bài không | Không: hiện "Đạt, nhưng còn cần gợi ý" + nút "Thử lại không gợi ý" | PR 15–16 | |
+| B3 | Tự đánh giá (không có consent / trẻ em) có tính là đạt bài không | Có, nhưng lưu `assessed_by = self`. Báo cáo sau này tách "tự đánh giá" với "máy chấm". | PR 15 | |
+| B4 | Khi nào mở nhiệm vụ tổng hợp của unit | Khi mọi bài của unit đã xong phần luyện | PR 15–16 | |
+| B5 | Thế nào là "đạt unit" | Mọi bài đạt (B1) **và** nhiệm vụ tổng hợp `pass_independent` | PR 15 | |
+| B6 | Item nào vào lịch ôn | Item `required` của bài đã xong phần luyện; không tính item `extended` và bài người học tự tạo (Q7) | PR 15 | |
+| Q7 | Bài `extended` (người học tự tạo) có tính vào lịch ôn item không | Không | PR 15 | |
+| B7 | Ôn sai thì sao | Lùi **một** mức khoảng ôn (không về 0); không ảnh hưởng "đã đạt bài" | PR 15 | |
+| B8 | Tối đa bao nhiêu item ôn mỗi ngày | 20 item; quá thì dời sang hôm sau, ưu tiên item quá hạn lâu nhất | PR 15–16 | |
+| B9 | Thứ tự trên màn Today | Ôn đến hạn → bài đang học dở → bài tiếp theo | PR 16 | |
+| B10 | Nhiệm vụ tổng hợp chặn publish unit | Có: unit thiếu nhiệm vụ tổng hợp thì không publish được (đang chỉ cảnh báo) | PR 15 | |
+| B11 | Ai sửa ngưỡng / khoảng ôn trong admin | Chỉ tài khoản admin; mọi thay đổi ghi log | PR 17 | |
+| B12 | Ai nghe lại bản ghi của user trong admin | Chỉ admin, mỗi lần nghe ghi log; không tải file về | PR 17 | |
+| B13 | Có bắt buộc unit có phần viết không | Không bắt buộc; chỉ cảnh báo khi viết = 0% (thêm vào PR 17) | PR 17 | |
+
+### 5.4 Ra sản phẩm (Bước 0, Bước 1)
+
+| # | Câu hỏi | Đề xuất | Cần cho | Chốt |
+|---|---|---|---|---|
+| C1 | Danh mục trình độ | Pre-A1, A1, A2, B1 (theo CEFR); trẻ em và người lớn dùng chung thang | Bước 1, nội dung | |
+| C2 | Nhóm đối tượng | 2 nhóm: trẻ 6–11, người lớn (≥ 16). Chưa làm nhóm 12–15. | Bước 1 | |
+| Q6 | Item dùng chung cho trẻ em và người lớn, hay tách | Dùng chung item; tách ở **bài / unit** (ví dụ, tình huống) | Bước 1 | |
+| C3 | Tỷ lệ 70/25/5 | Giữ nói 70 / nghe 25 / viết 5, sai lệch ±10, tính theo unit, chỉ cảnh báo | Nội dung | |
+| C4 | Bài kiểm tra đầu vào | 10–12 câu nghe + chọn, không nói, khoảng 5 phút; bỏ qua được; kết quả chỉ **đề xuất** trình độ, người học tự đổi được | Bước 1 | |
+| C5 | Hỏi gì ở onboarding | Nhóm tuổi, mục tiêu (giao tiếp / du lịch / công việc / trường học), sở thích (chọn tối đa 3), thời gian học mỗi ngày | Bước 1 | |
+| C6 | Nội dung cần có khi ra mắt | A1 đủ 6 unit × 3 bài; Pre-A1 cho trẻ 4 unit | Giai đoạn 2 | |
+| C7 | Quy tắc thưởng | XP khi xong phần luyện; thưởng thêm khi **đạt bài** và **đạt unit**; streak tính theo ngày có ít nhất 1 hoạt động | PR 16, 8.2 | |
+| C8 | Tính năng miễn phí / trả phí | Miễn phí: toàn bộ curriculum + tự đánh giá + 5 lượt chấm máy / ngày. Trả phí: chấm máy 30 lượt / ngày + tự sinh bài (Q8). | Kinh doanh 8.6 | |
+
+### 5.5 Stage 4–5 (sinh bài tự động)
+
+| # | Câu hỏi | Đề xuất | Cần cho | Chốt |
+|---|---|---|---|---|
+| Q5 | Item `draft` do AI tạo có vào danh mục chung không | Không tự vào; admin duyệt mới chuyển `published` | S4.1 | |
+| Q8 | Ai được tự sinh bài, giới hạn bao nhiêu | Gói trả phí: 5 bài / ngày; miễn phí: 1 bài / ngày; trẻ em: không tự sinh | S4.3 | |
+| Q9 | Admin có "nhận về" bài AI sinh từ người học làm nội dung chung không | Có, dùng chức năng chuyển bài hiện có; vào trạng thái nháp, admin duyệt | S4.2 | |
+| Q10 | Danh mục tình huống chuẩn | Bắt đầu 20 tình huống A1 (quán ăn, mua sắm, hỏi đường, sân bay, khách sạn, khám bệnh, trường học, giới thiệu bản thân…); team nội dung bổ sung | S5.1 | |
+| Q11 | Nhà cung cấp AI + ngân sách sinh bài | OpenAI (đã tích hợp), model đặt bằng env; trần chi phí theo tháng do team đặt, vượt thì tắt nút sinh bài | S4.1 | |
+| D1 | Đoạn video dùng cho bước 2 | Tối đa 30 giây mỗi đoạn, tối đa 3 đoạn mỗi bài | S4.2 | |
+| D2 | Khi AI kết luận "không phù hợp" | Báo cho người dùng, giữ bài dạng hub, không tính lượt sinh bài | S4.1 | |
+| D3 | Lọc nội dung tình huống người học tự gõ | Chạy kiểm duyệt nội dung trước khi sinh; tài khoản trẻ chỉ chọn từ danh mục, không tự gõ | S5.3 | |
+| D4 | Ngôn ngữ của bài sinh ra | Nội dung học bằng tiếng Anh; giải thích, gợi ý, phản hồi bằng tiếng Việt | S4.1 | |
+
+### 5.6 Về sau (Bước 7, 8.x) – chốt khi tới lượt
+
+| # | Câu hỏi | Đề xuất | Cần cho | Chốt |
+|---|---|---|---|---|
+| E1 | Báo cáo phụ huynh / giáo viên | Mỗi tuần một báo cáo, xem trong app; liên kết tài khoản bằng mã mời | Bước 7 | |
+| E2 | Thông báo push | Tối đa 1 thông báo học / ngày, theo giờ người học chọn; không gửi 21:00–07:00 | 8.7 | |
+| E3 | Thanh toán | Mua trong app qua App Store / Google Play (thư viện thanh toán sẽ hỏi duyệt riêng) | 8.6 | |
+| E4 | Xoá khoá i18n `lessonFlow.show_model` / `show_model_hint` | Đồng ý xoá | Dọn dẹp | |
 
 ---
 
@@ -325,5 +399,5 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
 ## 7. Việc tiếp theo ngay
 
-1. Team: test tay `develop` (Giai đoạn 0).
+1. Team: test tay `develop` (Giai đoạn 0) và điền cột "Chốt" ở mục 5 (ít nhất 5.1–5.3 cho Stage 3).
 2. Code, song song với bước 1: viết **plan chi tiết PR 12** (bộ chấm + `evaluations`, chưa có âm thanh), chờ duyệt rồi code. PR này không cần gì từ team.
