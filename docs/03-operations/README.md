@@ -6,7 +6,8 @@
 | ----- | --------------------------------- | --------------------------------------------------------------------------------- |
 | 1     | `01-cost-estimate.md`             | Fixed cost estimates, cost per lesson, budget guardrails                          |
 | 2     | `02-ai-key-strategy.md`           | Pointer to BA canonical doc on BYOK/paid managed AI                               |
-| 3     | `03-ios-staging-testflight-ci.md` | iOS Staging → TestFlight GitHub Actions workflow: secrets, dispatch, verification |
+| 3     | `03-ios-release-testflight-ci.md` | iOS Staging/Production → TestFlight GitHub Actions workflow: secrets, dispatch, verification |
+| 4     | `04-android-release-google-play-ci.md` | Android → Google Play GitHub Actions workflow: secrets, env file, version code |
 
 ## Minimal duplication
 

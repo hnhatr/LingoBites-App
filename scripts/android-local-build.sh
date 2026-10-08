@@ -34,8 +34,36 @@ if [ -z "${PLAY_STORE_JSON_KEY_FILE:-}" ]; then
   exit 1
 fi
 
+# Relative paths resolve against android/app (same as ANDROID_KEYSTORE_FILE);
+# export the absolute path so fastlane finds it regardless of its working dir.
+case "$PLAY_STORE_JSON_KEY_FILE" in
+  /*) ;;
+  *) PLAY_STORE_JSON_KEY_FILE="$ROOT_DIR/android/app/$PLAY_STORE_JSON_KEY_FILE" ;;
+esac
+export PLAY_STORE_JSON_KEY_FILE
+
 if [ ! -f "$PLAY_STORE_JSON_KEY_FILE" ]; then
   echo "PLAY_STORE_JSON_KEY_FILE does not exist: $PLAY_STORE_JSON_KEY_FILE" >&2
+  exit 1
+fi
+
+for var_name in ANDROID_KEYSTORE_FILE ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+  if [ -z "${!var_name:-}" ]; then
+    echo "Missing required Android signing variable: $var_name" >&2
+    echo "" >&2
+    echo "Add it to $LOCAL_ENV_FILE (see scripts/android-local-build.env.example)." >&2
+    exit 1
+  fi
+done
+
+# Relative keystore paths resolve against android/app, the same way Gradle's file() does.
+case "$ANDROID_KEYSTORE_FILE" in
+  /*) KEYSTORE_PATH="$ANDROID_KEYSTORE_FILE" ;;
+  *) KEYSTORE_PATH="$ROOT_DIR/android/app/$ANDROID_KEYSTORE_FILE" ;;
+esac
+
+if [ ! -f "$KEYSTORE_PATH" ]; then
+  echo "ANDROID_KEYSTORE_FILE does not exist: $KEYSTORE_PATH" >&2
   exit 1
 fi
 

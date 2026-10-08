@@ -14,8 +14,10 @@
 		790660A959394128A2616E75 /* Quicksand-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1CFFAB53F474DD49B16DD9E /* Quicksand-Medium.ttf */; };
 		7D11E5032CC04AA100A4B2D1 /* DeviceIdentity.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A3C06E6D3B947DBEF45D0676 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB4D8FDB386CB31325726DAE /* ExpoModulesProvider.swift */; };
 		C9B162286D0FB58263F0A5F5 /* libPods-LingoBites.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D301BF6F38731AE306E9FDBF /* libPods-LingoBites.a */; };
 		D5149D079B854F6C8FD34EFE /* Lexend-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 130DFB3A84AD4CCF98E486E3 /* Lexend-Bold.ttf */; };
+		E7A0C0DE00000000000000A2 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = E7A0C0DE00000000000000A1 /* Expo.plist */; };
 		F17F8B9ACB55453CABFFE16C /* Lexend-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
@@ -42,8 +44,10 @@
 		A00000000000000000000207 /* Config-ReleaseProd.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseProd.xcconfig"; sourceTree = "<group>"; };
 		B1CFFAB53F474DD49B16DD9E /* Quicksand-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Quicksand-Medium.ttf"; path = "../assets/fonts/Quicksand-Medium.ttf"; sourceTree = "<group>"; };
 		C57538AD2F4569A23D4757CC /* Pods-LingoBites.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugprod.xcconfig"; sourceTree = "<group>"; };
+		CB4D8FDB386CB31325726DAE /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-LingoBites/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		D301BF6F38731AE306E9FDBF /* libPods-LingoBites.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LingoBites.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB54EB68EE884B8C1DBCFF62 /* Pods-LingoBites.releasedev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasedev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasedev.xcconfig"; sourceTree = "<group>"; };
+		E7A0C0DE00000000000000A1 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Expo.plist; path = LingoBites/Supporting/Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F219A14E2021E68CD218D854 /* Pods-LingoBites.releasestag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasestag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasestag.xcconfig"; sourceTree = "<group>"; };
 		F7E8877D9229C2E6539AC598 /* Pods-LingoBites.debugdev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugdev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugdev.xcconfig"; sourceTree = "<group>"; };
@@ -71,6 +75,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				E7A0C0DE00000000000000A1 /* Expo.plist */,
 			);
 			name = LingoBites;
 			sourceTree = "<group>";
@@ -84,6 +89,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		6F5E9E3B27FEECAA7EE27975 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				73F9AA409A3D2E48BF61A457 /* LingoBites */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 		706722220D9C4E77B147DF01 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -93,6 +106,14 @@
 				4FAAED88B7834D3FACA9C2F2 /* MaterialIcons.ttf */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		73F9AA409A3D2E48BF61A457 /* LingoBites */ = {
+			isa = PBXGroup;
+			children = (
+				CB4D8FDB386CB31325726DAE /* ExpoModulesProvider.swift */,
+			);
+			name = LingoBites;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -118,6 +139,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				706722220D9C4E77B147DF01 /* Resources */,
+				6F5E9E3B27FEECAA7EE27975 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -153,9 +175,11 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "LingoBites" */;
 			buildPhases = (
 				E4D83D2E5026C621B9359869 /* [CP] Check Pods Manifest.lock */,
+				41E359DD3115A9A91CBBE0FF /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				E7A0C0DE00000000000000A3 /* [Expo] Set updates channel */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				C1233146BC0778205888CD2E /* [CP] Embed Pods Frameworks */,
 				82D10371419DD61ED01018AF /* [CP] Copy Pods Resources */,
@@ -208,6 +232,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				0A169C7D8271152CAA812B84 /* PrivacyInfo.xcprivacy in Resources */,
+				E7A0C0DE00000000000000A2 /* Expo.plist in Resources */,
 				F17F8B9ACB55453CABFFE16C /* Lexend-SemiBold.ttf in Resources */,
 				790660A959394128A2616E75 /* Quicksand-Medium.ttf in Resources */,
 				D5149D079B854F6C8FD34EFE /* Lexend-Bold.ttf in Resources */,
@@ -232,7 +257,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"\\\"$WITH_ENVIRONMENT\\\" \\\"$REACT_NATIVE_XCODE\\\"\"\n";
+			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli')\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n";
+		};
+		41E359DD3115A9A91CBBE0FF /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-LingoBites/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-LingoBites/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-LingoBites/expo-configure-project.sh\"\n";
 		};
 		82D10371419DD61ED01018AF /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -290,6 +338,25 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		E7A0C0DE00000000000000A3 /* [Expo] Set updates channel */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Set updates channel";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n# Sets the expo-updates channel in the bundled Expo.plist based on the build configuration.\nPLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Expo.plist\"\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Expo.plist not found in app bundle: $PLIST\"\n  exit 1\nfi\ncase \"$CONFIGURATION\" in\n  *Prod) CHANNEL=production ;;\n  *Stag) CHANNEL=staging ;;\n  *) CHANNEL=development ;;\nesac\n/usr/libexec/PlistBuddy -c \"Set :EXUpdatesRequestHeaders:expo-channel-name $CHANNEL\" \"$PLIST\"\necho \"expo-updates channel: $CHANNEL\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -299,6 +366,7 @@
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				7D11E5032CC04AA100A4B2D1 /* DeviceIdentity.mm in Sources */,
+				A3C06E6D3B947DBEF45D0676 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,7 +381,7 @@
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = LingoBites/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -323,6 +391,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -339,7 +408,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				INFOPLIST_FILE = LingoBites/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -349,6 +418,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
@@ -365,7 +435,7 @@
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = LingoBites/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -375,6 +445,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -391,7 +462,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				INFOPLIST_FILE = LingoBites/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -401,6 +472,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
@@ -417,7 +489,7 @@
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = LingoBites/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -427,6 +499,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -443,7 +516,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = SH8ZHVLYYL;
 				INFOPLIST_FILE = LingoBites/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -453,6 +526,7 @@
 					"-ObjC",
 					"-lc++",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_NAME = LingoBites;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;
@@ -510,7 +584,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -539,6 +613,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_VERSION = 5.0;
 				USE_HERMES = true;
 			};
 			name = DebugDev;
@@ -585,7 +660,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -612,6 +687,7 @@
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_VERSION = 5.0;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -666,7 +742,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -695,6 +771,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_VERSION = 5.0;
 				USE_HERMES = true;
 			};
 			name = DebugStag;
@@ -741,7 +818,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -768,6 +845,7 @@
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_VERSION = 5.0;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -822,7 +900,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -851,6 +929,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_VERSION = 5.0;
 				USE_HERMES = true;
 			};
 			name = DebugProd;
@@ -897,7 +976,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -924,6 +1003,7 @@
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_VERSION = 5.0;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};

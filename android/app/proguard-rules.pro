@@ -8,3 +8,17 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# react-native-config reads the generated BuildConfig fields via reflection.
+-keep class com.lingobites.BuildConfig { *; }
+
+# react-native-quick-sqlite registers JNI natives against this class name.
+-keep class com.margelo.rnquicksqlite.** { *; }
+
+# react-native-webview exposes these methods to JavaScript.
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# Move renamed classes into one package for smaller DEX (Play Console "Repackage Classes").
+-repackageclasses

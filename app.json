@@ -1,4 +1,17 @@
 {
   "name": "LingoBites",
-  "displayName": "LingoBites"
+  "displayName": "LingoBites",
+  "extra": {
+    "eas": {
+      "projectId": "157966c5-a7c1-4a97-8c0c-d334fe3ee4ed"
+    }
+  },
+  "runtimeVersion": {
+    "policy": "fingerprint"
+  },
+  "updates": {
+    "url": "https://u.expo.dev/157966c5-a7c1-4a97-8c0c-d334fe3ee4ed"
+  },
+  "android": {},
+  "ios": {}
 }

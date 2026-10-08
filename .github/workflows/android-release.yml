@@ -1,0 +1,165 @@
+name: Android Release Google Play
+
+# Manual dispatch only. Builds the selected flavor via the existing Fastlane
+# lane `fastlane android <env>` (see fastlane/Fastfile) and uploads the AAB to
+# the selected Google Play track. The GitHub Environment matching `env`
+# supplies the secrets, so give the `production` environment required reviewers.
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: App environment (flavor)
+        type: choice
+        options: [staging, production]
+        default: staging
+      track:
+        description: Google Play track
+        type: choice
+        options: [internal, alpha, beta, production]
+        default: internal
+
+concurrency:
+  group: android-release-${{ inputs.env }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-upload:
+    name: Build ${{ inputs.env }} & upload to Google Play (${{ inputs.track }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: ${{ inputs.env }}
+    env:
+      ENVFILE: .env.${{ inputs.env }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.1'
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+          cache: gradle
+
+      - name: Setup Ruby (bundler)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.4'
+          bundler-cache: true
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Check formatting
+        run: yarn format:check
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Test
+        run: yarn test --ci
+
+      - name: Verify required secrets are present
+        run: |
+          set -euo pipefail
+          missing=()
+          for var_name in APP_ENV_FILE ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD PLAY_STORE_JSON_KEY_BASE64; do
+            if [ -z "${!var_name:-}" ]; then
+              missing+=("$var_name")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "Missing required secrets in the '${{ inputs.env }}' environment:" >&2
+            printf '  - %s\n' "${missing[@]}" >&2
+            exit 1
+          fi
+          echo "All required secrets are present."
+        env:
+          APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_STORE_JSON_KEY_BASE64: ${{ secrets.PLAY_STORE_JSON_KEY_BASE64 }}
+
+      - name: Materialize env file
+        # The whole .env.<env> file is stored as the APP_ENV_FILE secret of the
+        # matching GitHub Environment (update it with `yarn env:push:<env>`).
+        # Everything in it is bundled into the app by react-native-config, so it
+        # must never contain signing passwords or other credentials.
+        # ANDROID_APP_VERSION_CODE is overwritten with the run number (plus an
+        # optional ANDROID_VERSION_CODE_OFFSET variable) so every upload is unique.
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$APP_ENV_FILE" | tr -d '\r' > "$ENVFILE"
+          version_code=$(( GITHUB_RUN_NUMBER + ${ANDROID_VERSION_CODE_OFFSET:-0} ))
+          for key in ANDROID_BUNDLE_ID ANDROID_APP_VERSION_NAME ANDROID_APP_VERSION_CODE APP_NAME; do
+            if ! grep -q "^${key}=" "$ENVFILE"; then
+              echo "Missing ${key} in APP_ENV_FILE for '${{ inputs.env }}'." >&2
+              exit 1
+            fi
+          done
+          sed -i "s|^ANDROID_APP_VERSION_CODE=.*|ANDROID_APP_VERSION_CODE=${version_code}|" "$ENVFILE"
+          echo "Package: $(grep '^ANDROID_BUNDLE_ID=' "$ENVFILE" | cut -d= -f2-)"
+          echo "Version: $(grep '^ANDROID_APP_VERSION_NAME=' "$ENVFILE" | cut -d= -f2-) (${version_code})"
+        env:
+          APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
+          ANDROID_VERSION_CODE_OFFSET: ${{ vars.ANDROID_VERSION_CODE_OFFSET }}
+
+      - name: Materialize Android signing files
+        run: |
+          set -euo pipefail
+          umask 077
+          signing_dir="$RUNNER_TEMP/lingobites-android-signing"
+          mkdir -p "$signing_dir"
+
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$signing_dir/upload.jks"
+          printf '%s' "$PLAY_STORE_JSON_KEY_BASE64" | base64 --decode > "$signing_dir/play-service-account.json"
+
+          test -s "$signing_dir/upload.jks"
+          test -s "$signing_dir/play-service-account.json"
+
+          printf 'ANDROID_KEYSTORE_FILE=%s\n' "$signing_dir/upload.jks" >> "$GITHUB_ENV"
+          printf 'PLAY_STORE_JSON_KEY_FILE=%s\n' "$signing_dir/play-service-account.json" >> "$GITHUB_ENV"
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          PLAY_STORE_JSON_KEY_BASE64: ${{ secrets.PLAY_STORE_JSON_KEY_BASE64 }}
+
+      - name: Build and upload to Google Play (fastlane android ${{ inputs.env }})
+        run: bundle exec fastlane android ${{ inputs.env }}
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_STORE_TRACK: ${{ inputs.track }}
+          PLAY_STORE_RELEASE_STATUS: completed
+
+      - name: Upload AAB artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lingobites-${{ inputs.env }}-${{ github.run_number }}-aab
+          path: android/app/build/outputs/bundle/${{ inputs.env }}Release/*.aab
+          retention-days: 14
+
+      - name: Cleanup signing material
+        if: always()
+        run: |
+          set -euo pipefail
+          rm -f "$ENVFILE"
+          rm -rf "$RUNNER_TEMP/lingobites-android-signing"

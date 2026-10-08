@@ -101,10 +101,9 @@ platform :ios do
 
     ENV.delete("APP_STORE_CONNECT_API_KEY")
 
-    increment_build_number(
-      xcodeproj: IOS_XCODEPROJ,
-      build_number: ENV["IOS_APP_BUILD_NUMBER"] || ENV.fetch("BUILD_NUMBER", Time.now.utc.strftime("%Y%m%d%H%M"))
-    )
+    # Passed as a build setting (not agvtool/increment_build_number) so ios/ sources stay
+    # untouched and the expo-updates fingerprint matches the one `eas update` computes.
+    build_number = ENV["IOS_APP_BUILD_NUMBER"] || ENV.fetch("BUILD_NUMBER", Time.now.utc.strftime("%Y%m%d%H%M"))
 
     Tempfile.create(["AuthKey_#{key_id}", ".p8"]) do |key_file|
       key_file.write(Base64.decode64(api_key_content))
@@ -147,7 +146,8 @@ platform :ios do
         "#{name}=#{Shellwords.escape(value)}"
       end
 
-      archive_xcargs = ([provisioning_xcargs] + signing_xcargs).join(" ")
+      build_number_xcargs = "CURRENT_PROJECT_VERSION=#{Shellwords.escape(build_number)}"
+      archive_xcargs = ([provisioning_xcargs, build_number_xcargs] + signing_xcargs).join(" ")
 
       build_app(
         workspace: IOS_WORKSPACE,

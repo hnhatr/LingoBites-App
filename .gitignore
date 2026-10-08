@@ -76,6 +76,7 @@ local.properties
 *.keystore
 !debug.keystore
 *.jks
+/android/app/play-service-account.json
 *.apk
 *.aab
 
@@ -118,3 +119,7 @@ reply.md
 .windsurfrules
 GEMINI.md
 QODER.md
+# Expo
+.expo
+dist/
+web-build/
