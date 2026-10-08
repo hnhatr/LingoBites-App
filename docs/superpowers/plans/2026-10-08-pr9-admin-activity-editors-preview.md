@@ -1,6 +1,6 @@
 # PR 9 – Admin: editor theo loại hoạt động, sinh nháp từ mẫu câu, preview 6 bước, cân bằng 70/25/5
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1).
+> Trạng thái: **ĐÃ CODE**: G1–G8 đã duyệt; server `1f5503b` → `09c79d6` (xem §9 cho các điểm lệch).
 > Ngày lập: 2026-10-08. Repo: `LingoBites-Server` (chủ yếu `admin-web`, cộng một phần nhỏ server). Nhánh: `claude/optimistic-bell-mfgk44`.
 > PR 2 của Stage 2 trong `2026-10-07-backward-design-curriculum-plan.md`, mục Admin-web 1–3. Dựng trên contract của PR 8: `data.content`, `acceptedAnswers`, route sinh nháp, `skill_balance`.
 
@@ -173,3 +173,44 @@ Thư mục mới `components/blocks/activity/`. Mỗi editor nhận `{ content, 
 - **Ba bản copy logic** (`acceptedAnswers` ở server, app, admin): giảm thiểu bằng một fixture duy nhất của server mà cả ba test cùng đọc.
 - **Khối lượng UI lớn** (6 editor + preview tương tác). Có thể tách **PR 9a** (commit 1–4: soạn và sinh nháp) và **PR 9b** (commit 5–7: preview và cân bằng).
 - **Preview không ghi âm**, nên phần nói chỉ tự đánh giá; không phản ánh độ khó thật của bước nói. Ghi rõ trên UI: "Bản chạy thử, phần nói tự đánh giá".
+
+## 9. Kết quả và điểm lệch so với plan
+
+**Commit (server, nhánh `claude/optimistic-bell-mfgk44`):**
+
+| Commit | Nội dung |
+|---|---|
+| `1f5503b` | §3: `content` bắt buộc khi publish, kiểm chỗ trống, bỏ `lines` / `dialogueTurns` của activity. |
+| `ca6b23c` | §4.1: kiểu, client sinh nháp, `acceptedAnswers` (copy), tiện ích `activityContent`. |
+| `e5f92a6` | §4.2: 6 editor theo loại, xác nhận khi đổi loại, tóm tắt `content` trong preview block. |
+| `44b5c85` | §4.3: nút "Draft from pattern", `ActivityDraftsPanel`, `initialDraft`. |
+| `6147be8` | §4.4: preview chạy thử 6 bước. |
+| `6fa3a07` | §4.5: `SkillBalancePanel`. |
+| `09c79d6` | Playwright `lesson-spec` mở rộng. |
+
+**Kiểm tra cuối:**
+- server: `tsc` sạch; `yarn test` 431 pass; `yarn test:db` 245 pass;
+- lint server: chỉ còn lỗi có sẵn ở `test/ipa.test.ts:84` (không do PR này);
+- admin-web: `tsc`, eslint `--max-warnings=0`, prettier, Vitest 160 pass, build;
+- Playwright 16/16;
+- app: `jest src/core/schemas` 44 pass (fixture không đổi).
+
+**Điểm lệch:**
+1. **Props của editor:** ngoài `{ content, onChange, items }` mỗi editor nhận thêm `lookup` (`PatternLookup`): text của `item_refs` không nằm trong bài (lấy qua `getItemByCode`) và variants của pattern (lấy qua `getItem`). Nhờ vậy lựa chọn chỗ trống khớp đúng phép kiểm `ACTIVITY_CONTENT_INVALID` của server. Thêm các file phụ:
+   - `activity/patternLookup.ts`;
+   - `activity/shared.tsx` (nút thêm / xoá / đổi thứ tự, danh sách đáp án chấp nhận);
+   - `activity/ActivityContentEditor.tsx` (chọn editor theo loại).
+2. **Activity chưa viết `content` vẫn lưu được:** nội dung còn nguyên dạng rỗng thì không gửi `content`; spec check báo `ACTIVITY_CONTENT_MISSING` khi publish. Nội dung đã viết thì phải hợp lệ mới lưu (`validateContent`).
+3. **Test editor gộp một file** `activity/ActivityEditors.test.tsx` (6 editor + đổi loại hỏi xác nhận), thay vì 6 file `*.test.tsx`.
+4. **`ACTIVITY_KINDS` trong `blockModel.ts` được giữ** (không xoá export), nhưng giờ suy ra từ danh sách trong `utils/blocks/activityContent.ts` để không còn hai danh sách.
+5. **Nút sinh nháp** hiện khi bài có ít nhất một pattern (danh sách item của editor không có `role`). Nếu server không trả nháp nào, panel giải thích: cần pattern bắt buộc (và ví dụ cho bước 4).
+6. **"Add all"** thêm lần lượt từng nháp. Nếu một nháp lỗi, các nháp chưa thêm vẫn còn trong panel; thêm hết thì panel tự đóng.
+7. **Preview 6 bước:**
+   - Thêm `PracticeEntry` (dùng chung cho nói / gõ / chọn), `rendererProps.ts` và `previewModel.ts` (cách chấm, gợi ý, đáp án chấp nhận).
+   - Chế độ mặc định vẫn là "All blocks"; nút "Run the 6 steps" chỉ hiện khi bài có block gắn bước.
+   - Câu dịch chấp nhận cả câu mẫu lẫn mọi câu của pattern.
+   - Trả lời sai rồi làm lại đúng tính là "With a hint".
+   - Kiểu `PreviewItem` của admin có thêm `payload?` / `variants?`; snapshot có thêm `tasks?` (server vốn đã gửi).
+8. **Test preview** đọc fixture seed của server qua `components/preview/seedSnapshot.testutil.ts`.
+9. **E2e:** bước 4 vẫn là block text, vì pattern tạo trong e2e không có ví dụ / lỗi thường gặp nên server không sinh nháp cho bước 4.
+10. **`SkillBalancePanel`** dùng lại style bảng `courses-table` sẵn có.
