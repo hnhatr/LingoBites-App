@@ -2,6 +2,8 @@
 <!--
   React Native copies JS-required images into res/drawable-* and loads them by
   name at runtime, so the resource shrinker cannot see they are used.
+  react-native-config looks up @string/build_config_package by name to find
+  BuildConfig; without it every Config value is empty in release builds.
 -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/src_*,@drawable/node_modules_*,@raw/src_*,@raw/node_modules_*" />
+    tools:keep="@drawable/src_*,@drawable/node_modules_*,@raw/src_*,@raw/node_modules_*,@string/build_config_package" />
