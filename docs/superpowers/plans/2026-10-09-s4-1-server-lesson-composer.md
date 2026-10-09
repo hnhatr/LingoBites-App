@@ -1,6 +1,6 @@
 # S4.1 – Server: `lessonComposer` lõi (chọn câu → bài 6 bước)
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-09, ĐANG CODE**.
+> Trạng thái: **ĐÃ CODE** (2026-10-09). Xem §13 cho kết quả và điểm lệch.
 > Ngày lập: 2026-10-09. Repo: `LingoBites-Server`. Nhánh: `claude/affectionate-darwin-krszil` (tạo từ `develop`).
 > PR đầu tiên của Giai đoạn 3 (Stage 4) trong `2026-10-08-remaining-work-plan.md`. S4.2 (admin) và S4.3 (người học) xây trên PR này.
 > Stage 3 (PR 12–17) **chưa làm**: bước 5 của bài sinh ra dùng **tự đánh giá** như bài curriculum hiện nay; khi Stage 3 xong thì được chấm máy mà không phải sửa composer.
@@ -205,3 +205,41 @@ Không thêm dependency.
 | Chi phí AI | 1 lần gọi / bài, cache theo nhóm câu, giới hạn ngày, trần tháng, flag mặc định tắt. |
 | Bài gốc bị xoá | `ON DELETE SET NULL`; bài sinh ra có câu riêng nên vẫn chạy. |
 | Migration trùng số với PR 12 | Ghi rõ ở §7; PR 12 dùng `008`. |
+
+## 13. Kết quả code và điểm lệch so với plan
+
+> Code ngày 2026-10-09 trên nhánh `claude/affectionate-darwin-krszil` (server), commit `e24b50f` → `9353697`. Gồm cả phần backend của kho prompt (thiết kế `2026-10-09-s4-ai-prompt-config-design.md` §11) và phần server của thiết kế chờ (`2026-10-09-s4-compose-wait-ux-design.md` §2).
+
+**Đã làm**
+
+| Phần | File chính |
+|---|---|
+| Migration 007: bảng `ai_prompts` / `ai_prompt_versions` / `ai_prompt_cases` / `ai_prompt_runs`; `lessons.derived_from_lesson_id` / `compose_key` / `situation_source` / `compose_prompt_version_id`; `lesson_creation_requests.kind` / `ai_calls` / `stage` / `stage_at` / `prompt_version_id` / `outcome_detail`; `items.reviewed_at`; `users.compose_daily_limit` | `src/common/database/migrations/007_lesson_compose{,.down}.sql`, `prisma/schema.prisma` |
+| `listen_and_repeat.prompts[]` có `sentenceId` / `startMs` / `endMs`, đoạn ≤ 30 giây; luật `ACTIVITY_SENTENCE_NOT_IN_LESSON` (+ nhãn admin) | `activityContent.ts`, `specValidator.ts`, `postgresLessonSpecStore.ts`, `admin-web/src/utils/spec/specRules.ts` |
+| Gọi AI có JSON Schema do nhà cung cấp ép (OpenAI `json_schema` strict, Gemini `responseJsonSchema`), trả token; prompt cũ gửi y như trước | `canonicalLesson/service/creationAi.ts` |
+| Kho prompt: template `{{…}}` + lint, `PromptSpec`, checksum, store (seed, draft, cổng R2, bật / rollback, lượt chạy thử), runtime (cache 60 giây, ghim phiên bản, fallback bản mặc định) | `src/common/ai/prompts/*`, `src/modules/aiPrompts/*` |
+| Prompt `lesson.compose` v1, tham số có trần cứng, hợp đồng đầu ra (zod + JSON Schema + khuôn chữ tự sinh), luật kiểm chéo, 6 ca mẫu | `composer/model/*`, `composer/prompts/*` |
+| Lọc trước, bộ chạy AI (gọi lại khi sai, timeout → model dự phòng, lỗi nhà cung cấp, schema bị từ chối → JSON mode), completion giả lập | `composer/service/composePrecheck.ts`, `composeAi.ts` |
+| `composeLesson()` thuần → 0 vi phạm validator | `composer/service/composeLesson.ts` |
+| Pipeline trên hàng đợi tạo bài: submit (lọc, cache, đang chạy, quota theo tài khoản, trần tháng), worker (stage, đếm lượt gọi, ghim prompt), ghi 1 transaction có fence | `composer/service/composePipeline.ts`, `composer/repository/composeStore.ts`, `lessonCreationWorker.ts`, `creationRequestStore.ts`, `composeWiring.ts`, `app/server.ts` |
+| Script: `yarn ai-prompt seed|list|export|create|try|activate`, `yarn compose:sample [--live]` | `scripts/ai-prompt.ts`, `scripts/compose-sample.ts` |
+| Env mới (chỉ thêm vào `.env.example`): `LESSON_COMPOSE_ENABLED`, `COMPOSE_LEARNER_DAILY_LIMIT`, `COMPOSE_MONTHLY_CALL_CAP`, `AI_ALLOWED_MODELS` | `src/common/config/env.ts` |
+
+**Điểm lệch so với plan**
+
+| # | Plan | Đã làm | Lý do |
+|---|---|---|---|
+| L1 | Mã bài `AI-XXXXXXXX` cho mọi bài sinh ra (H11) | Chỉ bài **admin** có mã; bài người học lưu `code = NULL` | Ràng buộc DB có sẵn `lessons_learner_no_code_check`. Validator vẫn kiểm bài trong bộ nhớ với mã tạm nên vẫn 0 vi phạm. |
+| L2 | JSON Schema gửi AI có cả số lượng (ví dụ `maxItems`) | JSON Schema chỉ khoá **cấu trúc + enum**; số lượng, độ dài do zod ở server kiểm (cùng `params`) | Tránh nhà cung cấp từ chối request vì từ khoá kích thước không hỗ trợ; khuôn chữ trong prompt vẫn ghi số lượng. |
+| L3 | 4 tiêu chí đều bắt buộc cho mọi task (H10) | Task `independent`: cả 4 bắt buộc; task `guided`: theo `defaultCriteria` có sẵn (chỉ `content` bắt buộc). Ngưỡng content 0.80, clarity 0.60 | Đúng quy ước D4 đang dùng cho bài admin. |
+| L4 | Không có | Thêm cột `lesson_creation_requests.outcome_detail` | Lưu `reason_vi` / `suggestion_vi` khi "không phù hợp" và các câu bị bỏ, để app hiển thị (H7). |
+| L5 | 8 ca mẫu (5 ca thiết kế + 3 ca L01–L03) | 6 ca (5 ca thiết kế + 1 ca "gọi đồ ăn" kiểu L03) | Bài mẫu L01–L03 của seed là bài curriculum, không có câu nguồn để chọn. Thêm ca bằng `yarn ai-prompt` hoặc admin S4.2b. |
+| L6 | Tên script `composeSample.ts` | `scripts/compose-sample.ts` (`yarn compose:sample`) và `scripts/ai-prompt.ts` (`yarn ai-prompt`) | Theo quy ước tên script kebab-case của repo. |
+| L7 | Quota: lượt timeout không tính | Đúng như vậy; riêng trường hợp hiếm "AI trả sai rồi lần gọi lại bị timeout" cũng **không** tính | Chỉ đếm theo mã kết quả cuối; lệch có lợi cho người học. |
+| L8 | Bước 2 = câu gốc | Bước 2 = câu gốc (`listen_and_repeat`) **+** thẻ item bắt buộc (`item_cards`); gợi ý của task `guided` gắn vào hoạt động đầu tiên của bước 4 | Giống bài curriculum mẫu; app PR 11 đọc gợi ý theo `task_id` của hoạt động. |
+| L9 | Lease compose = `job_budget_ms` + 30 giây | Lease cố định 270 giây (trần cứng 240 giây + 30) | Lease đặt lúc claim, trước khi biết phiên bản prompt. |
+| L10 | Gemini | Gemini gửi `systemInstruction` chỉ cho lời gọi có schema | Request của các prompt cũ giữ nguyên byte-for-byte. |
+
+**Chưa làm trong S4.1 (đúng phạm vi)**: route HTTP (S4.2 admin, S4.3 người học), trang admin quản lý prompt (S4.2b), snapshot bài người học có spec (S4.3), dọn `raw_output` của lượt chạy thử sau 30 ngày (làm cùng S4.2b).
+
+**Cần team làm trước khi bật `LESSON_COMPOSE_ENABLED`**: chạy `yarn ai-prompt seed` trên staging, rồi `yarn ai-prompt try <id bản v1>` với AI thật. Bản giả lập không đánh giá được 4 ca "lạc đề / không phù hợp / tình huống gợi ý" (đã thấy fail khi chạy thử với mock, là đúng).

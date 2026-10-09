@@ -469,7 +469,8 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] Bước 1 – hồ sơ + kiểm tra đầu vào
 
 **Giai đoạn 3 – Stage 4**
-- [ ] S4.1 `lessonComposer` (plan viết 2026-10-09, chờ duyệt)
+- [x] S4.1 `lessonComposer` + kho prompt backend – server, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR)
+- [ ] S4.2b admin "Prompt AI" (quản lý phiên bản prompt, chạy thử, rollback)
 - [ ] S4.2 admin "Sinh bài 6 bước"
 - [ ] S4.3 người học "Học theo 6 bước"
 - [ ] S4.4 ảnh không chữ
