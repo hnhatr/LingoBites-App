@@ -68,6 +68,18 @@ jobs:
           echo "org.gradle.parallel=true" >> ~/.gradle/gradle.properties
           echo "org.gradle.caching=true" >> ~/.gradle/gradle.properties
 
+      - name: Install ccache
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ccache
+
+      - name: Restore ccache
+        # Native (C++) objects from earlier runs. A new key every run so the cache is
+        # always saved; restore-keys picks up the most recent one.
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-android-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: ccache-android-${{ runner.os }}-
+
       - name: Install JS dependencies
         run: yarn install --frozen-lockfile
 
@@ -164,6 +176,20 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           PLAY_STORE_TRACK: ${{ inputs.track }}
           PLAY_STORE_RELEASE_STATUS: completed
+          # CMake (>= 3.17) reads these from the environment, so every native module
+          # built by the NDK compiles through ccache.
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          CCACHE_BASEDIR: ${{ github.workspace }}
+          CCACHE_NOHASHDIR: 'true'
+          CCACHE_COMPRESS: 'true'
+          CCACHE_MAXSIZE: 2G
+          # Codegen headers are regenerated each build, so ignore their timestamps.
+          CCACHE_SLOPPINESS: include_file_mtime,include_file_ctime,time_macros
+
+      - name: Show ccache stats
+        if: always()
+        run: ccache -s || true
 
       - name: Upload AAB artifact
         if: success()
