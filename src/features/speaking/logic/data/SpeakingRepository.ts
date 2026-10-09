@@ -227,11 +227,15 @@ export function listSpeakingRecordings(
   lessonId?: string,
 ): SpeakingRecordingRecord[] {
   const db = getDatabase();
+  // PR 14: spoken task answers (`lesson_task`) are not practice takes.
   const result = lessonId
-    ? db.execute('SELECT * FROM speaking_recordings WHERE lesson_id = ?;', [
-        lessonId,
-      ])
-    : db.execute('SELECT * FROM speaking_recordings;');
+    ? db.execute(
+        "SELECT * FROM speaking_recordings WHERE lesson_id = ? AND mode <> 'lesson_task';",
+        [lessonId],
+      )
+    : db.execute(
+        "SELECT * FROM speaking_recordings WHERE mode <> 'lesson_task';",
+      );
   const rows = result.rows;
   const items: SpeakingRecordingRecord[] = [];
   if (!rows) {
