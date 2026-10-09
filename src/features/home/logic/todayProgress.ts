@@ -29,6 +29,7 @@ export const TODAY_VISIBLE_STEPS = 3;
 /** Plan types that finish a lesson and so move the weekly goal. */
 const LESSON_STEP_TYPES: ReadonlySet<StudyActivityType> = new Set([
   'next_lesson',
+  'continue_lesson',
   'prerequisite_lesson',
 ]);
 
@@ -50,6 +51,7 @@ const MATCHERS: Record<StudyActivityType, EventMatcher> = {
   error_remediation: isReview,
   listening_remediation: isReview,
   next_lesson: isSameLessonDone,
+  continue_lesson: isSameLessonDone,
   prerequisite_lesson: isSameLessonDone,
   old_situation_practice: (event, step) =>
     isSameLessonDone(event, step) ||

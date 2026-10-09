@@ -41,6 +41,7 @@ jest.mock('@react-navigation/native', () => {
 
 jest.mock('@features/review', () => ({
   getDueFlashcards: () => [],
+  countItemsForReview: () => 0,
 }));
 
 let mockHasDownloads = false;

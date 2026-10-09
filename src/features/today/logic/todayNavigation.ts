@@ -6,6 +6,7 @@ import type {StudyActivityItem, TodayNavigationTarget} from './types';
 
 export type TodayNavigationRequest =
   | {screen: 'DailyReview'}
+  | {screen: 'ItemReview'}
   | {screen: 'CanonicalLessonPlayer'; lessonId: string}
   | {screen: 'CanonicalCatalog'}
   | {screen: 'SpeakingRoom'}
@@ -26,6 +27,9 @@ export function resolveTodayNavigation(
       return {screen: 'CanonicalLessonPlayer', lessonId};
     }
     return {screen: 'CanonicalCatalog'};
+  }
+  if (target.screen === 'ItemReview') {
+    return {screen: 'ItemReview'};
   }
   if (target.screen === 'FlashcardList') {
     return {screen: 'DailyReview'};
@@ -76,6 +80,8 @@ export function openStudyActivity(
       lessonId: resolved.lessonId,
       sentenceIndex: resolved.sentenceIndex,
     });
+  } else if (resolved.screen === 'ItemReview') {
+    navigation.openItemReview();
   } else {
     navigation.openReview();
   }

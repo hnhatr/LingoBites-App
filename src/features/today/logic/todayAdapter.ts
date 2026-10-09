@@ -2,7 +2,7 @@ import {
   buildCanonicalLessonProgression,
   hasDownloadedLessons,
 } from '@features/lesson/player';
-import {getDueFlashcards} from '@features/review';
+import {countItemsForReview, getDueFlashcards} from '@features/review';
 import {listErrorEvents, listSpeakingRecordings} from '@features/speaking';
 
 import {getDatabase} from '@core/db/database';
@@ -42,8 +42,12 @@ export function saveLearnerProfileData(profile: LearnerProfileData): void {
 
 export function getLearnerStateSnapshot(nowIso?: string): LearnerStateSnapshot {
   const dueFlashcards = getDueFlashcards(nowIso ? {today: nowIso} : {});
+  // PR 16 (G11): lesson items on the Server's schedule count as due reviews.
+  const dueItemCount = countItemsForReview(
+    nowIso ? new Date(nowIso) : new Date(),
+  );
 
-  const dueReviewCount = dueFlashcards.length;
+  const dueReviewCount = dueFlashcards.length + dueItemCount;
   const estimatedReviewMinutes = Math.ceil(dueReviewCount * 0.5);
 
   const recentErrors = listErrorEvents();
@@ -59,6 +63,7 @@ export function getLearnerStateSnapshot(nowIso?: string): LearnerStateSnapshot {
 
   return {
     dueReviewCount,
+    dueItemCount,
     estimatedReviewMinutes,
     recentErrors,
     speakingRecordings,
@@ -73,6 +78,8 @@ export function getLearnerStateSnapshot(nowIso?: string): LearnerStateSnapshot {
       prerequisiteGapTitle: progression.prerequisiteGapTitle,
       oldLessonId: progression.oldLessonId,
       oldLessonTitle: progression.oldLessonTitle,
+      inProgressLessonId: progression.inProgressLessonId,
+      inProgressLessonTitle: progression.inProgressLessonTitle,
     },
     profileData,
   };
