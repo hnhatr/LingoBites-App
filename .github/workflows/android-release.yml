@@ -59,12 +59,14 @@ jobs:
           ruby-version: '3.2.4'
           bundler-cache: true
 
-      - name: Give the Gradle daemon more memory
+      - name: Tune Gradle for CI
         # ~/.gradle/gradle.properties overrides android/gradle.properties (-Xmx2048m),
         # so this only affects CI. GitHub's Linux runners have 16 GB RAM.
         run: |
           mkdir -p ~/.gradle
           echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> ~/.gradle/gradle.properties
+          echo "org.gradle.parallel=true" >> ~/.gradle/gradle.properties
+          echo "org.gradle.caching=true" >> ~/.gradle/gradle.properties
 
       - name: Install JS dependencies
         run: yarn install --frozen-lockfile
