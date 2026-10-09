@@ -54,8 +54,8 @@ Sau PR này, ở bước 5 (và nhiệm vụ tổng hợp, khi PR 16 có màn):
 - `src/features/lesson/flow/components/IndependentTaskView.tsx`: ba nhánh (chấm máy / tự đánh giá / viết thay nói) + chọn (H11).
 - `src/features/lesson/flow/logic/useSelfCheckRecorder.ts`: chế độ "giữ file để gửi".
 - `src/features/lesson/flow/logic/useLessonFlow.ts`, `ActivityRunner.tsx`: H8.
-- `src/features/settings/screens/DataSettingsScreen.tsx` (hoặc component dòng cài đặt trong `speaking`): dòng consent.
-- `src/i18n/locales/{vi,en}.json`: khoá mới.
+- `src/features/profile/screens/DataSettingsScreen.tsx` (+ component dòng cài đặt trong `speaking`, như `SpeakingRecordingsSettingsRow`): dòng consent.
+- `src/core/i18n/{vi,en}.json`: khoá mới.
 
 **Thêm:**
 - `src/core/sync/taskAnswers.ts`: ghi / đọc `task_answers`, áp kết quả.
