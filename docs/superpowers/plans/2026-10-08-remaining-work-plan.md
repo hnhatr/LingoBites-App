@@ -450,7 +450,7 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 
 **Giai đoạn 1 – Stage 3**
 - [x] PR 12 – bộ chấm + kết quả (server) — đã code, chưa mở pull request (plan: `2026-10-09-phase1-stage3-plan.md` §4)
-- [ ] PR 13 – âm thanh vào server
+- [x] PR 13 – âm thanh vào server — đã code, chưa mở pull request (plan: `2026-10-09-pr13-server-audio-stt.md`)
 - [ ] Team: ghi bộ 40 bản ghi có nhãn (T2), viết mục giọng nói trong chính sách + khai báo store (T4)
 - [ ] Đo độ chính xác: chấm oan < 10%, bật flag `speechEvaluation`
 - [ ] PR 14 – app chấm bước 5

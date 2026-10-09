@@ -1,6 +1,6 @@
 # PR 13 – Server: âm thanh vào server, nhận dạng giọng nói, job chấm
 
-> Trạng thái: **CHỜ DUYỆT**. Chưa code.
+> Trạng thái: **ĐÃ CODE**: S1–S12 đã duyệt (2026-10-09; `AI_PROVIDER=openai` nên STT dùng chung `AI_API_KEY`). Server `a4b7076` → `ce30a30` (7 commit), app `4c97a699` (fixture). Xem §10 cho kết quả và các điểm lệch.
 > Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (+ 1 commit chỉ chép fixture sang `LingoBites-App`). Nhánh: `claude/funny-archimedes-gmioda`.
 > Thuộc Giai đoạn 1 (`2026-10-09-phase1-stage3-plan.md` §5). Cần trước: PR 12 và PR 15 (đã code). Migration là **009** (PR 15 đã dùng 008).
 > **Key OpenAI (T1) không chặn việc code.** Toàn bộ test chạy bằng STT `mock`; key chỉ cần khi chạy test tích hợp, chạy script đo và bật trên staging (§9).
@@ -147,3 +147,47 @@ Chi tiết từng bước nằm trong câu trả lời ở phiên chat (2026-10-
 2. Tạo **secret key** trong project đó, quyền giới hạn ở phần audio nếu được.
 3. Đặt key vào **Secret Manager** của GCP (staging trước), tên `STT_API_KEY`. Nếu `AI_PROVIDER` đã là `openai` thì có thể dùng luôn `AI_API_KEY`. **Không** dán key vào repo, file `.env` được commit hay chat.
 4. Kiểm phần Data controls / thời gian lưu dữ liệu của project.
+
+## 10. Kết quả code và điểm lệch so với plan
+
+**Kiểm tra cuối:**
+- Server:
+  - `tsc` sạch (`tsconfig.json`, `tsconfig.scripts.json`);
+  - unit 479 pass (trước 469; 320 skip vì cần DB);
+  - `test:db` 269/269 (trước 259);
+  - `prisma migrate diff`: rỗng;
+  - prettier sạch; eslint chỉ còn lỗi có sẵn `test/ipa.test.ts:84`;
+  - OpenAPI +1 path.
+- `accountMerge.test.ts` (ngoài `test:db`) chạy tay với DB: 8/8.
+- `sttIntegration.test.ts`: bỏ qua (chưa có key trong môi trường này).
+- admin-web: Vitest 160/160, Playwright 16/16 (Chromium có sẵn trên máy, config tạm đã xoá).
+- App: `tsc` sạch, lint 178/281, Jest 2206 pass; fixture mới trùng byte với server.
+- Script đo đã chạy thử với STT mock trên 4 dòng nhãn: in đúng chấm oan / chấm lọt / `unscorable` / độ trễ, theo cả nhóm người lớn / trẻ em.
+
+**Điểm lệch so với plan:**
+- **Thứ tự commit.** Cấu hình env (STT, giới hạn, flag) vào commit 1, vì route tạo bản ghi cần flag. Commit 4 chỉ còn phần capabilities.
+- **Env mới `EVALUATION_WORKER_ENABLED`** (mặc định bật khi có DB). Test đặt `false` để tự chạy worker bằng tay.
+- **STT mock đọc nội dung file**, không dùng bảng SHA:
+  - `MOCK_TRANSCRIPT:<chữ>` → nghe ra `<chữ>`;
+  - `MOCK_STT_ERROR:retryable|fatal` → lỗi tương ứng;
+  - file khác → nghe ra câu tham khảo đầu tiên.
+- **Dùng lại kết quả khi trùng file:** chỉ khi **cùng task**. Kết quả chép lại tính lại `outcome` theo mức gợi ý của lượt mới, và không tính vào giới hạn ngày.
+- **Giới hạn 30 lượt** chỉ đếm kết quả có `stt_model` (thực sự đã gọi STT).
+- **Job bị nhận lại sau khi đã thử quá 2 lần** (worker chết giữa chừng) kết thúc thành `stt_failed` mà không gọi STT nữa. Lỗi đọc file từ storage được coi như lỗi thử lại được.
+- **Bài hoặc task bị xoá trước khi chấm:** job đóng với `target_gone` và **không** có `evaluations`, vì không còn task để gắn. Lượt làm phía app ở `pending` mãi; PR 14 cần xử lý (hết thời gian thì cho làm lại).
+- **Gộp tài khoản chuyển cả `evaluation_jobs.user_id`.** Nếu không, job sẽ bị xoá theo user nguồn.
+- **`RecordingView` ở server:** `lesson_id` / `sentence_id` thành tùy chọn. Bản ghi `lesson_task` **bỏ hẳn** hai khoá này thay vì trả `null`, vì schema của app cũ có `sentence_id` tùy chọn nhưng không nhận `null`.
+- **Test `recordingsSchema.test.ts` sửa có chủ đích:** `lesson_id` / `sentence_id` được phép null; có thêm ràng buộc `recordings_target_check`; giới hạn thời lượng 35 / 90 giây.
+- **`objectKeys.ts`** có thêm hàm `recordingExtension` (đặt tên file gửi cho OpenAI).
+- **Script đo:**
+  - lệnh `yarn eval:measure`;
+  - bảng nhãn thêm cột `target` (`L01`–`L03`, `UNIT`) và `text` (câu viết);
+  - nhãn nhận cả `đạt` / `chưa` lẫn `pass` / `fail`;
+  - có in kết quả theo nhóm người lớn / trẻ em.
+- **Không sửa script deploy:** staging / production dùng `AI_PROVIDER=openai`. `.env.example` thêm các biến STT.
+
+**Bật trên staging** (sau khi deploy PR 12–15–13):
+1. Trong env staging (không phải secret): `STT_PROVIDER=openai`, và `SPEECH_EVALUATION_USER_IDS=<id tài khoản nội bộ>`. Key dùng chung `AI_API_KEY` sẵn có.
+2. Có bộ T2: `yarn eval:measure --env staging --labels <csv> --dir <thư mục>`. Đạt A3 mới đặt `SPEECH_EVALUATION_ENABLED=true`.
+3. Nếu thấy kết quả chấm về chậm: bật "CPU always allocated" cho Cloud Run (§8).
+
