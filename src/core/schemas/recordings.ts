@@ -67,7 +67,9 @@ export const RecordingViewSchema = z.object({
   client_recording_id: z.string().uuid().optional(),
   lesson_id: z.string().uuid().optional(),
   sentence_id: z.string().uuid().optional(),
-  mode: z.enum([...SpeakingModeRecordingSchema.options, 'lesson_task']).optional(),
+  mode: z
+    .enum([...SpeakingModeRecordingSchema.options, 'lesson_task'])
+    .optional(),
   duration_ms: z.number().int().optional(),
   attempt_id: z.string().uuid().optional(),
 });

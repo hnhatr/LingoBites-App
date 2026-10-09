@@ -68,6 +68,7 @@ export function SpeechGradingSettingsRow() {
   return (
     <View testID="speech-grading-settings">
       <ProfileSettingsRow
+        accessibilityHint="Gửi bản ghi bài nói ở bước 5 để máy chấm"
         accessibilityLabel="Chấm bài nói bằng máy"
         icon="record_voice_over"
         label="Chấm bài nói bằng máy"
@@ -80,6 +81,7 @@ export function SpeechGradingSettingsRow() {
           Tắt thì bạn tự đánh giá, bản ghi chỉ ở trên máy.
         </AppText>
         <Switch
+          accessibilityHint="Bật hoặc tắt chấm bài nói bằng máy"
           accessibilityLabel="Chấm bài nói bằng máy"
           onValueChange={handleToggle}
           testID="speech-grading-switch"

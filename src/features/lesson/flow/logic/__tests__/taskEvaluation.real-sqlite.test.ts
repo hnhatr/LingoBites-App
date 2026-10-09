@@ -3,7 +3,7 @@ import {join} from 'path';
 
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
-import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import type {EvaluationPayload} from '@core/schemas/evaluation';
 import {getTaskAnswer, saveEvaluation} from '@core/sync/taskAnswers';
@@ -218,5 +218,4 @@ it('an answer without a result for a day is let go (H10)', () => {
   expect(
     answerExpired({...answer, evaluation: pass}, created + ANSWER_EXPIRY_MS),
   ).toBe(false);
-  void getDatabase();
 });
