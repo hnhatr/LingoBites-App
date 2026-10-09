@@ -114,12 +114,22 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s\n' "$APP_ENV_FILE" | tr -d '\r' > "$ENVFILE"
-          for key in ANDROID_BUNDLE_ID ANDROID_APP_VERSION_NAME ANDROID_APP_VERSION_CODE APP_NAME; do
+          for key in APP_ENV API_BASE_URL ANDROID_BUNDLE_ID ANDROID_APP_VERSION_NAME ANDROID_APP_VERSION_CODE APP_NAME; do
             if ! grep -q "^${key}=" "$ENVFILE"; then
               echo "Missing ${key} in APP_ENV_FILE for '${{ inputs.env }}'." >&2
               exit 1
             fi
           done
+          app_env="$(grep '^APP_ENV=' "$ENVFILE" | cut -d= -f2-)"
+          api_base_url="$(grep '^API_BASE_URL=' "$ENVFILE" | cut -d= -f2-)"
+          if [ "$app_env" != "${{ inputs.env }}" ]; then
+            echo "APP_ENV in APP_ENV_FILE must match '${{ inputs.env }}'." >&2
+            exit 1
+          fi
+          case "$api_base_url" in
+            https://*) ;;
+            *) echo "API_BASE_URL in APP_ENV_FILE must be an HTTPS URL." >&2; exit 1 ;;
+          esac
           echo "Package: $(grep '^ANDROID_BUNDLE_ID=' "$ENVFILE" | cut -d= -f2-)"
           echo "Version name: $(grep '^ANDROID_APP_VERSION_NAME=' "$ENVFILE" | cut -d= -f2-)"
         env:
