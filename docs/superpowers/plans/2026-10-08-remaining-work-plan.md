@@ -226,6 +226,11 @@ Bộ sinh chung `lessonComposer` cho ra bài **qua validator** (0 vi phạm spec
 
 Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
+**Phương án chốt 2026-10-09: "chọn câu → bài 6 bước".** Người dùng chọn 1–8 câu trong một bài. Server sinh **một bài mới** liên kết về bài gốc, chỉ gọi AI **1 lần** (dịch / IPA lấy lại từ DB, hoạt động bước 2–4 sinh theo luật). Item AI tạo được tự publish, có `reviewed_at` để admin rà. Enrich lúc tạo bài tắt mặc định (giữ code). Plan chi tiết:
+- `2026-10-09-s4-1-server-lesson-composer.md`
+- `2026-10-09-s4-2-admin-compose-six-step.md`
+- `2026-10-09-s4-3-learner-compose-six-step.md`
+
 | PR | Repo | Nội dung | Xong khi |
 |---|---|---|---|
 | S4.1 | server | `lessonComposer` lõi + test bằng AI mock và fixture. **Dùng lại** kết quả dịch / phân tích từ, ngữ pháp / IPA mà luồng tạo bài hiện có đã sinh, hoặc gộp vào cùng một lần gọi AI. Không gọi AI phân tích lại câu. | Bài mẫu qua validator; số lần gọi AI mỗi bài ghi trong plan S4.1 |
@@ -334,9 +339,9 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
 | # | Câu hỏi | Đề xuất | Cần cho | Chốt |
 |---|---|---|---|---|
-| Q5 | Item `draft` do AI tạo có vào danh mục chung không | Không tự vào; admin duyệt mới chuyển `published` | S4.1 | |
+| Q5 | Item `draft` do AI tạo có vào danh mục chung không | Không tự vào; admin duyệt mới chuyển `published` | S4.1 | **Tự publish**, `source = ai` + `reviewed_at` để admin rà sau – 2026-10-09 |
 | Q8 | Ai được tự sinh bài, giới hạn bao nhiêu | Gói trả phí: 5 bài / ngày; miễn phí: 1 bài / ngày; trẻ em: không tự sinh | S4.3 | |
-| Q9 | Admin có "nhận về" bài AI sinh từ người học làm nội dung chung không | Có, dùng chức năng chuyển bài hiện có; vào trạng thái nháp, admin duyệt | S4.2 | |
+| Q9 | Admin có "nhận về" bài AI sinh từ người học làm nội dung chung không | Có, dùng chức năng chuyển bài hiện có; vào trạng thái nháp, admin duyệt | S4.2 | Có: admin chọn câu trong bài người học → sinh bài nháp trong unit (plan S4.2) – 2026-10-09 |
 | Q10 | Danh mục tình huống chuẩn | Bắt đầu 20 tình huống A1 (quán ăn, mua sắm, hỏi đường, sân bay, khách sạn, khám bệnh, trường học, giới thiệu bản thân…); team nội dung bổ sung | S5.1 | |
 | Q11 | Nhà cung cấp AI + ngân sách sinh bài | OpenAI (đã tích hợp), model đặt bằng env; trần chi phí theo tháng do team đặt, vượt thì tắt nút sinh bài | S4.1 | |
 | D1 | Đoạn video dùng cho bước 2 | Tối đa 30 giây mỗi đoạn, tối đa 3 đoạn mỗi bài | S4.2 | |
@@ -464,7 +469,7 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] Bước 1 – hồ sơ + kiểm tra đầu vào
 
 **Giai đoạn 3 – Stage 4**
-- [ ] S4.1 `lessonComposer`
+- [ ] S4.1 `lessonComposer` (plan viết 2026-10-09, chờ duyệt)
 - [ ] S4.2 admin "Sinh bài 6 bước"
 - [ ] S4.3 người học "Học theo 6 bước"
 - [ ] S4.4 ảnh không chữ
