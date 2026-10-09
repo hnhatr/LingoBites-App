@@ -1,6 +1,6 @@
 # PR 15 – Server: đạt bài, đạt unit, ghi nhớ item
 
-> Trạng thái: **CHỜ DUYỆT**. Chưa code.
+> Trạng thái: **ĐÃ CODE**: P1–P8 đã duyệt (2026-10-09); server `bdef2db` → `9632780` (5 commit), app `26960860` (fixture). Xem §11 cho kết quả và các điểm lệch.
 > Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (+ nhãn / thông báo lỗi nhỏ ở `admin-web`, + 1 commit chỉ chép fixture sang `LingoBites-App`). Nhánh: `claude/funny-archimedes-gmioda`.
 > Thuộc Giai đoạn 1 (`2026-10-09-phase1-stage3-plan.md` §7). Cần trước: PR 12 (đã code). Không cần key OpenAI.
 
@@ -150,3 +150,36 @@ item_memory:     { item_code, stage, due_at, stable_at, last_result, last_review
 - **Chi phí push:** mỗi lượt ôn đến hạn tốn 1–2 truy vấn trong transaction push; `settleUnit` đọc các bài của unit. Batch nhỏ (≤ 100) nên chấp nhận được; có index `(user_id, due_at)`.
 - **Tự đánh giá tính là đạt bài (B3)** dễ "đạt ảo". Đã ghi `passed_by` để báo cáo tách ra; máy chấm đạt sau sẽ nâng nguồn.
 - **P5**: khi chưa bật chấm nói, chưa ai đạt unit được. Đây là hệ quả của A13, cần team biết.
+
+## 11. Kết quả code và điểm lệch so với plan
+
+**Kiểm tra cuối:**
+- Server:
+  - `tsc` sạch (`tsconfig.json`, `tsconfig.scripts.json`);
+  - unit 469 pass (trước 460; 309 skip vì cần DB);
+  - `test:db` 259/259 (trước 253);
+  - `prisma migrate diff`: rỗng;
+  - prettier sạch; eslint chỉ còn lỗi có sẵn `test/ipa.test.ts:84`.
+- `test/accountMerge.test.ts` (ngoài `test:db`) chạy tay với DB: 8/8.
+- admin-web: lint / typecheck / format sạch, Vitest 160/160, Playwright 16/16. Playwright chạy bằng Chromium có sẵn trên máy, qua một config tạm đã xoá; `playwright.config.ts` không đổi.
+- App:
+  - `tsc` sạch, lint 178/281, Jest 2205 pass;
+  - fixture mới trùng byte với server;
+  - `format:check` báo `package.json`: lỗi có sẵn, file không đổi so với `develop`.
+
+**Điểm lệch so với plan:**
+- **Gộp commit 3 và 4 của §8.** Service tính kết quả và 3 collection chỉ đọc phụ thuộc nhau nên vào cùng một commit (`75898a5`).
+- **`writeServerRecord` chuyển sang file riêng** `sync/repository/serverRecords.ts`, để tránh vòng import giữa sync store và outcomes.
+- **`recordLessonAttempts` chuyển** từ `lessonOutcomes.ts` sang `learningOutcomes.ts`. Luật "xong phần luyện" giữ nguyên. `lessonOutcomes.ts` còn lại hàm đọc `getLessonOutcome` (có thêm `passedBy`) và `PRACTICE_STEPS`.
+- **Sửa thứ tự trong `push`.** Bộ đếm revision của user được lưu **trước** khi tính kết quả. Nếu không, record do server ghi trong cùng transaction sẽ bị bước cập nhật revision cuối của push ghi đè, và revision bị dùng lại.
+- **Publish unit bị chặn trả 409 `UNIT_SPEC_INVALID`**, không phải 422 như plan. Lý do: thống nhất với `LESSON_SPEC_INVALID` (cũng 409). Body có `details.violations`.
+- **admin-web chỉ sửa `client.ts`.** `UNIT_SPEC_INVALID` được xếp vào loại `publish_invalid` (+ test). `UnitEditPage` vốn đã hiện thông báo lỗi của server nên không phải sửa.
+- **Hai cách đếm bài khác nhau, có chủ đích:**
+  - chặn publish unit đếm mọi bài **chưa archive** (giống spec-check);
+  - mở / đạt unit chỉ đếm bài **đã publish**.
+- **Đạt unit cũng đặt `summative_unlocked_at`** nếu trước đó chưa có (đạt thì chắc chắn đã mở).
+- **`item_memory` có thêm cột `streak`** (số lần đúng liền ở mức ≥ 2) để tính "ổn định". Thời điểm ôn lấy `occurred_at` của lượt làm; push đã chặn giờ máy lệch quá 5 phút.
+- **Gộp tài khoản chuyển thêm `lesson_outcomes`.** Bảng này PR 8 còn sót; bản ghi của user đích được giữ khi trùng bài.
+- **Test thêm helper `test/helpers/sampleUnit.ts`** (dọn unit mẫu), dùng chung cho `evaluationRoutes` và `learningOutcomes`.
+- **Có thêm** schema payload của 3 collection (`outcomes/model/outcomePayloads.ts`). Test DB kiểm record pull theo đúng schema này.
+

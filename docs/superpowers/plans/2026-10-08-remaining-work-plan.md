@@ -454,7 +454,7 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] Team: ghi bộ 40 bản ghi có nhãn (T2), viết mục giọng nói trong chính sách + khai báo store (T4)
 - [ ] Đo độ chính xác: chấm oan < 10%, bật flag `speechEvaluation`
 - [ ] PR 14 – app chấm bước 5
-- [ ] PR 15 – đạt bài, đạt unit, ghi nhớ (server)
+- [x] PR 15 – đạt bài, đạt unit, ghi nhớ (server) — đã code, chưa mở pull request (plan: `2026-10-09-pr15-server-pass-unit-memory.md`)
 - [ ] PR 16 – app kết quả, tiến độ, ôn
 - [ ] PR 17 – admin
 

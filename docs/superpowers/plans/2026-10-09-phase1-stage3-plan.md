@@ -1,6 +1,6 @@
 # Giai đoạn 1 – Stage 3: âm thanh, chấm bài, đạt bài, ghi nhớ (PR 12–17)
 
-> Trạng thái: **ĐÃ DUYỆT** (2026-10-09). **PR 12 ĐÃ CODE**: server `347f9a6` → `6a3a84e` (5 commit), app `1096aaa3` (fixture). Xem §4.9 cho kết quả và các điểm lệch. PR 13–17: chưa code.
+> Trạng thái: **ĐÃ DUYỆT** (2026-10-09). **PR 12 ĐÃ CODE**: server `347f9a6` → `6a3a84e` (5 commit), app `1096aaa3` (fixture). Xem §4.9 cho kết quả và các điểm lệch. **PR 15 ĐÃ CODE** (plan riêng `2026-10-09-pr15-server-pass-unit-memory.md`, migration là **008**, nên PR 13 dùng 009). PR 13, 14, 16, 17: chưa code.
 > Ngày lập: 2026-10-09. Nền: `develop` (Stage 0–2 đã merge). Repo: `LingoBites-Server` (PR 12, 13, 15, 17 + admin-web), `LingoBites-App` (PR 14, 16).
 > Nguồn: `2026-10-08-remaining-work-plan.md` (mục 4 "Giai đoạn 1", mục 5 "Bảng chốt") và `2026-10-08-stage3-audio-evaluation-analysis.md` (thiết kế chốt).
 >
