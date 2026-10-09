@@ -126,7 +126,7 @@ OUTPUT TEMPLATE
 ```
 
 Ghi chú thiết kế:
-- Luật 1 là cửa của D2: bài không phù hợp thì dừng sớm, trả về rất ít token và không tính lượt.
+- Luật 1 là cửa của D2: bài không phù hợp thì dừng sớm, trả về rất ít token (vẫn tính lượt vì đã gọi AI, theo H12).
 - Luật 2 và 6 giữ bài **bám sát nguồn**. Không cho AI "dạy thêm" thứ ngoài câu đã chọn.
 - Luật 3 ứng với cảnh báo `CAN_DO_NOT_OBSERVABLE` của validator: tránh động từ không quan sát được.
 - Luật 8 yêu cầu **đổi chi tiết** ở bước 5, đúng tinh thần "vận dụng độc lập" (không chỉ lặp lại câu).
