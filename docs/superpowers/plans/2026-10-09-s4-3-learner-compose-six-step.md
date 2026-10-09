@@ -16,7 +16,7 @@ Trong một bài người học đang xem (bài tự tạo từ text / OCR / You
 | App: chế độ chọn câu, màn chờ, mở player cho bài người học có spec (bỏ điều kiện `origin = admin`) | |
 | App: bước 2 phát đúng đoạn video (`startMs` / `endMs`) với bài YouTube | |
 | Hub bài sinh ra hiện các hàng như bài curriculum (4.7), chip "AI tạo", link "Bài gốc" | |
-| Tắt enrich lúc tạo bài mặc định (`CREATION_ENRICH_ENABLED` mặc định `false`) | Xoá code enrich (đề xuất riêng khi dọn dẹp) |
+| Enrich lúc tạo bài **giữ bật** như hiện nay (J7) | Đổi mặc định hoặc xoá code enrich |
 
 ## 2. Quyết định (dùng đề xuất nếu bạn không đổi)
 
@@ -28,7 +28,7 @@ Trong một bài người học đang xem (bài tự tạo từ text / OCR / You
 | J4 | Offline | Nút tắt khi không có mạng (giống tạo bài hiện nay). Bài đã sinh tải về chạy offline như bài khác. |
 | J5 | Tiến độ / lượt làm | Dùng nguyên `activity_attempts` kind `lesson` + `lesson_outcomes` (PR 8). Hiện `curriculum/outcomes/repository/lessonOutcomes.ts:35` **bỏ qua** bài `origin != admin`; đổi thành "bài có đặc tả" để bài sinh ra cũng ghi `practice_completed_at`. |
 | J6 | Item của bài sinh ra trên app | Như bài curriculum: thẻ item, lưu flashcard theo item. Không vào lịch ôn item của Stage 3 (Q7 / B6: bài người học tự tạo không tính). |
-| J7 | Enrich cũ | `CREATION_ENRICH_ENABLED` đổi mặc định thành `false` (user chốt 2026-10-09). Phân tích câu khi bấm (`/sentences/:id/analysis`) **giữ nguyên**. ⚠️ Bài mới tạo sẽ không còn item tự động cho ôn / quiz cho tới khi người học mở phân tích câu hoặc sinh bài 6 bước. |
+| J7 | Enrich cũ | **Giữ bật** (user chốt lại 2026-10-09): bài tự tạo vẫn có từ vựng / ngữ pháp cho hub, quiz, ôn ngay khi tạo. Tắt được bằng env `CREATION_ENRICH_ENABLED=false` (không cần sửa code). Composer dùng lại phân tích đã lưu của câu đã chọn (S4.1 H4). |
 
 ## 3. Server
 
@@ -40,7 +40,6 @@ Trong một bài người học đang xem (bài tự tạo từ text / OCR / You
 - `lessonOutcomes.ts:35`: đổi `if (origin !== 'admin') continue` thành "bỏ qua khi bài không có đặc tả" (J5).
 - Header snapshot thêm `derived_from_lesson_id` (tuỳ chọn, nullable) và `generated: boolean` (`compose_key` khác null).
 - `/v1/capabilities`: `lessons.compose = { enabled }` (`LESSON_COMPOSE_ENABLED` và chưa vượt trần tháng).
-- Config: `CREATION_ENRICH_ENABLED` mặc định `false`; cập nhật `.env.example` và docs vận hành (**không** sửa `.env`).
 - ⚠️ **Đổi API public:** thêm trường vào snapshot (tuỳ chọn) và capabilities → làm mới fixture `valid-lesson-snapshot-*` và SHA, chép sang app trong 1 commit fixture.
 
 ## 4. App
@@ -65,7 +64,6 @@ Không thêm thư viện; dùng `YouTubePlayer`, client HTTP và poll có sẵn.
 | Repo | Nội dung |
 |---|---|
 | Server DB `learnerLessonCompose.test.ts` | 202 → bài learner `published`, owner đúng; snapshot của bài sinh ra có spec / items / tasks; bài learner thường vẫn `spec: null`; bài người khác 404; giới hạn ngày 429; cache 200 không tính lượt; `NOT_SUITABLE` không tính lượt; capability bật / tắt; push `activity_attempts` cho bài learner tính `practice_completed_at`. |
-| Server unit | Config `CREATION_ENRICH_ENABLED` mặc định `false`; pipeline tạo bài không gọi enrich khi tắt. |
 | App Jest | `isFlowLesson` cho bài learner có spec; `useCompose` các trạng thái (giả lập client); chế độ chọn câu giới hạn 8; `ListenRepeatActivity` có / không có đoạn video; hub hiện chip "AI tạo"; parse fixture snapshot mới. |
 | App kiểm tay (máy thật) | Tạo bài từ text → chọn 3 câu → học trọn 6 bước; bài YouTube → bước 2 phát đúng đoạn; tắt mạng sau khi tải bài → vẫn học được. |
 
@@ -76,22 +74,20 @@ Lệnh app: `yarn tsc`, `yarn lint` (không vượt ngân sách warning 281), `y
 **Server**
 1. `feat(compose): learner compose route, limit and capability`.
 2. `feat(delivery): learner lessons with a spec ship spec, items and tasks`.
-3. `chore(config): creation enrich off by default`.
-4. `test: refresh snapshot fixture for derived lessons`.
+3. `test: refresh snapshot fixture for derived lessons`.
 
 **App**
-5. `chore(fixtures): copy derived-lesson snapshot fixture from server`.
-6. `feat(lesson): six-step player runs learner lessons with a spec`.
-7. `feat(lesson): select sentences and compose a six-step lesson`.
-8. `feat(lesson): listen and repeat plays the source video clip`.
-9. `feat(lesson): hub and library mark AI-made six-step lessons`.
-10. `docs: S4.1–S4.3 plans marked implemented; remaining-work plan progress`.
+4. `chore(fixtures): copy derived-lesson snapshot fixture from server`.
+5. `feat(lesson): six-step player runs learner lessons with a spec`.
+6. `feat(lesson): select sentences and compose a six-step lesson`.
+7. `feat(lesson): listen and repeat plays the source video clip`.
+8. `feat(lesson): hub and library mark AI-made six-step lessons`.
+9. `docs: S4.1–S4.3 plans marked implemented; remaining-work plan progress`.
 
 ## 7. Rủi ro
 
 | Rủi ro | Cách giảm |
 |---|---|
 | Đổi điều kiện `isFlowLesson` mở player cho bài learner cũ | Bài learner cũ không có `spec` nên vẫn `false`; có test. |
-| Tắt enrich làm giảm item cho ôn / quiz của bài tự tạo | Ghi rõ ở J7; đổi lại được bằng env nếu cần. |
 | Người học chờ lâu | Màn chờ tối đa 60 giây, bài vẫn về thư viện khi xong. |
 | Phát đoạn YouTube không chính xác trên máy yếu | Dừng theo `endMs` với sai số ±300 ms; kiểm tay trên máy thật. |

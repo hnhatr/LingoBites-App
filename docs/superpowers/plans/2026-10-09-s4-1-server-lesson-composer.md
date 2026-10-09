@@ -23,7 +23,7 @@ Sau PR này, server có:
 |---|---|
 | Model, prompt, kiểm tra JSON AI, `composeLesson()` thuần | Route admin + nút admin + bộ lọc "AI tạo, chưa rà" (**S4.2**) |
 | Store ghi bài sinh ra (1 transaction), worker phân nhánh theo `kind` | Route người học, snapshot bài người học có spec, app (**S4.3**) |
-| Migration `007`: `lessons.derived_from_lesson_id`, `lessons.compose_key`, `lesson_creation_requests.kind`, `items.reviewed_at` | Tắt enrich mặc định (**S4.3**, sau khi app có đường thay thế) |
+| Migration `007`: `lessons.derived_from_lesson_id`, `lessons.compose_key`, `lesson_creation_requests.kind`, `items.reviewed_at` | Đổi cấu hình enrich (giữ bật, tắt được bằng env) |
 | Mở rộng `listen_and_repeat.prompts` với `sentenceId` / `startMs` / `endMs` (tuỳ chọn) | App / admin phát đúng đoạn video (**S4.2** preview, **S4.3** app) |
 | Giới hạn lượt / trần chi phí / cache (service + env) | Gói trả phí, tài khoản trẻ em (chưa có hồ sơ – Bước 1) |
 | Script dev `scripts/composeSample.ts` chạy trên bài L03 của seed | Stage 5 (tình huống) – tái dùng `composeLesson()` ở S5.3 |
@@ -35,7 +35,7 @@ Sau PR này, server có:
 | H1 | Đầu vào | `lesson_id` + `sentence_ids` (**1–8 câu**, cùng một bài, giữ thứ tự trong bài). Bài gốc là bài bất kỳ có câu: `admin_text`, `learner_text`, `learner_ocr`, `youtube`. Câu dài quá 300 ký tự bị từ chối (`COMPOSE_SENTENCE_TOO_LONG`). |
 | H2 | Lưu ở đâu | **Bài mới** (user chốt 2026-10-09). `lessons.derived_from_lesson_id` (FK, `ON DELETE SET NULL`) + `lessons.compose_key`. Câu được **chép** sang bài mới (giữ `text_vi`, `ipa`, `start_ms`, `end_ms`); bài mới giữ `source_type` và `youtube_video_id` của bài gốc để phát đúng đoạn video. |
 | H3 | Ai sở hữu bài sinh ra | Admin: `origin = admin`, `status = draft`, `unit_id` do admin chọn (S4.2). Người học: `origin = learner`, `owner_user_id`, `status = published`, không unit (S4.3). |
-| H4 | Số lần gọi AI | **1 lần** `compose` / bài. Không gọi dịch, IPA, enrich: dữ liệu câu lấy từ DB. Item mới lấy IPA từ CMUdict cục bộ, thiếu thì dùng `ipa` AI trả trong cùng lần gọi. JSON sai thì gọi lại **1 lần** kèm danh sách lỗi (tối đa 2 lần gọi khi lỗi). |
+| H4 | Số lần gọi AI | **1 lần** `compose` / bài. Không gọi dịch, IPA, enrich: dữ liệu câu lấy từ DB. Câu đã có phân tích (enrich lúc tạo bài hoặc phân tích khi bấm) thì đưa từ vựng / ngữ pháp đã lưu vào prompt làm gợi ý; câu chưa có thì AI tự rút trong cùng lần gọi. Item mới lấy IPA từ CMUdict cục bộ, thiếu thì dùng `ipa` AI trả trong cùng lần gọi. JSON sai thì gọi lại **1 lần** kèm danh sách lỗi (tối đa 2 lần gọi khi lỗi). |
 | H5 | Cache | `compose_key = sha256(source_lesson_id, sentence_ids đã sắp xếp, COMPOSE_PROMPT_VERSION, level)`. Người học chọn lại đúng nhóm câu đó → trả bài đã sinh, **không gọi AI**, không tính lượt. Admin có `force: true` để sinh bản mới (S4.2). |
 | H6 | Item AI tạo (Q5) | **Tự publish** (user chốt 2026-10-09) với `source = 'ai'`, `reviewed_at = null`. Quy tắc khi trùng mã: item `published` có sẵn → dùng lại, **không ghi đè**; item `draft` có `source = 'ai'` → publish; item `archived` hoặc `draft` của admin → **không dùng** (bỏ item đó khỏi bài, ghi log). Pattern chỉ dùng `values` cho chỗ trống, không dùng `item_refs` (tránh luật "published chỉ trỏ tới published"). |
 | H7 | Bài không phù hợp (D2) | AI trả `suitable = false` + `reason_vi` → request `failed` với mã `COMPOSE_NOT_SUITABLE`, **không** tính lượt người học; bài gốc giữ dạng hub. |
@@ -66,6 +66,8 @@ POST (S4.2 / S4.3) ─► kiểm tra quyền đọc bài gốc, câu, giới h�
 ```
 
 ## 4. Prompt và JSON trả về (`curriculum/composer/service/composeAi.ts`)
+
+> Bản nháp prompt đầy đủ + ví dụ để review: `2026-10-09-s4-1-compose-prompt-draft.md`.
 
 Prompt gồm: trình độ, đối tượng, câu đã chọn (`id`, `en`, `vi`), item ứng viên (`code`, `text`, `meaning_vi`), luật đầu ra và marker `COMPOSE_PROMPT_MARKER = 'Lesson sentences (JSON):'` để completion giả lập trong test nhận ra (giống `TRANSLATION_PROMPT_MARKER`).
 
@@ -177,7 +179,7 @@ Lệnh: `yarn test`, `yarn test:db`, `yarn lint`, `yarn tsc` (server). Mục ti�
 4. `feat(composer): pure composeLesson builds a publishable six-step lesson`.
 5. `feat(composer): materialize composed lesson and worker dispatch by kind`.
 6. `feat(composer): learner daily limit, monthly cap, compose cache`.
-7. `chore(scripts): composeSample dev script on the sample unit`.
+7. `chore(scripts): composeSample dev script on the sample unit` (mặc định dùng AI giả lập; `--live` gọi AI thật và in prompt + JSON để review).
 8. `docs: S4.1 plan marked implemented` (repo app).
 
 ## 11. File tóm tắt

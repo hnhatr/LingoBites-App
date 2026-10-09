@@ -226,7 +226,7 @@ Bộ sinh chung `lessonComposer` cho ra bài **qua validator** (0 vi phạm spec
 
 Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
-**Phương án chốt 2026-10-09: "chọn câu → bài 6 bước".** Người dùng chọn 1–8 câu trong một bài. Server sinh **một bài mới** liên kết về bài gốc, chỉ gọi AI **1 lần** (dịch / IPA lấy lại từ DB, hoạt động bước 2–4 sinh theo luật). Item AI tạo được tự publish, có `reviewed_at` để admin rà. Enrich lúc tạo bài tắt mặc định (giữ code). Plan chi tiết:
+**Phương án chốt 2026-10-09: "chọn câu → bài 6 bước".** Người dùng chọn 1–8 câu trong một bài. Server sinh **một bài mới** liên kết về bài gốc, chỉ gọi AI **1 lần** (dịch / IPA lấy lại từ DB, hoạt động bước 2–4 sinh theo luật). Item AI tạo được tự publish, có `reviewed_at` để admin rà. Enrich lúc tạo bài giữ bật (tắt được bằng env `CREATION_ENRICH_ENABLED=false`); composer dùng lại phân tích đã lưu. Plan chi tiết:
 - `2026-10-09-s4-1-server-lesson-composer.md`
 - `2026-10-09-s4-2-admin-compose-six-step.md`
 - `2026-10-09-s4-3-learner-compose-six-step.md`
