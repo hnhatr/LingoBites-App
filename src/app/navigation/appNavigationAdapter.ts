@@ -130,6 +130,7 @@ export function createAppNavigation(
 
   return {
     openLesson: lessonId => navigate('CanonicalLessonPlayer', {lessonId}),
+    openLessonFlow: lessonId => navigate('LessonFlowPlayer', {lessonId}),
     openCatalog: () => navigate('CanonicalCatalog', undefined),
     openLibrarySection: section => navigate('LibraryList', {section}),
     openVideoHub: () => navigate('VideoHub', undefined),
@@ -138,6 +139,7 @@ export function createAppNavigation(
     startCreate,
     finishCreate,
     openReview: () => navigate('DailyReview', undefined),
+    openItemReview: () => navigate('ItemReview', undefined),
     openPractice: lessonId => navigate('Practice', {lessonId}),
     openToday: target => navigate('Today', target),
     openSpeakingRoom: () => navigate('SpeakingRoom', undefined),

@@ -38,25 +38,42 @@ import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
+import {isFlowLesson} from '../../flow/logic/practiceCompletion';
+import {useFlowEntry} from '../../flow/logic/useFlowEntry';
 import {
   CanonicalLessonHub,
   type LessonHubSection,
+  lessonSectionTitleKey,
 } from '../components/CanonicalLessonHub';
 import {CanonicalLessonPlayer} from '../components/CanonicalLessonPlayer';
+import {ComposeSheet} from '../components/ComposeSheet';
 import {LessonDisplayToggles} from '../components/LessonDisplayToggles';
 import {LessonGrammarSection} from '../components/LessonGrammarSection';
+import {LessonListeningSection} from '../components/LessonListeningSection';
+import {LessonPatternSection} from '../components/LessonPatternSection';
+import {LessonPronunciationSection} from '../components/LessonPronunciationSection';
 import {LessonVocabularySection} from '../components/LessonVocabularySection';
 import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from '../components/SentenceAnalysisPanel';
 import type {YouTubePlayerRef} from '../components/YouTubePlayer';
+import {canComposeFrom} from '../logic/composePick';
+import {
+  markComposedLessonSeen,
+  requestComposeSheet,
+  useComposeTracker,
+} from '../logic/composeTracker';
 import {
   collectLessonGrammar,
+  collectLessonListening,
+  collectLessonPatterns,
+  collectLessonPronunciation,
   collectLessonVocabulary,
   mergeAnalyses,
 } from '../logic/lessonHubContent';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
+import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
 import {useLessonSavedItems} from '../logic/useLessonSavedItems';
 import type {LessonFlowParamList} from './navigationTypes';
@@ -67,12 +84,6 @@ type Props = NativeStackScreenProps<
 >;
 
 type PlayerView = 'hub' | LessonHubSection;
-
-const SECTION_TITLE_KEYS: Record<LessonHubSection, string> = {
-  sentences: 'lessonPlayer.explore_sentences_title',
-  vocabulary: 'lessonPlayer.explore_vocabulary_title',
-  grammar: 'lessonPlayer.explore_grammar_title',
-};
 
 function fireAndForget(task: Promise<unknown>): void {
   task.catch(() => undefined);
@@ -120,6 +131,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     Record<string, SentenceAnalysisPanelState | SentenceAnalysisPanelError>
   >({});
   const floatingClearance = useFloatingTabBarClearance();
+  const composeAvailable = useComposeAvailable();
+  const [composeOpen, setComposeOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -130,8 +143,10 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   useEffect(() => {
     if (lessonReady) {
       markStarted();
+      // S4.3: a composed lesson the learner opens needs no "ready" banner.
+      markComposedLessonSeen(lessonId);
     }
-  }, [lessonReady, markStarted]);
+  }, [lessonId, lessonReady, markStarted]);
 
   useFocusEffect(
     useCallback(() => {
@@ -143,11 +158,31 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   useFocusEffect(reloadSavedItems);
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
-  const isYouTubeStudy = snapshot?.source_type === 'youtube';
+  const flowEntry = useFlowEntry(lessonId, snapshot);
+  // A six-step lesson opens on its hub even when it came from a video (S4.3:
+  // a learner's lesson composed from YouTube sentences keeps source_type).
+  const flowLesson = snapshot !== null && isFlowLesson(snapshot);
+  const isYouTubeStudy = snapshot?.source_type === 'youtube' && !flowLesson;
   const isYouTubeLegacy =
     snapshot !== null &&
+    !flowLesson &&
     Boolean(snapshot.youtube) &&
     snapshot.source_type !== 'youtube';
+  const canCompose =
+    composeAvailable && snapshot !== null && canComposeFrom(snapshot);
+  const openCompose = canCompose ? () => setComposeOpen(true) : undefined;
+
+  // An "Đang tạo bài" card opened this lesson to show its compose progress.
+  const sheetRequested = useComposeTracker(
+    store => store.sheetLessonId === lessonId,
+  );
+  const composeSheetShown = snapshot !== null && canComposeFrom(snapshot);
+  useEffect(() => {
+    if (sheetRequested && composeSheetShown) {
+      setComposeOpen(true);
+      requestComposeSheet(null);
+    }
+  }, [composeSheetShown, sheetRequested]);
   const isYouTube = isYouTubeStudy || isYouTubeLegacy;
   const inSection = snapshot !== null && !isYouTube && view !== 'hub';
 
@@ -226,12 +261,29 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     () => (snapshot ? collectLessonGrammar(snapshot, analyses) : []),
     [snapshot, analyses],
   );
+  const patterns = useMemo(
+    () => (snapshot ? collectLessonPatterns(snapshot) : []),
+    [snapshot],
+  );
+  const pronunciation = useMemo(
+    () => (snapshot ? collectLessonPronunciation(snapshot) : []),
+    [snapshot],
+  );
+  const listening = useMemo(
+    () => (snapshot ? collectLessonListening(snapshot) : []),
+    [snapshot],
+  );
 
   const showHub = snapshot !== null && !isYouTube && view === 'hub';
   // Lesson names can be long: the header keeps a short generic title and
   // the full lesson name is rendered in the page body.
   const title = inSection
-    ? t(SECTION_TITLE_KEYS[view as LessonHubSection])
+    ? t(
+        lessonSectionTitleKey(
+          view as LessonHubSection,
+          (snapshot?.lesson_items ?? []).length > 0,
+        ),
+      )
     : t('lessonPlayer.player_title');
 
   const handleSeek = useCallback((ms: number) => {
@@ -415,11 +467,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             offline={state.status === 'ready' ? state.offline : false}
             hasUpdate={state.status === 'ready' ? state.hasUpdate : false}
             onOpenSection={openView}
+            onOpenLesson={appNavigation.openLesson}
             onOpenPractice={
               practiceEnabled
                 ? () => appNavigation.openPractice(lessonId)
                 : undefined
             }
+            onOpenCompose={openCompose}
           />
         );
       case 'sentences':
@@ -439,10 +493,38 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             saveControl={savedItems.grammar}
           />
         );
+      case 'patterns':
+        return (
+          <LessonPatternSection
+            entries={patterns}
+            onSpeakText={handleSpeak}
+            saveControl={savedItems.patterns}
+          />
+        );
+      case 'pronunciation':
+        return (
+          <LessonPronunciationSection
+            entries={pronunciation}
+            onSpeakText={handleSpeak}
+          />
+        );
+      case 'listening':
+        return (
+          <LessonListeningSection
+            entries={listening}
+            onSpeakText={handleSpeak}
+          />
+        );
     }
   };
 
   const studyReady = isYouTubeStudy && state.status === 'ready';
+  // Curriculum lessons start the six-step player (PR 10, decision G1).
+  const startLabel = !flowEntry.available
+    ? t('lessonPlayer.start_learning')
+    : flowEntry.resumeAt !== null
+    ? t('lessonFlow.continue_at', {step: flowEntry.resumeAt})
+    : t('lessonFlow.start');
 
   return (
     <AppScreen>
@@ -451,13 +533,26 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         onBack={() => (inSection ? openView('hub') : navigation.goBack())}
         rightAction={
           studyReady ? (
-            <LessonDisplayToggles
-              onToggleIpa={() => setShowIpa(value => !value)}
-              onToggleTranslation={() => setShowTranslation(value => !value)}
-              showIpa={showIpa}
-              showTranslation={showTranslation}
-            />
-          ) : showHub && completionState !== 'finished' ? (
+            <>
+              {openCompose ? (
+                <HeaderIconButton
+                  accessibilityHint={t('compose.entry_subtitle')}
+                  accessibilityLabel={t('compose.entry_a11y')}
+                  icon="auto_awesome"
+                  onPress={openCompose}
+                  testID="youtube-open-compose"
+                />
+              ) : null}
+              <LessonDisplayToggles
+                onToggleIpa={() => setShowIpa(value => !value)}
+                onToggleTranslation={() => setShowTranslation(value => !value)}
+                showIpa={showIpa}
+                showTranslation={showTranslation}
+              />
+            </>
+          ) : showHub &&
+            completionState !== 'finished' &&
+            !flowEntry.available ? (
             <HeaderIconButton
               accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
               accessibilityLabel={t('lessonPlayer.complete_lesson')}
@@ -488,7 +583,18 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       )}
       {showHub ? (
         <BottomActionBar style={themedStyles.actionBar}>
-          {completionState === 'finished' ? (
+          {flowEntry.available ? (
+            // Curriculum lessons complete through their practice (G6).
+            flowEntry.practiceDone ? (
+              <AppText
+                color="secondary"
+                testID="canonical-hub-practice-done"
+                variant="label"
+              >
+                {t('lessonFlow.practice_done')}
+              </AppText>
+            ) : null
+          ) : completionState === 'finished' ? (
             <AppText
               color="secondary"
               testID="canonical-hub-completed"
@@ -507,12 +613,30 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             </AppText>
           ) : null}
           <PrimaryActionButton
-            accessibilityLabel={t('lessonPlayer.start_learning')}
-            label={t('lessonPlayer.start_learning')}
-            onPress={() => openView('sentences')}
-            testID="canonical-hub-start"
+            accessibilityLabel={startLabel}
+            label={startLabel}
+            onPress={() =>
+              flowEntry.available
+                ? appNavigation.openLessonFlow(lessonId)
+                : openView('sentences')
+            }
+            testID={
+              flowEntry.available
+                ? 'canonical-hub-start-flow'
+                : 'canonical-hub-start'
+            }
           />
         </BottomActionBar>
+      ) : null}
+      {snapshot && (canCompose || (composeOpen && composeSheetShown)) ? (
+        <ComposeSheet
+          offline={state.status === 'ready' ? state.offline : false}
+          onClose={() => setComposeOpen(false)}
+          onOpenLesson={appNavigation.openLesson}
+          onSpeakText={handleSpeak}
+          snapshot={snapshot}
+          visible={composeOpen}
+        />
       ) : null}
     </AppScreen>
   );

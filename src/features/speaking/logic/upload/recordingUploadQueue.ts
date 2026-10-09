@@ -3,6 +3,11 @@ import {AppState, type AppStateStatus} from 'react-native';
 import {getDatabase} from '@core/db/database';
 import type {RecordingUploadState, SpeakingMode} from '@core/db/types';
 import {isAccountStillOwner} from '@core/sync/syncDrainOwnership';
+import {
+  deleteTaskAnswer,
+  getTaskAnswer,
+  markTaskAnswerSent,
+} from '@core/sync/taskAnswers';
 
 import {
   createRecordingMetadata,
@@ -11,7 +16,10 @@ import {
   uploadRecordingBinary,
 } from '../api/recordingClient';
 import type {ReadRecordingFileForUploadResult} from '../recordingService';
-import {isRecordingUploadConsentOn} from './recordingConsent';
+import {
+  isEvaluationConsentOn,
+  isRecordingUploadConsentOn,
+} from './recordingConsent';
 import {
   processPendingServerRecordingDeletion,
   readPendingServerDeleteMarker,
@@ -46,9 +54,11 @@ function uploadRetryDelayMsWithJitter(
 
 export type UploadQueueRecordingRow = {
   id: string;
-  lessonId: string;
-  sentenceId: string;
-  mode: SpeakingMode;
+  lessonId: string | null;
+  sentenceId: string | null;
+  /** PR 14: the attempt a `lesson_task` recording answers. */
+  activityId: string | null;
+  mode: SpeakingMode | 'lesson_task';
   filePath: string;
   durationMs: number;
   ownerUserId: string | null;
@@ -70,13 +80,16 @@ export type RecordingUploadQueueDeps = {
   uploadBinary?: typeof uploadRecordingBinary;
   readFile?: ReadRecordingFileForUpload;
   isConsentOn?: typeof isRecordingUploadConsentOn;
+  isEvaluationConsentOn?: typeof isEvaluationConsentOn;
   isOwner?: typeof isAccountStillOwner;
+  deleteFile?: (filePath: string) => Promise<void>;
 };
 
 type PendingJobRow = {
   id: string;
-  lesson_id: string;
-  sentence_id: string;
+  activity_id: string | null;
+  lesson_id: string | null;
+  sentence_id: string | null;
   mode: string;
   file_path: string;
   duration_ms: number;
@@ -125,7 +138,8 @@ function mapRow(row: PendingJobRow): UploadQueueRecordingRow {
     id: row.id,
     lessonId: row.lesson_id,
     sentenceId: row.sentence_id,
-    mode: row.mode as SpeakingMode,
+    activityId: row.activity_id,
+    mode: row.mode as UploadQueueRecordingRow['mode'],
     filePath: row.file_path,
     durationMs: row.duration_ms,
     ownerUserId: row.owner_user_id,
@@ -233,7 +247,9 @@ function handleUploadClientFailure(
   attempts: number,
 ): void {
   if (errorCode === RECORDING_UPLOAD_CONSENT_WITHDRAWN) {
-    flipPendingToLocalOnly(id);
+    const row = readRow(id);
+    if (row?.mode === 'lesson_task') discardLessonTask(row);
+    else flipPendingToLocalOnly(id);
     return;
   }
   if (!retryable) {
@@ -248,13 +264,72 @@ function handleUploadClientFailure(
   armRetryTimer(delayMs);
 }
 
-function consentAllowsUpload(id: string): boolean {
-  const isConsentOn = (deps.isConsentOn ?? isRecordingUploadConsentOn)();
-  if (!isConsentOn) {
-    flipPendingToLocalOnly(id);
+async function defaultDeleteFile(filePath: string): Promise<void> {
+  const {deleteRecordingFile} = await import('../recordingService');
+  await deleteRecordingFile(filePath);
+}
+
+function consentOnFor(row: UploadQueueRecordingRow): boolean {
+  return row.mode === 'lesson_task'
+    ? (deps.isEvaluationConsentOn ?? isEvaluationConsentOn)()
+    : (deps.isConsentOn ?? isRecordingUploadConsentOn)();
+}
+
+/**
+ * PR 14 (decision H6): without the grading consent a spoken task answer is
+ * never sent; its file, its queue row and its pending answer go (the
+ * attempt falls back to "not graded", decision H10).
+ */
+function discardLessonTask(row: UploadQueueRecordingRow): void {
+  getDatabase().execute('DELETE FROM speaking_recordings WHERE id = ?;', [
+    row.id,
+  ]);
+  if (row.activityId) deleteTaskAnswer(row.activityId);
+  (deps.deleteFile ?? defaultDeleteFile)(row.filePath).catch(() => undefined);
+}
+
+function consentAllowsUpload(row: UploadQueueRecordingRow): boolean {
+  if (!consentOnFor(row)) {
+    if (row.mode === 'lesson_task') discardLessonTask(row);
+    else flipPendingToLocalOnly(row.id);
     return false;
   }
   return true;
+}
+
+type CreateRequest = Parameters<typeof createRecordingMetadata>[0];
+
+/** The create request of a queued row, or null when it cannot be built. */
+function createRequestFor(
+  row: UploadQueueRecordingRow,
+  file: {byteSize: number; sha256: string},
+): CreateRequest | null {
+  if (row.mode !== 'lesson_task') {
+    if (!row.lessonId || !row.sentenceId) return null;
+    return {
+      mime_type: RECORDING_UPLOAD_MIME,
+      byte_size: file.byteSize,
+      sha256: file.sha256,
+      client_recording_id: row.id,
+      lesson_id: row.lessonId,
+      sentence_id: row.sentenceId,
+      mode: row.mode,
+      duration_ms: row.durationMs,
+    };
+  }
+  const answer = row.activityId ? getTaskAnswer(row.activityId) : null;
+  if (!answer?.target) return null;
+  return {
+    client_recording_id: row.id,
+    mode: 'lesson_task',
+    attempt_id: answer.attemptId,
+    target: answer.target,
+    support_level: answer.supportLevel,
+    duration_ms: Math.max(1, Math.round(row.durationMs)),
+    mime_type: RECORDING_UPLOAD_MIME,
+    byte_size: file.byteSize,
+    sha256: file.sha256,
+  };
 }
 
 function armRetryTimer(delayMs: number): void {
@@ -275,9 +350,7 @@ async function processRecordingJob(id: string): Promise<void> {
     return;
   }
 
-  const isConsentOn = (deps.isConsentOn ?? isRecordingUploadConsentOn)();
-  if (!isConsentOn) {
-    flipPendingToLocalOnly(id);
+  if (!consentAllowsUpload(row)) {
     return;
   }
 
@@ -317,22 +390,24 @@ async function processRecordingJob(id: string): Promise<void> {
     return;
   }
 
-  if (!consentAllowsUpload(id)) {
+  if (!consentAllowsUpload(refreshed)) {
     return;
   }
 
+  const request = createRequestFor(refreshed, fileResult);
+  if (!request) {
+    markFailed(id, 'INVALID_RECORDING_ROW');
+    return;
+  }
+  // Speaking takes keep their call unchanged; task answers are gated on the
+  // grading consent (PR 14).
+  const clientOptions =
+    refreshed.mode === 'lesson_task'
+      ? {expectedUserId: refreshed.ownerUserId!, consent: 'evaluation' as const}
+      : {expectedUserId: refreshed.ownerUserId!};
   const createResult = await (deps.createMetadata ?? createRecordingMetadata)(
-    {
-      mime_type: RECORDING_UPLOAD_MIME,
-      byte_size: fileResult.byteSize,
-      sha256: fileResult.sha256,
-      client_recording_id: refreshed.id,
-      lesson_id: refreshed.lessonId,
-      sentence_id: refreshed.sentenceId,
-      mode: refreshed.mode,
-      duration_ms: refreshed.durationMs,
-    },
-    {expectedUserId: refreshed.ownerUserId!},
+    request,
+    clientOptions,
   );
 
   if (!createResult.ok) {
@@ -350,7 +425,7 @@ async function processRecordingJob(id: string): Promise<void> {
     refreshed.serverRecordingId ??
     null;
 
-  if (!consentAllowsUpload(id)) {
+  if (!consentAllowsUpload(refreshed)) {
     return;
   }
 
@@ -358,7 +433,7 @@ async function processRecordingJob(id: string): Promise<void> {
     createResult.data.upload.url,
     createResult.data.upload.content_type || RECORDING_UPLOAD_MIME,
     fileResult.binary,
-    {expectedUserId: refreshed.ownerUserId!},
+    clientOptions,
   );
 
   if (!uploadResult.ok) {
@@ -372,6 +447,13 @@ async function processRecordingJob(id: string): Promise<void> {
   }
 
   markUploaded(id, serverId);
+  if (refreshed.mode === 'lesson_task' && refreshed.activityId) {
+    // Decision H2: the Server keeps the answer 30 days; the device does not.
+    markTaskAnswerSent(refreshed.activityId);
+    await (deps.deleteFile ?? defaultDeleteFile)(refreshed.filePath).catch(
+      () => undefined,
+    );
+  }
 }
 
 async function runDrainOnce(): Promise<void> {

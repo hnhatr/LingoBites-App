@@ -1,7 +1,10 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import {LESSON_CONTRACT_FIXTURE_SHA256} from '../fixtures';
 import {
+  itemCardIds,
   LESSON_CONTRACT_FIXTURE_REVISION,
   LESSON_CONTRACT_VERSION,
   LessonCatalogResponseSchema,
@@ -9,27 +12,38 @@ import {
 } from '../lesson';
 
 /**
- * LING-173 (TASK-007): the App lesson mirror matches the Server contract at
- * Server `integration/LING-149` @ TASK-003 (`648331b`). The fixtures below
- * are byte-identical copies of the Server canonical fixtures
- * (`src/modules/canonicalLesson/model/fixtures/
- * valid-lesson-{snapshot,catalog}-response.json`, revision
- * `ling-149-task-001-r1`); this test fails if either side drifts.
+ * The App lesson mirror matches the Server contract. The fixtures below are
+ * byte-identical copies of the Server canonical fixtures
+ * (`src/modules/canonicalLesson/model/fixtures/`), pinned by the same SHA-256
+ * digests as the Server; this test fails if either side drifts.
  */
-function loadFixture(name: string): unknown {
-  return JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'fixtures', name), 'utf8'),
-  );
+function readFixture(name: string): Buffer {
+  return fs.readFileSync(path.join(__dirname, 'fixtures', name));
 }
 
-describe('canonical lesson contract mirror (Server integration/LING-149)', () => {
+function loadFixture(name: string): unknown {
+  return JSON.parse(readFixture(name).toString('utf8'));
+}
+
+type SnapshotBody = {
+  contract_version: number;
+  lesson: Record<string, unknown>;
+};
+
+describe('canonical lesson contract mirror', () => {
   it('uses lesson contract version 1', () => {
     expect(LESSON_CONTRACT_VERSION).toBe(1);
+    expect(LESSON_CONTRACT_FIXTURE_REVISION).toBe('backward-design-pr5');
   });
 
-  it('pins the TASK-001 fixture revision', () => {
-    expect(LESSON_CONTRACT_FIXTURE_REVISION).toBe('ling-149-task-001-r1');
-  });
+  it.each(Object.entries(LESSON_CONTRACT_FIXTURE_SHA256))(
+    'keeps %s byte-identical to the Server',
+    (name, digest) => {
+      expect(
+        crypto.createHash('sha256').update(readFixture(name)).digest('hex'),
+      ).toBe(digest);
+    },
+  );
 
   it('parses the canonical snapshot fixture', () => {
     const parsed = LessonSnapshotResponseSchema.safeParse(
@@ -53,6 +67,43 @@ describe('canonical lesson contract mirror (Server integration/LING-149)', () =>
     }
   });
 
+  it('parses the specification fixture with items, tasks and steps', () => {
+    const parsed = LessonSnapshotResponseSchema.safeParse(
+      loadFixture('valid-lesson-snapshot-with-spec-response.json'),
+    );
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) {
+      return;
+    }
+    const lesson = parsed.data.lesson;
+    expect(lesson.spec?.code).toBe('A1-DRINKS-L01');
+    expect(lesson.spec?.can_do.length).toBeGreaterThan(0);
+    expect(lesson.lesson_items?.length).toBeGreaterThan(0);
+    const kinds = new Set(lesson.lesson_items?.map(entry => entry.item.kind));
+    expect(kinds.has('pattern')).toBe(true);
+    expect(lesson.tasks?.some(task => task.kind === 'independent')).toBe(true);
+    expect(lesson.blocks.every(block => block.step != null)).toBe(true);
+
+    const itemIds = new Set(lesson.lesson_items?.map(entry => entry.item.id));
+    const cards = lesson.blocks.filter(block => block.type === 'item_cards');
+    expect(cards.length).toBeGreaterThan(0);
+    for (const block of cards) {
+      expect(itemCardIds(block).every(id => itemIds.has(id))).toBe(true);
+    }
+  });
+
+  it('parses the composed fixture: a learner six-step lesson (S4.3)', () => {
+    const lesson = LessonSnapshotResponseSchema.parse(
+      loadFixture('valid-lesson-snapshot-composed-response.json'),
+    ).lesson;
+    expect(lesson.origin).toBe('learner');
+    expect(lesson.generated).toBe(true);
+    expect(lesson.derived_from_lesson_id).toEqual(expect.any(String));
+    expect(lesson.situation_source).toBe('source');
+    expect(lesson.spec?.code).toBeNull();
+    expect(lesson.tasks?.some(task => task.kind === 'independent')).toBe(true);
+  });
+
   it('parses the canonical catalog fixture', () => {
     const parsed = LessonCatalogResponseSchema.safeParse(
       loadFixture('valid-lesson-catalog-response.json'),
@@ -67,35 +118,49 @@ describe('canonical lesson contract mirror (Server integration/LING-149)', () =>
     }
   });
 
-  it('accepts a v2 snapshot that carries normalised items', () => {
-    const body = loadFixture('valid-lesson-snapshot-response.json') as {
-      lesson: Record<string, unknown>;
+  it('accepts the catalog card fields code and can-do', () => {
+    const body = loadFixture('valid-lesson-catalog-response.json') as {
+      lessons: Record<string, unknown>[];
     };
-    const parsed = LessonSnapshotResponseSchema.safeParse({
+    const parsed = LessonCatalogResponseSchema.safeParse({
       ...body,
-      contract_version: 2,
-      lesson: {
-        ...body.lesson,
-        items: [
-          {
-            id: '44444444-4444-4444-8444-444444444401',
-            kind: 'word',
-            item_key: 'coffee',
-            payload: {word: 'coffee', meaning_vi: 'cà phê'},
-            sentence_ids: [],
-            future_field: true,
-          },
-        ],
-      },
+      lessons: body.lessons.map(lesson => ({
+        ...lesson,
+        code: 'A1-DRINKS-L01',
+        can_do: ['Tự gọi một đồ uống kèm cỡ.'],
+      })),
     });
     expect(parsed.success).toBe(true);
   });
 
-  it('still parses a v1 snapshot without items', () => {
-    const parsed = LessonSnapshotResponseSchema.safeParse(
-      loadFixture('valid-lesson-snapshot-response.json'),
-    );
-    expect(parsed.success && parsed.data.lesson.items).toBeFalsy();
+  it('rejects the retired v2 items[] and contract version 2', () => {
+    const body = loadFixture(
+      'valid-lesson-snapshot-response.json',
+    ) as SnapshotBody;
+    const withItems = LessonSnapshotResponseSchema.safeParse({
+      ...body,
+      lesson: {...body.lesson, items: []},
+    });
+    expect(withItems.success).toBe(false);
+    const v2 = LessonSnapshotResponseSchema.safeParse({
+      ...body,
+      contract_version: 2,
+    });
+    expect(v2.success).toBe(false);
+  });
+
+  it('rejects the retired vocabulary and grammar blocks', () => {
+    const body = loadFixture(
+      'valid-lesson-snapshot-response.json',
+    ) as SnapshotBody;
+    const blocks = body.lesson.blocks as Record<string, unknown>[];
+    for (const type of ['vocabulary', 'grammar']) {
+      const parsed = LessonSnapshotResponseSchema.safeParse({
+        ...body,
+        lesson: {...body.lesson, blocks: [{...blocks[0], type}]},
+      });
+      expect(parsed.success).toBe(false);
+    }
   });
 
   it('rejects a contract_version mismatch instead of parsing leniently', () => {

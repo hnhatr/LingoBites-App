@@ -16,11 +16,20 @@ export type ReviewCardContent = {
   cefr?: string | null;
   example?: string | null;
   exampleTranslation?: string | null;
+  /**
+   * `pattern` cards are reviewed Vietnamese → English: the front shows the
+   * meaning and the learner says the sentence; `word` holds the frame with its
+   * slots blanked.
+   */
+  kind?: string | null;
 };
 
 type FaceProps = {
   card: ReviewCardContent;
   hint: string;
+  /** Pattern cards: kind chip and what to do on the front. */
+  patternLabel?: string;
+  patternPrompt?: string;
   onSpeak: () => void;
   speakAccessibilityLabel: string;
   speakTestID: string;
@@ -34,6 +43,8 @@ type FaceProps = {
 export function ReviewCardFront({
   card,
   hint,
+  patternLabel,
+  patternPrompt,
   onSpeak,
   speakAccessibilityLabel,
   speakTestID,
@@ -41,6 +52,45 @@ export function ReviewCardFront({
 }: FaceProps) {
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  if (card.kind === 'pattern') {
+    // No speak button: hearing the sentence would give the answer away.
+    return (
+      <View style={themedStyles.shelfFront}>
+        <View style={[themedStyles.face, themedStyles.front]} testID={testID}>
+          <View pointerEvents="none" style={themedStyles.blobTop} />
+          <View pointerEvents="none" style={themedStyles.blobBottom} />
+          <View style={styles.chips}>
+            {patternLabel ? <Chip label={patternLabel} tone="gold" /> : null}
+          </View>
+          <View style={styles.center}>
+            <AppText
+              adjustsFontSizeToFit
+              numberOfLines={4}
+              style={styles.meaningFront}
+              variant="display"
+            >
+              {card.meaning}
+            </AppText>
+            {patternPrompt ? (
+              <AppText color="muted" style={styles.ipa} variant="bodyLg">
+                {patternPrompt}
+              </AppText>
+            ) : null}
+          </View>
+          <View style={styles.hintRow}>
+            <MaterialIcon
+              color={theme.colors.text.muted}
+              name="refresh"
+              size={16}
+            />
+            <AppText color="muted" variant="label">
+              {hint}
+            </AppText>
+          </View>
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={themedStyles.shelfFront}>
       <View style={[themedStyles.face, themedStyles.front]} testID={testID}>
@@ -106,9 +156,13 @@ export function ReviewCardBack({
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const inverse = {color: theme.colors.text.inverse};
+  const pattern = card.kind === 'pattern';
   const meta = [card.ipa ? formatIpa(card.ipa) : null, card.pos]
     .filter(Boolean)
     .join(' · ');
+  // A pattern's answer is the English frame; the prompt (meaning) goes on top.
+  const top = pattern ? card.meaning : card.word;
+  const hero = pattern ? card.word : card.meaning;
   return (
     <View style={themedStyles.shelfBack}>
       <View style={[themedStyles.face, themedStyles.back]} testID={testID}>
@@ -116,7 +170,7 @@ export function ReviewCardBack({
         <View style={styles.backTop}>
           <View style={styles.flex1}>
             <AppText numberOfLines={2} style={inverse} variant="h2">
-              {card.word}
+              {top}
             </AppText>
             {meta ? (
               <AppText style={[inverse, styles.soft]} variant="label">
@@ -138,9 +192,10 @@ export function ReviewCardBack({
             adjustsFontSizeToFit
             numberOfLines={4}
             style={[inverse, styles.meaning]}
+            testID={`${testID}-hero`}
             variant="display"
           >
-            {card.meaning}
+            {hero}
           </AppText>
         </View>
         {card.example ? (
@@ -280,6 +335,11 @@ const styles = StyleSheet.create({
   meaning: {
     fontSize: 34,
     lineHeight: 40,
+    textAlign: 'center',
+  },
+  meaningFront: {
+    fontSize: 30,
+    lineHeight: 38,
     textAlign: 'center',
   },
   soft: {

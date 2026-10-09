@@ -15,6 +15,7 @@ import {
   CourseListScreen,
   LevelUnitsScreen,
   UnitLessonsScreen,
+  UnitSummativeTaskScreen,
 } from '@features/course';
 import {HomeScreen} from '@features/home';
 import {
@@ -22,6 +23,7 @@ import {
   ImageCaptureScreen,
   PasteTextScreen,
 } from '@features/input';
+import {LessonFlowPlayerScreen} from '@features/lesson';
 import {
   LessonsHistoryScreen,
   LibraryListScreen,
@@ -30,6 +32,7 @@ import {
 import {
   CanonicalLessonCatalogScreen,
   CanonicalLessonPlayerScreen,
+  ComposeTrackerHost,
   LessonCreationScreen,
 } from '@features/lesson/player';
 import {OCRReviewScreen} from '@features/ocr';
@@ -44,7 +47,7 @@ import {
   ProgressReportScreen,
   SupportAboutScreen,
 } from '@features/profile';
-import {DailyReviewScreen} from '@features/review';
+import {DailyReviewScreen, ItemReviewScreen} from '@features/review';
 import {
   ShadowingLessonPickerScreen,
   ShadowingSessionScreen,
@@ -263,14 +266,24 @@ function AuthenticatedRootStack() {
         name="CanonicalLessonPlayer"
         options={{gestureEnabled: false}}
       />
+      <RootStack.Screen
+        component={LessonFlowPlayerScreen}
+        name="LessonFlowPlayer"
+        options={{gestureEnabled: false}}
+      />
       <RootStack.Screen component={LibraryListScreen} name="LibraryList" />
       <RootStack.Screen component={VideoHubScreen} name="VideoHub" />
       {/* Structured curriculum */}
       <RootStack.Screen component={CourseLevelsScreen} name="CourseLevels" />
       <RootStack.Screen component={LevelUnitsScreen} name="LevelUnits" />
       <RootStack.Screen component={UnitLessonsScreen} name="UnitLessons" />
+      <RootStack.Screen
+        component={UnitSummativeTaskScreen}
+        name="UnitSummativeTask"
+      />
       {/* Practice */}
       <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
+      <RootStack.Screen component={ItemReviewScreen} name="ItemReview" />
       <RootStack.Screen component={PracticeScreen} name="Practice" />
       <RootStack.Screen component={TodayScreen} name="Today" />
       <RootStack.Screen component={SpeakingRoomScreen} name="SpeakingRoom" />
@@ -325,6 +338,8 @@ export function AppNavigator() {
     <AppNavigationProvider value={appNavigation}>
       <NavigationContainer ref={navigationRef}>
         <AuthenticatedRootStack />
+        {/* S4.3: running "Học theo 6 bước" requests and their banner. */}
+        <ComposeTrackerHost />
       </NavigationContainer>
     </AppNavigationProvider>
   );

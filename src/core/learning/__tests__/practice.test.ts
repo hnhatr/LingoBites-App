@@ -1,5 +1,10 @@
-import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
+import type {
+  LessonAnalysis,
+  LessonItemEntry,
+  LessonSnapshot,
+} from '@core/schemas/lesson';
 
+import {deriveItemCode} from '../itemCode';
 import {learningItemsFromSnapshot} from '../items';
 import {
   buildPracticeSource,
@@ -24,19 +29,40 @@ const SENTENCES = [
   ['They play football.', 'Họ chơi bóng đá.'],
 ] as const;
 
+/**
+ * A catalog item of the lesson (`lesson_items`). `payload` keeps the old
+ * fixture shape (`word`, `meaning_vi`, `ipa`, `pos`); `sentences` is ignored
+ * because catalog items find their sentences by text.
+ */
 function serverItem(
   n: number,
-  kind: 'word' | 'phrase' | 'grammar',
+  kind: 'word' | 'phrase' | 'pattern',
   key: string,
   payload: Record<string, unknown>,
-  sentences: number[],
-) {
+  _sentences: number[],
+): LessonItemEntry {
+  const text = String(payload.word ?? payload.name);
   return {
-    id: id(900 + n),
-    kind,
-    item_key: key,
-    payload,
-    sentence_ids: sentences.map(index => id(index + 1)),
+    role: 'required',
+    introduction: 'new',
+    position: n,
+    item: {
+      id: id(900 + n),
+      code: `${kind}:${key}`,
+      kind,
+      text,
+      meaning_vi: String(payload.meaning_vi ?? payload.name),
+      ipa: (payload.ipa as string | null) ?? null,
+      part_of_speech: (payload.pos as string | null) ?? null,
+      note_vi: null,
+      audience: 'all',
+      payload: kind === 'pattern' ? {slots: {}} : {},
+      audio: null,
+      image: null,
+      examples: [],
+      variants: [],
+      errors: [],
+    },
   };
 }
 
@@ -62,7 +88,7 @@ function snapshot(overrides: Partial<LessonSnapshot> = {}): LessonSnapshot {
     })),
     blocks: [],
     analyses: {},
-    items: [
+    lesson_items: [
       serverItem(
         1,
         'phrase',
@@ -100,8 +126,8 @@ function snapshot(overrides: Partial<LessonSnapshot> = {}): LessonSnapshot {
       ),
       serverItem(
         6,
-        'grammar',
-        'present simple',
+        'pattern',
+        'present-simple',
         {
           name: 'Present simple',
           name_vi: null,
@@ -133,10 +159,17 @@ describe('seeded random', () => {
 });
 
 describe('learning items of a snapshot', () => {
-  it('uses the Server items and keeps only sentences that still exist', () => {
+  it('uses the catalog items in order and finds their sentences by text', () => {
     const items = learningItemsFromSnapshot(
       snapshot({
-        items: [
+        lesson_items: [
+          serverItem(
+            2,
+            'word',
+            'tea',
+            {word: 'tea', meaning_vi: 'trà', ipa: null, pos: null},
+            [],
+          ),
           serverItem(
             1,
             'word',
@@ -144,28 +177,26 @@ describe('learning items of a snapshot', () => {
             {word: 'coffee', meaning_vi: 'cà phê', ipa: null, pos: null},
             [1],
           ),
-          {
-            ...serverItem(
-              2,
-              'word',
-              'tea',
-              {word: 'tea', meaning_vi: 'trà', ipa: null, pos: null},
-              [],
-            ),
-            sentence_ids: [id(99)],
-          },
+          serverItem(3, 'pattern', 'can-i-have', {name: 'Can I have'}, []),
         ],
       }),
     );
     expect(items.map(item => item.itemKey)).toEqual([
       'word:coffee',
       'word:tea',
+      'pattern:can-i-have',
     ]);
+    expect(items[0]).toMatchObject({
+      itemId: id(901),
+      source: 'catalog',
+      role: 'required',
+      introduction: 'new',
+    });
     expect(items[0]!.sentenceIds).toEqual([id(2)]);
     expect(items[1]!.sentenceIds).toEqual([]);
   });
 
-  it('derives the same words from blocks and analyses for an older download', () => {
+  it('derives words from analyses for a learner lesson, with Server codes', () => {
     const analysis: LessonAnalysis = {
       sentence_id: id(1),
       vocabulary: [
@@ -188,37 +219,22 @@ describe('learning items of a snapshot', () => {
       ],
       created_at: '2026-10-01T00:00:00.000Z',
     };
-    const old = snapshot({
-      items: undefined,
-      blocks: [
-        {
-          id: id(80),
-          type: 'vocabulary',
-          position: 0,
-          title: null,
-          data: {
-            items: [
-              {
-                id: id(81),
-                word: 'Coffee',
-                meaning: 'cà phê',
-                pronunciation: 'ˈkɒfi',
-              },
-            ],
-          },
-        },
-      ],
+    const learnerLesson = snapshot({
+      lesson_items: [],
       analyses: {[id(1)]: analysis},
     });
-    const items = learningItemsFromSnapshot(old);
+    const items = learningItemsFromSnapshot(learnerLesson);
+    // Analysis grammar is not a pattern frame and stays out (G5).
     expect(items.map(item => item.itemKey)).toEqual([
-      'word:coffee',
-      'phrase:wake up',
-      'grammar:present simple',
+      deriveItemCode('phrase', 'Wake up'),
     ]);
-    const coffee = items[0]!;
-    expect(coffee).toMatchObject({meaningVi: 'cà phê', ipa: 'ˈkɒfi'});
-    expect(coffee.sentenceIds).toEqual([id(2)]);
+    expect(items[0]).toMatchObject({
+      itemKey: 'phrase:wake up',
+      itemId: null,
+      source: 'analysis',
+      meaningVi: 'thức dậy',
+    });
+    expect(items[0]!.sentenceIds).toEqual([id(1)]);
   });
 });
 
@@ -236,7 +252,7 @@ describe('eligibility', () => {
     const tiny = buildPracticeSource(
       snapshot({
         sentences: snapshot().sentences.slice(0, 2),
-        items: snapshot().items!.slice(0, 2),
+        lesson_items: snapshot().lesson_items!.slice(0, 2),
       }),
     );
     const result = getPracticeEligibility(tiny);
@@ -248,7 +264,7 @@ describe('eligibility', () => {
   it('skips word questions that cannot get three distinct wrong meanings', () => {
     const twins = buildPracticeSource(
       snapshot({
-        items: [
+        lesson_items: [
           serverItem(
             1,
             'word',

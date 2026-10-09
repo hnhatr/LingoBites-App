@@ -54,6 +54,8 @@ export type CourseTarget =
 export interface AppNavigation {
   /** Open one lesson in the lesson player. */
   openLesson(lessonId: string): void;
+  /** Open a curriculum lesson's six-step player (PR 10). */
+  openLessonFlow(lessonId: string): void;
   /** Open the lesson catalog. */
   openCatalog(): void;
   /** Open one Library section's list (own lessons, words, or public). */
@@ -79,6 +81,8 @@ export interface AppNavigation {
    */
   finishCreate(lessonId: string): void;
   openReview(): void;
+  /** PR 16: today's lesson items on the Server's review schedule. */
+  openItemReview(): void;
   /** Open a quick-practice quiz generated from one downloaded lesson. */
   openPractice(lessonId: string): void;
   /**

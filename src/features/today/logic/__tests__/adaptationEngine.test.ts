@@ -349,4 +349,60 @@ describe('adaptationEngine', () => {
       );
     });
   });
+
+  describe('Today order (PR 16, decision B9)', () => {
+    it('puts due review, then the lesson in progress, then the next lesson', () => {
+      const plan = generateStudyBlock(
+        createMockSnapshot({
+          dueReviewCount: 3,
+          dueItemCount: 2,
+          estimatedReviewMinutes: 2,
+          lessonProgression: {
+            completedLessonIds: [],
+            nextLessonId: 'lesson-2',
+            nextLessonTitle: 'Bài 2',
+            nextLessonEstimatedMinutes: 5,
+            inProgressLessonId: 'lesson-1',
+            inProgressLessonTitle: 'Bài 1',
+          },
+        }),
+        'deep-practice',
+      );
+      const types = plan.activities.map(activity => activity.type);
+      expect(types.indexOf('due_review')).toBe(0);
+      expect(types.indexOf('continue_lesson')).toBe(1);
+      expect(types.indexOf('next_lesson')).toBeGreaterThan(1);
+      expect(plan.activities[0]!.navigationTarget).toEqual({
+        screen: 'ItemReview',
+      });
+      expect(plan.activities[1]!.navigationTarget.params).toEqual({
+        lessonId: 'lesson-1',
+      });
+    });
+
+    it('opens the flashcards when no lesson item is due', () => {
+      const plan = generateStudyBlock(
+        createMockSnapshot({dueReviewCount: 3, estimatedReviewMinutes: 2}),
+      );
+      expect(plan.activities[0]!.navigationTarget).toEqual({
+        screen: 'DailyReview',
+      });
+    });
+
+    it('does not offer the lesson in progress twice', () => {
+      const plan = generateStudyBlock(
+        createMockSnapshot({
+          lessonProgression: {
+            completedLessonIds: [],
+            nextLessonId: 'lesson-1',
+            inProgressLessonId: 'lesson-1',
+          },
+        }),
+        'deep-practice',
+      );
+      const types = plan.activities.map(activity => activity.type);
+      expect(types).toContain('continue_lesson');
+      expect(types).not.toContain('next_lesson');
+    });
+  });
 });

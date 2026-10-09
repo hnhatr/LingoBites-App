@@ -8,19 +8,90 @@ import {Chip} from '@ui/components/Chip';
 import {LessonExploreRow} from '@ui/components/LessonExploreRow';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {SvgIcon} from '@ui/components/SvgIcon';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {
-  collectLessonGrammar,
-  collectLessonVocabulary,
+  collectLessonOutcome,
+  type LessonHubSection,
+  type LessonHubSectionRow,
+  lessonHubSections,
   sortedSentences,
 } from '../logic/lessonHubContent';
+import {LessonOutcomeCard} from './LessonOutcomeCard';
 import {LessonStatusBanners} from './LessonStatusBanners';
 
-export type LessonHubSection = 'sentences' | 'vocabulary' | 'grammar';
+export type {LessonHubSection};
+
+type ExploreRowCopy = {
+  icon: HandoffIconName;
+  tone: 'teal' | 'coral' | 'gold';
+  titleKey: string;
+  subtitleKey: string;
+  /** Shown instead of the subtitle when the section is empty. */
+  emptyKey?: string;
+};
+
+const EXPLORE_ROWS: Record<LessonHubSection, ExploreRowCopy> = {
+  sentences: {
+    icon: 'menu_book',
+    tone: 'teal',
+    titleKey: 'lessonPlayer.explore_sentences_title',
+    subtitleKey: 'lessonPlayer.explore_sentences_subtitle',
+  },
+  vocabulary: {
+    icon: 'style',
+    tone: 'coral',
+    titleKey: 'lessonPlayer.explore_vocabulary_title',
+    subtitleKey: 'lessonPlayer.explore_vocabulary_subtitle',
+    emptyKey: 'lessonPlayer.explore_vocabulary_empty',
+  },
+  grammar: {
+    icon: 'rule',
+    tone: 'gold',
+    titleKey: 'lessonPlayer.explore_grammar_title',
+    subtitleKey: 'lessonPlayer.explore_grammar_subtitle',
+    emptyKey: 'lessonPlayer.explore_grammar_empty',
+  },
+  patterns: {
+    icon: 'rule',
+    tone: 'gold',
+    titleKey: 'lessonPlayer.explore_patterns_title',
+    subtitleKey: 'lessonPlayer.explore_patterns_subtitle',
+  },
+  pronunciation: {
+    icon: 'record_voice_over',
+    tone: 'teal',
+    titleKey: 'lessonPlayer.explore_pronunciation_title',
+    subtitleKey: 'lessonPlayer.explore_pronunciation_subtitle',
+  },
+  listening: {
+    icon: 'hearing',
+    tone: 'coral',
+    titleKey: 'lessonPlayer.explore_listening_title',
+    subtitleKey: 'lessonPlayer.explore_listening_subtitle',
+  },
+};
+
+/** Catalog lessons call their vocabulary "Từ & cụm". */
+const CATALOG_VOCABULARY_ROW: ExploreRowCopy = {
+  ...EXPLORE_ROWS.vocabulary,
+  titleKey: 'lessonPlayer.explore_items_vocabulary_title',
+  subtitleKey: 'lessonPlayer.explore_items_vocabulary_subtitle',
+};
+
+/** Section title for the player header (same wording as the hub row). */
+export function lessonSectionTitleKey(
+  section: LessonHubSection,
+  catalogLesson: boolean,
+): string {
+  return section === 'vocabulary' && catalogLesson
+    ? CATALOG_VOCABULARY_ROW.titleKey
+    : EXPLORE_ROWS[section].titleKey;
+}
 
 const PREVIEW_COUNT = 2;
 
@@ -39,11 +110,15 @@ export type CanonicalLessonHubProps = {
   offline?: boolean;
   hasUpdate?: boolean;
   onOpenSection: (section: LessonHubSection) => void;
+  /** Opens another lesson (a prerequisite on the outcome card). */
+  onOpenLesson?: (lessonId: string) => void;
   /**
    * Opens the quick-practice quiz. Omit to hide the row (practice flag off);
    * the row also stays hidden while the lesson is too small for a quiz.
    */
   onOpenPractice?: () => void;
+  /** S4.3: opens "Học theo 6 bước" sentence picking. Omit to hide the row. */
+  onOpenCompose?: () => void;
 };
 
 /**
@@ -58,20 +133,20 @@ export function CanonicalLessonHub({
   offline,
   hasUpdate,
   onOpenSection,
+  onOpenLesson,
   onOpenPractice,
+  onOpenCompose,
 }: CanonicalLessonHubProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const sentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
-  const vocabularyCount = useMemo(
-    () => collectLessonVocabulary(snapshot, analyses).length,
+  const outcome = useMemo(() => collectLessonOutcome(snapshot), [snapshot]);
+  const sectionRows = useMemo(
+    () => lessonHubSections(snapshot, analyses),
     [snapshot, analyses],
   );
-  const grammarCount = useMemo(
-    () => collectLessonGrammar(snapshot, analyses).length,
-    [snapshot, analyses],
-  );
+  const catalogLesson = (snapshot.lesson_items ?? []).length > 0;
   const canPractice = useMemo(
     () =>
       onOpenPractice !== undefined &&
@@ -104,13 +179,52 @@ export function CanonicalLessonHub({
           {snapshot.origin === 'learner' ? (
             <Chip label={t('lessonPlayer.hero_mine')} tone="accentSoft" />
           ) : null}
+          {snapshot.generated ? (
+            <Chip
+              label={t('compose.chip_generated')}
+              testID="canonical-hub-generated"
+              tone="gold"
+            />
+          ) : null}
+          {snapshot.situation_source === 'inferred' ? (
+            <Chip
+              label={t('compose.chip_inferred')}
+              testID="canonical-hub-inferred"
+              tone="coralSoft"
+            />
+          ) : null}
+          {outcome && outcome.audience !== 'all' ? (
+            <Chip
+              label={t(`lessonPlayer.audience_${outcome.audience}`)}
+              testID="canonical-hub-audience"
+              tone="coralSoft"
+            />
+          ) : null}
         </View>
+        {snapshot.generated &&
+        snapshot.derived_from_lesson_id &&
+        onOpenLesson ? (
+          <Pressable
+            accessibilityHint={t('compose.source_link_hint')}
+            accessibilityRole="link"
+            onPress={() => onOpenLesson(snapshot.derived_from_lesson_id!)}
+            testID="canonical-hub-source-lesson"
+          >
+            <AppText style={themedStyles.expandLabel} variant="label">
+              {`${t('compose.source_link')} →`}
+            </AppText>
+          </Pressable>
+        ) : null}
         {snapshot.description.trim().length > 0 ? (
           <AppText color="secondary" variant="body">
             {snapshot.description}
           </AppText>
         ) : null}
       </View>
+
+      {outcome ? (
+        <LessonOutcomeCard onOpenLesson={onOpenLesson} outcome={outcome} />
+      ) : null}
 
       <AppCard style={themedStyles.contentCard}>
         <View style={styles.cardBody}>
@@ -170,42 +284,14 @@ export function CanonicalLessonHub({
 
       <View style={styles.exploreSection}>
         <SectionHeader title={t('lessonPlayer.explore_title')} />
-        <LessonExploreRow
-          disabled={sentences.length === 0}
-          icon="menu_book"
-          medallionTone="teal"
-          onPress={() => onOpenSection('sentences')}
-          subtitle={t('lessonPlayer.explore_sentences_subtitle', {
-            count: sentences.length,
-          })}
-          title={t('lessonPlayer.explore_sentences_title')}
-        />
-        <LessonExploreRow
-          icon="style"
-          medallionTone="coral"
-          onPress={() => onOpenSection('vocabulary')}
-          subtitle={
-            vocabularyCount > 0
-              ? t('lessonPlayer.explore_vocabulary_subtitle', {
-                  count: vocabularyCount,
-                })
-              : t('lessonPlayer.explore_vocabulary_empty')
-          }
-          title={t('lessonPlayer.explore_vocabulary_title')}
-        />
-        <LessonExploreRow
-          icon="rule"
-          medallionTone="gold"
-          onPress={() => onOpenSection('grammar')}
-          subtitle={
-            grammarCount > 0
-              ? t('lessonPlayer.explore_grammar_subtitle', {
-                  count: grammarCount,
-                })
-              : t('lessonPlayer.explore_grammar_empty')
-          }
-          title={t('lessonPlayer.explore_grammar_title')}
-        />
+        {sectionRows.map(row => (
+          <ExploreRow
+            key={row.section}
+            catalogLesson={catalogLesson}
+            onOpenSection={onOpenSection}
+            row={row}
+          />
+        ))}
         {canPractice ? (
           <LessonExploreRow
             icon="bolt"
@@ -216,8 +302,49 @@ export function CanonicalLessonHub({
             title={t('practice.entry_button')}
           />
         ) : null}
+        {onOpenCompose ? (
+          <LessonExploreRow
+            icon="auto_awesome"
+            medallionTone="gold"
+            onPress={onOpenCompose}
+            subtitle={t('compose.entry_subtitle')}
+            testID="canonical-hub-compose"
+            title={t('compose.entry_title')}
+          />
+        ) : null}
       </View>
     </View>
+  );
+}
+
+function ExploreRow({
+  row,
+  catalogLesson,
+  onOpenSection,
+}: {
+  row: LessonHubSectionRow;
+  catalogLesson: boolean;
+  onOpenSection: (section: LessonHubSection) => void;
+}) {
+  const {t} = useTranslation();
+  const copy =
+    row.section === 'vocabulary' && catalogLesson
+      ? CATALOG_VOCABULARY_ROW
+      : EXPLORE_ROWS[row.section];
+  return (
+    <LessonExploreRow
+      disabled={row.section === 'sentences' && row.count === 0}
+      icon={copy.icon}
+      medallionTone={copy.tone}
+      onPress={() => onOpenSection(row.section)}
+      subtitle={
+        row.count === 0 && copy.emptyKey
+          ? t(copy.emptyKey)
+          : t(copy.subtitleKey, {count: row.count})
+      }
+      testID={`canonical-hub-explore-${row.section}`}
+      title={t(copy.titleKey)}
+    />
   );
 }
 

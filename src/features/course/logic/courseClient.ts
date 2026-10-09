@@ -15,6 +15,10 @@ import {z} from 'zod';
 
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {
+  type UnitSummativeTask,
+  UnitSummativeTaskResponseSchema,
+} from '@core/schemas/lesson';
 
 const CourseSchema = z.object({
   id: z.string(),
@@ -39,6 +43,8 @@ const LevelSchema = z.object({
   position: z.number().int(),
 });
 
+const AudienceSchema = z.enum(['all', 'kids', 'adults']);
+
 const UnitSchema = z.object({
   id: z.string(),
   levelId: z.string(),
@@ -46,6 +52,9 @@ const UnitSchema = z.object({
   title: z.string(),
   description: z.string(),
   position: z.number().int(),
+  /** What the learner can do after the unit; absent on older servers. */
+  canDo: z.array(z.string()).default([]),
+  audience: AudienceSchema.default('all'),
 });
 
 const CurriculumLessonSchema = z.object({
@@ -56,6 +65,9 @@ const CurriculumLessonSchema = z.object({
   description: z.string(),
   position: z.number().int(),
   estimatedMinutes: z.number().int().nullable(),
+  /** What the learner can do after the lesson; absent on older servers. */
+  canDo: z.array(z.string()).default([]),
+  audience: AudienceSchema.default('all'),
 });
 
 const EntitlementsResponseSchema = z.object({course_ids: z.array(z.string())});
@@ -219,4 +231,17 @@ export async function fetchUnitLessons(
   return result.ok
     ? {ok: true, value: byPosition(result.value.lessons)}
     : result;
+}
+
+/** PR 16: the unit's summative task, or null when the unit has none. */
+export async function fetchUnitSummativeTask(
+  unitId: string,
+  options: CourseClientOptions = {},
+): Promise<CourseResult<UnitSummativeTask | null>> {
+  const result = await getList(
+    `/v1/units/${encodeURIComponent(unitId)}/summative-task`,
+    UnitSummativeTaskResponseSchema,
+    options,
+  );
+  return result.ok ? {ok: true, value: result.value.task} : result;
 }

@@ -48,6 +48,31 @@ const mockFlashcardNoExample: FlashcardRecord = {
 };
 
 describe('VocabularyRowCard', () => {
+  it('shows a saved pattern as its frame with blank slots', () => {
+    const tree = render(
+      <VocabularyRowCard
+        flashcard={{
+          ...mockFlashcard,
+          word: 'Can I have a {size} {drink}, please?',
+          wordType: null,
+          kind: 'pattern',
+          itemKey: 'pattern:can-i-have',
+        }}
+        isSaved
+        onSave={jest.fn()}
+        onUnsave={jest.fn()}
+        onPress={jest.fn()}
+      />,
+    );
+
+    expect(tree.root.findByProps({testID: 'word-text'}).props.children).toBe(
+      'Can I have a … …, please?',
+    );
+    expect(
+      tree.root.findAll(node => node.props.children === 'Mẫu câu').length,
+    ).toBeGreaterThan(0);
+  });
+
   it('renders word and meaning', () => {
     const tree = render(
       <VocabularyRowCard

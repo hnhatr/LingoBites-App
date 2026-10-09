@@ -1,13 +1,19 @@
 import {AppState, type AppStateStatus} from 'react-native';
 
 import {getDatabase, withTransaction} from '@core/db/database';
+import {vocabularyItemKey} from '@core/learning';
 import {deleteLocalFiles} from '@core/localData/localFileCleanup';
+import {EVALUATIONS_COLLECTION} from '@core/schemas/evaluation';
 import {
   LessonProgressStatePayloadSchema,
   SyncCollectionSchema,
   type SyncPullRecord,
   type SyncRecord,
 } from '@core/schemas/sync';
+import {
+  applyLearningOutcomeRecord,
+  isLearningOutcomeCollection,
+} from '@core/sync/learningOutcomes';
 import {
   applyLessonBookmarkRecord,
   LESSON_BOOKMARKS_EVENT_TYPE,
@@ -20,6 +26,7 @@ import {
   applySpeakingAttemptRecord,
   SPEAKING_ATTEMPTS_EVENT_TYPE,
 } from '@core/sync/speakingAttempts';
+import {applyEvaluationRecord} from '@core/sync/taskAnswers';
 
 import {markSyncedNow} from './lastSync';
 import {syncPull} from './syncClient';
@@ -248,6 +255,16 @@ export function applySyncRecord(
     applyLessonBookmarkRecord(record);
     return;
   }
+  // PR 14: read-only results of the Server's scorer.
+  if (record.collection === EVALUATIONS_COLLECTION) {
+    applyEvaluationRecord(record);
+    return;
+  }
+  // PR 16: read-only lesson / unit outcomes and the item review schedule.
+  if (isLearningOutcomeCollection(record.collection)) {
+    applyLearningOutcomeRecord(record);
+    return;
+  }
   if (!SyncCollectionSchema.safeParse(record.collection).success) {
     // AD-008: skip records of collections this build does not know instead of
     // throwing, so an unknown collection cannot stall paging. The cursor
@@ -299,6 +316,22 @@ export function applySyncRecord(
   } else if (record.collection === 'activity_attempts') {
     payload.id = payload.id ?? record.entity_id;
     payload.occurred_at = payload.occurred_at ?? record.occurred_at;
+    // Lesson attempts (PR 8) carry their catalog codes as an array.
+    if (Array.isArray(payload.item_keys)) {
+      payload.item_keys_json = JSON.stringify(payload.item_keys);
+    }
+  } else if (record.collection === 'flashcards') {
+    // Cards are keyed by item code (baseline v7). A record without one gets
+    // the code derived from its word; one with no usable word is skipped so it
+    // can never stall paging on the NOT NULL column.
+    payload.item_key =
+      payload.item_key ??
+      (typeof payload.word === 'string'
+        ? vocabularyItemKey(payload.word)
+        : null);
+    if (!payload.item_key) {
+      return;
+    }
   }
 
   // Extract PK values

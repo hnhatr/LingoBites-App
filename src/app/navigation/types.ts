@@ -10,6 +10,7 @@ import type {
   CoursesStackParamList,
   LevelUnitsRouteParams,
   UnitLessonsRouteParams,
+  UnitSummativeTaskRouteParams,
 } from '@features/course';
 import type {HomeStackParamList} from '@features/home';
 import type {
@@ -26,11 +27,15 @@ import type {
   CanonicalCatalogRouteParams,
   CanonicalLessonPlayerRouteParams,
   LessonCreationRouteParams,
+  LessonFlowPlayerRouteParams,
 } from '@features/lesson/player';
 import type {OCRReviewRouteParams} from '@features/ocr';
 import type {PracticeRouteParams} from '@features/practice';
 import type {ProfileStackParamList} from '@features/profile';
-import type {DailyReviewRouteParams} from '@features/review';
+import type {
+  DailyReviewRouteParams,
+  ItemReviewRouteParams,
+} from '@features/review';
 import type {
   ShadowingLessonPickerRouteParams,
   ShadowingSessionRouteParams,
@@ -72,14 +77,17 @@ export type RootStackParamList = {
   // Lessons
   CanonicalCatalog: CanonicalCatalogRouteParams;
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
+  LessonFlowPlayer: LessonFlowPlayerRouteParams;
   LibraryList: LibraryListRouteParams;
   VideoHub: VideoHubRouteParams;
   // Structured curriculum (Course → Level → Unit → Lesson)
   CourseLevels: CourseLevelsRouteParams;
   LevelUnits: LevelUnitsRouteParams;
   UnitLessons: UnitLessonsRouteParams;
+  UnitSummativeTask: UnitSummativeTaskRouteParams;
   // Practice
   DailyReview: DailyReviewRouteParams;
+  ItemReview: ItemReviewRouteParams;
   Practice: PracticeRouteParams;
   Today: TodayRouteParams;
   SpeakingRoom: SpeakingRoomRouteParams;

@@ -1,9 +1,4 @@
-import {
-  grammarItemKey,
-  normalizeItemKey,
-  vocabularyItemKey,
-  vocabularyKind,
-} from '../itemKey';
+import {normalizeItemKey, vocabularyItemKey, vocabularyKind} from '../itemKey';
 // Byte-identical copy of the Server fixture: both sides must agree.
 import fixture from './fixtures/learning-item-keys.json';
 
@@ -32,7 +27,5 @@ describe('learning item keys', () => {
     expect(vocabularyItemKey('Coffee')).toBe('word:coffee');
     expect(vocabularyItemKey('  Wake   UP ')).toBe('phrase:wake up');
     expect(vocabularyItemKey('...')).toBeNull();
-    expect(grammarItemKey('Present Simple.')).toBe('grammar:present simple');
-    expect(grammarItemKey('   ')).toBeNull();
   });
 });

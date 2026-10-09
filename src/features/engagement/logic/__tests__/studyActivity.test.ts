@@ -1,5 +1,6 @@
 import {insertGamificationEvent} from '../data/GamificationRepository';
 import {
+  recordLessonActivityCompleted,
   recordLessonCompletedActivity,
   recordShadowingSessionActivity,
 } from '../studyActivity';
@@ -39,6 +40,18 @@ describe('studyActivity', () => {
     });
   });
 
+  it('records a zero-point lesson_activity_completed event per attempt', () => {
+    expect(
+      recordLessonActivityCompleted('attempt-1', '2026-10-08T10:00:00.000Z'),
+    ).toBe(true);
+    expect(insertMock).toHaveBeenCalledWith({
+      eventType: 'lesson_activity_completed',
+      sourceEventId: 'attempt-1',
+      points: 0,
+      createdAt: '2026-10-08T10:00:00.000Z',
+    });
+  });
+
   it('never throws when the write fails', () => {
     insertMock.mockImplementation(() => {
       throw new Error('db down');
@@ -46,6 +59,7 @@ describe('studyActivity', () => {
     const log = jest.spyOn(console, 'log').mockImplementation(() => {});
     expect(recordLessonCompletedActivity('lesson-1')).toBe(false);
     expect(recordShadowingSessionActivity('lesson-1')).toBe(false);
+    expect(recordLessonActivityCompleted('attempt-1')).toBe(false);
     log.mockRestore();
   });
 });

@@ -9,6 +9,7 @@ import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
 import type {FlashcardRecord} from '@core/db/types';
+import {renderFrameWithLabels} from '@core/learning';
 
 import type {LibraryVocabularySource} from '../logic/useLibrarySegments';
 
@@ -138,6 +139,11 @@ export function VocabularyRowCard({
     </View>
   ) : undefined;
 
+  // A saved sentence pattern shows its frame with the slots blanked and a
+  // "Mẫu câu" tag where a word shows its part of speech.
+  const pattern = flashcard.kind === 'pattern';
+  const word = pattern ? renderFrameWithLabels(flashcard.word) : flashcard.word;
+
   return (
     <View style={styles.container} testID={testID}>
       {/* Only the text is the card button: the bookmark and the source list
@@ -150,8 +156,8 @@ export function VocabularyRowCard({
         ipa={flashcard.ipa}
         meaning={flashcard.meaningVi}
         onPress={handleCardPress}
-        pos={flashcard.wordType}
-        pressAccessibilityLabel={`${flashcard.word} - ${flashcard.meaningVi}`}
+        pos={pattern ? t('lessonPlayer.item_kind_pattern') : flashcard.wordType}
+        pressAccessibilityLabel={`${word} - ${flashcard.meaningVi}`}
         pressTestID="vocabulary-card-pressable"
         trailing={
           <IconButton
@@ -168,7 +174,7 @@ export function VocabularyRowCard({
             testID="save-button"
           />
         }
-        word={flashcard.word}
+        word={word}
       />
     </View>
   );

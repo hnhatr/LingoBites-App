@@ -45,6 +45,8 @@ function lesson(id: string, position: number) {
     description: '',
     position,
     estimatedMinutes: null,
+    canDo: [] as string[],
+    audience: 'all',
   };
 }
 
@@ -56,6 +58,8 @@ function unit(id: string, position: number) {
     title: `Unit ${id}`,
     description: '',
     position,
+    canDo: [] as string[],
+    audience: 'all',
   };
 }
 
@@ -79,6 +83,14 @@ function press(tree: ReactTestRenderer.ReactTestRenderer, testID: string) {
   act(() => {
     target.props.onPress();
   });
+}
+
+function allText(tree: ReactTestRenderer.ReactTestRenderer): string {
+  return tree.root
+    .findAll(node => (node.type as unknown) === 'Text')
+    .flatMap(node => node.children)
+    .filter((child): child is string => typeof child === 'string')
+    .join('\n');
 }
 
 const navigation = {goBack: jest.fn(), navigate: jest.fn()} as never;
@@ -265,6 +277,78 @@ describe('Curriculum screens (F14)', () => {
 
     press(tree, 'unit-lessons-row-b');
     expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('b');
+
+    // PR 16 (B4): the summative task waits for every lesson's practice.
+    const summative = tree.root.find(
+      node =>
+        node.props.testID === 'unit-lessons-summative' &&
+        typeof node.props.onPress === 'function',
+    );
+    expect(summative.props.disabled).toBe(true);
+    expect(
+      tree.root.findAll(
+        node => node.props.testID === 'unit-lessons-summative-locked',
+      ).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('opens the summative task once every lesson is practised (PR 16)', async () => {
+    client.fetchUnitLessons.mockResolvedValue({
+      ok: true,
+      value: [lesson('a', 0)],
+    });
+    listCompletedLessons.mockReturnValue([
+      {lessonId: 'a', completedAt: '2026-10-01T00:00:00.000Z'},
+    ]);
+    const tree = await render(
+      <UnitLessonsScreen
+        navigation={navigation}
+        route={{params: {unitId: 'unit-1', title: 'Đồ uống'}} as never}
+      />,
+    );
+    press(tree, 'unit-lessons-summative');
+    expect(
+      (navigation as unknown as {navigate: jest.Mock}).navigate,
+    ).toHaveBeenCalledWith('UnitSummativeTask', {
+      unitId: 'unit-1',
+      title: 'Đồ uống',
+    });
+  });
+
+  it('shows what a unit and a lesson teach from their first can-do', async () => {
+    client.fetchLevelUnits.mockResolvedValue({
+      ok: true,
+      value: [
+        {...unit('unit-1', 0), canDo: ['Gọi đồ uống ở quán.']},
+        {...unit('unit-2', 1), description: 'Chào hỏi'},
+      ],
+    });
+    client.fetchUnitLessons.mockResolvedValue({
+      ok: true,
+      value: [{...lesson('a', 0), canDo: ['Gọi một đồ uống kèm cỡ.']}],
+    });
+    const units = await render(
+      <LevelUnitsScreen
+        navigation={navigation}
+        route={{params: {levelId: 'level-1'}} as never}
+      />,
+    );
+    const unitsText = allText(units);
+    expect(unitsText).toContain('Bạn sẽ: Gọi đồ uống ở quán.');
+    expect(unitsText).toContain('Chào hỏi');
+
+    const lessons = await render(
+      <UnitLessonsScreen
+        navigation={navigation}
+        route={{params: {unitId: 'unit-1'}} as never}
+      />,
+    );
+    expect(
+      lessons.root.findAll(
+        node => node.props.testID === 'unit-lessons-can-do-a',
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(allText(lessons)).toContain('Bạn sẽ: Gọi một đồ uống kèm cỡ.');
   });
 
   it('retries after a load error', async () => {

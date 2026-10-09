@@ -1,0 +1,44 @@
+{
+  "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000004",
+  "code": "pronunciation:final-t",
+  "kind": "pronunciation",
+  "language": "en",
+  "text": "Final /t/",
+  "meaning_vi": "Âm /t/ ở cuối từ",
+  "ipa": "/t/",
+  "part_of_speech": null,
+  "note_vi": null,
+  "audio_media_id": null,
+  "image_media_id": null,
+  "audience": "all",
+  "payload": {
+    "focus": "/t/ cuối từ",
+    "focus_ipa": "/t/",
+    "tip_vi": "Chạm đầu lưỡi sau răng trên và bật nhẹ, đừng nuốt mất âm.",
+    "minimal_pairs": [
+      ["eight", "ate"],
+      ["light", "lie"]
+    ],
+    "target_item_refs": ["word:coffee"]
+  },
+  "source": "admin",
+  "status": "draft",
+  "published_at": null,
+  "created_at": "2026-10-07T00:00:00.000Z",
+  "updated_at": "2026-10-07T00:00:00.000Z",
+  "examples": [],
+  "variants": [],
+  "errors": [
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000421",
+      "code": "final_consonant_drop",
+      "description_vi": "Bỏ âm cuối /t/.",
+      "feedback_vi": "Nhớ bật nhẹ âm /t/ ở cuối.",
+      "severity": "tolerated",
+      "wrong_example": null,
+      "right_example": null,
+      "position": 0
+    }
+  ],
+  "preview": []
+}

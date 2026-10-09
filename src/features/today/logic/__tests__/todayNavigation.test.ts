@@ -19,6 +19,12 @@ describe('resolveTodayNavigation', () => {
     });
   });
 
+  it('opens the item review (PR 16)', () => {
+    expect(resolveTodayNavigation({screen: 'ItemReview'})).toEqual({
+      screen: 'ItemReview',
+    });
+  });
+
   it('sends FlashcardList targets to DailyReview', () => {
     expect(
       resolveTodayNavigation({

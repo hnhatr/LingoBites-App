@@ -1,3 +1,6 @@
+import {readFileSync} from 'fs';
+import {join} from 'path';
+
 import {getAppConfig} from '@core/api/appConfig';
 
 import {
@@ -5,6 +8,7 @@ import {
   fetchCourses,
   fetchLevelUnits,
   fetchUnitLessons,
+  fetchUnitSummativeTask,
 } from '../courseClient';
 
 jest.mock('@core/api/appConfig', () => ({
@@ -149,6 +153,9 @@ describe('courseClient (F14 curriculum routes)', () => {
       `https://api.example/v1/units/${UNIT_ID}/lessons`,
     ]);
     expect(units.ok && units.value[0].id).toBe(UNIT_ID);
+    // Older servers send no specification: it reads as empty.
+    expect(units.ok && units.value[0].canDo).toEqual([]);
+    expect(units.ok && units.value[0].audience).toBe('all');
     expect(lessons.ok && lessons.value.map(item => item.id)).toEqual([
       'first',
       'second',
@@ -186,5 +193,33 @@ describe('courseClient (F14 curriculum routes)', () => {
 
     expect(authenticatedFetch).not.toHaveBeenCalled();
     expect(result).toMatchObject({ok: false, cancelled: true});
+  });
+});
+
+describe('unit summative task (PR 16)', () => {
+  it('reads the Server fixture and a unit without a task', async () => {
+    const body = JSON.parse(
+      readFileSync(
+        join(
+          __dirname,
+          '../../../../core/schemas/__tests__/fixtures/valid-unit-summative-task-response.json',
+        ),
+        'utf8',
+      ),
+    ) as {task: {id: string}};
+    authenticatedFetch.mockResolvedValueOnce(jsonResponse(200, body));
+    const result = await fetchUnitSummativeTask(UNIT_ID);
+    expect(authenticatedFetch.mock.calls[0]?.[0]).toBe(
+      `https://api.example/v1/units/${UNIT_ID}/summative-task`,
+    );
+    expect(result).toMatchObject({ok: true, value: {id: body.task.id}});
+
+    authenticatedFetch.mockResolvedValueOnce(
+      jsonResponse(200, {...body, task: null}),
+    );
+    await expect(fetchUnitSummativeTask(UNIT_ID)).resolves.toEqual({
+      ok: true,
+      value: null,
+    });
   });
 });

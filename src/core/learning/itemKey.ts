@@ -1,13 +1,15 @@
+import type {ItemKind} from './catalogItem';
+
 /**
- * Learning item identity (schema v5): `kind:itemKey`, e.g. `word:coffee`,
- * `phrase:wake up`, `grammar:present simple`.
+ * Learning item identity: the catalog item code, `kind:body`, e.g.
+ * `word:coffee`, `phrase:wake up`, `pattern:can-i-have` (see `./itemCode`).
  *
  * The rules mirror the Server's `normalizeItemKey` and are pinned by the same
  * fixture (`__tests__/fixtures/learning-item-keys.json`, byte-identical to
  * `LingoBites-Server/test/fixtures/learning-item-keys.json`). Change both
  * together, or a saved card would stop matching its lesson item.
  */
-export type LearningItemKind = 'word' | 'phrase' | 'grammar';
+export type LearningItemKind = ItemKind;
 
 /**
  * Lowercase, NFKC, curly apostrophes to `'`, collapsed whitespace, and no
@@ -32,10 +34,4 @@ export function vocabularyKind(itemKey: string): 'word' | 'phrase' {
 export function vocabularyItemKey(word: string): string | null {
   const key = normalizeItemKey(word);
   return key === '' ? null : `${vocabularyKind(key)}:${key}`;
-}
-
-/** `grammar:present simple`, or `null` for a blank name. */
-export function grammarItemKey(name: string): string | null {
-  const key = normalizeItemKey(name);
-  return key === '' ? null : `grammar:${key}`;
 }

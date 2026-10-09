@@ -63,7 +63,6 @@ function seedLesson(
     contract_version: number;
     lesson: Record<string, unknown>;
   };
-  body.contract_version = 2;
   body.lesson = {
     ...body.lesson,
     id: LESSON_ID,
@@ -80,15 +79,33 @@ function seedLesson(
     })),
     blocks: [],
     analyses: {},
-    items: withItems
-      ? WORDS.map(([word, meaning, sentence], index) => ({
-          id: id(900 + index),
-          kind: word.includes(' ') ? 'phrase' : 'word',
-          item_key: word,
-          payload: {word, meaning_vi: meaning, ipa: null, pos: null},
-          sentence_ids: [id(sentence + 1)],
-        }))
-      : undefined,
+    lesson_items: withItems
+      ? WORDS.map(([word, meaning], index) => {
+          const kind = word.includes(' ') ? 'phrase' : 'word';
+          return {
+            role: 'required',
+            introduction: 'new',
+            position: index,
+            item: {
+              id: id(900 + index),
+              code: `${kind}:${word}`,
+              kind,
+              text: word,
+              meaning_vi: meaning,
+              ipa: null,
+              part_of_speech: null,
+              note_vi: null,
+              audience: 'all',
+              payload: {},
+              audio: null,
+              image: null,
+              examples: [],
+              variants: [],
+              errors: [],
+            },
+          };
+        })
+      : [],
   };
   saveLessonSnapshotBody({body});
   return parseLessonSnapshotResponse(body);
@@ -318,7 +335,7 @@ describe('PracticeScreen', () => {
   it('a download without items still offers a translation quiz', async () => {
     const result = seedLesson(false);
     expect(result.ok).toBe(true);
-    // No items[], blocks or analyses: no word questions, but every sentence
+    // No lesson items, blocks or analyses: no word questions, but every sentence
     // has a translation, so the quiz is made of translation questions.
     const {tree} = await renderScreen();
     expect(byId(tree, 'practice-unavailable')).toHaveLength(0);

@@ -3,11 +3,19 @@ export type {
   CanonicalLessonPlayerRouteParams,
   LessonCreationRouteParams,
   LessonFlowParamList,
+  LessonFlowPlayerRouteParams,
 } from './screens/navigationTypes';
 export {CanonicalLessonCatalogScreen} from './screens/CanonicalLessonCatalogScreen';
 export {CanonicalLessonPlayerScreen} from './screens/CanonicalLessonPlayerScreen';
 export {LessonCreationScreen} from './screens/LessonCreationScreen';
 export {CanonicalLessonPlayer} from './components/CanonicalLessonPlayer';
+export {ComposeRequestCards} from './components/ComposeRequestCards';
+export {ComposeTrackerHost} from './components/ComposeTrackerHost';
+export {
+  dismissCompose,
+  type ComposeEntry,
+  useComposeTracker,
+} from './logic/composeTracker';
 export type {CanonicalLessonPlayerProps} from './components/CanonicalLessonPlayer';
 export {CanonicalBlockView} from './components/CanonicalBlockView';
 export {SentenceAnalysisPanel} from './components/SentenceAnalysisPanel';

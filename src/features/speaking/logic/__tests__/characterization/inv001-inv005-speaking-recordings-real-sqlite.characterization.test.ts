@@ -5,7 +5,6 @@ import path from 'node:path';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 
-import {PRIOR_SCHEMA_403BC52} from '@test/support/adversarial/priorSchema403bc52';
 import {
   openRealSqlite,
   type RealSqliteConnection,
@@ -21,15 +20,9 @@ const T0 = '2026-09-10T08:00:00.000Z';
 const NOW = '2026-09-27T12:00:00.000Z';
 
 function applyPriorSchema(raw: RealSqliteConnection) {
-  for (const sql of PRIOR_SCHEMA_403BC52) {
-    try {
-      raw.execute(sql);
-    } catch (error) {
-      if (!String((error as Error).message).includes('duplicate column')) {
-        throw error;
-      }
-    }
-  }
+  // Earlier launches now always run on the baseline schema (PR 5 reset a
+  // pre-baseline install instead of upgrading it; see schemaBaseline test).
+  runMigrations(raw);
 }
 
 function seedPriorSpeakingRecording(
@@ -108,7 +101,7 @@ describe('speaking recordings (real SQLite / node:sqlite)', () => {
     db.close();
   });
 
-  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: 403bc52 speaking_recordings upgrade to head with readable on-disk bytes`, () => {
+  it(`${CHARACTERIZATION_INVARIANTS.INV_001}: recordings written by an earlier launch stay readable with their on-disk bytes`, () => {
     const payload = 'SPEAKING-RECORDING-BYTES-PRIOR';
     const recordingPath = writeRecordingFile(
       'LingoBitesRecordings/rec-prior.m4a',

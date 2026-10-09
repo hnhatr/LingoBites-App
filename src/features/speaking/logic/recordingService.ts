@@ -16,7 +16,9 @@
 
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import {Platform} from 'react-native';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import AudioRecorderPlayer, {
+  type AudioSet,
+} from 'react-native-audio-recorder-player';
 import {check, PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
 import type {SpeakingMode} from '@core/db/types';
@@ -104,8 +106,25 @@ export type StartRecordingResult =
  * Starts recording to a new file under the app's documents directory.
  * Must only be called from an explicit user tap on a record button (REQ-20).
  */
+/**
+ * PR 14 (decision H13): spoken task answers go to speech recognition, which
+ * needs no more than AAC, mono, 16 kHz at ~32 kbps (35 s ≈ 140 KB). Literal
+ * values stand for the library's enums: MPEG_4 = 2, AAC = 3.
+ */
+export const LESSON_TASK_AUDIO_SET: AudioSet = {
+  AudioEncoderAndroid: 3 as AudioSet['AudioEncoderAndroid'],
+  OutputFormatAndroid: 2 as AudioSet['OutputFormatAndroid'],
+  AudioSamplingRateAndroid: 16_000,
+  AudioEncodingBitRateAndroid: 32_000,
+  AudioChannelsAndroid: 1,
+  AVFormatIDKeyIOS: 'aac' as AudioSet['AVFormatIDKeyIOS'],
+  AVSampleRateKeyIOS: 16_000,
+  AVNumberOfChannelsKeyIOS: 1,
+  AVEncoderBitRateKeyIOS: 32_000,
+};
+
 export async function startRecording(
-  mode: SpeakingMode,
+  mode: SpeakingMode | 'lesson_task',
   recordingId: string,
 ): Promise<StartRecordingResult> {
   if (!nativeFsAvailable()) {
@@ -146,7 +165,10 @@ export async function startRecording(
   const filePath = `${directory}/${sanitizeRecordingSegment(recordingId)}.m4a`;
 
   try {
-    await getRecorder().startRecorder(filePath);
+    await getRecorder().startRecorder(
+      filePath,
+      mode === 'lesson_task' ? LESSON_TASK_AUDIO_SET : undefined,
+    );
     return {ok: true, filePath};
   } catch {
     return {

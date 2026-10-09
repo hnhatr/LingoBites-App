@@ -68,14 +68,13 @@ describe('todayAdapter real SQLite (TASK-008)', () => {
     expect(snapshot.lessonProgression.nextLessonId).toBeNull();
   });
 
-  it('schema v3 drops retired package tables after migrations', () => {
+  it('migrations leave the database at the baseline version', () => {
+    // Retired tables are absent from the baseline; that is checked on real
+    // SQLite in `core/db/__tests__/schemaBaseline.real-sqlite.test.ts` (this
+    // mock treats every table as present).
     expect(readAppSchemaVersion(open({name: DB_NAME}))).toBe(
       APP_SCHEMA_VERSION,
     );
-    const db = open({name: DB_NAME});
-    expect(() =>
-      db.execute('SELECT 1 FROM content_packages LIMIT 1;'),
-    ).toThrow();
   });
 
   it('still surfaces speaking errors in the learner snapshot', () => {

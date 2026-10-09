@@ -5,11 +5,15 @@ import {
   UploadSendPreconditionError,
 } from '@core/api/authenticatedFetch';
 import type {
+  CreateLessonTaskRecordingRequest,
   CreateRecordingRequest,
   CreateRecordingSuccessResponse,
 } from '@core/schemas/recordings';
 
-import {isRecordingUploadConsentOn} from '../upload/recordingConsent';
+import {
+  isEvaluationConsentOn,
+  isRecordingUploadConsentOn,
+} from '../upload/recordingConsent';
 
 export const RECORDING_UPLOAD_MIME = 'audio/mp4';
 
@@ -40,6 +44,11 @@ export type RecordingClientOptions = {
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
   expectedUserId?: string;
+  /**
+   * PR 14: which consent gates the send. Spoken task answers go out under
+   * the grading consent; every other recording under the upload consent.
+   */
+  consent?: 'upload' | 'evaluation';
 };
 
 export class RecordingUploadUrlError extends Error {
@@ -124,7 +133,10 @@ function recordingAuthenticatedFetchOptions(
   options: RecordingClientOptions,
 ): AuthenticatedFetchOptions {
   const auth: AuthenticatedFetchOptions = {
-    beforeSend: () => isRecordingUploadConsentOn(),
+    beforeSend: () =>
+      options.consent === 'evaluation'
+        ? isEvaluationConsentOn()
+        : isRecordingUploadConsentOn(),
   };
   if (options.expectedUserId !== undefined) {
     auth.expectedUserId = options.expectedUserId;
@@ -147,7 +159,7 @@ function consentWithdrawnResult(): {
 }
 
 export async function createRecordingMetadata(
-  request: CreateRecordingRequest,
+  request: CreateRecordingRequest | CreateLessonTaskRecordingRequest,
   options: RecordingClientOptions = {},
 ): Promise<CreateRecordingResult> {
   const {apiBaseUrl} = getAppConfig();

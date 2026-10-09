@@ -1,7 +1,11 @@
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {normalizeItemKey} from './itemKey';
-import {learningItemsFromSnapshot, type WordLearningItem} from './items';
+import {
+  isWordLearningItem,
+  learningItemsFromSnapshot,
+  type WordLearningItem,
+} from './items';
 import {createRandom, shuffled} from './random';
 
 /**
@@ -60,7 +64,7 @@ export function buildPracticeSource(
   analyses: Record<string, LessonAnalysis> = snapshot.analyses,
 ): PracticeSource {
   const words = learningItemsFromSnapshot(snapshot, analyses).filter(
-    (item): item is WordLearningItem => item.kind !== 'grammar',
+    isWordLearningItem,
   );
   return {
     lessonId: snapshot.id,

@@ -9,7 +9,9 @@ import {
   useLessonBookmarks,
 } from '@features/lesson/library';
 
+import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
+import {AppText} from '@ui/components/AppText';
 import {
   LessonCard,
   lessonCardDurationLabel,
@@ -78,6 +80,17 @@ export function UnitLessonsScreen({navigation, route}: Props) {
                 sentenceCount,
               })}
               exerciseCount={localState?.activityCounts.get(lesson.id)}
+              footer={
+                lesson.canDo[0] ? (
+                  <AppText
+                    color="secondary"
+                    numberOfLines={2}
+                    testID={`unit-lessons-can-do-${lesson.id}`}
+                  >
+                    {t('course.unit_can_do', {text: lesson.canDo[0]})}
+                  </AppText>
+                ) : undefined
+              }
               kind={lessonCardKind(sourceType)}
               onPress={onPress}
               onToggleBookmark={() =>
@@ -120,6 +133,28 @@ export function UnitLessonsScreen({navigation, route}: Props) {
                 progress={ready.progress}
                 testID="unit-lessons-progress"
               />
+              {/* PR 16 (B4): the summative task opens after every lesson's practice. */}
+              <AppButton
+                accessibilityHint={t(
+                  `course.summative_${ready.summative}_hint`,
+                )}
+                disabled={ready.summative === 'locked'}
+                onPress={() =>
+                  navigation.navigate('UnitSummativeTask', {unitId, title})
+                }
+                testID="unit-lessons-summative"
+                title={t(`course.summative_${ready.summative}`)}
+                variant={ready.summative === 'open' ? 'primary' : 'outline'}
+              />
+              {ready.summative === 'locked' ? (
+                <AppText
+                  color="secondary"
+                  testID="unit-lessons-summative-locked"
+                  variant="caption"
+                >
+                  {t('course.summative_locked_note')}
+                </AppText>
+              ) : null}
             </View>
           ) : undefined
         }
@@ -135,6 +170,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     progress: {
+      gap: theme.spacing.sm,
       paddingBottom: theme.spacing.sm,
     },
   });

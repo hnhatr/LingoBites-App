@@ -1,0 +1,105 @@
+import React from 'react';
+import {useTranslation} from 'react-i18next';
+
+import {AppText} from '@ui/components/AppText';
+
+import type {
+  ActivityContent,
+  FillBlankContent,
+  ListenAndRepeatContent,
+  MultipleChoiceContent,
+  RolePlayContent,
+  SpeakingDrillContent,
+  TranslationContent,
+} from '@core/schemas/activityContent';
+import type {LessonTask} from '@core/schemas/lesson';
+
+import type {EntryReport} from '../logic/activityOutcome';
+import type {FlowActivity, FlowItems} from '../logic/flowContent';
+import {FillBlankActivity} from './activities/FillBlankActivity';
+import {ListenRepeatActivity} from './activities/ListenRepeatActivity';
+import {MultipleChoiceActivity} from './activities/MultipleChoiceActivity';
+import {RolePlayActivity} from './activities/RolePlayActivity';
+import {SpeakingDrillActivity} from './activities/SpeakingDrillActivity';
+import {TranslationActivity} from './activities/TranslationActivity';
+
+export type ActivityBodyProps = {
+  activity: FlowActivity;
+  content: ActivityContent;
+  items: FlowItems;
+  /** The task the block runs, for its hint levels. */
+  task: LessonTask | null;
+  /** S4.3: the lesson's video, for step 2 source clips. */
+  youtubeVideoId?: string | null;
+  onComplete: (reports: EntryReport[]) => void;
+};
+
+/** The interactive part of an activity, chosen by its kind. */
+export function ActivityBody({
+  activity,
+  content,
+  items,
+  task,
+  youtubeVideoId,
+  onComplete,
+}: ActivityBodyProps) {
+  const {t} = useTranslation();
+  switch (activity.kind) {
+    case 'listen_and_repeat':
+      return (
+        <ListenRepeatActivity
+          content={content as ListenAndRepeatContent}
+          onComplete={onComplete}
+          youtubeVideoId={youtubeVideoId}
+        />
+      );
+    case 'speaking_drill':
+      return (
+        <SpeakingDrillActivity
+          task={task}
+          content={content as SpeakingDrillContent}
+          items={items}
+          onComplete={onComplete}
+        />
+      );
+    case 'role_play':
+      return (
+        <RolePlayActivity
+          task={task}
+          items={items}
+          content={content as RolePlayContent}
+          onComplete={onComplete}
+        />
+      );
+    case 'multiple_choice':
+      return (
+        <MultipleChoiceActivity
+          content={content as MultipleChoiceContent}
+          onComplete={onComplete}
+        />
+      );
+    case 'fill_blank':
+      return (
+        <FillBlankActivity
+          task={task}
+          content={content as FillBlankContent}
+          onComplete={onComplete}
+        />
+      );
+    case 'translation':
+      return (
+        <TranslationActivity
+          task={task}
+          content={content as TranslationContent}
+          items={items}
+          onComplete={onComplete}
+        />
+      );
+    default:
+      return (
+        <AppText color="secondary" testID="lesson-flow-activity-unsupported">
+          {t('lessonFlow.activity_unsupported')}
+        </AppText>
+      );
+  }
+}

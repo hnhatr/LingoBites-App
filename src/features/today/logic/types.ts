@@ -20,6 +20,7 @@ export type StudyActivityType =
   | 'active_recall'
   | 'prerequisite_lesson'
   | 'next_lesson'
+  | 'continue_lesson'
   | 'old_situation_practice'
   | 'speaking_practice'
   | 'interview_practice';
@@ -27,6 +28,7 @@ export type StudyActivityType =
 export type TodayNavigationTarget = {
   screen:
     | 'DailyReview'
+    | 'ItemReview'
     | 'CanonicalLessonPlayer'
     | 'CanonicalCatalog'
     | 'SpeakingRoom'
@@ -55,7 +57,10 @@ export type LearnerProfileData = {
 };
 
 export type LearnerStateSnapshot = {
+  /** Due flashcards plus today's lesson items (PR 16). */
   dueReviewCount: number;
+  /** Lesson items due on the Server's schedule, within today's limit. */
+  dueItemCount?: number;
   estimatedReviewMinutes: number;
   /** False when no canonical lesson is stored offline (FR-021 empty hint). */
   hasDownloadedLessons: boolean;
@@ -71,6 +76,8 @@ export type LearnerStateSnapshot = {
     prerequisiteGapTitle?: string | null;
     oldLessonId?: string | null;
     oldLessonTitle?: string | null;
+    inProgressLessonId?: string | null;
+    inProgressLessonTitle?: string | null;
   };
   profileData?: LearnerProfileData | null;
 };
