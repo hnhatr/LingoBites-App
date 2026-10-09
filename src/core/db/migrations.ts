@@ -11,7 +11,7 @@ import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
  * (`UPGRADE_STEPS`) on top of the baseline version; the baseline statements
  * always create the latest shape.
  */
-export const APP_SCHEMA_VERSION = 8;
+export const APP_SCHEMA_VERSION = 9;
 
 /** The version the baseline was folded at; older databases are reset. */
 export const BASELINE_SCHEMA_VERSION = 7;
@@ -51,6 +51,37 @@ const ACTIVITY_ATTEMPTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_activity_attempt
     ON activity_attempts (lesson_id, occurred_at DESC);`;
 
 /**
+ * `task_answers` (v9, PR 14): one row per step-5 or summative answer sent to
+ * the Server's scorer. The attempt itself stays in `activity_attempts`
+ * (`pending` / `service`); this row knows the target, whether the answer
+ * was spoken or written (and written instead of spoken), the recording
+ * that carries a spoken one, and the result once it arrives. `pending_text`
+ * holds a written answer only while it waits for the network; it is
+ * cleared as soon as the answer is sent.
+ */
+const TASK_ANSWERS_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS task_answers (
+    attempt_id TEXT PRIMARY KEY NOT NULL,
+    owner_user_id TEXT,
+    lesson_id TEXT,
+    block_id TEXT,
+    unit_id TEXT,
+    task_id TEXT,
+    source TEXT NOT NULL,
+    substitute INTEGER NOT NULL DEFAULT 0,
+    support_level TEXT NOT NULL DEFAULT 'none',
+    recording_id TEXT,
+    pending_text TEXT,
+    state TEXT NOT NULL,
+    evaluation_json TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE INDEX IF NOT EXISTS idx_task_answers_block
+    ON task_answers (block_id, created_at DESC);`,
+];
+
+/**
  * Upgrade steps keyed by the version they start from; each runs in the
  * migration transaction and must keep the rows it touches.
  */
@@ -69,6 +100,8 @@ const UPGRADE_STEPS: Record<number, readonly string[]> = {
     'ALTER TABLE activity_attempts_v8 RENAME TO activity_attempts;',
     ACTIVITY_ATTEMPTS_INDEX,
   ],
+  // v8 → v9: a new table, nothing else moves.
+  8: TASK_ANSWERS_STATEMENTS,
 };
 
 /** Every table the baseline creates, in creation order. */
@@ -89,6 +122,7 @@ export const BASELINE_TABLES = [
   'speaking_attempts',
   'activity_attempts',
   'lesson_bookmarks',
+  'task_answers',
 ] as const;
 
 export const BASELINE_STATEMENTS: string[] = [
@@ -316,6 +350,7 @@ export const BASELINE_STATEMENTS: string[] = [
   );`,
   `CREATE INDEX IF NOT EXISTS idx_lesson_bookmarks_saved
     ON lesson_bookmarks (tombstone, saved_at DESC);`,
+  ...TASK_ANSWERS_STATEMENTS,
 ];
 
 export function readAppSchemaVersion(db: QuickSQLiteConnection): number {

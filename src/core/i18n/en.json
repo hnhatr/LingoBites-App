@@ -730,6 +730,7 @@
     "outcome_pass_with_support": "Passed after another try",
     "outcome_fail": "Not yet",
     "outcome_unscorable": "Could not be scored",
+    "outcome_pending": "Grading…",
     "outcome_none": "Not done",
     "redo": "Do it again",
     "redo_hint": "Runs this activity again",

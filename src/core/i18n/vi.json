@@ -730,6 +730,7 @@
     "outcome_pass_with_support": "Đạt sau khi làm lại",
     "outcome_fail": "Chưa đạt",
     "outcome_unscorable": "Chưa chấm được",
+    "outcome_pending": "Đang chấm…",
     "outcome_none": "Chưa làm",
     "redo": "Làm lại",
     "redo_hint": "Làm lại hoạt động này",

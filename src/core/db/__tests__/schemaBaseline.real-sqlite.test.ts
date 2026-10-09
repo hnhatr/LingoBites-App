@@ -139,7 +139,7 @@ describe('baseline schema', () => {
 
     runMigrations(db);
 
-    expect(readAppSchemaVersion(db)).toBe(8);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
     expect(names('table')).toEqual([...BASELINE_TABLES].sort());
     expect(names('index')).toContain('idx_activity_attempts_lesson');
     expect(
@@ -155,5 +155,25 @@ describe('baseline schema', () => {
          occurred_at, updated_at, block_id, outcome)
        VALUES ('a2', 'lesson', 'fill_blank', 1, 'x', 'x', 'b1', 'fail');`,
     );
+  });
+
+  it('upgrades v8 by adding task_answers and keeps every row (PR 14)', () => {
+    runMigrations(db);
+    db.execute('DROP TABLE task_answers;');
+    db.execute(
+      `INSERT INTO activity_attempts (id, kind, activity, duration_ms,
+         occurred_at, updated_at, outcome)
+       VALUES ('a8', 'lesson', 'role_play', 1, 'x', 'x', 'pass_independent');`,
+    );
+    db.execute('PRAGMA user_version = 8;');
+
+    runMigrations(db);
+
+    expect(readAppSchemaVersion(db)).toBe(9);
+    expect(names('table')).toEqual([...BASELINE_TABLES].sort());
+    expect(names('index')).toContain('idx_task_answers_block');
+    expect(
+      db.execute('SELECT COUNT(*) AS n FROM activity_attempts;').rows?.item(0),
+    ).toEqual({n: 1});
   });
 });
