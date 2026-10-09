@@ -25,6 +25,9 @@ export const LESSON_CONTRACT_FIXTURE_SHA256 = {
   /** PR 12: evaluation results pulled from the read-only collection (PR 14). */
   'valid-sync-evaluation-pull-response.json':
     '4771d6ebecb41004b72d4bca7d69f92f597c2e0000fb8e01c655bfd8e16355a3',
+  /** PR 15: lesson pass, unit outcome and item review schedule (app reads from PR 16). */
+  'valid-sync-learning-outcomes-pull-response.json':
+    '3d9d3da86de6702a23161ee67c77ee470a970988be1c7068d08dce1878ce1096',
   /**
    * PR 10: accepted answers of a pattern; a copy of the Server's
    * `test/fixtures/accepted-answers.json` (read by `@core/learning` tests).
