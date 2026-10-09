@@ -31,6 +31,35 @@ describe('activity content (PR 8 contract)', () => {
     }
   });
 
+  it('parses the composed lesson, whose step 2 replays source clips (S4.3)', () => {
+    const composed = LessonSnapshotResponseSchema.parse(
+      loadFixture('valid-lesson-snapshot-composed-response.json'),
+    ).lesson;
+    for (const block of composed.blocks.filter(b => b.type === 'activity')) {
+      const kind = block.data.activityKind;
+      if (isActivityKind(kind)) {
+        expect(parseActivityContent(kind, block.data.content)).not.toBeNull();
+      }
+    }
+    const repeat = composed.blocks.find(
+      block => block.data.activityKind === 'listen_and_repeat',
+    );
+    const content = parseActivityContent(
+      'listen_and_repeat',
+      repeat?.data.content,
+    );
+    expect(content?.prompts[0]).toMatchObject({
+      sentenceId: composed.sentences[0]?.id,
+      startMs: 0,
+      endMs: 2000,
+    });
+    expect(
+      parseActivityContent('listen_and_repeat', {
+        prompts: [{id: 'p1', textEn: 'Hi', textVi: 'Chào', startMs: 0}],
+      }),
+    ).toBeNull();
+  });
+
   it('returns null for missing or malformed content', () => {
     expect(parseActivityContent('translation', undefined)).toBeNull();
     expect(parseActivityContent('translation', {prompts: []})).toBeNull();

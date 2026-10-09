@@ -59,6 +59,11 @@ function entries<T extends z.ZodTypeAny>(
     });
 }
 
+/** D1: one source clip is at most 30 seconds. */
+export const SOURCE_CLIP_MAX_MS = 30_000;
+
+const clipMs = z.number().int().min(0);
+
 export const ListenAndRepeatContentSchema = z
   .object({
     prompts: entries(
@@ -68,8 +73,41 @@ export const ListenAndRepeatContentSchema = z
           textEn,
           textVi,
           itemId: z.string().uuid().optional(),
+          /**
+           * S4.1: the lesson sentence this prompt replays and, for a video
+           * lesson, its clip.
+           */
+          sentenceId: z.string().uuid().optional(),
+          startMs: clipMs.optional(),
+          endMs: clipMs.optional(),
         })
-        .strict(),
+        .strict()
+        .superRefine((prompt, ctx) => {
+          const {startMs, endMs} = prompt;
+          if ((startMs === undefined) !== (endMs === undefined)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'startMs and endMs go together',
+              path: ['endMs'],
+            });
+          } else if (startMs !== undefined && endMs !== undefined) {
+            if (endMs <= startMs) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'endMs must be after startMs',
+                path: ['endMs'],
+              });
+            } else if (endMs - startMs > SOURCE_CLIP_MAX_MS) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `a clip is at most ${
+                  SOURCE_CLIP_MAX_MS / 1000
+                } seconds`,
+                path: ['endMs'],
+              });
+            }
+          }
+        }),
     ),
   })
   .strict();

@@ -92,6 +92,18 @@ describe('canonical lesson contract mirror', () => {
     }
   });
 
+  it('parses the composed fixture: a learner six-step lesson (S4.3)', () => {
+    const lesson = LessonSnapshotResponseSchema.parse(
+      loadFixture('valid-lesson-snapshot-composed-response.json'),
+    ).lesson;
+    expect(lesson.origin).toBe('learner');
+    expect(lesson.generated).toBe(true);
+    expect(lesson.derived_from_lesson_id).toEqual(expect.any(String));
+    expect(lesson.situation_source).toBe('source');
+    expect(lesson.spec?.code).toBeNull();
+    expect(lesson.tasks?.some(task => task.kind === 'independent')).toBe(true);
+  });
+
   it('parses the canonical catalog fixture', () => {
     const parsed = LessonCatalogResponseSchema.safeParse(
       loadFixture('valid-lesson-catalog-response.json'),

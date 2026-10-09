@@ -117,6 +117,8 @@ export type CanonicalLessonHubProps = {
    * the row also stays hidden while the lesson is too small for a quiz.
    */
   onOpenPractice?: () => void;
+  /** S4.3: opens "Học theo 6 bước" sentence picking. Omit to hide the row. */
+  onOpenCompose?: () => void;
 };
 
 /**
@@ -133,6 +135,7 @@ export function CanonicalLessonHub({
   onOpenSection,
   onOpenLesson,
   onOpenPractice,
+  onOpenCompose,
 }: CanonicalLessonHubProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -176,6 +179,20 @@ export function CanonicalLessonHub({
           {snapshot.origin === 'learner' ? (
             <Chip label={t('lessonPlayer.hero_mine')} tone="accentSoft" />
           ) : null}
+          {snapshot.generated ? (
+            <Chip
+              label={t('compose.chip_generated')}
+              testID="canonical-hub-generated"
+              tone="gold"
+            />
+          ) : null}
+          {snapshot.situation_source === 'inferred' ? (
+            <Chip
+              label={t('compose.chip_inferred')}
+              testID="canonical-hub-inferred"
+              tone="coralSoft"
+            />
+          ) : null}
           {outcome && outcome.audience !== 'all' ? (
             <Chip
               label={t(`lessonPlayer.audience_${outcome.audience}`)}
@@ -184,6 +201,20 @@ export function CanonicalLessonHub({
             />
           ) : null}
         </View>
+        {snapshot.generated &&
+        snapshot.derived_from_lesson_id &&
+        onOpenLesson ? (
+          <Pressable
+            accessibilityHint={t('compose.source_link_hint')}
+            accessibilityRole="link"
+            onPress={() => onOpenLesson(snapshot.derived_from_lesson_id!)}
+            testID="canonical-hub-source-lesson"
+          >
+            <AppText style={themedStyles.expandLabel} variant="label">
+              {`${t('compose.source_link')} →`}
+            </AppText>
+          </Pressable>
+        ) : null}
         {snapshot.description.trim().length > 0 ? (
           <AppText color="secondary" variant="body">
             {snapshot.description}
@@ -269,6 +300,16 @@ export function CanonicalLessonHub({
             subtitle={t('practice.entry_hint')}
             testID="canonical-hub-practice"
             title={t('practice.entry_button')}
+          />
+        ) : null}
+        {onOpenCompose ? (
+          <LessonExploreRow
+            icon="auto_awesome"
+            medallionTone="gold"
+            onPress={onOpenCompose}
+            subtitle={t('compose.entry_subtitle')}
+            testID="canonical-hub-compose"
+            title={t('compose.entry_title')}
           />
         ) : null}
       </View>
