@@ -8,7 +8,8 @@
  * `GET /api/v1/lessons`, `GET /api/v1/lessons/:id`,
  * `POST /api/v1/lessons/:id/sentences/:sentenceId/analysis`,
  * `POST /api/v1/lessons/revisions`, `POST /api/v1/lesson-creations`,
- * `GET /api/v1/lesson-creations/:id`.
+ * `GET /api/v1/lesson-creations/:id`. The S4.3 compose routes reuse `send`
+ * and `errorFromStatus` from `composeClient.ts`.
  *
  * No local persistence of any kind: this module imports no repository,
  * storage, or database code, and never writes responses anywhere. Downloads
@@ -94,7 +95,7 @@ function networkError(): CanonicalLessonError {
   };
 }
 
-function contentError(message: string): CanonicalLessonError {
+export function contentError(message: string): CanonicalLessonError {
   return {
     ok: false,
     kind: 'content-error',
@@ -120,7 +121,7 @@ function errorCodeOf(body: unknown): string | null {
   return typeof code === 'string' ? code : null;
 }
 
-function errorFromStatus(
+export function errorFromStatus(
   status: number,
   body: unknown,
   notFoundCode: string,
@@ -163,7 +164,7 @@ function errorFromStatus(
   return {ok: false, kind: 'server-error', ...base, retryable: false};
 }
 
-async function send(
+export async function send(
   path: string,
   init: RequestInit,
   notFoundCode: string,
