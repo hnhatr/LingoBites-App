@@ -3,7 +3,11 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRequestId} from '@core/api/requestId';
 import type {ComposeQuota, LessonSnapshot} from '@core/schemas/lesson';
 
-import {fetchComposeQuota, submitCompose} from './composeClient';
+import {
+  fetchComposeCapability,
+  fetchComposeQuota,
+  submitCompose,
+} from './composeClient';
 import {
   type ComposePickIssue,
   composePickIssue,
@@ -190,4 +194,20 @@ export function useComposePick(snapshot: LessonSnapshot) {
     repick,
     retry,
   };
+}
+
+/**
+ * `lessons.compose.enabled` from the Server, read once per screen; false
+ * until it answers and on any failure (the entry stays hidden).
+ */
+export function useComposeAvailable(): boolean {
+  const [available, setAvailable] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchComposeCapability({signal: controller.signal}).then(value => {
+      if (!controller.signal.aborted) setAvailable(value);
+    });
+    return () => controller.abort();
+  }, []);
+  return available;
 }

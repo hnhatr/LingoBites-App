@@ -815,7 +815,9 @@
     "result_independent": "Use it on your own",
     "support_hint_1": "hint level 1",
     "support_hint_2": "hint level 2",
-    "support_model": "saw the model"
+    "support_model": "saw the model",
+    "play_clip": "Play the original clip",
+    "play_clip_hint": "Play this sentence from the source video"
   },
   "course": {
     "courses_title": "Courses",
@@ -921,6 +923,8 @@
     "source_link": "Source lesson",
     "source_link_hint": "Open the lesson the sentences came from",
     "library_chip": "6 steps · AI-made",
-    "new_chip": "New"
+    "new_chip": "New",
+    "select_hint": "Pick or unpick this sentence",
+    "dismiss_hint": "Hide this notice"
   }
 }

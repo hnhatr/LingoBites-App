@@ -1,6 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {fetchLessonCreationStatus} from '../canonicalLessonClient';
+import {saveLessonSnapshotBody} from '../canonicalDownloadRepository';
+import {
+  fetchLessonCreationStatus,
+  fetchLessonSnapshot,
+} from '../canonicalLessonClient';
 import {fetchActiveComposes} from '../composeClient';
 import {
   dismissCompose,
@@ -17,6 +21,11 @@ import {
 
 jest.mock('../canonicalLessonClient', () => ({
   fetchLessonCreationStatus: jest.fn(),
+  fetchLessonSnapshot: jest.fn(),
+}));
+jest.mock('../canonicalDownloadRepository', () => ({
+  getLessonDownload: jest.fn(() => null),
+  saveLessonSnapshotBody: jest.fn(),
 }));
 jest.mock('../composeClient', () => ({
   fetchActiveComposes: jest.fn(),
@@ -86,7 +95,15 @@ describe('compose tracker (wait design §3)', () => {
         compose: progress('done', true),
       },
     });
+    (fetchLessonSnapshot as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      value: {snapshot: {}, rawBody: {lesson: LESSON}},
+    });
     await pollRunningComposes();
+    // The ready lesson is saved for the library before it is opened.
+    expect(saveLessonSnapshotBody).toHaveBeenCalledWith({
+      body: {lesson: LESSON},
+    });
     expect(getComposeEntry(REQUEST)).toMatchObject({
       status: 'succeeded',
       lessonId: LESSON,

@@ -7,6 +7,8 @@ import {
   View,
 } from 'react-native';
 
+import {ComposeRequestCards} from '@features/lesson/player';
+
 import {AppScreen} from '@ui/components/AppScreen';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 
@@ -105,14 +107,20 @@ export function LibraryListScreen({navigation, route}: Props) {
         ) : !ready ? (
           <ActivityIndicator style={styles.loading} />
         ) : isOwnLessonSection(section) ? (
-          <LessonsTabContent
-            packagedLessons={lessons}
-            packagedTitle={null}
-            isFiltered={isFiltered}
-            onPracticeLesson={
-              practiceEnabled ? appNavigation.openPractice : undefined
-            }
-          />
+          <>
+            {/* S4.3: six-step lessons still being made. */}
+            <View style={styles.cards}>
+              <ComposeRequestCards />
+            </View>
+            <LessonsTabContent
+              packagedLessons={lessons}
+              packagedTitle={null}
+              isFiltered={isFiltered}
+              onPracticeLesson={
+                practiceEnabled ? appNavigation.openPractice : undefined
+              }
+            />
+          </>
         ) : section.id === 'vocabulary' ? (
           <VocabularyTabContent
             vocabulary={vocabulary}
@@ -127,6 +135,9 @@ export function LibraryListScreen({navigation, route}: Props) {
 }
 
 const styles = StyleSheet.create({
+  cards: {
+    paddingHorizontal: 16,
+  },
   content: {
     flex: 1,
   },

@@ -6,7 +6,14 @@ import type {
   LessonCreationError,
 } from '@core/schemas/lesson';
 
-import {fetchLessonCreationStatus} from './canonicalLessonClient';
+import {
+  getLessonDownload,
+  saveLessonSnapshotBody,
+} from './canonicalDownloadRepository';
+import {
+  fetchLessonCreationStatus,
+  fetchLessonSnapshot,
+} from './canonicalLessonClient';
 import {fetchActiveComposes} from './composeClient';
 
 /**
@@ -42,12 +49,27 @@ const FINISHED_TTL_MS = 24 * 60 * 60 * 1000;
 type ComposeTrackerState = {
   entries: ComposeEntry[];
   hydrated: boolean;
+  /** The request an open sheet shows; no banner for it (memory only). */
+  focusedRequestId: string | null;
+  /** A card asked this lesson's screen to open its compose sheet. */
+  sheetLessonId: string | null;
 };
 
 export const useComposeTracker = create<ComposeTrackerState>()(() => ({
   entries: [],
   hydrated: false,
+  focusedRequestId: null,
+  sheetLessonId: null,
 }));
+
+/** "Đang tạo bài" card → the source lesson opens with its sheet showing. */
+export function requestComposeSheet(lessonId: string | null): void {
+  useComposeTracker.setState({sheetLessonId: lessonId});
+}
+
+export function setFocusedCompose(requestId: string | null): void {
+  useComposeTracker.setState({focusedRequestId: requestId});
+}
 
 function storageOrNull(): typeof AsyncStorage | null {
   try {
@@ -143,6 +165,22 @@ export function markComposeSeen(requestId: string): void {
   );
 }
 
+/** Opening a composed lesson counts as seeing that it is ready. */
+export function markComposedLessonSeen(lessonId: string): void {
+  if (
+    !useComposeTracker
+      .getState()
+      .entries.some(entry => entry.lessonId === lessonId && !entry.seen)
+  ) {
+    return;
+  }
+  setEntries(entries =>
+    entries.map(entry =>
+      entry.lessonId === lessonId ? {...entry, seen: true} : entry,
+    ),
+  );
+}
+
 /** Forget a finished request (the learner closed its card or banner). */
 export function dismissCompose(requestId: string): void {
   setEntries(entries =>
@@ -205,6 +243,20 @@ export async function hydrateComposeTracker(
   });
 }
 
+/**
+ * J3: a lesson that is ready lands in "Bài học của tôi" without being opened
+ * first. Media are fetched when the learner opens it, like any download.
+ */
+async function downloadComposedLesson(lessonId: string): Promise<void> {
+  try {
+    if (getLessonDownload(lessonId)) return;
+    const fetched = await fetchLessonSnapshot(lessonId);
+    if (fetched.ok) saveLessonSnapshotBody({body: fetched.value.rawBody});
+  } catch {
+    // Opening the lesson downloads it again; nothing is lost.
+  }
+}
+
 /** Poll one running request and fold the answer into its entry. */
 export async function pollCompose(requestId: string): Promise<void> {
   const entry = getComposeEntry(requestId);
@@ -228,6 +280,9 @@ export async function pollCompose(requestId: string): Promise<void> {
     return;
   }
   const value = polled.value;
+  if (value.status === 'succeeded' && value.lesson_id) {
+    await downloadComposedLesson(value.lesson_id);
+  }
   setEntries(entries =>
     entries.map(item => {
       if (item.requestId !== requestId) return item;
@@ -267,5 +322,10 @@ export async function pollRunningComposes(): Promise<void> {
 
 /** Test seam: forget everything (memory only). */
 export function resetComposeTrackerForTests(): void {
-  useComposeTracker.setState({entries: [], hydrated: false});
+  useComposeTracker.setState({
+    entries: [],
+    hydrated: false,
+    focusedRequestId: null,
+    sheetLessonId: null,
+  });
 }

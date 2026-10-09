@@ -31,6 +31,7 @@ import {
 import {
   CanonicalLessonCatalogScreen,
   CanonicalLessonPlayerScreen,
+  ComposeTrackerHost,
   LessonCreationScreen,
 } from '@features/lesson/player';
 import {OCRReviewScreen} from '@features/ocr';
@@ -331,6 +332,8 @@ export function AppNavigator() {
     <AppNavigationProvider value={appNavigation}>
       <NavigationContainer ref={navigationRef}>
         <AuthenticatedRootStack />
+        {/* S4.3: running "Học theo 6 bước" requests and their banner. */}
+        <ComposeTrackerHost />
       </NavigationContainer>
     </AppNavigationProvider>
   );
