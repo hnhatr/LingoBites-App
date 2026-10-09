@@ -78,38 +78,15 @@ App hiện cùng luật này để tắt nút sớm (S4.3), server vẫn kiểm 
 ## 4. Prompt và JSON trả về (`curriculum/composer/service/composeAi.ts`)
 
 > Bản nháp prompt đầy đủ + ví dụ để review: `2026-10-09-s4-1-compose-prompt-draft.md`.
+> **Bản nháp đó là nguồn chuẩn** cho prompt và khuôn đầu ra (`suitable` / `reason_vi` / `suggestion_vi` / `lesson`, `slots` dạng danh sách). Đầu ra khoá 3 lớp: khuôn trong prompt + JSON Schema `strict` gửi cho nhà cung cấp + zod và luật ở server.
 
 Prompt gồm: trình độ, đối tượng, câu đã chọn (`id`, `en`, `vi`), item ứng viên (`code`, `text`, `meaning_vi`), luật đầu ra và marker `COMPOSE_PROMPT_MARKER = 'Lesson sentences (JSON):'` để completion giả lập trong test nhận ra (giống `TRANSLATION_PROMPT_MARKER`).
 
-JSON trả về, kiểm bằng zod (`ComposeAiResponseSchema`):
-
-```jsonc
-{
-  "suitable": true,                 // false → chỉ cần reason_vi
-  "reason_vi": "…",
-  "can_do": ["Gọi đồ uống theo cỡ và loại…"],          // 1–2, 10–300 ký tự
-  "situation": { "speaker": "…", "listener": "…", "place": "…", "purpose": "…" },
-  "items": [                                            // 3–10 từ / cụm từ
-    { "code": "word:coffee" | null, "text": "coffee", "kind": "word" | "phrase",
-      "meaning_vi": "…", "ipa": "…" | null, "pos": "noun" | null, "required": true }
-  ],
-  "patterns": [                                         // 1–2
-    { "frame": "Can I have a {size} {drink}, please?", "meaning_vi": "…",
-      "slots": { "size": { "label_vi": "cỡ", "values": ["small", "large"] } },
-      "variants": ["Could I have a {size} {drink}?"],
-      "example_sentence_ids": ["s1"] }
-  ],
-  "guided_task": { "title_vi": "…", "prompt_vi": "…", "hint_levels": ["…", "…"] },
-  "independent_task": { "title_vi": "…", "prompt_vi": "…",
-                        "situation": { … đổi chi tiết so với bài … } },
-  "role_play": { "learner_speaker": "A" | "B",
-                 "turns": [ { "speaker": "A", "text_en": "…", "text_vi": "…",
-                              "pattern_index": 0 | null } ] }   // 2–8 lượt
-}
-```
+JSON trả về: xem `OUTPUT TEMPLATE` và §3.1 trong bản nháp prompt. Kiểm bằng `ComposeAiResponseSchema` (zod) và cùng hình dạng với JSON Schema `strict` gửi cho nhà cung cấp.
 
 Kiểm thêm ngoài zod (lỗi nào cũng đưa vào lần gọi lại):
-- `frame` parse được bằng `parseFrame`, tên chỗ trống khớp `slots`, biến thể dùng đúng các chỗ trống (`variantSlotProblem` có sẵn);
+- `suitable` khớp với `lesson` / `reason_vi`;
+- `frame` parse được bằng `parseFrame`, tên chỗ trống khớp `slots[].name`, biến thể dùng đúng các chỗ trống (`variantSlotProblem` có sẵn);
 - `example_sentence_ids` thuộc câu đã chọn;
 - `role_play` có ít nhất 1 lượt của người học; `pattern_index` hợp lệ;
 - `code` (nếu có) phải nằm trong danh sách ứng viên đã gửi.
@@ -179,7 +156,7 @@ UPDATE items SET reviewed_at = updated_at WHERE source = 'admin';
 
 | Loại | Nội dung |
 |---|---|
-| Unit `composeAi.test.ts` | Parse JSON hợp lệ; từng loại lỗi (frame sai, slot thiếu, role_play không có lượt người học, `code` lạ, `example_sentence_ids` lạ) → danh sách lỗi đúng; prompt có marker và không chứa dữ liệu người dùng ngoài câu. |
+| Unit `composeAi.test.ts` | JSON Schema và zod khớp nhau trên mọi fixture (hợp lệ / lỗi); request gửi tới OpenAI có `json_schema` + `strict`, tới Gemini có `responseSchema`; nhà cung cấp báo không hỗ trợ → gọi lại bằng `json_object`; các prompt cũ vẫn gửi `json_object`. Parse JSON hợp lệ; từng loại lỗi (frame sai, slot thiếu, role_play không có lượt người học, `code` lạ, `example_sentence_ids` lạ) → danh sách lỗi đúng; prompt có marker và không chứa dữ liệu người dùng ngoài câu. |
 | Unit `composeLesson.test.ts` | Fixture `test/fixtures/compose/l03-food.json` (câu bài L03 + AI trả mẫu) → **0 vi phạm** `checkLessonSpec`; bước 2 có đủ câu kèm `startMs` khi bài gốc là YouTube; item trùng mã dùng lại id; item `archived` bị bỏ; `suitable = false` → lỗi `COMPOSE_NOT_SUITABLE`; `used_sentence_ids` bỏ câu lạc quẻ (bước 2 chỉ còn câu được giữ); còn < 2 câu → `COMPOSE_NOT_SUITABLE`; `situation_source = inferred` được ghi; cùng input → cùng output. |
 | Unit `composePrecheck.test.ts` | Câu quá ngắn / trùng / chỉ câu cảm thán / không Latin → `COMPOSE_SENTENCES_TOO_THIN`, không gọi AI. |
 | Unit `activityContent` | `listen_and_repeat` có / không có `sentenceId`, `endMs ≤ startMs` → lỗi, đoạn > 30 giây → lỗi. |
@@ -206,10 +183,11 @@ Lệnh: `yarn test`, `yarn test:db`, `yarn lint`, `yarn tsc` (server). Mục ti�
 |---|---|
 | `src/common/database/migrations/007_lesson_compose{,.down}.sql` | `prisma/schema.prisma` |
 | `src/modules/curriculum/composer/model/compose.ts` (zod, mã lỗi) | `src/modules/curriculum/lessonBlocks/model/activityContent.ts` |
+| `src/modules/curriculum/composer/model/composeAiSchema.ts` (JSON Schema cho structured output) |
 | `src/modules/curriculum/composer/service/composeAi.ts` | `src/modules/curriculum/spec/service/specValidator.ts` |
 | `src/modules/curriculum/composer/service/composeLesson.ts` | `src/modules/canonicalLesson/service/lessonCreationWorker.ts` (phân nhánh `kind`) |
 | `src/modules/curriculum/composer/service/composePipeline.ts` | `src/modules/canonicalLesson/repository/creationRequestStore.ts` (`kind`, đếm lượt) |
-| `src/modules/curriculum/composer/service/composeLimits.ts` | `src/modules/canonicalLesson/service/creationAi.ts` (completion giả lập nhận marker compose) |
+| `src/modules/curriculum/composer/service/composeLimits.ts` | `src/modules/canonicalLesson/service/creationAi.ts` (completion giả lập nhận marker compose; `callProviderJson` thêm tham số tuỳ chọn `jsonSchema`, không đổi hành vi các prompt cũ) |
 | `src/modules/curriculum/composer/repository/composeStore.ts` | `src/common/config/*.ts` (env §2 H12–H14) |
 | `scripts/composeSample.ts` | `.env.example` (chỉ thêm tên biến, **không** sửa `.env`), `package.json` (thêm test DB vào `test:db`) |
 | `test/composeAi.test.ts`, `test/composeLesson.test.ts`, `test/composePipeline.test.ts`, `test/fixtures/compose/*.json` | |
