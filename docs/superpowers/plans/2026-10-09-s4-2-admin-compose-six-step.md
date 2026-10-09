@@ -86,7 +86,7 @@ Không thêm dependency.
 
 ## 8. Kết quả code và điểm lệch so với plan
 
-> Code ngày 2026-10-09, server `b4f6c59` → `c53f07a` (nhánh `claude/affectionate-darwin-krszil`).
+> Code ngày 2026-10-09, server `b4f6c59` → `d98ef30` (nhánh `claude/affectionate-darwin-krszil`).
 
 **Đã làm**
 
@@ -112,3 +112,17 @@ Không thêm dependency.
 | M6 | Lỗi: 403, 400, 404, 503, 409 | Thêm `COMPOSE_ALREADY_DERIVED` (409) khi chọn câu trong bài đã là bài sinh ra | I1: không sinh lồng. |
 | M7 | — | E2E bắt lỗi: sau khi sinh xong, chuyển sang bài mới mà dialog vẫn mở (trang không remount) → đóng dialog khi đổi bài | Đã sửa trong `LessonEditPage.tsx`. |
 | M8 | — | ⚠️ Đổi API (chỉ thêm trường / route): +3 path, +4 operation OpenAPI | Ghi vào `test/openApiDocument.test.ts`. |
+| M9 | — | `reviewed_at` trong contract item là **tuỳ chọn** (server luôn trả) | Fixture item dùng chung mà app và admin-web chép lại chưa có trường này; tránh phải sửa fixture ở 3 nơi. |
+
+**Kiểm tra đã chạy (2026-10-09, Postgres 16 local)**
+
+| Lệnh | Kết quả | Sau S4.1 |
+|---|---|---|
+| `yarn test` | 461 pass, 0 fail | 461 |
+| `yarn test:db` | 250 pass, 0 fail | 248 |
+| `yarn admin-web:test` (Vitest) | 174 / 174 | 160 |
+| Playwright `e2e/` | 17 / 17 (thêm `compose.spec.ts`) | 16 / 16 |
+| `yarn typecheck`, `yarn format` | xanh | xanh |
+| `eslint src test scripts` | còn 1 lỗi **có sẵn** `test/ipa.test.ts:84` | như cũ |
+
+Playwright chạy với Chromium có sẵn trong máy (`/opt/pw-browsers/chromium`) qua một config tạm, không commit; trên CI dùng `playwright.config.ts` như cũ.
