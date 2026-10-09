@@ -2,7 +2,10 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React from 'react';
 import {Modal, StyleSheet, View} from 'react-native';
 
-import {SpeakingRecordingsSettingsRow} from '@features/speaking';
+import {
+  SpeakingRecordingsSettingsRow,
+  SpeechGradingSettingsRow,
+} from '@features/speaking';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
@@ -55,6 +58,7 @@ export function DataSettingsScreen({navigation}: Props) {
 
       <SettingsGroup title="Bản ghi giọng nói">
         <SpeakingRecordingsSettingsRow />
+        <SpeechGradingSettingsRow />
       </SettingsGroup>
 
       <SettingsGroup title="Vùng nguy hiểm">

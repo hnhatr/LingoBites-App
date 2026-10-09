@@ -87,6 +87,10 @@ export {
   applyRecordingUploadConsent,
   SpeakingRecordingsSettingsRow,
 } from './components/SpeakingRecordingsSettingsRow';
+export {
+  applyEvaluationConsent,
+  SpeechGradingSettingsRow,
+} from './components/SpeechGradingSettingsRow';
 export type {
   SaveShadowingAttemptInput,
   SaveShadowingAttemptResult,
