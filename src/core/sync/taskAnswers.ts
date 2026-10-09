@@ -158,6 +158,28 @@ export function latestTaskAnswerForBlock(blockId: string): TaskAnswer | null {
   return row ? toAnswer(row) : null;
 }
 
+function listAnswers(column: 'lesson_id' | 'unit_id', id: string) {
+  const rows = getDatabase().execute(
+    `SELECT * FROM task_answers WHERE ${column} = ? ORDER BY created_at DESC;`,
+    [id],
+  ).rows;
+  const answers: TaskAnswer[] = [];
+  for (let index = 0; index < (rows?.length ?? 0); index += 1) {
+    answers.push(toAnswer(rows!.item(index) as TaskAnswerRow));
+  }
+  return answers;
+}
+
+/** Every answer to a lesson's step-5 tasks, newest first (PR 16). */
+export function listTaskAnswersForLesson(lessonId: string): TaskAnswer[] {
+  return listAnswers('lesson_id', lessonId);
+}
+
+/** Every answer to a unit's summative task, newest first (PR 16). */
+export function listTaskAnswersForUnit(unitId: string): TaskAnswer[] {
+  return listAnswers('unit_id', unitId);
+}
+
 /** Written answers still waiting for the network, oldest first. */
 export function listUnsentWrittenAnswers(): TaskAnswer[] {
   const rows = getDatabase().execute(

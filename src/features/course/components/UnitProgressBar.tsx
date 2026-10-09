@@ -12,15 +12,24 @@ type Props = {
   testID?: string;
 };
 
-/** Determinate "x/y bài" bar for one unit (completed lessons on device). */
+/**
+ * Determinate "x/y bài" bar for one unit (completed lessons on device), with
+ * "đạt z" once the Server counts lessons as passed (PR 16).
+ */
 export function UnitProgressBar({progress, testID}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const label = t('course.unit_progress', {
-    completed: progress.completed,
-    total: progress.total,
-  });
+  const label = progress.passed
+    ? t('course.unit_progress_passed', {
+        completed: progress.completed,
+        total: progress.total,
+        passed: progress.passed,
+      })
+    : t('course.unit_progress', {
+        completed: progress.completed,
+        total: progress.total,
+      });
 
   return (
     <View

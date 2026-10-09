@@ -1,12 +1,21 @@
 import {
   countUnitProgress,
   readCompletedLessonIds,
+  readSummativeState,
   unitProgressRatio,
 } from '../unitProgress';
 
 jest.mock('@core/sync/lessonProgress', () => ({
   listCompletedLessons: jest.fn(),
 }));
+jest.mock('@core/sync/learningOutcomes', () => ({
+  getUnitOutcome: jest.fn(),
+  listPassedLessonIds: jest.fn(() => new Set()),
+}));
+
+const {getUnitOutcome} = jest.requireMock('@core/sync/learningOutcomes') as {
+  getUnitOutcome: jest.Mock;
+};
 
 const {listCompletedLessons} = jest.requireMock(
   '@core/sync/lessonProgress',
@@ -44,5 +53,32 @@ describe('unit progress (F14)', () => {
     });
 
     expect(readCompletedLessonIds().size).toBe(0);
+  });
+
+  it('counts passed lessons when they are known (PR 16)', () => {
+    expect(
+      countUnitProgress(['a', 'b', 'c'], new Set(['a', 'b']), new Set(['a'])),
+    ).toEqual({completed: 2, total: 3, passed: 1});
+  });
+
+  it('opens the summative task by the Server row or local practice (B4)', () => {
+    getUnitOutcome.mockReturnValue(null);
+    expect(readSummativeState('u', ['a', 'b'], new Set(['a']))).toBe('locked');
+    expect(readSummativeState('u', ['a', 'b'], new Set(['a', 'b']))).toBe(
+      'open',
+    );
+    expect(readSummativeState('u', [], new Set())).toBe('locked');
+    getUnitOutcome.mockReturnValue({
+      unitId: 'u',
+      summativeUnlockedAt: 'x',
+      passedAt: null,
+    });
+    expect(readSummativeState('u', ['a'], new Set())).toBe('open');
+    getUnitOutcome.mockReturnValue({
+      unitId: 'u',
+      summativeUnlockedAt: 'x',
+      passedAt: 'y',
+    });
+    expect(readSummativeState('u', ['a'], new Set())).toBe('passed');
   });
 });

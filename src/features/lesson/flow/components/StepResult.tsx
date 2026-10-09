@@ -11,6 +11,7 @@ import type {LessonSnapshot} from '@core/schemas/lesson';
 import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 
 import {flowActivity} from '../logic/flowContent';
+import {useLessonOutcome} from '../logic/lessonOutcome';
 import type {FlowStep} from '../logic/practiceCompletion';
 import {latestOutcomes} from './StepView';
 
@@ -25,7 +26,8 @@ export type StepResultProps = {
 
 /**
  * Step 6: the newest result of every activity of steps 2–5, whether the
- * practice part is done, and a way back to what is not passed yet.
+ * practice part is done, whether the lesson is passed (PR 16), and a way
+ * back to what is not passed yet.
  */
 export function StepResult({
   snapshot,
@@ -68,6 +70,8 @@ export function StepResult({
     const outcome = latest.get(block.id);
     return outcome === undefined || outcome === 'fail';
   });
+  const lessonOutcome = useLessonOutcome(snapshot, attempts);
+  const hasIndependent = rows.some(({block}) => block.step === 5);
 
   return (
     <View style={themedStyles.container} testID="lesson-flow-result">
@@ -77,6 +81,20 @@ export function StepResult({
             ? t('lessonFlow.practice_done')
             : t('lessonFlow.practice_remaining', {count: practiceRemaining})}
         </AppText>
+        {lessonOutcome.label === 'in_progress' ? null : (
+          <AppText testID="lesson-flow-lesson-outcome" variant="body">
+            {t(`lessonFlow.lesson_outcome_${lessonOutcome.label}`)}
+          </AppText>
+        )}
+        {lessonOutcome.label === 'passed' && !lessonOutcome.confirmed ? (
+          <AppText
+            color="secondary"
+            testID="lesson-flow-lesson-outcome-unconfirmed"
+            variant="label"
+          >
+            {t('lessonFlow.lesson_outcome_unconfirmed')}
+          </AppText>
+        ) : null}
       </AppCard>
       {(
         [
@@ -124,6 +142,17 @@ export function StepResult({
           onPress={() => onOpenStep(firstOpen.block.step as FlowStep)}
           testID="lesson-flow-open-unfinished"
           title={t('lessonFlow.open_unfinished')}
+          variant="secondary"
+        />
+      ) : null}
+      {lessonOutcome.label === 'practice_done' &&
+      hasIndependent &&
+      firstOpen?.block.step !== 5 ? (
+        <AppButton
+          accessibilityHint={t('lessonFlow.redo_independent_hint')}
+          onPress={() => onOpenStep(5)}
+          testID="lesson-flow-redo-independent"
+          title={t('lessonFlow.redo_independent')}
           variant="secondary"
         />
       ) : null}
