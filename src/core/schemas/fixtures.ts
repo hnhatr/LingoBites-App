@@ -19,6 +19,12 @@ export const LESSON_CONTRACT_FIXTURE_SHA256 = {
   /** PR 8: lesson player attempts; the app sends these from PR 10. */
   'valid-sync-activity-attempt-lesson-push-request.json':
     '9f2ae916990aadcd386e3192eac203173b6fa8ecea980bc073701d5b914c13ed',
+  /** PR 12: step-5 attempts handed to the server's scorer (app sends from PR 14). */
+  'valid-sync-activity-attempt-lesson-pending-push-request.json':
+    '8096e20123f02547832969abb91f5c168faf56cfad4207e74681aa2bce18bfb0',
+  /** PR 12: evaluation results pulled from the read-only collection (PR 14). */
+  'valid-sync-evaluation-pull-response.json':
+    '4771d6ebecb41004b72d4bca7d69f92f597c2e0000fb8e01c655bfd8e16355a3',
   /**
    * PR 10: accepted answers of a pattern; a copy of the Server's
    * `test/fixtures/accepted-answers.json` (read by `@core/learning` tests).
