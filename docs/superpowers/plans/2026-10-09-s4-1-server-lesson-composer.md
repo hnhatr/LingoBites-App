@@ -208,7 +208,7 @@ Không thêm dependency.
 
 ## 13. Kết quả code và điểm lệch so với plan
 
-> Code ngày 2026-10-09 trên nhánh `claude/affectionate-darwin-krszil` (server), commit `e24b50f` → `9353697`. Gồm cả phần backend của kho prompt (thiết kế `2026-10-09-s4-ai-prompt-config-design.md` §11) và phần server của thiết kế chờ (`2026-10-09-s4-compose-wait-ux-design.md` §2).
+> Code ngày 2026-10-09 trên nhánh `claude/affectionate-darwin-krszil` (server), commit `e24b50f` → `80cdfc7`. Gồm cả phần backend của kho prompt (thiết kế `2026-10-09-s4-ai-prompt-config-design.md` §11) và phần server của thiết kế chờ (`2026-10-09-s4-compose-wait-ux-design.md` §2).
 
 **Đã làm**
 
@@ -243,3 +243,16 @@ Không thêm dependency.
 **Chưa làm trong S4.1 (đúng phạm vi)**: route HTTP (S4.2 admin, S4.3 người học), trang admin quản lý prompt (S4.2b), snapshot bài người học có spec (S4.3), dọn `raw_output` của lượt chạy thử sau 30 ngày (làm cùng S4.2b).
 
 **Cần team làm trước khi bật `LESSON_COMPOSE_ENABLED`**: chạy `yarn ai-prompt seed` trên staging, rồi `yarn ai-prompt try <id bản v1>` với AI thật. Bản giả lập không đánh giá được 4 ca "lạc đề / không phù hợp / tình huống gợi ý" (đã thấy fail khi chạy thử với mock, là đúng).
+
+**Kiểm tra đã chạy (2026-10-09, Postgres 16 local)**
+
+| Lệnh | Kết quả | Trước phiên |
+|---|---|---|
+| `yarn test` | 461 pass, 0 fail (300 skip vì không có DB) | 432 pass |
+| `yarn test:db` | 248 pass, 0 fail | 246 pass |
+| `yarn admin-web:test` | 160 / 160 | 160 |
+| `yarn typecheck` | xanh | xanh |
+| `yarn format` | xanh | xanh |
+| `yarn lint` | 1 lỗi **có sẵn** ở `test/ipa.test.ts:84` (Giai đoạn 0); file mới không có lỗi | 1 lỗi đó |
+| Playwright `e2e/` | **chưa chạy** (S4.1 không đổi UI admin ngoài nhãn spec-check) | 16/16 |
+| AI thật | **chưa chạy** (không có key trong phiên); mock chạy hết luồng | — |
