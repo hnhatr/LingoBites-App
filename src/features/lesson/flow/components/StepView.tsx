@@ -102,6 +102,7 @@ export function StepView({
             key={block.id}
             latestOutcome={latest.get(block.id) ?? null}
             task={task}
+            youtubeVideoId={snapshot.youtube?.video_id ?? null}
             onFinished={(outcome, supportLevel, durationMs) =>
               onFinished(block, outcome, supportLevel, durationMs)
             }
