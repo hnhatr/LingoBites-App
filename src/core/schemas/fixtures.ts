@@ -28,6 +28,9 @@ export const LESSON_CONTRACT_FIXTURE_SHA256 = {
   /** PR 15: lesson pass, unit outcome and item review schedule (app reads from PR 16). */
   'valid-sync-learning-outcomes-pull-response.json':
     '3d9d3da86de6702a23161ee67c77ee470a970988be1c7068d08dce1878ce1096',
+  /** PR 13: upload of a spoken step-5 answer (app sends it from PR 14). */
+  'valid-recording-lesson-task-create-request.json':
+    '2765231d238f89e16c912d6e204ed6b99973a47d34932b4dc87f8a1ae7074b51',
   /**
    * PR 10: accepted answers of a pattern; a copy of the Server's
    * `test/fixtures/accepted-answers.json` (read by `@core/learning` tests).

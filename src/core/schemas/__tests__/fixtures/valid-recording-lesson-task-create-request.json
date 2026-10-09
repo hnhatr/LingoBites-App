@@ -1,0 +1,14 @@
+{
+  "client_recording_id": "77777777-7777-4777-8777-777777777712",
+  "mode": "lesson_task",
+  "attempt_id": "99999999-9999-4999-8999-999999999912",
+  "target": {
+    "lesson_id": "33333333-3333-4333-8333-333333333301",
+    "block_id": "44444444-4444-4444-8444-444444444405"
+  },
+  "support_level": "none",
+  "duration_ms": 9500,
+  "mime_type": "audio/mp4",
+  "byte_size": 38000,
+  "sha256": "3b1f6c0c8b9b8e7f4e5a2d1c0b9a8f7e6d5c4b3a2918070605040302010a0b0c"
+}
