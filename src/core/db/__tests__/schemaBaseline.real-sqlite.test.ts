@@ -169,11 +169,32 @@ describe('baseline schema', () => {
 
     runMigrations(db);
 
-    expect(readAppSchemaVersion(db)).toBe(9);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
     expect(names('table')).toEqual([...BASELINE_TABLES].sort());
     expect(names('index')).toContain('idx_task_answers_block');
     expect(
       db.execute('SELECT COUNT(*) AS n FROM activity_attempts;').rows?.item(0),
+    ).toEqual({n: 1});
+  });
+
+  it('upgrades v9 by adding the learning outcome tables (PR 16)', () => {
+    runMigrations(db);
+    for (const table of ['lesson_outcomes', 'unit_outcomes', 'item_memory']) {
+      db.execute(`DROP TABLE ${table};`);
+    }
+    db.execute(
+      `INSERT INTO task_answers (attempt_id, source, state, created_at, updated_at)
+       VALUES ('t9', 'text', 'evaluated', 'x', 'x');`,
+    );
+    db.execute('PRAGMA user_version = 9;');
+
+    runMigrations(db);
+
+    expect(readAppSchemaVersion(db)).toBe(10);
+    expect(names('table')).toEqual([...BASELINE_TABLES].sort());
+    expect(names('index')).toContain('idx_item_memory_due');
+    expect(
+      db.execute('SELECT COUNT(*) AS n FROM task_answers;').rows?.item(0),
     ).toEqual({n: 1});
   });
 });

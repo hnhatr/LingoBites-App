@@ -11,7 +11,7 @@ import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
  * (`UPGRADE_STEPS`) on top of the baseline version; the baseline statements
  * always create the latest shape.
  */
-export const APP_SCHEMA_VERSION = 9;
+export const APP_SCHEMA_VERSION = 10;
 
 /** The version the baseline was folded at; older databases are reset. */
 export const BASELINE_SCHEMA_VERSION = 7;
@@ -82,6 +82,38 @@ const TASK_ANSWERS_STATEMENTS = [
 ];
 
 /**
+ * Learning outcomes (v10, PR 16): local copies of the Server's read-only
+ * `lesson_outcomes`, `unit_outcomes` and `item_memory` collections. Rows come
+ * from sync pulls; `item_memory` is also moved ahead on the device right
+ * after a review, until the next pull brings the Server's row.
+ */
+const LEARNING_OUTCOMES_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS lesson_outcomes (
+    lesson_id TEXT PRIMARY KEY NOT NULL,
+    practice_completed_at TEXT,
+    passed_at TEXT,
+    passed_by TEXT,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE TABLE IF NOT EXISTS unit_outcomes (
+    unit_id TEXT PRIMARY KEY NOT NULL,
+    summative_unlocked_at TEXT,
+    passed_at TEXT,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE TABLE IF NOT EXISTS item_memory (
+    item_code TEXT PRIMARY KEY NOT NULL,
+    stage INTEGER NOT NULL,
+    due_at TEXT NOT NULL,
+    stable_at TEXT,
+    last_result TEXT,
+    last_reviewed_at TEXT,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE INDEX IF NOT EXISTS idx_item_memory_due ON item_memory (due_at);`,
+];
+
+/**
  * Upgrade steps keyed by the version they start from; each runs in the
  * migration transaction and must keep the rows it touches.
  */
@@ -102,6 +134,8 @@ const UPGRADE_STEPS: Record<number, readonly string[]> = {
   ],
   // v8 → v9: a new table, nothing else moves.
   8: TASK_ANSWERS_STATEMENTS,
+  // v9 → v10: new tables only.
+  9: LEARNING_OUTCOMES_STATEMENTS,
 };
 
 /** Every table the baseline creates, in creation order. */
@@ -123,6 +157,9 @@ export const BASELINE_TABLES = [
   'activity_attempts',
   'lesson_bookmarks',
   'task_answers',
+  'lesson_outcomes',
+  'unit_outcomes',
+  'item_memory',
 ] as const;
 
 export const BASELINE_STATEMENTS: string[] = [
@@ -351,6 +388,7 @@ export const BASELINE_STATEMENTS: string[] = [
   `CREATE INDEX IF NOT EXISTS idx_lesson_bookmarks_saved
     ON lesson_bookmarks (tombstone, saved_at DESC);`,
   ...TASK_ANSWERS_STATEMENTS,
+  ...LEARNING_OUTCOMES_STATEMENTS,
 ];
 
 export function readAppSchemaVersion(db: QuickSQLiteConnection): number {

@@ -11,6 +11,10 @@ import {
   type SyncRecord,
 } from '@core/schemas/sync';
 import {
+  applyLearningOutcomeRecord,
+  isLearningOutcomeCollection,
+} from '@core/sync/learningOutcomes';
+import {
   applyLessonBookmarkRecord,
   LESSON_BOOKMARKS_EVENT_TYPE,
 } from '@core/sync/lessonBookmarks';
@@ -256,9 +260,9 @@ export function applySyncRecord(
     applyEvaluationRecord(record);
     return;
   }
-  // PR 14: read-only results of the Server's scorer.
-  if (record.collection === EVALUATIONS_COLLECTION) {
-    applyEvaluationRecord(record);
+  // PR 16: read-only lesson / unit outcomes and the item review schedule.
+  if (isLearningOutcomeCollection(record.collection)) {
+    applyLearningOutcomeRecord(record);
     return;
   }
   if (!SyncCollectionSchema.safeParse(record.collection).success) {
