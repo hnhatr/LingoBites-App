@@ -465,10 +465,11 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [x] PR 16 – app kết quả, tiến độ, ôn (+ route server `GET /v1/units/:unitId/summative-task`) — đã code, chưa test trên máy thật, chưa mở pull request (plan: `2026-10-09-pr16-app-result-progress-review.md`)
 - [x] PR 17 – admin (cấu hình chấm, lượt chấm, nghe lại có log, thống kê, preview thử chấm, cảnh báo B13) — đã code, chưa mở pull request (plan: `2026-10-09-pr17-admin-evaluation.md`)
 
-**Giai đoạn 2**
-- [ ] Bước 0 chốt cấu hình
-- [ ] Nội dung thật: ít nhất 1 level đủ unit
-- [ ] Bước 1 – hồ sơ + kiểm tra đầu vào
+**Giai đoạn 2** (plan: `2026-10-09-phase2-product-trial-plan.md`; bỏ phần phụ huynh / giáo viên)
+- [x] Bước 0 chốt cấu hình — `2026-10-09-phase2-step0-config.md` (P2.0)
+- [x] Nội dung: A1 8 unit + A2 6 unit = 14 unit / 42 bài, bản nháp kỹ thuật, **chờ người phụ trách nội dung đọc lại** (P2.1, P2.2; `yarn seed:curriculum`) — server, nhánh `claude/zen-babbage-njiyn1`, chưa mở PR
+- [x] Bước 1 – hồ sơ + kiểm tra đầu vào: server (P2.3, migration `012`) + app (P2.4) — nhánh `claude/zen-babbage-njiyn1`, chưa mở PR, **chưa test trên máy thật**
+- [ ] Chạy thử: reset + seed staging, test tay theo Phụ lục A của backlog (P2.5)
 
 **Giai đoạn 3 – Stage 4**
 - [x] S4.1 `lessonComposer` + kho prompt backend – server, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR)

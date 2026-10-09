@@ -1,6 +1,6 @@
 # Giai đoạn 2 – Ra bản chạy thử (plan)
 
-> Lập 2026-10-09. **CHỜ DUYỆT**: chưa code.
+> Lập 2026-10-09. Duyệt "ok" 2026-10-09. **ĐÃ CODE** P2.0–P2.4 (nhánh `claude/zen-babbage-njiyn1`, cả hai repo); P2.5 (chạy thử trên staging) do team làm. Xem mục 7.
 > Nguồn: `2026-10-08-remaining-work-plan.md` mục "Giai đoạn 2", backlog 3.1–3.3, bảng chốt 5.4.
 > Phạm vi do người dùng chốt: **bỏ qua quyền phụ huynh / giáo viên** (cả consent phụ huynh ở Bước 1); làm sẵn nội dung mẫu **A1 + A2** gồm các chủ đề người học hay cần.
 
@@ -240,3 +240,38 @@ CREATE TABLE learner_profiles (
 | G6 | Thứ tự PR | P2.0 → P2.1 → P2.3 → P2.4 → P2.2 → P2.5. |
 
 Mỗi PR: code theo commit nhỏ, chạy đủ bước kiểm ở mục 2.1 của plan tổng trước khi push lên nhánh `claude/zen-babbage-njiyn1` (cả hai repo), đánh dấu "ĐÃ CODE" + "Điểm lệch so với plan".
+
+---
+
+## 7. Kết quả và điểm lệch so với plan
+
+**Đã làm:**
+
+| PR | Repo | Commit chính |
+|---|---|---|
+| P2.0 | app | `docs: phase 2 step 0 configuration` |
+| P2.1 | server | `feat(curriculum): seed the A1 trial course` |
+| P2.3 | server | `feat(learner-profile): onboarding profile, placement test…` |
+| P2.4 | app | `feat(onboarding): learner profile, placement test and starting level` |
+| P2.2 | server | `feat(curriculum): A2 level of the trial course` |
+
+**Kiểm tra đã chạy:**
+- Server: typecheck, lint, format; unit 524 + test mới; DB 288 (Postgres 16 local); `yarn seed:curriculum` trên DB trống → 14 unit / 42 bài published, chạy lần 2 không tạo thêm gì.
+- App: `tsc`, `lint` (trong ngân sách warning), `format:check`, Jest 2324+ pass.
+- `test/curriculumContent.test.ts` (không cần DB): mọi bài qua spec-check **không có cả warning**, mọi unit đúng 70/25/5 và có phần viết, mọi câu mẫu (nhắc lại, dịch, lượt nói của người học) nằm trong đáp án chấp nhận của mẫu câu.
+
+**Điểm lệch:**
+1. **Unit 2 A1** đổi thành "Tuổi, sinh nhật, liên lạc": bài 2 là *xin* số điện thoại / email (`Can I have your {contact}, please?`), bài 3 là *nói sinh nhật* thay cho đánh vần. Lý do: số điện thoại và chữ cái đánh vần được nhận dạng giọng nói viết ra rất thất thường, máy chấm theo từ sẽ chấm oan. Nghe số điện thoại vẫn có ở bài tập chọn đáp án.
+2. **Nhiệm vụ bước 5 có "thẻ vai"** (ví dụ "Bạn là y tá…", "Bạn 25 tuổi…") khi mẫu câu ngắn: máy chấm so theo từ với ngưỡng 0.80, câu 3–4 từ sai một từ ngoài danh sách là trượt.
+3. **Giờ và số** có cả dạng chữ và số trong giá trị slot (`seven thirty` / `7:30`), vì nhận dạng giọng nói viết kiểu nào cũng có.
+4. **Bộ câu hỏi kiểm tra đầu vào** nằm trong server `src/modules/learnerProfile/model/placement.ts` (code chạy cần đọc được), không ở `scripts/curriculum/placement.ts`; làm cùng P2.3.
+5. **Lọc unit cho trẻ em làm ở app**, không thêm bộ lọc vào API `/v1/levels/:levelId/units` (API đã trả `audience`); tuổi lưu ở `@core/learning/learnerAudience` để `course` và `onboarding` không import nhau.
+6. **Kết quả kiểm tra đầu vào** chỉ được lưu khi đã có hồ sơ, nên onboarding lưu nháp hồ sơ trước khi vào bài kiểm tra (vẫn ở màn onboarding tới khi chọn trình độ).
+7. **Today**: chưa sắp "bài tiếp theo" theo trình độ trong thuật toán Today (Today dựa trên bài đã tải về). Thay bằng thẻ "Lộ trình của bạn" trên Home mở danh sách unit của trình độ đã chọn.
+8. Thêm intent điều hướng `openLearningProfile` (đổi interface `AppNavigation`).
+
+**Cần team xem kỹ:**
+- ⚠️ Migration `012_learner_profiles` (có `.down.sql`); API public mới `/v1/me/learner-profile`, `/v1/placement/*`.
+- ⚠️ Course mẫu đổi từ `a1-giao-tiep` sang `tieng-anh-giao-tiep`: DB đã seed trước đây phải `db:reset` rồi seed lại.
+- Nội dung 42 bài + 12 câu kiểm tra đầu vào là **bản nháp kỹ thuật**: người phụ trách nội dung (T5) đọc lại trước production.
+- App chưa chạy trên máy thật (TTS ở bài kiểm tra, luồng onboarding offline).

@@ -227,3 +227,18 @@ yarn ios:dev                    # hoặc yarn android:dev
 | Bước 6 | Xem kết quả | Tách "Luyện tập" / "Vận dụng"; hub hiện "Đã hoàn thành phần luyện" |
 | Mạng | Tắt mạng khi học, rồi bật lại | Lượt làm được sync lên server |
 | Quyền micro | Từ chối quyền micro | Vẫn tự đánh giá được |
+
+**Giai đoạn 2 – chạy thử (P2.5).** Staging: `yarn db:reset:staging` (⚠️ mất dữ liệu cũ) → deploy → `yarn seed:curriculum:staging`. Production: `yarn seed:curriculum --draft`, người phụ trách nội dung đọc lại rồi publish.
+
+| Chỗ | Thao tác | Kết quả mong đợi |
+|---|---|---|
+| Onboarding | Tài khoản mới: nhập tên → 4 bước (nhóm tuổi, mục tiêu, sở thích, thời gian) | Qua từng bước được, "Quay lại" giữ lựa chọn |
+| Onboarding | Bấm "Để sau" ở bước đầu | Vào app ngay; Hồ sơ học tập hiện A1, người lớn |
+| Kiểm tra đầu vào | Làm đúng hết | Gợi ý A2; chọn "Bắt đầu A2" → Home có thẻ "Lộ trình của bạn: A2" |
+| Kiểm tra đầu vào | Làm sai hết / thoát giữa chừng / tắt mạng | Gợi ý A1 hoặc vào thẳng A1, không kẹt màn hình |
+| Kiểm tra đầu vào | Nghe câu hỏi (TTS) trên máy thật | Có tiếng; nút "Nghe lại" đọc lại |
+| Offline | Tắt mạng rồi làm onboarding | Vào được app; bật mạng, mở lại app thì hồ sơ lên server |
+| Trẻ em | Chọn "Trẻ em" | Không thấy unit "Khách sạn, du lịch"; bước 5 chỉ tự đánh giá |
+| Hồ sơ học tập | Tab Hồ sơ → "Hồ sơ học tập": đổi trình độ, làm lại bài kiểm tra | Thẻ Home đổi theo trình độ mới |
+| Nội dung | Học trọn 1 unit A1 và 1 unit A2 (6 bước + nhiệm vụ tổng hợp) | Không lỗi nội dung; chấm câu viết ở bước 5 bài 3 đúng |
+| Ôn | Hôm sau mở Today | Có item của bài đã học trong lượt ôn |
