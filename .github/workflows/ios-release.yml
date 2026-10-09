@@ -175,9 +175,9 @@ jobs:
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
 
       - name: Build and upload to TestFlight (fastlane ios ${{ inputs.env }})
+        # Build number = latest TestFlight build number + 1 (computed by fastlane).
         run: bundle exec fastlane ios ${{ inputs.env }}
         env:
-          BUILD_NUMBER: ${{ github.run_number }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.IOS_APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.IOS_APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY }}

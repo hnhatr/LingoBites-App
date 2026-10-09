@@ -20,8 +20,6 @@ Give the `production` GitHub Environment required reviewers so a production buil
 | `ANDROID_KEY_PASSWORD`       | Upload key password                                                              |
 | `PLAY_STORE_JSON_KEY_BASE64` | Base64-encoded Google Play service account JSON                                  |
 
-Optional repository/environment **variable**: `ANDROID_VERSION_CODE_OFFSET` (default `0`).
-
 `APP_ENV_FILE` is bundled into the app by `react-native-config`, so it must never contain signing passwords or other credentials. Signing values come from `.env.android-build.local` and stay in their own secrets.
 
 ## Setting / updating the secrets
@@ -46,7 +44,9 @@ done
 
 ## Version code
 
-The workflow overwrites `ANDROID_APP_VERSION_CODE` with `github.run_number + ANDROID_VERSION_CODE_OFFSET`, so every upload is unique. If a build was already uploaded with a higher version code (for example a manual first upload), set `ANDROID_VERSION_CODE_OFFSET` above it. `ANDROID_APP_VERSION_NAME` comes from `APP_ENV_FILE`.
+Automatic. Before building, the fastlane lane `next_android_version_code` reads the version codes on every Google Play track (internal, alpha, beta, production) and uses the highest + 1, never lower than `ANDROID_APP_VERSION_CODE` from the env file. It is passed to Gradle as `-PlingobitesVersionCode`, so the env file is not modified. Re-running a failed job is safe.
+
+To force a specific value, set `ANDROID_VERSION_CODE` in the job environment (or in `.env.android-build.local` for local builds). `ANDROID_APP_VERSION_NAME` still comes from `APP_ENV_FILE`; bump it yourself for a new release version.
 
 ## Prerequisites on Google Play
 

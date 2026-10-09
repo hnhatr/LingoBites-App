@@ -103,7 +103,17 @@ platform :ios do
 
     # Passed as a build setting (not agvtool/increment_build_number) so ios/ sources stay
     # untouched and the expo-updates fingerprint matches the one `eas update` computes.
-    build_number = ENV["IOS_APP_BUILD_NUMBER"] || ENV.fetch("BUILD_NUMBER", Time.now.utc.strftime("%Y%m%d%H%M"))
+    # Defaults to the latest TestFlight build number + 1; IOS_APP_BUILD_NUMBER overrides it.
+    build_number = ENV["IOS_APP_BUILD_NUMBER"].to_s.strip
+    if build_number.empty?
+      latest_build_number = latest_testflight_build_number(
+        api_key: api_key,
+        app_identifier: options[:app_identifier],
+        initial_build_number: 0
+      )
+      build_number = (latest_build_number.to_i + 1).to_s
+    end
+    UI.message("Using iOS build number #{build_number}")
 
     Tempfile.create(["AuthKey_#{key_id}", ".p8"]) do |key_file|
       key_file.write(Base64.decode64(api_key_content))
@@ -179,7 +189,7 @@ platform :ios do
 end
 
 platform :android do
-  desc "Build Staging APK/AAB and upload the AAB to Google Play"
+  desc "Build Staging AAB and upload it to Google Play"
   lane :staging do
     envfile = ".env.staging"
     build_android_for_play(
@@ -189,7 +199,7 @@ platform :android do
     )
   end
 
-  desc "Build Production APK/AAB and upload the AAB to Google Play"
+  desc "Build Production AAB and upload it to Google Play"
   lane :production do
     envfile = ".env.production"
     build_android_for_play(
@@ -199,8 +209,41 @@ platform :android do
     )
   end
 
+  # Highest version code on any Google Play track + 1, never lower than
+  # ANDROID_APP_VERSION_CODE from the env file. ANDROID_VERSION_CODE overrides it.
+  private_lane :next_android_version_code do |options|
+    override = ENV["ANDROID_VERSION_CODE"].to_s.strip
+    next override.to_i unless override.empty?
+
+    failed_tracks = []
+    play_version_codes = %w[internal alpha beta production].flat_map do |track|
+      google_play_track_version_codes(
+        package_name: options[:package_name],
+        track: track,
+        json_key: options[:json_key]
+      )
+    rescue StandardError => e
+      UI.important("Could not read version codes for track '#{track}': #{e.message}")
+      failed_tracks << track
+      []
+    end
+    UI.user_error!("Could not read version codes from any Google Play track") if failed_tracks.size == 4
+
+    env_version_code = read_env_value(options[:envfile], "ANDROID_APP_VERSION_CODE").to_i
+    [play_version_codes.max.to_i + 1, env_version_code].max
+  end
+
   private_lane :build_android_for_play do |options|
     ENV["ENVFILE"] = options[:envfile]
+    json_key = ENV.fetch("PLAY_STORE_JSON_KEY_FILE")
+
+    version_code = next_android_version_code(
+      package_name: options[:package_name],
+      json_key: json_key,
+      envfile: options[:envfile]
+    )
+    UI.message("Using Android versionCode #{version_code}")
+    gradle_properties = { "lingobitesVersionCode" => version_code }
 
     gradle(
       task: "clean",
@@ -208,15 +251,10 @@ platform :android do
     )
 
     gradle(
-      task: "assemble",
-      build_type: options[:build_type],
-      project_dir: "android"
-    )
-
-    gradle(
       task: "bundle",
       build_type: options[:build_type],
-      project_dir: "android"
+      project_dir: "android",
+      properties: gradle_properties
     )
 
     aab_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
@@ -225,7 +263,7 @@ platform :android do
       package_name: options[:package_name],
       track: ENV.fetch("PLAY_STORE_TRACK", "internal"),
       release_status: ENV.fetch("PLAY_STORE_RELEASE_STATUS", "completed"),
-      json_key: ENV.fetch("PLAY_STORE_JSON_KEY_FILE"),
+      json_key: json_key,
       aab: aab_path,
       skip_upload_apk: true,
       skip_upload_metadata: true,

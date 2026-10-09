@@ -59,6 +59,13 @@ jobs:
           ruby-version: '3.2.4'
           bundler-cache: true
 
+      - name: Give the Gradle daemon more memory
+        # ~/.gradle/gradle.properties overrides android/gradle.properties (-Xmx2048m),
+        # so this only affects CI. GitHub's Linux runners have 16 GB RAM.
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> ~/.gradle/gradle.properties
+
       - name: Install JS dependencies
         run: yarn install --frozen-lockfile
 
@@ -102,24 +109,31 @@ jobs:
         # matching GitHub Environment (update it with `yarn env:push:<env>`).
         # Everything in it is bundled into the app by react-native-config, so it
         # must never contain signing passwords or other credentials.
-        # ANDROID_APP_VERSION_CODE is overwritten with the run number (plus an
-        # optional ANDROID_VERSION_CODE_OFFSET variable) so every upload is unique.
+        # The versionCode is not taken from this file: fastlane uses the highest
+        # version code on Google Play + 1 (see next_android_version_code).
         run: |
           set -euo pipefail
           printf '%s\n' "$APP_ENV_FILE" | tr -d '\r' > "$ENVFILE"
-          version_code=$(( GITHUB_RUN_NUMBER + ${ANDROID_VERSION_CODE_OFFSET:-0} ))
-          for key in ANDROID_BUNDLE_ID ANDROID_APP_VERSION_NAME ANDROID_APP_VERSION_CODE APP_NAME; do
+          for key in APP_ENV API_BASE_URL ANDROID_BUNDLE_ID ANDROID_APP_VERSION_NAME ANDROID_APP_VERSION_CODE APP_NAME; do
             if ! grep -q "^${key}=" "$ENVFILE"; then
               echo "Missing ${key} in APP_ENV_FILE for '${{ inputs.env }}'." >&2
               exit 1
             fi
           done
-          sed -i "s|^ANDROID_APP_VERSION_CODE=.*|ANDROID_APP_VERSION_CODE=${version_code}|" "$ENVFILE"
+          app_env="$(grep '^APP_ENV=' "$ENVFILE" | cut -d= -f2-)"
+          api_base_url="$(grep '^API_BASE_URL=' "$ENVFILE" | cut -d= -f2-)"
+          if [ "$app_env" != "${{ inputs.env }}" ]; then
+            echo "APP_ENV in APP_ENV_FILE must match '${{ inputs.env }}'." >&2
+            exit 1
+          fi
+          case "$api_base_url" in
+            https://*) ;;
+            *) echo "API_BASE_URL in APP_ENV_FILE must be an HTTPS URL." >&2; exit 1 ;;
+          esac
           echo "Package: $(grep '^ANDROID_BUNDLE_ID=' "$ENVFILE" | cut -d= -f2-)"
-          echo "Version: $(grep '^ANDROID_APP_VERSION_NAME=' "$ENVFILE" | cut -d= -f2-) (${version_code})"
+          echo "Version name: $(grep '^ANDROID_APP_VERSION_NAME=' "$ENVFILE" | cut -d= -f2-)"
         env:
           APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
-          ANDROID_VERSION_CODE_OFFSET: ${{ vars.ANDROID_VERSION_CODE_OFFSET }}
 
       - name: Materialize Android signing files
         run: |
