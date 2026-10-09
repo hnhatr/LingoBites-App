@@ -75,9 +75,14 @@ export {
   queueAccountOnlyServerRecordingDelete,
 } from './logic/upload/serverRecordingDeletion';
 export {
+  isEvaluationConsentOn,
   isRecordingUploadConsentOn,
+  readEvaluationConsent,
   readRecordingUploadConsent,
+  setEvaluationConsent,
+  shouldAskEvaluationConsent,
 } from './logic/upload/recordingConsent';
+export {queueLessonTaskRecording} from './logic/upload/lessonTaskRecording';
 export {
   applyRecordingUploadConsent,
   SpeakingRecordingsSettingsRow,

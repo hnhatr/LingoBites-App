@@ -90,7 +90,8 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
       outcome: LessonAttemptOutcome,
       supportLevel: LessonSupportLevel,
       durationMs: number,
-    ) => finishActivity({block, outcome, supportLevel, durationMs}),
+      graded?: {attemptId: string; recordingClientId?: string},
+    ) => finishActivity({block, outcome, supportLevel, durationMs, graded}),
     [finishActivity],
   );
 
@@ -191,6 +192,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             attempts={flow.attempts}
             items={items}
             onFinished={handleFinished}
+            onOpenStep={next => openStep(next as FlowStep)}
             onSpeakText={handleSpeak}
             snapshot={snapshot}
             step={step}
