@@ -456,7 +456,7 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [x] PR 14 – app chấm bước 5 — đã code, chưa test trên máy thật, chưa mở pull request (plan: `2026-10-09-pr14-app-step5-evaluation.md`)
 - [x] PR 15 – đạt bài, đạt unit, ghi nhớ (server) — đã code, chưa mở pull request (plan: `2026-10-09-pr15-server-pass-unit-memory.md`)
 - [x] PR 16 – app kết quả, tiến độ, ôn (+ route server `GET /v1/units/:unitId/summative-task`) — đã code, chưa test trên máy thật, chưa mở pull request (plan: `2026-10-09-pr16-app-result-progress-review.md`)
-- [ ] PR 17 – admin
+- [x] PR 17 – admin (cấu hình chấm, lượt chấm, nghe lại có log, thống kê, preview thử chấm, cảnh báo B13) — đã code, chưa mở pull request (plan: `2026-10-09-pr17-admin-evaluation.md`)
 
 **Giai đoạn 2**
 - [ ] Bước 0 chốt cấu hình

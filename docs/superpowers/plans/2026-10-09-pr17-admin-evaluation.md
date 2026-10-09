@@ -1,6 +1,6 @@
 # PR 17 – Admin: cấu hình chấm, lượt làm, nghe lại, thống kê, preview
 
-> Trạng thái: **CHỜ DUYỆT** (2026-10-09).
+> Trạng thái: **ĐÃ DUYỆT** (2026-10-09) → **ĐÃ CODE** (2026-10-09). Xem §9 cho kết quả và các điểm lệch so với plan.
 > Nền: `claude/funny-archimedes-gmioda` (đã có PR 12–16). Plan giai đoạn: `2026-10-09-phase1-stage3-plan.md` §9.
 > Repo: **chỉ `LingoBites-Server`** (server + `admin-web`). App không đổi.
 
@@ -151,3 +151,53 @@ Cổng kiểm: server `yarn tsc`, `yarn lint`, `yarn test`, `yarn test:db`; `yar
 
 1. Bạn duyệt plan (đặc biệt **K1–K2** migration, **K5** đổi khoảng ôn, **K11** route thử chấm).
 2. Duyệt xong: code theo §6 trên `claude/funny-archimedes-gmioda` (server).
+
+---
+
+## 9. Kết quả code và điểm lệch so với plan
+
+### 9.1 Commit (server, `claude/funny-archimedes-gmioda`)
+
+| Commit | Nội dung |
+|---|---|
+| `68e2650` | Migration 010 (`admin_settings`, `admin_audit_log`), route cấu hình + log; bộ chấm và lịch ôn đọc cấu hình |
+| `e6a3274` | Lượt chấm của user, thống kê, log mỗi lần nghe bản ghi |
+| `6db3e9b` | **Sửa lỗi log** (xem 9.3, mục 1) |
+| `747b21d` | Route thử chấm bằng chữ và bằng giọng nói |
+| `94107b0` | Cảnh báo `SKILL_WRITE_MISSING` (B13) |
+| `5983b72` | admin-web: trang cấu hình, trang thống kê, tab "Evaluations" |
+| `22b4725` | admin-web: preview dùng nhãn của app, bước 5 có "Try grading" |
+| `71cebd6` | admin-web: mở được 2 trang mới khi tải lại; log hiện đúng thứ tự; Playwright |
+
+### 9.2 Kiểm tra
+
+| Phần | Kết quả |
+|---|---|
+| Server | `tsc` sạch; `yarn test` 483 pass; `yarn test:db` 276/276 (trước 270); `prisma migrate diff` rỗng; OpenAPI 153 path / 184 operation. `yarn lint` còn 1 lỗi có sẵn (`test/ipa.test.ts:84`) |
+| admin-web | `tsc` sạch; Vitest 165 pass (trước 160); Playwright 18/18 (trước 16) |
+
+### 9.3 Điểm lệch so với plan
+
+1. ⚠️ **Đã sửa một lỗi lộ dữ liệu có từ PR 12.**
+   - Access log ghi body của request dưới khóa `body`. Luật redact chỉ có `req.body.text`, nên **câu người học viết ở `POST /v1/evaluations/text` đã bị ghi vào log**.
+   - Đã thêm `body.text`, cùng `response.preview.heard` cho route thử chấm. Có test.
+   - **Việc cần làm:** log staging cũ có thể còn câu trả lời của người học; nên xóa hoặc rút ngắn thời gian giữ log đó.
+2. **Không có `STT_PROVIDER=none`.** Env chỉ có `mock` / `openai`, nên route thử chấm bằng giọng nói luôn bật (local dùng mock).
+3. **Thử chấm bằng giọng nói gửi âm thanh dạng raw body**, đích nằm trong query (`?lesson_id&block_id`). Không dùng multipart: cách này giống route upload bản ghi, không cần thêm plugin. Giới hạn 2 MB.
+4. **Response thử chấm có `heard`** (STT nghe được gì) để admin hiểu kết quả. Chỉ nằm trong response; log đã redact.
+5. **Log `preview_speech` được ghi trước khi gọi STT**, nên lần gọi lỗi vẫn có dòng log (vẫn tốn chi phí).
+6. **Server chỉ phục vụ các đường dẫn SPA có trong danh sách.** Phải thêm `/admin/grading/settings` và `/admin/grading/stats`; Playwright phát hiện lỗi này.
+7. **Trang thống kê chọn kỳ 7 / 30 / 90 ngày**; API vẫn nhận `from` / `to` tùy ý.
+8. **Trình phát âm thanh có sẵn ở tab "Recordings" cũng thêm `controlsList="nodownload"`.**
+9. **Script `yarn eval:measure` vẫn dùng ngưỡng mặc định trong code**, không đọc `admin_settings`, để kết quả đo T2 không đổi theo cấu hình.
+10. **Commit 3 và 4 của plan gộp làm một**; có thêm 2 commit sửa lỗi (mục 1 và 6).
+11. **Không có Playwright cho tab "Evaluations"**: cần dữ liệu chấm của user. Đã có Vitest và `test:db` thay thế.
+
+### 9.4 Cần làm tay
+
+- Staging:
+  1. Chạy migration 010.
+  2. Đặt `STT_COST_PER_MINUTE_USD` nếu giá STT khác 0.003.
+  3. Xử lý log cũ (9.3, mục 1).
+- Thử trên trình duyệt thật: ghi âm ở preview bước 5 (Chrome cho `audio/webm`, Safari cho `audio/mp4`).
+
