@@ -1,6 +1,6 @@
 # PR 16 – App: kết quả bài, tiến độ unit, nhiệm vụ tổng hợp, ôn theo item
 
-> Trạng thái: **CHỜ DUYỆT** (2026-10-09).
+> Trạng thái: **ĐÃ DUYỆT** (2026-10-09) → **ĐÃ CODE** (2026-10-09). Xem §9 cho kết quả và các điểm lệch so với plan.
 > Nền: `claude/funny-archimedes-gmioda` (cả hai repo, đã có PR 12–15). Plan giai đoạn: `2026-10-09-phase1-stage3-plan.md` §8.
 > Repo: chủ yếu `LingoBites-App`; **một route nhỏ ở `LingoBites-Server`** (G3) vì app chưa có cách lấy nhiệm vụ tổng hợp của unit.
 
@@ -156,3 +156,55 @@ App:
 
 1. Bạn duyệt plan (đặc biệt **G3** route mới, **G9–G10** cách ôn item và bỏ trùng flashcard, **G11** Today).
 2. Duyệt xong: code theo §6, server trước rồi app, trên `claude/funny-archimedes-gmioda`.
+
+---
+
+## 9. Kết quả code và điểm lệch so với plan
+
+### 9.1 Commit
+
+| Repo | Commit | Nội dung |
+|---|---|---|
+| Server | `7e4b414` | `GET /v1/units/:unitId/summative-task` + fixture `valid-unit-summative-task-response.json` + test |
+| App | `cfff69c9` | Schema `learningOutcomes`, `UnitSummativeTaskSchema`, chép fixture, test contract |
+| App | `7be7a210` | SQLite v10 (3 bảng), applier pull, 2.7 |
+| App | `8a2251a1` | Bước 6 "Đạt bài", tiến độ unit "đạt z", trạng thái nhiệm vụ tổng hợp |
+| App | `d4f758cb` | Ôn theo item (màn `ItemReview`), bỏ trùng flashcard, bước 1 dùng lịch item |
+| App | `39a43565` | Today theo B9 |
+| App | `01347c4e` | Màn nhiệm vụ tổng hợp |
+
+### 9.2 Kiểm tra
+
+| Repo | Kết quả |
+|---|---|
+| Server | `tsc` sạch; `yarn test` 480 pass; `yarn test:db` 270/270 (trước 245); OpenAPI 144 path / 175 operation. `yarn lint` còn 1 lỗi có sẵn (`test/ipa.test.ts:84`) |
+| App | `tsc` sạch; Jest 2279 pass (trước 2198); lint 178/281 (không tăng); `format:check` chỉ còn cảnh báo có sẵn ở `package.json` |
+
+### 9.3 Điểm lệch so với plan
+
+1. **G1 – không có cột `owner_user_id`.** Ba bảng mới khóa theo `lesson_id` / `unit_id` / `item_code`. Lý do: dữ liệu học của máy bị xóa hết khi đổi tài khoản (AD-007, `localDataWipe.ts` đã thêm 3 bảng), giống `task_answers`.
+2. **G6 – không tổng quát hóa `IndependentTaskView`.** View đó gắn chặt với block, snapshot và phần tự đánh giá của bước 5. Sửa nó dễ làm vỡ PR 14. Thay vào đó có `SummativeTaskView` riêng, dùng lại các phần chấm của PR 14: `taskEvaluation`, `useSelfCheckRecorder`, `RecorderControls`, `EvaluationFeedback`, `EvaluationConsentPrompt`.
+   - `EvaluationConsentPrompt` có thêm prop tùy chọn `declineLabel`, để nhiệm vụ tổng hợp ghi "Viết thay nói" thay cho "Tự đánh giá".
+   - Bản ghi nói của unit tối đa 90 giây, theo giới hạn của server.
+3. **Nhiệm vụ tổng hợp không có tự đánh giá.** Khi chưa chấm được giọng nói (flag tắt, chưa đồng ý, máy không ghi âm được), bài nói chuyển sang viết thay nói. Bài vẫn được chấm nhưng **không** làm đạt unit, và màn có ghi rõ điều này.
+4. **Số "đã đạt" ở tiến độ unit chỉ lấy dòng của server.** Không tính cục bộ từng bài, vì cần đọc snapshot và lượt làm của từng bài. Bước 6 vẫn có fallback cục bộ G2 như plan.
+5. **`nextItemMemory` trên máy không tính `stable_at`.** Máy không biết chuỗi đúng liên tiếp. Bậc và hạn ôn vẫn tính đúng luật; `stable_at` đến từ lần pull sau.
+6. **Today:**
+   - Thẻ "Học tiếp" được hiện cả khi đang ở chế độ củng cố (REQ-14 chỉ chặn bài **mới**), ước tính 10 phút.
+   - Nếu bài đang học dở cũng là "bài tiếp theo" thì chỉ hiện một thẻ.
+   - Checklist ở Home chưa đánh dấu xong bước ôn khi chỉ ôn item, vì màn ôn item không ghi sự kiện `review_session_completed`. Để PR sau nếu cần.
+7. **Giới hạn 20 item/ngày** đếm lượt `item_recall` trong `activity_attempts` trên máy, tính theo ngày giờ Việt Nam.
+8. **Route server trả nhiệm vụ tổng hợp đầu tiên theo `position`.** Server tính đạt unit khi có bất kỳ nhiệm vụ tổng hợp nào đạt.
+9. **Đổi interface trong app.** `AppNavigation` có thêm `openItemReview()`; root stack có thêm route `ItemReview` và `UnitSummativeTask`.
+10. **Dọn một lỗi của PR 14.** `pullWorker` có hai nhánh `evaluations` trùng nhau; đã bỏ một nhánh.
+
+### 9.4 Cần test tay trên máy thật
+
+- Unit mẫu "Gọi đồ uống" đi trọn vòng:
+  1. Học bước 1–4.
+  2. Bước 5 được chấm, bước 6 hiện "Đạt bài" kèm "Sẽ được xác nhận khi đồng bộ"; sau khi đồng bộ, dòng xác nhận mất.
+  3. Mở nhiệm vụ tổng hợp, làm và đạt. Tiến độ unit hiện "đạt z".
+  4. Hôm sau, Today có "Ôn từ đã học". Ôn xong, lịch dời.
+- `json_each` trong `react-native-quick-sqlite` trên máy thật: test Jest chạy trên SQLite của Node.
+- Học trên máy A, mở máy B: bài hiện là đã hoàn thành (2.7).
+
