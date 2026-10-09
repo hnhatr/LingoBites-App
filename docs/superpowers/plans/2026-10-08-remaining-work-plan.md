@@ -472,7 +472,7 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [x] S4.1 `lessonComposer` + kho prompt backend – server, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR)
 - [ ] S4.2b admin "Prompt AI" (quản lý phiên bản prompt, chạy thử, rollback)
 - [x] S4.2 admin "Sinh bài 6 bước" – server + admin-web, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR)
-- [ ] S4.3 người học "Học theo 6 bước"
+- [x] S4.3 người học "Học theo 6 bước" – server + app, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR, chưa test tay trên máy thật)
 - [ ] S4.4 ảnh không chữ
 
 **Giai đoạn 4 – Stage 5**
