@@ -1005,5 +1005,65 @@
     "library_chip": "6 bước · AI tạo",
     "select_hint": "Chọn hoặc bỏ chọn câu này",
     "dismiss_hint": "Ẩn thông báo này"
+  },
+  "learnerOnboarding": {
+    "step": "Bước {{current}}/{{total}}",
+    "age_title": "Ai sẽ học?",
+    "age": {
+      "adults": "Người lớn",
+      "kids": "Trẻ em (6–11 tuổi)"
+    },
+    "goals_title": "Bạn học tiếng Anh để làm gì?",
+    "goals_hint": "Chọn một hoặc nhiều mục tiêu.",
+    "goal": {
+      "communication": "Giao tiếp hằng ngày",
+      "travel": "Du lịch",
+      "work": "Công việc",
+      "school": "Học ở trường"
+    },
+    "interests_title": "Bạn thích gì?",
+    "interests_hint": "Chọn tối đa {{max}} sở thích, hoặc bỏ trống.",
+    "interest": {
+      "music": "Âm nhạc",
+      "movies": "Phim ảnh",
+      "sports": "Thể thao",
+      "cooking": "Nấu ăn",
+      "travel": "Du lịch",
+      "technology": "Công nghệ",
+      "reading": "Đọc sách",
+      "games": "Trò chơi"
+    },
+    "minutes_title": "Mỗi ngày bạn học bao lâu?",
+    "minutes": "{{count}} phút",
+    "placement_title": "Kiểm tra trình độ",
+    "placement_body": "12 câu nghe và chọn, khoảng 5 phút. Kết quả chỉ là gợi ý, bạn đổi được bất kỳ lúc nào.",
+    "take_test": "Làm bài kiểm tra (5 phút)",
+    "skip_test": "Bỏ qua, học từ A1",
+    "next": "Tiếp",
+    "back": "Quay lại",
+    "later": "Để sau",
+    "loading": "Đang tải…",
+    "test_title": "Kiểm tra trình độ",
+    "test_unavailable": "Chưa tải được bài kiểm tra. Kiểm tra mạng rồi thử lại.",
+    "question_count": "Câu {{current}}/{{total}}",
+    "listen": "Nghe lại",
+    "finish_test": "Xem kết quả",
+    "result_score": "Bạn trả lời đúng {{total}}/{{max}} câu.",
+    "result_title": "Gợi ý: bắt đầu từ {{level}}",
+    "result_body_A1": "A1 giúp bạn nói được những câu cơ bản: giới thiệu bản thân, gọi đồ, hỏi giá, hỏi đường.",
+    "result_body_A2": "Bạn đã nắm phần cơ bản. A2 giúp bạn kể chuyện, hẹn gặp, đặt bàn, đi khám, mua sắm.",
+    "start_level": "Bắt đầu {{level}}",
+    "choose_level": "Chọn {{level}}",
+    "profile_title": "Hồ sơ học tập",
+    "level_title": "Trình độ",
+    "level": {
+      "A1": "A1 – Sơ cấp 1",
+      "A2": "A2 – Sơ cấp 2"
+    },
+    "retake_test": "Làm lại bài kiểm tra",
+    "pending_sync": "Chưa đồng bộ, sẽ lưu lên máy chủ khi có mạng.",
+    "save": "Lưu",
+    "path_label": "Lộ trình của bạn",
+    "path_open": "Vào học"
   }
 }

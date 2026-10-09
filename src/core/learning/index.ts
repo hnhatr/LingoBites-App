@@ -7,6 +7,13 @@ export {
 export {type ItemKind, ItemKindValues} from './catalogItem';
 export {deriveItemCode, parseItemCode, type ParsedItemCode} from './itemCode';
 export {
+  type ContentAudience,
+  getLearnerAgeGroup,
+  isAudienceVisible,
+  type LearnerAgeGroup,
+  setLearnerAgeGroup,
+} from './learnerAudience';
+export {
   type ItemPayload,
   type ListeningPayload,
   parseItemPayload,

@@ -1,5 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
+import {isAudienceVisible} from '@core/learning';
+
 import {
   type Course,
   type CourseClientError,
@@ -104,12 +106,18 @@ export type UnitWithProgress = {
 /**
  * Units of one level, each with its completed-lesson count. Lessons of every
  * unit load in parallel; one failed unit only hides its own progress bar.
+ * Units for adults are left out for a child's profile (Phase 2, G5).
  */
 export function useLevelUnits(levelId: string) {
   const load = useCallback(
     async (signal: AbortSignal): Promise<CourseResult<UnitWithProgress[]>> => {
-      const units = await fetchLevelUnits(levelId, {signal});
-      if (!units.ok) return units;
+      const fetched = await fetchLevelUnits(levelId, {signal});
+      if (!fetched.ok) return fetched;
+      // Phase 2 (G5): children do not see units marked for adults.
+      const units = {
+        ...fetched,
+        value: fetched.value.filter(unit => isAudienceVisible(unit.audience)),
+      };
       const lessonLists = await Promise.all(
         units.value.map(unit => fetchUnitLessons(unit.id, {signal})),
       );
