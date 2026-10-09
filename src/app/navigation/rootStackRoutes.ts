@@ -16,6 +16,7 @@ export const ROOT_FLOW_ROUTES = [
   'CourseLevels',
   'LevelUnits',
   'UnitLessons',
+  'UnitSummativeTask',
   'DailyReview',
   'ItemReview',
   'Practice',

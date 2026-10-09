@@ -16,6 +16,12 @@ export type UnitLessonsRouteParams = {
   title?: string;
 };
 
+/** PR 16: a unit's summative task. */
+export type UnitSummativeTaskRouteParams = {
+  unitId: string;
+  title?: string;
+};
+
 /** The Courses tab holds only the course list. */
 export type CoursesStackParamList = {
   CourseList: CourseListRouteParams;
@@ -26,4 +32,5 @@ export type CourseFlowParamList = {
   CourseLevels: CourseLevelsRouteParams;
   LevelUnits: LevelUnitsRouteParams;
   UnitLessons: UnitLessonsRouteParams;
+  UnitSummativeTask: UnitSummativeTaskRouteParams;
 };

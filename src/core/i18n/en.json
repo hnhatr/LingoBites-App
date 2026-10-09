@@ -874,6 +874,13 @@
     "unit_number": "Unit {{number}}",
     "unit_progress": "{{completed}}/{{total}} lessons",
     "unit_progress_passed": "{{completed}}/{{total}} lessons · {{passed}} passed",
+    "summative_locked": "Unit task",
+    "summative_locked_hint": "Locked: finish the practice of every lesson",
+    "summative_locked_note": "Finish every lesson's practice to open it",
+    "summative_open": "Do the unit task",
+    "summative_open_hint": "Opens the unit's summative task",
+    "summative_passed": "Unit passed · do the task again",
+    "summative_passed_hint": "Opens the unit's summative task again",
     "unit_progress_hint": "Lessons completed in this unit",
     "lessons_title": "Lessons",
     "lessons_empty": "This unit has no lessons yet",
@@ -921,5 +928,16 @@
     "missing": "{{count}} items need their lesson downloaded again",
     "back": "Back",
     "back_hint": "Leaves the review"
+  },
+  "summativeTask": {
+    "title": "Unit task",
+    "label": "Unit task",
+    "loading": "Loading the task…",
+    "none": "This unit has no unit task yet.",
+    "load_failed": "Could not load the task. Please try again.",
+    "write_instead": "Write instead",
+    "write_instead_hint": "Answer in writing instead of recording",
+    "write_instead_note": "You are writing instead of speaking: it is graded but does not pass the unit.",
+    "substitute_not_passing": "A written answer does not pass the unit. Speak it again when you can."
   }
 }

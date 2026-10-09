@@ -874,6 +874,13 @@
     "unit_number": "Chương {{number}}",
     "unit_progress": "{{completed}}/{{total}} bài",
     "unit_progress_passed": "{{completed}}/{{total}} bài · đạt {{passed}}",
+    "summative_locked": "Nhiệm vụ tổng hợp",
+    "summative_locked_hint": "Chưa mở: cần xong phần luyện của mọi bài",
+    "summative_locked_note": "Xong phần luyện của mọi bài để mở",
+    "summative_open": "Làm nhiệm vụ tổng hợp",
+    "summative_open_hint": "Mở nhiệm vụ tổng hợp của chương",
+    "summative_passed": "Đã đạt chương · làm lại nhiệm vụ",
+    "summative_passed_hint": "Mở lại nhiệm vụ tổng hợp của chương",
     "unit_progress_hint": "Số bài đã hoàn thành trong chương",
     "lessons_title": "Bài học",
     "lessons_empty": "Chương này chưa có bài học nào",
@@ -921,5 +928,16 @@
     "missing": "{{count}} từ cần tải lại bài để ôn",
     "back": "Quay lại",
     "back_hint": "Rời màn ôn"
+  },
+  "summativeTask": {
+    "title": "Nhiệm vụ tổng hợp",
+    "label": "Tổng hợp",
+    "loading": "Đang tải nhiệm vụ…",
+    "none": "Chương này chưa có nhiệm vụ tổng hợp.",
+    "load_failed": "Chưa tải được nhiệm vụ. Thử lại nhé.",
+    "write_instead": "Viết thay nói",
+    "write_instead_hint": "Trả lời bằng chữ thay vì ghi âm",
+    "write_instead_note": "Bạn đang viết thay nói: bài vẫn được chấm nhưng chưa tính là đạt chương.",
+    "substitute_not_passing": "Viết thay nói chưa tính là đạt chương. Hãy nói lại khi có thể."
   }
 }

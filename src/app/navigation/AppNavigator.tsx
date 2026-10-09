@@ -15,6 +15,7 @@ import {
   CourseListScreen,
   LevelUnitsScreen,
   UnitLessonsScreen,
+  UnitSummativeTaskScreen,
 } from '@features/course';
 import {HomeScreen} from '@features/home';
 import {
@@ -275,6 +276,10 @@ function AuthenticatedRootStack() {
       <RootStack.Screen component={CourseLevelsScreen} name="CourseLevels" />
       <RootStack.Screen component={LevelUnitsScreen} name="LevelUnits" />
       <RootStack.Screen component={UnitLessonsScreen} name="UnitLessons" />
+      <RootStack.Screen
+        component={UnitSummativeTaskScreen}
+        name="UnitSummativeTask"
+      />
       {/* Practice */}
       <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
       <RootStack.Screen component={ItemReviewScreen} name="ItemReview" />

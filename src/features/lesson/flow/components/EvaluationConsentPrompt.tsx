@@ -8,12 +8,15 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 /**
  * PR 14 (T4, A12): asked the first time a spoken step-5 answer could be
- * graded. "Tự đánh giá" keeps the recording on the device.
+ * graded. "Tự đánh giá" keeps the recording on the device; the unit's
+ * summative task (PR 16) names its own way out, writing instead.
  */
 export function EvaluationConsentPrompt({
   onAnswer,
+  declineLabel,
 }: {
   onAnswer: (agreed: boolean) => void;
+  declineLabel?: string;
 }) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -32,10 +35,12 @@ export function EvaluationConsentPrompt({
           title={t('lessonFlow.evaluation_consent_agree')}
         />
         <AppButton
-          accessibilityHint={t('lessonFlow.evaluation_consent_self')}
+          accessibilityHint={
+            declineLabel ?? t('lessonFlow.evaluation_consent_self')
+          }
           onPress={() => onAnswer(false)}
           testID="lesson-flow-evaluation-consent-self"
-          title={t('lessonFlow.evaluation_consent_self')}
+          title={declineLabel ?? t('lessonFlow.evaluation_consent_self')}
           variant="outline"
         />
       </View>

@@ -277,6 +277,42 @@ describe('Curriculum screens (F14)', () => {
 
     press(tree, 'unit-lessons-row-b');
     expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('b');
+
+    // PR 16 (B4): the summative task waits for every lesson's practice.
+    const summative = tree.root.find(
+      node =>
+        node.props.testID === 'unit-lessons-summative' &&
+        typeof node.props.onPress === 'function',
+    );
+    expect(summative.props.disabled).toBe(true);
+    expect(
+      tree.root.findAll(
+        node => node.props.testID === 'unit-lessons-summative-locked',
+      ).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('opens the summative task once every lesson is practised (PR 16)', async () => {
+    client.fetchUnitLessons.mockResolvedValue({
+      ok: true,
+      value: [lesson('a', 0)],
+    });
+    listCompletedLessons.mockReturnValue([
+      {lessonId: 'a', completedAt: '2026-10-01T00:00:00.000Z'},
+    ]);
+    const tree = await render(
+      <UnitLessonsScreen
+        navigation={navigation}
+        route={{params: {unitId: 'unit-1', title: 'Đồ uống'}} as never}
+      />,
+    );
+    press(tree, 'unit-lessons-summative');
+    expect(
+      (navigation as unknown as {navigate: jest.Mock}).navigate,
+    ).toHaveBeenCalledWith('UnitSummativeTask', {
+      unitId: 'unit-1',
+      title: 'Đồ uống',
+    });
   });
 
   it('shows what a unit and a lesson teach from their first can-do', async () => {

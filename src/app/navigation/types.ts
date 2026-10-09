@@ -10,6 +10,7 @@ import type {
   CoursesStackParamList,
   LevelUnitsRouteParams,
   UnitLessonsRouteParams,
+  UnitSummativeTaskRouteParams,
 } from '@features/course';
 import type {HomeStackParamList} from '@features/home';
 import type {
@@ -83,6 +84,7 @@ export type RootStackParamList = {
   CourseLevels: CourseLevelsRouteParams;
   LevelUnits: LevelUnitsRouteParams;
   UnitLessons: UnitLessonsRouteParams;
+  UnitSummativeTask: UnitSummativeTaskRouteParams;
   // Practice
   DailyReview: DailyReviewRouteParams;
   ItemReview: ItemReviewRouteParams;
