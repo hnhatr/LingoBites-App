@@ -15,6 +15,7 @@ import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 import {CanonicalBlockView} from '../../player/components/CanonicalBlockView';
 import {flowActivity, type FlowItems, flowTask} from '../logic/flowContent';
 import {isIndependentBlock} from '../logic/independent';
+import {isSpeakingActivity} from '../logic/noSpeaking';
 import {blocksOfStep} from '../logic/practiceCompletion';
 import {ActivityRunner} from './ActivityRunner';
 import {type GradedAttempt, IndependentTaskView} from './IndependentTaskView';
@@ -34,6 +35,8 @@ export type StepViewProps = {
   ) => boolean;
   /** PR 14: open a practice step from a step-5 result. */
   onOpenStep?: (step: number) => void;
+  /** PR 14 (decision H8): speaking is off for now. */
+  speakingOff?: boolean;
 };
 
 /** Newest outcome per block (attempts are listed newest first). */
@@ -58,6 +61,7 @@ export function StepView({
   onSpeakText,
   onFinished,
   onOpenStep,
+  speakingOff = false,
 }: StepViewProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -96,6 +100,7 @@ export function StepView({
               onPracticeRelated={onOpenStep ? () => onOpenStep(3) : undefined}
               snapshot={snapshot}
               task={task}
+              writeInstead={speakingOff && task.response_mode === 'speak'}
             />
           );
         }
@@ -106,6 +111,7 @@ export function StepView({
             items={items}
             key={block.id}
             latestOutcome={latest.get(block.id) ?? null}
+            speakingOff={speakingOff && isSpeakingActivity(activity.kind)}
             task={task}
             onFinished={(outcome, supportLevel, durationMs) =>
               onFinished(block, outcome, supportLevel, durationMs)
