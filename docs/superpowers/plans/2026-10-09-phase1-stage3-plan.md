@@ -1,6 +1,6 @@
 # Giai đoạn 1 – Stage 3: âm thanh, chấm bài, đạt bài, ghi nhớ (PR 12–17)
 
-> Trạng thái: **CHỜ DUYỆT**. Chưa code.
+> Trạng thái: **ĐÃ DUYỆT** (2026-10-09). **PR 12 ĐÃ CODE**: server `347f9a6` → `6a3a84e` (5 commit), app `1096aaa3` (fixture). Xem §4.9 cho kết quả và các điểm lệch. PR 13–17: chưa code.
 > Ngày lập: 2026-10-09. Nền: `develop` (Stage 0–2 đã merge). Repo: `LingoBites-Server` (PR 12, 13, 15, 17 + admin-web), `LingoBites-App` (PR 14, 16).
 > Nguồn: `2026-10-08-remaining-work-plan.md` (mục 4 "Giai đoạn 1", mục 5 "Bảng chốt") và `2026-10-08-stage3-audio-evaluation-analysis.md` (thiết kế chốt).
 >
@@ -296,6 +296,47 @@ OpenAPI: +2 path. Lỗi theo `ApiErrorResponseSchema` sẵn có.
 - ⚠️ **Đổi contract công khai (thêm):** enum `outcome` / `assessed_by`, trường `recording_client_id`, collection `evaluations`, 2 route, capabilities. App hiện tại không gửi / không đọc, không vỡ. Một rủi ro nhỏ: thiết bị cũ pull lượt `pending` do thiết bị mới đẩy lên — `pullWorker.ts` ghi thẳng payload `activity_attempts` vào SQLite; cần kiểm cột `outcome` / `assessed_by` của bảng SQLite có ràng buộc giá trị không (nếu có thì PR 14 nới, và ghi chú bản app tối thiểu).
 - **Luật chấm chỉ theo chữ**: câu đúng ý nhưng không theo mẫu của bài sẽ trượt `purpose` / `content`. Đã chấp nhận ở thiết kế (§3.2 "hướng mở rộng"); số liệu PR 17 sẽ cho biết có cần nới không.
 - **Ghi `sync_records` từ server** là đường mới: phải khoá `user_sync_state` đúng như `push`, nếu không có thể trùng revision khi push song song. Có test chạy song song push + chấm.
+
+---
+
+### 4.9 Kết quả code và điểm lệch so với plan
+
+**Kiểm tra cuối:**
+- Server:
+  - `tsc` sạch (`tsconfig.json`, `tsconfig.scripts.json`);
+  - unit 460 pass (trước 431; 303 skip vì cần DB);
+  - `test:db` 253/253 (trước 245);
+  - `prisma migrate diff` (DB đã migrate → schema): rỗng;
+  - prettier sạch; eslint chỉ còn lỗi có sẵn `test/ipa.test.ts:84`;
+  - OpenAPI +2 path / +2 operation.
+- `test/accountMerge.test.ts` không nằm trong `test:db`; đã chạy tay với DB: 8/8.
+- App: `tsc` sạch, lint 178/281 (không nâng budget), Jest 2204 pass. Hai fixture mới trùng byte với server.
+- admin-web: không đổi.
+
+**Điểm lệch so với plan:**
+- **Không tách hàm `acceptedAnswers` của task (E7).** Bộ chấm cần từng câu mở rộng **kèm giá trị chỗ trống** để kiểm "món có trong bài", nên dùng hàm mới `expandWithValues` (cùng thứ tự odometer với `expandPattern`). Repository tự tải item, biến thể, lỗi và giá trị chỗ trống. `postgresTaskStore.ts` không đổi; bỏ commit 2 của §4.7.
+- **So khớp theo "cửa sổ".** Mỗi câu chấp nhận được so với cả câu người học và với mọi đoạn liên tiếp dài bằng câu đó ± 2 từ. Nhờ vậy lời chào, "thanks" hay câu thứ hai không làm trượt. Nhiệm vụ tổng hợp có 2 mẫu câu được chấm **riêng từng mẫu**: content lấy điểm thấp nhất, purpose lấy tỷ lệ mẫu có mặt.
+- **Purpose và content tách rõ:**
+  - purpose: mẫu câu "có mặt" khi có một câu mở rộng đạt ngưỡng content, chưa xét giá trị chỗ trống;
+  - content: phải đạt ngưỡng **và** câu người học có đúng các giá trị chỗ trống đó.
+  - Ví dụ: "Can I have a pizza" đạt purpose, trượt content.
+  - Item `listening` / `pronunciation` không tính vào purpose (người học nghe hoặc luyện chúng, không nói ra trong câu trả lời).
+- **Thứ tự lỗi chính:** lỗi `blocking`, rồi purpose → content → clarity (plan ghi content → purpose). Sai mẫu câu là lỗi lớn hơn thiếu món.
+- **Lỗi thường gặp** chỉ được ghi khi độ trùng với `wrong_example` ≥ 0.85 **và** không thấp hơn độ trùng với câu đúng gần nhất. Như vậy câu đúng không bị gắn nhầm lỗi. Lỗi không có `wrong_example` (ví dụ `missing_drink`) không bao giờ được ghi; trường hợp này đã có tiêu chí content bắt.
+- **Luật `response_mode` chặt hơn E6:**
+  - task `speak` gửi câu viết thì **bắt buộc** `substitute = true`;
+  - task `write` thì bắt buộc `false`;
+  - `choose` → 422.
+- **Payload và bảng có thêm `support_level`.** Trường này cần để PR 15 tách `pass_with_support`. `primary_issue` không lưu cột riêng mà tính lại từ `errors` và `criteria` khi đọc. `reference_en` dài tối đa 1000 vì có thể ghép 2 câu.
+- **Giới hạn 100 câu viết / ngày là hằng số** (`TEXT_EVALUATION_DAILY_LIMIT`), chưa có env. Vượt giới hạn thì trả 200 `unscorable / limit` và không lưu gì.
+- **Lượt `pending` bị loại hẳn khỏi "hoàn thành phần luyện"** trong SQL. Lớp bảo vệ này phòng app gửi `pending` cho block bước 2–4.
+- **Tên fixture:**
+  - `valid-sync-evaluation-pull-response.json` thay cho `valid-sync-evaluation-record.json`;
+  - `valid-sync-activity-attempt-lesson-pending-push-request.json` giữ đúng tên;
+  - `test/fixtures/evaluation-cases.json` chỉ dùng ở server (app không chấm nên không chép).
+- **Có thêm:** test chạy song song 5 push + 5 lượt chấm (revision 1–10 liền, không trùng); test dọn dữ liệu (xoá user thì cascade `evaluations`).
+- **Chưa làm (để PR 13):** env `SPEECH_EVALUATION_ENABLED` / `SPEECH_EVALUATION_USER_IDS`. Capabilities hiện trả cố định `evaluation: { text: true, speech: false }`.
+- **Rủi ro thêm:** `evaluations` cascade khi admin **xoá** bài, unit hoặc task (giống `lesson_outcomes`). Lịch sử chấm của bài bị xoá mất theo. Archive bài thì không ảnh hưởng.
 
 ---
 

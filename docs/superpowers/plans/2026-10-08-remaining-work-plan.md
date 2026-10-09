@@ -21,7 +21,7 @@
 
 **Nhánh:**
 - Nền phát triển là **`develop`**. **Không merge vào `main`** (bản ổn định).
-- Nhánh làm việc của cả hai repo: `claude/optimistic-bell-mfgk44`, tạo từ `develop`.
+- Nhánh làm việc của cả hai repo: `claude/optimistic-bell-mfgk44` (PR 1–11), từ Giai đoạn 1 là `claude/funny-archimedes-gmioda`, tạo từ `develop`.
 - Khi PR trước đã merge, tạo lại nhánh từ `develop` mới nhất rồi làm tiếp.
 
 ---
@@ -35,7 +35,7 @@
    - dependency mới, nếu có.
 2. **Chờ duyệt** ("ok") rồi mới code.
 3. Code theo commit nhỏ. Trước khi push, chạy các bước kiểm (mục 2.1).
-4. Push lên `claude/optimistic-bell-mfgk44`.
+4. Push lên nhánh làm việc hiện tại (mục 1).
 5. Đánh dấu plan **"ĐÃ CODE"**, thêm mục **"Điểm lệch so với plan"**.
 6. Ghi vào báo cáo phiên `.ai-logs/reports/<session_id>.md`.
 7. Mở pull request vào `develop` khi được yêu cầu.
@@ -449,7 +449,7 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] Staging chạy migration mới + seed
 
 **Giai đoạn 1 – Stage 3**
-- [ ] PR 12 – bộ chấm + kết quả (server)
+- [x] PR 12 – bộ chấm + kết quả (server) — đã code, chưa mở pull request (plan: `2026-10-09-phase1-stage3-plan.md` §4)
 - [ ] PR 13 – âm thanh vào server
 - [ ] Team: ghi bộ 40 bản ghi có nhãn (T2), viết mục giọng nói trong chính sách + khai báo store (T4)
 - [ ] Đo độ chính xác: chấm oan < 10%, bật flag `speechEvaluation`
