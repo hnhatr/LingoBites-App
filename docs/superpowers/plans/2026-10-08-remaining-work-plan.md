@@ -144,6 +144,7 @@ Hướng làm đã chốt, xem đầy đủ trong `2026-10-08-stage3-audio-evalu
   - env `STT_PROVIDER` / `STT_MODEL` / `STT_API_KEY`;
   - job `evaluation` (retry 2 lần);
   - `EVAL_DAILY_LIMIT`; chống chấm lại cùng file bằng SHA-256;
+  - trần phút STT mỗi tháng `STT_MONTHLY_BUDGET_MINUTES` (A15): 80% cảnh báo admin, 100% chuyển về tự đánh giá;
   - job dọn bản ghi sau 30 ngày;
   - script đo độ chính xác;
   - flag `speechEvaluation`.
@@ -226,6 +227,11 @@ Bộ sinh chung `lessonComposer` cho ra bài **qua validator** (0 vi phạm spec
 
 Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
+**Phương án chốt 2026-10-09: "chọn câu → bài 6 bước".** Người dùng chọn 2–8 câu trong một bài. Server sinh **một bài mới** liên kết về bài gốc, chỉ gọi AI **1 lần** (dịch / IPA lấy lại từ DB, hoạt động bước 2–4 sinh theo luật). Item AI tạo được tự publish, có `reviewed_at` để admin rà. Enrich lúc tạo bài giữ bật (tắt được bằng env `CREATION_ENRICH_ENABLED=false`); composer dùng lại phân tích đã lưu. Plan chi tiết:
+- `2026-10-09-s4-1-server-lesson-composer.md`
+- `2026-10-09-s4-2-admin-compose-six-step.md`
+- `2026-10-09-s4-3-learner-compose-six-step.md`
+
 | PR | Repo | Nội dung | Xong khi |
 |---|---|---|---|
 | S4.1 | server | `lessonComposer` lõi + test bằng AI mock và fixture. **Dùng lại** kết quả dịch / phân tích từ, ngữ pháp / IPA mà luồng tạo bài hiện có đã sinh, hoặc gộp vào cùng một lần gọi AI. Không gọi AI phân tích lại câu. | Bài mẫu qua validator; số lần gọi AI mỗi bài ghi trong plan S4.1 |
@@ -295,6 +301,7 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | A12 | Người học không đồng ý consent | Giữ tự đánh giá như hiện nay: vẫn ghi âm và nghe lại **trên máy**, không gửi đi. Không cho micro thì nói thành tiếng rồi tự tick. Hỏi lại tối đa 1 lần / 7 ngày; đổi được trong Cài đặt. | PR 14 | OK – 2026-10-08 |
 | A13 | Người học **không tiện nói** lúc này | Nút **"Không nói được lúc này"**: tắt hoạt động nói bước 3–4 trong 15 phút; bước 5 chuyển sang **viết**, server chấm như câu viết (chữ chỉ lên server LingoBites, không gửi bên thứ ba). Kết quả ghi "đạt (viết thay nói)", **chưa tính đạt bài**; nói lại sau mới tính. | PR 12 (server), PR 14 (app), PR 15 | OK – 2026-10-08 |
 | A14 | Có cho **bỏ hẳn** bước 5 không | Không. Bỏ qua thì bài dừng ở "đã xong phần luyện", chưa "đạt bài". | PR 15–16 | OK – 2026-10-08 |
+| A15 | Trần chi phí nhận dạng giọng nói mỗi tháng (ngoài giới hạn từng người ở A4) | Env `STT_MONTHLY_BUDGET_MINUTES`. Dùng tới 80% thì cảnh báo admin; tới 100% thì tự chuyển mọi người về tự đánh giá tới hết tháng (không lỗi, không mất dữ liệu). Con số cụ thể do team đặt theo ngân sách (ví dụ 40.000 phút ≈ $120 với OpenAI mini). | PR 13 | OK – 2026-10-08 (con số team điền) |
 
 ### 5.3 Stage 3 – đạt bài, đạt unit, ôn (PR 15–17)
 
@@ -334,9 +341,9 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 
 | # | Câu hỏi | Đề xuất | Cần cho | Chốt |
 |---|---|---|---|---|
-| Q5 | Item `draft` do AI tạo có vào danh mục chung không | Không tự vào; admin duyệt mới chuyển `published` | S4.1 | |
+| Q5 | Item `draft` do AI tạo có vào danh mục chung không | Không tự vào; admin duyệt mới chuyển `published` | S4.1 | **Tự publish**, `source = ai` + `reviewed_at` để admin rà sau – 2026-10-09 |
 | Q8 | Ai được tự sinh bài, giới hạn bao nhiêu | Gói trả phí: 5 bài / ngày; miễn phí: 1 bài / ngày; trẻ em: không tự sinh | S4.3 | |
-| Q9 | Admin có "nhận về" bài AI sinh từ người học làm nội dung chung không | Có, dùng chức năng chuyển bài hiện có; vào trạng thái nháp, admin duyệt | S4.2 | |
+| Q9 | Admin có "nhận về" bài AI sinh từ người học làm nội dung chung không | Có, dùng chức năng chuyển bài hiện có; vào trạng thái nháp, admin duyệt | S4.2 | Có: admin chọn câu trong bài người học → sinh bài nháp trong unit (plan S4.2) – 2026-10-09 |
 | Q10 | Danh mục tình huống chuẩn | Bắt đầu 20 tình huống A1 (quán ăn, mua sắm, hỏi đường, sân bay, khách sạn, khám bệnh, trường học, giới thiệu bản thân…); team nội dung bổ sung | S5.1 | |
 | Q11 | Nhà cung cấp AI + ngân sách sinh bài | OpenAI (đã tích hợp), model đặt bằng env; trần chi phí theo tháng do team đặt, vượt thì tắt nút sinh bài | S4.1 | |
 | D1 | Đoạn video dùng cho bước 2 | Tối đa 30 giây mỗi đoạn, tối đa 3 đoạn mỗi bài | S4.2 | |
@@ -464,9 +471,10 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] Bước 1 – hồ sơ + kiểm tra đầu vào
 
 **Giai đoạn 3 – Stage 4**
-- [ ] S4.1 `lessonComposer`
-- [ ] S4.2 admin "Sinh bài 6 bước"
-- [ ] S4.3 người học "Học theo 6 bước"
+- [x] S4.1 `lessonComposer` + kho prompt backend – server, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR)
+- [x] S4.2b admin "Prompt AI" (quản lý phiên bản prompt, chạy thử, rollback) – server + admin-web, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR, chưa chạy thử với AI thật)
+- [x] S4.2 admin "Sinh bài 6 bước" – server + admin-web, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR)
+- [x] S4.3 người học "Học theo 6 bước" – server + app, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR, chưa test tay trên máy thật)
 - [ ] S4.4 ảnh không chữ
 
 **Giai đoạn 4 – Stage 5**

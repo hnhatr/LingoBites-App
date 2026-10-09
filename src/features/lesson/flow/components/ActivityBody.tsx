@@ -29,6 +29,8 @@ export type ActivityBodyProps = {
   items: FlowItems;
   /** The task the block runs, for its hint levels. */
   task: LessonTask | null;
+  /** S4.3: the lesson's video, for step 2 source clips. */
+  youtubeVideoId?: string | null;
   onComplete: (reports: EntryReport[]) => void;
 };
 
@@ -38,6 +40,7 @@ export function ActivityBody({
   content,
   items,
   task,
+  youtubeVideoId,
   onComplete,
 }: ActivityBodyProps) {
   const {t} = useTranslation();
@@ -47,6 +50,7 @@ export function ActivityBody({
         <ListenRepeatActivity
           content={content as ListenAndRepeatContent}
           onComplete={onComplete}
+          youtubeVideoId={youtubeVideoId}
         />
       );
     case 'speaking_drill':

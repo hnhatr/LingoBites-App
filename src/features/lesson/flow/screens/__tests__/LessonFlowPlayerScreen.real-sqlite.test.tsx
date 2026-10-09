@@ -97,7 +97,8 @@ describe('LessonFlowPlayerScreen (shell)', () => {
   it('says when the lesson has no steps', () => {
     mockState = {
       status: 'ready',
-      snapshot: {...snapshot, origin: 'learner'},
+      // A plain learner lesson: no spec (S4.3 runs learner lessons that have one).
+      snapshot: {...snapshot, origin: 'learner', spec: null},
       offline: false,
       hasUpdate: false,
     };

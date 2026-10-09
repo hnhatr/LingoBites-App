@@ -113,6 +113,7 @@ export function StepView({
             latestOutcome={latest.get(block.id) ?? null}
             speakingOff={speakingOff && isSpeakingActivity(activity.kind)}
             task={task}
+            youtubeVideoId={snapshot.youtube?.video_id ?? null}
             onFinished={(outcome, supportLevel, durationMs) =>
               onFinished(block, outcome, supportLevel, durationMs)
             }

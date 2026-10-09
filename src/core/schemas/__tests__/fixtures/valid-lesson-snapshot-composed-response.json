@@ -1,0 +1,475 @@
+{
+  "contract_version": 1,
+  "lesson": {
+    "id": "5a4c0000-0000-4000-8000-000000000001",
+    "slug": "quan-ca-phe-6-buoc",
+    "title": "Ở quán cà phê · 6 bước",
+    "description": "",
+    "origin": "learner",
+    "source_type": "youtube",
+    "content_revision": 1,
+    "unit": null,
+    "youtube": {
+      "video_id": "dQw4w9WgXcQ",
+      "duration_ms": 212000
+    },
+    "sentences": [
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000002",
+        "position": 0,
+        "text_en": "Hi, what can I get for you?",
+        "text_vi": "Chào bạn, bạn muốn dùng gì?",
+        "ipa": "haɪ wɒt kæn aɪ ɡɛt fɔː juː",
+        "start_ms": 0,
+        "end_ms": 2000
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000003",
+        "position": 1,
+        "text_en": "Can I have a large latte, please?",
+        "text_vi": "Cho tôi một ly latte lớn nhé.",
+        "ipa": "kæn aɪ hæv ə lɑːdʒ ˈlæteɪ pliːz",
+        "start_ms": 2000,
+        "end_ms": 5000
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000004",
+        "position": 2,
+        "text_en": "Sure. Anything else?",
+        "text_vi": "Vâng. Bạn cần gì thêm không?",
+        "ipa": "ʃʊə ˈɛniθɪŋ ɛls",
+        "start_ms": 5000,
+        "end_ms": 7000
+      }
+    ],
+    "blocks": [
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000005",
+        "type": "activity",
+        "position": 0,
+        "title": null,
+        "data": {
+          "content": {
+            "prompts": [
+              {
+                "id": "p1",
+                "endMs": 2000,
+                "textEn": "Hi, what can I get for you?",
+                "textVi": "Chào bạn, bạn muốn dùng gì?",
+                "startMs": 0,
+                "sentenceId": "5a4c0000-0000-4000-8000-000000000002"
+              },
+              {
+                "id": "p2",
+                "endMs": 5000,
+                "textEn": "Can I have a large latte, please?",
+                "textVi": "Cho tôi một ly latte lớn nhé.",
+                "startMs": 2000,
+                "sentenceId": "5a4c0000-0000-4000-8000-000000000003"
+              },
+              {
+                "id": "p3",
+                "endMs": 7000,
+                "textEn": "Sure. Anything else?",
+                "textVi": "Vâng. Bạn cần gì thêm không?",
+                "startMs": 5000,
+                "sentenceId": "5a4c0000-0000-4000-8000-000000000004"
+              }
+            ]
+          },
+          "titleVi": "Nghe câu gốc và nhắc lại",
+          "activityKind": "listen_and_repeat"
+        },
+        "step": 2,
+        "skill": "listen",
+        "duration_sec": 90
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000006",
+        "type": "item_cards",
+        "position": 1,
+        "title": null,
+        "data": {
+          "item_ids": [
+            "5a4c0000-0000-4000-8000-000000000007",
+            "5a4c0000-0000-4000-8000-000000000008",
+            "5a4c0000-0000-4000-8000-000000000009"
+          ]
+        },
+        "step": 2,
+        "skill": null,
+        "duration_sec": 60
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000010",
+        "type": "activity",
+        "position": 2,
+        "title": null,
+        "data": {
+          "content": {
+            "combos": [
+              {
+                "id": "c1",
+                "values": {
+                  "thing": "get"
+                }
+              },
+              {
+                "id": "c2",
+                "values": {
+                  "thing": "water"
+                }
+              }
+            ],
+            "patternItemId": "5a4c0000-0000-4000-8000-000000000009"
+          },
+          "titleVi": "Đổi chỗ trống",
+          "item_refs": ["5a4c0000-0000-4000-8000-000000000009"],
+          "activityKind": "speaking_drill"
+        },
+        "step": 3,
+        "skill": "speak",
+        "duration_sec": 60
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000011",
+        "type": "activity",
+        "position": 3,
+        "title": null,
+        "data": {
+          "content": {
+            "questions": [
+              {
+                "id": "q1",
+                "slot": "thing",
+                "answer": "get",
+                "textVi": "Chào bạn, bạn muốn dùng gì?",
+                "afterEn": " for you?",
+                "options": ["get", "water"],
+                "beforeEn": "Hi, what can I ",
+                "patternItemId": "5a4c0000-0000-4000-8000-000000000009"
+              }
+            ]
+          },
+          "titleVi": "Điền vào chỗ trống",
+          "item_refs": ["5a4c0000-0000-4000-8000-000000000009"],
+          "activityKind": "fill_blank"
+        },
+        "step": 3,
+        "skill": "write",
+        "duration_sec": 30
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000012",
+        "type": "activity",
+        "position": 4,
+        "title": null,
+        "data": {
+          "content": {
+            "sentences": [
+              {
+                "id": "s1",
+                "textVi": "Chào bạn, bạn muốn dùng gì?",
+                "modelEn": "Hi, what can I get for you?",
+                "patternItemId": "5a4c0000-0000-4000-8000-000000000009"
+              }
+            ]
+          },
+          "task_id": "5a4c0000-0000-4000-8000-000000000013",
+          "titleVi": "Dịch sang tiếng Anh",
+          "item_refs": ["5a4c0000-0000-4000-8000-000000000009"],
+          "activityKind": "translation"
+        },
+        "step": 4,
+        "skill": "write",
+        "duration_sec": 30
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000014",
+        "type": "activity",
+        "position": 5,
+        "title": null,
+        "data": {
+          "content": {
+            "turns": [
+              {
+                "id": "t1",
+                "textEn": "Hello! How can I help?",
+                "textVi": "Xin chào! Tôi giúp gì được?",
+                "speaker": "A"
+              },
+              {
+                "id": "t2",
+                "textEn": "Hi, what can I get for you?",
+                "textVi": "Chào bạn, bạn muốn dùng gì?",
+                "speaker": "B",
+                "patternItemId": "5a4c0000-0000-4000-8000-000000000009"
+              },
+              {
+                "id": "t3",
+                "textEn": "Sure, no problem.",
+                "textVi": "Được, không sao.",
+                "speaker": "A"
+              },
+              {
+                "id": "t4",
+                "textEn": "Thank you very much.",
+                "textVi": "Cảm ơn bạn nhiều.",
+                "speaker": "B"
+              }
+            ],
+            "learnerSpeaker": "B"
+          },
+          "task_id": "5a4c0000-0000-4000-8000-000000000015",
+          "titleVi": "Tự nói trong tình huống mới",
+          "item_refs": ["5a4c0000-0000-4000-8000-000000000009"],
+          "activityKind": "role_play",
+          "instructionsVi": "Dùng mẫu câu trong một tình huống khác."
+        },
+        "step": 5,
+        "skill": "speak",
+        "duration_sec": 120
+      }
+    ],
+    "analyses": {},
+    "spec": {
+      "code": null,
+      "audience": "all",
+      "can_do": ["Gọi một đồ uống và trả lời câu hỏi của nhân viên quán."],
+      "situation": {
+        "speaker": "khách",
+        "listener": "nhân viên quán",
+        "place": "quán cà phê",
+        "purpose": "gọi đồ uống"
+      },
+      "estimated_minutes": 7,
+      "prerequisites": []
+    },
+    "lesson_items": [
+      {
+        "role": "required",
+        "introduction": "new",
+        "position": 0,
+        "item": {
+          "id": "5a4c0000-0000-4000-8000-000000000007",
+          "code": "word:get",
+          "kind": "word",
+          "text": "get",
+          "meaning_vi": "lấy, gọi (món)",
+          "ipa": null,
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      },
+      {
+        "role": "required",
+        "introduction": "new",
+        "position": 1,
+        "item": {
+          "id": "5a4c0000-0000-4000-8000-000000000008",
+          "code": "word:large",
+          "kind": "word",
+          "text": "large",
+          "meaning_vi": "lớn",
+          "ipa": null,
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      },
+      {
+        "role": "extended",
+        "introduction": "new",
+        "position": 2,
+        "item": {
+          "id": "5a4c0000-0000-4000-8000-000000000016",
+          "code": "word:latte",
+          "kind": "word",
+          "text": "latte",
+          "meaning_vi": "cà phê latte",
+          "ipa": null,
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      },
+      {
+        "role": "extended",
+        "introduction": "new",
+        "position": 3,
+        "item": {
+          "id": "5a4c0000-0000-4000-8000-000000000017",
+          "code": "word:sure",
+          "kind": "word",
+          "text": "sure",
+          "meaning_vi": "chắc chắn, được thôi",
+          "ipa": null,
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {},
+          "audio": null,
+          "image": null,
+          "examples": [],
+          "variants": [],
+          "errors": []
+        }
+      },
+      {
+        "role": "required",
+        "introduction": "new",
+        "position": 4,
+        "item": {
+          "id": "5a4c0000-0000-4000-8000-000000000009",
+          "code": "pattern:hi-what-can-i-for-you",
+          "kind": "pattern",
+          "text": "Hi, what can I {thing} for you?",
+          "meaning_vi": "Chào bạn, bạn muốn dùng gì?",
+          "ipa": null,
+          "part_of_speech": null,
+          "note_vi": null,
+          "audience": "all",
+          "payload": {
+            "slots": {
+              "thing": {
+                "values": ["get", "water"],
+                "label_vi": "từ thay thế"
+              }
+            }
+          },
+          "audio": null,
+          "image": null,
+          "examples": [
+            {
+              "text_en": "Hi, what can I get for you?",
+              "text_vi": "Chào bạn, bạn muốn dùng gì?",
+              "audience": "all",
+              "audio": null
+            }
+          ],
+          "variants": [],
+          "errors": []
+        }
+      }
+    ],
+    "tasks": [
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000013",
+        "kind": "guided",
+        "title_vi": "Luyện mẫu câu",
+        "prompt_vi": "Nói lại mẫu câu với từ khác.",
+        "situation": {
+          "speaker": "khách",
+          "listener": "nhân viên quán",
+          "place": "quán cà phê",
+          "purpose": "gọi đồ uống"
+        },
+        "response_mode": "speak",
+        "hint_levels": [
+          {
+            "type": "keyword",
+            "level": 1,
+            "content_vi": "Dùng mẫu câu vừa học."
+          },
+          {
+            "type": "model",
+            "level": 2,
+            "content_vi": "Hi, what can I {thing} for you?"
+          }
+        ],
+        "position": 0,
+        "item_codes": [
+          "word:get",
+          "word:large",
+          "pattern:hi-what-can-i-for-you"
+        ],
+        "criteria": [
+          {
+            "criterion": "purpose",
+            "required": false,
+            "threshold": null
+          },
+          {
+            "criterion": "content",
+            "required": true,
+            "threshold": 0.8
+          },
+          {
+            "criterion": "clarity",
+            "required": false,
+            "threshold": 0.6
+          },
+          {
+            "criterion": "independence",
+            "required": false,
+            "threshold": null
+          }
+        ]
+      },
+      {
+        "id": "5a4c0000-0000-4000-8000-000000000015",
+        "kind": "independent",
+        "title_vi": "Tự nói trong tình huống mới",
+        "prompt_vi": "Dùng mẫu câu trong một tình huống khác.",
+        "situation": {
+          "speaker": "người học",
+          "listener": "đồng nghiệp",
+          "place": "văn phòng",
+          "purpose": "trao đổi thông tin"
+        },
+        "response_mode": "speak",
+        "hint_levels": [],
+        "position": 1,
+        "item_codes": [
+          "word:get",
+          "word:large",
+          "pattern:hi-what-can-i-for-you"
+        ],
+        "criteria": [
+          {
+            "criterion": "purpose",
+            "required": true,
+            "threshold": null
+          },
+          {
+            "criterion": "content",
+            "required": true,
+            "threshold": 0.8
+          },
+          {
+            "criterion": "clarity",
+            "required": true,
+            "threshold": 0.6
+          },
+          {
+            "criterion": "independence",
+            "required": true,
+            "threshold": null
+          }
+        ]
+      }
+    ],
+    "generated": true,
+    "derived_from_lesson_id": "5a4c0000-0000-4000-8000-000000000018",
+    "situation_source": "source"
+  }
+}

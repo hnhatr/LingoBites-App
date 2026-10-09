@@ -10,6 +10,9 @@ export const LESSON_CONTRACT_FIXTURE_SHA256 = {
   /** Lesson A1-DRINKS-L01 of the Server's sample unit "Gọi đồ uống". */
   'valid-lesson-snapshot-with-spec-response.json':
     'e1743120817bcdd24e2482c40b984365225414e0589299d140e1d212445c44fd',
+  /** S4.3: a learner's six-step lesson composed from picked sentences. */
+  'valid-lesson-snapshot-composed-response.json':
+    '5a20fcc8279c3b5851e744f2012009693823e116b5b377e8207597b47911c353',
   'valid-lesson-catalog-response.json':
     '68b2b9a8978c00e38c3b42896b2b4d8d841eaee73b49a8b3ee4e4532a3a569dd',
   'valid-sync-lesson-progress-push-request.json':

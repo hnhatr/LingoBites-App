@@ -17,6 +17,7 @@ import {
 } from '@features/review';
 
 import type {FlashcardRecord, GrammarBookmark} from '@core/db/types';
+import i18n from '@core/i18n';
 import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
 import type {LessonSourceType} from '@core/schemas/lesson';
 
@@ -161,7 +162,10 @@ export function useLibrarySegments(
       sourceType: item.snapshot.source_type,
       origin: item.snapshot.origin,
       practiceReady: isPracticeReady(item.snapshot),
-      contextLabel: lessonContextLabel(item.snapshot.unit),
+      // S4.3: a learner's lesson composed from picked sentences.
+      contextLabel: item.snapshot.generated
+        ? i18n.t('compose.library_chip')
+        : lessonContextLabel(item.snapshot.unit),
       activityCount: activityCountOf(item.snapshot),
       youtubeDurationMs: item.snapshot.youtube?.duration_ms ?? null,
     }));

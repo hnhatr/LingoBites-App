@@ -35,8 +35,31 @@ const attempt = (
 describe('practice completion (PR 8 rule G5)', () => {
   it('runs the seed lesson in the six-step player', () => {
     expect(isFlowLesson(snapshot)).toBe(true);
-    expect(isFlowLesson({...snapshot, origin: 'learner'})).toBe(false);
     expect(isFlowLesson({...snapshot, spec: undefined})).toBe(false);
+  });
+
+  it('runs a learner lesson only when it carries a spec (S4.3)', () => {
+    const composed = LessonSnapshotResponseSchema.parse(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(
+            __dirname,
+            '../../../../../core/schemas/__tests__/fixtures/valid-lesson-snapshot-composed-response.json',
+          ),
+          'utf8',
+        ),
+      ),
+    ).lesson;
+    expect(isFlowLesson(composed)).toBe(true);
+    // A plain learner lesson: no spec, no step blocks.
+    expect(
+      isFlowLesson({
+        ...composed,
+        spec: null,
+        blocks: composed.blocks.map(block => ({...block, step: null})),
+      }),
+    ).toBe(false);
+    expect(isFlowLesson({...composed, spec: null})).toBe(false);
   });
 
   it('needs a scorable attempt on every activity of steps 2–4', () => {

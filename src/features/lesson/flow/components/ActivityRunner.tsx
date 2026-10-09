@@ -23,6 +23,8 @@ export type ActivityRunnerProps = {
   activity: FlowActivity;
   items: FlowItems;
   task: LessonTask | null;
+  /** S4.3: the lesson's video, for step 2 source clips. */
+  youtubeVideoId?: string | null;
   /** Outcome of the newest attempt on this block, if any. */
   latestOutcome: LessonAttemptOutcome | null;
   /**
@@ -48,6 +50,7 @@ export function ActivityRunner({
   activity,
   items,
   task,
+  youtubeVideoId,
   latestOutcome,
   speakingOff = false,
   onFinished,
@@ -123,6 +126,7 @@ export function ActivityRunner({
             key={runKey}
             onComplete={complete}
             task={task}
+            youtubeVideoId={youtubeVideoId}
           />
         ) : (
           <View style={themedStyles.result}>

@@ -394,6 +394,14 @@ export const LessonSnapshotSchema = z
     spec: LessonSpecSchema.nullable().optional(),
     lesson_items: z.array(LessonItemEntrySchema).optional(),
     tasks: z.array(LessonTaskSchema).optional(),
+    /**
+     * S4.3: only on the learner's own lesson composed from picked sentences
+     * ("AI tạo"): the lesson the sentences came from (null once deleted) and
+     * whether the situation came from it or the AI inferred one.
+     */
+    generated: z.literal(true).optional(),
+    derived_from_lesson_id: z.string().uuid().nullable().optional(),
+    situation_source: z.enum(['source', 'inferred']).nullable().optional(),
   })
   .strict();
 
@@ -522,18 +530,87 @@ export const LessonCreationErrorSchema = z
 
 export type LessonCreationError = z.infer<typeof LessonCreationErrorSchema>;
 
+/**
+ * S4.3: progress of a "Học theo 6 bước" request (Server wait design §2.3).
+ * Only compose requests carry it.
+ */
+export const LessonComposeProgressSchema = z
+  .object({
+    stage: z.string().nullable(),
+    stage_started_at: z.string().nullable(),
+    elapsed_ms: z.number().int().min(0),
+    /** Typical duration (p50) of the prompt version, for "about N s". */
+    expected_ms: z.number().int().min(0),
+    /** Whether the request used one of the learner's daily composes. */
+    quota_charged: z.boolean(),
+    reason_vi: z.string().nullable(),
+    suggestion_vi: z.string().nullable(),
+    dropped_sentence_ids: z.array(z.string().uuid()),
+  })
+  .strict();
+
+export type LessonComposeProgress = z.infer<typeof LessonComposeProgressSchema>;
+
 export const LessonCreationStatusResponseSchema = z
   .object({
     contract_version: LessonContractVersionSchema,
     status: LessonCreationStatusSchema,
     lesson_id: z.string().uuid().nullable(),
     error: LessonCreationErrorSchema.nullable(),
+    compose: LessonComposeProgressSchema.optional(),
   })
   .strict();
 
 export type LessonCreationStatusResponse = z.infer<
   typeof LessonCreationStatusResponseSchema
 >;
+
+/** S4.3: the same picked sentences were composed before (no AI, no quota). */
+export const ComposeCachedResponseSchema = z
+  .object({
+    contract_version: z.literal(1),
+    lesson_id: z.string().uuid(),
+    cached: z.literal(true),
+  })
+  .strict();
+
+export const ComposeQuotaResponseSchema = z
+  .object({
+    contract_version: z.literal(1),
+    quota: z
+      .object({
+        limit: z.number().int().min(0),
+        used: z.number().int().min(0),
+        remaining: z.number().int().min(0),
+        resets_at: z.string(),
+      })
+      .strict(),
+  })
+  .strict();
+
+export type ComposeQuota = z.infer<typeof ComposeQuotaResponseSchema>['quota'];
+
+export const ActiveComposeResponseSchema = z
+  .object({
+    contract_version: z.literal(1),
+    requests: z.array(
+      z
+        .object({
+          id: z.string().uuid(),
+          status: LessonCreationStatusSchema,
+          source_lesson_id: z.string().uuid(),
+          source_lesson_title: z.string().nullable(),
+          sentence_ids: z.array(z.string().uuid()),
+          compose: LessonComposeProgressSchema,
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
+export type ActiveCompose = z.infer<
+  typeof ActiveComposeResponseSchema
+>['requests'][number];
 
 /**
  * Parse helpers. Every helper rejects a `contract_version` mismatch so the

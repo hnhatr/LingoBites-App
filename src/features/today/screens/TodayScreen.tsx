@@ -2,6 +2,8 @@ import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
+import {ComposeRequestCards} from '@features/lesson/player';
+
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -76,6 +78,8 @@ export function TodayScreen({route}: Props = {}) {
         contentContainerStyle={themedStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* S4.3: six-step lessons still being made. */}
+        <ComposeRequestCards testID="today-compose-cards" />
         {!hasDownloads ? (
           <View
             style={themedStyles.consolidationBanner}
