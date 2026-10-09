@@ -16,14 +16,14 @@ export type FlowStep = (typeof FLOW_STEPS)[number];
 type AttemptLike = Pick<LessonActivityAttemptRow, 'blockId' | 'outcome'>;
 
 /**
- * A curriculum lesson the six-step player can run: authored by the admin,
- * with a specification and at least one block placed on a step.
+ * A lesson the six-step player can run: one with a specification and at
+ * least one block placed on a step. That is a curriculum lesson, or (S4.3) a
+ * learner's own lesson composed from picked sentences; a plain learner lesson
+ * has no spec and stays on the sentence player.
  */
 export function isFlowLesson(snapshot: LessonSnapshot): boolean {
   return (
-    snapshot.origin === 'admin' &&
-    snapshot.spec != null &&
-    snapshot.blocks.some(block => block.step != null)
+    snapshot.spec != null && snapshot.blocks.some(block => block.step != null)
   );
 }
 
