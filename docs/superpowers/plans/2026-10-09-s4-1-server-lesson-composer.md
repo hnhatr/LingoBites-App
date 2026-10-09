@@ -36,7 +36,7 @@ Sau PR này, server có:
 | H2 | Lưu ở đâu | **Bài mới** (user chốt 2026-10-09). `lessons.derived_from_lesson_id` (FK, `ON DELETE SET NULL`) + `lessons.compose_key`. Câu được **chép** sang bài mới (giữ `text_vi`, `ipa`, `start_ms`, `end_ms`); bài mới giữ `source_type` và `youtube_video_id` của bài gốc để phát đúng đoạn video. |
 | H3 | Ai sở hữu bài sinh ra | Admin: `origin = admin`, `status = draft`, `unit_id` do admin chọn (S4.2). Người học: `origin = learner`, `owner_user_id`, `status = published`, không unit (S4.3). |
 | H4 | Số lần gọi AI | **1 lần** `compose` / bài. Không gọi dịch, IPA, enrich: dữ liệu câu lấy từ DB. Câu đã có phân tích (enrich lúc tạo bài hoặc phân tích khi bấm) thì đưa từ vựng / ngữ pháp đã lưu vào prompt làm gợi ý; câu chưa có thì AI tự rút trong cùng lần gọi. Item mới lấy IPA từ CMUdict cục bộ, thiếu thì dùng `ipa` AI trả trong cùng lần gọi. JSON sai thì gọi lại **1 lần** kèm danh sách lỗi (tối đa 2 lần gọi khi lỗi). |
-| H5 | Cache | `compose_key = sha256(source_lesson_id, sentence_ids đã sắp xếp, COMPOSE_PROMPT_VERSION, level)`. Người học chọn lại đúng nhóm câu đó → trả bài đã sinh, **không gọi AI**, không tính lượt. Admin có `force: true` để sinh bản mới (S4.2). |
+| H5 | Cache | `compose_key = sha256(source_lesson_id, sentence_ids đã sắp xếp, checksum của phiên bản prompt đang dùng, level)`. Người học chọn lại đúng nhóm câu đó → trả bài đã sinh, **không gọi AI**, không tính lượt. Admin có `force: true` để sinh bản mới (S4.2). |
 | H6 | Item AI tạo (Q5) | **Tự publish** (user chốt 2026-10-09) với `source = 'ai'`, `reviewed_at = null`. Quy tắc khi trùng mã: item `published` có sẵn → dùng lại, **không ghi đè**; item `draft` có `source = 'ai'` → publish; item `archived` hoặc `draft` của admin → **không dùng** (bỏ item đó khỏi bài, ghi log). Pattern chỉ dùng `values` cho chỗ trống, không dùng `item_refs` (tránh luật "published chỉ trỏ tới published"). |
 | H7 | Câu chọn lạc quẻ / không có tình huống (D2, chốt 2026-10-09) | 4 trường hợp, xem §3.1:<br>(1) **Lọc trước, không AI:** câu quá ngắn / trùng / không phải tiếng Anh → `COMPOSE_SENTENCES_TOO_THIN` (400).<br>(2) **Hoàn toàn lạc đề:** AI trả `suitable = false` + `reason_vi` + `suggestion_vi` → `failed COMPOSE_NOT_SUITABLE`; bài gốc giữ dạng hub.<br>(3) **Chọn lẫn:** AI giữ nhóm câu liền mạch nhất (`used_sentence_ids`), bỏ câu lạc quẻ, bài vẫn tạo; còn < 2 câu → như (2).<br>(4) **Có nội dung nhưng không có hội thoại:** AI suy ra một tình huống đời thường, `situation_source = inferred`; bài ghi nhãn "Tình huống do AI gợi ý". |
 | H8 | Ngôn ngữ (D4) | Nội dung học tiếng Anh; can-do, tình huống, đề bài, gợi ý, nghĩa bằng tiếng Việt (như seed). |
@@ -44,7 +44,7 @@ Sau PR này, server có:
 | H10 | Tiêu chí task (A2) | 4 tiêu chí mặc định: content 0.80, clarity 0.60, purpose = đủ item bắt buộc, independence = không dùng gợi ý; tất cả `required`. |
 | H11 | Mã bài | `AI-<8 ký tự hex đầu của lesson id, viết hoa>` (khớp `LessonCodeSchema`). |
 | H12 | Giới hạn (Q8, chốt 2026-10-09) | **Đặt theo từng tài khoản:** cột `users.compose_daily_limit` (null = dùng mặc định env `COMPOSE_LEARNER_DAILY_LIMIT`, mặc định **1**; `0` = khoá). Admin sửa trên trang chi tiết người dùng (S4.2). **Chỉ lượt có gọi AI mới tính**, kể cả khi AI kết luận "không phù hợp"; lượt bị lọc trước (H7-1), trúng cache, lỗi hạ tầng trước khi gọi AI thì không tính. Ngày theo giờ Việt Nam. Admin (tài khoản quản trị): không giới hạn. |
-| H13 | Trần chi phí (Q11) | `COMPOSE_MONTHLY_CALL_CAP` (mặc định `0` = không trần) đếm số lần gọi AI compose trong tháng; vượt → `COMPOSE_BUDGET_EXHAUSTED` (503) và capability báo tắt (S4.3). Model: `COMPOSE_MODEL`, mặc định = `AI_MODEL`; cùng `AI_PROVIDER` / `AI_API_KEY`. |
+| H13 | Trần chi phí (Q11) | `COMPOSE_MONTHLY_CALL_CAP` (mặc định `0` = không trần) đếm số lần gọi AI compose trong tháng; vượt → `COMPOSE_BUDGET_EXHAUSTED` (503) và capability báo tắt (S4.3). Model, temperature, nội dung prompt: lấy từ **phiên bản prompt đang bật** (`2026-10-09-s4-ai-prompt-config-design.md`), mặc định = `AI_MODEL`; cùng `AI_PROVIDER` / `AI_API_KEY`. |
 | H14 | Bật / tắt | `LESSON_COMPOSE_ENABLED` (mặc định `false`); `/v1/capabilities` trả `lessons.compose.enabled` ở S4.3. Admin dùng được khi biến này bật. |
 
 ## 3. Luồng xử lý
@@ -78,9 +78,10 @@ App hiện cùng luật này để tắt nút sớm (S4.3), server vẫn kiểm 
 ## 4. Prompt và JSON trả về (`curriculum/composer/service/composeAi.ts`)
 
 > Bản nháp prompt đầy đủ + ví dụ để review: `2026-10-09-s4-1-compose-prompt-draft.md`.
+> **Prompt không viết cứng trong code:** nội dung, ví dụ, tham số số lượng, model nằm trong kho prompt có phiên bản (`ai_prompts` / `ai_prompt_versions`), xem `2026-10-09-s4-ai-prompt-config-design.md`. S4.1 làm phần backend của kho prompt (§11 của file đó).
 > **Bản nháp đó là nguồn chuẩn** cho prompt và khuôn đầu ra (`suitable` / `reason_vi` / `suggestion_vi` / `lesson`, `slots` dạng danh sách). Đầu ra khoá 3 lớp: khuôn trong prompt + JSON Schema `strict` gửi cho nhà cung cấp + zod và luật ở server.
 
-Prompt gồm: trình độ, đối tượng, câu đã chọn (`id`, `en`, `vi`), item ứng viên (`code`, `text`, `meaning_vi`), luật đầu ra và marker `COMPOSE_PROMPT_MARKER = 'Lesson sentences (JSON):'` để completion giả lập trong test nhận ra (giống `TRANSLATION_PROMPT_MARKER`).
+Prompt gồm: trình độ, đối tượng, câu đã chọn (`id`, `en`, `vi`), item ứng viên (`code`, `text`, `meaning_vi`), luật đầu ra và marker `COMPOSE_PROMPT_MARKER = 'Lesson sentences (JSON):'` (nằm trong `user_template` mặc định; lint bắt buộc giữ marker này để AI giả lập trong test nhận ra) để completion giả lập trong test nhận ra (giống `TRANSLATION_PROMPT_MARKER`).
 
 JSON trả về: xem `OUTPUT TEMPLATE` và §3.1 trong bản nháp prompt. Kiểm bằng `ComposeAiResponseSchema` (zod) và cùng hình dạng với JSON Schema `strict` gửi cho nhà cung cấp.
 
@@ -189,6 +190,7 @@ Lệnh: `yarn test`, `yarn test:db`, `yarn lint`, `yarn tsc` (server). Mục ti�
 | `src/modules/curriculum/composer/service/composePipeline.ts` | `src/modules/canonicalLesson/repository/creationRequestStore.ts` (`kind`, đếm lượt) |
 | `src/modules/curriculum/composer/service/composeLimits.ts` | `src/modules/canonicalLesson/service/creationAi.ts` (completion giả lập nhận marker compose; `callProviderJson` thêm tham số tuỳ chọn `jsonSchema`, không đổi hành vi các prompt cũ) |
 | `src/modules/curriculum/composer/repository/composeStore.ts` | `src/common/config/*.ts` (env §2 H12–H14) |
+| `src/common/ai/prompts/registry.ts`, `promptRuntime.ts`, `promptTemplate.ts` (render + lint), `src/modules/curriculum/composer/prompts/composeDefaultV1.ts` (bản mặc định), `scripts/aiPrompt.ts`, `scripts/seedAiPrompts.ts` | |
 | `scripts/composeSample.ts` | `.env.example` (chỉ thêm tên biến, **không** sửa `.env`), `package.json` (thêm test DB vào `test:db`) |
 | `test/composeAi.test.ts`, `test/composeLesson.test.ts`, `test/composePipeline.test.ts`, `test/fixtures/compose/*.json` | |
 
