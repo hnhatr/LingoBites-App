@@ -31,6 +31,9 @@ export const LESSON_CONTRACT_FIXTURE_SHA256 = {
   /** PR 13: upload of a spoken step-5 answer (app sends it from PR 14). */
   'valid-recording-lesson-task-create-request.json':
     '2765231d238f89e16c912d6e204ed6b99973a47d34932b4dc87f8a1ae7074b51',
+  /** PR 16: a unit's summative task as `GET /v1/units/:unitId/summative-task` sends it. */
+  'valid-unit-summative-task-response.json':
+    '159250d7ca9b777d33539e3e24a4f5b4355e3d264d902bd37cc3fdd95a16db10',
   /**
    * PR 10: accepted answers of a pattern; a copy of the Server's
    * `test/fixtures/accepted-answers.json` (read by `@core/learning` tests).
