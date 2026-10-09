@@ -1,6 +1,6 @@
 # S4.2 – Server + admin: "Sinh bài 6 bước" từ câu đã chọn
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-09** (quyết định dùng đề xuất). Chưa code. Cần S4.1 xong trước.
+> Trạng thái: **ĐÃ CODE** (2026-10-09). Xem §8 cho kết quả và điểm lệch.
 > Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (server + `admin-web`). Nhánh: `claude/affectionate-darwin-krszil`.
 > Thiết kế chung (chọn câu → bài mới, 1 lần gọi AI, item tự publish) ở plan S4.1.
 
@@ -83,3 +83,32 @@ Lệnh: `yarn test`, `yarn test:db`, `yarn admin-web:test`, Playwright `e2e/` (m
 | Nhúng YouTube trong admin bị chặn bởi CSP | Kiểm `vite.config.ts` / header deploy; nếu chặn thì hiện link "mở đoạn trên YouTube" có `?t=`. |
 
 Không thêm dependency.
+
+## 8. Kết quả code và điểm lệch so với plan
+
+> Code ngày 2026-10-09, server `b4f6c59` → `c53f07a` (nhánh `claude/affectionate-darwin-krszil`).
+
+**Đã làm**
+
+| Phần | File chính |
+|---|---|
+| `POST /v1/admin/lessons/:id/compose` (200 cache / 202 / lỗi theo mã), dùng chung service compose với worker | `curriculum/composer/controller/composeRoutes.ts`, `app/server.ts` |
+| Poll `GET /v1/{admin/}lesson-creations/:id` có thêm khối `compose` (stage, thời gian, `expected_ms` = p50 50 lần gần nhất, `quota_charged`, `reason_vi` / `suggestion_vi`, câu bị bỏ) — **chỉ** với request compose | `canonicalLesson/model/creation.ts`, `lessonCreationService.ts`, `creationRequestStore.ts` |
+| Bài trả thêm `derivedFromLessonId`, `situationSource`; item trong đặc tả trả thêm `source`, `reviewed_at` | `curriculum/lessons/*`, `curriculum/spec/*` |
+| Item: lọc `reviewed=false|true`, `reviewed_at` trong view, `POST /v1/admin/items/:id/review`; sửa item hoặc tạo item bởi admin tự ghi `reviewed_at` | `items/*` |
+| Giới hạn compose theo tài khoản: `GET` / `PATCH /v1/admin/users/:id/compose-quota` | `composeRoutes.ts` |
+| Admin-web: chọn 2–8 câu + "Sinh bài 6 bước"; dialog chọn unit, tiến độ theo stage, cache / "Sinh bản mới", lỗi theo mã; banner "Bài sinh tự động từ …" + đếm item AI chưa rà; preview bước 2 nhúng đoạn video; editor giữ và ghi nhãn "Câu gốc · 0:12–0:15"; danh sách item lọc "Chưa rà" + nút "Đã rà"; trang item có "Đánh dấu đã rà"; trang người dùng có ô "Số bài 6 bước / ngày" | `LessonSentencesSection.tsx`, `ComposeLessonDialog.tsx`, `lesson/DerivedLessonBanner.tsx`, `preview/PreviewListenRepeat.tsx`, `activity/ListenAndRepeatEditor.tsx`, `ItemListPage.tsx`, `items/ItemLifecyclePanel.tsx`, `users/ComposeQuotaPanel.tsx`, `LessonEditPage.tsx`, `UserDetailPage.tsx` |
+| Playwright `e2e/compose.spec.ts`: tạo bài text → chọn 3 câu → sinh → bài nháp mở được, banner, không còn mục thiếu để publish ngoài rà item, preview 6 bước | `admin-web/e2e/compose.spec.ts`, `playwright.config.ts` (`LESSON_COMPOSE_ENABLED=true` cho server e2e) |
+
+**Điểm lệch**
+
+| # | Plan | Đã làm | Lý do |
+|---|---|---|---|
+| M1 | Bài trả `derived_from: { lesson_id, title }` | Trả `derivedFromLessonId` (+ `situationSource`); banner tự lấy tiêu đề bài gốc | Giữ bản ghi bài phẳng như các trường hiện có; không thêm join. |
+| M2 | `PATCH /v1/admin/users/:id` nhận `compose_daily_limit` (I8) | Route con riêng `GET` / `PATCH /v1/admin/users/:id/compose-quota`, trả cả số lượt đã dùng hôm nay | Không đụng route người dùng hiện có; trang người dùng đọc được "đã dùng / giới hạn". |
+| M3 | Trang unit có dòng "Đang sinh: N bài" (thiết kế chờ §4) | **Chưa làm**; đóng dialog khi đang chạy thì trang bài hiện ghi chú "bài nháp sẽ xuất hiện trong unit khi xong" | Tách khỏi S4.2 cho gọn; làm cùng S4.2b nếu cần. |
+| M4 | Rủi ro CSP | ⚠️ Thêm `frame-src https://www.youtube-nocookie.com` vào CSP của admin SPA (chỉ nguồn này) | Không có thì iframe preview bị chặn. |
+| M5 | Không có | Item do admin **tạo** cũng ghi `reviewed_at` ngay; "Đã rà" không đổi `updated_at` | Bộ lọc "chưa rà" chỉ còn item AI; rà không phải sửa nội dung nên không đẩy bài lên bản mới. |
+| M6 | Lỗi: 403, 400, 404, 503, 409 | Thêm `COMPOSE_ALREADY_DERIVED` (409) khi chọn câu trong bài đã là bài sinh ra | I1: không sinh lồng. |
+| M7 | — | E2E bắt lỗi: sau khi sinh xong, chuyển sang bài mới mà dialog vẫn mở (trang không remount) → đóng dialog khi đổi bài | Đã sửa trong `LessonEditPage.tsx`. |
+| M8 | — | ⚠️ Đổi API (chỉ thêm trường / route): +3 path, +4 operation OpenAPI | Ghi vào `test/openApiDocument.test.ts`. |
