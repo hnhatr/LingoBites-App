@@ -1,6 +1,6 @@
 # S4.2 – Server + admin: "Sinh bài 6 bước" từ câu đã chọn
 
-> Trạng thái: **CHỜ DUYỆT**. Chưa code. Cần S4.1 xong trước.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-09** (quyết định dùng đề xuất). Chưa code. Cần S4.1 xong trước.
 > Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (server + `admin-web`). Nhánh: `claude/affectionate-darwin-krszil`.
 > Thiết kế chung (chọn câu → bài mới, 1 lần gọi AI, item tự publish) ở plan S4.1.
 

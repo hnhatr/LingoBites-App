@@ -2,7 +2,7 @@
 
 > ⚠️ **Đã được thay bằng** `2026-10-09-s4-ai-prompt-config-design.md` §7 (prompt v1 tách system / user, mọi con số thành `{{params.*}}`, lưu trong kho prompt có phiên bản). File này giữ lại vì có ví dụ, luật kiểm và ca mẫu; phần nào khác §7 thì theo §7.
 
-> Trạng thái: **NHÁP, CHỜ REVIEW**. Ngày lập: 2026-10-09. Đi kèm plan `2026-10-09-s4-1-server-lesson-composer.md` §4.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-09** (nội dung prompt chuẩn ở thiết kế prompt §7). Ngày lập: 2026-10-09. Đi kèm plan `2026-10-09-s4-1-server-lesson-composer.md` §4.
 > Code sẽ nằm ở `LingoBites-Server/src/modules/curriculum/composer/service/composeAi.ts`.
 > Prompt viết **tiếng Anh**, giống các prompt hiện có (`creationEnrich.ts`, `creationTranslation.ts`), vì model theo luật tốt hơn. Kết quả trả về: nội dung học bằng tiếng Anh, phần giải thích bằng tiếng Việt (D4).
 
@@ -273,7 +273,7 @@ Không gửi lại câu trả lời cũ (tiết kiệm token). Lần 2 vẫn sai
 3. Sau khi code S4.1, chạy script `scripts/composeSample.ts --live` (cần `AI_API_KEY`, tắt mặc định) trên 3–5 bài thật: in prompt và JSON ra màn hình để đọc trực tiếp. Có thể so 2 model nếu muốn.
 4. Mỗi lần sửa prompt là tạo một phiên bản mới trong kho prompt; `checksum` của phiên bản nằm trong `compose_key` (cache cũ tự hết hiệu lực vì nằm trong `compose_key`).
 
-**Câu hỏi để bạn chốt khi review:**
+**Câu hỏi để bạn chốt khi review:** – chốt 2026-10-09 ("ok hết": dùng cột Đề xuất)
 
 | # | Câu hỏi | Đề xuất |
 |---|---|---|

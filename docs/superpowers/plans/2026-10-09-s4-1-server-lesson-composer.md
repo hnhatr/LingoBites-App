@@ -1,6 +1,6 @@
 # S4.1 – Server: `lessonComposer` lõi (chọn câu → bài 6 bước)
 
-> Trạng thái: **CHỜ DUYỆT**. Chưa code.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-09, ĐANG CODE**.
 > Ngày lập: 2026-10-09. Repo: `LingoBites-Server`. Nhánh: `claude/affectionate-darwin-krszil` (tạo từ `develop`).
 > PR đầu tiên của Giai đoạn 3 (Stage 4) trong `2026-10-08-remaining-work-plan.md`. S4.2 (admin) và S4.3 (người học) xây trên PR này.
 > Stage 3 (PR 12–17) **chưa làm**: bước 5 của bài sinh ra dùng **tự đánh giá** như bài curriculum hiện nay; khi Stage 3 xong thì được chấm máy mà không phải sửa composer.

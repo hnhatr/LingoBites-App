@@ -1,6 +1,6 @@
 # S4.3 – Server + app: người học "Học theo 6 bước" từ câu đã chọn
 
-> Trạng thái: **CHỜ DUYỆT**. Chưa code. Cần S4.1 xong trước (S4.2 không bắt buộc).
+> Trạng thái: **ĐÃ DUYỆT 2026-10-09** (quyết định dùng đề xuất). Chưa code. Cần S4.1 xong trước (S4.2 không bắt buộc).
 > Ngày lập: 2026-10-09. Repo: `LingoBites-Server` + `LingoBites-App`. Nhánh: `claude/affectionate-darwin-krszil` ở cả hai repo.
 > Thiết kế chung ở plan S4.1. Gộp mục 4.7 của backlog (hub bài tự tạo hiện như bài curriculum).
 

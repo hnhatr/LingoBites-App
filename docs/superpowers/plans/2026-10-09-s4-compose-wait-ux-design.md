@@ -1,6 +1,6 @@
 # Thiết kế: AI chạy lâu – không bắt người học chờ, app minh bạch
 
-> Trạng thái: **NHÁP, CHỜ DUYỆT**. Ngày lập: 2026-10-09. Áp dụng cho S4.1 (server), S4.2 (admin), S4.3 (app).
+> Trạng thái: **ĐÃ DUYỆT 2026-10-09**. Ngày lập: 2026-10-09. Áp dụng cho S4.1 (server), S4.2 (admin), S4.3 (app).
 > Bổ sung cho `2026-10-09-s4-ai-prompt-config-design.md` (tham số thời gian nằm trong phiên bản prompt).
 
 ## 1. Vấn đề
@@ -135,7 +135,7 @@ Admin cũng không phải chờ: dialog "Sinh bài 6 bước" hiện tiến đ�
 | App | Đóng sheet → request vẫn được poll; mở lại app → khôi phục request chờ từ AsyncStorage; poll dừng ở nền và kiểm ngay khi về foreground; xong khi đang ở màn khác → toast; lỗi timeout hiện "không bị tính" theo `quota_charged`; mất mạng → "Đang chờ mạng…"; nghe trước không ghi lượt làm. |
 | Kiểm tay | Máy thật: gửi, đóng sheet, học bài khác, nhận toast; khoá màn hình 1 phút rồi mở → thấy toast và bài mới. |
 
-## 7. Câu hỏi để bạn chốt
+## 7. Câu hỏi để bạn chốt – chốt 2026-10-09 ("ok hết": dùng cột Đề xuất)
 
 | # | Câu hỏi | Đề xuất |
 |---|---|---|

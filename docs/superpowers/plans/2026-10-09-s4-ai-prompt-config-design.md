@@ -1,6 +1,6 @@
 # Thiết kế: prompt AI cấu hình được theo thời gian (Prompt Registry)
 
-> Trạng thái: **NHÁP, CHỜ DUYỆT**. Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (server + `admin-web`).
+> Trạng thái: **ĐÃ DUYỆT 2026-10-09**. Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (server + `admin-web`).
 > Áp dụng trước cho prompt `lesson.compose` (S4.1). Sau này dùng chung cho Stage 5 (`situation.compose`), S4.4 (`image.describe`), và có thể chuyển dần các prompt cũ (dịch, IPA, enrich, phân tích câu).
 > Thay cho hằng số `COMPOSE_PROMPT_VERSION` và env `COMPOSE_MODEL` trong plan S4.1.
 
@@ -358,7 +358,7 @@ Không thêm dependency (render là thay chuỗi; JSON Schema viết tay; lint b
 | DB vòng đời | Draft sửa được; bản đã bật không sửa được (409); bật khi chạy thử chưa pass → 409 trừ khi có lý do; rollback |
 | Admin Vitest (S4.2b) | Form sửa, lint hiển thị, xem trước, chạy thử (API giả lập), rollback |
 
-## 13. Câu hỏi để bạn chốt
+## 13. Câu hỏi để bạn chốt – chốt 2026-10-09 ("ok hết": dùng cột Đề xuất)
 
 | # | Câu hỏi | Đề xuất |
 |---|---|---|
