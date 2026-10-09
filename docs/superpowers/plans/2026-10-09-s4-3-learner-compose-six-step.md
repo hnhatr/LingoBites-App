@@ -6,7 +6,7 @@
 
 ## 1. Mục tiêu và phạm vi
 
-Trong một bài người học đang xem (bài tự tạo từ text / OCR / YouTube, hoặc bài chung dạng hub), người học bật chế độ **"Chọn câu để học 6 bước"**, tick 1–8 câu rồi bấm **"Học theo 6 bước"**. App chờ server sinh bài (khoảng 10–30 giây), sau đó mở **bài mới** (nhãn "AI tạo") trong player 6 bước. Bài mới nằm trong thư viện "Bài của tôi", có liên kết về bài gốc.
+Trong một bài người học đang xem (bài tự tạo từ text / OCR / YouTube, hoặc bài chung dạng hub), người học bật chế độ **"Chọn câu để học 6 bước"**, tick 2–8 câu rồi bấm **"Học theo 6 bước"**. App chờ server sinh bài (khoảng 10–30 giây), sau đó mở **bài mới** (nhãn "AI tạo") trong player 6 bước. Bài mới nằm trong thư viện "Bài của tôi", có liên kết về bài gốc.
 
 | Trong S4.3 | Ngoài S4.3 |
 |---|---|
@@ -23,7 +23,8 @@ Trong một bài người học đang xem (bài tự tạo từ text / OCR / You
 | # | Câu hỏi | Đề xuất |
 |---|---|---|
 | J1 | Bài nào người học được chọn câu | Bài người học đọc được: bài của chính họ (`origin = learner`) **và** bài chung đã publish **chưa có** 6 bước (không phải flow lesson). Bài đã là bài sinh ra thì không chọn tiếp. |
-| J2 | Giới hạn | 1 bài / ngày (H12). Trúng cache không tính lượt. Hết lượt: "Hôm nay bạn đã tạo đủ bài 6 bước. Mai thử lại nhé." Nút vẫn hiện để mở bài đã sinh trúng cache. |
+| J2 | Giới hạn | Theo từng tài khoản (H12; mặc định 1 / ngày). Chỉ lượt có gọi AI mới tính; trúng cache, bị lọc trước không tính. Màn chọn câu hiện "Còn N lượt hôm nay". Hết lượt: "Hôm nay bạn đã tạo đủ bài 6 bước. Mai thử lại nhé." Nút vẫn mở được bài đã sinh trúng cache. |
+| J8 | Câu lạc quẻ (H7) | - Lọc trước ngay trên app (cùng luật §3.1 S4.1): nút tắt kèm "Hãy chọn thêm câu có nội dung".<br>- Chọn các câu cách xa nhau (> 3 câu) → nhắc nhẹ "Nên chọn các câu liền nhau trong cùng đoạn", vẫn cho gửi.<br>- `COMPOSE_NOT_SUITABLE` → hiện `reason_vi` + `suggestion_vi`, **giữ nguyên lựa chọn** để người học sửa.<br>- Bài có câu bị bỏ → "Đã bỏ N câu không cùng tình huống".<br>- `situation_source = inferred` → chip "Tình huống do AI gợi ý" trên hub. |
 | J3 | Chờ kết quả | Poll `GET /v1/lesson-creations/:id` mỗi 2 giây, tối đa 60 giây trên màn; quá thì "Bài đang được tạo, sẽ có trong Bài của tôi"; kết quả về qua thư viện / poll lại khi mở app. |
 | J4 | Offline | Nút tắt khi không có mạng (giống tạo bài hiện nay). Bài đã sinh tải về chạy offline như bài khác. |
 | J5 | Tiến độ / lượt làm | Dùng nguyên `activity_attempts` kind `lesson` + `lesson_outcomes` (PR 8). Hiện `curriculum/outcomes/repository/lessonOutcomes.ts:35` **bỏ qua** bài `origin != admin`; đổi thành "bài có đặc tả" để bài sinh ra cũng ghi `practice_completed_at`. |
@@ -32,13 +33,14 @@ Trong một bài người học đang xem (bài tự tạo từ text / OCR / You
 
 ## 3. Server
 
-- `POST /v1/lessons/:id/compose`, body `{ sentence_ids: uuid[1..8] }`, header `Idempotency-Key`.
+- `POST /v1/lessons/:id/compose`, body `{ sentence_ids: uuid[2..8] }`, header `Idempotency-Key`.
   - Quyền: người học phải đọc được bài (J1). Bài của người khác → 404 như route đọc bài.
-  - 200 `{ lesson_id, cached: true }` | 202 `{ request_id }`. Lỗi: `COMPOSE_DISABLED` 403, `COMPOSE_LIMIT_REACHED` 429 (kèm `resets_at`), `COMPOSE_BUDGET_EXHAUSTED` 503, `COMPOSE_SENTENCES_INVALID` 400.
+  - 200 `{ lesson_id, cached: true }` | 202 `{ request_id }`. Lỗi: `COMPOSE_DISABLED` 403, `COMPOSE_LIMIT_REACHED` 429 (kèm `resets_at`, `limit`, `used`), `COMPOSE_SENTENCES_TOO_THIN` 400, `COMPOSE_BUDGET_EXHAUSTED` 503, `COMPOSE_SENTENCES_INVALID` 400.
   - Poll bằng `GET /v1/lesson-creations/:id` có sẵn; `failed` có `error_code` (và `reason_vi` khi `COMPOSE_NOT_SUITABLE`).
 - `postgresLessonDeliveryStore.ts:174`: thay `header.origin !== 'admin'` bằng "không có đặc tả" (bài người học **có** `can_do` / `situation` / task thì trả `spec`, `lesson_items`, `tasks`). Bài người học thường vẫn trả `spec: null, lesson_items: []` như cũ.
 - `lessonOutcomes.ts:35`: đổi `if (origin !== 'admin') continue` thành "bỏ qua khi bài không có đặc tả" (J5).
-- Header snapshot thêm `derived_from_lesson_id` (tuỳ chọn, nullable) và `generated: boolean` (`compose_key` khác null).
+- `GET /v1/lessons/:id/compose-quota` → `{ limit, used, resets_at }` cho dòng "Còn N lượt hôm nay".
+- Header snapshot thêm `situation_source` (nullable), `derived_from_lesson_id` (tuỳ chọn, nullable) và `generated: boolean` (`compose_key` khác null).
 - `/v1/capabilities`: `lessons.compose = { enabled }` (`LESSON_COMPOSE_ENABLED` và chưa vượt trần tháng).
 - ⚠️ **Đổi API public:** thêm trường vào snapshot (tuỳ chọn) và capabilities → làm mới fixture `valid-lesson-snapshot-*` và SHA, chép sang app trong 1 commit fixture.
 
@@ -63,7 +65,7 @@ Không thêm thư viện; dùng `YouTubePlayer`, client HTTP và poll có sẵn.
 
 | Repo | Nội dung |
 |---|---|
-| Server DB `learnerLessonCompose.test.ts` | 202 → bài learner `published`, owner đúng; snapshot của bài sinh ra có spec / items / tasks; bài learner thường vẫn `spec: null`; bài người khác 404; giới hạn ngày 429; cache 200 không tính lượt; `NOT_SUITABLE` không tính lượt; capability bật / tắt; push `activity_attempts` cho bài learner tính `practice_completed_at`. |
+| Server DB `learnerLessonCompose.test.ts` | 202 → bài learner `published`, owner đúng; snapshot của bài sinh ra có spec / items / tasks; bài learner thường vẫn `spec: null`; bài người khác 404; giới hạn ngày 429; cache 200 không tính lượt; `NOT_SUITABLE` **có** tính lượt (đã gọi AI); bị lọc trước không tính; giới hạn theo `users.compose_daily_limit`; capability bật / tắt; push `activity_attempts` cho bài learner tính `practice_completed_at`. |
 | App Jest | `isFlowLesson` cho bài learner có spec; `useCompose` các trạng thái (giả lập client); chế độ chọn câu giới hạn 8; `ListenRepeatActivity` có / không có đoạn video; hub hiện chip "AI tạo"; parse fixture snapshot mới. |
 | App kiểm tay (máy thật) | Tạo bài từ text → chọn 3 câu → học trọn 6 bước; bài YouTube → bước 2 phát đúng đoạn; tắt mạng sau khi tải bài → vẫn học được. |
 

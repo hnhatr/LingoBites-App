@@ -25,7 +25,7 @@ trình độ, đối tượng           ┘                                     
 |---|---|---|
 | `{{level}}` | Admin: mã level của unit đích. Người học: `A1` | 1 trong `Pre-A1`, `A1`, `A2`, `B1` |
 | `{{audience}}` | `lessons.audience` của bài gốc (`all` / `adult` / `child`) | |
-| `{{sentences}}` | Câu đã chọn: `id` ngắn (`s1`, `s2`…), `en`, `vi` | 1–8 câu, mỗi câu ≤ 300 ký tự |
+| `{{sentences}}` | Câu đã chọn: `id` ngắn (`s1`, `s2`…), `en`, `vi` | 2–8 câu, mỗi câu ≤ 300 ký tự |
 | `{{analysis_hints}}` | Từ vựng / ngữ pháp đã lưu của các câu đó (enrich hoặc phân tích khi bấm). Câu chưa có thì bỏ trống | ≤ 5 từ + 2 điểm ngữ pháp mỗi câu |
 | `{{catalog_items}}` | Item `published` trong danh mục có `normalizeItemKey` xuất hiện trong câu: `code`, `kind`, `text`, `meaning_vi` | ≤ 40 |
 
@@ -41,11 +41,21 @@ the tasks that show the learner can do it without help.
 Learner level: {{level}} (CEFR). Audience: {{audience}}.
 
 RULES
-1. Decide first whether these sentences can teach a real communication
-   situation (someone says something to someone, somewhere, to get something
-   done). Songs, news, lists of facts, or sentences with no speaker and listener
-   are NOT suitable. If not suitable, return only
-   { "suitable": false, "reason_vi": "<one short Vietnamese sentence>" }.
+1. Decide first which sentences belong to ONE communication situation
+   (someone says something to someone, somewhere, to get something done).
+   a. If some sentences do not fit that situation (another topic, a fragment
+      from somewhere else), leave them out: "used_sentence_ids" lists only the
+      sentences you keep, in their original order.
+   b. If the sentences describe or tell something but contain no dialogue, you
+      may choose ONE everyday situation in which a learner would naturally say
+      them (for example telling a friend about the weather) and set
+      "situation_source": "inferred". If the sentences already show who speaks
+      to whom, set "situation_source": "source".
+   c. If fewer than 2 sentences can be kept, or no everyday situation fits
+      (songs, poems, news, lists of facts, unrelated sentences), return only
+      { "suitable": false,
+        "reason_vi": "<one short Vietnamese sentence: why>",
+        "suggestion_vi": "<one short Vietnamese sentence: what to select instead>" }.
 2. Stay inside the language of the sentences. Do not teach words or structures
    above {{level}} that the sentences do not contain.
 3. "can_do": 1–2 Vietnamese sentences, each starting with an action verb the
@@ -87,6 +97,8 @@ CATALOG ITEMS (JSON, may be empty):
 Return ONLY one JSON object, no markdown:
 {
   "suitable": true,
+  "used_sentence_ids": [string],
+  "situation_source": "source" | "inferred",
   "can_do": [string],
   "situation": { "speaker": string, "listener": string, "place": string, "purpose": string },
   "items": [{ "code": string | null, "kind": "word" | "phrase", "text": string,
@@ -129,6 +141,8 @@ Ghi chú thiết kế:
 ```json
 {
   "suitable": true,
+  "used_sentence_ids": ["s1", "s2", "s3", "s4"],
+  "situation_source": "source",
   "can_do": ["Gọi một đồ uống kèm cỡ và hỏi giá ở quán cà phê."],
   "situation": { "speaker": "khách", "listener": "nhân viên", "place": "quán cà phê", "purpose": "gọi đồ uống và trả tiền" },
   "items": [
@@ -165,7 +179,15 @@ Ghi chú thiết kế:
 | 4 | `translation` / `multiple_choice` (luật PR 8), có gợi ý của `guided_task` |
 | 5 | `role_play` (B là người học) + task độc lập "Gọi đồ ở quầy nước ép", 4 tiêu chí mặc định |
 
-**Ví dụ không phù hợp:** 4 câu lời bài hát → `{ "suitable": false, "reason_vi": "Đoạn này là lời bài hát, không có tình huống giao tiếp để luyện." }`.
+**Các ví dụ lạc quẻ (cũng dùng làm fixture test):**
+
+| Câu chọn | Kết quả mong đợi |
+|---|---|
+| `Yeah.` · `Oh!` · `OK.` | Server chặn trước (`COMPOSE_SENTENCES_TOO_THIN`), **không gọi AI**, không tính lượt |
+| 4 câu lời bài hát | `{ "suitable": false, "reason_vi": "Đoạn này là lời bài hát, không có tình huống giao tiếp để luyện.", "suggestion_vi": "Hãy chọn một đoạn hội thoại trong bài." }` – có gọi AI nên **tính lượt** |
+| s1–s4 ở trên + `The Eiffel Tower is in Paris.` | `"used_sentence_ids": ["s1","s2","s3","s4"]`, bỏ câu về tháp Eiffel; app báo "Đã bỏ 1 câu không cùng tình huống" |
+| `The weather is hot today.` · `I like ice cream.` · `Let's go to the beach.` | `"situation_source": "inferred"`, tình huống "rủ bạn đi chơi khi trời nóng"; bài ghi nhãn "Tình huống do AI gợi ý" |
+| `Hi, what can I get for you?` · `The Eiffel Tower is in Paris.` | Giữ được < 2 câu cùng tình huống → `suitable: false` + gợi ý chọn thêm câu liền nhau |
 
 ## 5. Server kiểm gì sau khi nhận JSON
 
@@ -175,6 +197,7 @@ Ghi chú thiết kế:
 | `frame` parse được, tên slot khớp `slots`, mỗi slot 2–6 giá trị, biến thể dùng đúng slot | Gọi lại |
 | `code` khác null phải có trong CATALOG ITEMS đã gửi | Gọi lại |
 | `example_sentence_ids` thuộc `s1…sN` | Gọi lại |
+| `used_sentence_ids` ⊆ câu đã chọn, ≥ 2 câu, giữ thứ tự; `example_sentence_ids` ⊆ `used_sentence_ids` | Gọi lại |
 | `role_play` có lượt của người học; `pattern_index` hợp lệ; lượt người học có `pattern_index` khớp frame (`acceptedAnswers`) | Gọi lại |
 | Item `required` ≤ 5, tổng item ≤ 10 | Server tự cắt (giữ thứ tự), không gọi lại |
 | Validator (`checkLessonSpec`) sau khi dựng bài | Lỗi `COMPOSE_SPEC_INVALID`, không ghi, log rule |

@@ -6,7 +6,7 @@
 
 ## 1. Mục tiêu và phạm vi
 
-Admin mở một bài có câu (bài admin từ text / YouTube, hoặc bài người học xem qua `UserLessonPanel`), **tick chọn 1–8 câu**, bấm **"Sinh bài 6 bước"**, chọn unit đích. Server tạo **bài nháp** trong unit đó; admin sửa trên các tab có sẵn (Đặc tả, Item, Task, Hoạt động), preview 6 bước (bước 2 phát đúng đoạn video), rồi publish như bài thường.
+Admin mở một bài có câu (bài admin từ text / YouTube, hoặc bài người học xem qua `UserLessonPanel`), **tick chọn 2–8 câu**, bấm **"Sinh bài 6 bước"**, chọn unit đích. Server tạo **bài nháp** trong unit đó; admin sửa trên các tab có sẵn (Đặc tả, Item, Task, Hoạt động), preview 6 bước (bước 2 phát đúng đoạn video), rồi publish như bài thường.
 
 Đây cũng là cách "nhận về" bài người học làm nội dung chung (Q9): sinh từ bài người học → bài nháp của admin, người học vẫn giữ bài của mình.
 
@@ -28,12 +28,13 @@ Admin mở một bài có câu (bài admin từ text / YouTube, hoặc bài ngư
 | I3 | Sinh lại | Cùng nhóm câu + unit đã có bài sinh ra → hỏi "Mở bài đã sinh" hay "Sinh bản mới" (`force: true`). |
 | I4 | Vị trí bài mới | Cuối unit, `status = draft`. |
 | I5 | Quyền | Chỉ tài khoản admin có quyền ghi (`canMutate`), như các route admin khác. Ghi log `admin_actor` vào request (cột có sẵn). |
+| I8 | Giới hạn theo tài khoản (H12) | Trang chi tiết người dùng (`UserDetailPage`) có ô "Số bài 6 bước / ngày": để trống = mặc định hệ thống, `0` = khoá. Hiện số lượt đã dùng hôm nay. Ghi `admin_actor` vào log. Route `PATCH /v1/admin/users/:id` nhận thêm `compose_daily_limit`. |
 | I6 | Rà item AI | Lọc `source = ai` và `reviewed_at IS NULL`. Nút "Đánh dấu đã rà" ghi `reviewed_at = now()`. Sửa item AI qua editor có sẵn cũng tự ghi `reviewed_at`. Không chặn publish bài (item đã published). |
 | I7 | Video ở preview | `iframe` YouTube nhúng sẵn (`youtube-nocookie.com/embed/<id>?start=&end=`), không thêm thư viện. |
 
 ## 3. Server
 
-- `POST /v1/admin/lessons/:id/compose`, body `{ sentence_ids: uuid[1..8], unit_id: uuid, force?: boolean }`, header `Idempotency-Key`.
+- `POST /v1/admin/lessons/:id/compose`, body `{ sentence_ids: uuid[2..8], unit_id: uuid, force?: boolean }`, header `Idempotency-Key`.
   - 200 `{ lesson_id, cached: true }` khi trúng cache và không `force`.
   - 202 `{ request_id }` khi xếp hàng; poll `GET /v1/admin/lesson-creations/:id` (có sẵn), kết quả `succeeded` có `lesson_id`.
   - Lỗi: `COMPOSE_DISABLED` 403, `COMPOSE_SENTENCES_INVALID` 400, `LESSON_NOT_FOUND` 404, `UNIT_NOT_FOUND` 404, `COMPOSE_BUDGET_EXHAUSTED` 503, `IDEMPOTENCY_CONFLICT` 409.
