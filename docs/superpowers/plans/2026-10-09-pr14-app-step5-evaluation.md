@@ -1,6 +1,6 @@
 # PR 14 – App: chấm bước 5 (nói và viết)
 
-> Trạng thái: **CHỜ DUYỆT**. Chưa code.
+> Trạng thái: **ĐÃ CODE**: H1–H13 đã duyệt (2026-10-09). App `ddf73164` → `f92fef34` (7 commit). Xem §7 cho kết quả và các điểm lệch. **Chưa test trên máy thật** (§4).
 > Ngày lập: 2026-10-09. Repo: `LingoBites-App`. Nhánh: `claude/funny-archimedes-gmioda`.
 > Thuộc Giai đoạn 1 (`2026-10-09-phase1-stage3-plan.md` §6). Cần trước: PR 12, 13, 15 (server, đã code). Câu consent T4 đã OK.
 
@@ -107,3 +107,32 @@ Sau PR này, ở bước 5 (và nhiệm vụ tổng hợp, khi PR 16 có màn):
 - **Chỉ test tự động được phần logic.** Ghi âm, quyền micro, upload nền và cấu hình AAC 16 kHz cần **test tay trên máy thật** (§4).
 - **Bỏ qua phần nói** (H8) làm phần luyện chưa xong. Đây là có chủ đích (A13): nói lại sau mới tính.
 - **Hoãn 2.9** (H12): nhập vai nhiều lượt vẫn ghi một file cho cả đoạn.
+
+## 7. Kết quả code và điểm lệch so với plan
+
+**Kiểm tra cuối:**
+- `tsc` sạch;
+- `yarn lint`: 178/281 (không nâng ngân sách, không quy tắc nào vượt);
+- kiểm ranh giới module: không có vi phạm mới;
+- `yarn format:check`: chỉ còn `package.json` (lỗi có sẵn, file không đổi);
+- Jest: 2242 pass (trước 2206), 3 skip.
+
+**Chưa kiểm:** chưa test trên máy thật: ghi âm, quyền micro, upload nền, AAC 16 kHz, kết quả qua sync. Cần làm theo danh sách §4 trên staging, với tài khoản nội bộ có trong `SPEECH_EVALUATION_USER_IDS`.
+
+**Điểm lệch so với plan:**
+- **Thứ tự commit:**
+  - H11 (task `choose` ở bước 5) vào commit 3, bằng một luật trong `hintLadder`: task `independent` không có gợi ý nào. Bước 5 dạng chọn vì vậy chạy không gợi ý, app tự chấm (`rule`). Không có commit 5 riêng.
+  - Thêm 1 commit dọn format / lint.
+- **Task viết (`response_mode = write`) luôn gửi server chấm.** Không còn nhánh tự đánh giá cho câu viết. Mất mạng thì câu viết được giữ trên máy và tự gửi lại mỗi khi app trở lại màn hình chính (`initWrittenAnswerQueue` trong `App.tsx`), không phải theo lần sync.
+- **Server từ chối câu viết** (4xx, ví dụ bài bị xoá): bỏ câu trả lời, màn hình hiện "Chưa chấm được lượt này", cho làm lại.
+- **`RecorderControls`** nhận được bộ ghi của component cha.
+- **`useSelfCheckRecorder`** có thêm:
+  - `forGrading`: ghi bằng cấu hình bài tập;
+  - `maxMs`: tự dừng sau 45 giây;
+  - `release()`: giao file cho hàng đợi upload, không xoá khi rời màn.
+- **Danh sách bản ghi luyện nói** (`listSpeakingRecordings`) không còn trả bản ghi `lesson_task`.
+- **Client recordings** có thêm tuỳ chọn `consent` (`upload` / `evaluation`). Bản ghi luyện nói vẫn gọi y như cũ.
+- **Dòng Cài đặt "Chấm bài nói bằng máy"** viết chữ tiếng Việt trực tiếp, như dòng bản ghi có sẵn bên cạnh (chưa qua i18n). Tắt thì xoá các câu nói **chưa upload**; câu đã upload vẫn chờ kết quả.
+- **Nhiệm vụ tổng hợp:** hàm gửi chấm đã nhận đích `unit_id + task_id`, nhưng chưa có màn (PR 16).
+- **H12** (ghi âm từng lượt nhập vai): hoãn như đã duyệt.
+
