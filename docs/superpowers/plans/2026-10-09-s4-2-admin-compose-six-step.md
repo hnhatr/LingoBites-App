@@ -106,7 +106,7 @@ Không thêm dependency.
 |---|---|---|---|
 | M1 | Bài trả `derived_from: { lesson_id, title }` | Trả `derivedFromLessonId` (+ `situationSource`); banner tự lấy tiêu đề bài gốc | Giữ bản ghi bài phẳng như các trường hiện có; không thêm join. |
 | M2 | `PATCH /v1/admin/users/:id` nhận `compose_daily_limit` (I8) | Route con riêng `GET` / `PATCH /v1/admin/users/:id/compose-quota`, trả cả số lượt đã dùng hôm nay | Không đụng route người dùng hiện có; trang người dùng đọc được "đã dùng / giới hạn". |
-| M3 | Trang unit có dòng "Đang sinh: N bài" (thiết kế chờ §4) | **Chưa làm**; đóng dialog khi đang chạy thì trang bài hiện ghi chú "bài nháp sẽ xuất hiện trong unit khi xong" | Tách khỏi S4.2 cho gọn; làm cùng S4.2b nếu cần. |
+| M3 | Trang unit có dòng "Đang sinh: N bài" (thiết kế chờ §4) | Chưa làm trong S4.2; **đã làm trong S4.2b** (K6) | Tách khỏi S4.2 cho gọn. |
 | M4 | Rủi ro CSP | ⚠️ Thêm `frame-src https://www.youtube-nocookie.com` vào CSP của admin SPA (chỉ nguồn này) | Không có thì iframe preview bị chặn. |
 | M5 | Không có | Item do admin **tạo** cũng ghi `reviewed_at` ngay; "Đã rà" không đổi `updated_at` | Bộ lọc "chưa rà" chỉ còn item AI; rà không phải sửa nội dung nên không đẩy bài lên bản mới. |
 | M6 | Lỗi: 403, 400, 404, 503, 409 | Thêm `COMPOSE_ALREADY_DERIVED` (409) khi chọn câu trong bài đã là bài sinh ra | I1: không sinh lồng. |

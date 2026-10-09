@@ -1,6 +1,6 @@
 # S4.2b – Server + admin-web: trang "Prompt AI"
 
-> Trạng thái: **CHỜ DUYỆT**. Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (server + `admin-web`). Nhánh: `claude/affectionate-darwin-krszil`.
+> Trạng thái: **ĐÃ CODE 2026-10-09** (xem §8). Duyệt 2026-10-09 ("Duyệt hết": dùng cột Đề xuất K1–K8). Ngày lập: 2026-10-09. Repo: `LingoBites-Server` (server + `admin-web`). Nhánh: `claude/affectionate-darwin-krszil`.
 > Dựa trên thiết kế đã duyệt `2026-10-09-s4-ai-prompt-config-design.md` §6, §8, §9 (R1–R4). Backend kho prompt đã có từ S4.1 (`promptStore`, `promptRuntime`, `tryComposeVersion`, script `yarn ai-prompt`); S4.2b đưa các việc đó lên trang admin.
 
 ## 1. Mục tiêu và phạm vi
@@ -104,3 +104,48 @@ Lệnh: `yarn test`, `yarn test:db`, `yarn typecheck`, `yarn format`, `yarn admi
 | Chạy thử tốn tiền | 10 lần / giờ, tính vào trần tháng; mock khi `AI_PROVIDER=mock`. |
 | Chạy thử nền mất khi server khởi động lại | Ca đã xong vẫn lưu; trang báo "đã dừng", bấm chạy lại. |
 | Nhiều instance server: cờ "đang chạy" nằm trong bộ nhớ | Hiện chỉ một instance; nếu thêm instance thì chuyển sang hàng đợi (ghi vào backlog). |
+
+## 8. Kết quả code và điểm lệch so với plan
+
+> Code ngày 2026-10-09, server `5d02a6b` → `ca2175c` (nhánh `claude/affectionate-darwin-krszil`). Chưa mở PR. Không thêm migration, không thêm dependency.
+
+**Đã làm**
+
+| Phần | File chính |
+|---|---|
+| 13 operation `/v1/admin/ai-prompts/*` (danh sách, chi tiết + số liệu, phiên bản, tạo / sửa nháp, lint, xem trước, chạy thử nền, kết quả chạy thử, bật / bật lại, ca mẫu) | `aiPrompts/controller/aiPromptRoutes.ts`, `aiPrompts/service/promptAdminService.ts` |
+| Store: danh sách prompt, kết quả mới nhất mỗi ca, đếm lượt chạy thử trong 1 giờ, dọn `raw_output` > 30 ngày, thêm / sửa ca mẫu, số liệu theo phiên bản (`percentile_cont`) | `aiPrompts/repository/promptStore.ts` |
+| Form tham số đọc trần cứng từ chính zod schema | `common/ai/prompts/paramFields.ts` |
+| Một `promptRuntime` dùng chung cho worker compose và trang admin → bật bản mới xoá cache 60 giây ngay | `app/server.ts` |
+| `GET /v1/admin/units/:id/compose-running` (K6) | `composer/controller/composeRoutes.ts` |
+| Admin-web: menu "Prompt AI"; trang danh sách; trang prompt (phiên bản, số liệu + cảnh báo ngưỡng §8, "Tạo bản mới từ bản này", "Bật lại", ca mẫu); trang phiên bản (3 ô template, tham số có min / max, model, temperature, token tối đa, ví dụ JSON, ghi chú bắt buộc, lint khi gõ; tab Xem trước; tab Chạy thử có cột bản đang bật; nút Bật, bắt ghi lý do khi chưa đạt hết ca) | `routes/AiPrompt*Page.tsx`, `components/aiPrompts/*`, `AdminShell.tsx`, `App.tsx`, `api/*` |
+| Dòng "Đang sinh: N bài" ở khung bài của unit (trang Curriculum) và trang sửa unit; tự tải lại danh sách bài khi số giảm | `components/lesson/UnitComposeRunning.tsx`, `CurriculumPage.tsx`, `UnitEditPage.tsx` |
+
+**Điểm lệch**
+
+| # | Plan | Đã làm | Lý do |
+|---|---|---|---|
+| P1 | K2: 10 lượt chạy thử / giờ | Đếm theo số bản ghi chạy thử: trong 60 phút qua tối đa 10 × số ca đang dùng | Không cần cột "lượt" mới (không migration); một lượt bấm = một bản ghi mỗi ca. |
+| P2 | R3: chạy thử tính vào trần chi phí tháng | ⚠️ `aiCallsThisMonth` nay cộng thêm số bản ghi chạy thử trong tháng (1 bản ghi = 1 lần gọi); hết ngân sách thì chạy thử trả 429 | S4.1 chưa tính phần này. Ảnh hưởng cả giới hạn compose của người học khi admin chạy thử nhiều. |
+| P3 | — | Nút "Tạo bản nháp từ bản mặc định" (khi DB chưa có phiên bản nào vẫn sửa được) | Môi trường mới chưa seed thì trang không còn bị "kẹt". |
+| P4 | Xem trước bản đang gõ | Xem trước dùng **bản đã lưu** | Route preview theo id phiên bản; lint khi gõ vẫn kiểm bản đang gõ. |
+| P5 | OpenAPI tăng khoảng 13 path / 15 operation | Tăng 15 path / 17 operation (gồm 3 đường dẫn trang SPA) | Đếm thật trong `openApiDocument.test.ts`. |
+| P6 | — | Sửa lỗi tranh chấp: kết quả chạy thử đọc cờ "đang chạy" **trước** khi đọc các ca | Không thì lượt vừa xong có thể trông như đã xong mà thiếu ca cuối (test bắt được). |
+| P7 | — | AI giả lập chỉ đạt 2/6 ca mẫu (không nhận ra lời bài hát, câu lạc quẻ) | Test DB ghi kết quả "đạt" thay AI thật; E2E bật kèm lý do. Cần chạy thử với AI thật trên staging. |
+| P8 | Log không chứa nội dung prompt | Log kiểm toán của route chỉ có id + admin; nhưng **log truy cập có sẵn** của server vẫn ghi body request (gồm template) | Template và ca mẫu không có dữ liệu người học. Không đổi logger chung (ngoài phạm vi). |
+
+**Kiểm tra đã chạy (2026-10-09, Postgres 16 local)**
+
+| Lệnh | Kết quả | Trước S4.2b |
+|---|---|---|
+| `yarn test` | 462 pass, 0 fail | 462 |
+| `yarn test:db` (thêm `aiPromptRoutes.test.ts`) | 252 pass, 0 fail | 251 |
+| `yarn admin-web:test` (Vitest) | 182 / 182 (thêm `AiPromptPages.test.tsx`) | 174 |
+| Playwright `e2e/` | 18 / 18 (thêm `ai-prompts.spec.ts`) | 17 |
+| `yarn typecheck`, `yarn format` | xanh | xanh |
+| `eslint src test` | còn 1 lỗi **có sẵn** `test/ipa.test.ts:84` | như cũ |
+
+Playwright chạy bằng Chromium có sẵn qua một config tạm (đã xoá, không commit).
+
+**Chưa kiểm được:** chạy thử với AI thật (không có key) — cần thử trên staging trước khi bật bản mới cho người dùng thật.
+
