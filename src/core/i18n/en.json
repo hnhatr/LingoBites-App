@@ -902,5 +902,24 @@
       "source_open_hint": "Opens the lesson to see this word in context"
     },
     "practice_a11y": "Quick practice for {{title}}"
+  },
+  "itemReview": {
+    "title": "Review learned items",
+    "progress": "{{current}}/{{total}}",
+    "reveal": "Tap to see the meaning",
+    "reveal_hint": "Shows or hides the Vietnamese meaning",
+    "listen": "Listen",
+    "listen_hint": "Reads this item aloud",
+    "remembered": "Remembered",
+    "remembered_hint": "You remembered what this means",
+    "forgot": "Not yet",
+    "forgot_hint": "You did not remember what this means",
+    "save_failed": "Could not save, please try again.",
+    "empty": "Nothing left to review today.",
+    "done": "Today's review is done!",
+    "summary": "Remembered {{correct}} · not yet {{incorrect}}",
+    "missing": "{{count}} items need their lesson downloaded again",
+    "back": "Back",
+    "back_hint": "Leaves the review"
   }
 }

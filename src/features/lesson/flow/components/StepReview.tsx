@@ -3,8 +3,10 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {
+  dueItemCodes,
   getDueFlashcardsByItemKeys,
   recordFlashcardRating,
+  recordItemReview,
 } from '@features/review';
 import {requestSync} from '@features/sync';
 
@@ -37,6 +39,14 @@ function readDueCards(snapshot: LessonSnapshot): FlashcardRecord[] {
   }
 }
 
+function readDueItems(snapshot: LessonSnapshot): Set<string> {
+  try {
+    return dueItemCodes(lessonItemCodes(snapshot));
+  } catch {
+    return new Set();
+  }
+}
+
 /**
  * Step 1 "Ôn liên quan" (decision G5): prerequisite lessons, the items this
  * lesson builds on and lesson items whose cards are due. Due cards are rated
@@ -51,9 +61,10 @@ export function StepReview({
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [dueCards] = useState(() => readDueCards(snapshot));
+  const [dueItems] = useState(() => readDueItems(snapshot));
   const rows = useMemo(
-    () => relatedReviewRows(snapshot, dueCards),
-    [snapshot, dueCards],
+    () => relatedReviewRows(snapshot, dueCards, dueItems),
+    [snapshot, dueCards, dueItems],
   );
   const prerequisites = snapshot.spec?.prerequisites ?? [];
 
@@ -104,10 +115,22 @@ function ReviewCard({
   const [rated, setRated] = useState<ReviewRating | null>(null);
   const [failed, setFailed] = useState(false);
 
+  const [shownAt] = useState(() => Date.now());
   const rate = (rating: ReviewRating) => {
-    if (!row.dueCard || rated) return;
-    const result = recordFlashcardRating({flashcardId: row.dueCard.id, rating});
-    if (!result.ok) {
+    if (rated) return;
+    let ok = false;
+    if (row.dueItem) {
+      ok = recordItemReview({
+        itemCode: row.item.code,
+        result: rating === 'remembered' ? 'correct' : 'incorrect',
+        durationMs: Math.min(Date.now() - shownAt, 3_600_000),
+      });
+    } else if (row.dueCard) {
+      ok = recordFlashcardRating({flashcardId: row.dueCard.id, rating}).ok;
+    } else {
+      return;
+    }
+    if (!ok) {
       setFailed(true);
       return;
     }
@@ -138,7 +161,7 @@ function ReviewCard({
           onPress={() => onSpeakText(row.item.text)}
         />
       </View>
-      {row.dueCard ? (
+      {row.dueCard || row.dueItem ? (
         rated ? (
           <AppText
             color="secondary"

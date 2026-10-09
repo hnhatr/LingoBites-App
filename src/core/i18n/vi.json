@@ -902,5 +902,24 @@
       "source_open_hint": "Mở bài học để xem từ này trong ngữ cảnh"
     },
     "practice_a11y": "Luyện tập nhanh bài {{title}}"
+  },
+  "itemReview": {
+    "title": "Ôn từ đã học",
+    "progress": "{{current}}/{{total}}",
+    "reveal": "Chạm để xem nghĩa",
+    "reveal_hint": "Hiện hoặc ẩn nghĩa tiếng Việt",
+    "listen": "Nghe",
+    "listen_hint": "Đọc to từ này",
+    "remembered": "Nhớ",
+    "remembered_hint": "Bạn nhớ nghĩa của từ này",
+    "forgot": "Chưa nhớ",
+    "forgot_hint": "Bạn chưa nhớ nghĩa của từ này",
+    "save_failed": "Chưa lưu được, thử lại nhé.",
+    "empty": "Hôm nay không còn từ nào cần ôn.",
+    "done": "Xong phần ôn hôm nay!",
+    "summary": "Nhớ {{correct}} · chưa nhớ {{incorrect}}",
+    "missing": "{{count}} từ cần tải lại bài để ôn",
+    "back": "Quay lại",
+    "back_hint": "Rời màn ôn"
   }
 }

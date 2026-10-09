@@ -34,4 +34,11 @@ describe('related review (step 1, decision G5)', () => {
     ]);
     expect(lessonItemCodes(lesson)).toContain('pattern:can-i-have');
   });
+
+  it('adds lesson items due on the Server schedule (PR 16)', () => {
+    const rows = relatedReviewRows(snapshot, [], new Set(['word:milk']));
+    expect(rows.map(row => [row.item.code, row.dueItem])).toEqual([
+      ['word:milk', true],
+    ]);
+  });
 });

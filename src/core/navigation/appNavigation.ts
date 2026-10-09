@@ -81,6 +81,8 @@ export interface AppNavigation {
    */
   finishCreate(lessonId: string): void;
   openReview(): void;
+  /** PR 16: today's lesson items on the Server's review schedule. */
+  openItemReview(): void;
   /** Open a quick-practice quiz generated from one downloaded lesson. */
   openPractice(lessonId: string): void;
   /**

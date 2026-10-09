@@ -44,6 +44,7 @@ describe('createAppNavigation (root-stack adapter)', () => {
     nav.openLibrarySection('publicVideo');
     nav.openVideoHub();
     nav.openReview();
+    nav.openItemReview();
     nav.openToday();
     nav.openSpeakingRoom();
     nav.openShadowing();
@@ -55,6 +56,7 @@ describe('createAppNavigation (root-stack adapter)', () => {
       ['LibraryList', {section: 'publicVideo'}],
       ['VideoHub', undefined],
       ['DailyReview', undefined],
+      ['ItemReview', undefined],
       ['Today', undefined],
       ['SpeakingRoom', undefined],
       ['ShadowingLessonPicker', undefined],
