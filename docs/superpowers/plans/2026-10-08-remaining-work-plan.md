@@ -21,7 +21,7 @@
 
 **Nhánh:**
 - Nền phát triển là **`develop`**. **Không merge vào `main`** (bản ổn định).
-- Nhánh làm việc của cả hai repo: `claude/optimistic-bell-mfgk44`, tạo từ `develop`.
+- Nhánh làm việc của cả hai repo: `claude/optimistic-bell-mfgk44` (PR 1–11), từ Giai đoạn 1 là `claude/funny-archimedes-gmioda`, tạo từ `develop`.
 - Khi PR trước đã merge, tạo lại nhánh từ `develop` mới nhất rồi làm tiếp.
 
 ---
@@ -35,7 +35,7 @@
    - dependency mới, nếu có.
 2. **Chờ duyệt** ("ok") rồi mới code.
 3. Code theo commit nhỏ. Trước khi push, chạy các bước kiểm (mục 2.1).
-4. Push lên `claude/optimistic-bell-mfgk44`.
+4. Push lên nhánh làm việc hiện tại (mục 1).
 5. Đánh dấu plan **"ĐÃ CODE"**, thêm mục **"Điểm lệch so với plan"**.
 6. Ghi vào báo cáo phiên `.ai-logs/reports/<session_id>.md`.
 7. Mở pull request vào `develop` khi được yêu cầu.
@@ -456,14 +456,14 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] Staging chạy migration mới + seed
 
 **Giai đoạn 1 – Stage 3**
-- [ ] PR 12 – bộ chấm + kết quả (server)
-- [ ] PR 13 – âm thanh vào server
+- [x] PR 12 – bộ chấm + kết quả (server) — đã code, chưa mở pull request (plan: `2026-10-09-phase1-stage3-plan.md` §4)
+- [x] PR 13 – âm thanh vào server — đã code, chưa mở pull request (plan: `2026-10-09-pr13-server-audio-stt.md`)
 - [ ] Team: ghi bộ 40 bản ghi có nhãn (T2), viết mục giọng nói trong chính sách + khai báo store (T4)
 - [ ] Đo độ chính xác: chấm oan < 10%, bật flag `speechEvaluation`
-- [ ] PR 14 – app chấm bước 5
-- [ ] PR 15 – đạt bài, đạt unit, ghi nhớ (server)
-- [ ] PR 16 – app kết quả, tiến độ, ôn
-- [ ] PR 17 – admin
+- [x] PR 14 – app chấm bước 5 — đã code, chưa test trên máy thật, chưa mở pull request (plan: `2026-10-09-pr14-app-step5-evaluation.md`)
+- [x] PR 15 – đạt bài, đạt unit, ghi nhớ (server) — đã code, chưa mở pull request (plan: `2026-10-09-pr15-server-pass-unit-memory.md`)
+- [x] PR 16 – app kết quả, tiến độ, ôn (+ route server `GET /v1/units/:unitId/summative-task`) — đã code, chưa test trên máy thật, chưa mở pull request (plan: `2026-10-09-pr16-app-result-progress-review.md`)
+- [x] PR 17 – admin (cấu hình chấm, lượt chấm, nghe lại có log, thống kê, preview thử chấm, cảnh báo B13) — đã code, chưa mở pull request (plan: `2026-10-09-pr17-admin-evaluation.md`)
 
 **Giai đoạn 2**
 - [ ] Bước 0 chốt cấu hình

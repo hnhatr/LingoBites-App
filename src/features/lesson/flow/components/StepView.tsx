@@ -15,9 +15,10 @@ import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 import {CanonicalBlockView} from '../../player/components/CanonicalBlockView';
 import {flowActivity, type FlowItems, flowTask} from '../logic/flowContent';
 import {isIndependentBlock} from '../logic/independent';
+import {isSpeakingActivity} from '../logic/noSpeaking';
 import {blocksOfStep} from '../logic/practiceCompletion';
 import {ActivityRunner} from './ActivityRunner';
-import {IndependentTaskView} from './IndependentTaskView';
+import {type GradedAttempt, IndependentTaskView} from './IndependentTaskView';
 
 export type StepViewProps = {
   snapshot: LessonSnapshot;
@@ -30,7 +31,12 @@ export type StepViewProps = {
     outcome: LessonAttemptOutcome,
     supportLevel: LessonSupportLevel,
     durationMs: number,
+    graded?: GradedAttempt,
   ) => boolean;
+  /** PR 14: open a practice step from a step-5 result. */
+  onOpenStep?: (step: number) => void;
+  /** PR 14 (decision H8): speaking is off for now. */
+  speakingOff?: boolean;
 };
 
 /** Newest outcome per block (attempts are listed newest first). */
@@ -54,6 +60,8 @@ export function StepView({
   attempts,
   onSpeakText,
   onFinished,
+  onOpenStep,
+  speakingOff = false,
 }: StepViewProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -86,11 +94,13 @@ export function StepView({
               items={items}
               key={block.id}
               latestOutcome={latest.get(block.id) ?? null}
-              onFinished={(outcome, supportLevel, durationMs) =>
-                onFinished(block, outcome, supportLevel, durationMs)
+              onFinished={(outcome, supportLevel, durationMs, graded) =>
+                onFinished(block, outcome, supportLevel, durationMs, graded)
               }
+              onPracticeRelated={onOpenStep ? () => onOpenStep(3) : undefined}
               snapshot={snapshot}
               task={task}
+              writeInstead={speakingOff && task.response_mode === 'speak'}
             />
           );
         }
@@ -101,6 +111,7 @@ export function StepView({
             items={items}
             key={block.id}
             latestOutcome={latest.get(block.id) ?? null}
+            speakingOff={speakingOff && isSpeakingActivity(activity.kind)}
             task={task}
             youtubeVideoId={snapshot.youtube?.video_id ?? null}
             onFinished={(outcome, supportLevel, durationMs) =>

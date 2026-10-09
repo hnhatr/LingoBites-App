@@ -1,0 +1,80 @@
+{
+  "request_id": "11111111-1111-4111-8111-111111111112",
+  "status": "success",
+  "contract_version": 2,
+  "records": [
+    {
+      "collection": "evaluations",
+      "entity_id": "99999999-9999-4999-8999-999999999911",
+      "payload": {
+        "attempt_id": "99999999-9999-4999-8999-999999999911",
+        "lesson_id": "33333333-3333-4333-8333-333333333303",
+        "unit_id": null,
+        "block_id": "44444444-4444-4444-8444-444444444415",
+        "task_id": "66666666-6666-4666-8666-666666666603",
+        "source": "text",
+        "substitute": false,
+        "support_level": "none",
+        "outcome": "pass_independent",
+        "criteria": {
+          "purpose": { "passed": true, "score": 1, "required": true },
+          "content": { "passed": true, "score": 1, "required": true },
+          "clarity": { "passed": true, "score": 1, "required": true },
+          "independence": { "passed": true, "score": null, "required": true }
+        },
+        "errors": [],
+        "primary_issue": null,
+        "missing_words": [],
+        "reference_en": "Can I have a sandwich, please?",
+        "unscorable_reason": null,
+        "scorer_version": 1,
+        "evaluated_at": "2026-10-09T03:20:01.000Z"
+      },
+      "revision": 41,
+      "occurred_at": "2026-10-09T03:20:01.000Z",
+      "updated_at": "2026-10-09T03:20:01.000Z",
+      "tombstone": false
+    },
+    {
+      "collection": "evaluations",
+      "entity_id": "99999999-9999-4999-8999-999999999913",
+      "payload": {
+        "attempt_id": "99999999-9999-4999-8999-999999999913",
+        "lesson_id": "33333333-3333-4333-8333-333333333301",
+        "unit_id": null,
+        "block_id": "44444444-4444-4444-8444-444444444405",
+        "task_id": "66666666-6666-4666-8666-666666666601",
+        "source": "text",
+        "substitute": true,
+        "support_level": "none",
+        "outcome": "fail",
+        "criteria": {
+          "purpose": { "passed": false, "score": 0, "required": true },
+          "content": { "passed": false, "score": 0.333, "required": true },
+          "clarity": { "passed": false, "score": 0.25, "required": true },
+          "independence": { "passed": true, "score": null, "required": true }
+        },
+        "errors": [
+          {
+            "item_code": "pattern:can-i-have",
+            "code": "blunt_i_want",
+            "severity": "tolerated",
+            "feedback_vi": "Thử \"Can I have…\" hoặc \"I'd like…\" cho lịch sự hơn."
+          }
+        ],
+        "primary_issue": { "kind": "criterion", "criterion": "purpose" },
+        "missing_words": ["could", "get", "a", "small"],
+        "reference_en": "Could I get a small coffee?",
+        "unscorable_reason": null,
+        "scorer_version": 1,
+        "evaluated_at": "2026-10-09T03:30:01.000Z"
+      },
+      "revision": 43,
+      "occurred_at": "2026-10-09T03:30:01.000Z",
+      "updated_at": "2026-10-09T03:30:01.000Z",
+      "tombstone": false
+    }
+  ],
+  "next_cursor": "djE6NDM",
+  "has_more": false
+}

@@ -3,12 +3,17 @@ import {AppState, type AppStateStatus} from 'react-native';
 import {getDatabase, withTransaction} from '@core/db/database';
 import {vocabularyItemKey} from '@core/learning';
 import {deleteLocalFiles} from '@core/localData/localFileCleanup';
+import {EVALUATIONS_COLLECTION} from '@core/schemas/evaluation';
 import {
   LessonProgressStatePayloadSchema,
   SyncCollectionSchema,
   type SyncPullRecord,
   type SyncRecord,
 } from '@core/schemas/sync';
+import {
+  applyLearningOutcomeRecord,
+  isLearningOutcomeCollection,
+} from '@core/sync/learningOutcomes';
 import {
   applyLessonBookmarkRecord,
   LESSON_BOOKMARKS_EVENT_TYPE,
@@ -21,6 +26,7 @@ import {
   applySpeakingAttemptRecord,
   SPEAKING_ATTEMPTS_EVENT_TYPE,
 } from '@core/sync/speakingAttempts';
+import {applyEvaluationRecord} from '@core/sync/taskAnswers';
 
 import {markSyncedNow} from './lastSync';
 import {syncPull} from './syncClient';
@@ -247,6 +253,16 @@ export function applySyncRecord(
   }
   if (record.collection === LESSON_BOOKMARKS_EVENT_TYPE) {
     applyLessonBookmarkRecord(record);
+    return;
+  }
+  // PR 14: read-only results of the Server's scorer.
+  if (record.collection === EVALUATIONS_COLLECTION) {
+    applyEvaluationRecord(record);
+    return;
+  }
+  // PR 16: read-only lesson / unit outcomes and the item review schedule.
+  if (isLearningOutcomeCollection(record.collection)) {
+    applyLearningOutcomeRecord(record);
     return;
   }
   if (!SyncCollectionSchema.safeParse(record.collection).success) {

@@ -26,6 +26,7 @@ import {StepResult} from '../components/StepResult';
 import {StepReview} from '../components/StepReview';
 import {StepView} from '../components/StepView';
 import {flowActivity, flowItems} from '../logic/flowContent';
+import {useNoSpeaking} from '../logic/noSpeaking';
 import {
   blocksOfStep,
   type FlowStep,
@@ -61,6 +62,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const runnable = snapshot !== null && isFlowLesson(snapshot);
   const flow = useLessonFlow(lessonId, runnable ? snapshot : null);
+  const noSpeaking = useNoSpeaking();
   const items = useMemo(
     () => (snapshot ? flowItems(snapshot) : new Map()),
     [snapshot],
@@ -90,7 +92,8 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
       outcome: LessonAttemptOutcome,
       supportLevel: LessonSupportLevel,
       durationMs: number,
-    ) => finishActivity({block, outcome, supportLevel, durationMs}),
+      graded?: {attemptId: string; recordingClientId?: string},
+    ) => finishActivity({block, outcome, supportLevel, durationMs, graded}),
     [finishActivity],
   );
 
@@ -170,6 +173,33 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             label: t(STEP_LABEL_KEYS[step]),
           })}
         </AppText>
+        {step >= 3 && step <= 5 ? (
+          noSpeaking.active ? (
+            <View
+              style={themedStyles.noSpeaking}
+              testID="lesson-flow-no-speaking"
+            >
+              <AppText color="secondary" style={themedStyles.flex}>
+                {t('lessonFlow.no_speaking_active')}
+              </AppText>
+              <AppButton
+                accessibilityHint={t('lessonFlow.can_speak_again')}
+                onPress={noSpeaking.stop}
+                testID="lesson-flow-can-speak"
+                title={t('lessonFlow.can_speak_again')}
+                variant="ghost"
+              />
+            </View>
+          ) : (
+            <AppButton
+              accessibilityHint={t('lessonFlow.no_speaking_hint')}
+              onPress={noSpeaking.start}
+              testID="lesson-flow-cannot-speak"
+              title={t('lessonFlow.no_speaking')}
+              variant="ghost"
+            />
+          )
+        ) : null}
         {step === 1 ? (
           <StepReview
             onOpenLesson={appNavigation.openLesson}
@@ -191,6 +221,8 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             attempts={flow.attempts}
             items={items}
             onFinished={handleFinished}
+            onOpenStep={next => openStep(next as FlowStep)}
+            speakingOff={noSpeaking.active}
             onSpeakText={handleSpeak}
             snapshot={snapshot}
             step={step}
@@ -253,6 +285,11 @@ function makeStyles(theme: AppTheme) {
     },
     flex: {
       flex: 1,
+    },
+    noSpeaking: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
     },
     nav: {
       flexDirection: 'row',

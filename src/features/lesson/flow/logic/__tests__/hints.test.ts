@@ -29,10 +29,14 @@ describe('hint ladder (PR 11 G1, G8)', () => {
     ]);
   });
 
+  it('independent use (step 5) has no hints at all (PR 14 H11)', () => {
+    expect(hintLadder({task: independent, model: MODEL})).toEqual([]);
+  });
+
   it('falls back to three fixed levels like the admin preview', () => {
     expect(
       hintLadder({
-        task: independent,
+        task: {...guided, hint_levels: []},
         model: MODEL,
         frame: 'Can I have a {size} {drink}, please?',
       }),

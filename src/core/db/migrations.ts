@@ -11,7 +11,7 @@ import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
  * (`UPGRADE_STEPS`) on top of the baseline version; the baseline statements
  * always create the latest shape.
  */
-export const APP_SCHEMA_VERSION = 8;
+export const APP_SCHEMA_VERSION = 10;
 
 /** The version the baseline was folded at; older databases are reset. */
 export const BASELINE_SCHEMA_VERSION = 7;
@@ -51,6 +51,69 @@ const ACTIVITY_ATTEMPTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_activity_attempt
     ON activity_attempts (lesson_id, occurred_at DESC);`;
 
 /**
+ * `task_answers` (v9, PR 14): one row per step-5 or summative answer sent to
+ * the Server's scorer. The attempt itself stays in `activity_attempts`
+ * (`pending` / `service`); this row knows the target, whether the answer
+ * was spoken or written (and written instead of spoken), the recording
+ * that carries a spoken one, and the result once it arrives. `pending_text`
+ * holds a written answer only while it waits for the network; it is
+ * cleared as soon as the answer is sent.
+ */
+const TASK_ANSWERS_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS task_answers (
+    attempt_id TEXT PRIMARY KEY NOT NULL,
+    owner_user_id TEXT,
+    lesson_id TEXT,
+    block_id TEXT,
+    unit_id TEXT,
+    task_id TEXT,
+    source TEXT NOT NULL,
+    substitute INTEGER NOT NULL DEFAULT 0,
+    support_level TEXT NOT NULL DEFAULT 'none',
+    recording_id TEXT,
+    pending_text TEXT,
+    state TEXT NOT NULL,
+    evaluation_json TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE INDEX IF NOT EXISTS idx_task_answers_block
+    ON task_answers (block_id, created_at DESC);`,
+];
+
+/**
+ * Learning outcomes (v10, PR 16): local copies of the Server's read-only
+ * `lesson_outcomes`, `unit_outcomes` and `item_memory` collections. Rows come
+ * from sync pulls; `item_memory` is also moved ahead on the device right
+ * after a review, until the next pull brings the Server's row.
+ */
+const LEARNING_OUTCOMES_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS lesson_outcomes (
+    lesson_id TEXT PRIMARY KEY NOT NULL,
+    practice_completed_at TEXT,
+    passed_at TEXT,
+    passed_by TEXT,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE TABLE IF NOT EXISTS unit_outcomes (
+    unit_id TEXT PRIMARY KEY NOT NULL,
+    summative_unlocked_at TEXT,
+    passed_at TEXT,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE TABLE IF NOT EXISTS item_memory (
+    item_code TEXT PRIMARY KEY NOT NULL,
+    stage INTEGER NOT NULL,
+    due_at TEXT NOT NULL,
+    stable_at TEXT,
+    last_result TEXT,
+    last_reviewed_at TEXT,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE INDEX IF NOT EXISTS idx_item_memory_due ON item_memory (due_at);`,
+];
+
+/**
  * Upgrade steps keyed by the version they start from; each runs in the
  * migration transaction and must keep the rows it touches.
  */
@@ -69,6 +132,10 @@ const UPGRADE_STEPS: Record<number, readonly string[]> = {
     'ALTER TABLE activity_attempts_v8 RENAME TO activity_attempts;',
     ACTIVITY_ATTEMPTS_INDEX,
   ],
+  // v8 → v9: a new table, nothing else moves.
+  8: TASK_ANSWERS_STATEMENTS,
+  // v9 → v10: new tables only.
+  9: LEARNING_OUTCOMES_STATEMENTS,
 };
 
 /** Every table the baseline creates, in creation order. */
@@ -89,6 +156,10 @@ export const BASELINE_TABLES = [
   'speaking_attempts',
   'activity_attempts',
   'lesson_bookmarks',
+  'task_answers',
+  'lesson_outcomes',
+  'unit_outcomes',
+  'item_memory',
 ] as const;
 
 export const BASELINE_STATEMENTS: string[] = [
@@ -316,6 +387,8 @@ export const BASELINE_STATEMENTS: string[] = [
   );`,
   `CREATE INDEX IF NOT EXISTS idx_lesson_bookmarks_saved
     ON lesson_bookmarks (tombstone, saved_at DESC);`,
+  ...TASK_ANSWERS_STATEMENTS,
+  ...LEARNING_OUTCOMES_STATEMENTS,
 ];
 
 export function readAppSchemaVersion(db: QuickSQLiteConnection): number {

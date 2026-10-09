@@ -16,6 +16,18 @@ export type SelfCheckRecorder = {
   start: () => void;
   stop: () => void;
   play: () => void;
+  /**
+   * PR 14: hand the take over (to the upload queue). The file is then the
+   * caller's and is not deleted when the controls go away; null without one.
+   */
+  release: () => {filePath: string; durationMs: number} | null;
+};
+
+export type SelfCheckRecorderOptions = {
+  /** PR 14: record a step-5 answer for grading (task audio settings, H13). */
+  forGrading?: boolean;
+  /** Stop on its own after this long (45 s for step 5, decision A6). */
+  maxMs?: number;
 };
 
 function safely(task: Promise<unknown>): void {
@@ -29,6 +41,7 @@ function safely(task: Promise<unknown>): void {
  */
 export function useSelfCheckRecorder(
   recorder: LessonRecorder | null = loadLessonRecorder(),
+  options: SelfCheckRecorderOptions = {},
 ): SelfCheckRecorder {
   const recorderRef = useRef(recorder);
   const [state, setState] = useState<SelfCheckRecorderState>(
@@ -37,6 +50,14 @@ export function useSelfCheckRecorder(
   const fileRef = useRef<string | null>(null);
   const startedAtRef = useRef(0);
   const recordingRef = useRef(false);
+  const durationRef = useRef(0);
+  const limitRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const {forGrading = false, maxMs} = options;
+
+  const clearLimit = useCallback(() => {
+    if (limitRef.current) clearTimeout(limitRef.current);
+    limitRef.current = null;
+  }, []);
 
   const discard = useCallback(() => {
     const file = fileRef.current;
@@ -48,6 +69,7 @@ export function useSelfCheckRecorder(
 
   useEffect(
     () => () => {
+      clearLimit();
       const active = recorderRef.current;
       const file = fileRef.current;
       if (active && file && recordingRef.current) {
@@ -66,8 +88,27 @@ export function useSelfCheckRecorder(
       }
       discard();
     },
-    [discard],
+    [discard, clearLimit],
   );
+
+  const stop = useCallback(() => {
+    const active = recorderRef.current;
+    const file = fileRef.current;
+    clearLimit();
+    if (!active || !file || !recordingRef.current) return;
+    recordingRef.current = false;
+    safely(
+      active.stopRecording(file, startedAtRef.current).then(result => {
+        if (result.ok) {
+          fileRef.current = result.filePath;
+          durationRef.current = result.durationMs;
+          setState('recorded');
+        } else {
+          setState('idle');
+        }
+      }),
+    );
+  }, [clearLimit]);
 
   const start = useCallback(() => {
     const active = recorderRef.current;
@@ -75,7 +116,10 @@ export function useSelfCheckRecorder(
     discard();
     safely(
       active
-        .startRecording('shadowing', `lesson-${createRequestId()}`)
+        .startRecording(
+          forGrading ? 'lesson_task' : 'shadowing',
+          `lesson-${createRequestId()}`,
+        )
         .then(result => {
           if (!result.ok) {
             setState('unavailable');
@@ -85,25 +129,19 @@ export function useSelfCheckRecorder(
           startedAtRef.current = Date.now();
           recordingRef.current = true;
           setState('recording');
+          if (maxMs) {
+            limitRef.current = setTimeout(() => stop(), maxMs);
+          }
         }),
     );
-  }, [discard]);
+  }, [discard, forGrading, maxMs, stop]);
 
-  const stop = useCallback(() => {
-    const active = recorderRef.current;
+  const release = useCallback(() => {
     const file = fileRef.current;
-    if (!active || !file) return;
-    recordingRef.current = false;
-    safely(
-      active.stopRecording(file, startedAtRef.current).then(result => {
-        if (result.ok) {
-          fileRef.current = result.filePath;
-          setState('recorded');
-        } else {
-          setState('idle');
-        }
-      }),
-    );
+    if (!file || recordingRef.current) return null;
+    fileRef.current = null;
+    setState('idle');
+    return {filePath: file, durationMs: durationRef.current};
   }, []);
 
   const play = useCallback(() => {
@@ -114,5 +152,5 @@ export function useSelfCheckRecorder(
     }
   }, []);
 
-  return {state, start, stop, play};
+  return {state, start, stop, play, release};
 }

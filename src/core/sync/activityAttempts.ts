@@ -150,6 +150,8 @@ export type RecordLessonActivityAttemptInput = {
   outcome: LessonActivityAttemptPayload['outcome'];
   assessedBy: LessonActivityAttemptPayload['assessed_by'];
   durationMs: number;
+  /** PR 14: the recording of a spoken answer sent for grading. */
+  recordingClientId?: string;
   occurredAt?: string;
   id?: string;
 };
@@ -177,6 +179,9 @@ export function recordLessonActivityAttempt(
     outcome: input.outcome,
     assessed_by: input.assessedBy,
     duration_ms: Math.min(Math.round(input.durationMs), 3_600_000),
+    ...(input.recordingClientId
+      ? {recording_client_id: input.recordingClientId}
+      : {}),
   });
   if (!payload.success) {
     return {ok: false, errorCode: 'INVALID_ATTEMPT'};

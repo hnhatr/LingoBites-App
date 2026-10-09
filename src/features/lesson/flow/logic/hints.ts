@@ -58,6 +58,8 @@ export function hintLadder({
   model: string;
   frame?: string | null;
 }): HintStep[] {
+  // Independent use (step 5) has no hints at all (PR 11 G4, PR 14 H11).
+  if (task?.kind === 'independent') return [];
   const own = parseHintLevels(task);
   if (own.length > 0) {
     return own.map(step =>

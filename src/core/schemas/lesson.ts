@@ -355,6 +355,23 @@ export const LessonTaskSchema = z
 
 export type LessonTask = z.infer<typeof LessonTaskSchema>;
 
+/**
+ * PR 16: a unit's summative task (`GET /v1/units/:unitId/summative-task`),
+ * in the shape of a snapshot task with the unit it belongs to.
+ */
+export const UnitSummativeTaskSchema = LessonTaskSchema.extend({
+  kind: z.literal('summative'),
+  unit_id: z.string().uuid(),
+});
+
+export type UnitSummativeTask = z.infer<typeof UnitSummativeTaskSchema>;
+
+export const UnitSummativeTaskResponseSchema = z.object({
+  request_id: z.string(),
+  status: z.literal('success'),
+  task: UnitSummativeTaskSchema.nullable(),
+});
+
 export const LessonSnapshotSchema = z
   .object({
     id: z.string().uuid(),

@@ -16,6 +16,9 @@ import {
 import {
   countUnitProgress,
   readCompletedLessonIds,
+  readPassedLessonIds,
+  readSummativeState,
+  type SummativeState,
   type UnitProgress,
 } from './unitProgress';
 
@@ -111,6 +114,7 @@ export function useLevelUnits(levelId: string) {
         units.value.map(unit => fetchUnitLessons(unit.id, {signal})),
       );
       const completedIds = readCompletedLessonIds();
+      const passedIds = readPassedLessonIds();
       return {
         ok: true,
         value: units.value.map((unit, index) => {
@@ -121,6 +125,7 @@ export function useLevelUnits(levelId: string) {
               ? countUnitProgress(
                   lessons.value.map(lesson => lesson.id),
                   completedIds,
+                  passedIds,
                 )
               : null,
           };
@@ -135,7 +140,11 @@ export function useLevelUnits(levelId: string) {
 export type UnitLessons = {
   lessons: CurriculumLesson[];
   completedIds: ReadonlySet<string>;
+  /** Lessons the Server counts as passed (PR 16). */
+  passedIds: ReadonlySet<string>;
   progress: UnitProgress;
+  /** Whether the unit's summative task is open (decision B4). */
+  summative: SummativeState;
 };
 
 /** Lessons of one unit plus which of them are completed on this device. */
@@ -145,15 +154,16 @@ export function useUnitLessons(unitId: string) {
       const lessons = await fetchUnitLessons(unitId, {signal});
       if (!lessons.ok) return lessons;
       const completedIds = readCompletedLessonIds();
+      const passedIds = readPassedLessonIds();
+      const lessonIds = lessons.value.map(lesson => lesson.id);
       return {
         ok: true,
         value: {
           lessons: lessons.value,
           completedIds,
-          progress: countUnitProgress(
-            lessons.value.map(lesson => lesson.id),
-            completedIds,
-          ),
+          passedIds,
+          progress: countUnitProgress(lessonIds, completedIds, passedIds),
+          summative: readSummativeState(unitId, lessonIds, completedIds),
         },
       };
     },

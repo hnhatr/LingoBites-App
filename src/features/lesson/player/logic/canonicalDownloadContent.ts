@@ -55,16 +55,24 @@ export type CanonicalLessonProgression = {
   prerequisiteGapTitle: string | null;
   oldLessonId: string | null;
   oldLessonTitle: string | null;
+  /** PR 16 (B9): the oldest downloaded lesson started but not completed. */
+  inProgressLessonId: string | null;
+  inProgressLessonTitle: string | null;
 };
 
 /** Oldest download first — stable progression order for Today. */
 export function buildCanonicalLessonProgression(): CanonicalLessonProgression {
   const ordered = listDownloadedLessonSummaries();
   const completedLessonIdSet = new Set<string>();
+  let inProgressLessonId: string | null = null;
+  let inProgressLessonTitle: string | null = null;
   for (const lesson of ordered) {
     const progress = getLessonProgress(lesson.lessonId);
     if (progress?.status === 'completed') {
       completedLessonIdSet.add(lesson.lessonId);
+    } else if (progress?.status === 'in_progress' && !inProgressLessonId) {
+      inProgressLessonId = lesson.lessonId;
+      inProgressLessonTitle = lesson.title;
     }
   }
   const completedLessonIds = ordered
@@ -109,6 +117,8 @@ export function buildCanonicalLessonProgression(): CanonicalLessonProgression {
     prerequisiteGapTitle,
     oldLessonId,
     oldLessonTitle,
+    inProgressLessonId,
+    inProgressLessonTitle,
   };
 }
 

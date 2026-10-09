@@ -40,6 +40,11 @@ export type FinishedActivity = {
   outcome: LessonAttemptOutcome;
   supportLevel: LessonSupportLevel;
   durationMs: number;
+  /**
+   * PR 14: an answer sent to the Server's scorer brings its own attempt id
+   * (the answer row and the recording point at it) and is `service`-assessed.
+   */
+  graded?: {attemptId: string; recordingClientId?: string};
 };
 
 export type UseLessonFlowResult = {
@@ -75,7 +80,7 @@ export function useLessonFlow(
   }, [snapshot, step, attempts]);
 
   const finishActivity = useCallback(
-    ({block, outcome, supportLevel, durationMs}: FinishedActivity) => {
+    ({block, outcome, supportLevel, durationMs, graded}: FinishedActivity) => {
       const activity = flowActivity(block);
       if (!snapshot || !activity || block.step == null) return false;
       const result = recordLessonActivityAttempt({
@@ -89,8 +94,15 @@ export function useLessonFlow(
         sessionId,
         supportLevel,
         outcome,
-        assessedBy: SELF_ASSESSED.has(activity.kind) ? 'self' : 'rule',
+        assessedBy: graded
+          ? 'service'
+          : SELF_ASSESSED.has(activity.kind)
+          ? 'self'
+          : 'rule',
         durationMs,
+        ...(graded
+          ? {id: graded.attemptId, recordingClientId: graded.recordingClientId}
+          : {}),
       });
       if (!result.ok) return false;
       recordLessonActivityCompleted(result.id);

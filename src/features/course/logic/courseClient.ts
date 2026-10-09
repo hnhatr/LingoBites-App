@@ -15,6 +15,10 @@ import {z} from 'zod';
 
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {
+  type UnitSummativeTask,
+  UnitSummativeTaskResponseSchema,
+} from '@core/schemas/lesson';
 
 const CourseSchema = z.object({
   id: z.string(),
@@ -227,4 +231,17 @@ export async function fetchUnitLessons(
   return result.ok
     ? {ok: true, value: byPosition(result.value.lessons)}
     : result;
+}
+
+/** PR 16: the unit's summative task, or null when the unit has none. */
+export async function fetchUnitSummativeTask(
+  unitId: string,
+  options: CourseClientOptions = {},
+): Promise<CourseResult<UnitSummativeTask | null>> {
+  const result = await getList(
+    `/v1/units/${encodeURIComponent(unitId)}/summative-task`,
+    UnitSummativeTaskResponseSchema,
+    options,
+  );
+  return result.ok ? {ok: true, value: result.value.task} : result;
 }

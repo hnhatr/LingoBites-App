@@ -11,6 +11,7 @@ jest.mock('@features/review', () => ({
   getDueFlashcards: (
     options?: import('@core/db/types').GetDueFlashcardsOptions,
   ) => mockGetDueFlashcards(options),
+  countItemsForReview: () => 0,
 }));
 
 import {AppThemeProvider} from '@ui/theme';

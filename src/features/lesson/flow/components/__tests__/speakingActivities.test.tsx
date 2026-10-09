@@ -42,7 +42,7 @@ const blockOn = (step: number) =>
     block => block.type === 'activity' && block.step === step,
   )!;
 
-function run(block: LessonBlock) {
+function run(block: LessonBlock, speakingOff = false) {
   const onFinished = jest.fn(() => true);
   const tree = renderWithTheme(
     <ActivityRunner
@@ -50,6 +50,7 @@ function run(block: LessonBlock) {
       block={block}
       items={items}
       latestOutcome={null}
+      speakingOff={speakingOff}
       task={flowTask(snapshot, flowActivity(block)!.taskId)}
       onFinished={onFinished}
     />,
@@ -169,5 +170,15 @@ describe('speaking activities (self-check)', () => {
       'none',
       expect.any(Number),
     );
+  });
+});
+
+describe('speaking off for now (PR 14 H8)', () => {
+  it('a speaking activity can be skipped without recording anything', () => {
+    const {tree, onFinished} = run(blockOn(3), true);
+    expect(has(tree, 'lesson-flow-speaking-off')).toBe(true);
+    press(tree, 'lesson-flow-skip-speaking');
+    expect(has(tree, 'lesson-flow-skip-speaking')).toBe(false);
+    expect(onFinished).not.toHaveBeenCalled();
   });
 });

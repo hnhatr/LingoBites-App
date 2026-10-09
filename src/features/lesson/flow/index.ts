@@ -4,3 +4,4 @@ export {
   practiceCompleted,
   resumeStep,
 } from './logic/practiceCompletion';
+export {SummativeTaskView} from './components/SummativeTaskView';

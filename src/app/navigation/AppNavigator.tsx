@@ -15,6 +15,7 @@ import {
   CourseListScreen,
   LevelUnitsScreen,
   UnitLessonsScreen,
+  UnitSummativeTaskScreen,
 } from '@features/course';
 import {HomeScreen} from '@features/home';
 import {
@@ -46,7 +47,7 @@ import {
   ProgressReportScreen,
   SupportAboutScreen,
 } from '@features/profile';
-import {DailyReviewScreen} from '@features/review';
+import {DailyReviewScreen, ItemReviewScreen} from '@features/review';
 import {
   ShadowingLessonPickerScreen,
   ShadowingSessionScreen,
@@ -276,8 +277,13 @@ function AuthenticatedRootStack() {
       <RootStack.Screen component={CourseLevelsScreen} name="CourseLevels" />
       <RootStack.Screen component={LevelUnitsScreen} name="LevelUnits" />
       <RootStack.Screen component={UnitLessonsScreen} name="UnitLessons" />
+      <RootStack.Screen
+        component={UnitSummativeTaskScreen}
+        name="UnitSummativeTask"
+      />
       {/* Practice */}
       <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
+      <RootStack.Screen component={ItemReviewScreen} name="ItemReview" />
       <RootStack.Screen component={PracticeScreen} name="Practice" />
       <RootStack.Screen component={TodayScreen} name="Today" />
       <RootStack.Screen component={SpeakingRoomScreen} name="SpeakingRoom" />

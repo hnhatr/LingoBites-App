@@ -140,7 +140,29 @@ export function generateStudyBlock(
       subtitleVi: `${snapshot.dueReviewCount} mục đến hạn ôn tập`,
       estimatedMinutes: reviewEstMins,
       targetId: 'due_review',
-      navigationTarget: {screen: 'DailyReview'},
+      // PR 16 (G11): lesson items first, the flashcards after them.
+      navigationTarget: {
+        screen: (snapshot.dueItemCount ?? 0) > 0 ? 'ItemReview' : 'DailyReview',
+      },
+    });
+  }
+
+  // 1b. Lesson in progress (decision B9: due review → in progress → next).
+  const inProgressLessonId = snapshot.lessonProgression?.inProgressLessonId;
+  if (inProgressLessonId) {
+    candidateActivities.push({
+      id: 'activity-continue-lesson',
+      type: 'continue_lesson',
+      titleVi: `Học tiếp: ${
+        snapshot.lessonProgression.inProgressLessonTitle ?? 'Bài đang học'
+      }`,
+      subtitleVi: 'Tiếp tục bài bạn đang học dở',
+      estimatedMinutes: 10,
+      targetId: inProgressLessonId,
+      navigationTarget: {
+        screen: 'CanonicalLessonPlayer',
+        params: {lessonId: inProgressLessonId},
+      },
     });
   }
 
@@ -225,7 +247,11 @@ export function generateStudyBlock(
   }
 
   // 9. Next Lesson Progression (REQ-12) - STOPPED/REDUCED IF CONSOLIDATION
-  if (!isConsolidation && snapshot.lessonProgression?.nextLessonId) {
+  if (
+    !isConsolidation &&
+    snapshot.lessonProgression?.nextLessonId &&
+    snapshot.lessonProgression.nextLessonId !== inProgressLessonId
+  ) {
     const nextLessonMins =
       snapshot.lessonProgression.nextLessonEstimatedMinutes ?? 15;
     candidateActivities.push({

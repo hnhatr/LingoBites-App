@@ -372,11 +372,15 @@ export function getDueFlashcards({
     // SETE-253: cards without a Vietnamese translation can never be answered
     // (the back face would repeat the English prompt), so they are excluded
     // from the due queue at the source rather than rendered degenerately.
+    // PR 16 (G10): an item the Server schedules (`item_memory`) is reviewed
+    // on that schedule only, so its card is never due here as well.
     `SELECT flashcards.* FROM flashcards
       INNER JOIN review_schedule ON review_schedule.card_id = flashcards.id
       WHERE flashcards.is_saved = 1
         AND TRIM(flashcards.meaning_vi) != ''
         AND review_schedule.next_review_at <= ?
+        AND (flashcards.item_key IS NULL
+          OR flashcards.item_key NOT IN (SELECT item_code FROM item_memory))
       ORDER BY datetime(review_schedule.next_review_at) ASC${limitClause};`,
     params,
   );

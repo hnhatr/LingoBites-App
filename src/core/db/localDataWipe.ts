@@ -30,6 +30,10 @@ function deleteLearnerOwnedRows(db: QuickSQLiteConnection): void {
     'flashcard_sources',
     'activity_attempts',
     'lesson_bookmarks',
+    'task_answers',
+    'lesson_outcomes',
+    'unit_outcomes',
+    'item_memory',
   ]) {
     db.execute(`DELETE FROM ${table};`);
   }

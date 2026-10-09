@@ -22,6 +22,21 @@ export const LESSON_CONTRACT_FIXTURE_SHA256 = {
   /** PR 8: lesson player attempts; the app sends these from PR 10. */
   'valid-sync-activity-attempt-lesson-push-request.json':
     '9f2ae916990aadcd386e3192eac203173b6fa8ecea980bc073701d5b914c13ed',
+  /** PR 12: step-5 attempts handed to the server's scorer (app sends from PR 14). */
+  'valid-sync-activity-attempt-lesson-pending-push-request.json':
+    '8096e20123f02547832969abb91f5c168faf56cfad4207e74681aa2bce18bfb0',
+  /** PR 12: evaluation results pulled from the read-only collection (PR 14). */
+  'valid-sync-evaluation-pull-response.json':
+    '4771d6ebecb41004b72d4bca7d69f92f597c2e0000fb8e01c655bfd8e16355a3',
+  /** PR 15: lesson pass, unit outcome and item review schedule (app reads from PR 16). */
+  'valid-sync-learning-outcomes-pull-response.json':
+    '3d9d3da86de6702a23161ee67c77ee470a970988be1c7068d08dce1878ce1096',
+  /** PR 13: upload of a spoken step-5 answer (app sends it from PR 14). */
+  'valid-recording-lesson-task-create-request.json':
+    '2765231d238f89e16c912d6e204ed6b99973a47d34932b4dc87f8a1ae7074b51',
+  /** PR 16: a unit's summative task as `GET /v1/units/:unitId/summative-task` sends it. */
+  'valid-unit-summative-task-response.json':
+    '159250d7ca9b777d33539e3e24a4f5b4355e3d264d902bd37cc3fdd95a16db10',
   /**
    * PR 10: accepted answers of a pattern; a copy of the Server's
    * `test/fixtures/accepted-answers.json` (read by `@core/learning` tests).

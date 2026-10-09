@@ -27,6 +27,11 @@ export type ActivityRunnerProps = {
   youtubeVideoId?: string | null;
   /** Outcome of the newest attempt on this block, if any. */
   latestOutcome: LessonAttemptOutcome | null;
+  /**
+   * PR 14 (decision H8): a speaking activity while speaking is off can be
+   * skipped; nothing is recorded, so the practice waits for it.
+   */
+  speakingOff?: boolean;
   /** Saves the attempt; false when it could not be stored. */
   onFinished: (
     outcome: LessonAttemptOutcome,
@@ -47,6 +52,7 @@ export function ActivityRunner({
   task,
   youtubeVideoId,
   latestOutcome,
+  speakingOff = false,
   onFinished,
 }: ActivityRunnerProps) {
   const {theme} = useAppTheme();
@@ -55,6 +61,7 @@ export function ActivityRunner({
   const [running, setRunning] = useState(latestOutcome === null);
   const [runKey, setRunKey] = useState(0);
   const [saveFailed, setSaveFailed] = useState(false);
+  const [skipped, setSkipped] = useState(false);
   const startedAt = useRef(Date.now());
 
   const start = () => {
@@ -90,7 +97,24 @@ export function ActivityRunner({
             <AppText color="secondary">{activity.instructionsVi}</AppText>
           ) : null}
         </View>
-        {activity.content === null ? (
+        {speakingOff && running ? (
+          <View style={themedStyles.result} testID="lesson-flow-speaking-off">
+            <AppText color="secondary">
+              {skipped
+                ? t('lessonFlow.skip_speaking_hint')
+                : t('lessonFlow.no_speaking_active')}
+            </AppText>
+            {skipped ? null : (
+              <AppButton
+                accessibilityHint={t('lessonFlow.skip_speaking_hint')}
+                onPress={() => setSkipped(true)}
+                testID="lesson-flow-skip-speaking"
+                title={t('lessonFlow.skip_speaking')}
+                variant="outline"
+              />
+            )}
+          </View>
+        ) : activity.content === null ? (
           <AppText color="secondary" testID="lesson-flow-activity-empty">
             {t('lessonFlow.activity_no_content')}
           </AppText>

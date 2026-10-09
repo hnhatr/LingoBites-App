@@ -139,6 +139,7 @@ export function createAppNavigation(
     startCreate,
     finishCreate,
     openReview: () => navigate('DailyReview', undefined),
+    openItemReview: () => navigate('ItemReview', undefined),
     openPractice: lessonId => navigate('Practice', {lessonId}),
     openToday: target => navigate('Today', target),
     openSpeakingRoom: () => navigate('SpeakingRoom', undefined),

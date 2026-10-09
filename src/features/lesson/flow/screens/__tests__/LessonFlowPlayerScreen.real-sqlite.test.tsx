@@ -128,6 +128,11 @@ describe('LessonFlowPlayerScreen (shell)', () => {
       'Đã hoàn thành phần luyện',
     );
     expect(mockRequestSync).toHaveBeenCalledTimes(2);
+    // PR 16: practice done, step 5 not yet passed.
+    expect(textOf(tree, 'lesson-flow-lesson-outcome')).toBe(
+      'Chưa đạt bài: làm đạt bước 5 để đạt bài',
+    );
+    expect(has(tree, 'lesson-flow-redo-independent')).toBe(true);
 
     const rows = getDatabase().execute(
       `SELECT payload_json FROM sync_outbox
@@ -210,5 +215,11 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(textOf(again.tree, `lesson-flow-result-${stepFive.id}`)).toContain(
       'Đạt, tự làm được',
     );
+    // PR 16: passed on the device, confirmed by the next sync.
+    expect(textOf(again.tree, 'lesson-flow-lesson-outcome')).toBe('Đạt bài');
+    expect(has(again.tree, 'lesson-flow-lesson-outcome-unconfirmed')).toBe(
+      true,
+    );
+    expect(has(again.tree, 'lesson-flow-redo-independent')).toBe(false);
   });
 });
