@@ -143,6 +143,7 @@ export function createAppNavigation(
     openPractice: lessonId => navigate('Practice', {lessonId}),
     openToday: target => navigate('Today', target),
     openSpeakingRoom: () => navigate('SpeakingRoom', undefined),
+    openLearningProfile: () => navigate('LearningProfile', undefined),
     openShadowing: target =>
       target
         ? navigate('ShadowingSession', target)

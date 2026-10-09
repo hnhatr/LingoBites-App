@@ -32,6 +32,8 @@ export function ProfileScreenView({
   openAppSettings,
   openDataSettings,
   openProgressReport,
+  openLearningProfile,
+  learningLevel,
   openReminderSheet,
   openSettingsSheet,
   openSupportAbout,
@@ -147,6 +149,15 @@ export function ProfileScreenView({
         </View>
 
         <SettingsGroup title="Học tập">
+          <ProfileSettingsRow
+            accessibilityHint="Chạm để thay đổi"
+            accessibilityLabel={`Hồ sơ học tập: ${learningLevel ?? 'chưa có'}`}
+            icon="school"
+            label="Hồ sơ học tập"
+            medallionTone="gold"
+            onPress={openLearningProfile}
+            trailing={learningLevel ? {text: learningLevel} : 'chevron'}
+          />
           <ProfileSettingsRow
             accessibilityHint="Chạm để thay đổi"
             accessibilityLabel={`Mục tiêu tuần: ${weeklyGoalTrailingLabel}`}

@@ -1005,5 +1005,65 @@
     "library_chip": "6 steps · AI-made",
     "select_hint": "Pick or unpick this sentence",
     "dismiss_hint": "Hide this notice"
+  },
+  "learnerOnboarding": {
+    "step": "Step {{current}}/{{total}}",
+    "age_title": "Who is learning?",
+    "age": {
+      "adults": "An adult",
+      "kids": "A child (6–11)"
+    },
+    "goals_title": "Why are you learning English?",
+    "goals_hint": "Pick one or more goals.",
+    "goal": {
+      "communication": "Everyday conversation",
+      "travel": "Travel",
+      "work": "Work",
+      "school": "School"
+    },
+    "interests_title": "What do you like?",
+    "interests_hint": "Pick up to {{max}} interests, or none.",
+    "interest": {
+      "music": "Music",
+      "movies": "Movies",
+      "sports": "Sports",
+      "cooking": "Cooking",
+      "travel": "Travel",
+      "technology": "Technology",
+      "reading": "Reading",
+      "games": "Games"
+    },
+    "minutes_title": "How long will you study each day?",
+    "minutes": "{{count}} min",
+    "placement_title": "Placement test",
+    "placement_body": "12 listen-and-choose questions, about 5 minutes. The result is only a suggestion; you can change it any time.",
+    "take_test": "Take the test (5 min)",
+    "skip_test": "Skip, start at A1",
+    "next": "Next",
+    "back": "Back",
+    "later": "Later",
+    "loading": "Loading…",
+    "test_title": "Placement test",
+    "test_unavailable": "Could not load the test. Check your connection and try again.",
+    "question_count": "Question {{current}}/{{total}}",
+    "listen": "Listen again",
+    "finish_test": "See the result",
+    "result_score": "You got {{total}}/{{max}} right.",
+    "result_title": "Suggestion: start at {{level}}",
+    "result_body_A1": "A1 gets you speaking the basics: introducing yourself, ordering, asking prices and directions.",
+    "result_body_A2": "You know the basics. A2 helps you tell stories, make plans, book a table, see a doctor and shop.",
+    "start_level": "Start {{level}}",
+    "choose_level": "Choose {{level}}",
+    "profile_title": "Learning profile",
+    "level_title": "Level",
+    "level": {
+      "A1": "A1 – Elementary 1",
+      "A2": "A2 – Elementary 2"
+    },
+    "retake_test": "Retake the placement test",
+    "pending_sync": "Not synced yet; it will be saved when you are online.",
+    "save": "Save",
+    "path_label": "Your learning path",
+    "path_open": "Start learning"
   }
 }

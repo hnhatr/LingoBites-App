@@ -36,6 +36,13 @@ import {
   LessonCreationScreen,
 } from '@features/lesson/player';
 import {OCRReviewScreen} from '@features/ocr';
+import {
+  LearnerOnboardingScreen,
+  LearningProfileScreen,
+  PlacementResultScreen,
+  PlacementTestScreen,
+  useLearnerProfileStore,
+} from '@features/onboarding';
 import {PracticeScreen} from '@features/practice';
 import {
   AccountSettingsScreen,
@@ -281,6 +288,16 @@ function AuthenticatedRootStack() {
         component={UnitSummativeTaskScreen}
         name="UnitSummativeTask"
       />
+      {/* Phase 2: the learner profile from Profile, and a new placement test */}
+      <RootStack.Screen
+        component={LearningProfileScreen}
+        name="LearningProfile"
+      />
+      <RootStack.Screen component={PlacementTestScreen} name="PlacementTest" />
+      <RootStack.Screen
+        component={PlacementResultScreen}
+        name="PlacementResult"
+      />
       {/* Practice */}
       <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
       <RootStack.Screen component={ItemReviewScreen} name="ItemReview" />
@@ -313,7 +330,42 @@ export function AppNavigator() {
   }, [boot]);
 
   const gateRoute = accountGateRouteForPhase(phase);
-  if (gateRoute !== 'Tabs') {
+  const userId = useAccountStore(state => state.user?.id ?? null);
+  const profileStatus = useLearnerProfileStore(state => state.status);
+  const loadProfile = useLearnerProfileStore(state => state.load);
+  const resetProfile = useLearnerProfileStore(state => state.reset);
+  // Phase 2 (P2.4): a signed-in learner without a profile is onboarded first.
+  useEffect(() => {
+    if (gateRoute === 'Tabs' && userId) {
+      loadProfile(userId).catch(() => {});
+    } else {
+      resetProfile();
+    }
+  }, [gateRoute, userId, loadProfile, resetProfile]);
+
+  if (gateRoute === 'Tabs' && profileStatus === 'needed') {
+    return (
+      <NavigationContainer>
+        <RootStack.Navigator id="RootStack" screenOptions={HIDDEN_HEADER}>
+          <RootStack.Screen
+            component={LearnerOnboardingScreen}
+            name="LearnerOnboarding"
+          />
+          <RootStack.Screen
+            component={PlacementTestScreen}
+            name="PlacementTest"
+          />
+          <RootStack.Screen
+            component={PlacementResultScreen}
+            name="PlacementResult"
+          />
+        </RootStack.Navigator>
+      </NavigationContainer>
+    );
+  }
+  const profileUnknown =
+    profileStatus === 'checking' || (profileStatus === 'idle' && userId);
+  if (gateRoute !== 'Tabs' || profileUnknown) {
     return (
       <NavigationContainer>
         <RootStack.Navigator id="RootStack" screenOptions={HIDDEN_HEADER}>
