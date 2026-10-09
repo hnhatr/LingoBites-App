@@ -30,6 +30,12 @@ import type {
   LessonFlowPlayerRouteParams,
 } from '@features/lesson/player';
 import type {OCRReviewRouteParams} from '@features/ocr';
+import type {
+  LearnerOnboardingRouteParams,
+  LearningProfileRouteParams,
+  PlacementResultRouteParams,
+  PlacementTestRouteParams,
+} from '@features/onboarding';
 import type {PracticeRouteParams} from '@features/practice';
 import type {ProfileStackParamList} from '@features/profile';
 import type {
@@ -68,6 +74,11 @@ export type RootStackParamList = {
   BootGate: BootGateRouteParams;
   Onboarding: OnboardingRouteParams;
   AccountSwitch: AccountSwitchRouteParams;
+  // Phase 2: learner profile and placement test
+  LearnerOnboarding: LearnerOnboardingRouteParams;
+  LearningProfile: LearningProfileRouteParams;
+  PlacementTest: PlacementTestRouteParams;
+  PlacementResult: PlacementResultRouteParams;
   // Create-lesson flow
   CreateHub: CreateHubRouteParams;
   PasteText: PasteTextRouteParams;

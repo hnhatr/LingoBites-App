@@ -17,8 +17,10 @@ import {
   setWeeklyGoalTarget,
   WEEKLY_GOAL_OPTIONS,
 } from '@features/engagement';
+import {useLearnerProfileStore} from '@features/onboarding';
 import {formatLastSyncedLabel, readLastSyncedAt} from '@features/sync';
 
+import {useOptionalAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 
 import type {ProfileStackParamList} from '../screens/navigationTypes';
@@ -175,6 +177,15 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     navigation.navigate('SupportAbout');
   }, [navigation]);
 
+  // Phase 2 (P2.4): the onboarding answers and level, opened on the root stack.
+  const appNavigation = useOptionalAppNavigation();
+  const learningLevel = useLearnerProfileStore(
+    state => state.profile?.levelCode ?? null,
+  );
+  const openLearningProfile = useCallback(() => {
+    appNavigation?.openLearningProfile();
+  }, [appNavigation]);
+
   const closeSettingsSheet = useCallback(() => {
     setOpenSettingsSheet(null);
   }, []);
@@ -239,6 +250,8 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     openAccountSettings,
     openAppSettings,
     openDataSettings,
+    openLearningProfile,
+    learningLevel,
     openProgressReport,
     openReminderSheet,
     openSettingsSheet,

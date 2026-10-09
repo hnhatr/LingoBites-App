@@ -91,6 +91,8 @@ export interface AppNavigation {
    */
   openToday(target?: {mode?: '5-minute' | 'normal' | 'deep-practice'}): void;
   openSpeakingRoom(): void;
+  /** Phase 2: the learner profile (level, goals…) and the placement test. */
+  openLearningProfile(): void;
   /**
    * Open shadowing practice: a specific lesson/sentence when given,
    * otherwise the lesson picker.

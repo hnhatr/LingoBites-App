@@ -4,6 +4,7 @@
  * Renders in mockup v4 order (AC-1, FR-001):
  * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
  * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8)
+ * 2b. LearningPathCard — the learner's level from onboarding (Phase 2)
  * 3. HomeTodaySuggestion — "Kế hoạch hôm nay" checklist under the hero (F12)
  * 4. HomeWeeklyGoal — one paw per target lesson (I3, P-004)
  * 5. HomeShortcutsGrid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003)
@@ -14,6 +15,8 @@
  */
 import React, {useMemo} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
+
+import {LearningPathCard} from '@features/onboarding';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
@@ -135,6 +138,11 @@ export function HomeScreenView(props: HomeScreenViewModel) {
                 : onNavigateCreate
             }
           />
+        </View>
+
+        {/* Phase 2: the level chosen at onboarding, opening its units */}
+        <View style={styles.todaySection}>
+          <LearningPathCard />
         </View>
 
         {/* "Kế hoạch hôm nay" (F12): the hero's step is one row of this plan */}
