@@ -250,11 +250,15 @@ platform :android do
       "reactNativeArchitectures" => "armeabi-v7a,arm64-v8a"
     }
 
+    # On CI, skip Android lint vital: ~2 min on the critical path of every release build.
+    lint_vital_task = "lintVital#{options[:build_type][0].upcase}#{options[:build_type][1..]}"
+
     gradle(
       task: "bundle",
       build_type: options[:build_type],
       project_dir: "android",
-      properties: gradle_properties
+      properties: gradle_properties,
+      flags: ENV["CI"] ? "-x #{lint_vital_task}" : nil
     )
 
     aab_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
