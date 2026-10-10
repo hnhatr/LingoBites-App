@@ -5,7 +5,12 @@ import {Image, Pressable, StyleSheet, View} from 'react-native';
 import {AppText} from '@ui/components/AppText';
 import {useAppTheme} from '@ui/theme';
 
-import {fetchSourcePhoto, type SourcePhoto} from '../logic/sourcePhoto';
+import {
+  cacheSourcePhoto,
+  fetchSourcePhoto,
+  readCachedSourcePhoto,
+  type SourcePhoto,
+} from '../logic/sourcePhoto';
 import {type ReportableItem, WordReportSheet} from './WordReportSheet';
 
 /**
@@ -27,11 +32,21 @@ export function SourcePhotoCard({
   const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
-    if (offline) return;
     let cancelled = false;
-    fetchSourcePhoto(lessonId).then(result => {
-      if (!cancelled && result.ok) setPhoto(result.value);
-    });
+    (async () => {
+      // The saved copy works offline and online; the server is asked only without one.
+      const cached = await readCachedSourcePhoto(lessonId);
+      if (cancelled) return;
+      if (cached) {
+        setPhoto(cached);
+        return;
+      }
+      if (offline) return;
+      const result = await fetchSourcePhoto(lessonId);
+      if (cancelled || !result.ok || result.value === null) return;
+      setPhoto(result.value);
+      void cacheSourcePhoto(lessonId, result.value.uri);
+    })();
     return () => {
       cancelled = true;
     };

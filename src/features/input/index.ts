@@ -21,3 +21,4 @@ export type {
   MomentReviewRouteParams,
   SituationInputRouteParams,
 } from './screens/navigationTypes';
+export {withdrawPhotoConsent} from './logic/photoConsent';

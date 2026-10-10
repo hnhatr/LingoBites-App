@@ -1,9 +1,12 @@
+import {trackEvent} from '@features/analytics';
+
 import {removeLessonDownload} from './canonicalDownloadRepository';
 import {
   type CanonicalLessonClientOptions,
   type CanonicalLessonResult,
   send,
 } from './canonicalLessonClient';
+import {removeCachedSourcePhoto} from './sourcePhoto';
 
 /**
  * E5 (S4): delete one of the learner's own lessons on the server, then drop
@@ -38,6 +41,8 @@ export async function deleteLearnerLesson(
       status: answered.status,
     };
   }
+  trackEvent('lesson_deleted', {});
+  await removeCachedSourcePhoto(lessonId);
   try {
     removeLessonDownload(lessonId);
   } catch {
