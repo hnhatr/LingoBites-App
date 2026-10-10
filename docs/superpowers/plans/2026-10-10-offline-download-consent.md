@@ -1,6 +1,6 @@
 # Kế hoạch: xin đồng ý trước khi tải dữ liệu offline
 
-> Trạng thái: **BẢN NHÁP — chờ duyệt** (VibeGuard §1: chưa code cho tới khi chốt các quyết định ở mục 5).
+> Trạng thái: **ĐÃ LÀM** (2026-10-10). Các quyết định ở mục 5 được duyệt theo đề xuất: không có chế độ Wi-Fi, người dùng cũ được hỏi lại và giữ file đã tải, hỏi ở bài đầu tiên có media, chỉ xoá media, dung lượng chỉ hiện sau khi tải, phần hiển thị media tách việc riêng.
 > Ngày lập: 2026-10-10. Phạm vi: `LingoBites-App`. Server không cần đổi (trừ Q5 nếu chọn phương án B).
 
 ---
