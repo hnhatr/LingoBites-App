@@ -1184,6 +1184,12 @@
     "consent_cancel": "Để sau",
     "offline": "Cần có mạng để tạo bài.",
     "intent_describe": "Tả bức ảnh",
-    "intent_describe_desc": "AI viết các câu tả những gì nhìn thấy, bạn luyện tả lại."
+    "intent_describe_desc": "AI viết các câu tả những gì nhìn thấy, bạn luyện tả lại.",
+    "delete_lesson": "Xoá bài này",
+    "delete_title": "Xoá bài này?",
+    "delete_body": "Bài và ảnh của bài (nếu có) sẽ bị xoá khỏi tài khoản và thiết bị này. Không khôi phục được.",
+    "delete_confirm": "Xoá",
+    "delete_cancel": "Huỷ",
+    "delete_failed": "Chưa xoá được bài. Thử lại khi có mạng."
   }
 }

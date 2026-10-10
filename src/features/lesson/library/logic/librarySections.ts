@@ -37,7 +37,10 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     title: 'Bài học của tôi',
     description: 'Bài bạn tạo từ văn bản và ảnh',
     emptyHint: 'Chưa có bài, tạo bài đầu tiên',
-    lessons: {origin: 'learner', sourceTypes: ['learner_text', 'learner_ocr']},
+    lessons: {
+      origin: 'learner',
+      sourceTypes: ['learner_text', 'learner_ocr', 'learner_situation'],
+    },
     unit: 'bài',
   },
   {

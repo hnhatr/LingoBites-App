@@ -120,6 +120,8 @@ export type CanonicalLessonHubProps = {
   onOpenPractice?: () => void;
   /** S4.3: opens "Học theo 6 bước" sentence picking. Omit to hide the row. */
   onOpenCompose?: () => void;
+  /** E5: the learner's own lesson can be deleted (server and this device). */
+  onDeleteLesson?: () => void;
 };
 
 /**
@@ -137,6 +139,7 @@ export function CanonicalLessonHub({
   onOpenLesson,
   onOpenPractice,
   onOpenCompose,
+  onDeleteLesson,
 }: CanonicalLessonHubProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -313,6 +316,26 @@ export function CanonicalLessonHub({
             testID="canonical-hub-compose"
             title={t('compose.entry_title')}
           />
+        ) : null}
+        {onDeleteLesson ? (
+          <Pressable
+            accessibilityLabel={t('moment.delete_lesson')}
+            accessibilityRole="button"
+            disabled={offline}
+            onPress={onDeleteLesson}
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 44,
+            }}
+            testID="canonical-hub-delete"
+          >
+            <AppText
+              style={{color: theme.colors.text.muted, fontWeight: '600'}}
+            >
+              {t('moment.delete_lesson')}
+            </AppText>
+          </Pressable>
         ) : null}
       </View>
     </View>

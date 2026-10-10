@@ -53,6 +53,7 @@ export {
 } from './logic/canonicalLessonClient';
 export {fetchComposeQuota} from './logic/composeClient';
 export {fetchSourcePhoto} from './logic/sourcePhoto';
+export {deleteLearnerLesson} from './logic/learnerLessonDelete';
 export type {SourcePhoto} from './logic/sourcePhoto';
 export type {
   CanonicalLessonClientOptions,

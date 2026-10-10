@@ -18,6 +18,7 @@ export const LIBRARY_SOURCE_FILTER_OPTIONS: ReadonlyArray<{
   {key: 'admin_text', label: 'Bài mẫu'},
   {key: 'learner_text', label: 'Văn bản'},
   {key: 'learner_ocr', label: 'Ảnh / OCR'},
+  {key: 'learner_situation', label: 'Tình huống'},
   {key: 'youtube', label: 'YouTube'},
 ];
 

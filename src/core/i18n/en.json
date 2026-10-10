@@ -1184,6 +1184,12 @@
     "consent_cancel": "Not now",
     "offline": "You need a connection to create lessons.",
     "intent_describe": "Describe the photo",
-    "intent_describe_desc": "The AI writes sentences about what is visible; you practise describing it."
+    "intent_describe_desc": "The AI writes sentences about what is visible; you practise describing it.",
+    "delete_lesson": "Delete this lesson",
+    "delete_title": "Delete this lesson?",
+    "delete_body": "The lesson and its photo (if any) will be removed from your account and this device. This cannot be undone.",
+    "delete_confirm": "Delete",
+    "delete_cancel": "Cancel",
+    "delete_failed": "The lesson could not be deleted. Try again when you are online."
   }
 }
