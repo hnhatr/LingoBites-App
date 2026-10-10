@@ -2,6 +2,11 @@
   "app": {
     "name": "LingoBites"
   },
+  "app_update": {
+    "title": "Đang cập nhật",
+    "message": "LingoBites đang tải bản mới nhất, chỉ mất vài giây.",
+    "progress": "Đã tải {{percent}}%"
+  },
   "nav": {
     "tab": {
       "home": "Trang chủ",
