@@ -14,6 +14,8 @@ export {ComposeTrackerHost} from './components/ComposeTrackerHost';
 export {
   dismissCompose,
   type ComposeEntry,
+  resumeTrackedMoment,
+  trackMoment,
   useComposeTracker,
 } from './logic/composeTracker';
 export type {CanonicalLessonPlayerProps} from './components/CanonicalLessonPlayer';
@@ -53,6 +55,12 @@ export {
 } from './logic/canonicalLessonClient';
 export {fetchComposeQuota} from './logic/composeClient';
 export {fetchSourcePhoto} from './logic/sourcePhoto';
+export {
+  cacheSourcePhoto,
+  readCachedSourcePhoto,
+  removeAllCachedSourcePhotos,
+  removeCachedSourcePhoto,
+} from './logic/sourcePhoto';
 export {ITEM_REPORT_REASONS, reportLessonItem} from './logic/itemReport';
 export type {ItemReportReason} from './logic/itemReport';
 export {deleteLearnerLesson} from './logic/learnerLessonDelete';

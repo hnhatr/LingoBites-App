@@ -13,7 +13,15 @@ export type AnalyticsEventName =
   | 'result_viewed'
   | 'lesson_saved'
   | 'lesson_reopened'
-  | 'unified_lesson_opened';
+  | 'unified_lesson_opened'
+  | 'moment_analyzed'
+  | 'moment_intent_chosen'
+  | 'moment_rejected'
+  | 'moment_lesson_ready'
+  | 'moment_reopened'
+  | 'moment_replayed'
+  | 'pii_line_hidden'
+  | 'lesson_deleted';
 
 export type InputMethod = 'camera' | 'gallery' | 'paste_text';
 

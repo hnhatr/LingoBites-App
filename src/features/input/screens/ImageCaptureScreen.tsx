@@ -125,6 +125,10 @@ export function ImageCaptureScreen({navigation, route}: Props) {
     setScreenState({type: 'ocr_loading', image});
     const result = await analyzeImage(image, sourceType);
     if (!result.ok) {
+      trackEvent('moment_rejected', {
+        code: result.errorCode ?? 'unknown',
+        stage: 'analyze',
+      });
       setScreenState({
         type: 'error',
         message: result.message || t('errors.ocr_failed'),
@@ -132,6 +136,10 @@ export function ImageCaptureScreen({navigation, route}: Props) {
       });
       return;
     }
+    trackEvent('moment_analyzed', {
+      kind: result.value.kind,
+      has_image_id: result.value.image_id !== null,
+    });
     navigation.replace('MomentReview', {
       sourceType,
       image,

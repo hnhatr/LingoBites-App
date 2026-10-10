@@ -2,6 +2,8 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {trackEvent} from '@features/analytics';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
@@ -16,11 +18,13 @@ import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {
   collectLessonOutcome,
+  collectLessonPatterns,
   type LessonHubSection,
   type LessonHubSectionRow,
   lessonHubSections,
   sortedSentences,
 } from '../logic/lessonHubContent';
+import {replayDayKey, replayLine} from '../logic/situationReplay';
 import {LessonOutcomeCard} from './LessonOutcomeCard';
 import {LessonStatusBanners} from './LessonStatusBanners';
 import {SourcePhotoCard} from './SourcePhotoCard';
@@ -146,6 +150,15 @@ export function CanonicalLessonHub({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const sentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const outcome = useMemo(() => collectLessonOutcome(snapshot), [snapshot]);
+  const [replayOpen, setReplayOpen] = useState(false);
+  // E5 (S3): only lessons made from a situation can be replayed; no AI, works offline.
+  const replay = useMemo(
+    () =>
+      snapshot.source_type === 'learner_situation'
+        ? replayLine(collectLessonPatterns(snapshot), replayDayKey(new Date()))
+        : null,
+    [snapshot],
+  );
   const sectionRows = useMemo(
     () => lessonHubSections(snapshot, analyses),
     [snapshot, analyses],
@@ -310,6 +323,29 @@ export function CanonicalLessonHub({
             testID="canonical-hub-practice"
             title={t('practice.entry_button')}
           />
+        ) : null}
+        {replay ? (
+          <View>
+            <LessonExploreRow
+              icon="repeat"
+              medallionTone="teal"
+              onPress={() => {
+                if (!replayOpen) trackEvent('moment_replayed', {});
+                setReplayOpen(open => !open);
+              }}
+              subtitle={t('moment.replay_subtitle')}
+              testID="canonical-hub-replay"
+              title={t('moment.replay_title')}
+            />
+            {replayOpen ? (
+              <AppCard style={themedStyles.contentCard}>
+                <AppText color="secondary" variant="caption">
+                  {t('moment.replay_changed', {label: replay.changedLabelVi})}
+                </AppText>
+                <AppText variant="h3">{replay.after}</AppText>
+              </AppCard>
+            ) : null}
+          </View>
         ) : null}
         {onOpenCompose ? (
           <LessonExploreRow

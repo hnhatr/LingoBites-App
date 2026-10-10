@@ -3,7 +3,13 @@ import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {fetchComposeQuota} from '@features/lesson/player';
+import {trackEvent} from '@features/analytics';
+import {
+  dismissCompose,
+  fetchComposeQuota,
+  resumeTrackedMoment,
+  trackMoment,
+} from '@features/lesson/player';
 import {useLearnerProfileStore} from '@features/onboarding';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -88,10 +94,18 @@ export function SituationInputScreen({navigation, route}: Props) {
       createRequestId(),
     );
     if (!result.ok) {
+      trackEvent('moment_rejected', {
+        code: result.errorCode ?? 'unknown',
+        stage: 'submit',
+      });
       setSubmitError(momentFailureMessage(result.errorCode, t));
       return;
     }
     setRequestId(result.value.moment_request_id);
+    trackMoment({
+      requestId: result.value.moment_request_id,
+      situationVi: null,
+    });
   }
 
   async function answer(accept: boolean) {
@@ -102,9 +116,11 @@ export function SituationInputScreen({navigation, route}: Props) {
       return;
     }
     if (!accept) {
+      dismissCompose(requestId);
       setRequestId(null);
       return;
     }
+    resumeTrackedMoment(requestId);
     progress.resume();
   }
 

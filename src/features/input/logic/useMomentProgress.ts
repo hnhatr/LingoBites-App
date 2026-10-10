@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
+import {trackEvent} from '@features/analytics';
 import {
   type CanonicalLessonError,
   fetchLessonCreationStatus,
@@ -58,6 +59,9 @@ export function useMomentProgress(requestId: string | null) {
       }
       setStatus(result.value);
       const next = result.value.status;
+      if (next === 'succeeded') {
+        trackEvent('moment_lesson_ready', {});
+      }
       if (TERMINAL.has(next) || next === 'awaiting_confirmation') {
         stop();
         return;

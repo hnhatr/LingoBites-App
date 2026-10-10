@@ -20,6 +20,8 @@ export interface LibrarySectionConfig {
   lessons?: {origin: LessonOrigin; sourceTypes: LessonSourceType[]};
   /** Public sections: the server catalog query behind the section. */
   catalog?: {origin: LessonOrigin; sourceType: LessonSourceType};
+  /** E5: the learner's "Khoảnh khắc" moments, read from the server list. */
+  moments?: boolean;
   unit: 'bài' | 'từ' | 'quy tắc';
 }
 
@@ -39,8 +41,19 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     emptyHint: 'Chưa có bài, tạo bài đầu tiên',
     lessons: {
       origin: 'learner',
-      sourceTypes: ['learner_text', 'learner_ocr', 'learner_situation'],
+      sourceTypes: ['learner_text', 'learner_ocr'],
     },
+    unit: 'bài',
+  },
+  {
+    id: 'moments',
+    group: 'mine',
+    icon: 'auto_awesome',
+    title: 'Khoảnh khắc',
+    description: 'Bài làm từ tình huống và ảnh',
+    emptyHint:
+      'Chưa có khoảnh khắc. Chụp ảnh hoặc kể một tình huống để bắt đầu',
+    moments: true,
     unit: 'bài',
   },
   {

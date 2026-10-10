@@ -1200,6 +1200,15 @@
     "report_reason_other": "Lý do khác",
     "report_word_done": "Cảm ơn bạn. Mình sẽ kiểm tra lại từ này.",
     "report_word_failed": "Chưa gửi được. Bạn thử lại sau nhé.",
-    "report_word_close": "Đóng"
+    "report_word_close": "Đóng",
+    "level_chip": "Trình độ {{level}}",
+    "library_offline": "Cần mạng để xem khoảnh khắc của bạn.",
+    "replay_title": "Luyện nói lại tình huống",
+    "replay_subtitle": "Đổi một chi tiết rồi luyện lại câu",
+    "replay_changed": "Chi tiết đổi: {{label}}",
+    "card_running": "Đang tạo khoảnh khắc",
+    "card_awaiting": "Chờ bạn xác nhận tình huống",
+    "card_ready": "Khoảnh khắc đã sẵn sàng",
+    "card_default_title": "Khoảnh khắc của bạn"
   }
 }

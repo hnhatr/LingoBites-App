@@ -4,11 +4,15 @@ import {useTranslation} from 'react-i18next';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
-import {startLessonFromConfirmedText} from '@features/lesson/player';
+import {
+  startLessonFromConfirmedText,
+  trackMoment,
+} from '@features/lesson/player';
 import {useLearnerProfileStore} from '@features/onboarding';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
 import {ErrorCard} from '@ui/components/ErrorCard';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
@@ -83,6 +87,7 @@ export function MomentReviewScreen({navigation, route}: Props) {
       else next.add(line);
       return next;
     });
+    trackEvent('pii_line_hidden', {});
   }
 
   async function understand() {
@@ -116,6 +121,10 @@ export function MomentReviewScreen({navigation, route}: Props) {
   async function describe() {
     if (!analysis.image_id) return;
     setBusy(true);
+    trackEvent('moment_intent_chosen', {
+      intent: 'describe',
+      suggested: analysis.suggested_intent === 'describe',
+    });
     const result = await submitMoment(
       {
         intent: 'describe',
@@ -129,12 +138,14 @@ export function MomentReviewScreen({navigation, route}: Props) {
       setError(result.message);
       return;
     }
+    trackMoment({requestId: result.value.moment_request_id, situationVi: null});
     navigation.replace('SituationInput', {
       requestId: result.value.moment_request_id,
     });
   }
 
   function practise() {
+    trackEvent('moment_intent_chosen', {intent: 'use', suggested: false});
     navigation.replace('SituationInput', {
       imageText: confirmed,
       imageId: analysis.image_id ?? undefined,
@@ -160,6 +171,14 @@ export function MomentReviewScreen({navigation, route}: Props) {
           source={{uri: image.uri}}
           style={styles.photo}
         />
+        <View style={styles.chipRow}>
+          <Chip
+            label={t('moment.level_chip', {
+              level: profile?.levelCode === 'A2' ? 'A2' : 'A1',
+            })}
+            tone="gold"
+          />
+        </View>
         <AppText color="secondary">{t('moment.review_intro')}</AppText>
 
         <TextField
@@ -264,6 +283,7 @@ const styles = StyleSheet.create({
   content: {gap: 14, padding: 16},
   photo: {height: 180, width: '100%', borderRadius: 16},
   input: {minHeight: 150, textAlignVertical: 'top'},
+  chipRow: {flexDirection: 'row'},
   piiRow: {flexDirection: 'row', alignItems: 'center', gap: 8},
   grow: {flex: 1},
   linkRow: {minHeight: 44, justifyContent: 'center'},

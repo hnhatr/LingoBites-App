@@ -77,6 +77,8 @@ describe('useLibraryCounts (real SQLite)', () => {
     // The downloaded admin lesson is public, not "mine".
     expect(latest.counts).toEqual({
       mine: 2,
+      // Moments are read from the server list, not counted on the device.
+      moments: 0,
       video: 1,
       vocabulary: 1,
       grammar: 1,

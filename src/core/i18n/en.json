@@ -1200,6 +1200,15 @@
     "report_reason_other": "Something else",
     "report_word_done": "Thanks. We will check this word.",
     "report_word_failed": "Could not send it. Please try again later.",
-    "report_word_close": "Close"
+    "report_word_close": "Close",
+    "level_chip": "Level {{level}}",
+    "library_offline": "You need a connection to see your moments.",
+    "replay_title": "Practise the situation again",
+    "replay_subtitle": "Change one detail and say the sentence again",
+    "replay_changed": "Changed detail: {{label}}",
+    "card_running": "Making your moment",
+    "card_awaiting": "Confirm the situation",
+    "card_ready": "Your moment is ready",
+    "card_default_title": "Your moment"
   }
 }
