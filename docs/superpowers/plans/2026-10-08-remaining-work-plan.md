@@ -16,7 +16,8 @@
 | Stage 0–2 (PR 1–11): đặc tả bài, item, task, hoạt động, player 6 bước, gợi ý, vận dụng độc lập | ✅ Đã merge vào `develop` (server #114, app #221) |
 | Stage 3: âm thanh, chấm bài, đạt bài, ghi nhớ, ôn | ⏳ Thiết kế đã chốt, **chưa code** |
 | Stage 4: video / text / OCR / ảnh → bài 6 bước | ⏳ Đã mô tả, chưa có plan chi tiết |
-| Stage 5: tình huống → bài 6 bước | ⏳ Đã mô tả, chưa có plan chi tiết |
+| Stage 5: tình huống / ảnh → bài 6 bước | ⏳ Đã mô tả; phần ảnh có thiết kế ở `2026-10-10-stage5-9-image-lesson-game-hub.md`, chưa có plan chi tiết |
+| Stage 6–9: Game Hub + 3 nhóm game (hỏi–đáp, ghép / sắp xếp, nghe) | ⏳ Có thiết kế (cùng file), chưa có plan chi tiết |
 | Bước 1 (hồ sơ, đầu vào), Bước 7 (báo cáo, phụ huynh), nhóm 8.x | ⏳ Chưa bắt đầu |
 
 **Nhánh:**
@@ -70,9 +71,12 @@ Giai đoạn 1  Stage 3: PR 12 → 13 → 14  (chấm bài)
      │
 Giai đoạn 2  Ra sản phẩm: Bước 0 (cấu hình), soạn nội dung, Bước 1 (hồ sơ + đầu vào)
      │
-Giai đoạn 3  Stage 4: S4.1 → S4.2 → S4.3 (→ S4.4 sau Stage 5)
+Giai đoạn 3  Stage 4: S4.1 → S4.2 → S4.3 (S4.4 chuyển sang Stage 5, phần ảnh)
      │
 Giai đoạn 4  Stage 5: S5.1 → S5.2 → S5.3 → S5.4 → S5.5
+     │                 phần ảnh: S5.6 → S5.7 → S5.8 → S5.9
+     │
+Giai đoạn 4b Stage 6: Game Hub → Stage 7: hỏi–đáp → Stage 8: ghép / sắp xếp → Stage 9: nghe
      │
 Giai đoạn 5  Bước 7 (báo cáo, phụ huynh), kinh doanh, push, các mục 8.x, dọn dẹp
 ```
@@ -237,12 +241,12 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | S4.1 | server | `lessonComposer` lõi + test bằng AI mock và fixture. **Dùng lại** kết quả dịch / phân tích từ, ngữ pháp / IPA mà luồng tạo bài hiện có đã sinh, hoặc gộp vào cùng một lần gọi AI. Không gọi AI phân tích lại câu. | Bài mẫu qua validator; số lần gọi AI mỗi bài ghi trong plan S4.1 |
 | S4.2 | server + admin | Nút "Sinh bài 6 bước" trên bài từ text / YouTube / bài nhận từ người học. Kết quả là **bài nháp**; bước 2 phát đúng đoạn video. | Admin sửa được rồi publish |
 | S4.3 | server + app | Bài tự tạo có nút "Học theo 6 bước". Snapshot trả `lesson_items` / spec / tasks. Bỏ điều kiện `origin = admin` của `isFlowLesson`. Gộp hub bài tự tạo (4.7). | Người học chạy trọn 6 bước trên bài tự tạo |
-| S4.4 | server + app | Ảnh không chữ → AI mô tả thành tình huống → đi đường Stage 5 | Làm sau S5.3 |
+| S4.4 | — | Chuyển sang Stage 5, phần ảnh (S5.6–S5.9) | — |
 
 - **Cần trước:** Giai đoạn 0 xong; Q5, Q8, Q9, Q11.
 - **Nên làm sau Stage 3**, để bước 5 được chấm thật.
 
-### Giai đoạn 4 – Stage 5: tình huống → bài 6 bước
+### Giai đoạn 4 – Stage 5: tình huống / ảnh → bài 6 bước
 
 | PR | Repo | Nội dung | Cần trước |
 |---|---|---|---|
@@ -253,6 +257,30 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | S5.5 | app + server | Luyện lại tình huống: chỉ bước 5 / nhiệm vụ tổng hợp, đổi chi tiết, theo lịch ôn | PR 15 |
 
 **Xong khi:** người học chọn hoặc gõ một tình huống, nhận bài 6 bước đúng trình độ và học trọn được. Admin sinh được bài nháp từ tình huống.
+
+**Phần ảnh** (thiết kế: `2026-10-10-stage5-9-image-lesson-game-hub.md` §2):
+
+| PR | Repo | Nội dung | Cần trước |
+|---|---|---|---|
+| S5.6 | server + app | Endpoint media cho người học (ảnh / audio của bài, tải offline) | — |
+| S5.7 | server | Nguồn `learner_image`: upload, kiểm duyệt, vision → văn bản nguồn, pipeline + `lessonComposer`, task "tả lại bức ảnh", job, giới hạn lượt | S5.3, Q12–Q15 |
+| S5.8 | app | "Tả bức ảnh" trong luồng Tạo bài; chọn trình độ / mục tiêu; hub bài hiện ảnh | S5.6, S5.7 |
+| S5.9 | server + admin | Admin xem / nhận về bài sinh từ ảnh, xem lượt bị từ chối | S5.7 |
+
+**Xong khi:** chụp một ảnh ra được bài đúng trình độ có ảnh, đoạn đọc, từ vựng, mẫu câu, nhiệm vụ viết / nói; ảnh không phù hợp bị từ chối, không tính lượt.
+
+### Giai đoạn 4b – Stage 6–9: Game Hub và 3 nhóm game
+
+Thiết kế: `2026-10-10-stage5-9-image-lesson-game-hub.md` §3–4. Chỉ app; không migration, không sửa server (`activity_attempts` đã nhận `kind = 'game'`).
+
+| PR | Repo | Nội dung | Cần trước |
+|---|---|---|---|
+| S6 | app | Game Hub: `features/games`, contract hai mức, registry theo flag, host ghi attempt + kết quả chung, `GameHubScreen`, route + intent, test chung | M1, M2 |
+| S7 | app | Hỏi–đáp theo lượt: chọn nghĩa, điền chỗ trống, đúng / sai; hoạt động `game` trong Today | S6 |
+| S8 | app | Sắp xếp, ghép cặp: ghép từ–nghĩa, xếp câu, kéo thả mẫu câu | S6 |
+| S9 | app | Nghe: nghe TTS rồi chọn / gõ | S6 |
+
+**Xong khi (mỗi stage):** chơi được offline với bài đã tải, item đến hạn, thẻ đã lưu; kết quả lên server; từ sai lưu được thành flashcard.
 
 ### Giai đoạn 5 – Mở rộng và dọn dẹp
 
@@ -350,6 +378,19 @@ Nội dung không có tình huống giao tiếp thì giữ dạng hub.
 | D2 | Khi AI kết luận "không phù hợp" | Báo cho người dùng, giữ bài dạng hub, không tính lượt sinh bài | S4.1 | |
 | D3 | Lọc nội dung tình huống người học tự gõ | Chạy kiểm duyệt nội dung trước khi sinh; tài khoản trẻ chỉ chọn từ danh mục, không tự gõ | S5.3 | |
 | D4 | Ngôn ngữ của bài sinh ra | Nội dung học bằng tiếng Anh; giải thích, gợi ý, phản hồi bằng tiếng Việt | S4.1 | |
+
+### 5.5b Stage 5 phần ảnh và Stage 6–9 (game)
+
+| # | Câu hỏi | Đề xuất | Cần cho | Chốt |
+|---|---|---|---|---|
+| Q12 | Lưu ảnh người học gửi, xin đồng ý | Lưu cùng bài để hiện trong hub, xoá khi xoá bài / xoá dữ liệu; xin đồng ý lần đầu | S5.7 | |
+| Q13 | Kiểm duyệt ảnh | Từ chối ảnh không phù hợp trước khi sinh; "không có tình huống" như H7, không tính lượt | S5.7 | |
+| Q14 | Chi phí vision, ai được dùng | Chung hạn mức Q8; trẻ em không tự sinh (như D3) | S5.7 | |
+| Q15 | Chấm bài viết "tả lại bức ảnh" | Tự đánh giá cho tới khi có chấm viết (PR 12) | S5.7 | |
+| M1 | Game có dời lịch ôn `item_memory` không | Không; từ sai gợi ý lưu flashcard | S6 | |
+| M2 | Lối vào Game Hub | Today, Home, hub bài, kết quả Practice; chưa thêm tab | S6 | |
+| M3 | Game nặng đồ hoạ (Skia) / HTML5 (WebView) | Chưa; Stage 7–9 dùng thư viện đã có | sau S9 | |
+| M4 | XP / thưởng cho game | Như practice, không thay "đạt bài" | S6 | |
 
 ### 5.6 Về sau (Bước 7, 8.x) – chốt khi tới lượt
 
@@ -476,7 +517,7 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [x] S4.2b admin "Prompt AI" (quản lý phiên bản prompt, chạy thử, rollback) – server + admin-web, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR, chưa chạy thử với AI thật)
 - [x] S4.2 admin "Sinh bài 6 bước" – server + admin-web, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR)
 - [x] S4.3 người học "Học theo 6 bước" – server + app, nhánh `claude/affectionate-darwin-krszil` (2026-10-09; chưa mở PR, chưa test tay trên máy thật)
-- [ ] S4.4 ảnh không chữ
+- [ ] ~~S4.4 ảnh không chữ~~ → chuyển sang Stage 5 (S5.6–S5.9)
 
 **Giai đoạn 4 – Stage 5**
 - [ ] S5.1 danh mục tình huống
@@ -484,6 +525,16 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] S5.3 sinh bài từ tình huống
 - [ ] S5.4 gợi ý tình huống
 - [ ] S5.5 luyện lại tình huống
+- [ ] S5.6 endpoint media cho người học
+- [ ] S5.7 server: nguồn `learner_image`
+- [ ] S5.8 app: "Tả bức ảnh"
+- [ ] S5.9 admin: bài sinh từ ảnh
+
+**Giai đoạn 4b – Stage 6–9**
+- [ ] S6 Game Hub
+- [ ] S7 game hỏi–đáp
+- [ ] S8 game ghép / sắp xếp
+- [ ] S9 game nghe
 
 **Giai đoạn 5**
 - [ ] Bước 7 – báo cáo, phụ huynh / giáo viên

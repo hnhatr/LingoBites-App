@@ -18,7 +18,8 @@
 | **P1** | Việc chặn Stage 3 (cần quyết định hoặc chuẩn bị trước) |
 | **P2** | Stage 3: khép kín vòng Học → Vận dụng → Đánh giá → Ghi nhận → Ôn |
 | **P3** | Ra được sản phẩm cho người dùng thật |
-| **Stage 4–5** | Sinh bài 6 bước tự động từ nội dung có sẵn và từ tình huống (sau khi xong P0–P2) |
+| **Stage 4–5** | Sinh bài 6 bước tự động từ nội dung có sẵn, từ tình huống và từ ảnh (sau khi xong P0–P2) |
+| **Stage 6–9** | Game Hub và 3 nhóm game đầu tiên (hỏi–đáp, ghép / sắp xếp, nghe) |
 | **P4** | Tính năng bổ trợ, làm dần |
 
 Ở các mục còn việc, cột "Ai" chỉ người làm: **Team** = sản phẩm / nội dung, **Code** = lập trình, **Team + Code** = cả hai.
@@ -100,7 +101,7 @@ Mỗi PR cần plan chi tiết riêng được duyệt trước (VibeGuard).
 
 Cả hai stage dùng **một bộ sinh bài 6 bước chung** (gọi là `lessonComposer`) và chỉ khác **đầu vào**:
 - **Stage 4** xây bộ sinh, đầu vào là nội dung có sẵn (video, text, ảnh có chữ).
-- **Stage 5** tái dùng bộ sinh, đầu vào là một tình huống.
+- **Stage 5** tái dùng bộ sinh, đầu vào là một tình huống hoặc **một tấm ảnh** (AI tả ảnh thành tình huống + đoạn văn nguồn).
 
 ### Đầu ra chung của `lessonComposer`
 
@@ -133,13 +134,13 @@ Một bài **đủ điều kiện publish** theo validator hiện có (0 vi ph�
 | S4.1 | `lessonComposer` phần lõi: từ một bài đã có câu và phân tích, sinh đặc tả, mẫu câu, task, tiêu chí; ghép với bộ sinh nháp hoạt động; chạy validator. Dùng lại kết quả phân tích sẵn có (hoặc gộp một lần gọi AI), không phân tích lại. | server | Có test bằng AI mock và fixture |
 | S4.2 | **Admin:** nút "Sinh bài 6 bước" trên bài tạo từ text / transcript YouTube / bài nhận từ người học. Kết quả là bài nháp, sửa được trên các tab có sẵn. Bước 2 có thể phát đúng đoạn video. | server + admin | Làm trước, giúp có nhiều nội dung curriculum nhanh |
 | S4.3 | **Người học:** bài tự tạo (text, OCR, YouTube) có nút "Học theo 6 bước". Snapshot trả `lesson_items` / spec / tasks cho bài người học. Player mở cho bài tự tạo có đủ đặc tả (bỏ điều kiện `origin = admin` của `isFlowLesson`). | server + app | Gộp mục 4.7 |
-| S4.4 | **Ảnh không có chữ** (ảnh cảnh vật, đồ vật): AI mô tả ảnh thành một tình huống, rồi đi theo đường của Stage 5. | server + app | Phụ thuộc Stage 5; có thể để cuối |
+| S4.4 | ~~Ảnh không có chữ~~ → **chuyển sang Stage 5, phần ảnh (S5.6–S5.9)**. | — | Xem S5 |
 
 - **Phụ thuộc:** P0 xong; Q5 đã chốt; chính sách chi phí AI. Không bắt buộc chờ Stage 3, nhưng nên làm sau để bước 5 được chấm thật.
 - **Ước lượng:** 4–5 PR.
 - **Xong khi:** một video YouTube và một đoạn text bất kỳ sinh ra được bài qua validator, chạy đủ 6 bước trên app, và admin sửa được trước khi publish.
 
-### S5 – Stage 5: từ tình huống → bài 6 bước
+### S5 – Stage 5: từ tình huống và từ ảnh → bài 6 bước
 
 | # | Việc | Repo | Ghi chú |
 |---|---|---|---|
@@ -148,10 +149,15 @@ Một bài **đủ điều kiện publish** theo validator hiện có (0 vi ph�
 | S5.3 | **Sinh bài từ tình huống:** đầu vào là tình huống (chọn từ danh mục, hoặc người học tự gõ "tôi sắp đi phỏng vấn xin việc") + trình độ + đối tượng. AI viết đoạn hội thoại mẫu làm "nguồn" cho bước 2, rồi `lessonComposer` sinh phần còn lại. Ưu tiên tái dùng item đã có trong danh mục. | server + app + admin | Tái dùng S4.1 |
 | S5.4 | **Gợi ý tình huống** theo mục tiêu và sở thích của người học. | app + server | Cần Bước 1 của lộ trình (hồ sơ người học, mục 3.3) |
 | S5.5 | **Luyện lại tình huống:** chỉ chạy bước 5 hoặc nhiệm vụ tổng hợp của tình huống đã học, đổi chi tiết mỗi lần, theo lịch ôn. Nối với nhập vai AI (mục 4.3) nếu đã có. | app + server | Cần Stage 3 (`item_memory`) |
+| | **Phần ảnh – tạo bài từ một tấm ảnh** (thiết kế: `2026-10-10-stage5-9-image-lesson-game-hub.md` §2). Người học chụp / chọn ảnh → AI tả ảnh thành tình huống + đoạn văn / hội thoại theo trình độ → pipeline tạo bài + `lessonComposer` → bài có đọc, từ vựng, mẫu câu, nhiệm vụ viết / nói "tả lại bức ảnh". | | |
+| S5.6 | **Endpoint media cho người học** (G1 của PR 6): đọc ảnh / audio của bài, tải về để học offline. | server + app | Game Hub cũng cần |
+| S5.7 | **Server – nguồn `learner_image`:** upload ảnh, kiểm duyệt, bước vision → văn bản nguồn (prompt mới), đưa vào pipeline sẵn có + `lessonComposer`, task "tả lại bức ảnh", job bất đồng bộ, giới hạn lượt. | server | ⚠️ Đổi contract công khai `source_type`; cần Q12–Q15 |
+| S5.8 | **App – "Tả bức ảnh":** sau khi chụp / chọn ảnh hỏi "Lấy chữ" (OCR) hay "Tả bức ảnh"; chọn trình độ, mục tiêu; `startCreate({kind: 'image_scene'})`; chờ job; mở bài. Hub bài hiện ảnh gốc. | app | Cần S5.6, S5.7 |
+| S5.9 | **Admin:** xem bài sinh từ ảnh, "nhận về" làm nội dung chung (Q9), xem lượt bị từ chối. | server + admin | Có thể để cuối |
 
-- **Phụ thuộc:** S4.1; Q5; danh mục tình huống do team nội dung chốt.
-- **Ước lượng:** 4–6 PR.
-- **Xong khi:** người học chọn hoặc gõ một tình huống, nhận được bài 6 bước phù hợp trình độ và học trọn được; admin sinh được bài nháp từ tình huống để đưa vào curriculum.
+- **Phụ thuộc:** S4.1; Q5; danh mục tình huống do team nội dung chốt. Phần ảnh: nên làm sau S5.3; cần Q12–Q15.
+- **Ước lượng:** 4–6 PR (tình huống) + 3–4 PR (ảnh).
+- **Xong khi:** người học chọn hoặc gõ một tình huống, nhận được bài 6 bước phù hợp trình độ và học trọn được; admin sinh được bài nháp từ tình huống để đưa vào curriculum. Phần ảnh: chụp một ảnh (ví dụ quán cà phê) ra được bài đúng trình độ có ảnh, đoạn đọc, từ vựng, mẫu câu, nhiệm vụ viết / nói và học trọn được; ảnh không phù hợp bị từ chối, không tính lượt.
 
 ### Quyết định cần chốt trước Stage 4–5
 
@@ -161,6 +167,38 @@ Một bài **đủ điều kiện publish** theo validator hiện có (0 vi ph�
 | Q9 | Bài do AI sinh từ người học có được admin "nhận về" làm nội dung chung không (giống chức năng chuyển bài hiện có)? |
 | Q10 | Danh mục tình huống chuẩn gồm những gì, chia theo trình độ và đối tượng ra sao? |
 | Q11 | Nhà cung cấp AI và ngân sách cho việc sinh bài (khác với ngân sách chấm nói ở Q4). |
+| Q12 | Ảnh người học gửi: có lưu trên server không, bao lâu; có cần xin đồng ý như ghi âm không? |
+| Q13 | Kiểm duyệt ảnh: ảnh nào bị từ chối, ảnh "không có tình huống" xử lý ra sao? |
+| Q14 | Chi phí vision: dùng chung hạn mức Q8 hay tách riêng; trẻ em có được tạo bài từ ảnh không? |
+| Q15 | Chấm bài viết "tả lại bức ảnh": tự đánh giá hay chờ chấm viết của PR 12? |
+
+---
+
+## Stage 6–9 – Game Hub và 3 nhóm game
+
+Thiết kế đầy đủ (contract, cấu trúc thư mục, điều hướng): `2026-10-10-stage5-9-image-lesson-game-hub.md` §3–4. Thay cho phần mini game của mục 4.3.
+
+Game là "ổ cắm" luyện ngoài bài: mỗi game chỉ viết sinh câu + chấm + UI một lượt; một **host** chung lo seed, đếm giờ, ghi `activity_attempts` (`kind = 'game'`, đã có ở app và server), sync, màn kết quả, lưu từ sai thành flashcard. Không cần migration, không cần sửa server.
+
+| # | Việc | Repo | Ghi chú |
+|---|---|---|---|
+| S6 | **Stage 6 – Game Hub:** feature `features/games` + `core/learning/games` (contract hai mức: game theo lượt / game tự do), registry theo feature flag, host `useGameSession`, màn kết quả chung, `GameHubScreen`, route `GameHub` / `GameSession` trên root stack, intent `openGames` / `openGame`, lối vào Home / hub bài / kết quả Practice, test chung cho mọi game. | app | Cần M1, M2 |
+| S7 | **Stage 7 – Hỏi–đáp theo lượt:** chọn nghĩa, điền chỗ trống, đúng / sai. Dùng lại bộ sinh `meaning_choice` / `cloze_choice`. Thêm hoạt động `game` cho Today. | app | Cờ `miniGame`, `fillBlankGame` |
+| S8 | **Stage 8 – Sắp xếp, ghép cặp:** ghép từ–nghĩa, xếp câu, kéo thả vào chỗ trống của mẫu câu. Mỗi lượt là một bảng. Dùng gesture-handler + reanimated đã có. | app | Cờ `wordMatchGame`, `sentenceOrderGame` |
+| S9 | **Stage 9 – Nghe:** nghe TTS rồi chọn, nghe rồi gõ (chấm bằng `acceptedAnswers`). Game khai báo `requires: ['tts']`; máy không có giọng tiếng Anh thì Hub báo lý do. | app | Cờ `miniGame` |
+
+- **Phụ thuộc:** không chặn bởi Stage 3–5; game theo `item_memory` (nguồn "đến hạn") cần PR 15–16.
+- **Để sau:** `tenseQuizGame` (chưa có dữ liệu ngữ pháp có cấu trúc), `flashcardChallenge`, game arcade / ô chữ / nói / nhập vai AI (gắn vào mức "game tự do" của contract, không phải sửa khung).
+- **Xong khi (mỗi stage):** game chơi được offline với bài đã tải, với item đến hạn và với thẻ đã lưu; kết quả lên server; từ sai lưu được thành flashcard.
+
+### Quyết định cần chốt trước Stage 6
+
+| # | Câu hỏi |
+|---|---|
+| M1 | Game có dời lịch ôn (`item_memory`) không? Đề xuất: **không**, chỉ gợi ý lưu flashcard cho từ sai. |
+| M2 | Lối vào chính của Game Hub: Today / Home / hub bài, hay thêm tab riêng? Đề xuất: chưa thêm tab. |
+| M3 | Có mở đường cho game nặng đồ hoạ (Skia, dependency mới) hoặc game HTML5 (WebView) ngay không? Đề xuất: chưa. |
+| M4 | XP / thưởng cho game: đề xuất tính như practice, không thay cho "đạt bài". |
 
 ---
 
@@ -170,7 +208,7 @@ Một bài **đủ điều kiện publish** theo validator hiện có (0 vi ph�
 |---|---|---|
 | 4.1 | **8.1 Hỗ trợ học:** sửa phát âm tự động, chỉnh tốc độ nghe. Mọi lần dùng hỗ trợ ghi vào mức hỗ trợ. | Dùng lại STT của Stage 3 |
 | 4.2 | **8.2 Động lực:** nhiệm vụ, câu chuyện có nhân vật đồng hành (cho trẻ), mở khoá nội dung; thưởng gắn với "đạt bài", không chỉ với số lượt làm. | Hiện có pet, XP, badge, streak, weekly goal |
-| 4.3 | **8.3 Thực hành mở rộng:**<br>- mini game: các flag `wordMatchGame`, `fillBlankGame`, `tenseQuizGame`, `sentenceOrderGame` đã có nhưng chưa có UI;<br>- nhập vai với AI theo tình huống bài;<br>- chế độ đấu, nhiệm vụ đội. | ⚠️ Chi phí AI |
+| 4.3 | **8.3 Thực hành mở rộng:**<br>- mini game: **chuyển sang Stage 6–9** (Game Hub + 3 nhóm game); `tenseQuizGame` để sau;<br>- nhập vai với AI theo tình huống bài;<br>- chế độ đấu, nhiệm vụ đội. | ⚠️ Chi phí AI |
 | 4.4 | **8.4 Nguồn mới:** bài hát, phim, nhân vật, nguồn lời nói. | Sau Stage 4 |
 | 4.5 | **8.5 Quản lý việc học:** dùng sở thích, lịch sử, báo cáo để định hướng học tiếp; phụ huynh / giáo viên giao bài. | Cần 3.3, 3.5 |
 | 4.6 | **8.7 Vận hành:** admin cấu hình quy tắc thưởng và nội dung thông báo. | |
