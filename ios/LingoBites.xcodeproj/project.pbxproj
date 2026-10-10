@@ -15,27 +15,27 @@
 		7D11E5032CC04AA100A4B2D1 /* DeviceIdentity.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A3C06E6D3B947DBEF45D0676 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB4D8FDB386CB31325726DAE /* ExpoModulesProvider.swift */; };
-		A3C09FDA0D6A9FF7EC45CF58 /* libPods-LingoBites.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D55D6B4F1743B5EE50926DDE /* libPods-LingoBites.a */; };
+		B2BB762C81D0ED5FF322708A /* libPods-LingoBites.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9BFCD7B346D41F724AE7845 /* libPods-LingoBites.a */; };
 		D5149D079B854F6C8FD34EFE /* Lexend-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 130DFB3A84AD4CCF98E486E3 /* Lexend-Bold.ttf */; };
 		E7A0C0DE00000000000000A2 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = E7A0C0DE00000000000000A1 /* Expo.plist */; };
 		F17F8B9ACB55453CABFFE16C /* Lexend-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1056969697BB239868595C99 /* Pods-LingoBites.releasedev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasedev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasedev.xcconfig"; sourceTree = "<group>"; };
 		130DFB3A84AD4CCF98E486E3 /* Lexend-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Lexend-Bold.ttf"; path = "../assets/fonts/Lexend-Bold.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* LingoBites.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LingoBites.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = LingoBites/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = LingoBites/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = LingoBites/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		18CFC5460316E0F7DBCFBBC5 /* Pods-LingoBites.releasedev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasedev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasedev.xcconfig"; sourceTree = "<group>"; };
-		1F834ED683C9F3B5EC917C81 /* Pods-LingoBites.releaseprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releaseprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releaseprod.xcconfig"; sourceTree = "<group>"; };
+		1B09D86709E854A2BC9DDCF9 /* Pods-LingoBites.releasestag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasestag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasestag.xcconfig"; sourceTree = "<group>"; };
 		2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Lexend-SemiBold.ttf"; path = "../assets/fonts/Lexend-SemiBold.ttf"; sourceTree = "<group>"; };
 		4FAAED88B7834D3FACA9C2F2 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = ../assets/fonts/MaterialIcons.ttf; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LingoBites/AppDelegate.swift; sourceTree = "<group>"; };
 		7D11E5002CC04AA100A4B2D1 /* DeviceIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceIdentity.h; path = LingoBites/DeviceIdentity.h; sourceTree = "<group>"; };
 		7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = DeviceIdentity.mm; path = LingoBites/DeviceIdentity.mm; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = LingoBites/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		85F336BD19CACC70258B2FA9 /* Pods-LingoBites.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugprod.xcconfig"; sourceTree = "<group>"; };
+		9032A66363A7BE42F2CD7F46 /* Pods-LingoBites.debugdev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugdev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugdev.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000201 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		A00000000000000000000202 /* Config-DebugDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-DebugDev.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000203 /* Config-ReleaseDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseDev.xcconfig"; sourceTree = "<group>"; };
@@ -43,14 +43,14 @@
 		A00000000000000000000205 /* Config-ReleaseStag.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseStag.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000206 /* Config-DebugProd.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-DebugProd.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000207 /* Config-ReleaseProd.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseProd.xcconfig"; sourceTree = "<group>"; };
-		A033F1364DE45AFD541B3D90 /* Pods-LingoBites.debugstag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugstag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugstag.xcconfig"; sourceTree = "<group>"; };
+		A27276F792631A149F0914F9 /* Pods-LingoBites.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugprod.xcconfig"; sourceTree = "<group>"; };
 		B1CFFAB53F474DD49B16DD9E /* Quicksand-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Quicksand-Medium.ttf"; path = "../assets/fonts/Quicksand-Medium.ttf"; sourceTree = "<group>"; };
-		B952747ADB65AF1E45F673A2 /* Pods-LingoBites.releasestag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasestag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasestag.xcconfig"; sourceTree = "<group>"; };
-		BD935301A3C4F2264ADAC33B /* Pods-LingoBites.debugdev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugdev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugdev.xcconfig"; sourceTree = "<group>"; };
+		B76BC52F8DD68F6465396570 /* Pods-LingoBites.releaseprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releaseprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releaseprod.xcconfig"; sourceTree = "<group>"; };
 		CB4D8FDB386CB31325726DAE /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-LingoBites/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		D55D6B4F1743B5EE50926DDE /* libPods-LingoBites.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LingoBites.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7A0C0DE00000000000000A1 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Expo.plist; path = LingoBites/Supporting/Expo.plist; sourceTree = "<group>"; };
+		E9BFCD7B346D41F724AE7845 /* libPods-LingoBites.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LingoBites.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F1571BA85616B258E6F86821 /* Pods-LingoBites.debugstag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugstag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugstag.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,7 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A3C09FDA0D6A9FF7EC45CF58 /* libPods-LingoBites.a in Frameworks */,
+				B2BB762C81D0ED5FF322708A /* libPods-LingoBites.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,7 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				D55D6B4F1743B5EE50926DDE /* libPods-LingoBites.a */,
+				E9BFCD7B346D41F724AE7845 /* libPods-LingoBites.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -157,12 +157,12 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				BD935301A3C4F2264ADAC33B /* Pods-LingoBites.debugdev.xcconfig */,
-				18CFC5460316E0F7DBCFBBC5 /* Pods-LingoBites.releasedev.xcconfig */,
-				A033F1364DE45AFD541B3D90 /* Pods-LingoBites.debugstag.xcconfig */,
-				B952747ADB65AF1E45F673A2 /* Pods-LingoBites.releasestag.xcconfig */,
-				85F336BD19CACC70258B2FA9 /* Pods-LingoBites.debugprod.xcconfig */,
-				1F834ED683C9F3B5EC917C81 /* Pods-LingoBites.releaseprod.xcconfig */,
+				9032A66363A7BE42F2CD7F46 /* Pods-LingoBites.debugdev.xcconfig */,
+				1056969697BB239868595C99 /* Pods-LingoBites.releasedev.xcconfig */,
+				F1571BA85616B258E6F86821 /* Pods-LingoBites.debugstag.xcconfig */,
+				1B09D86709E854A2BC9DDCF9 /* Pods-LingoBites.releasestag.xcconfig */,
+				A27276F792631A149F0914F9 /* Pods-LingoBites.debugprod.xcconfig */,
+				B76BC52F8DD68F6465396570 /* Pods-LingoBites.releaseprod.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -174,15 +174,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "LingoBites" */;
 			buildPhases = (
-				8E77C925545BBC6D990AC45C /* [CP] Check Pods Manifest.lock */,
+				2F82B1D8DD22AC7F0CB5DBDA /* [CP] Check Pods Manifest.lock */,
 				41E359DD3115A9A91CBBE0FF /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				E7A0C0DE00000000000000A3 /* [Expo] Set updates channel */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				E387D81C209FE8ABEB391086 /* [CP] Embed Pods Frameworks */,
-				5DB84B6A32A465D822809839 /* [CP] Copy Pods Resources */,
+				AE7BE433D3A3069BE54115DE /* [CP] Embed Pods Frameworks */,
+				EE625F03897DAA08C25EFC48 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -259,6 +259,28 @@
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli')\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n";
 		};
+		2F82B1D8DD22AC7F0CB5DBDA /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-LingoBites-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		41E359DD3115A9A91CBBE0FF /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -282,46 +304,7 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-LingoBites/expo-configure-project.sh\"\n";
 		};
-		5DB84B6A32A465D822809839 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		8E77C925545BBC6D990AC45C /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-LingoBites-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E387D81C209FE8ABEB391086 /* [CP] Embed Pods Frameworks */ = {
+		AE7BE433D3A3069BE54115DE /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -356,6 +339,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "set -e\n# Sets the expo-updates channel in the bundled Expo.plist based on the build configuration.\nPLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Expo.plist\"\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Expo.plist not found in app bundle: $PLIST\"\n  exit 1\nfi\ncase \"$CONFIGURATION\" in\n  *Prod) CHANNEL=production ;;\n  *Stag) CHANNEL=staging ;;\n  *) CHANNEL=development ;;\nesac\n/usr/libexec/PlistBuddy -c \"Set :EXUpdatesRequestHeaders:expo-channel-name $CHANNEL\" \"$PLIST\"\necho \"expo-updates channel: $CHANNEL\"\n";
+		};
+		EE625F03897DAA08C25EFC48 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-resources.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
