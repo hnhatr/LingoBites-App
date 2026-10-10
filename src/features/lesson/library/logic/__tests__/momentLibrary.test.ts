@@ -1,6 +1,6 @@
 import {getAppConfig} from '@core/api/appConfig';
 
-import {lessonBelongsToSection,LIBRARY_SECTIONS} from '../librarySections';
+import {lessonBelongsToSection, LIBRARY_SECTIONS} from '../librarySections';
 import {fetchMomentLibrary} from '../momentLibrary';
 
 jest.mock('@core/api/appConfig', () => ({getAppConfig: jest.fn()}));

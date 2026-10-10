@@ -1209,6 +1209,7 @@
     "card_running": "Đang tạo khoảnh khắc",
     "card_awaiting": "Chờ bạn xác nhận tình huống",
     "card_ready": "Khoảnh khắc đã sẵn sàng",
-    "card_default_title": "Khoảnh khắc của bạn"
+    "card_default_title": "Khoảnh khắc của bạn",
+    "replay_listen": "Nghe câu này"
   }
 }

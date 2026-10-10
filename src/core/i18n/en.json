@@ -1209,6 +1209,7 @@
     "card_running": "Making your moment",
     "card_awaiting": "Confirm the situation",
     "card_ready": "Your moment is ready",
-    "card_default_title": "Your moment"
+    "card_default_title": "Your moment",
+    "replay_listen": "Listen to this sentence"
   }
 }

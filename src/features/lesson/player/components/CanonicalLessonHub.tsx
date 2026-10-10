@@ -126,6 +126,8 @@ export type CanonicalLessonHubProps = {
   onOpenCompose?: () => void;
   /** E5: the learner's own lesson can be deleted (server and this device). */
   onDeleteLesson?: () => void;
+  /** Speaks the replayed sentence (TTS); omitted = no play button. */
+  onSpeakText?: (text: string) => void;
 };
 
 /**
@@ -144,6 +146,7 @@ export function CanonicalLessonHub({
   onOpenPractice,
   onOpenCompose,
   onDeleteLesson,
+  onSpeakText,
 }: CanonicalLessonHubProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -343,6 +346,19 @@ export function CanonicalLessonHub({
                   {t('moment.replay_changed', {label: replay.changedLabelVi})}
                 </AppText>
                 <AppText variant="h3">{replay.after}</AppText>
+                {onSpeakText ? (
+                  <Pressable
+                    accessibilityLabel={t('moment.replay_listen')}
+                    accessibilityRole="button"
+                    onPress={() => onSpeakText(replay.after)}
+                    style={themedStyles.listen}
+                    testID="canonical-hub-replay-listen"
+                  >
+                    <AppText color="primary" variant="label">
+                      {t('moment.replay_listen')}
+                    </AppText>
+                  </Pressable>
+                ) : null}
               </AppCard>
             ) : null}
           </View>
@@ -415,6 +431,7 @@ function ExploreRow({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    listen: {alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center'},
     contentCard: {
       borderBottomColor: theme.colors.accentSoft,
       borderBottomWidth: 4,

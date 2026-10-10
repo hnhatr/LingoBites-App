@@ -1,5 +1,19 @@
+jest.mock('../composeClient', () => ({
+  fetchActiveComposes: jest.fn(async () => ({ok: true, value: []})),
+  fetchActiveMomentRequests: jest.fn(async () => ({ok: true, value: []})),
+}));
+jest.mock('../canonicalLessonClient', () => ({
+  fetchLessonCreationStatus: jest.fn(),
+  fetchLessonSnapshot: jest.fn(),
+}));
+jest.mock('../canonicalDownloadRepository', () => ({
+  getLessonDownload: jest.fn(() => null),
+  saveLessonSnapshotBody: jest.fn(),
+}));
+
 import {
   dismissCompose,
+  hydrateComposeTracker,
   resetComposeTrackerForTests,
   resumeTrackedMoment,
   trackMoment,
@@ -52,5 +66,30 @@ describe('tracked moments', () => {
     }));
     dismissCompose('m3');
     expect(entry('m3')).toBeUndefined();
+  });
+});
+
+describe('moments restored from the server', () => {
+  it('a moment still waiting for confirmation comes back as awaiting', async () => {
+    resetComposeTrackerForTests();
+    const client = jest.requireMock('../composeClient') as {
+      fetchActiveMomentRequests: jest.Mock;
+    };
+    client.fetchActiveMomentRequests.mockResolvedValueOnce({
+      ok: true,
+      value: [
+        {
+          id: '22222222-2222-4222-8222-222222222222',
+          status: 'awaiting_confirmation',
+          situation_vi: 'Gọi đồ uống',
+        },
+      ],
+    });
+    await hydrateComposeTracker();
+    expect(entry('22222222-2222-4222-8222-222222222222')).toMatchObject({
+      kind: 'moment',
+      status: 'awaiting',
+      sourceTitle: 'Gọi đồ uống',
+    });
   });
 });

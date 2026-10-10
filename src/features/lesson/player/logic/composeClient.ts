@@ -143,6 +143,42 @@ export async function fetchActiveComposes(
   return {ok: true, value: parsed.data.requests};
 }
 
+const ActiveMomentResponseSchema = z.object({
+  requests: z.array(
+    z.object({
+      id: z.string().uuid(),
+      status: z.string(),
+      situation_vi: z.string().nullable(),
+    }),
+  ),
+});
+
+export type ActiveMomentRequest = z.infer<
+  typeof ActiveMomentResponseSchema
+>['requests'][number];
+
+/** E6 (deferred E3): the caller's moments still running or waiting for a confirmation. */
+export async function fetchActiveMomentRequests(
+  options: CanonicalLessonClientOptions = {},
+): Promise<CanonicalLessonResult<ActiveMomentRequest[]>> {
+  const answered = await send(
+    `${LESSON_CREATIONS_PATH}?kind=moment&active=true`,
+    {method: 'GET'},
+    'CREATION_REQUEST_NOT_FOUND',
+    options,
+  );
+  if (!('body' in answered)) return answered;
+  const {status, body} = answered;
+  if (status < 200 || status >= 300) {
+    return errorFromStatus(status, body, 'CREATION_REQUEST_NOT_FOUND');
+  }
+  const parsed = ActiveMomentResponseSchema.safeParse(body);
+  if (!parsed.success) {
+    return contentError('Active moment response failed validation.');
+  }
+  return {ok: true, value: parsed.data.requests};
+}
+
 const ComposeCapabilitySchema = z.object({
   capabilities: z.object({
     lessons: z.object({

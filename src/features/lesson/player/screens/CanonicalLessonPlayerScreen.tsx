@@ -545,6 +545,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                   : undefined
               }
               onOpenCompose={openCompose}
+              onSpeakText={handleSpeak}
               onDeleteLesson={
                 snapshot.origin === 'learner' ? confirmDelete : undefined
               }

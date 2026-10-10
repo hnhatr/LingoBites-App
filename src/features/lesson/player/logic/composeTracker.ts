@@ -14,7 +14,7 @@ import {
   fetchLessonCreationStatus,
   fetchLessonSnapshot,
 } from './canonicalLessonClient';
-import {fetchActiveComposes} from './composeClient';
+import {fetchActiveComposes, fetchActiveMomentRequests} from './composeClient';
 
 /**
  * S4.3 / wait design §3: the learner's "Học theo 6 bước" requests, wherever
@@ -269,6 +269,31 @@ export async function hydrateComposeTracker(
       hydrated: true,
       entries: [...kept, ...state.entries],
     }));
+  }
+  // E6: moments started on another device or before a restart come back too.
+  const moments = await fetchActiveMomentRequests();
+  if (moments.ok) {
+    setEntries(entries => {
+      const known = new Set(entries.map(entry => entry.requestId));
+      const added: ComposeEntry[] = moments.value
+        .filter(request => !known.has(request.id))
+        .map(request => ({
+          requestId: request.id,
+          kind: 'moment',
+          sourceLessonId: '',
+          sourceTitle: request.situation_vi,
+          sentenceIds: [],
+          createdAt: now,
+          status:
+            request.status === 'awaiting_confirmation' ? 'awaiting' : 'running',
+          progress: null,
+          lessonId: null,
+          error: null,
+          seen: false,
+          waitingNetwork: false,
+        }));
+      return added.length > 0 ? [...entries, ...added] : entries;
+    });
   }
   const active = await fetchActiveComposes();
   if (!active.ok) return;

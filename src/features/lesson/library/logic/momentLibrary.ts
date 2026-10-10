@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {z} from 'zod';
 
 import {
@@ -34,6 +35,58 @@ export type MomentLibraryItem = {
   thumbnailUri: string | null;
 };
 
+const CACHE_KEY = 'moment-library:v1';
+
+/** The last list this device got, shown when the network is not there. */
+export async function readCachedMomentLibrary(): Promise<
+  MomentLibraryItem[] | null
+> {
+  try {
+    const raw = await AsyncStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = z.array(MomentLibraryItemSchema).safeParse(JSON.parse(raw));
+    if (!parsed.success) return null;
+    return parsed.data.map(toItem);
+  } catch {
+    return null;
+  }
+}
+
+async function saveCachedMomentLibrary(
+  items: MomentLibraryItem[],
+): Promise<void> {
+  try {
+    await AsyncStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify(
+        items.map(item => ({
+          lesson_id: item.lessonId,
+          title: item.title,
+          moment_intent: item.intent,
+          situation_title_vi: item.situationTitleVi,
+          created_at: item.createdAt,
+          thumbnail_url: item.thumbnailUri,
+        })),
+      ),
+    );
+  } catch {
+    // Without the cache the list still works online.
+  }
+}
+
+function toItem(
+  row: z.infer<typeof MomentLibraryItemSchema>,
+): MomentLibraryItem {
+  return {
+    lessonId: row.lesson_id,
+    title: row.title,
+    intent: row.moment_intent,
+    situationTitleVi: row.situation_title_vi,
+    createdAt: row.created_at,
+    thumbnailUri: row.thumbnail_url,
+  };
+}
+
 /** The learner's moment lessons, newest first. Needs the network. */
 export async function fetchMomentLibrary(
   options: CanonicalLessonClientOptions = {},
@@ -51,17 +104,14 @@ export async function fetchMomentLibrary(
   const parsed = MomentLibraryResponseSchema.safeParse(answered.body);
   if (!parsed.success) return contentError('Moment list failed validation.');
   const {apiBaseUrl} = getAppConfig();
-  return {
-    ok: true,
-    value: parsed.data.moments.map(row => ({
-      lessonId: row.lesson_id,
-      title: row.title,
-      intent: row.moment_intent,
-      situationTitleVi: row.situation_title_vi,
-      createdAt: row.created_at,
-      thumbnailUri: row.thumbnail_url
+  const items = parsed.data.moments.map(row =>
+    toItem({
+      ...row,
+      thumbnail_url: row.thumbnail_url
         ? `${apiBaseUrl}${row.thumbnail_url}`
         : null,
-    })),
-  };
+    }),
+  );
+  await saveCachedMomentLibrary(items);
+  return {ok: true, value: items};
 }
