@@ -5,6 +5,12 @@ name: iOS Release TestFlight
 # The GitHub Environment matching `env` supplies the secrets (including the
 # whole .env.<env> file as APP_ENV_FILE), so give the `production` environment
 # required reviewers.
+#
+# Cost notes: the JS quality gate runs on a Linux runner (macOS minutes cost
+# ~10x). The macOS build is skipped when a build with the same expo-updates
+# fingerprint and env file already reached TestFlight from a run of this
+# workflow: ship JS-only changes with `yarn eas:update:<env>` instead, or set
+# `force_build` (for example to bump IOS_APP_VERSION_NAME).
 on:
   workflow_dispatch:
     inputs:
@@ -13,6 +19,10 @@ on:
         type: choice
         options: [staging, production]
         default: staging
+      force_build:
+        description: Build even if this native fingerprint was already uploaded
+        type: boolean
+        default: false
 
 concurrency:
   group: ios-release-${{ inputs.env }}
@@ -22,27 +32,15 @@ permissions:
   contents: read
 
 jobs:
-  build-and-upload:
-    name: Build ${{ inputs.env }} & upload to TestFlight
-    runs-on: macos-latest
-    timeout-minutes: 60
-    environment: ${{ inputs.env }}
-    env:
-      ENVFILE: .env.${{ inputs.env }}
+  checks:
+    name: Format, lint, typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      fingerprint: ${{ steps.fingerprint.outputs.hash }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Resolve scheme for environment
-        run: |
-          set -euo pipefail
-          case "${{ inputs.env }}" in
-            staging)    scheme=Staging;    configuration=ReleaseStag ;;
-            production) scheme=Production; configuration=ReleaseProd ;;
-            *) echo "Unknown env: ${{ inputs.env }}" >&2; exit 1 ;;
-          esac
-          printf 'IOS_SCHEME=%s\n' "$scheme" >> "$GITHUB_ENV"
-          printf 'IOS_CONFIGURATION=%s\n' "$configuration" >> "$GITHUB_ENV"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -50,38 +48,42 @@ jobs:
           node-version: '22.13.1'
           cache: yarn
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Ruby (bundler)
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2.4'
-          bundler-cache: true
-
       - name: Install JS dependencies
         run: yarn install --frozen-lockfile
-
-      - name: Install Ruby gems
-        run: bundle install
-
-      - name: Install CocoaPods
-        run: bundle exec pod install --project-directory=ios
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Check lint warning budget
-        run: yarn lint:budget
-
-      - name: Typecheck
-        run: yarn typecheck
 
       - name: Check formatting
         run: yarn format:check
 
+      - name: Lint
+        # Includes module boundaries and the ESLint warning budget.
+        run: yarn lint
+
+      - name: Typecheck
+        run: yarn typecheck
+
       - name: Test
-        run: yarn test --passWithNoTests
+        run: yarn test --ci
+
+      - name: Compute expo-updates fingerprint
+        id: fingerprint
+        run: |
+          set -euo pipefail
+          fingerprint="$(npx expo-updates fingerprint:generate --platform ios | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')"
+          echo "iOS runtime version (fingerprint): $fingerprint"
+          printf 'hash=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+
+  build-and-upload:
+    name: Build ${{ inputs.env }} & upload to TestFlight
+    needs: checks
+    runs-on: macos-latest
+    timeout-minutes: 60
+    environment: ${{ inputs.env }}
+    env:
+      ENVFILE: .env.${{ inputs.env }}
+      FINGERPRINT: ${{ needs.checks.outputs.fingerprint }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Verify required secrets are present
         run: |
@@ -129,12 +131,133 @@ jobs:
         env:
           APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
 
+      - name: Compute release key
+        # react-native-config compiles the env file into the native app, so a
+        # changed env file needs a new build even when the fingerprint is the same.
+        id: release-key
+        run: |
+          set -euo pipefail
+          test -n "$FINGERPRINT"
+          env_hash="$(shasum -a 256 "$ENVFILE" | cut -c1-16)"
+          printf 'key=ios-release-%s-%s-%s\n' "${{ inputs.env }}" "$FINGERPRINT" "$env_hash" >> "$GITHUB_OUTPUT"
+
+      - name: Look up previous build with the same fingerprint
+        id: previous
+        uses: actions/cache/restore@v4
+        with:
+          path: .release-marker
+          key: ${{ steps.release-key.outputs.key }}
+          lookup-only: true
+
+      - name: Decide whether to build
+        id: gate
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.previous.outputs.cache-hit }}" = "true" ] && [ "${{ inputs.force_build }}" != "true" ]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Skipped: native build already on TestFlight"
+              echo ""
+              echo "A build with iOS fingerprint \`$FINGERPRINT\` and the same env file was already uploaded."
+              echo "Ship JS changes with \`yarn eas:update:${{ inputs.env }} \"<message>\"\`, or re-run with **force_build** to upload a new binary."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice::Skipped: fingerprint $FINGERPRINT was already uploaded. Use EAS Update or force_build."
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve scheme for environment
+        if: steps.gate.outputs.build == 'true'
+        run: |
+          set -euo pipefail
+          case "${{ inputs.env }}" in
+            staging)    scheme=Staging;    configuration=ReleaseStag ;;
+            production) scheme=Production; configuration=ReleaseProd ;;
+            *) echo "Unknown env: ${{ inputs.env }}" >&2; exit 1 ;;
+          esac
+          printf 'IOS_SCHEME=%s\n' "$scheme" >> "$GITHUB_ENV"
+          printf 'IOS_CONFIGURATION=%s\n' "$configuration" >> "$GITHUB_ENV"
+
+      - name: Setup Node
+        if: steps.gate.outputs.build == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.1'
+          cache: yarn
+
+      - name: Enable Corepack
+        if: steps.gate.outputs.build == 'true'
+        run: corepack enable
+
+      - name: Setup Ruby (bundler)
+        if: steps.gate.outputs.build == 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.4'
+          bundler-cache: true
+
+      - name: Install ccache
+        if: steps.gate.outputs.build == 'true'
+        run: |
+          brew install ccache
+          echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+          HOMEBREW_NO_INSTALL_CLEANUP: '1'
+
+      - name: Restore ccache
+        # Native (C/C++/Obj-C) objects from earlier runs. A new key every run so
+        # the cache is always saved; restore-keys picks up the most recent one.
+        if: steps.gate.outputs.build == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-ios-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: ccache-ios-${{ runner.os }}-
+
+      - name: Restore CocoaPods
+        if: steps.gate.outputs.build == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock', 'yarn.lock') }}
+          restore-keys: pods-${{ runner.os }}-
+
+      - name: Install JS dependencies
+        if: steps.gate.outputs.build == 'true'
+        run: yarn install --frozen-lockfile
+
+      - name: Install CocoaPods
+        # USE_CCACHE=1 makes react_native_post_install route every Pod target
+        # through React Native's ccache-clang wrappers (no Podfile change, so the
+        # fingerprint is unaffected).
+        if: steps.gate.outputs.build == 'true'
+        run: |
+          set -euo pipefail
+          bundle exec pod install --project-directory=ios
+          # React Native also writes the ccache wrappers into the app project. That
+          # file is part of the expo-updates fingerprint, so restore it: only Pod
+          # targets (the bulk of the native code) go through ccache.
+          if ! git diff --quiet -- ios/LingoBites.xcodeproj; then
+            if git diff -U0 -- ios/LingoBites.xcodeproj | grep -E '^[+-][^+-]' | grep -qvE '^\+[[:space:]]*(CC|CXX|LD|LDPLUSPLUS|CCACHE_BINARY) = '; then
+              echo "::warning::pod install changed ios/LingoBites.xcodeproj beyond the ccache settings; run 'yarn pod' locally and commit the result."
+            else
+              git checkout -- ios/LingoBites.xcodeproj
+            fi
+          fi
+        env:
+          USE_CCACHE: '1'
+
       - name: Generate Xcode build config from env file
+        if: steps.gate.outputs.build == 'true'
         run: |
           set -euo pipefail
           ruby ./node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb . ios/tmp.xcconfig
 
       - name: Preflight - assert resolved bundle id matches env file
+        if: steps.gate.outputs.build == 'true'
         run: |
           set -euo pipefail
           resolved="$(xcodebuild -workspace ios/LingoBites.xcworkspace -scheme "$IOS_SCHEME" -configuration "$IOS_CONFIGURATION" -showBuildSettings 2>/dev/null | awk -F ' = ' '$1 ~ /^[[:space:]]*PRODUCT_BUNDLE_IDENTIFIER$/ {print $2}')"
@@ -153,6 +276,7 @@ jobs:
           fi
 
       - name: Materialize iOS signing files
+        if: steps.gate.outputs.build == 'true'
         run: |
           set -euo pipefail
           umask 077
@@ -177,14 +301,19 @@ jobs:
       - name: Print expo-updates fingerprint
         # The runtime version this build embeds. An EAS update reaches it only
         # when `eas update` prints the same runtime version for ios.
+        if: steps.gate.outputs.build == 'true'
         run: |
           set -euo pipefail
           fingerprint="$(npx expo-updates fingerprint:generate --platform ios | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')"
           echo "iOS runtime version (fingerprint): $fingerprint"
           echo "iOS runtime version (fingerprint): \`$fingerprint\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$fingerprint" != "$FINGERPRINT" ]; then
+            echo "::warning::Fingerprint on macOS ($fingerprint) differs from the checks job ($FINGERPRINT); the skip check uses the checks job value."
+          fi
 
       - name: Build and upload to TestFlight (fastlane ios ${{ inputs.env }})
         # Build number = latest TestFlight build number + 1 (computed by fastlane).
+        if: steps.gate.outputs.build == 'true'
         run: bundle exec fastlane ios ${{ inputs.env }}
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.IOS_APP_STORE_CONNECT_KEY_ID }}
@@ -194,6 +323,27 @@ jobs:
           IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           APPLE_ID: ${{ secrets.IOS_APPLE_ID }}
           APP_STORE_CONNECT_TEAM_ID: ${{ secrets.IOS_APP_STORE_CONNECT_TEAM_ID }}
+          # Read by React Native's ccache-clang wrappers (see Install CocoaPods).
+          CCACHE_BASEDIR: ${{ github.workspace }}
+          CCACHE_MAXSIZE: 2G
+          CCACHE_COMPRESS: 'true'
+
+      - name: Show ccache stats
+        if: always() && steps.gate.outputs.build == 'true'
+        run: ccache -s || true
+
+      - name: Record uploaded fingerprint
+        if: success() && steps.gate.outputs.build == 'true'
+        run: |
+          mkdir -p .release-marker
+          printf 'run=%s\nfingerprint=%s\n' "${{ github.run_id }}" "$FINGERPRINT" > .release-marker/info.txt
+
+      - name: Save uploaded fingerprint
+        if: success() && steps.gate.outputs.build == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .release-marker
+          key: ${{ steps.release-key.outputs.key }}
 
       - name: Cleanup signing material
         if: always()
