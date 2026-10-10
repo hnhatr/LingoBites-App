@@ -1190,6 +1190,16 @@
     "delete_body": "The lesson and its photo (if any) will be removed from your account and this device. This cannot be undone.",
     "delete_confirm": "Delete",
     "delete_cancel": "Cancel",
-    "delete_failed": "The lesson could not be deleted. Try again when you are online."
+    "delete_failed": "The lesson could not be deleted. Try again when you are online.",
+    "report_word_button": "Wrong word?",
+    "report_word_title": "Report a wrong word",
+    "report_word_pick": "Pick the word that looks wrong",
+    "report_word_reason": "What is wrong?",
+    "report_reason_not_in_image": "Not in the photo",
+    "report_reason_wrong_meaning": "Wrong meaning",
+    "report_reason_other": "Something else",
+    "report_word_done": "Thanks. We will check this word.",
+    "report_word_failed": "Could not send it. Please try again later.",
+    "report_word_close": "Close"
   }
 }

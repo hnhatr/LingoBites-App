@@ -1190,6 +1190,16 @@
     "delete_body": "Bài và ảnh của bài (nếu có) sẽ bị xoá khỏi tài khoản và thiết bị này. Không khôi phục được.",
     "delete_confirm": "Xoá",
     "delete_cancel": "Huỷ",
-    "delete_failed": "Chưa xoá được bài. Thử lại khi có mạng."
+    "delete_failed": "Chưa xoá được bài. Thử lại khi có mạng.",
+    "report_word_button": "Từ nào sai?",
+    "report_word_title": "Báo từ sai",
+    "report_word_pick": "Chọn từ bạn thấy sai",
+    "report_word_reason": "Vì sao sai?",
+    "report_reason_not_in_image": "Không có trong ảnh",
+    "report_reason_wrong_meaning": "Nghĩa không đúng",
+    "report_reason_other": "Lý do khác",
+    "report_word_done": "Cảm ơn bạn. Mình sẽ kiểm tra lại từ này.",
+    "report_word_failed": "Chưa gửi được. Bạn thử lại sau nhé.",
+    "report_word_close": "Đóng"
   }
 }

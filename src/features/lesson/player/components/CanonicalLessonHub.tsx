@@ -165,7 +165,11 @@ export function CanonicalLessonHub({
   return (
     <View testID="canonical-lesson-hub" style={styles.container}>
       <LessonStatusBanners offline={offline} hasUpdate={hasUpdate} />
-      <SourcePhotoCard lessonId={snapshot.id} offline={offline ?? false} />
+      <SourcePhotoCard
+        items={(snapshot.lesson_items ?? []).map(entry => entry.item)}
+        lessonId={snapshot.id}
+        offline={offline ?? false}
+      />
 
       <View style={styles.header}>
         <AppText testID="canonical-hub-title" variant="h2" numberOfLines={3}>
