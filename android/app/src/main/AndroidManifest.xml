@@ -13,7 +13,7 @@
     </activity>
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="true" />
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH"
-      android:value="ALWAYS" />
+      android:value="NEVER" />
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0" />
     <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL"
       android:value="https://u.expo.dev/157966c5-a7c1-4a97-8c0c-d334fe3ee4ed" />

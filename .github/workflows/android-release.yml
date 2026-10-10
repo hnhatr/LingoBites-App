@@ -168,6 +168,15 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           PLAY_STORE_JSON_KEY_BASE64: ${{ secrets.PLAY_STORE_JSON_KEY_BASE64 }}
 
+      - name: Print expo-updates fingerprint
+        # The runtime version this build embeds. An EAS update reaches it only
+        # when `eas update` prints the same runtime version for android.
+        run: |
+          set -euo pipefail
+          fingerprint="$(npx expo-updates fingerprint:generate --platform android | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')"
+          echo "Android runtime version (fingerprint): $fingerprint"
+          echo "Android runtime version (fingerprint): \`$fingerprint\`" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Build and upload to Google Play (fastlane android ${{ inputs.env }})
         run: bundle exec fastlane android ${{ inputs.env }}
         env:
