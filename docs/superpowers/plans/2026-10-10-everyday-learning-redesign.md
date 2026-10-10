@@ -120,6 +120,8 @@ Nguồn đó đi vào pipeline + `lessonComposer` như một bài văn bản. Nh
 - câu người học tự gõ, **cho phép gõ tiếng Việt** ("ngày mai em đi khám răng, muốn nói bị ê buốt") vì người mới học khó tả tình huống bằng tiếng Anh;
 - ảnh + ý định "Dùng" (có thể kèm câu gõ). Nếu ảnh có chữ (thực đơn), chữ đó được đưa vào làm **dữ liệu thật** cho hội thoại ("I'd like a Caramel Macchiato, please" dùng đúng tên món trên thực đơn).
 
+Khi người học tự gõ: gửi xong vẫn ở lại màn, sau vài giây thấy "AI hiểu tình huống của bạn là: …" và bấm **Đúng** hoặc **Sửa lại** (không tính lượt). Chỉ sau khi xác nhận, bài mới được tạo tiếp ở nền. Chọn từ danh mục thì không hỏi.
+
 AI viết **hội thoại mẫu** theo trình độ (S5.3) → `lessonComposer` sinh spec, can-do, item, mẫu câu, task → bài 6 bước. Bước 5 nhập vai đúng tình huống người học đưa ra.
 
 Tài khoản trẻ em: **không tạo bài** từ bất kỳ nguồn nào (chốt 2026-10-10). Trẻ em học bài có sẵn của curriculum.
@@ -281,7 +283,7 @@ Thêm sự kiện analytics: `moment_analyzed`, `moment_intent_chosen` (kèm `su
 | R3 | Chi phí vision cao hơn dự kiến | Phân tích ảnh không dùng LLM; chỉ gọi vision khi người học đã chọn Tả; trần chi phí tháng |
 | R4 | Kiểm duyệt chặn nhầm (vd ảnh nhãn thuốc, giải phẫu ở phòng khám) | Ngưỡng `LIKELY` thay vì `POSSIBLE`; theo dõi tỷ lệ từ chối; admin xem lượt bị từ chối |
 | R5 | Đổi contract `source_type` và `input` | Đổi server và app cùng một đợt; giữ `/v1/ocr` cho app cũ |
-| R6 | Tình huống gõ tiếng Việt bị hiểu sai | AI trả lại tình huống đã hiểu (tiếng Việt, 1 câu) để người học xác nhận trước khi sinh |
+| R6 | Tình huống gõ tiếng Việt bị hiểu sai | Gõ xong, người học ở lại màn và thấy ngay câu AI hiểu (tiếng Việt, 1 câu), bấm "Đúng" thì bài mới được tạo tiếp; "Sửa lại" không tính lượt (chốt 2026-10-10) |
 
 ---
 

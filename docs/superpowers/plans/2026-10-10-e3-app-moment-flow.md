@@ -1,7 +1,7 @@
 # E3 – App: luồng "Học từ đời thường" (Hiểu / Dùng)
 
 > Trạng thái: **PLAN, chờ duyệt**. Chưa code.
-> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10). Riêng **P6 (banner xác nhận tình huống) chưa chốt**, phụ thuộc N5 của E2.
+> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10). P6 chốt phương án A (xác nhận ngay sau khi gõ, banner chỉ là dự phòng).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-App` (chỉ app). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.1–§3.5, §4.5, §5.3. Gộp S5.2 (bản tối thiểu) và phần app của S5.3.
 > Cần trước: E0, E1, E2 (server đã deploy lên staging). Ý định **Tả** chỉ hiện khi E4 xong (capability).
@@ -28,9 +28,9 @@ Người học đi trọn từ "chụp / chọn ảnh / kể tình huống" tớ
 | P1 | Luồng sau khi có ảnh | `ImageCaptureScreen` chỉ chụp / chọn → gọi `analyzeImage` (E1) → `MomentReviewScreen`. Giữ `OCRReviewScreen` sau cờ cũ để quay về nếu cần (cờ mới `momentFlow` tắt → luồng cũ y như sau E0). |
 | P2 | Ý định mặc định | Theo `suggested_intent` của server. Vào từ "Kể tình huống" → thẳng `SituationInputScreen` (ý định Dùng), không hỏi. |
 | P3 | Ý định "Hiểu" gửi đi bằng gì | Route tạo bài có sẵn (`submitLessonCreation`, nguồn `ocr` / `text`) → không đổi luồng chờ hiện có (`LessonCreationScreen`). |
-| P4 | Ý định "Dùng" gửi đi bằng gì | `submitMoment` (E2) → **không chặn**: thêm vào tracker, quay về màn trước, toast khi xong (giống S4.3, thiết kế chờ đã duyệt). |
+| P4 | Ý định "Dùng" gửi đi bằng gì | `submitMoment` (E2), thêm vào tracker. Chọn từ danh mục, hoặc ảnh không kèm câu gõ → **không chặn**: quay về màn trước, toast khi xong (giống S4.3, thiết kế chờ đã duyệt). Có câu tự gõ → ở lại màn để xác nhận trước (P6), xác nhận xong mới chạy nền. |
 | P5 | Ô "Bạn muốn làm gì ở đây?" trên thẻ Dùng | Tuỳ chọn, ≤ 200 ký tự, gợi ý theo loại ảnh ("vd: gọi một ly trà đá"). Có chữ → gửi `situation_note` (cần xác nhận, N5 của E2). Không có chữ và có ảnh → server dựa vào chữ trong ảnh; ảnh không chữ mà để trống → nút tắt với dòng "Hãy viết bạn muốn làm gì". |
-| P6 | Xác nhận tình huống | Tracker thấy `awaiting_confirmation` → banner trên Home / Tạo bài "AI hiểu tình huống: …  [Đúng] [Sửa lại]". "Sửa lại" → `confirm(false)` rồi mở `SituationInputScreen` với chữ cũ. Thông báo nội bộ app, không push. |
+| P6 | Xác nhận tình huống | **Chốt 2026-10-10 (phương án A, ngay sau khi gõ).** Bấm gửi → **ở lại** `SituationInputScreen` (hoặc `MomentReviewScreen` khi có ảnh), ô gõ khoá lại, hiện "AI đang đọc tình huống của bạn…" và poll trạng thái mỗi 1 giây. Có `awaiting_confirmation` → thẻ ngay dưới ô gõ: "AI hiểu tình huống của bạn là: …" + **[Đúng, tạo bài]** **[Sửa lại]**. Đúng → `confirm(true)`, toast "Đang tạo bài, bạn có thể làm việc khác", quay về màn trước, bài về như P4. Sửa lại → `confirm(false)` (không tính lượt), mở khoá ô gõ với chữ cũ, con trỏ cuối dòng. **Dự phòng:** quá 20 giây chưa có câu xác nhận, hoặc người học bấm quay lại / thoát app → request vẫn chờ; tracker hiện banner "AI hiểu tình huống: … [Đúng] [Sửa lại]" ở Home / Tạo bài (hết hạn sau 24 giờ, không tính lượt). Thông báo nội bộ app, không push. |
 | P7 | Thông tin cá nhân | Chạy `piiDetect` (chép luật từ server, cùng fixture) ngay khi người học sửa chữ; dòng có PII tô vàng + nút "Ẩn dòng này" (thay bằng `•••`). Không chặn gửi (Q-E3). |
 | P8 | Màn đồng ý gửi ảnh | Lần đầu bấm chụp / chọn ảnh. Nội dung §5.3 của thiết kế. Lưu như `youtubeDisclosure` (AsyncStorage, có phiên bản để hỏi lại khi đổi nội dung). Từ chối → quay lại, gợi ý "Dán chữ" / "Kể tình huống". Đổi lại được trong Cài đặt. |
 | P9 | Trình độ | Chip "Trình độ: A1 ▾" lấy `levelCode` từ `useLearnerProfileStore`; đổi chỉ áp cho lần tạo này. Không có hồ sơ → A1. |
@@ -52,7 +52,9 @@ Người học đi trọn từ "chụp / chọn ảnh / kể tình huống" tớ
 | `src/features/input/screens/SituationInputScreen.tsx` | Danh mục (lọc theo trình độ, gợi ý theo `goals` / `interests` lên đầu) + ô gõ tự do; bộ đếm ký tự. |
 | `src/features/input/components/IntentCard.tsx` | Thẻ ý định (chọn một). |
 | `src/features/input/components/PiiHighlightedText.tsx` | Chữ có dòng tô + nút ẩn. |
-| `src/features/input/components/SituationConfirmBanner.tsx` | Banner P6. |
+| `src/features/input/components/SituationConfirmCard.tsx` | Thẻ xác nhận ngay dưới ô gõ (P6). |
+| `src/features/input/components/SituationConfirmBanner.tsx` | Banner dự phòng (P6). |
+| `src/features/input/logic/useSituationConfirm.ts` | Gửi → poll 1 giây tới `awaiting_confirmation` / lỗi / 20 giây → trạng thái màn; `accept()`, `edit()`. |
 | `src/features/input/components/PhotoConsentSheet.tsx` | P8. |
 
 ### 3.2 Sửa
@@ -81,7 +83,7 @@ Không xoá file. `OCRReviewScreen` giữ cho luồng cũ (xoá ở PR dọn d�
 |---|---|
 | Unit | `piiDetect` theo fixture server; `momentClient` map lỗi (`IMAGE_REJECTED`, `CONTENT_REJECTED`, 429, timeout, hủy); `useMomentDraft`: ẩn dòng thay bằng `•••` trong chữ gửi đi, rẽ nhánh Hiểu / Dùng, kiểm tra P5. |
 | Tracker | Entry cũ không có `kind` vẫn đọc được; `moment` đi `running → awaiting_confirmation → running → succeeded`; `confirm(false)` → entry `failed` `MOMENT_CANCELLED`, không báo lỗi đỏ. |
-| Màn | `CreateScreen`: cờ tắt / bật, offline, trẻ em. `MomentReviewScreen`: ý định mặc định theo `suggested_intent`; Tả ẩn khi capability tắt; chip trình độ lấy từ hồ sơ; hết lượt. `SituationInputScreen`: gợi ý theo `goals`; 200 ký tự. Trẻ em: `CreateScreen` khoá, không thấy nút Tạo bài ở Home / Thư viện / hub bài; lỗi `CREATION_NOT_ALLOWED` hiện đúng câu. `ImageCaptureScreen`: chưa đồng ý → sheet; từ chối → quay lại. |
+| Màn | `CreateScreen`: cờ tắt / bật, offline, trẻ em. `MomentReviewScreen`: ý định mặc định theo `suggested_intent`; Tả ẩn khi capability tắt; chip trình độ lấy từ hồ sơ; hết lượt. `SituationInputScreen`: gợi ý theo `goals`; 200 ký tự; gửi câu tự gõ → chờ → thẻ xác nhận → Đúng: quay về + toast, Sửa lại: mở khoá với chữ cũ, không tính lượt; quá 20 giây / bấm quay lại → banner dự phòng; danh mục → không hỏi xác nhận. Trẻ em: `CreateScreen` khoá, không thấy nút Tạo bài ở Home / Thư viện / hub bài; lỗi `CREATION_NOT_ALLOWED` hiện đúng câu. `ImageCaptureScreen`: chưa đồng ý → sheet; từ chối → quay lại. |
 | Navigation | Test ma trận mount route có `MomentReview`, `SituationInput`; gate theo cờ. |
 | Fixture | Parse snapshot mới (có `moment_intent`), trạng thái `awaiting_confirmation`. |
 | Kiểm tay (máy thật) | Chụp thực đơn → Hiểu → bài có tóm tắt; cùng ảnh → Dùng + "gọi một ly trà đá" → xác nhận → bài 6 bước dùng đúng tên món; chọn "Hỏi đường" từ danh mục → bài; ảnh có số điện thoại → dòng bị tô, ẩn được; tắt mạng giữa chừng → bài vẫn về khi có mạng; tài khoản trẻ em. |
@@ -94,7 +96,7 @@ Lệnh: `yarn tsc`, `yarn lint` (không vượt ngân sách warning), `yarn form
 2. `feat(input): moment client, PII rules and photo consent` (+ test).
 3. `feat(lesson): track moment requests alongside composes` (+ test).
 4. `feat(input): moment review screen with intent and level` (+ test).
-5. `feat(input): situation input and confirmation banner` (+ test).
+5. `feat(input): situation input with inline confirmation and fallback banner` (+ test).
 6. `feat(input): new create hub behind momentFlow` (+ test, i18n, analytics).
 7. `chore(release): momentFlow flag, situationLearning ready (off in production)`.
 
@@ -103,7 +105,7 @@ Lệnh: `yarn tsc`, `yarn lint` (không vượt ngân sách warning), `yarn form
 | Rủi ro | Cách xử lý |
 |---|---|
 | Nhiều màn mới, dễ vỡ luồng cũ | Mọi thứ sau cờ `momentFlow`; tắt cờ → giống hệt sau E0 |
-| Người học không quay lại xác nhận tình huống | Banner hiện ở Home và Tạo bài; hết 24 giờ thì tự huỷ, không tính lượt |
+| Người học phải chờ ở màn gõ | Server ưu tiên chặng (1); quá 20 giây thì cho đi tiếp, xác nhận qua banner; hết 24 giờ tự huỷ, không tính lượt |
 | Luật PII app / server lệch nhau | Một fixture chung, test cả hai bên |
 
 ## 7. Điểm lệch so với plan

@@ -1,7 +1,7 @@
 # E2 – Server: khoảnh khắc "Dùng" (tình huống), kiểm duyệt text, hạn mức "Hiểu"
 
 > Trạng thái: **PLAN, chờ duyệt**. Chưa code.
-> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10). Riêng **N5 (xác nhận tình huống) chưa chốt**.
+> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10). N5 chốt phương án A (xác nhận ngay sau khi gõ).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-Server` (+ admin-web: chỉ hiện mã lỗi mới nếu có bảng request). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.4.1, §3.4.3, §4.1, §4.3, §4.4. Gộp S5.1 (bản tối thiểu) và S5.3.
 > Cần trước: E1 (cho `image_id` / `image_text`). S4.1 / S4.3 (đã code). Chốt Q-E1, Q10. Đã chốt 2026-10-10: trẻ em không tạo bài (N7), hạn mức "Hiểu" 10 / ngày (N11).
@@ -30,7 +30,7 @@
 | N2 | Bài nguồn ẩn | Cột mới `lessons.library_hidden boolean DEFAULT false`. Bài nguồn có `true`: không hiện trong catalog / thư viện người học, nhưng **vẫn đọc được** qua snapshot (để link "Bài gốc" và phân tích câu chạy như S4.3). |
 | N3 | Độ dài hội thoại | 4–8 lượt (khớp `COMPOSE_SENTENCES_MAX = 8`), mỗi lượt 1 câu, ≤ 12 từ với A1, ≤ 18 từ với A2. Server kiểm tra lại; sai → thử lại 1 lần (retry template) rồi `MOMENT_AUTHOR_FAILED`. |
 | N4 | Trình độ | `level` lấy từ body, chỉ nhận `LevelCodeValues` hiện có (`A1`, `A2`). Thiếu → lấy `learner_profiles.level_code`; không có hồ sơ → `A1`. |
-| N5 | Tình huống tự gõ cần xác nhận (R6) | Chỉ khi có `situation_note`. Sau chặng (1), request dừng ở trạng thái mới `awaiting_confirmation`, trả `situation_vi` (1 câu tiếng Việt AI hiểu). Người học **Đúng** → chạy tiếp (2), (3). **Sai** → request `failed` mã `MOMENT_CANCELLED`, **không tính lượt**. Không trả lời trong 24 giờ → hết hạn, không tính lượt. Không tốn thêm lần gọi AI (chặng 1 vốn phải chạy). |
+| N5 | Tình huống tự gõ cần xác nhận (R6) | **Chốt 2026-10-10 (phương án A, xác nhận ngay sau khi gõ).** Chỉ khi có `situation_note`. Sau chặng (1), request dừng ở trạng thái mới `awaiting_confirmation`, trả `situation_vi` (1 câu tiếng Việt AI hiểu). Người học đang **ở lại màn gõ** chờ câu này (E3 P6). **Đúng** → chạy tiếp (2), (3) ở nền. **Sửa lại** → request `failed` mã `MOMENT_CANCELLED`, **không tính lượt**. Không trả lời trong 24 giờ → hết hạn, không tính lượt. Không tốn thêm lần gọi AI (chặng 1 vốn phải chạy). Để người học chờ ngắn: request có `situation_note` được worker nhận **ưu tiên** (xếp trước request khác trong hàng), chặng (1) có timeout riêng `author_timeout_ms` (mặc định 20 giây, trong `params` của prompt `moment.use`), mục tiêu p50 ≤ 8 giây. |
 | N6 | Hạn mức "Dùng" | Chung hạn mức ngày của compose (Q8, `compose_daily_limit` / `learnerDailyLimit`) và "một request đang chạy mỗi người". Chỉ tính khi bài 6 bước tạo **thành công** (H12). Trần chi phí tháng như compose. |
 | N7 | Tài khoản trẻ em (`age_group = 'kids'`) | **Chốt 2026-10-10: trẻ em không được tạo bài từ bất kỳ nguồn nào.** Server chặn 403 `CREATION_NOT_ALLOWED` ở cả 3 route người học: `POST /api/v1/moments`, `POST /api/v1/lesson-creations` (dán chữ, OCR, YouTube) và `POST /api/v1/lessons/:id/compose` (S4.3). Kiểm tra theo `learner_profiles.age_group`; chưa có hồ sơ → coi như người lớn (onboarding bắt buộc chọn nhóm tuổi). `GET /situations` vẫn lọc theo `audience` để sau này trẻ em duyệt bài có sẵn theo tình huống. |
 | N8 | Kiểm duyệt text | `moderateText(text)` trả `allowed \| blocked \| unchecked`. OpenAI: gọi `POST /v1/moderations` (model `omni-moderation-latest`, miễn phí), chặn khi `flagged`. Gemini: không có endpoint riêng → `unchecked`, và mọi lần gọi Gemini trong luồng người học đọc `promptFeedback.blockReason` / `finishReason = SAFETY` → `CONTENT_REJECTED`. Lỗi mạng khi kiểm duyệt → `unchecked` (không chặn oan), ghi log mã lỗi. |
@@ -106,7 +106,7 @@ CREATE INDEX lesson_creation_requests_moment_owner_idx
 | `src/modules/moments/model/moment.ts` (mới) | Zod body, `MomentInput`, mã lỗi. |
 | `src/modules/moments/service/momentService.ts` (mới) | `submit`: kiểm tra N7, N14, kiểm duyệt, hạn mức (dùng `learnerQuota` của compose), một request đang chạy, trần chi phí → xếp hàng `kind = 'moment'`. `confirm`. |
 | `src/modules/moments/service/momentPipeline.ts` (mới) | Worker chặng 1–3 (N1). Chặng 2 gọi lại `createLessonCreationPipeline` với `text` = các câu hội thoại (một câu một dòng), bài ra `library_hidden = true`, `moment_intent = 'use'`. Chặng 3 gọi phần build / save của composer (`composeLesson`) cho bài nguồn đó (bỏ qua bước cache và quota vì đã kiểm ở `submit`). Bài 6 bước: `moment_intent = 'use'`, `situation_id`. Lỗi từng chặng trả mã rõ: `MOMENT_AUTHOR_FAILED`, `MOMENT_NOT_SUITABLE` (kèm `reason_vi`), `TRANSLATION_FAILED`, `COMPOSE_FAILED`. |
-| `src/modules/canonicalLesson/service/lessonCreationWorker.ts` | Nhận `kind = 'moment'` → `momentPipeline`; bỏ qua request `awaiting_confirmation`; job hết hạn xác nhận. |
+| `src/modules/canonicalLesson/service/lessonCreationWorker.ts` | Nhận `kind = 'moment'` → `momentPipeline`; nhận ưu tiên request `moment` có `situation_note` chưa qua chặng (1) (N5); bỏ qua request `awaiting_confirmation`; job hết hạn xác nhận. |
 | `src/modules/canonicalLesson/model/contract.ts`, `creation.ts`, `creationRequest.ts` | `learner_situation`; trạng thái `awaiting_confirmation`; `LessonCreationInput` thêm `{moment: MomentInput}`. |
 | `src/modules/canonicalLesson/service/creationSource.ts` | N13 cho `learner_ocr`. |
 | `src/modules/canonicalLesson/service/creationTranslation.ts` | Tuỳ chọn `withSummary` (N12): lô đầu thêm trường `summary_vi`; schema cho phép thiếu. |
@@ -151,6 +151,7 @@ Thêm các file DB mới vào `test:db` trong `package.json`. Lệnh: `yarn test
 | Bài nguồn ẩn lọt vào thống kê / admin | Admin vẫn thấy (cột `library_hidden` hiện trong bảng bài); thống kê người học bỏ qua bài ẩn |
 | Kiểm duyệt chặn nhầm tình huống y tế ("đau ngực", "thuốc") | Chỉ chặn khi `flagged`; theo dõi `CONTENT_REJECTED` ở E6 |
 | Tài khoản trẻ em đang có bài tự tạo từ trước | Bài cũ giữ nguyên, vẫn học được; chỉ chặn tạo mới |
+| Người học chờ lâu ở màn gõ khi hàng đợi đông | Ưu tiên N5; quá 20 giây thì app cho đi tiếp và báo xác nhận qua banner (E3 P6) |
 | Đổi contract trạng thái request (`awaiting_confirmation`) làm app cũ lỗi | App cũ chỉ gọi route tạo bài cũ, không bao giờ nhận trạng thái này (chỉ request `moment` có) |
 
 ## 7. Điểm lệch so với plan
