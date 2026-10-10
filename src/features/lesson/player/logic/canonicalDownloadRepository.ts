@@ -120,6 +120,7 @@ type LessonDownloadStampRow = {
   lesson_id: string;
   content_revision: number;
   server_revision: number | null;
+  media_dir: string | null;
   downloaded_at: string;
   snapshot_length: number;
 };
@@ -128,8 +129,8 @@ function listLessonDownloadStampRows(
   db: QuickSQLiteConnection,
 ): LessonDownloadStampRow[] {
   const result = db.execute(
-    `SELECT lesson_id, content_revision, server_revision, downloaded_at,
-            length(snapshot_json) AS snapshot_length
+    `SELECT lesson_id, content_revision, server_revision, media_dir,
+            downloaded_at, length(snapshot_json) AS snapshot_length
        FROM lesson_downloads ORDER BY downloaded_at DESC;`,
   );
   const rows: LessonDownloadStampRow[] = [];
@@ -141,7 +142,7 @@ function listLessonDownloadStampRows(
 }
 
 function stampOf(row: LessonDownloadStampRow): string {
-  return `${row.content_revision}|${row.server_revision}|${row.downloaded_at}|${row.snapshot_length}`;
+  return `${row.content_revision}|${row.server_revision}|${row.media_dir}|${row.downloaded_at}|${row.snapshot_length}`;
 }
 
 /** Every stored download, newest first. Unparseable rows are skipped. */
@@ -336,6 +337,94 @@ export function removeLessonDownload(
 }
 
 /**
+ * Point the stored row at media staged after the row was written (the
+ * learner tapped "Tải để học offline"). Only applies while the row still holds
+ * `revision`, so media of an older revision never lands on a newer copy.
+ * Returns whether the row was updated.
+ */
+export function setLessonMediaDir(
+  lessonId: string,
+  revision: number,
+  mediaDir: string | null,
+  db: QuickSQLiteConnection = getDatabase(),
+): boolean {
+  const result = db.execute(
+    'UPDATE lesson_downloads SET media_dir = ? WHERE lesson_id = ? AND content_revision = ?;',
+    [mediaDir, lessonId, revision],
+  );
+  return (result.rowsAffected ?? 0) > 0;
+}
+
+/** The stored row's media dir, without parsing the snapshot. */
+export function getLessonMediaDir(
+  lessonId: string,
+  db: QuickSQLiteConnection = getDatabase(),
+): string | null {
+  const row = firstRow<{media_dir: string | null}>(
+    db.execute(
+      'SELECT media_dir FROM lesson_downloads WHERE lesson_id = ? LIMIT 1;',
+      [lessonId],
+    ),
+  );
+  return row?.media_dir ?? null;
+}
+
+/**
+ * Forget one lesson's media; the lesson text stays. The files go with the
+ * next `sweepLessonMedia`.
+ */
+export function removeLessonMedia(
+  lessonId: string,
+  db: QuickSQLiteConnection = getDatabase(),
+): void {
+  db.execute(
+    'UPDATE lesson_downloads SET media_dir = NULL WHERE lesson_id = ?;',
+    [lessonId],
+  );
+}
+
+/** Forget every lesson's media; the lesson texts stay. */
+export function removeAllLessonMedia(
+  db: QuickSQLiteConnection = getDatabase(),
+): void {
+  db.execute(
+    'UPDATE lesson_downloads SET media_dir = NULL WHERE media_dir IS NOT NULL;',
+  );
+}
+
+export type LessonMediaDownload = {
+  lessonId: string;
+  title: string;
+  mediaDir: string;
+};
+
+/** Lessons whose media is on the device, newest first. */
+export function listLessonMediaDownloads(
+  db: QuickSQLiteConnection = getDatabase(),
+): LessonMediaDownload[] {
+  const result = db.execute(
+    `SELECT lesson_id, media_dir,
+            json_extract(snapshot_json, '$.lesson.title') AS title
+       FROM lesson_downloads
+      WHERE media_dir IS NOT NULL
+      ORDER BY downloaded_at DESC;`,
+  );
+  const rows: LessonMediaDownload[] = [];
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    const row = result.rows?.item(index) as
+      | {lesson_id: string; media_dir: string; title: string | null}
+      | undefined;
+    if (!row) continue;
+    rows.push({
+      lessonId: row.lesson_id,
+      title: row.title ?? '',
+      mediaDir: row.media_dir,
+    });
+  }
+  return rows;
+}
+
+/**
  * Relative media directory for one staged revision, e.g.
  * `lesson-media/<lessonId>/<revision>`.
  */
@@ -349,6 +438,8 @@ export type LessonMediaFileSystem = {
   unlink: (path: string) => Promise<void>;
   exists: (path: string) => Promise<boolean>;
   readdir: (path: string) => Promise<string[]>;
+  /** Total bytes of the files directly in `path` (0 when unreadable). */
+  dirSize?: (path: string) => Promise<number>;
   downloadFile: (url: string, destPath: string) => Promise<void>;
 };
 
@@ -393,6 +484,21 @@ async function defaultReaddir(path: string): Promise<string[]> {
   }
 }
 
+async function defaultDirSize(path: string): Promise<number> {
+  try {
+    const entries = (await RNFS.readDir(path)) as Array<{
+      size: number | string;
+      isFile: () => boolean;
+    }>;
+    return entries.reduce(
+      (total, entry) => (entry.isFile() ? total + Number(entry.size) : total),
+      0,
+    );
+  } catch {
+    return 0;
+  }
+}
+
 /** Production file-system binding (RNFS); tests inject a fake. */
 export const defaultLessonMediaFileSystem: LessonMediaFileSystem = {
   documentDir: deviceDocumentDir,
@@ -404,6 +510,7 @@ export const defaultLessonMediaFileSystem: LessonMediaFileSystem = {
   },
   exists: defaultExists,
   readdir: defaultReaddir,
+  dirSize: defaultDirSize,
   downloadFile: defaultDownloadFile,
 };
 
@@ -473,4 +580,14 @@ export async function sweepLessonMedia(
     }
   }
   return {removed};
+}
+
+/** Bytes used by one lesson's staged media (0 when unknown). */
+export async function lessonMediaSizeBytes(
+  mediaDir: string,
+  fs: LessonMediaFileSystem = defaultLessonMediaFileSystem,
+): Promise<number> {
+  const base = fs.documentDir();
+  if (!base || !fs.dirSize) return 0;
+  return fs.dirSize(`${base}/${mediaDir}`);
 }

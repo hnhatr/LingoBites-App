@@ -15,6 +15,9 @@
    ("Cần kết nối mạng") và có nút "Thử lại" — không ẩn, không spinner vô hạn.
 5. **Phát hiện offline bằng chính request:** lỗi mạng hoặc timeout của
    `fetch` (không thêm NetInfo — cùng cách `appSync.ts` đang làm).
+6. **Tải nặng cần đồng ý:** phần chữ của bài đã mở luôn được lưu (cần cho
+   offline, ôn tập, tiến độ) và được ghi rõ trong Cài đặt. Ảnh / âm thanh của
+   bài chỉ tải khi người học cho phép (xem mục 2, #35–#37).
 
 Ký hiệu: ✅ dùng đầy đủ · 🟡 dùng giới hạn · ⏳ dùng được, lưu hàng chờ,
 gửi khi có mạng · 🔒 khoá.
@@ -57,6 +60,9 @@ gửi khi có mạng · 🔒 khoá.
 | 32 | Tài khoản | Đăng xuất | ✅ | Hỏi xác nhận: offline thì không vào lại được tới khi có mạng | Logout Server |
 | 33 | Tài khoản | Chuyển / gộp tài khoản | 🔒 | Khoá | — |
 | 34 | Hệ thống | Sync outbox, analytics | ⏳ | Xếp hàng, backoff | Tự đẩy |
+| 35 | Dữ liệu | Hỏi đồng ý tải ảnh / âm thanh bài | — | Chỉ hỏi khi có mạng, ở bài đầu tiên có media: Tự động tải / Tôi tự chọn bài / Để sau (hỏi lại sau 7 ngày) | — |
+| 36 | Bài học | Thẻ "Tải để học offline" trong bài có media | 🟡 | Đã tải: "có sẵn offline" + Xoá; chưa tải: "Cần mạng để tải ảnh và âm thanh của bài. Phần chữ vẫn học được." | Cho tải |
+| 37 | Cài đặt | Dữ liệu & bộ nhớ → Học offline, màn "Bài đã tải" | ✅ | Đổi lựa chọn, xem dung lượng, xoá media từng bài / tất cả | — |
 
 ### Quyết định
 
@@ -94,6 +100,7 @@ gửi khi có mạng · 🔒 khoá.
 | P1 | ✅ Xong | `core/api/connectivity.ts`; `OfflineBanner` trong mọi `AppScreen` (BootGate tắt); `LockedFeature`; Create hub khoá #20–22; cảnh báo đăng xuất offline #32 |
 | P2 | ✅ Xong | `courseClient.getList` lưu câu trả lời hợp lệ (`curriculum_cache.*`, entitlement theo tài khoản) và trả lại khi lỗi mạng; catalog / Home rơi về bài đã tải (#9) |
 | P3 | Chưa làm | — |
+| Đồng ý tải media | ✅ Xong | `mediaDownloadConsent.ts` (`app_settings`: `downloads.media_consent`), `useLessonMediaDownload`, `MediaDownloadConsentSheet`, `LessonMediaDownloadCard`, `OfflineStudySettingsGroup`, `OfflineDownloadsScreen`. Kế hoạch: `docs/superpowers/plans/2026-10-10-offline-download-consent.md` |
 
 Khác với thiết kế ban đầu:
 

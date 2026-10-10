@@ -564,6 +564,7 @@
     "player_title": "Lesson",
     "loading": "Opening lesson…",
     "load_failed": "Lesson failed to load.",
+    "not_downloaded": "This lesson is not on your device yet. Connect to the internet to download it.",
     "update_app": "Please update the app to open this lesson.",
     "archived": "This lesson is no longer available.",
     "retry_load_hint": "Loads the lesson again",
@@ -675,6 +676,7 @@
     "grammar_examples": "Examples",
     "block_unsupported": "This block type is not supported in this app version.",
     "video_unavailable": "Video is unavailable. Sentences remain readable below.",
+    "video_offline": "Playing the video needs a connection. You can still study the subtitles.",
     "catalog_title": "All lessons",
     "catalog_load_failed": "Lessons failed to load.",
     "catalog_row_hint": "Tap to open the lesson",
@@ -1080,5 +1082,28 @@
     "save": "Save",
     "path_label": "Your learning path",
     "path_open": "Start learning"
+  },
+  "mediaConsent": {
+    "title": "Save lessons for offline study?",
+    "body_text": "The text of the lessons you open (sentences, meanings, vocabulary, grammar) is always stored on this device, so you can keep studying, reviewing and tracking progress offline.",
+    "body_media": "This lesson also has images or audio. These files are larger and use device storage and mobile data when downloaded.",
+    "body_control": "You can change this or delete downloaded files at any time in Profile → Data & storage → Offline study.",
+    "choose_auto": "Download automatically",
+    "choose_auto_caption": "Download images and audio whenever a lesson opens online",
+    "choose_manual": "I'll choose lessons",
+    "choose_manual_caption": "Download only when you tap \"Download for offline\" in a lesson",
+    "later": "Not now",
+    "close": "Close"
+  },
+  "lessonMedia": {
+    "saved": "This lesson's images and audio are on your device — available offline.",
+    "missing": "This lesson's images and audio are not on your device. The text is already available offline.",
+    "missing_offline": "Downloading this lesson's images and audio needs a connection. You can still study the text.",
+    "failed": "Could not download the images and audio. Check your connection and try again.",
+    "download": "Download for offline",
+    "download_hint": "Download this lesson's images and audio to your device",
+    "retry": "Try again",
+    "remove": "Delete downloaded files",
+    "remove_hint": "Delete this lesson's images and audio from your device; the text stays"
   }
 }

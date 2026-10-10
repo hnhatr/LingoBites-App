@@ -290,7 +290,7 @@ function createMockDatabase() {
 
     if (
       normalized.startsWith(
-        'select lesson_id, content_revision, server_revision, downloaded_at, length(snapshot_json) as snapshot_length from lesson_downloads',
+        'select lesson_id, content_revision, server_revision, media_dir, downloaded_at, length(snapshot_json) as snapshot_length from lesson_downloads',
       )
     ) {
       return toRows(
@@ -302,6 +302,7 @@ function createMockDatabase() {
             lesson_id: row.lesson_id,
             content_revision: row.content_revision,
             server_revision: row.server_revision ?? null,
+            media_dir: row.media_dir ?? null,
             downloaded_at: row.downloaded_at,
             snapshot_length: String(row.snapshot_json ?? '').length,
           })),

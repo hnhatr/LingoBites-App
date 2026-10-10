@@ -564,6 +564,7 @@
     "player_title": "Bài học",
     "loading": "Đang mở bài học…",
     "load_failed": "Không mở được bài học.",
+    "not_downloaded": "Bài này chưa có trên máy. Kết nối mạng để tải.",
     "update_app": "Hãy cập nhật ứng dụng để mở bài học này.",
     "archived": "Bài học này không còn nữa.",
     "retry_load_hint": "Tải lại bài học",
@@ -675,6 +676,7 @@
     "grammar_examples": "Ví dụ",
     "block_unsupported": "Phiên bản ứng dụng này chưa hiển thị được loại nội dung này.",
     "video_unavailable": "Video không phát được. Bạn vẫn đọc được các câu bên dưới.",
+    "video_offline": "Cần mạng để phát video, phụ đề vẫn học được.",
     "catalog_title": "Tất cả bài học",
     "catalog_load_failed": "Không tải được danh sách bài học.",
     "catalog_row_hint": "Chạm để mở bài học",
@@ -1080,5 +1082,28 @@
     "save": "Lưu",
     "path_label": "Lộ trình của bạn",
     "path_open": "Vào học"
+  },
+  "mediaConsent": {
+    "title": "Lưu bài để học khi không có mạng?",
+    "body_text": "Phần chữ của các bài bạn đã mở (câu, nghĩa, từ vựng, ngữ pháp) luôn được lưu trên máy. Nhờ vậy bạn vẫn học, ôn tập và giữ tiến độ khi mất mạng.",
+    "body_media": "Bài này có thêm ảnh hoặc âm thanh. Các file này nặng hơn, tốn dung lượng máy và dữ liệu di động khi tải.",
+    "body_control": "Bạn có thể đổi lựa chọn hoặc xoá file đã tải bất cứ lúc nào trong Hồ sơ → Dữ liệu & bộ nhớ → Học offline.",
+    "choose_auto": "Tự động tải",
+    "choose_auto_caption": "Tải ảnh và âm thanh mỗi khi mở bài có mạng",
+    "choose_manual": "Tôi tự chọn bài",
+    "choose_manual_caption": "Chỉ tải khi bạn bấm \"Tải để học offline\" trong bài",
+    "later": "Để sau",
+    "close": "Đóng"
+  },
+  "lessonMedia": {
+    "saved": "Ảnh và âm thanh của bài đã lưu trên máy — có sẵn offline.",
+    "missing": "Ảnh và âm thanh của bài chưa lưu trên máy. Phần chữ đã có sẵn offline.",
+    "missing_offline": "Cần mạng để tải ảnh và âm thanh của bài. Phần chữ vẫn học được.",
+    "failed": "Chưa tải được ảnh và âm thanh. Kiểm tra mạng rồi thử lại.",
+    "download": "Tải để học offline",
+    "download_hint": "Tải ảnh và âm thanh của bài về máy",
+    "retry": "Thử tải lại",
+    "remove": "Xoá file đã tải",
+    "remove_hint": "Xoá ảnh và âm thanh của bài khỏi máy, phần chữ vẫn giữ"
   }
 }

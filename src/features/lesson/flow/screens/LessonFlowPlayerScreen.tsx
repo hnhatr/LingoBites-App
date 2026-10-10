@@ -19,6 +19,7 @@ import type {
   LessonSupportLevel,
 } from '@core/schemas/sync';
 
+import {isLessonNotDownloaded} from '../../player/logic/lessonNotDownloaded';
 import {useCanonicalLesson} from '../../player/logic/useCanonicalLesson';
 import type {LessonFlowParamList} from '../../player/screens/navigationTypes';
 import {StepRail} from '../components/StepRail';
@@ -134,6 +135,8 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
           <AppText color="secondary" testID="lesson-flow-unavailable">
             {state.status === 'contract-mismatch'
               ? t('lessonPlayer.update_app')
+              : isLessonNotDownloaded(state)
+              ? t('lessonPlayer.not_downloaded')
               : t('lessonFlow.unavailable')}
           </AppText>
           {state.status === 'error' ? (

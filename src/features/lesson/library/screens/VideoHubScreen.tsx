@@ -23,6 +23,7 @@ import {
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {useIsOffline} from '@core/api/connectivity';
 import {useAppNavigation} from '@core/navigation';
 
 import {getLibrarySection} from '../logic/librarySections';
@@ -42,6 +43,8 @@ const CREATE_NOTE: Record<YouTubeLessonCreationStatus, string | null> = {
   limit_reached: 'Bạn đã dùng hết lượt tạo bài từ video',
 };
 
+const OFFLINE_CREATE_NOTE = 'Cần kết nối mạng';
+
 /**
  * "Học qua video" hub, pushed from the Home shortcut: the video in
  * progress, the learner's own and the public videos, and creating a lesson
@@ -55,6 +58,8 @@ export function VideoHubScreen(_props: Props) {
   const navigation = useAppNavigation();
   const tileWidth = useGridTileWidth();
   const youtubeCreation = useYouTubeLessonCreation();
+  // Offline mode (#22): creating a lesson needs the Server.
+  const offline = useIsOffline();
   const {counts, refresh: refreshCounts} = useLibraryCounts();
   const [inProgress, setInProgress] = useState(findVideoInProgress);
 
@@ -68,7 +73,9 @@ export function VideoHubScreen(_props: Props) {
   const publicVideo = getLibrarySection('publicVideo');
   const mineMeta =
     counts.video > 0 ? `${counts.video} ${mine.unit}` : mine.emptyHint;
-  const createNote = CREATE_NOTE[youtubeCreation.status];
+  const createNote = offline
+    ? OFFLINE_CREATE_NOTE
+    : CREATE_NOTE[youtubeCreation.status];
   const continueTitle = inProgress ? splitLessonTitle(inProgress.title) : null;
 
   return (
@@ -142,7 +149,7 @@ export function VideoHubScreen(_props: Props) {
           </AppText>
           <AppButton
             accessibilityHint="Mở trang dán link YouTube"
-            disabled={youtubeCreation.status !== 'available'}
+            disabled={offline || youtubeCreation.status !== 'available'}
             iconLeft="add"
             loading={youtubeCreation.status === 'checking'}
             onPress={youtubeCreation.start}
