@@ -124,7 +124,7 @@ describe('PasteTextScreen', () => {
     expect(tree!.root.findByType(TextInput).props.value).toBe('');
   });
 
-  it('hides detection, gates CTA, and marks controls disabled while empty (SETE-264)', async () => {
+  it('gates CTA and marks controls disabled while empty, with no detection chip (SETE-264)', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
 
     await ReactTestRenderer.act(async () => {
@@ -161,7 +161,8 @@ describe('PasteTextScreen', () => {
       input.props.onChangeText('Hello world');
     });
 
-    expect(detectionChips()).toHaveLength(1);
+    // E0 K7: the app does not detect language, so no detection chip at all.
+    expect(detectionChips()).toHaveLength(0);
     expect(helperTexts()).toHaveLength(0);
 
     expect(cta().props.disabled).toBe(false);

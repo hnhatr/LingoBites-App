@@ -20,7 +20,8 @@ import {useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 import {
-  MAX_INPUT_TEXT_LENGTH,
+  getDraftTextState,
+  MAX_LESSON_V2_WORDS,
   validateConfirmedText,
 } from '@core/utils/textValidation';
 
@@ -30,14 +31,6 @@ type Props = NativeStackScreenProps<CreateFlowParamList, 'OCRReview'>;
 export type OCRReviewScreenProps = Props;
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
-
-function countWords(text: string): number {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return 0;
-  }
-  return trimmed.split(/\s+/).length;
-}
 
 export function OCRReviewScreen({navigation, route}: Props) {
   const appNavigation = useAppNavigation();
@@ -62,7 +55,7 @@ export function OCRReviewScreen({navigation, route}: Props) {
   const ocrAbortRef = useRef<AbortController | null>(null);
   const ocrRequestIdRef = useRef(0);
   const initialExtractedText = extractedText ?? '';
-  const wordCount = useMemo(() => countWords(text), [text]);
+  const draft = useMemo(() => getDraftTextState(text), [text]);
 
   useEffect(() => {
     return () => {
@@ -85,6 +78,9 @@ export function OCRReviewScreen({navigation, route}: Props) {
     }
     if (warnings.includes('may_not_be_english')) {
       messages.push(t('errors.ocr_not_english'));
+    }
+    if (warnings.includes('text_exceeds_max_length')) {
+      messages.push(t('errors.ocr_text_over_limit'));
     }
     return messages;
   }, [warnings, t]);
@@ -164,10 +160,11 @@ export function OCRReviewScreen({navigation, route}: Props) {
   }
 
   const busy = isRetryingOcr;
+  const canSubmit = !busy && !creating && !draft.overWordLimit;
 
   return (
     <AppScreen>
-      <ScreenHeader onBack={() => navigation.goBack()} title="Kiểm tra text" />
+      <ScreenHeader onBack={() => navigation.goBack()} title={t('ocr.title')} />
       <ScrollView
         contentContainerStyle={{
           gap: theme.spacing.lg,
@@ -197,8 +194,7 @@ export function OCRReviewScreen({navigation, route}: Props) {
         </View>
 
         <AppText color="secondary" variant="body">
-          Kiểm tra và chỉnh sửa trước khi phân tích. App chỉ gửi text bạn xác
-          nhận cho AI.
+          {t('ocr.review_intro')}
         </AppText>
 
         <TextField
@@ -209,7 +205,7 @@ export function OCRReviewScreen({navigation, route}: Props) {
               setScreenState({type: 'input'});
             }
           }}
-          placeholder="Chỉnh sửa đoạn tiếng Anh..."
+          placeholder={t('ocr.placeholder')}
           style={{
             borderColor: theme.colors.accentSoft,
             borderRadius: 20,
@@ -221,11 +217,13 @@ export function OCRReviewScreen({navigation, route}: Props) {
         />
 
         <View style={styles.tagsRow}>
-          <Chip label="Text từ ảnh" tone="accentSoft" />
-          <Chip label={`${wordCount} từ`} tone="neutral" />
+          <Chip label={t('ocr.chip_source')} tone="accentSoft" />
           <Chip
-            label={`${text.trim().length}/${MAX_INPUT_TEXT_LENGTH}`}
-            tone="neutral"
+            label={t('ocr.words_progress', {
+              count: draft.words,
+              max: MAX_LESSON_V2_WORDS,
+            })}
+            tone={draft.overWordLimit ? 'coralSoft' : 'neutral'}
           />
         </View>
 
@@ -246,7 +244,7 @@ export function OCRReviewScreen({navigation, route}: Props) {
         ) : null}
 
         <Pressable
-          accessibilityLabel="Thử OCR lại"
+          accessibilityLabel={t('ocr.retry')}
           accessibilityRole="button"
           disabled={busy}
           onPress={() => {
@@ -269,7 +267,7 @@ export function OCRReviewScreen({navigation, route}: Props) {
             size={20}
           />
           <AppText style={{color: theme.colors.primary, fontWeight: '600'}}>
-            {isRetryingOcr ? 'Đang nhận diện lại...' : 'Thử OCR lại'}
+            {isRetryingOcr ? t('ocr.retrying') : t('ocr.retry')}
           </AppText>
         </Pressable>
       </ScrollView>
@@ -283,11 +281,11 @@ export function OCRReviewScreen({navigation, route}: Props) {
       >
         <PrimaryActionButton
           accessibilityLabel="Phân tích & học ngay"
-          disabled={busy || creating}
+          disabled={!canSubmit}
           onPress={() => {
             handleAnalyze();
           }}
-          label={creating ? 'Đang khởi tạo bài học…' : 'Phân tích & học ngay'}
+          label={creating ? t('ocr.submitting') : t('ocr.submit')}
         />
       </BottomActionBar>
     </AppScreen>

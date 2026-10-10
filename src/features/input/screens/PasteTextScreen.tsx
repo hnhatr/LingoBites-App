@@ -19,7 +19,11 @@ import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
-import {validateConfirmedText} from '@core/utils/textValidation';
+import {
+  getDraftTextState,
+  MAX_LESSON_V2_WORDS,
+  validateConfirmedText,
+} from '@core/utils/textValidation';
 
 import type {CreateFlowParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CreateFlowParamList, 'PasteText'>;
@@ -28,14 +32,6 @@ export type PasteTextScreenProps = Props;
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
 
-function countWords(text: string): number {
-  const trimmed = text.trim();
-  if (!trimmed) {
-    return 0;
-  }
-  return trimmed.split(/\s+/).length;
-}
-
 export function PasteTextScreen({navigation, route}: Props) {
   const appNavigation = useAppNavigation();
   const {theme} = useAppTheme();
@@ -43,7 +39,7 @@ export function PasteTextScreen({navigation, route}: Props) {
   const [text, setText] = useState('');
   const [screenState, setScreenState] = useState<ScreenState>({type: 'input'});
   const [creating, setCreating] = useState(false);
-  const wordCount = useMemo(() => countWords(text), [text]);
+  const draft = useMemo(() => getDraftTextState(text), [text]);
   const hasText = text.trim().length > 0;
   const floatingClearance = useFloatingTabBarClearance();
 
@@ -55,6 +51,9 @@ export function PasteTextScreen({navigation, route}: Props) {
       navigation.setParams({analyzeError: undefined});
     }
   }, [analyzeError, navigation]);
+
+  // Trùng giới hạn ở server (startLessonFromConfirmedText): không cho bấm khi vượt.
+  const canSubmit = hasText && !draft.overWordLimit && !creating;
 
   async function handleAnalyze() {
     if (creating) return;
@@ -96,7 +95,10 @@ export function PasteTextScreen({navigation, route}: Props) {
 
   return (
     <AppScreen>
-      <ScreenHeader onBack={() => navigation.goBack()} title="Dán text" />
+      <ScreenHeader
+        onBack={() => navigation.goBack()}
+        title={t('paste.title')}
+      />
       <ScrollView
         contentContainerStyle={{
           gap: theme.spacing.lg,
@@ -108,8 +110,7 @@ export function PasteTextScreen({navigation, route}: Props) {
         showsVerticalScrollIndicator={false}
       >
         <AppText color="secondary" variant="body">
-          Dán hoặc nhập đoạn tiếng Anh — bài viết, thực đơn, tin nhắn — app sẽ
-          biến thành bài học.
+          {t('paste.intro')}
         </AppText>
 
         <TextField
@@ -120,7 +121,7 @@ export function PasteTextScreen({navigation, route}: Props) {
               setScreenState({type: 'input'});
             }
           }}
-          placeholder="Dán đoạn text của bạn vào đây…"
+          placeholder={t('paste.placeholder')}
           style={{
             borderColor: theme.colors.accentSoft,
             borderRadius: 20,
@@ -132,7 +133,7 @@ export function PasteTextScreen({navigation, route}: Props) {
         />
 
         <Pressable
-          accessibilityLabel="Xóa văn bản"
+          accessibilityLabel={t('paste.clear_a11y')}
           accessibilityRole="button"
           accessibilityState={{disabled: !hasText}}
           disabled={!hasText}
@@ -165,22 +166,36 @@ export function PasteTextScreen({navigation, route}: Props) {
               fontWeight: '600',
             }}
           >
-            Xóa văn bản
+            {t('paste.clear')}
           </AppText>
         </Pressable>
 
-        <View style={styles.tagsRow}>
-          {hasText ? (
-            <Chip label="Phát hiện: Tiếng Anh" tone="accentSoft" />
-          ) : null}
-          <Chip label={`${wordCount} từ`} tone="neutral" />
-          <Chip label={`${text.trim().length} ký tự`} tone="neutral" />
+        <View style={styles.tagsRow} testID="paste-counters">
+          <Chip
+            label={t('paste.words_progress', {
+              count: draft.words,
+              max: MAX_LESSON_V2_WORDS,
+            })}
+            tone={draft.overWordLimit ? 'coralSoft' : 'neutral'}
+          />
+          <Chip
+            label={t('paste.chars_count', {count: text.trim().length})}
+            tone="neutral"
+          />
         </View>
 
         {!hasText ? (
           <AppText color="secondary" variant="body">
-            Cần ít nhất 1 từ để trích xuất từ vựng.
+            {t('paste.need_word')}
           </AppText>
+        ) : null}
+
+        {draft.overWordLimit ? (
+          <ErrorCard
+            message={t('errors.text_over_word_limit', {
+              max: MAX_LESSON_V2_WORDS,
+            })}
+          />
         ) : null}
 
         {screenState.type === 'error' ? (
@@ -202,12 +217,12 @@ export function PasteTextScreen({navigation, route}: Props) {
         }}
       >
         <PrimaryActionButton
-          accessibilityLabel="Trích xuất từ vựng"
-          disabled={creating || !hasText}
+          accessibilityLabel={t('paste.submit_a11y')}
+          disabled={!canSubmit}
           onPress={() => {
             handleAnalyze();
           }}
-          label={creating ? 'Đang khởi tạo bài học…' : 'Trích xuất từ vựng'}
+          label={creating ? t('paste.submitting') : t('paste.submit')}
         />
       </BottomActionBar>
     </AppScreen>

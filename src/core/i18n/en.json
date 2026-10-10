@@ -274,7 +274,9 @@
     "rate_limit_exceeded": "Too many requests. Please try again shortly.",
     "youtube_failed": "We couldn't create a YouTube lesson. Please try again.",
     "youtube_auth_required": "Your session expired. Please sign in again.",
-    "youtube_timeout": "The YouTube lesson took too long. Please try again."
+    "youtube_timeout": "The YouTube lesson took too long. Please try again.",
+    "text_over_word_limit": "The passage is longer than {{max}} words. Remove some to continue.",
+    "ocr_text_over_limit": "The photo has more text than one lesson can hold. Remove the parts you don't need."
   },
   "lesson": {
     "no_lessons": "You don't have any lessons yet. Capture an English passage to get started.",
@@ -1105,5 +1107,44 @@
     "retry": "Try again",
     "remove": "Delete downloaded files",
     "remove_hint": "Delete this lesson's images and audio from your device; the text stays"
+  },
+  "paste": {
+    "title": "Paste text",
+    "intro": "Paste or type a passage of English — an article, a menu, a message — and the app turns it into a lesson.",
+    "placeholder": "Paste your text here…",
+    "clear": "Clear text",
+    "clear_a11y": "Clear text",
+    "words_count": "{{count}} words",
+    "chars_count": "{{count}} characters",
+    "need_word": "Add at least 1 word to extract vocabulary.",
+    "submit": "Extract vocabulary",
+    "submit_a11y": "Extract vocabulary",
+    "submitting": "Creating your lesson…",
+    "words_progress": "{{count}}/{{max}} words"
+  },
+  "ocr": {
+    "title": "Check text",
+    "title_capture": "Take photo",
+    "title_gallery": "Upload photo",
+    "review_intro": "Check and edit before analyzing. The photo was sent to the server to read the text. Only the text you confirm below is used to make the lesson.",
+    "placeholder": "Edit the English passage...",
+    "chip_source": "Text from photo",
+    "submit": "Analyze & learn now",
+    "submitting": "Creating your lesson…",
+    "retry": "Retry OCR",
+    "retrying": "Recognizing again...",
+    "scanning": "Recognizing text in the photo...",
+    "opening_gallery": "Opening photo library...",
+    "opening_camera": "Opening camera...",
+    "pick_again": "Pick another photo",
+    "tap_to_pick": "Tap to choose a photo",
+    "pick_from_gallery_a11y": "Choose a photo from the library",
+    "file_formats": "PNG or JPG",
+    "manual_text": "Type text manually",
+    "extract": "Extract text",
+    "extract_a11y": "Extract text",
+    "ocr_card_title": "Read text in the photo",
+    "ocr_card_body": "Read the English text in the photo so you can check it and make a lesson.",
+    "words_progress": "{{count}}/{{max}} words"
   }
 }

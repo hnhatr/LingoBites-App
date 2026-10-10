@@ -274,7 +274,9 @@
     "rate_limit_exceeded": "Bạn gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.",
     "youtube_failed": "Chưa thể tạo bài học YouTube. Vui lòng thử lại.",
     "youtube_auth_required": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
-    "youtube_timeout": "Tạo bài học YouTube mất quá nhiều thời gian. Vui lòng thử lại."
+    "youtube_timeout": "Tạo bài học YouTube mất quá nhiều thời gian. Vui lòng thử lại.",
+    "text_over_word_limit": "Đoạn văn dài quá {{max}} từ. Hãy xoá bớt để tiếp tục.",
+    "ocr_text_over_limit": "Ảnh có nhiều chữ hơn giới hạn của một bài. Hãy xoá bớt phần không cần học."
   },
   "lesson": {
     "no_lessons": "Bạn chưa có bài học nào. Hãy chụp một đoạn tiếng Anh để bắt đầu.",
@@ -1105,5 +1107,44 @@
     "retry": "Thử tải lại",
     "remove": "Xoá file đã tải",
     "remove_hint": "Xoá ảnh và âm thanh của bài khỏi máy, phần chữ vẫn giữ"
+  },
+  "paste": {
+    "title": "Dán text",
+    "intro": "Dán hoặc nhập đoạn tiếng Anh — bài viết, thực đơn, tin nhắn — app sẽ biến thành bài học.",
+    "placeholder": "Dán đoạn text của bạn vào đây…",
+    "clear": "Xóa văn bản",
+    "clear_a11y": "Xóa văn bản",
+    "words_count": "{{count}} từ",
+    "chars_count": "{{count}} ký tự",
+    "need_word": "Cần ít nhất 1 từ để trích xuất từ vựng.",
+    "submit": "Trích xuất từ vựng",
+    "submit_a11y": "Trích xuất từ vựng",
+    "submitting": "Đang khởi tạo bài học…",
+    "words_progress": "{{count}}/{{max}} từ"
+  },
+  "ocr": {
+    "title": "Kiểm tra text",
+    "title_capture": "Chụp ảnh",
+    "title_gallery": "Upload ảnh",
+    "review_intro": "Kiểm tra và chỉnh sửa trước khi phân tích. Ảnh đã được gửi lên máy chủ để đọc chữ. Chỉ đoạn chữ bạn xác nhận dưới đây được dùng để tạo bài.",
+    "placeholder": "Chỉnh sửa đoạn tiếng Anh...",
+    "chip_source": "Text từ ảnh",
+    "submit": "Phân tích & học ngay",
+    "submitting": "Đang khởi tạo bài học…",
+    "retry": "Thử OCR lại",
+    "retrying": "Đang nhận diện lại...",
+    "scanning": "Đang nhận diện chữ trong ảnh...",
+    "opening_gallery": "Đang mở thư viện ảnh...",
+    "opening_camera": "Đang mở camera...",
+    "pick_again": "Chọn ảnh khác",
+    "tap_to_pick": "Chạm để chọn ảnh",
+    "pick_from_gallery_a11y": "Chọn ảnh từ thư viện",
+    "file_formats": "PNG hoặc JPG",
+    "manual_text": "Nhập text thủ công",
+    "extract": "Trích xuất text",
+    "extract_a11y": "Trích xuất text",
+    "ocr_card_title": "Đọc chữ trong ảnh",
+    "ocr_card_body": "Đọc chữ tiếng Anh trong ảnh để bạn kiểm tra và tạo bài.",
+    "words_progress": "{{count}}/{{max}} từ"
   }
 }
