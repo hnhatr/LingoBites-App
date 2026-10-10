@@ -1,10 +1,11 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Image, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {getTextLengthBucket, trackEvent} from '@features/analytics';
 import {startLessonFromConfirmedText} from '@features/lesson/player';
+import {useLearnerProfileStore} from '@features/onboarding';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -16,9 +17,11 @@ import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
 
 import {useIsOffline} from '@core/api/connectivity';
+import {createRequestId} from '@core/api/requestId';
 import {useAppNavigation} from '@core/navigation';
 import {validateConfirmedText} from '@core/utils/textValidation';
 
+import {fetchDescribeCapability, submitMoment} from '../logic/momentClient';
 import {detectPiiLines} from '../logic/piiDetect';
 import type {CreateFlowParamList} from './navigationTypes';
 
@@ -41,6 +44,18 @@ export function MomentReviewScreen({navigation, route}: Props) {
   const [hidden, setHidden] = useState<Set<number>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [describeEnabled, setDescribeEnabled] = useState(false);
+  const profile = useLearnerProfileStore(state => state.profile);
+  const kids = profile?.ageGroup === 'kids';
+  const canDescribe =
+    describeEnabled &&
+    !kids &&
+    analysis.image_id !== null &&
+    analysis.kind !== 'text';
+
+  useEffect(() => {
+    fetchDescribeCapability().then(setDescribeEnabled);
+  }, []);
 
   const piiLines = useMemo(
     () => new Set(detectPiiLines(text).map(line => line.line)),
@@ -95,6 +110,28 @@ export function MomentReviewScreen({navigation, route}: Props) {
     });
     setBusy(false);
     if (!result.ok) setError(result.message);
+  }
+
+  /** E4 (Tả): the server reads the photo and writes sentences about what it shows. */
+  async function describe() {
+    if (!analysis.image_id) return;
+    setBusy(true);
+    const result = await submitMoment(
+      {
+        intent: 'describe',
+        level: profile?.levelCode === 'A2' ? 'A2' : 'A1',
+        image_id: analysis.image_id,
+      },
+      createRequestId(),
+    );
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
+    navigation.replace('SituationInput', {
+      requestId: result.value.moment_request_id,
+    });
   }
 
   function practise() {
@@ -167,8 +204,24 @@ export function MomentReviewScreen({navigation, route}: Props) {
           );
         })}
 
-        {!hasText ? (
+        {!hasText && !canDescribe ? (
           <AppText color="secondary">{t('moment.no_text')}</AppText>
+        ) : null}
+
+        {canDescribe ? (
+          <Pressable
+            accessibilityLabel={t('moment.intent_describe')}
+            accessibilityRole="button"
+            disabled={busy || offline}
+            onPress={describe}
+            style={styles.intent}
+            testID="intent-describe"
+          >
+            <AppText variant="label">{t('moment.intent_describe')}</AppText>
+            <AppText color="secondary" variant="caption">
+              {t('moment.intent_describe_desc')}
+            </AppText>
+          </Pressable>
         ) : null}
 
         {hasText ? (

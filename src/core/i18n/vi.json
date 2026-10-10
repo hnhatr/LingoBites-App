@@ -1182,6 +1182,8 @@
     "consent_body": "Ảnh được gửi lên máy chủ LingoBites để đọc chữ và kiểm tra an toàn. Nếu bạn học nói, chữ trong ảnh được gửi cho AI để viết bài. Không chụp giấy tờ tùy thân, thẻ ngân hàng hay mặt người lạ. Ảnh chỉ được giữ 24 giờ nếu không dùng để tạo bài.",
     "consent_confirm": "Đồng ý",
     "consent_cancel": "Để sau",
-    "offline": "Cần có mạng để tạo bài."
+    "offline": "Cần có mạng để tạo bài.",
+    "intent_describe": "Tả bức ảnh",
+    "intent_describe_desc": "AI viết các câu tả những gì nhìn thấy, bạn luyện tả lại."
   }
 }

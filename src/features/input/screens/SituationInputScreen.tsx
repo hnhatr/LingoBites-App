@@ -57,6 +57,11 @@ export function SituationInputScreen({navigation, route}: Props) {
   const progress = useMomentProgress(requestId);
   const status = progress.status;
 
+  // E4: a describe moment started on the review screen is followed here.
+  useEffect(() => {
+    if (route.params?.requestId) setRequestId(route.params.requestId);
+  }, [route.params?.requestId]);
+
   useEffect(() => {
     if (kids) return;
     fetchSituations(level).then(result => {

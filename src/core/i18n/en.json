@@ -1182,6 +1182,8 @@
     "consent_body": "The photo is sent to the LingoBites server to read the text and check it is safe. If you practise speaking, the text is sent to an AI to write the lesson. Do not photograph ID, bank cards or strangers' faces. The photo is kept 24 hours if you do not use it.",
     "consent_confirm": "Agree",
     "consent_cancel": "Not now",
-    "offline": "You need a connection to create lessons."
+    "offline": "You need a connection to create lessons.",
+    "intent_describe": "Describe the photo",
+    "intent_describe_desc": "The AI writes sentences about what is visible; you practise describing it."
   }
 }

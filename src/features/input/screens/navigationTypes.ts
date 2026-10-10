@@ -20,7 +20,7 @@ export interface MomentReviewRouteParams {
 
 /** E3: pick or type a situation. `imageText` is text the learner confirmed from a photo. */
 export type SituationInputRouteParams =
-  | {imageText?: string; imageId?: string}
+  | {imageText?: string; imageId?: string; requestId?: string}
   | undefined;
 
 /** Create-lesson hub and input flow screens (registered on the root stack). */

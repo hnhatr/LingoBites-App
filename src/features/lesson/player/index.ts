@@ -52,6 +52,8 @@ export {
   submitLessonCreation,
 } from './logic/canonicalLessonClient';
 export {fetchComposeQuota} from './logic/composeClient';
+export {fetchSourcePhoto} from './logic/sourcePhoto';
+export type {SourcePhoto} from './logic/sourcePhoto';
 export type {
   CanonicalLessonClientOptions,
   CanonicalLessonError,

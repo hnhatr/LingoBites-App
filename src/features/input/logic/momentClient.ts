@@ -71,7 +71,8 @@ export type ActiveMoment = z.infer<
 >['requests'][number];
 
 export type MomentStartBody = {
-  intent: 'use';
+  intent: 'use' | 'describe';
+  image_id?: string;
   level?: 'A1' | 'A2';
   situation_id?: string;
   situation_note?: string;
@@ -232,4 +233,27 @@ export async function fetchActiveMoments(
   return parsed.success
     ? {ok: true, value: parsed.data.requests}
     : contentError('Active moments failed validation.');
+}
+
+/** E4: whether the server accepts "Tả" moments right now (the capability, not a guess). */
+export async function fetchDescribeCapability(
+  options: CanonicalLessonClientOptions = {},
+): Promise<boolean> {
+  const answered = await send(
+    '/v1/capabilities',
+    {method: 'GET'},
+    'CAPABILITY_NOT_FOUND',
+    options,
+  );
+  if (!('body' in answered) || answered.status !== 200) return false;
+  const parsed = z
+    .object({
+      capabilities: z.object({
+        moments: z.object({describe: z.object({enabled: z.boolean()})}),
+      }),
+    })
+    .safeParse(answered.body);
+  return parsed.success
+    ? parsed.data.capabilities.moments.describe.enabled
+    : false;
 }
