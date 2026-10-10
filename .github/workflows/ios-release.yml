@@ -198,9 +198,7 @@ jobs:
 
       - name: Install ccache
         if: steps.gate.outputs.build == 'true'
-        run: |
-          brew install ccache
-          echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
+        run: brew install ccache
         env:
           HOMEBREW_NO_AUTO_UPDATE: '1'
           HOMEBREW_NO_INSTALL_CLEANUP: '1'
@@ -208,10 +206,12 @@ jobs:
       - name: Restore ccache
         # Native (C/C++/Obj-C) objects from earlier runs. A new key every run so
         # the cache is always saved; restore-keys picks up the most recent one.
+        # Xcode does not pass CCACHE_DIR to the compiler, so this is ccache's
+        # default directory on macOS.
         if: steps.gate.outputs.build == 'true'
         uses: actions/cache@v4
         with:
-          path: ~/.ccache
+          path: ~/Library/Caches/ccache
           key: ccache-ios-${{ runner.os }}-${{ github.run_id }}
           restore-keys: ccache-ios-${{ runner.os }}-
 
@@ -246,6 +246,11 @@ jobs:
             else
               git checkout -- ios/LingoBites.xcodeproj
             fi
+          fi
+          if grep -q 'ccache-clang' ios/Pods/Pods.xcodeproj/project.pbxproj; then
+            echo "ccache enabled for Pod targets."
+          else
+            echo "::warning::ccache wrappers missing from Pods.xcodeproj; native Pods compile without ccache."
           fi
         env:
           USE_CCACHE: '1'
@@ -323,10 +328,6 @@ jobs:
           IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           APPLE_ID: ${{ secrets.IOS_APPLE_ID }}
           APP_STORE_CONNECT_TEAM_ID: ${{ secrets.IOS_APP_STORE_CONNECT_TEAM_ID }}
-          # Read by React Native's ccache-clang wrappers (see Install CocoaPods).
-          CCACHE_BASEDIR: ${{ github.workspace }}
-          CCACHE_MAXSIZE: 2G
-          CCACHE_COMPRESS: 'true'
 
       - name: Show ccache stats
         if: always() && steps.gate.outputs.build == 'true'

@@ -157,7 +157,8 @@ platform :ios do
       end
 
       build_number_xcargs = "CURRENT_PROJECT_VERSION=#{Shellwords.escape(build_number)}"
-      archive_xcargs = ([provisioning_xcargs, build_number_xcargs] + signing_xcargs).join(" ")
+      # The index store only serves Xcode's editor features; skip it in the archive.
+      archive_xcargs = ([provisioning_xcargs, build_number_xcargs, "COMPILER_INDEX_STORE_ENABLE=NO"] + signing_xcargs).join(" ")
 
       build_app(
         workspace: IOS_WORKSPACE,
