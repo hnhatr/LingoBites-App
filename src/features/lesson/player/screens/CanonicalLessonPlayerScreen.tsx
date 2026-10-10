@@ -34,6 +34,7 @@ import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {useIsOffline} from '@core/api/connectivity';
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
 import type {LessonAnalysis} from '@core/schemas/lesson';
@@ -72,6 +73,7 @@ import {
   collectLessonVocabulary,
   mergeAnalyses,
 } from '../logic/lessonHubContent';
+import {isLessonNotDownloaded} from '../logic/lessonNotDownloaded';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
 import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
@@ -117,6 +119,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const reloadSavedItems = savedItems.reload;
   const [positionMs, setPositionMs] = useState(0);
   const [videoAvailable, setVideoAvailable] = useState(true);
+  const offline = useIsOffline();
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoMountKey, setVideoMountKey] = useState(0);
   const [showTranslation, setShowTranslation] = useState(true);
@@ -331,7 +334,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         videoPlaying={videoPlaying}
         showTranslation={showTranslation}
         showIpa={showIpa}
-        unavailableReason={t('lessonPlayer.video_unavailable')}
+        unavailableReason={
+          offline
+            ? t('lessonPlayer.video_offline')
+            : t('lessonPlayer.video_unavailable')
+        }
         videoSlot={options?.videoSlot}
         onRetryVideo={options?.onRetryVideo}
         onSeek={handleSeek}
@@ -390,7 +397,9 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       return (
         <View testID="canonical-player-error" style={themedStyles.errorBox}>
           <AppText color="danger">
-            {'message' in state.error
+            {isLessonNotDownloaded(state)
+              ? t('lessonPlayer.not_downloaded')
+              : 'message' in state.error
               ? state.error.message
               : t('lessonPlayer.load_failed')}
           </AppText>

@@ -3,6 +3,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
 
+import {useConnectivityStore} from '@core/api/connectivity';
 import {FeatureFlagProvider} from '@core/release';
 
 import {mockAppNavigation} from '@test/support';
@@ -62,6 +63,7 @@ describe('VideoHubScreen', () => {
     mockCounts = {video: 0};
     mockInProgress = null;
     mockCreationStatus = 'available';
+    useConnectivityStore.setState({status: 'online'});
   });
 
   it('hides the continue card when no video is in progress', () => {
@@ -124,6 +126,16 @@ describe('VideoHubScreen', () => {
     press(tree, 'video-hub-public');
     expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith(
       'publicVideo',
+    );
+  });
+
+  it('asks for a connection when offline', () => {
+    mockCreationStatus = 'unavailable';
+    useConnectivityStore.setState({status: 'offline'});
+    const tree = render();
+    expect(byTestID(tree, 'video-hub-create')[0].props.disabled).toBe(true);
+    expect(byTestID(tree, 'video-hub-create-note')[0].props.children).toBe(
+      'Cần kết nối mạng',
     );
   });
 });
