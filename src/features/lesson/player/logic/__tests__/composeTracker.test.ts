@@ -29,6 +29,7 @@ jest.mock('../canonicalDownloadRepository', () => ({
 }));
 jest.mock('../composeClient', () => ({
   fetchActiveComposes: jest.fn(),
+  fetchActiveMomentRequests: jest.fn(async () => ({ok: true, value: []})),
 }));
 
 const mockedStatus = fetchLessonCreationStatus as jest.Mock;

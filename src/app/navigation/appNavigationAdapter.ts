@@ -29,6 +29,8 @@ export const CREATE_FLOW_ROUTES: ReadonlySet<string> = new Set([
   'PasteText',
   'ImageCapture',
   'OCRReview',
+  'MomentReview',
+  'SituationInput',
   'LessonCreation',
 ]);
 
@@ -61,6 +63,12 @@ export function createAppNavigation(
       case 'camera':
       case 'gallery':
         navigate('ImageCapture', {sourceType: entry.kind});
+        return;
+      case 'situation':
+        navigate('SituationInput', {
+          imageText: entry.imageText,
+          requestId: entry.requestId,
+        });
         return;
       case 'youtube':
         navigate('LessonCreation', {

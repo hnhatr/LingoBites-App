@@ -1,7 +1,8 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React from 'react';
-import {Modal, StyleSheet, View} from 'react-native';
+import {Alert, Modal, StyleSheet, View} from 'react-native';
 
+import {withdrawPhotoConsent} from '@features/input';
 import {
   SpeakingRecordingsSettingsRow,
   SpeechGradingSettingsRow,
@@ -28,6 +29,22 @@ type Props = NativeStackScreenProps<ProfileStackParamList, 'DataSettings'>;
  */
 export function DataSettingsScreen({navigation}: Props) {
   const {theme} = useAppTheme();
+  const handleWithdrawPhotoConsent = () => {
+    Alert.alert(
+      'Rút đồng ý gửi ảnh?',
+      'Ảnh bạn chụp sẽ không được gửi đi cho đến khi bạn đồng ý lại.',
+      [
+        {text: 'Hủy', style: 'cancel'},
+        {
+          text: 'Rút đồng ý',
+          style: 'destructive',
+          onPress: () => {
+            void withdrawPhotoConsent();
+          },
+        },
+      ],
+    );
+  };
   const {
     audioCacheTrailingLabel,
     clearDataConfirmText,
@@ -63,6 +80,26 @@ export function DataSettingsScreen({navigation}: Props) {
       <OfflineStudySettingsGroup
         onOpenDownloads={() => navigation.navigate('OfflineDownloads')}
       />
+
+      <SettingsGroup title="Ảnh gửi đi">
+        <View>
+          <ProfileSettingsRow
+            accessibilityHint="Chạm để rút đồng ý"
+            accessibilityLabel="Rút đồng ý gửi ảnh để phân tích"
+            icon="photo_camera"
+            label="Rút đồng ý gửi ảnh"
+            onPress={handleWithdrawPhotoConsent}
+            trailing="chevron"
+          />
+          <AppText
+            color="secondary"
+            style={[styles.caption, {paddingBottom: theme.spacing.sm}]}
+            variant="caption"
+          >
+            Lần sau bạn chụp ảnh sẽ được hỏi lại trước khi ảnh được gửi đi.
+          </AppText>
+        </View>
+      </SettingsGroup>
 
       <SettingsGroup title="Bản ghi giọng nói">
         <SpeakingRecordingsSettingsRow />

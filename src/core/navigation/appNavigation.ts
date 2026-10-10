@@ -23,6 +23,7 @@ export type AppTabName = 'Home' | 'Courses' | 'Lessons' | 'Profile';
 /** One Library list: the learner's own sections, then the public catalog. */
 export type LibrarySectionKey =
   | 'mine'
+  | 'moments'
   | 'video'
   | 'vocabulary'
   | 'grammar'
@@ -37,7 +38,9 @@ export type CreateEntry =
   /** Open the YouTube link composer. */
   | {kind: 'youtube'; submissionId?: string}
   /** Submit already-confirmed text and show creation progress. */
-  | {kind: 'text' | 'ocr'; text: string; submissionId?: string};
+  | {kind: 'text' | 'ocr'; text: string; submissionId?: string}
+  /** E3: pick or type a situation; `imageText` is confirmed text from a photo. */
+  | {kind: 'situation'; imageText?: string; requestId?: string};
 
 /**
  * One step of the structured curriculum (Course → Level → Unit → Lesson).

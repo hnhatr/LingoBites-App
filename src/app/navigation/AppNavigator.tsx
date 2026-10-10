@@ -24,6 +24,7 @@ import {
   ImageCaptureScreen,
   PasteTextScreen,
 } from '@features/input';
+import {MomentReviewScreen, SituationInputScreen} from '@features/input';
 import {LessonFlowPlayerScreen} from '@features/lesson';
 import {
   LessonsHistoryScreen,
@@ -264,6 +265,15 @@ function AuthenticatedRootStack() {
       )}
       {canMount('OCRReview') && (
         <RootStack.Screen component={OCRReviewScreen} name="OCRReview" />
+      )}
+      {canMount('MomentReview') && (
+        <RootStack.Screen component={MomentReviewScreen} name="MomentReview" />
+      )}
+      {canMount('SituationInput') && (
+        <RootStack.Screen
+          component={SituationInputScreen}
+          name="SituationInput"
+        />
       )}
       <RootStack.Screen
         component={LessonCreationScreen}

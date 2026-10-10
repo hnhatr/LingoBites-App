@@ -2,7 +2,13 @@ import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {speak} from '@features/audio';
 
@@ -55,6 +61,7 @@ import {
   requestComposeSheet,
   useComposeTracker,
 } from '../logic/composeTracker';
+import {deleteLearnerLesson} from '../logic/learnerLessonDelete';
 import {
   collectLessonGrammar,
   collectLessonListening,
@@ -195,6 +202,24 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const canCompose =
     composeAvailable && snapshot !== null && canComposeFrom(snapshot);
   const openCompose = canCompose ? () => setComposeOpen(true) : undefined;
+  /** E5 (S4): the learner deletes their own lesson after one confirmation. */
+  const confirmDelete = () => {
+    Alert.alert(t('moment.delete_title'), t('moment.delete_body'), [
+      {text: t('moment.delete_cancel'), style: 'cancel'},
+      {
+        text: t('moment.delete_confirm'),
+        style: 'destructive',
+        onPress: async () => {
+          const result = await deleteLearnerLesson(lessonId);
+          if (result.ok) {
+            appNavigation.goBack();
+          } else {
+            Alert.alert(t('moment.delete_title'), t('moment.delete_failed'));
+          }
+        },
+      },
+    ]);
+  };
 
   // An "Đang tạo bài" card opened this lesson to show its compose progress.
   const sheetRequested = useComposeTracker(
@@ -499,6 +524,10 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                   : undefined
               }
               onOpenCompose={openCompose}
+              onSpeakText={handleSpeak}
+              onDeleteLesson={
+                snapshot.origin === 'learner' ? confirmDelete : undefined
+              }
             />
           </>
         );

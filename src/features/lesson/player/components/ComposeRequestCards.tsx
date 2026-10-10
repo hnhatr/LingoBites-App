@@ -12,6 +12,7 @@ import {useOptionalAppNavigation} from '@core/navigation';
 import {
   type ComposeEntry,
   dismissCompose,
+  markComposeSeen,
   requestComposeSheet,
   useComposeTracker,
 } from '../logic/composeTracker';
@@ -33,7 +34,11 @@ export function ComposeRequestCards({testID = 'compose-cards'}) {
       all.filter(
         entry =>
           entry.status === 'running' ||
-          (entry.status === 'failed' && !entry.seen),
+          entry.status === 'awaiting' ||
+          (entry.status === 'failed' && !entry.seen) ||
+          (entry.kind === 'moment' &&
+            entry.status === 'succeeded' &&
+            !entry.seen),
       ),
     [all],
   );
@@ -41,6 +46,16 @@ export function ComposeRequestCards({testID = 'compose-cards'}) {
 
   const open = (entry: ComposeEntry) => {
     if (!navigation) return;
+    if (entry.kind === 'moment') {
+      // A moment opens where it can be answered or read; nothing to open while it runs.
+      if (entry.status === 'awaiting') {
+        navigation.startCreate({kind: 'situation', requestId: entry.requestId});
+      } else if (entry.status === 'succeeded' && entry.lessonId) {
+        markComposeSeen(entry.requestId);
+        navigation.openLesson(entry.lessonId);
+      }
+      return;
+    }
     requestComposeSheet(entry.sourceLessonId);
     navigation.openLesson(entry.sourceLessonId);
   };
@@ -49,10 +64,31 @@ export function ComposeRequestCards({testID = 'compose-cards'}) {
     <View style={styles.list} testID={testID}>
       {entries.map(entry => {
         const running = entry.status === 'running';
+        const isMoment = entry.kind === 'moment';
         const stage = entry.waitingNetwork
           ? t('compose.waiting_network')
           : t(`compose.stage_${entry.progress?.stage ?? 'queued'}`, {
               defaultValue: t('compose.stage_queued'),
+            });
+        const heading = isMoment
+          ? t(
+              entry.status === 'awaiting'
+                ? 'moment.card_awaiting'
+                : entry.status === 'succeeded'
+                ? 'moment.card_ready'
+                : entry.status === 'failed'
+                ? 'compose.card_failed'
+                : 'moment.card_running',
+            )
+          : running
+          ? t('compose.card_running')
+          : t('compose.card_failed');
+        const detail = isMoment
+          ? entry.sourceTitle ?? t('moment.card_default_title')
+          : t('compose.card_detail', {
+              title: entry.sourceTitle ?? '',
+              count: entry.sentenceIds.length,
+              stage: running ? stage : t('compose.repick'),
             });
         return (
           <View key={entry.requestId} style={styles.card}>
@@ -69,17 +105,9 @@ export function ComposeRequestCards({testID = 'compose-cards'}) {
                 size={22}
               />
               <View style={styles.text}>
-                <AppText variant="label">
-                  {running
-                    ? t('compose.card_running')
-                    : t('compose.card_failed')}
-                </AppText>
+                <AppText variant="label">{heading}</AppText>
                 <AppText color="secondary" numberOfLines={2} variant="caption">
-                  {t('compose.card_detail', {
-                    title: entry.sourceTitle ?? '',
-                    count: entry.sentenceIds.length,
-                    stage: running ? stage : t('compose.repick'),
-                  })}
+                  {isMoment && running ? `${detail} · ${stage}` : detail}
                 </AppText>
               </View>
             </Pressable>

@@ -10,8 +10,10 @@ describe('buildNavigationMountSnapshot', () => {
     );
     expect(Object.keys(snapshot.ingestionRoutes).sort()).toEqual([
       'ImageCapture',
+      'MomentReview',
       'OCRReview',
       'PasteText',
+      'SituationInput',
     ]);
   });
 });

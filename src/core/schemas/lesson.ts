@@ -36,6 +36,7 @@ export const LessonSourceTypeValues = [
   'learner_text',
   'learner_ocr',
   'youtube',
+  'learner_situation',
 ] as const;
 
 export const LessonSourceTypeSchema = z.enum(LessonSourceTypeValues);
@@ -489,6 +490,7 @@ export const LessonCreationStatusValues = [
   'queued',
   'processing',
   'waiting_transcript',
+  'awaiting_confirmation',
   'succeeded',
   'failed',
 ] as const;
@@ -579,6 +581,9 @@ export const LessonCreationStatusResponseSchema = z
     lesson_id: z.string().uuid().nullable(),
     error: LessonCreationErrorSchema.nullable(),
     compose: LessonComposeProgressSchema.optional(),
+    /** E2: the situation the AI understood, while awaiting the learner's confirmation. */
+    situation_vi: z.string().nullable().optional(),
+    confirm_expires_at: z.string().nullable().optional(),
   })
   .strict();
 

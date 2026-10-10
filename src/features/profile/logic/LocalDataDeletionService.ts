@@ -1,5 +1,8 @@
 import {listAudioAssetLocalPaths} from '@features/audio';
-import {sweepLessonMedia} from '@features/lesson/player';
+import {
+  removeAllCachedSourcePhotos,
+  sweepLessonMedia,
+} from '@features/lesson/player';
 import {
   clearSpeakingData,
   enqueueSpeakingAttemptTombstones,
@@ -130,6 +133,7 @@ export async function clearAllLocalDataWithFiles(
   } catch {
     // Best-effort; unreferenced media is swept again on the next lesson open.
   }
+  await removeAllCachedSourcePhotos();
 
   requestRecordingUploadDrain();
   try {

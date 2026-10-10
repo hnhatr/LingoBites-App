@@ -24,7 +24,11 @@ type Props = NativeStackScreenProps<CreateFlowParamList, 'CreateHub'>;
 export type CreateScreenProps = Props;
 
 type Tile = {
-  icon: 'add_photo_alternate' | 'play_circle' | 'content_paste';
+  icon:
+    | 'add_photo_alternate'
+    | 'play_circle'
+    | 'content_paste'
+    | 'record_voice_over';
   labelKey: string;
   descKey: string;
   a11yKey: string;
@@ -53,6 +57,8 @@ export function CreateScreen(_props: Props) {
   const youtubeCreation = useYouTubeLessonCreation();
   const youtubeEnabled = youtubeCreation.status === 'available';
   const pasteEnabled = config.features.pasteTextInput;
+  // E3: learn from a situation (typed or chosen) — the moment flow.
+  const situationEnabled = config.features.momentFlow === true;
 
   const openCamera = useCallback(
     () => appNavigation.startCreate({kind: 'camera'}),
@@ -84,6 +90,16 @@ export function CreateScreen(_props: Props) {
       testID: 'create-tile-youtube',
     });
   }
+  if (situationEnabled) {
+    tiles.push({
+      icon: 'record_voice_over',
+      labelKey: 'moment.tile_title',
+      descKey: 'moment.tile_desc',
+      a11yKey: 'moment.tile_title',
+      onPress: () => appNavigation.startCreate({kind: 'situation'}),
+      testID: 'create-tile-situation',
+    });
+  }
   if (pasteEnabled) {
     tiles.push({
       icon: 'content_paste',
@@ -94,7 +110,8 @@ export function CreateScreen(_props: Props) {
       testID: 'create-tile-paste',
     });
   }
-  const hasAnySource = imageInputEnabled || youtubeEnabled || pasteEnabled;
+  const hasAnySource =
+    imageInputEnabled || youtubeEnabled || pasteEnabled || situationEnabled;
   // Offline mode (#20–22): every source needs the Server (OCR, AI, YouTube
   // transcript). The tiles stay visible but locked, with the reason above.
   const offline = useIsOffline();

@@ -2,6 +2,8 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {trackEvent} from '@features/analytics';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
@@ -16,13 +18,16 @@ import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {
   collectLessonOutcome,
+  collectLessonPatterns,
   type LessonHubSection,
   type LessonHubSectionRow,
   lessonHubSections,
   sortedSentences,
 } from '../logic/lessonHubContent';
+import {replayDayKey, replayLine} from '../logic/situationReplay';
 import {LessonOutcomeCard} from './LessonOutcomeCard';
 import {LessonStatusBanners} from './LessonStatusBanners';
+import {SourcePhotoCard} from './SourcePhotoCard';
 
 export type {LessonHubSection};
 
@@ -119,6 +124,10 @@ export type CanonicalLessonHubProps = {
   onOpenPractice?: () => void;
   /** S4.3: opens "Học theo 6 bước" sentence picking. Omit to hide the row. */
   onOpenCompose?: () => void;
+  /** E5: the learner's own lesson can be deleted (server and this device). */
+  onDeleteLesson?: () => void;
+  /** Speaks the replayed sentence (TTS); omitted = no play button. */
+  onSpeakText?: (text: string) => void;
 };
 
 /**
@@ -136,12 +145,23 @@ export function CanonicalLessonHub({
   onOpenLesson,
   onOpenPractice,
   onOpenCompose,
+  onDeleteLesson,
+  onSpeakText,
 }: CanonicalLessonHubProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const sentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const outcome = useMemo(() => collectLessonOutcome(snapshot), [snapshot]);
+  const [replayOpen, setReplayOpen] = useState(false);
+  // E5 (S3): only lessons made from a situation can be replayed; no AI, works offline.
+  const replay = useMemo(
+    () =>
+      snapshot.source_type === 'learner_situation'
+        ? replayLine(collectLessonPatterns(snapshot), replayDayKey(new Date()))
+        : null,
+    [snapshot],
+  );
   const sectionRows = useMemo(
     () => lessonHubSections(snapshot, analyses),
     [snapshot, analyses],
@@ -161,6 +181,11 @@ export function CanonicalLessonHub({
   return (
     <View testID="canonical-lesson-hub" style={styles.container}>
       <LessonStatusBanners offline={offline} hasUpdate={hasUpdate} />
+      <SourcePhotoCard
+        items={(snapshot.lesson_items ?? []).map(entry => entry.item)}
+        lessonId={snapshot.id}
+        offline={offline ?? false}
+      />
 
       <View style={styles.header}>
         <AppText testID="canonical-hub-title" variant="h2" numberOfLines={3}>
@@ -302,6 +327,42 @@ export function CanonicalLessonHub({
             title={t('practice.entry_button')}
           />
         ) : null}
+        {replay ? (
+          <View>
+            <LessonExploreRow
+              icon="repeat"
+              medallionTone="teal"
+              onPress={() => {
+                if (!replayOpen) trackEvent('moment_replayed', {});
+                setReplayOpen(open => !open);
+              }}
+              subtitle={t('moment.replay_subtitle')}
+              testID="canonical-hub-replay"
+              title={t('moment.replay_title')}
+            />
+            {replayOpen ? (
+              <AppCard style={themedStyles.contentCard}>
+                <AppText color="secondary" variant="caption">
+                  {t('moment.replay_changed', {label: replay.changedLabelVi})}
+                </AppText>
+                <AppText variant="h3">{replay.after}</AppText>
+                {onSpeakText ? (
+                  <Pressable
+                    accessibilityLabel={t('moment.replay_listen')}
+                    accessibilityRole="button"
+                    onPress={() => onSpeakText(replay.after)}
+                    style={themedStyles.listen}
+                    testID="canonical-hub-replay-listen"
+                  >
+                    <AppText color="primary" variant="label">
+                      {t('moment.replay_listen')}
+                    </AppText>
+                  </Pressable>
+                ) : null}
+              </AppCard>
+            ) : null}
+          </View>
+        ) : null}
         {onOpenCompose ? (
           <LessonExploreRow
             icon="auto_awesome"
@@ -311,6 +372,26 @@ export function CanonicalLessonHub({
             testID="canonical-hub-compose"
             title={t('compose.entry_title')}
           />
+        ) : null}
+        {onDeleteLesson ? (
+          <Pressable
+            accessibilityLabel={t('moment.delete_lesson')}
+            accessibilityRole="button"
+            disabled={offline}
+            onPress={onDeleteLesson}
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 44,
+            }}
+            testID="canonical-hub-delete"
+          >
+            <AppText
+              style={{color: theme.colors.text.muted, fontWeight: '600'}}
+            >
+              {t('moment.delete_lesson')}
+            </AppText>
+          </Pressable>
         ) : null}
       </View>
     </View>
@@ -350,6 +431,7 @@ function ExploreRow({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    listen: {alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center'},
     contentCard: {
       borderBottomColor: theme.colors.accentSoft,
       borderBottomWidth: 4,

@@ -17,6 +17,7 @@ import {useFeatureEnabled} from '@core/release';
 
 import {GrammarTabContent} from '../components/GrammarTabContent';
 import {LessonsTabContent} from '../components/LessonsTabContent';
+import {MomentLibraryList} from '../components/MomentLibraryList';
 import {PublicLessonsList} from '../components/PublicLessonsList';
 import {SearchAndFilterBar} from '../components/SearchAndFilterBar';
 import {VocabularyTabContent} from '../components/VocabularyTabContent';
@@ -98,7 +99,9 @@ export function LibraryListScreen({navigation, route}: Props) {
         onSearchChange={handleSearchChange}
       />
       <View style={styles.content} testID={`library-list-${section.id}`}>
-        {section.catalog ? (
+        {section.moments ? (
+          <MomentLibraryList emptyHint={section.emptyHint} />
+        ) : section.catalog ? (
           <PublicLessonsList
             origin={section.catalog.origin}
             sourceType={section.catalog.sourceType}

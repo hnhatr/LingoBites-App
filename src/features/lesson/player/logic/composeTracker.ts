@@ -14,7 +14,7 @@ import {
   fetchLessonCreationStatus,
   fetchLessonSnapshot,
 } from './canonicalLessonClient';
-import {fetchActiveComposes} from './composeClient';
+import {fetchActiveComposes, fetchActiveMomentRequests} from './composeClient';
 
 /**
  * S4.3 / wait design §3: the learner's "Học theo 6 bước" requests, wherever
@@ -24,10 +24,16 @@ import {fetchActiveComposes} from './composeClient';
  * of running composes on start, so another device's request shows too.
  */
 
-export type ComposeEntryStatus = 'running' | 'succeeded' | 'failed';
+export type ComposeEntryStatus =
+  | 'running'
+  | 'awaiting'
+  | 'succeeded'
+  | 'failed';
 
 export type ComposeEntry = {
   requestId: string;
+  /** `moment` entries come from "Kể tình huống" and have no source lesson (`''`). */
+  kind?: 'compose' | 'moment';
   sourceLessonId: string;
   sourceTitle: string | null;
   sentenceIds: string[];
@@ -157,6 +163,50 @@ export function trackCompose(input: {
   });
 }
 
+/**
+ * E3 (deferred to E6): a "moment" request keeps running after the learner
+ * leaves the screen. It shows as a card until its lesson is ready, or until
+ * the learner has to confirm the situation (`awaiting`).
+ */
+export function trackMoment(input: {
+  requestId: string;
+  situationVi: string | null;
+}): void {
+  setEntries(entries => {
+    if (entries.some(entry => entry.requestId === input.requestId)) {
+      return entries;
+    }
+    return [
+      ...entries,
+      {
+        requestId: input.requestId,
+        kind: 'moment',
+        sourceLessonId: '',
+        sourceTitle: input.situationVi,
+        sentenceIds: [],
+        createdAt: Date.now(),
+        status: 'running',
+        progress: null,
+        lessonId: null,
+        error: null,
+        seen: false,
+        waitingNetwork: false,
+      },
+    ];
+  });
+}
+
+/** The learner confirmed a situation: the moment runs again and is polled. */
+export function resumeTrackedMoment(requestId: string): void {
+  setEntries(entries =>
+    entries.map(entry =>
+      entry.requestId === requestId && entry.status === 'awaiting'
+        ? {...entry, status: 'running'}
+        : entry,
+    ),
+  );
+}
+
 export function markComposeSeen(requestId: string): void {
   setEntries(entries =>
     entries.map(entry =>
@@ -219,6 +269,31 @@ export async function hydrateComposeTracker(
       hydrated: true,
       entries: [...kept, ...state.entries],
     }));
+  }
+  // E6: moments started on another device or before a restart come back too.
+  const moments = await fetchActiveMomentRequests();
+  if (moments.ok) {
+    setEntries(entries => {
+      const known = new Set(entries.map(entry => entry.requestId));
+      const added: ComposeEntry[] = moments.value
+        .filter(request => !known.has(request.id))
+        .map(request => ({
+          requestId: request.id,
+          kind: 'moment',
+          sourceLessonId: '',
+          sourceTitle: request.situation_vi,
+          sentenceIds: [],
+          createdAt: now,
+          status:
+            request.status === 'awaiting_confirmation' ? 'awaiting' : 'running',
+          progress: null,
+          lessonId: null,
+          error: null,
+          seen: false,
+          waitingNetwork: false,
+        }));
+      return added.length > 0 ? [...entries, ...added] : entries;
+    });
   }
   const active = await fetchActiveComposes();
   if (!active.ok) return;
@@ -295,6 +370,9 @@ export async function pollCompose(requestId: string): Promise<void> {
           progress,
           waitingNetwork: false,
         };
+      }
+      if (value.status === 'awaiting_confirmation') {
+        return {...item, status: 'awaiting', waitingNetwork: false};
       }
       if (value.status === 'failed') {
         return {

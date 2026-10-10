@@ -19,17 +19,19 @@ import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {ErrorCard} from '@ui/components/ErrorCard';
-import {ImagePlaceholder} from '@ui/components/ImagePlaceholder';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {SectionHeader} from '@ui/components/SectionHeader';
 import {useAppTheme} from '@ui/theme';
+
+import {useFeatureFlags} from '@core/release';
 
 import {
   type PickedImage,
   pickImageFromCamera,
   pickImageFromGallery,
 } from '../logic/imagePicker';
+import {analyzeImage} from '../logic/momentClient';
+import {ensurePhotoConsent} from '../logic/photoConsent';
 import type {CreateFlowParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CreateFlowParamList, 'ImageCapture'>;
 
@@ -43,11 +45,11 @@ type ScreenState =
   | {type: 'permission_denied'}
   | {type: 'error'; message: string; image?: PickedImage};
 
-const RECENT_PLACEHOLDERS = ['flyer.jpg', 'menu.png', 'sign.jpg'] as const;
-
 export function ImageCaptureScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
+  const {config} = useFeatureFlags();
+  const momentFlow = config.features.momentFlow === true;
   const {sourceType} = route.params;
   const isGallery = sourceType === 'gallery';
   const [screenState, setScreenState] = useState<ScreenState>(
@@ -108,7 +110,48 @@ export function ImageCaptureScreen({navigation, route}: Props) {
     }
   }, [isGallery, launchPicker]);
 
+  /** E3 (P1, P8): with momentFlow on, the server reads and checks the photo, then the learner chooses. */
+  async function analyzeForMoment(image: PickedImage) {
+    const consented = await ensurePhotoConsent({
+      title: t('moment.consent_title'),
+      body: t('moment.consent_body'),
+      confirmLabel: t('moment.consent_confirm'),
+      cancelLabel: t('moment.consent_cancel'),
+    });
+    if (!consented) {
+      setScreenState({type: 'preview', image});
+      return;
+    }
+    setScreenState({type: 'ocr_loading', image});
+    const result = await analyzeImage(image, sourceType);
+    if (!result.ok) {
+      trackEvent('moment_rejected', {
+        code: result.errorCode ?? 'unknown',
+        stage: 'analyze',
+      });
+      setScreenState({
+        type: 'error',
+        message: result.message || t('errors.ocr_failed'),
+        image,
+      });
+      return;
+    }
+    trackEvent('moment_analyzed', {
+      kind: result.value.kind,
+      has_image_id: result.value.image_id !== null,
+    });
+    navigation.replace('MomentReview', {
+      sourceType,
+      image,
+      analysis: result.value,
+    });
+  }
+
   async function handleContinue(image: PickedImage) {
+    if (momentFlow) {
+      await analyzeForMoment(image);
+      return;
+    }
     ocrAbortRef.current?.abort();
     const controller = new AbortController();
     ocrAbortRef.current = controller;
@@ -165,7 +208,9 @@ export function ImageCaptureScreen({navigation, route}: Props) {
     navigation.goBack();
   }
 
-  const headerTitle = isGallery ? 'Upload ảnh' : 'Chụp ảnh';
+  const headerTitle = isGallery
+    ? t('ocr.title_gallery')
+    : t('ocr.title_capture');
 
   if (screenState.type === 'picking' || screenState.type === 'ocr_loading') {
     return (
@@ -183,10 +228,10 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <AppText color="secondary" style={styles.centerText}>
             {screenState.type === 'ocr_loading'
-              ? 'Đang nhận diện chữ trong ảnh...'
+              ? t('ocr.scanning')
               : isGallery
-              ? 'Đang mở thư viện ảnh...'
-              : 'Đang mở camera...'}
+              ? t('ocr.opening_gallery')
+              : t('ocr.opening_camera')}
           </AppText>
         </View>
       </AppScreen>
@@ -212,7 +257,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             }}
           />
           <AppButton
-            title="Nhập text thủ công"
+            title={t('ocr.manual_text')}
             variant="secondary"
             onPress={() => navigation.navigate('PasteText')}
           />
@@ -247,21 +292,21 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           <ErrorCard message={screenState.message} />
           {screenState.image ? (
             <AppButton
-              title="Thử OCR lại"
+              title={t('ocr.retry')}
               onPress={() => {
                 handleContinue(screenState.image!);
               }}
             />
           ) : null}
           <AppButton
-            title="Chọn ảnh khác"
+            title={t('ocr.pick_again')}
             variant="secondary"
             onPress={() => {
               launchPicker();
             }}
           />
           <AppButton
-            title="Nhập text thủ công"
+            title={t('ocr.manual_text')}
             variant="secondary"
             onPress={() => navigation.navigate('PasteText')}
           />
@@ -293,7 +338,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             }}
           />
           <AppButton
-            title="Chọn ảnh khác"
+            title={t('ocr.pick_again')}
             variant="secondary"
             onPress={() => {
               launchPicker();
@@ -308,7 +353,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           }}
         >
           <Pressable
-            accessibilityLabel="Trích xuất text"
+            accessibilityLabel={t('ocr.extract_a11y')}
             accessibilityRole="button"
             onPress={() => {
               handleContinue(screenState.image);
@@ -338,7 +383,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
                 fontWeight: '600',
               }}
             >
-              Trích xuất text
+              {t('ocr.extract')}
             </AppText>
           </Pressable>
         </BottomActionBar>
@@ -359,7 +404,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
         showsVerticalScrollIndicator={false}
       >
         <Pressable
-          accessibilityLabel="Chọn ảnh từ thư viện"
+          accessibilityLabel={t('ocr.pick_from_gallery_a11y')}
           accessibilityRole="button"
           onPress={() => {
             launchPicker();
@@ -403,23 +448,12 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             style={[styles.pickText, {color: theme.colors.primary}]}
             variant="h3"
           >
-            Chạm để chọn ảnh
+            {t('ocr.tap_to_pick')}
           </AppText>
           <AppText color="muted" variant="caption">
-            PNG hoặc JPG
+            {t('ocr.file_formats')}
           </AppText>
         </Pressable>
-
-        <View>
-          <SectionHeader title="Ảnh gần đây" />
-          <View style={styles.recentRow}>
-            {RECENT_PLACEHOLDERS.map(label => (
-              <View key={label} style={styles.flex1}>
-                <ImagePlaceholder height={96} label={label} />
-              </View>
-            ))}
-          </View>
-        </View>
 
         <AppCard style={styles.ocrCard}>
           <MaterialIcon
@@ -428,9 +462,9 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             size={22}
           />
           <View style={styles.ocrTextContainer}>
-            <AppText variant="label">OCR thông minh</AppText>
+            <AppText variant="label">{t('ocr.ocr_card_title')}</AppText>
             <AppText color="muted" variant="caption">
-              Tự phát hiện ngôn ngữ và trích các từ đáng học từ ảnh của bạn.
+              {t('ocr.ocr_card_body')}
             </AppText>
           </View>
         </AppCard>
@@ -444,7 +478,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
         }}
       >
         <Pressable
-          accessibilityLabel="Trích xuất text"
+          accessibilityLabel={t('ocr.extract_a11y')}
           accessibilityRole="button"
           onPress={() => {
             launchPicker();
@@ -474,7 +508,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
               fontWeight: '600',
             }}
           >
-            Trích xuất text
+            {t('ocr.extract')}
           </AppText>
         </Pressable>
       </BottomActionBar>
@@ -488,13 +522,6 @@ const styles = StyleSheet.create({
   },
   pickText: {
     fontWeight: '600',
-  },
-  recentRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  flex1: {
-    flex: 1,
   },
   ocrCard: {
     alignItems: 'flex-start',
