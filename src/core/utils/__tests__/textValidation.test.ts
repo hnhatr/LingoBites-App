@@ -1,4 +1,6 @@
 import {
+  countWords,
+  getDraftTextState,
   MAX_INPUT_TEXT_LENGTH,
   MAX_LESSON_V2_WORDS,
   validateConfirmedText,
@@ -57,6 +59,28 @@ describe('validateLessonV2InputText', () => {
     expect(validateLessonV2InputText(` ${value} `)).toEqual({
       valid: true,
       value,
+    });
+  });
+});
+
+describe('countWords and getDraftTextState', () => {
+  it('counts words across spaces and line breaks', () => {
+    expect(countWords('  one   two\nthree\t')).toBe(3);
+    expect(countWords('   ')).toBe(0);
+  });
+
+  it('flags a draft only when it passes the word limit', () => {
+    const atLimit = Array.from({length: MAX_LESSON_V2_WORDS}, () => 'a').join(
+      ' ',
+    );
+    const overLimit = `${atLimit} extra`;
+    expect(getDraftTextState(atLimit)).toMatchObject({
+      words: MAX_LESSON_V2_WORDS,
+      overWordLimit: false,
+    });
+    expect(getDraftTextState(overLimit)).toMatchObject({
+      words: MAX_LESSON_V2_WORDS + 1,
+      overWordLimit: true,
     });
   });
 });

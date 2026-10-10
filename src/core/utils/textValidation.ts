@@ -43,3 +43,27 @@ export function validateLessonV2InputText(
 
   return {valid: true, value};
 }
+
+export function countWords(input: string): number {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return 0;
+  }
+  return trimmed.split(/\s+/).length;
+}
+
+/**
+ * Live state of the text box: the counter and the submit button both read it,
+ * so the word limit is checked in one place (E0 K1).
+ */
+export function getDraftTextState(
+  input: string,
+  maxWords = MAX_LESSON_V2_WORDS,
+) {
+  const words = countWords(input);
+  return {
+    words,
+    overWordLimit: words > maxWords,
+    maxWords,
+  };
+}
