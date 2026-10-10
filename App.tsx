@@ -3,6 +3,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {AppNavigator} from './src/app/navigation/AppNavigator';
 import {trackAppOpened} from './src/features/analytics';
+import {AppUpdateOverlay} from './src/features/appUpdate';
 import {EngagementBootstrap} from './src/features/engagement';
 import {initWrittenAnswerQueue} from './src/features/lesson/flow/logic/taskEvaluation';
 import {initRecordingUploadQueue} from './src/features/speaking/logic/upload/recordingUploadQueue';
@@ -39,6 +40,7 @@ function App() {
           {launchSplashDone ? null : (
             <LaunchSplash onFinish={handleLaunchSplashFinish} />
           )}
+          <AppUpdateOverlay />
         </AppThemeProvider>
       </SafeAreaProvider>
     </FeatureFlagProvider>
