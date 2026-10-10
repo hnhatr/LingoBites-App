@@ -51,9 +51,11 @@ import {ComposeSheet} from '../components/ComposeSheet';
 import {LessonDisplayToggles} from '../components/LessonDisplayToggles';
 import {LessonGrammarSection} from '../components/LessonGrammarSection';
 import {LessonListeningSection} from '../components/LessonListeningSection';
+import {LessonMediaDownloadCard} from '../components/LessonMediaDownloadCard';
 import {LessonPatternSection} from '../components/LessonPatternSection';
 import {LessonPronunciationSection} from '../components/LessonPronunciationSection';
 import {LessonVocabularySection} from '../components/LessonVocabularySection';
+import {MediaDownloadConsentSheet} from '../components/MediaDownloadConsentSheet';
 import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
@@ -74,9 +76,15 @@ import {
   mergeAnalyses,
 } from '../logic/lessonHubContent';
 import {isLessonNotDownloaded} from '../logic/lessonNotDownloaded';
+import {
+  postponeMediaDownloadConsent,
+  setMediaDownloadConsent,
+  shouldAskMediaDownloadConsent,
+} from '../logic/mediaDownloadConsent';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
 import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
+import {useLessonMediaDownload} from '../logic/useLessonMediaDownload';
 import {useLessonSavedItems} from '../logic/useLessonSavedItems';
 import type {LessonFlowParamList} from './navigationTypes';
 
@@ -162,6 +170,28 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const flowEntry = useFlowEntry(lessonId, snapshot);
+  const lessonMedia = useLessonMediaDownload(snapshot);
+  const downloadLessonMedia = lessonMedia.download;
+  // Lesson media is only downloaded with consent; ask once, online, on the
+  // first lesson that has media.
+  const [mediaConsentOpen, setMediaConsentOpen] = useState(false);
+  useEffect(() => {
+    if (snapshot && !offline && shouldAskMediaDownloadConsent(snapshot)) {
+      setMediaConsentOpen(true);
+    }
+  }, [offline, snapshot]);
+  const answerMediaConsent = useCallback(
+    (choice: 'auto' | 'manual' | 'later') => {
+      setMediaConsentOpen(false);
+      if (choice === 'later') {
+        postponeMediaDownloadConsent();
+        return;
+      }
+      setMediaDownloadConsent(choice);
+      if (choice === 'auto') downloadLessonMedia();
+    },
+    [downloadLessonMedia],
+  );
   // A six-step lesson opens on its hub even when it came from a video (S4.3:
   // a learner's lesson composed from YouTube sentences keeps source_type).
   const flowLesson = snapshot !== null && isFlowLesson(snapshot);
@@ -470,20 +500,28 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     switch (view) {
       case 'hub':
         return (
-          <CanonicalLessonHub
-            snapshot={snapshot}
-            analyses={analyses}
-            offline={state.status === 'ready' ? state.offline : false}
-            hasUpdate={state.status === 'ready' ? state.hasUpdate : false}
-            onOpenSection={openView}
-            onOpenLesson={appNavigation.openLesson}
-            onOpenPractice={
-              practiceEnabled
-                ? () => appNavigation.openPractice(lessonId)
-                : undefined
-            }
-            onOpenCompose={openCompose}
-          />
+          <>
+            <LessonMediaDownloadCard
+              offline={offline}
+              onDownload={lessonMedia.download}
+              onRemove={lessonMedia.remove}
+              status={lessonMedia.status}
+            />
+            <CanonicalLessonHub
+              snapshot={snapshot}
+              analyses={analyses}
+              offline={state.status === 'ready' ? state.offline : false}
+              hasUpdate={state.status === 'ready' ? state.hasUpdate : false}
+              onOpenSection={openView}
+              onOpenLesson={appNavigation.openLesson}
+              onOpenPractice={
+                practiceEnabled
+                  ? () => appNavigation.openPractice(lessonId)
+                  : undefined
+              }
+              onOpenCompose={openCompose}
+            />
+          </>
         );
       case 'sentences':
         return renderPlayer();
@@ -647,6 +685,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           visible={composeOpen}
         />
       ) : null}
+      <MediaDownloadConsentSheet
+        onChooseAuto={() => answerMediaConsent('auto')}
+        onChooseManual={() => answerMediaConsent('manual')}
+        onLater={() => answerMediaConsent('later')}
+        visible={mediaConsentOpen}
+      />
     </AppScreen>
   );
 }

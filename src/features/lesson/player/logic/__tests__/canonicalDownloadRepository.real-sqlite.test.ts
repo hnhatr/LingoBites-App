@@ -14,12 +14,18 @@ import {
   applyLessonRevisionStates,
   getLessonDownload,
   getLessonDownloadsSignature,
+  getLessonMediaDir,
   InvalidLessonSnapshotError,
   lessonMediaDirFor,
   type LessonMediaFileSystem,
+  lessonMediaSizeBytes,
   listLessonDownloadKinds,
   listLessonDownloads,
+  listLessonMediaDownloads,
+  removeAllLessonMedia,
+  removeLessonMedia,
   saveLessonSnapshotBody,
+  setLessonMediaDir,
   stageLessonMedia,
   sweepLessonMedia,
 } from '../canonicalDownloadRepository';
@@ -294,5 +300,93 @@ describe('canonical download repository (real SQLite, INV-007)', () => {
     );
     expect(removed.removed).toEqual([lessonId]);
     expect(getLessonDownload(lessonId, getDatabase())).toBeNull();
+  });
+});
+
+describe('learner-managed lesson media (offline download consent)', () => {
+  it('attaches media staged after the row and lists it with the title', async () => {
+    const body = loadSnapshotBody();
+    const lessonId = lessonIdOf(body);
+    saveLessonSnapshotBody({body}, getDatabase());
+    const {fs: fakeFs} = makeFakeFs();
+    const staged = await stageLessonMedia(
+      lessonId,
+      3,
+      ['https://cdn.example/a.mp3'],
+      fakeFs,
+    );
+    expect(setLessonMediaDir(lessonId, 3, staged, getDatabase())).toBe(true);
+    expect(getLessonMediaDir(lessonId, getDatabase())).toBe(staged);
+    // The parsed-row cache sees the new media dir.
+    expect(listLessonDownloads(getDatabase())[0].mediaDir).toBe(staged);
+    expect(listLessonMediaDownloads(getDatabase())).toEqual([
+      {lessonId, title: 'Morning routine', mediaDir: staged},
+    ]);
+  });
+
+  it('never attaches media of another revision', () => {
+    const body = loadSnapshotBody();
+    const lessonId = lessonIdOf(body);
+    saveLessonSnapshotBody({body}, getDatabase());
+    expect(
+      setLessonMediaDir(
+        lessonId,
+        99,
+        lessonMediaDirFor(lessonId, 99),
+        getDatabase(),
+      ),
+    ).toBe(false);
+    expect(getLessonMediaDir(lessonId, getDatabase())).toBeNull();
+  });
+
+  it('removing media keeps the lesson text and sweeps the files', async () => {
+    const body = loadSnapshotBody();
+    const lessonId = lessonIdOf(body);
+    const {fs: fakeFs, files} = makeFakeFs();
+    const staged = await stageLessonMedia(
+      lessonId,
+      3,
+      ['https://cdn.example/a.mp3'],
+      fakeFs,
+    );
+    saveLessonSnapshotBody({body, mediaDir: staged}, getDatabase());
+    removeLessonMedia(lessonId, getDatabase());
+    await sweepLessonMedia(getDatabase(), fakeFs);
+    expect(files.size).toBe(0);
+    expect(getLessonDownload(lessonId, getDatabase())?.mediaDir).toBeNull();
+    expect(
+      getLessonDownload(lessonId, getDatabase())?.snapshot.sentences.length,
+    ).toBeGreaterThan(0);
+    expect(listLessonMediaDownloads(getDatabase())).toEqual([]);
+  });
+
+  it('removing all media keeps every lesson text', async () => {
+    const body = loadSnapshotBody();
+    const {fs: fakeFs} = makeFakeFs();
+    const staged = await stageLessonMedia(
+      lessonIdOf(body),
+      3,
+      ['https://cdn.example/a.mp3'],
+      fakeFs,
+    );
+    saveLessonSnapshotBody({body, mediaDir: staged}, getDatabase());
+    removeAllLessonMedia(getDatabase());
+    expect(listLessonMediaDownloads(getDatabase())).toEqual([]);
+    expect(listLessonDownloads(getDatabase())).toHaveLength(1);
+  });
+
+  it('measures a media dir through the file system', async () => {
+    const {fs: fakeFs} = makeFakeFs();
+    const sized: LessonMediaFileSystem = {
+      ...fakeFs,
+      dirSize: async target =>
+        target === '/fake-documents/lesson-media/x/3' ? 2048 : 0,
+    };
+    await expect(lessonMediaSizeBytes('lesson-media/x/3', sized)).resolves.toBe(
+      2048,
+    );
+    await expect(
+      lessonMediaSizeBytes('lesson-media/x/3', fakeFs),
+    ).resolves.toBe(0);
   });
 });

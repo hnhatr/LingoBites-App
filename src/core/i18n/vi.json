@@ -1082,5 +1082,28 @@
     "save": "Lưu",
     "path_label": "Lộ trình của bạn",
     "path_open": "Vào học"
+  },
+  "mediaConsent": {
+    "title": "Lưu bài để học khi không có mạng?",
+    "body_text": "Phần chữ của các bài bạn đã mở (câu, nghĩa, từ vựng, ngữ pháp) luôn được lưu trên máy. Nhờ vậy bạn vẫn học, ôn tập và giữ tiến độ khi mất mạng.",
+    "body_media": "Bài này có thêm ảnh hoặc âm thanh. Các file này nặng hơn, tốn dung lượng máy và dữ liệu di động khi tải.",
+    "body_control": "Bạn có thể đổi lựa chọn hoặc xoá file đã tải bất cứ lúc nào trong Hồ sơ → Dữ liệu & bộ nhớ → Học offline.",
+    "choose_auto": "Tự động tải",
+    "choose_auto_caption": "Tải ảnh và âm thanh mỗi khi mở bài có mạng",
+    "choose_manual": "Tôi tự chọn bài",
+    "choose_manual_caption": "Chỉ tải khi bạn bấm \"Tải để học offline\" trong bài",
+    "later": "Để sau",
+    "close": "Đóng"
+  },
+  "lessonMedia": {
+    "saved": "Ảnh và âm thanh của bài đã lưu trên máy — có sẵn offline.",
+    "missing": "Ảnh và âm thanh của bài chưa lưu trên máy. Phần chữ đã có sẵn offline.",
+    "missing_offline": "Cần mạng để tải ảnh và âm thanh của bài. Phần chữ vẫn học được.",
+    "failed": "Chưa tải được ảnh và âm thanh. Kiểm tra mạng rồi thử lại.",
+    "download": "Tải để học offline",
+    "download_hint": "Tải ảnh và âm thanh của bài về máy",
+    "retry": "Thử tải lại",
+    "remove": "Xoá file đã tải",
+    "remove_hint": "Xoá ảnh và âm thanh của bài khỏi máy, phần chữ vẫn giữ"
   }
 }

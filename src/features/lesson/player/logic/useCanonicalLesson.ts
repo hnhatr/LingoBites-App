@@ -7,6 +7,7 @@ import {
   applyLessonRevisionStates,
   getLessonDownload,
   InvalidLessonSnapshotError,
+  type LessonDownloadRecord,
   saveLessonSnapshotBody,
   stageLessonMedia,
   sweepLessonMedia,
@@ -17,6 +18,10 @@ import {
   fetchLessonSnapshot,
   fetchSentenceAnalysis,
 } from './canonicalLessonClient';
+import {
+  lessonMediaUrls,
+  readMediaDownloadConsent,
+} from './mediaDownloadConsent';
 
 export type CanonicalLessonViewState =
   | {status: 'idle'}
@@ -31,14 +36,30 @@ export type CanonicalLessonViewState =
   | {status: 'contract-mismatch'}
   | {status: 'error'; error: CanonicalLessonError | {message: string}};
 
-function mediaUrlsOf(snapshot: LessonSnapshot): string[] {
-  const urls: string[] = [];
-  for (const block of snapshot.blocks) {
-    if (block.type !== 'media') continue;
-    const url = (block.data as Record<string, unknown>).url;
-    if (typeof url === 'string' && url.length > 0) urls.push(url);
+/**
+ * Media to store with a freshly fetched snapshot. Media already on the
+ * device for this revision is kept; new media is only downloaded with the
+ * learner's `auto` consent. A failed media download never blocks the lesson:
+ * the text opens and the learner can retry from the lesson.
+ */
+async function mediaDirForOpen(
+  snapshot: LessonSnapshot,
+  previous: LessonDownloadRecord | null,
+): Promise<string | null> {
+  const urls = lessonMediaUrls(snapshot);
+  if (urls.length === 0) return null;
+  if (
+    previous?.mediaDir &&
+    previous.contentRevision === snapshot.content_revision
+  ) {
+    return previous.mediaDir;
   }
-  return urls;
+  if (readMediaDownloadConsent() !== 'auto') return null;
+  try {
+    return await stageLessonMedia(snapshot.id, snapshot.content_revision, urls);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -57,12 +78,12 @@ export function useCanonicalLesson(lessonId: string) {
     const db = getDatabase();
     const fetched = await fetchLessonSnapshot(lessonId);
     if (fetched.ok) {
+      const previousCopy = getLessonDownload(lessonId, db);
+      const mediaDir = await mediaDirForOpen(
+        fetched.value.snapshot,
+        previousCopy,
+      );
       try {
-        const mediaDir = await stageLessonMedia(
-          lessonId,
-          fetched.value.snapshot.content_revision,
-          mediaUrlsOf(fetched.value.snapshot),
-        );
         // The validated server body is stored verbatim (AD-005).
         const stored = saveLessonSnapshotBody(
           {body: fetched.value.rawBody, mediaDir},
@@ -77,8 +98,8 @@ export function useCanonicalLesson(lessonId: string) {
         });
         return;
       } catch (error) {
-        // Any failed redownload (invalid body, truncated media, staging
-        // failure) keeps the previous copy when one exists (INV-007).
+        // A failed redownload (invalid body) keeps the previous copy when
+        // one exists (INV-007).
         const previous = getLessonDownload(lessonId, db);
         if (previous) {
           setState({

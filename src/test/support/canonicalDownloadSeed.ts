@@ -37,3 +37,29 @@ export function seedCanonicalLessonDownload(
 export function readSeededLessonDownload(lessonId: string = DEFAULT_LESSON_ID) {
   return getLessonDownload(lessonId);
 }
+
+export const SEED_MEDIA_URL = 'https://cdn.example/lesson-audio.mp3';
+
+/**
+ * The fixture snapshot response body, optionally with one media block
+ * (lessons whose media needs download consent).
+ */
+export function canonicalLessonBody(
+  options: {withMedia?: boolean} = {},
+): Record<string, unknown> {
+  const body = JSON.parse(
+    fs.readFileSync(SNAPSHOT_FIXTURE_PATH, 'utf8'),
+  ) as Record<string, unknown>;
+  if (options.withMedia) {
+    const blocks = (body.lesson as {blocks: Array<Record<string, unknown>>})
+      .blocks;
+    blocks.push({
+      id: '22222222-2222-4222-8222-2222222222ff',
+      type: 'media',
+      position: blocks.length,
+      title: 'Audio',
+      data: {url: SEED_MEDIA_URL},
+    });
+  }
+  return body;
+}

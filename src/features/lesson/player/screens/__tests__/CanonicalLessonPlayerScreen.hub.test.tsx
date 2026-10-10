@@ -84,6 +84,27 @@ jest.mock('../../logic/useCanonicalLesson', () => ({
   }),
 }));
 
+let mockShouldAskMedia = false;
+const mockSetMediaConsent = jest.fn();
+const mockPostponeMediaConsent = jest.fn();
+
+jest.mock('../../logic/mediaDownloadConsent', () => ({
+  shouldAskMediaDownloadConsent: () => mockShouldAskMedia,
+  setMediaDownloadConsent: (value: string) => mockSetMediaConsent(value),
+  postponeMediaDownloadConsent: () => mockPostponeMediaConsent(),
+}));
+
+let mockMediaStatus = 'none';
+const mockDownloadMedia = jest.fn();
+
+jest.mock('../../logic/useLessonMediaDownload', () => ({
+  useLessonMediaDownload: () => ({
+    status: mockMediaStatus,
+    download: mockDownloadMedia,
+    remove: jest.fn(),
+  }),
+}));
+
 let mockCompletionState: 'unfinished' | 'finished' | 'error' = 'unfinished';
 const mockCompleteLesson = jest.fn();
 
@@ -140,6 +161,49 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     mockSpeak.mockClear();
     mockOpen.mockClear();
     mockCompleteLesson.mockClear();
+    mockShouldAskMedia = false;
+    mockMediaStatus = 'none';
+    mockSetMediaConsent.mockClear();
+    mockPostponeMediaConsent.mockClear();
+    mockDownloadMedia.mockClear();
+  });
+
+  it('asks before downloading lesson media and downloads on "Tự động tải"', () => {
+    mockShouldAskMedia = true;
+    mockMediaStatus = 'missing';
+    const {tree} = renderScreen();
+    expect(tree.root.findByProps({testID: 'media-consent-sheet'})).toBeTruthy();
+    act(() => {
+      pressable(tree, 'media-consent-auto').props.onPress();
+    });
+    expect(mockSetMediaConsent).toHaveBeenCalledWith('auto');
+    expect(mockDownloadMedia).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Để sau" postpones without downloading', () => {
+    mockShouldAskMedia = true;
+    mockMediaStatus = 'missing';
+    const {tree} = renderScreen();
+    act(() => {
+      pressable(tree, 'media-consent-later').props.onPress();
+    });
+    expect(mockPostponeMediaConsent).toHaveBeenCalledTimes(1);
+    expect(mockSetMediaConsent).not.toHaveBeenCalled();
+    expect(mockDownloadMedia).not.toHaveBeenCalled();
+  });
+
+  it('offers the learner-driven media download on the hub', () => {
+    mockMediaStatus = 'missing';
+    const {tree} = renderScreen();
+    act(() => {
+      pressable(tree, 'lesson-media-download').props.onPress();
+    });
+    expect(mockDownloadMedia).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the media card for a lesson without media', () => {
+    const {tree} = renderScreen();
+    expect(has(tree, 'lesson-media-card')).toBe(false);
   });
 
   it('opens a text lesson on the hub without the retry action', () => {
