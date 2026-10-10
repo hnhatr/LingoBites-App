@@ -11,7 +11,7 @@ import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {installKeychainVault, vault} from '@test/support/keychainVault';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
-import {resetBootStateForTests} from '../accountBootstrap';
+import {CACHED_USER_KEY, resetBootStateForTests} from '../accountBootstrap';
 import {resetAccountStoreForTests, useAccountStore} from '../useAccountStore';
 
 const mockFetch = jest.fn();
@@ -124,6 +124,118 @@ describe('useAccountStore navigation flow (SETE-303 / T6)', () => {
     );
     await useAccountStore.getState().retry();
     expect(useAccountStore.getState().phase).toBe('authenticated');
+  });
+});
+
+describe('useAccountStore offline session (offline-mode.md #1)', () => {
+  const offline = () => new TypeError('Network request failed');
+
+  /** Signs in online, then boots again with the network down. */
+  async function bootOfflineSession(): Promise<void> {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse(200, {
+        request_id: 'b1',
+        status: 'authenticated',
+        user,
+        session: freshSession,
+      }),
+    );
+    await useAccountStore.getState().boot();
+    resetBootStateForTests();
+    mockFetch.mockReset();
+    mockFetch.mockRejectedValue(offline());
+    await useAccountStore.getState().boot();
+  }
+
+  function rememberedUser(): string | null {
+    const result = getDatabase().execute(
+      'SELECT value FROM app_settings WHERE key = ? LIMIT 1;',
+      [CACHED_USER_KEY],
+    );
+    const row = result.rows?.item(0) as {value?: string} | undefined;
+    return row?.value ?? null;
+  }
+
+  it('opens the tabs offline with the remembered user', async () => {
+    await bootOfflineSession();
+    const state = useAccountStore.getState();
+    expect(state.phase).toBe('authenticated');
+    expect(state.offlineSession).toBe(true);
+    expect(state.user).toEqual(user);
+  });
+
+  it('keeps the offline session while revalidation is still offline', async () => {
+    await bootOfflineSession();
+    await useAccountStore.getState().revalidate();
+    const state = useAccountStore.getState();
+    expect(state.phase).toBe('authenticated');
+    expect(state.offlineSession).toBe(true);
+  });
+
+  it('becomes an online session once the Server answers', async () => {
+    await bootOfflineSession();
+    const renamed = {...user, display_name: 'An Nguyen'};
+    mockFetch.mockReset();
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse(200, {request_id: 'm1', status: 'success', user: renamed}),
+    );
+    await useAccountStore.getState().revalidate();
+    const state = useAccountStore.getState();
+    expect(state.phase).toBe('authenticated');
+    expect(state.offlineSession).toBe(false);
+    expect(state.user).toEqual(renamed);
+  });
+
+  it('leaves the tabs when the Server rejects the stored session', async () => {
+    await bootOfflineSession();
+    mockFetch.mockReset();
+    mockFetch.mockImplementation(async (url: string) => {
+      if (url.endsWith('/v1/me')) {
+        return jsonResponse(401, {
+          request_id: 'm2',
+          status: 'failed',
+          error: {code: 'INVALID_SESSION', message: 'Unknown session.'},
+        });
+      }
+      if (url.endsWith('/v1/auth/logout')) {
+        return jsonResponse(401, {});
+      }
+      return jsonResponse(404, {
+        request_id: 't2',
+        status: 'failed',
+        error: {code: 'ACCOUNT_NOT_FOUND', message: 'No account.'},
+        bootstrap_ticket: 'bt_ticket_2',
+        bootstrap_ticket_expires_at: new Date(
+          Date.now() + 900_000,
+        ).toISOString(),
+      });
+    });
+    await useAccountStore.getState().revalidate();
+    expect(useAccountStore.getState().phase).toBe('needs-onboarding');
+    expect(useAccountStore.getState().offlineSession).toBe(false);
+  });
+
+  it('does nothing for an online session', async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse(200, {
+        request_id: 'b1',
+        status: 'authenticated',
+        user,
+        session: freshSession,
+      }),
+    );
+    await useAccountStore.getState().boot();
+    mockFetch.mockReset();
+    await useAccountStore.getState().revalidate();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('forgets the remembered user on logout', async () => {
+    await bootOfflineSession();
+    expect(rememberedUser()).not.toBeNull();
+    await useAccountStore.getState().logout();
+    expect(useAccountStore.getState().phase).toBe('signed-out');
+    expect(rememberedUser()).toBeNull();
   });
 });
 

@@ -68,7 +68,27 @@ export type AuthHttpClient = {
 export type AuthClientDeps = {
   fetchImpl?: typeof fetch;
   baseUrl?: string;
+  /** Per-request timeout; a timed-out request surfaces as `offline`. */
+  timeoutMs?: number;
 };
+
+/**
+ * Auth requests give up after this long so a weak network or captive Wi-Fi
+ * reaches the offline path instead of holding boot on the splash spinner.
+ */
+export const AUTH_REQUEST_TIMEOUT_MS = 12_000;
+
+function withTimeout(fetchImpl: typeof fetch, timeoutMs: number): typeof fetch {
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetchImpl(input, {...init, signal: controller.signal});
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+}
 
 function readErrorBody(data: unknown): ApiErrorBody | null {
   if (typeof data !== 'object' || data === null) {
@@ -236,7 +256,10 @@ function isMeBody(data: unknown): data is MeBody {
 }
 
 export function createAuthClient(deps: AuthClientDeps = {}): AuthHttpClient {
-  const fetchImpl = deps.fetchImpl ?? fetch;
+  const fetchImpl = withTimeout(
+    deps.fetchImpl ?? fetch,
+    deps.timeoutMs ?? AUTH_REQUEST_TIMEOUT_MS,
+  );
   const baseUrl = deps.baseUrl ?? getAppConfig().apiBaseUrl;
 
   return {

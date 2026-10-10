@@ -249,3 +249,31 @@ describe('authClient users/refresh/logout/me (SETE-303 / T6)', () => {
     });
   });
 });
+
+describe('authClient timeout (offline-mode.md #1)', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('aborts a hanging request and maps it to offline', async () => {
+    jest.useFakeTimers();
+    mockFetch.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () =>
+            reject(new Error('Aborted')),
+          );
+        }),
+    );
+    const client = createAuthClient({
+      fetchImpl: mockFetch,
+      baseUrl: 'http://test',
+      timeoutMs: 1_000,
+    });
+
+    const pending = client.me('lb_at_access');
+    jest.advanceTimersByTime(1_000);
+
+    await expect(pending).rejects.toMatchObject({kind: 'offline'});
+  });
+});
