@@ -4,6 +4,11 @@ name: Android Release Google Play
 # lane `fastlane android <env>` (see fastlane/Fastfile) and uploads the AAB to
 # the selected Google Play track. The GitHub Environment matching `env`
 # supplies the secrets, so give the `production` environment required reviewers.
+#
+# The build is skipped when a build with the same expo-updates fingerprint and
+# env file was already uploaded to the same track from a run of this workflow:
+# ship JS-only changes with `yarn eas:update:<env>` instead, or set
+# `force_build` (for example to bump ANDROID_APP_VERSION_NAME).
 on:
   workflow_dispatch:
     inputs:
@@ -17,6 +22,10 @@ on:
         type: choice
         options: [internal, alpha, beta, production]
         default: internal
+      force_build:
+        description: Build even if this native fingerprint was already uploaded
+        type: boolean
+        default: false
 
 concurrency:
   group: android-release-${{ inputs.env }}
@@ -26,13 +35,10 @@ permissions:
   contents: read
 
 jobs:
-  build-and-upload:
-    name: Build ${{ inputs.env }} & upload to Google Play (${{ inputs.track }})
+  checks:
+    name: Format, lint, typecheck, test
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    environment: ${{ inputs.env }}
-    env:
-      ENVFILE: .env.${{ inputs.env }}
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,43 +48,6 @@ jobs:
         with:
           node-version: '22.13.1'
           cache: yarn
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: '17'
-          cache: gradle
-
-      - name: Setup Ruby (bundler)
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2.4'
-          bundler-cache: true
-
-      - name: Tune Gradle for CI
-        # ~/.gradle/gradle.properties overrides android/gradle.properties (-Xmx2048m),
-        # so this only affects CI. GitHub's Linux runners have 16 GB RAM.
-        run: |
-          mkdir -p ~/.gradle
-          echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> ~/.gradle/gradle.properties
-          echo "org.gradle.parallel=true" >> ~/.gradle/gradle.properties
-          echo "org.gradle.caching=true" >> ~/.gradle/gradle.properties
-
-      - name: Install ccache
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ccache
-
-      - name: Restore ccache
-        # Native (C++) objects from earlier runs. A new key every run so the cache is
-        # always saved; restore-keys picks up the most recent one.
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ccache
-          key: ccache-android-${{ runner.os }}-${{ github.run_id }}
-          restore-keys: ccache-android-${{ runner.os }}-
 
       - name: Install JS dependencies
         run: yarn install --frozen-lockfile
@@ -94,6 +63,18 @@ jobs:
 
       - name: Test
         run: yarn test --ci
+
+  build-and-upload:
+    name: Build ${{ inputs.env }} & upload to Google Play (${{ inputs.track }})
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: ${{ inputs.env }}
+    env:
+      ENVFILE: .env.${{ inputs.env }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Verify required secrets are present
         run: |
@@ -149,7 +130,105 @@ jobs:
         env:
           APP_ENV_FILE: ${{ secrets.APP_ENV_FILE }}
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.1'
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Compute expo-updates fingerprint and release key
+        # The fingerprint is the runtime version this build embeds. An EAS update
+        # reaches it only when `eas update` prints the same runtime version for
+        # android. react-native-config compiles the env file into the app, so the
+        # release key also covers it.
+        id: release-key
+        run: |
+          set -euo pipefail
+          fingerprint="$(npx expo-updates fingerprint:generate --platform android | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')"
+          echo "Android runtime version (fingerprint): $fingerprint"
+          echo "Android runtime version (fingerprint): \`$fingerprint\`" >> "$GITHUB_STEP_SUMMARY"
+          env_hash="$(sha256sum "$ENVFILE" | cut -c1-16)"
+          printf 'fingerprint=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+          printf 'key=android-release-%s-%s-%s-%s\n' "${{ inputs.env }}" "${{ inputs.track }}" "$fingerprint" "$env_hash" >> "$GITHUB_OUTPUT"
+
+      - name: Look up previous build with the same fingerprint
+        id: previous
+        uses: actions/cache/restore@v4
+        with:
+          path: .release-marker
+          key: ${{ steps.release-key.outputs.key }}
+          lookup-only: true
+
+      - name: Decide whether to build
+        id: gate
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.previous.outputs.cache-hit }}" = "true" ] && [ "${{ inputs.force_build }}" != "true" ]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Skipped: native build already on Google Play (${{ inputs.track }})"
+              echo ""
+              echo "A build with Android fingerprint \`${{ steps.release-key.outputs.fingerprint }}\` and the same env file was already uploaded to this track."
+              echo "Ship JS changes with \`yarn eas:update:${{ inputs.env }} \"<message>\"\`, or re-run with **force_build** to upload a new binary."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice::Skipped: fingerprint ${{ steps.release-key.outputs.fingerprint }} was already uploaded to ${{ inputs.track }}. Use EAS Update or force_build."
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Java
+        if: steps.gate.outputs.build == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+
+      - name: Setup Gradle
+        # Caches Gradle dependencies, wrappers and the build cache, and saves them
+        # again after each run (setup-java's `cache: gradle` only saved them when
+        # the build scripts changed, so the build cache went stale).
+        if: steps.gate.outputs.build == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Setup Ruby (bundler)
+        if: steps.gate.outputs.build == 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.4'
+          bundler-cache: true
+
+      - name: Tune Gradle for CI
+        # ~/.gradle/gradle.properties overrides android/gradle.properties (-Xmx2048m),
+        # so this only affects CI. GitHub's Linux runners have 16 GB RAM.
+        if: steps.gate.outputs.build == 'true'
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> ~/.gradle/gradle.properties
+          echo "org.gradle.parallel=true" >> ~/.gradle/gradle.properties
+          echo "org.gradle.caching=true" >> ~/.gradle/gradle.properties
+
+      - name: Install ccache
+        if: steps.gate.outputs.build == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ccache
+
+      - name: Restore ccache
+        # Native (C++) objects from earlier runs. A new key every run so the cache is
+        # always saved; restore-keys picks up the most recent one.
+        if: steps.gate.outputs.build == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-android-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: ccache-android-${{ runner.os }}-
+
       - name: Materialize Android signing files
+        if: steps.gate.outputs.build == 'true'
         run: |
           set -euo pipefail
           umask 077
@@ -168,16 +247,8 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           PLAY_STORE_JSON_KEY_BASE64: ${{ secrets.PLAY_STORE_JSON_KEY_BASE64 }}
 
-      - name: Print expo-updates fingerprint
-        # The runtime version this build embeds. An EAS update reaches it only
-        # when `eas update` prints the same runtime version for android.
-        run: |
-          set -euo pipefail
-          fingerprint="$(npx expo-updates fingerprint:generate --platform android | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')"
-          echo "Android runtime version (fingerprint): $fingerprint"
-          echo "Android runtime version (fingerprint): \`$fingerprint\`" >> "$GITHUB_STEP_SUMMARY"
-
       - name: Build and upload to Google Play (fastlane android ${{ inputs.env }})
+        if: steps.gate.outputs.build == 'true'
         run: bundle exec fastlane android ${{ inputs.env }}
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -197,16 +268,29 @@ jobs:
           CCACHE_SLOPPINESS: include_file_mtime,include_file_ctime,time_macros
 
       - name: Show ccache stats
-        if: always()
+        if: always() && steps.gate.outputs.build == 'true'
         run: ccache -s || true
 
       - name: Upload AAB artifact
-        if: success()
+        if: success() && steps.gate.outputs.build == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: lingobites-${{ inputs.env }}-${{ github.run_number }}-aab
           path: android/app/build/outputs/bundle/${{ inputs.env }}Release/*.aab
           retention-days: 14
+
+      - name: Record uploaded fingerprint
+        if: success() && steps.gate.outputs.build == 'true'
+        run: |
+          mkdir -p .release-marker
+          printf 'run=%s\nfingerprint=%s\n' "${{ github.run_id }}" "${{ steps.release-key.outputs.fingerprint }}" > .release-marker/info.txt
+
+      - name: Save uploaded fingerprint
+        if: success() && steps.gate.outputs.build == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .release-marker
+          key: ${{ steps.release-key.outputs.key }}
 
       - name: Cleanup signing material
         if: always()
