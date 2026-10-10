@@ -370,13 +370,13 @@ Thiết kế: `2026-10-10-stage5-9-image-lesson-game-hub.md` §3–4. Chỉ app;
 | # | Câu hỏi | Đề xuất | Cần cho | Chốt |
 |---|---|---|---|---|
 | Q5 | Item `draft` do AI tạo có vào danh mục chung không | Không tự vào; admin duyệt mới chuyển `published` | S4.1 | **Tự publish**, `source = ai` + `reviewed_at` để admin rà sau – 2026-10-09 |
-| Q8 | Ai được tự sinh bài, giới hạn bao nhiêu | Gói trả phí: 5 bài / ngày; miễn phí: 1 bài / ngày; trẻ em: không tự sinh | S4.3 | |
+| Q8 | Ai được tự sinh bài, giới hạn bao nhiêu | Gói trả phí: 5 bài / ngày; miễn phí: 1 bài / ngày; trẻ em: không tự sinh | S4.3 || Trẻ em **không tạo bài** từ bất kỳ nguồn nào (dán chữ, OCR, YouTube, tình huống, ảnh, 6 bước) – 2026-10-10 |
 | Q9 | Admin có "nhận về" bài AI sinh từ người học làm nội dung chung không | Có, dùng chức năng chuyển bài hiện có; vào trạng thái nháp, admin duyệt | S4.2 | Có: admin chọn câu trong bài người học → sinh bài nháp trong unit (plan S4.2) – 2026-10-09 |
 | Q10 | Danh mục tình huống chuẩn | Bắt đầu 20 tình huống A1 (quán ăn, mua sắm, hỏi đường, sân bay, khách sạn, khám bệnh, trường học, giới thiệu bản thân…); team nội dung bổ sung | S5.1 | |
 | Q11 | Nhà cung cấp AI + ngân sách sinh bài | OpenAI (đã tích hợp), model đặt bằng env; trần chi phí theo tháng do team đặt, vượt thì tắt nút sinh bài | S4.1 | |
 | D1 | Đoạn video dùng cho bước 2 | Tối đa 30 giây mỗi đoạn, tối đa 3 đoạn mỗi bài | S4.2 | |
 | D2 | Khi AI kết luận "không phù hợp" | Báo cho người dùng, giữ bài dạng hub, không tính lượt sinh bài | S4.1 | |
-| D3 | Lọc nội dung tình huống người học tự gõ | Chạy kiểm duyệt nội dung trước khi sinh; tài khoản trẻ chỉ chọn từ danh mục, không tự gõ | S5.3 | |
+| D3 | Lọc nội dung tình huống người học tự gõ | Chạy kiểm duyệt nội dung trước khi sinh; tài khoản trẻ chỉ chọn từ danh mục, không tự gõ | S5.3 || Trẻ em **không tạo bài** từ bất kỳ nguồn nào (dán chữ, OCR, YouTube, tình huống, ảnh, 6 bước) – 2026-10-10 |
 | D4 | Ngôn ngữ của bài sinh ra | Nội dung học bằng tiếng Anh; giải thích, gợi ý, phản hồi bằng tiếng Việt | S4.1 | |
 
 ### 5.5b Stage 5 phần ảnh và Stage 6–9 (game)
@@ -385,7 +385,7 @@ Thiết kế: `2026-10-10-stage5-9-image-lesson-game-hub.md` §3–4. Chỉ app;
 |---|---|---|---|---|
 | Q12 | Lưu ảnh người học gửi, xin đồng ý | Lưu cùng bài để hiện trong hub, xoá khi xoá bài / xoá dữ liệu; xin đồng ý lần đầu | S5.7 | |
 | Q13 | Kiểm duyệt ảnh | Từ chối ảnh không phù hợp trước khi sinh; "không có tình huống" như H7, không tính lượt | S5.7 | |
-| Q14 | Chi phí vision, ai được dùng | Chung hạn mức Q8; trẻ em không tự sinh (như D3) | S5.7 | |
+| Q14 | Chi phí vision, ai được dùng | Chung hạn mức Q8; trẻ em không tự sinh (như D3) | S5.7 || Trẻ em **không tạo bài** từ bất kỳ nguồn nào (dán chữ, OCR, YouTube, tình huống, ảnh, 6 bước) – 2026-10-10 |
 | Q15 | Chấm bài viết "tả lại bức ảnh" | Tự đánh giá cho tới khi có chấm viết (PR 12) | S5.7 | |
 | M1 | Game có dời lịch ôn `item_memory` không | Không; từ sai gợi ý lưu flashcard | S6 | |
 | M2 | Lối vào Game Hub | Today, Home, hub bài, kết quả Practice; chưa thêm tab | S6 | |

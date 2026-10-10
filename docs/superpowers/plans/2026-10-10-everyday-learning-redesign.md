@@ -122,7 +122,7 @@ Nguồn đó đi vào pipeline + `lessonComposer` như một bài văn bản. Nh
 
 AI viết **hội thoại mẫu** theo trình độ (S5.3) → `lessonComposer` sinh spec, can-do, item, mẫu câu, task → bài 6 bước. Bước 5 nhập vai đúng tình huống người học đưa ra.
 
-Tài khoản trẻ em: chỉ chọn từ danh mục, không tự gõ, không dùng ảnh tự do (D3, Q14).
+Tài khoản trẻ em: **không tạo bài** từ bất kỳ nguồn nào (chốt 2026-10-10). Trẻ em học bài có sẵn của curriculum.
 
 ### 3.5 Chờ và nhận bài
 
@@ -216,7 +216,7 @@ Chỉ tính lượt khi tạo bài **thành công** (H12). Trần chi phí thán
 | `features/input/screens/CreateScreen.tsx` | Bố cục §3.1; gợi ý tình huống; khoảnh khắc gần đây | Cờ `imageInput`, `situationLearning` |
 | `features/input/screens/ImageCaptureScreen.tsx` | Chỉ chụp / chọn rồi chuyển sang màn phân tích; bỏ ảnh giả; chữ qua i18n | Dùng lại `imagePicker.ts` |
 | `features/input/screens/MomentReviewScreen.tsx` (mới, thay `OCRReviewScreen`) | §3.2 + §3.3: ảnh, chữ sửa được, tô dòng có thông tin cá nhân, chọn ý định, chip trình độ | `OCRReviewScreen` giữ tới khi bỏ `/v1/ocr` |
-| `features/input/screens/SituationInputScreen.tsx` (mới) | Chọn từ danh mục hoặc gõ (tiếng Việt / Anh), đếm ký tự | Trẻ em: chỉ danh mục |
+| `features/input/screens/SituationInputScreen.tsx` (mới) | Chọn từ danh mục hoặc gõ (tiếng Việt / Anh), đếm ký tự | Trẻ em: không vào được |
 | `features/input/logic/momentClient.ts` (mới) | `analyzeImage`, `submitMoment` | Theo mẫu `ocrClient.ts` (timeout, hủy, map lỗi) |
 | `features/input/logic/piiDetect.ts` (mới) | Cùng luật với server, chạy trên máy để tô dòng ngay | Thuần, có unit test |
 | `core/navigation` | `startCreate({kind: 'moment', …})` | Chỉ `appNavigationAdapter` biết tên route |
@@ -311,7 +311,7 @@ Sau E3, người học đã dùng được A (Hiểu) và C (Dùng) trọn vẹn
 | # | Câu hỏi | Đề xuất |
 |---|---|---|
 | Q-E1 | Cho phép gõ tình huống bằng tiếng Việt? | **Có.** AI xác nhận lại tình huống (R6) trước khi sinh |
-| Q-E2 | Bài "Hiểu" có dùng chung hạn mức sinh bài Q8 không? | **Không.** Hạn mức riêng 10 / ngày vì rẻ (không qua composer) và là lối vào chính |
+| Q-E2 | Bài "Hiểu" có dùng chung hạn mức sinh bài Q8 không? | **Không.** Hạn mức riêng 10 / ngày vì rẻ (không qua composer) và là lối vào chính. **Chốt 2026-10-10.** |
 | Q-E3 | Thông tin cá nhân: cảnh báo hay chặn? | **Cảnh báo**, người học tự ẩn; chỉ chặn ảnh nhạy cảm |
 | Q-E4 | Từ trong bài tự tạo có vào lịch ôn không? (Q7 hiện là "Không") | Giữ **Không** tự động; thêm nút "Lưu từ để ôn" trên từng từ (flashcard). Xem lại sau khi có số liệu §6 |
 | Q-E5 | Nếu `react-native-image-picker` không gỡ EXIF: gỡ ở server bằng thư viện ảnh (dependency mới, cần duyệt) hay bỏ qua ở bản đầu? | Kiểm tra trên máy thật trước; nếu cần thì đề xuất thư viện ở plan E1 |

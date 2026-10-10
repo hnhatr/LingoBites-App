@@ -1,6 +1,7 @@
 # E1 – Server: phân tích ảnh (`POST /api/v1/images/analyze`)
 
 > Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-Server` (chỉ server). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §4.2, §5. Thay một phần S5.7 (upload, kiểm duyệt ảnh).
 > Cần trước: kết quả kiểm tay EXIF / HEIC của E0 (§7 plan E0). Chốt Q12, Q13 (bảng chốt `remaining-work-plan` §5.5b).

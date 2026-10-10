@@ -1,6 +1,7 @@
 # E3 – App: luồng "Học từ đời thường" (Hiểu / Dùng)
 
 > Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10). Riêng **P6 (banner xác nhận tình huống) chưa chốt**, phụ thuộc N5 của E2.
 > Ngày lập: 2026-10-10. Repo: `LingoBites-App` (chỉ app). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.1–§3.5, §4.5, §5.3. Gộp S5.2 (bản tối thiểu) và phần app của S5.3.
 > Cần trước: E0, E1, E2 (server đã deploy lên staging). Ý định **Tả** chỉ hiện khi E4 xong (capability).
@@ -18,7 +19,7 @@ Người học đi trọn từ "chụp / chọn ảnh / kể tình huống" tớ
 | Màn xác nhận tình huống AI hiểu (khi gõ tự do) | Hiện ảnh gốc trong hub bài (E4) |
 | Màn đồng ý gửi ảnh lần đầu | |
 | Theo dõi request "Dùng" chạy nền (mở rộng `composeTracker`) | |
-| Hiển thị lỗi mới: bị từ chối, hết lượt, không phù hợp | |
+| Hiển thị lỗi mới: bị từ chối, hết lượt, không phù hợp, trẻ em không được tạo bài | |
 
 ## 2. Quyết định (dùng đề xuất nếu bạn không đổi)
 
@@ -33,7 +34,7 @@ Người học đi trọn từ "chụp / chọn ảnh / kể tình huống" tớ
 | P7 | Thông tin cá nhân | Chạy `piiDetect` (chép luật từ server, cùng fixture) ngay khi người học sửa chữ; dòng có PII tô vàng + nút "Ẩn dòng này" (thay bằng `•••`). Không chặn gửi (Q-E3). |
 | P8 | Màn đồng ý gửi ảnh | Lần đầu bấm chụp / chọn ảnh. Nội dung §5.3 của thiết kế. Lưu như `youtubeDisclosure` (AsyncStorage, có phiên bản để hỏi lại khi đổi nội dung). Từ chối → quay lại, gợi ý "Dán chữ" / "Kể tình huống". Đổi lại được trong Cài đặt. |
 | P9 | Trình độ | Chip "Trình độ: A1 ▾" lấy `levelCode` từ `useLearnerProfileStore`; đổi chỉ áp cho lần tạo này. Không có hồ sơ → A1. |
-| P10 | Trẻ em | `ageGroup = 'kids'`: không hiện ô gõ tự do; thẻ Dùng chỉ mở danh mục; ảnh chỉ dùng được ý định Hiểu. |
+| P10 | Trẻ em | **Chốt 2026-10-10: không tạo bài.** `ageGroup = 'kids'`: `CreateScreen` hiện thông báo "Tạo bài từ ảnh, chữ và tình huống chưa dành cho tài khoản trẻ em" thay cho các ô nguồn; ẩn mọi nút mở Tạo bài (Home, Thư viện, "Học theo 6 bước" trong bài). Server trả `CREATION_NOT_ALLOWED` thì app hiện cùng câu đó (phòng khi hồ sơ trên máy chưa cập nhật). |
 | P11 | Còn lượt | Thẻ Dùng / Tả hiện "Còn N lượt hôm nay" (`GET /lesson-creations/quota`). Hết lượt: thẻ mờ + "Mai bạn tạo tiếp được nhé"; Hiểu vẫn dùng được nếu còn lượt riêng. |
 | P12 | Offline | Như hiện nay: khoá toàn bộ nguồn (`LockedFeature`). Danh mục tình huống được cache (ETag) nên vẫn xem được, nhưng không gửi. |
 
@@ -48,7 +49,7 @@ Người học đi trọn từ "chụp / chọn ảnh / kể tình huống" tớ
 | `src/features/input/logic/useMomentDraft.ts` | Trạng thái màn review: ảnh, chữ, dòng ẩn, ý định, trình độ, ghi chú, lỗi; `submit()` rẽ nhánh P3 / P4. |
 | `src/features/input/logic/photoConsent.ts` | P8 (theo mẫu `youtubeDisclosure.ts`). |
 | `src/features/input/screens/MomentReviewScreen.tsx` | §3.2 + §3.3 của thiết kế. |
-| `src/features/input/screens/SituationInputScreen.tsx` | Danh mục (lọc theo trình độ, gợi ý theo `goals` / `interests` lên đầu) + ô gõ tự do (ẩn với trẻ em); bộ đếm ký tự. |
+| `src/features/input/screens/SituationInputScreen.tsx` | Danh mục (lọc theo trình độ, gợi ý theo `goals` / `interests` lên đầu) + ô gõ tự do; bộ đếm ký tự. |
 | `src/features/input/components/IntentCard.tsx` | Thẻ ý định (chọn một). |
 | `src/features/input/components/PiiHighlightedText.tsx` | Chữ có dòng tô + nút ẩn. |
 | `src/features/input/components/SituationConfirmBanner.tsx` | Banner P6. |
@@ -80,7 +81,7 @@ Không xoá file. `OCRReviewScreen` giữ cho luồng cũ (xoá ở PR dọn d�
 |---|---|
 | Unit | `piiDetect` theo fixture server; `momentClient` map lỗi (`IMAGE_REJECTED`, `CONTENT_REJECTED`, 429, timeout, hủy); `useMomentDraft`: ẩn dòng thay bằng `•••` trong chữ gửi đi, rẽ nhánh Hiểu / Dùng, kiểm tra P5. |
 | Tracker | Entry cũ không có `kind` vẫn đọc được; `moment` đi `running → awaiting_confirmation → running → succeeded`; `confirm(false)` → entry `failed` `MOMENT_CANCELLED`, không báo lỗi đỏ. |
-| Màn | `CreateScreen`: cờ tắt / bật, offline, trẻ em. `MomentReviewScreen`: ý định mặc định theo `suggested_intent`; Tả ẩn khi capability tắt; chip trình độ lấy từ hồ sơ; hết lượt. `SituationInputScreen`: gợi ý theo `goals`; trẻ em không có ô gõ; 200 ký tự. `ImageCaptureScreen`: chưa đồng ý → sheet; từ chối → quay lại. |
+| Màn | `CreateScreen`: cờ tắt / bật, offline, trẻ em. `MomentReviewScreen`: ý định mặc định theo `suggested_intent`; Tả ẩn khi capability tắt; chip trình độ lấy từ hồ sơ; hết lượt. `SituationInputScreen`: gợi ý theo `goals`; 200 ký tự. Trẻ em: `CreateScreen` khoá, không thấy nút Tạo bài ở Home / Thư viện / hub bài; lỗi `CREATION_NOT_ALLOWED` hiện đúng câu. `ImageCaptureScreen`: chưa đồng ý → sheet; từ chối → quay lại. |
 | Navigation | Test ma trận mount route có `MomentReview`, `SituationInput`; gate theo cờ. |
 | Fixture | Parse snapshot mới (có `moment_intent`), trạng thái `awaiting_confirmation`. |
 | Kiểm tay (máy thật) | Chụp thực đơn → Hiểu → bài có tóm tắt; cùng ảnh → Dùng + "gọi một ly trà đá" → xác nhận → bài 6 bước dùng đúng tên món; chọn "Hỏi đường" từ danh mục → bài; ảnh có số điện thoại → dòng bị tô, ẩn được; tắt mạng giữa chừng → bài vẫn về khi có mạng; tài khoản trẻ em. |

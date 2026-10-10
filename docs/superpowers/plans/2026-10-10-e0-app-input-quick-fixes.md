@@ -1,6 +1,7 @@
 # E0 – App: sửa nhanh luồng nhập text / ảnh hiện có
 
 > Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-App` (chỉ app). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` (§1 "Lỗi nhỏ", §5.3, §8 E0).
 > Không phụ thuộc PR nào. Không migration, không đổi API, không thêm thư viện.

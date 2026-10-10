@@ -1,9 +1,10 @@
 # E4 – Server + app: ý định "Tả" (bài từ ảnh cảnh vật) và ảnh trong bài
 
 > Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-Server` + `LingoBites-App`. Nhánh: `claude/beautiful-cerf-t6c9y1` ở cả hai repo.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.4.2, §4. Gộp S5.6, S5.7 (phần còn lại sau E1), S5.8.
-> Cần trước: E1, E2, E3. Chốt Q14, Q15.
+> Cần trước: E1, E2, E3. Chốt Q15. Q14 đã chốt 2026-10-10 (trẻ em không tạo bài).
 > ⚠️ **Migration** nhỏ và **đổi API public** (snapshot có ảnh nguồn, route ảnh mới, `intent = 'describe'`).
 
 ## 1. Mục tiêu và phạm vi
@@ -28,7 +29,7 @@ Người học chụp một cảnh / đồ vật, chọn **Tả**, nhận bài 6
 | R4 | Ảnh không có gì để học / có người là chính | `suitable = false` → `MOMENT_NOT_SUITABLE` + `reason_vi` + gợi ý ("Hãy chụp gần hơn đồ vật bạn muốn học"), **không tính lượt**. |
 | R5 | Pipeline | Như E2 N1: chặng (1) vision viết nguồn (thay vì hội thoại) → (2) bài nguồn ẩn → (3) composer. `objects` truyền vào composer như `catalog_items` gợi ý (composer ưu tiên dùng). Không có bước xác nhận (ảnh là nguồn rõ ràng). |
 | R6 | Nhiệm vụ "Tả lại bức ảnh" | Thêm task cố định vào bài sau composer: viết 3 câu tả ảnh (`assessed_by = self` theo Q15) + nói 30 giây (khung ghi âm Stage 3, tự đánh giá nếu chưa bật chấm). Không gọi thêm AI. |
-| R7 | Hạn mức | Như "Dùng": chung hạn mức compose (Q8 / Q14), chỉ tính khi thành công. Trẻ em: không dùng Tả (Q14). |
+| R7 | Hạn mức | Như "Dùng": chung hạn mức compose (Q8 / Q14), chỉ tính khi thành công. Trẻ em: không tạo bài (đã chặn chung ở E2 N7). |
 | R8 | Gắn ảnh vào bài | Khi bài tạo **thành công**: `learner_images.lesson_id = <bài 6 bước>` (hoặc bài "Hiểu"), `expires_at = NULL` (E1 §3.1). Bài thất bại → ảnh giữ hạn 24 giờ cũ. "Hiểu" nhận `image_id` tuỳ chọn trong body tạo bài có sẵn. |
 | R9 | Phục vụ ảnh cho người học | `GET /api/v1/learner-images/:id?exp=<unix>&sig=<hmac>`: URL ký HMAC-SHA256 (khoá env mới `LEARNER_IMAGE_URL_SECRET`), hạn 7 ngày, chỉ trả ảnh **đã gắn bài** của chính chủ. Lý do: app tải media bằng `fs.downloadFile(url)` không kèm header đăng nhập. Snapshot luôn trả URL ký mới; URL hết hạn thì app lấy lại snapshot. `Cache-Control: private, max-age=86400`. |
 | R10 | Ảnh trong snapshot | Header snapshot thêm `source_image: {url, width, height} \| null`. Không thêm block `media` (block là nội dung admin soạn); app gộp `source_image.url` vào danh sách tải media. |
@@ -50,7 +51,7 @@ CREATE INDEX learner_images_lesson_idx ON learner_images (lesson_id) WHERE lesso
 |---|---|
 | `src/modules/canonicalLesson/service/creationAi.ts` | `callProviderJson` nhận `images?: Array<{mimeType, base64}>`: OpenAI → phần `image_url` dạng data URL trong `messages`; Gemini → `inline_data` trong `parts`. Không ảnh → giữ nguyên request cũ (byte-for-byte). |
 | `src/modules/moments/prompts/momentDescribePromptSpec.ts`, `momentDescribeDefaultV1.ts`, `momentDescribeCases.ts` (mới) | Spec `moment.describe` (R2, R3). Thêm vào `PROMPT_REGISTRY`. Cases dùng ảnh fixture nhỏ trong `test/fixtures/images/`. Mock deterministic khi `AI_PROVIDER=mock`. |
-| `src/modules/moments/service/momentService.ts` | Nhận `intent = 'describe'` (bắt buộc `image_id`, cấm với trẻ em). |
+| `src/modules/moments/service/momentService.ts` | Nhận `intent = 'describe'` (bắt buộc `image_id`; trẻ em đã bị chặn chung ở E2). |
 | `src/modules/moments/service/momentPipeline.ts` | Nhánh describe (R5), task R6, gắn ảnh R8. |
 | `src/modules/canonicalLesson/model/contract.ts` | `LessonSourceTypeValues` thêm `learner_image`. |
 | `src/modules/canonicalLesson/controller/lessonCreations.ts` + `creationRequest.ts` | Body tạo bài "Hiểu" nhận `image_id` tuỳ chọn; gắn ảnh khi thành công (R8). |
@@ -66,7 +67,7 @@ CREATE INDEX learner_images_lesson_idx ON learner_images (lesson_id) WHERE lesso
 | File | Thay đổi |
 |---|---|
 | `src/core/schemas/lesson.ts` | `learner_image`; header `source_image?`; chép fixture. |
-| `src/features/input/screens/MomentReviewScreen.tsx` | Thẻ Tả hiện khi capability `moments.describe.enabled` và không phải trẻ em; gửi `submitMoment({intent: 'describe', image_id, level})`; "Hiểu" gửi kèm `image_id`. |
+| `src/features/input/screens/MomentReviewScreen.tsx` | Thẻ Tả hiện khi capability `moments.describe.enabled` (trẻ em không vào được màn này, E3 P10); gửi `submitMoment({intent: 'describe', image_id, level})`; "Hiểu" gửi kèm `image_id`. |
 | `src/features/lesson/player/logic/mediaDownloadConsent.ts` | `lessonMediaUrls` thêm `snapshot.source_image?.url` (đứng đầu). |
 | `src/features/lesson/player/logic/canonicalDownloadRepository.ts` | Không đổi cách tải; URL ký tải được bằng `fs.downloadFile`. Khi tải lỗi 403 (hết hạn) → lấy lại snapshot rồi thử 1 lần. |
 | `src/features/lesson/player/components/CanonicalLessonHub.tsx` (hoặc hub tương ứng) | Ảnh nguồn đầu hub (file local nếu đã tải, không thì URL); chạm để xem lớn. Chip "Từ ảnh" / "Tình huống". |
@@ -78,8 +79,8 @@ CREATE INDEX learner_images_lesson_idx ON learner_images (lesson_id) WHERE lesso
 | Repo | Loại | Nội dung |
 |---|---|---|
 | Server | Unit | `callProviderJson` có ảnh: đúng shape OpenAI / Gemini; không ảnh → request cũ không đổi (so snapshot JSON). Spec `moment.describe` lint + cases; lọc `confidence`; số câu, số từ. `imageUrlSigner`: đúng, sai chữ ký, hết hạn. |
-| Server | DB `test/momentDescribe.test.ts` | Ảnh hợp lệ → bài 6 bước `learner_image` có `source_image`, ảnh `expires_at = NULL`; `suitable=false` → không tính lượt, ảnh vẫn hạn 24 giờ; trẻ em → 403; ảnh người khác → 404; route ảnh: chủ + chữ ký đúng → 200, người khác / sai chữ ký / ảnh chưa gắn bài → 404; "Hiểu" kèm `image_id` gắn ảnh. |
-| App | Jest | Schema có `source_image`; `lessonMediaUrls` gồm ảnh nguồn; hub hiện ảnh; thẻ Tả theo capability / trẻ em; tải lại khi 403. |
+| Server | DB `test/momentDescribe.test.ts` | Ảnh hợp lệ → bài 6 bước `learner_image` có `source_image`, ảnh `expires_at = NULL`; `suitable=false` → không tính lượt, ảnh vẫn hạn 24 giờ; trẻ em → 403 `CREATION_NOT_ALLOWED`; ảnh người khác → 404; route ảnh: chủ + chữ ký đúng → 200, người khác / sai chữ ký / ảnh chưa gắn bài → 404; "Hiểu" kèm `image_id` gắn ảnh. |
+| App | Jest | Schema có `source_image`; `lessonMediaUrls` gồm ảnh nguồn; hub hiện ảnh; thẻ Tả theo capability; tải lại khi 403. |
 | App | Kiểm tay | Chụp góc bếp → Tả → bài có từ đồ vật đúng; tắt mạng sau khi tải → ảnh vẫn hiện; ảnh selfie → không phù hợp, không mất lượt. |
 
 ## 6. Thứ tự commit
