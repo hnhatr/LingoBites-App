@@ -160,4 +160,13 @@ describe('PublicLessonsList', () => {
     });
     expect(mockLoadMore).toHaveBeenCalledTimes(1);
   });
+
+  it('says the list is downloaded-only while offline (#9)', () => {
+    mockState = {...mockState, offline: true};
+    const tree = renderList();
+    expect(
+      tree.root.findAll(node => node.props.testID === 'public-lessons-offline')
+        .length,
+    ).toBeGreaterThan(0);
+  });
 });

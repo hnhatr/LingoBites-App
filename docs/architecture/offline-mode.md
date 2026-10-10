@@ -86,6 +86,21 @@ gửi khi có mạng · 🔒 khoá.
 | **P2** — cache nội dung | Cache Course / Level / Unit + entitlement (#17, #19); catalog lọc bài đã tải (#9) | `useCurriculum.ts`, `courseClient.ts`, `PublicLessonsList` |
 | **P3** — tuỳ chọn | Nháp tạo bài / OCR xếp hàng (#20, #21) | input / ocr |
 
+### Trạng thái triển khai
+
+| Giai đoạn | Trạng thái | Ghi chú |
+|---|---|---|
+| P0 | ✅ Xong | `offlineBoot` trong `accountBootstrap.ts`; user lưu ở `app_settings` (`account.cached_user`), xoá khi đăng xuất; timeout 12s (`AUTH_REQUEST_TIMEOUT_MS`); `revalidate()` khi app về foreground |
+| P1 | ✅ Xong | `core/api/connectivity.ts`; `OfflineBanner` trong mọi `AppScreen` (BootGate tắt); `LockedFeature`; Create hub khoá #20–22; cảnh báo đăng xuất offline #32 |
+| P2 | ✅ Xong | `courseClient.getList` lưu câu trả lời hợp lệ (`curriculum_cache.*`, entitlement theo tài khoản) và trả lại khi lỗi mạng; catalog / Home rơi về bài đã tải (#9) |
+| P3 | Chưa làm | — |
+
+Khác với thiết kế ban đầu:
+
+- Banner chưa hiện số mục chờ đồng bộ ("· N mục chờ").
+- #17 không có nhãn "Dữ liệu offline" riêng: banner offline chung đã báo.
+- Lỗi Server (5xx) không dùng cache / không mở app offline — chỉ lỗi mạng.
+
 ## 5. Rủi ro
 
 - Token hết hạn vẫn cho dùng offline; mọi request Server chờ tới khi có mạng

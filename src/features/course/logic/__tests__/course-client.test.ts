@@ -1,9 +1,14 @@
 import {readFileSync} from 'fs';
 import {join} from 'path';
+import {open} from 'react-native-quick-sqlite';
 
 import {getAppConfig} from '@core/api/appConfig';
+import {DB_NAME} from '@core/db/constants';
+import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 
+import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
+  fetchCourseEntitlements,
   fetchCourseLevels,
   fetchCourses,
   fetchLevelUnits,
@@ -56,6 +61,9 @@ function lesson(id: string, position: number) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  __resetMockDatabases();
+  resetDatabaseForTests(open({name: DB_NAME}));
+  getDatabase();
   (getAppConfig as jest.Mock).mockReturnValue({
     apiBaseUrl: 'https://api.example',
   });
@@ -220,6 +228,76 @@ describe('unit summative task (PR 16)', () => {
     await expect(fetchUnitSummativeTask(UNIT_ID)).resolves.toEqual({
       ok: true,
       value: null,
+    });
+  });
+});
+
+describe('courseClient offline cache (offline-mode.md #17, #19)', () => {
+  const coursesBody = {
+    request_id: 'r1',
+    status: 'success',
+    courses: [
+      {
+        id: COURSE_ID,
+        slug: 'english-a1',
+        title: 'English A1',
+        description: 'Start here',
+        sourceLanguage: 'vi',
+        targetLanguage: 'en',
+        ...timestamps,
+      },
+    ],
+  };
+
+  function setAccount(id: string) {
+    getDatabase().execute(
+      'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      ['current_account_id', id, new Date().toISOString()],
+    );
+  }
+
+  it('serves the last answer when the network fails', async () => {
+    authenticatedFetch.mockResolvedValueOnce(jsonResponse(200, coursesBody));
+    const online = await fetchCourses();
+    expect(online.ok).toBe(true);
+
+    authenticatedFetch.mockRejectedValueOnce(new Error('offline'));
+    expect(await fetchCourses()).toEqual(online);
+  });
+
+  it('does not serve the cache for a Server error', async () => {
+    authenticatedFetch.mockResolvedValueOnce(jsonResponse(200, coursesBody));
+    await fetchCourses();
+
+    authenticatedFetch.mockResolvedValueOnce(jsonResponse(503, {}));
+    expect(await fetchCourses()).toMatchObject({
+      ok: false,
+      kind: 'server-error',
+    });
+  });
+
+  it('keeps entitlements per account', async () => {
+    setAccount('account-a');
+    authenticatedFetch.mockResolvedValueOnce(
+      jsonResponse(200, {
+        request_id: 'e1',
+        status: 'success',
+        course_ids: [COURSE_ID],
+      }),
+    );
+    await fetchCourseEntitlements();
+
+    authenticatedFetch.mockRejectedValueOnce(new Error('offline'));
+    expect(await fetchCourseEntitlements()).toEqual({
+      ok: true,
+      value: [COURSE_ID],
+    });
+
+    setAccount('account-b');
+    authenticatedFetch.mockRejectedValueOnce(new Error('offline'));
+    expect(await fetchCourseEntitlements()).toMatchObject({
+      ok: false,
+      kind: 'network-error',
     });
   });
 });

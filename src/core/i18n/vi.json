@@ -228,6 +228,7 @@
     "locked_create": "Tạo bài mới cần mạng để nhận diện chữ và phân tích. Bạn vẫn học và ôn được các bài đã có trên máy.",
     "retry": "Thử lại",
     "retry_hint": "Kiểm tra lại kết nối mạng",
+    "downloaded_only": "Đang offline — chỉ hiện các bài đã có trên máy.",
     "checking": "Đang kiểm tra…",
     "sign_out_warning": "Bạn đang offline. Sau khi đăng xuất, bạn sẽ không vào lại được cho đến khi có mạng."
   },
