@@ -16,7 +16,12 @@ import {
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
-import type {LessonOrigin, LessonSourceType} from '@core/schemas/lesson';
+import type {
+  LessonCatalogItem,
+  LessonCatalogKind,
+  LessonOrigin,
+  LessonSourceType,
+} from '@core/schemas/lesson';
 
 import {
   EMPTY_LESSON_CARD_STATE,
@@ -29,6 +34,8 @@ import {LibraryEmptyState} from './LibraryEmptyState';
 export interface PublicLessonsListProps {
   origin: LessonOrigin;
   sourceType: LessonSourceType;
+  /** `video`: public videos, each card naming its six-step lessons. */
+  kind?: LessonCatalogKind;
   /** Client-side search over the loaded lessons' title and description. */
   searchQuery?: string;
 }
@@ -41,13 +48,18 @@ export interface PublicLessonsListProps {
 export function PublicLessonsList({
   origin,
   sourceType,
+  kind,
   searchQuery = '',
 }: PublicLessonsListProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const feedClearance = useFloatingTabBarClearance();
   const navigation = useAppNavigation();
-  const {state, refresh, loadMore} = useCanonicalCatalog({origin, sourceType});
+  const {state, refresh, loadMore} = useCanonicalCatalog({
+    origin,
+    sourceType,
+    kind,
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -142,7 +154,10 @@ export function PublicLessonsList({
       }
       renderItem={({item}) => {
         const {title, subtitle} = splitLessonTitle(item.title);
-        const contextLabel = lessonContextLabel(item.unit);
+        const contextLabel =
+          kind === 'video'
+            ? videoContextLabel(item)
+            : lessonContextLabel(item.unit);
         const durationLabel = lessonCardDurationLabel({
           estimatedMinutes: item.estimated_minutes,
           youtubeDurationMs: item.youtube_duration_ms,
@@ -150,7 +165,7 @@ export function PublicLessonsList({
         });
         return (
           <LessonCard
-            accessibilityHint="Mở bài học"
+            accessibilityHint={kind === 'video' ? 'Mở video' : 'Mở bài học'}
             bookmarked={isBookmarked(item.id)}
             context={contextLabel}
             downloaded={localState.downloadedIds.has(item.id)}
@@ -180,6 +195,12 @@ export function PublicLessonsList({
       }}
     />
   );
+}
+
+/** A public video card says how many six-step lessons it has. */
+export function videoContextLabel(item: LessonCatalogItem): string {
+  const count = item.video_lesson_count ?? 0;
+  return count > 0 ? `Video · ${count} bài học` : 'Video';
 }
 
 function makeStyles(theme: AppTheme) {

@@ -1,7 +1,11 @@
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 
 import type {LibrarySectionKey} from '@core/navigation';
-import type {LessonOrigin, LessonSourceType} from '@core/schemas/lesson';
+import type {
+  LessonCatalogKind,
+  LessonOrigin,
+  LessonSourceType,
+} from '@core/schemas/lesson';
 
 export type LibrarySectionId = LibrarySectionKey;
 
@@ -19,7 +23,12 @@ export interface LibrarySectionConfig {
   /** Own-lesson sections: which downloaded lessons belong to the section. */
   lessons?: {origin: LessonOrigin; sourceTypes: LessonSourceType[]};
   /** Public sections: the server catalog query behind the section. */
-  catalog?: {origin: LessonOrigin; sourceType: LessonSourceType};
+  catalog?: {
+    origin: LessonOrigin;
+    sourceType: LessonSourceType;
+    /** `video`: public videos only; their six-step lessons open from them. */
+    kind?: LessonCatalogKind;
+  };
   unit: 'bài' | 'từ' | 'quy tắc';
 }
 
@@ -85,7 +94,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     title: 'Video công khai',
     description: 'Học qua video YouTube có phụ đề',
     emptyHint: 'Chưa có video công khai',
-    catalog: {origin: 'admin', sourceType: 'youtube'},
+    catalog: {origin: 'admin', sourceType: 'youtube', kind: 'video'},
     unit: 'bài',
   },
 ];

@@ -21,6 +21,8 @@ import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {
   type LearnerLessonCreationRequestBody,
   type LessonAnalysis,
+  type LessonCatalogItem,
+  type LessonCatalogKind,
   type LessonCatalogResponse,
   type LessonCreationStatusResponse,
   type LessonOrigin,
@@ -34,6 +36,7 @@ import {
   parseLessonCreationStatusResponse,
   parseLessonRevisionsResponse,
   parseLessonSnapshotResponse,
+  parseLessonVideoLessonsResponse,
 } from '@core/schemas/lesson';
 
 const LESSONS_PATH = '/api/v1/lessons';
@@ -196,6 +199,8 @@ export async function fetchLessonCatalog(
     origin?: LessonOrigin;
     /** Narrow to one source type (e.g. `youtube`). */
     sourceType?: LessonSourceType;
+    /** `video` = public videos only (with their lesson count). */
+    kind?: LessonCatalogKind;
   } = {},
   options: CanonicalLessonClientOptions = {},
 ): Promise<CanonicalLessonResult<LessonCatalogResponse>> {
@@ -206,8 +211,13 @@ export async function fetchLessonCatalog(
   if (query.sourceType !== undefined) {
     params.set('source_type', query.sourceType);
   }
+  if (query.kind !== undefined) params.set('kind', query.kind);
   // Lesson-card fields (duration, exercise count); older servers ignore it.
-  params.set('include', 'card_meta');
+  // Public videos also ask for their lesson count.
+  params.set(
+    'include',
+    query.kind === 'video' ? 'card_meta,video_meta' : 'card_meta',
+  );
   const suffix = params.size > 0 ? `?${params.toString()}` : '';
   const answered = await send(
     `${LESSONS_PATH}${suffix}`,
@@ -223,6 +233,30 @@ export async function fetchLessonCatalog(
   const parsed = parseLessonCatalogResponse(body);
   if (!parsed.ok) return contentError(parsed.message);
   return {ok: true, value: parsed.response};
+}
+
+/**
+ * The published unit lessons (six-step) made from the same video as one
+ * lesson the caller may see; empty for a lesson without a video.
+ */
+export async function fetchVideoLessons(
+  lessonId: string,
+  options: CanonicalLessonClientOptions = {},
+): Promise<CanonicalLessonResult<LessonCatalogItem[]>> {
+  const answered = await send(
+    `${LESSONS_PATH}/${encodeURIComponent(lessonId)}/video-lessons`,
+    {method: 'GET'},
+    'LESSON_NOT_FOUND',
+    options,
+  );
+  if (!('body' in answered)) return answered;
+  const {status, body} = answered;
+  if (status < 200 || status >= 300) {
+    return errorFromStatus(status, body, 'LESSON_NOT_FOUND');
+  }
+  const parsed = parseLessonVideoLessonsResponse(body);
+  if (!parsed.ok) return contentError(parsed.message);
+  return {ok: true, value: parsed.response.lessons};
 }
 
 /**

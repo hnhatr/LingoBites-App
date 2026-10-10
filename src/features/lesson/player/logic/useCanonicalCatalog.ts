@@ -2,6 +2,7 @@ import {useCallback, useState} from 'react';
 
 import type {
   LessonCatalogItem,
+  LessonCatalogKind,
   LessonOrigin,
   LessonSourceType,
 } from '@core/schemas/lesson';
@@ -36,7 +37,21 @@ export type CanonicalCatalogState =
 export type CanonicalCatalogFilter = {
   origin?: LessonOrigin;
   sourceType?: LessonSourceType;
+  kind?: LessonCatalogKind;
 };
+
+/** A public video: an admin YouTube lesson outside any unit. */
+export function isPublicVideo(item: {
+  origin: LessonOrigin;
+  source_type: LessonSourceType;
+  unit: unknown;
+}): boolean {
+  return (
+    item.origin === 'admin' &&
+    item.source_type === 'youtube' &&
+    item.unit === null
+  );
+}
 
 function toCatalogItem({snapshot}: LessonDownloadRecord): LessonCatalogItem {
   return {
@@ -67,7 +82,8 @@ export function downloadedCatalogItems(
       .filter(
         item =>
           (!filter.origin || item.origin === filter.origin) &&
-          (!filter.sourceType || item.source_type === filter.sourceType),
+          (!filter.sourceType || item.source_type === filter.sourceType) &&
+          (!filter.kind || isPublicVideo(item) === (filter.kind === 'video')),
       );
   } catch {
     return [];
@@ -75,16 +91,21 @@ export function downloadedCatalogItems(
 }
 
 export function useCanonicalCatalog(filter: CanonicalCatalogFilter = {}) {
-  const {origin, sourceType} = filter;
+  const {origin, sourceType, kind} = filter;
   const [state, setState] = useState<CanonicalCatalogState>({status: 'idle'});
 
   const refresh = useCallback(async () => {
     setState({status: 'loading'});
-    const result = await fetchLessonCatalog({limit: 20, origin, sourceType});
+    const result = await fetchLessonCatalog({
+      limit: 20,
+      origin,
+      sourceType,
+      kind,
+    });
     if (!result.ok) {
       const downloaded =
         result.kind === 'network-error'
-          ? downloadedCatalogItems({origin, sourceType})
+          ? downloadedCatalogItems({origin, sourceType, kind})
           : [];
       setState(
         downloaded.length > 0
@@ -105,7 +126,7 @@ export function useCanonicalCatalog(filter: CanonicalCatalogFilter = {}) {
       nextCursor: result.value.next_cursor,
       loadingMore: false,
     });
-  }, [origin, sourceType]);
+  }, [origin, sourceType, kind]);
 
   const loadMore = useCallback(async () => {
     let cursor: string | null = null;
@@ -131,6 +152,7 @@ export function useCanonicalCatalog(filter: CanonicalCatalogFilter = {}) {
       cursor,
       origin,
       sourceType,
+      kind,
     });
     if (!result.ok) {
       setState(previous =>
@@ -146,7 +168,7 @@ export function useCanonicalCatalog(filter: CanonicalCatalogFilter = {}) {
       nextCursor: result.value.next_cursor,
       loadingMore: false,
     });
-  }, [origin, sourceType]);
+  }, [origin, sourceType, kind]);
 
   return {state, refresh, loadMore};
 }

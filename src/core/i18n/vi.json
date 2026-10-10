@@ -475,7 +475,9 @@
       "sheet_transcript_meta": "· {{count}} câu",
       "sheet_transcript_empty": "Bài học không có câu nào.",
       "sheet_close_a11y": "Đóng",
-      "sheet_analysis_a11y": "Sheet phân tích"
+      "sheet_analysis_a11y": "Sheet phân tích",
+      "video_lessons_title": "Bài học từ video này",
+      "video_lessons_hint": "Mở bài học 6 bước"
     }
   },
   "gamification": {
