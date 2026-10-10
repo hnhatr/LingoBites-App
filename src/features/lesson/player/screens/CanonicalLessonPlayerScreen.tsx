@@ -86,6 +86,7 @@ import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
 import {useLessonMediaDownload} from '../logic/useLessonMediaDownload';
 import {useLessonSavedItems} from '../logic/useLessonSavedItems';
+import {useVideoLessons} from '../logic/useVideoLessons';
 import type {LessonFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<
@@ -170,6 +171,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const flowEntry = useFlowEntry(lessonId, snapshot);
+  // A public video lists the six-step lessons made from it.
+  const videoLessons = useVideoLessons(snapshot, offline);
   const lessonMedia = useLessonMediaDownload(snapshot);
   const downloadLessonMedia = lessonMedia.download;
   // Lesson media is only downloaded with consent; ask once, online, on the
@@ -378,6 +381,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         analysisStates={analysisStates}
         onSpeakText={handleSpeak}
         vocabularySave={savedItems.vocabulary}
+        videoLessons={videoLessons}
+        onOpenVideoLesson={appNavigation.openLesson}
       />
     ) : null;
 

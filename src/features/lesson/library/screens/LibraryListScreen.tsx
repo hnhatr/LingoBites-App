@@ -102,6 +102,7 @@ export function LibraryListScreen({navigation, route}: Props) {
           <PublicLessonsList
             origin={section.catalog.origin}
             sourceType={section.catalog.sourceType}
+            kind={section.catalog.kind}
             searchQuery={searchQuery}
           />
         ) : !ready ? (

@@ -7,7 +7,11 @@ import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
+import type {
+  LessonAnalysis,
+  LessonCatalogItem,
+  LessonSnapshot,
+} from '@core/schemas/lesson';
 
 import {sortedBlocks, sortedSentences} from '../logic/lessonHubContent';
 import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
@@ -56,6 +60,9 @@ export type CanonicalLessonPlayerProps = {
   onSpeakText?: (text: string) => void;
   /** "Lưu thẻ" on analysed words; omitted = no save buttons. */
   vocabularySave?: VocabularySaveControl;
+  /** Public video (YouTube study only): its six-step lessons. */
+  videoLessons?: readonly LessonCatalogItem[];
+  onOpenVideoLesson?: (lessonId: string) => void;
 };
 
 /**
@@ -88,6 +95,8 @@ export function CanonicalLessonPlayer({
   analysisStates,
   onSpeakText,
   vocabularySave,
+  videoLessons,
+  onOpenVideoLesson,
 }: CanonicalLessonPlayerProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -136,6 +145,8 @@ export function CanonicalLessonPlayer({
         analysisStates={analysisStates}
         onSpeakText={onSpeakText}
         vocabularySave={vocabularySave}
+        videoLessons={videoLessons}
+        onOpenVideoLesson={onOpenVideoLesson}
       />
     );
   }

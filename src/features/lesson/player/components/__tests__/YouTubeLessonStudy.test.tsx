@@ -269,6 +269,55 @@ describe('YouTubeLessonStudy', () => {
     expect(texts).not.toContain('3');
   });
 
+  it('lists the six-step lessons of a public video and opens one', async () => {
+    const onOpenVideoLesson = jest.fn();
+    const lessonId = '44444444-4444-4444-8444-444444444401';
+    const tree = await renderStudy({
+      onOpenVideoLesson,
+      videoLessons: [
+        {
+          id: lessonId,
+          title: 'Order a coffee · Gọi cà phê',
+          description: '',
+          origin: 'admin',
+          source_type: 'youtube',
+          content_revision: 1,
+          sentence_count: 4,
+          youtube_video_id: 'dQw4w9WgXcQ',
+          unit: {
+            course_id: '55555555-5555-4555-8555-555555555501',
+            course_title: 'English',
+            level_id: '55555555-5555-4555-8555-555555555502',
+            level_title: 'A1',
+            unit_id: '55555555-5555-4555-8555-555555555503',
+            unit_title: 'Daily life',
+            unit_position: 1,
+            lesson_position: 1,
+          },
+          updated_at: '2026-10-01T00:00:00.000Z',
+          estimated_minutes: 10,
+          activity_count: 6,
+        },
+      ],
+    });
+    const texts = tree.root
+      .findAll(node => typeof node.props.children === 'string')
+      .map(node => node.props.children as string);
+    expect(texts).toContain(vi.youtube.study.video_lessons_title);
+    pressByTestId(tree.root, `youtube-video-lesson-${lessonId}`);
+    expect(onOpenVideoLesson).toHaveBeenCalledWith(lessonId);
+  });
+
+  it('shows no lesson list while a video has no six-step lesson', async () => {
+    const tree = await renderStudy({
+      onOpenVideoLesson: jest.fn(),
+      videoLessons: [],
+    });
+    expect(
+      tree.root.findAll(node => node.props.testID === 'youtube-video-lessons'),
+    ).toHaveLength(0);
+  });
+
   it('uses distinct testIDs for transcript open control and sheet (AC-009)', async () => {
     const tree = await renderStudy();
     pressByTestId(tree.root, 'youtube-open-transcript');
