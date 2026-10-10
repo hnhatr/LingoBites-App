@@ -6,7 +6,11 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
+import type {
+  LessonAnalysis,
+  LessonCatalogItem,
+  LessonSnapshot,
+} from '@core/schemas/lesson';
 
 import {
   activeSentenceIndexAt,
@@ -21,6 +25,7 @@ import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from './SentenceAnalysisPanel';
+import {VideoLessonsSection} from './VideoLessonsSection';
 import {YouTubeAnalysisSheet} from './YouTubeAnalysisSheet';
 import {YouTubeSentenceCarousel} from './YouTubeSentenceCarousel';
 import {YouTubeTranscriptSheet} from './YouTubeTranscriptSheet';
@@ -50,6 +55,9 @@ export type YouTubeLessonStudyProps = {
   >;
   onSpeakText?: (text: string) => void;
   vocabularySave?: VocabularySaveControl;
+  /** Public video: the six-step lessons made from it, listed under it. */
+  videoLessons?: readonly LessonCatalogItem[];
+  onOpenVideoLesson?: (lessonId: string) => void;
 };
 
 type OpenSheet = 'none' | 'analysis' | 'transcript';
@@ -75,6 +83,8 @@ export function YouTubeLessonStudy({
   analysisStates,
   onSpeakText,
   vocabularySave,
+  videoLessons,
+  onOpenVideoLesson,
 }: YouTubeLessonStudyProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -249,6 +259,13 @@ export function YouTubeLessonStudy({
         {orderedBlocks.map(block => (
           <CanonicalBlockView key={block.id} block={block} />
         ))}
+
+        {videoLessons && onOpenVideoLesson ? (
+          <VideoLessonsSection
+            lessons={videoLessons}
+            onOpenLesson={onOpenVideoLesson}
+          />
+        ) : null}
       </ScrollView>
 
       <LessonStudyToolbar

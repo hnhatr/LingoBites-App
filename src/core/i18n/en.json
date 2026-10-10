@@ -477,7 +477,9 @@
       "sheet_transcript_meta": "· {{count}} sentences",
       "sheet_transcript_empty": "No sentences in this lesson.",
       "sheet_close_a11y": "Close",
-      "sheet_analysis_a11y": "Analysis sheet"
+      "sheet_analysis_a11y": "Analysis sheet",
+      "video_lessons_title": "Lessons from this video",
+      "video_lessons_hint": "Open the six-step lesson"
     }
   },
   "gamification": {

@@ -6137,21 +6137,7 @@ metro-cache@0.84.6:
     https-proxy-agent "^7.0.5"
     metro-core "0.84.6"
 
-metro-config@0.84.5:
-  version "0.84.5"
-  resolved "https://registry.yarnpkg.com/metro-config/-/metro-config-0.84.5.tgz#a45b1556bd61393cd4853393ac2b11eefdd7a217"
-  integrity sha512-zie+uN6oohscowi2S7ByU+wUw6CrT4ZxW9uAbONOObSxx86RGmnIAmjXHLkfmcdYoY7jzOPEbqcI6oeVmqyBQA==
-  dependencies:
-    connect "^3.6.5"
-    flow-enums-runtime "^0.0.6"
-    jest-validate "^29.7.0"
-    metro "0.84.5"
-    metro-cache "0.84.5"
-    metro-core "0.84.5"
-    metro-runtime "0.84.5"
-    yaml "^2.6.1"
-
-metro-config@0.84.6, metro-config@^0.84.3:
+metro-config@0.84.5, metro-config@0.84.6, metro-config@^0.84.3:
   version "0.84.6"
   resolved "https://registry.npmjs.org/metro-config/-/metro-config-0.84.6.tgz"
   integrity sha512-cD2mLEofcuV26kxSV4hfV1Pbuh6igdUhYQriO8ZVeJ7HyZfq4/wqHV0gSR7fEO8NUp9odr60/Kzm5YakmghWwQ==
@@ -6229,29 +6215,14 @@ metro-minify-terser@0.84.6:
     flow-enums-runtime "^0.0.6"
     terser "^5.15.0"
 
-metro-resolver@0.84.5:
-  version "0.84.5"
-  resolved "https://registry.yarnpkg.com/metro-resolver/-/metro-resolver-0.84.5.tgz#bc2d8aa10eb9ec9044dec099dc6f4c28f1306f3a"
-  integrity sha512-VSSnepg1k6LyCwtb6eirWdAWlpKwBG8Rdtsr1mU38rMelFyWgh3/QuMSiZIZAIjwg/fsa8GhW5/FO54CAUPCEA==
-  dependencies:
-    flow-enums-runtime "^0.0.6"
-
-metro-resolver@0.84.6:
+metro-resolver@0.84.5, metro-resolver@0.84.6:
   version "0.84.6"
   resolved "https://registry.npmjs.org/metro-resolver/-/metro-resolver-0.84.6.tgz"
   integrity sha512-PplpGc/OCLxgKeLNsLQO/VHsYDIvkcGGr3zNT7UanHCGRqhxKv245o+naV8cRI4/pcLqyc+9j+J0AJbT3Kp5Sg==
   dependencies:
     flow-enums-runtime "^0.0.6"
 
-metro-runtime@0.84.5:
-  version "0.84.5"
-  resolved "https://registry.yarnpkg.com/metro-runtime/-/metro-runtime-0.84.5.tgz#2c13f2177f5d3951f7f62188c223e84a520ed87c"
-  integrity sha512-U1m2+d1Pr+JO2/iVXBB2OfXXityz7tqwIorxfrT15IEgaHvpJBq/OHiqnOWPKJbUl3JcxjcdviZZOKk85oK4Qg==
-  dependencies:
-    "@babel/runtime" "^7.25.0"
-    flow-enums-runtime "^0.0.6"
-
-metro-runtime@0.84.6, metro-runtime@^0.84.3:
+metro-runtime@0.84.5, metro-runtime@0.84.6, metro-runtime@^0.84.3:
   version "0.84.6"
   resolved "https://registry.npmjs.org/metro-runtime/-/metro-runtime-0.84.6.tgz"
   integrity sha512-47EYO/DOai0PA3GoAyDpyXOgHNMwbl/Z9dQlQineDLHkpD42xOwMrIx1crT0+n6F+aGoEyxZmeFwfMzaIqVqKQ==
@@ -6259,22 +6230,7 @@ metro-runtime@0.84.6, metro-runtime@^0.84.3:
     "@babel/runtime" "^7.25.0"
     flow-enums-runtime "^0.0.6"
 
-metro-source-map@0.84.5:
-  version "0.84.5"
-  resolved "https://registry.yarnpkg.com/metro-source-map/-/metro-source-map-0.84.5.tgz#1338cc7ca3666dc126eb5ef4b3514a6a8b8b7f05"
-  integrity sha512-2BtV5L9uPc49F13Gn5wiP6bX/EncqzqTIk2VL/0F/96Vo0YEOjluT/qktQjFODfqGFsucwnh5mPEAl/2jVEfeg==
-  dependencies:
-    "@babel/traverse" "^7.29.0"
-    "@babel/types" "^7.29.0"
-    flow-enums-runtime "^0.0.6"
-    invariant "^2.2.4"
-    metro-symbolicate "0.84.5"
-    nullthrows "^1.1.1"
-    ob1 "0.84.5"
-    source-map "^0.5.6"
-    vlq "^1.0.0"
-
-metro-source-map@0.84.6, metro-source-map@^0.84.3:
+metro-source-map@0.84.5, metro-source-map@0.84.6, metro-source-map@^0.84.3:
   version "0.84.6"
   resolved "https://registry.npmjs.org/metro-source-map/-/metro-source-map-0.84.6.tgz"
   integrity sha512-4p/EplRbgNxhdqA6kAj1AmIq9qqYXYSAjgxuZ73rYA+p037xDDrxK8CyDKNfbn1k6aMuVt8LV0fpt7NHUTKiZw==
@@ -6337,26 +6293,7 @@ metro-transform-plugins@0.84.6:
     flow-enums-runtime "^0.0.6"
     nullthrows "^1.1.1"
 
-metro-transform-worker@0.84.5:
-  version "0.84.5"
-  resolved "https://registry.yarnpkg.com/metro-transform-worker/-/metro-transform-worker-0.84.5.tgz#57543a44e1054d1adbfa054d1a7a907981c1c455"
-  integrity sha512-ui1Z8x4s5RL36gMmKLaMMO7O9NNDHNdthEZSCDQHAau3JcAsTaFOK6I+2q4I/kW5u8hSEjJk9L45TXSVJw6g1A==
-  dependencies:
-    "@babel/core" "^7.25.2"
-    "@babel/generator" "^7.29.1"
-    "@babel/parser" "^7.29.0"
-    "@babel/types" "^7.29.0"
-    flow-enums-runtime "^0.0.6"
-    metro "0.84.5"
-    metro-babel-transformer "0.84.5"
-    metro-cache "0.84.5"
-    metro-cache-key "0.84.5"
-    metro-minify-terser "0.84.5"
-    metro-source-map "0.84.5"
-    metro-transform-plugins "0.84.5"
-    nullthrows "^1.1.1"
-
-metro-transform-worker@0.84.6:
+metro-transform-worker@0.84.5, metro-transform-worker@0.84.6:
   version "0.84.6"
   resolved "https://registry.npmjs.org/metro-transform-worker/-/metro-transform-worker-0.84.6.tgz"
   integrity sha512-xLTVrOENaHR9DiuhnHS+zcle0rKsCy2CpXSIx7xD+zhJs+qVRNUyV7Z1zIt/0P/d0cSGVx846R+dIjHEudhcww==
@@ -6375,51 +6312,7 @@ metro-transform-worker@0.84.6:
     metro-transform-plugins "0.84.6"
     nullthrows "^1.1.1"
 
-metro@0.84.5:
-  version "0.84.5"
-  resolved "https://registry.yarnpkg.com/metro/-/metro-0.84.5.tgz#c7402b9a5a80fa22501705e7d121f59d866bf06f"
-  integrity sha512-r1liLkyFZMVSEMNjU1CJU5pRzs3NdkxHqXS60O25c0rCIqAR+cGk7rPydw/g0WAIKVXojIBIF45yYBPagJGcgw==
-  dependencies:
-    "@babel/code-frame" "^7.29.0"
-    "@babel/core" "^7.25.2"
-    "@babel/generator" "^7.29.1"
-    "@babel/parser" "^7.29.0"
-    "@babel/template" "^7.28.6"
-    "@babel/traverse" "^7.29.0"
-    "@babel/types" "^7.29.0"
-    accepts "^2.0.0"
-    ci-info "^2.0.0"
-    connect "^3.6.5"
-    debug "^4.4.0"
-    error-stack-parser "^2.0.6"
-    flow-enums-runtime "^0.0.6"
-    graceful-fs "^4.2.4"
-    hermes-parser "0.35.0"
-    invariant "^2.2.4"
-    jest-worker "^29.7.0"
-    jsc-safe-url "^0.2.2"
-    lodash.throttle "^4.1.1"
-    metro-babel-transformer "0.84.5"
-    metro-cache "0.84.5"
-    metro-cache-key "0.84.5"
-    metro-config "0.84.5"
-    metro-core "0.84.5"
-    metro-file-map "0.84.5"
-    metro-resolver "0.84.5"
-    metro-runtime "0.84.5"
-    metro-source-map "0.84.5"
-    metro-symbolicate "0.84.5"
-    metro-transform-plugins "0.84.5"
-    metro-transform-worker "0.84.5"
-    mime-types "^3.0.1"
-    nullthrows "^1.1.1"
-    serialize-error "^2.1.0"
-    source-map "^0.5.6"
-    throat "^5.0.0"
-    ws "^7.5.10"
-    yargs "^17.6.2"
-
-metro@0.84.6, metro@^0.84.3:
+metro@0.84.5, metro@0.84.6, metro@^0.84.3:
   version "0.84.6"
   resolved "https://registry.npmjs.org/metro/-/metro-0.84.6.tgz"
   integrity sha512-ty/tx/imE5Ph2gvPU788Ckim6RAC2tyZxLz2hWRgC9U7/fGKV7qY/slADy0qHPEw9cpUgc4BfmV3oUsYwm7oeg==
@@ -6683,13 +6576,6 @@ nullthrows@^1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/nullthrows/-/nullthrows-1.1.1.tgz"
   integrity sha512-2vPPEi+Z7WqML2jZYddDIfy5Dqb0r2fze2zTxNNknZaFpVHU3mFB3R+DWeJWGVx0ecvttSGlJTI+WG+8Z4cDWw==
-
-ob1@0.84.5:
-  version "0.84.5"
-  resolved "https://registry.yarnpkg.com/ob1/-/ob1-0.84.5.tgz#5b103040a271723e555f77be3d54aaf4c32d9db5"
-  integrity sha512-aH9RkoZc7w/90HBamFxTw8ZLFr05wXS+iOnvmrgo53Ep8Pyrm5FieQSaPIVROkfFVQISeD/zo92fes26TOwe+A==
-  dependencies:
-    flow-enums-runtime "^0.0.6"
 
 ob1@0.84.6:
   version "0.84.6"

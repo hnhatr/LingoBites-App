@@ -1,13 +1,6 @@
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
@@ -18,17 +11,6 @@ import {
 } from 'react-native';
 
 import {speak} from '@features/audio';
-
-/**
- * Lazily loaded through the youtube feature's public barrel so importing this
- * screen never pulls the native video module into suites that never render
- * video (`react-native-youtube-iframe` is untransformed ESM under jest).
- */
-const YouTubePlayer = React.lazy(() =>
-  import('../components/YouTubePlayer').then(module => ({
-    default: module.YouTubePlayer,
-  })),
-);
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -66,7 +48,13 @@ import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from '../components/SentenceAnalysisPanel';
-import type {YouTubePlayerRef} from '../components/YouTubePlayer';
+// Imported statically: a dynamic import() loads a split bundle in dev, which
+// throws when the dev client has not set up HMR. Jest mocks the iframe module
+// in jest.setup.js.
+import {
+  YouTubePlayer,
+  type YouTubePlayerRef,
+} from '../components/YouTubePlayer';
 import {canComposeFrom} from '../logic/composePick';
 import {
   markComposedLessonSeen,
@@ -93,6 +81,7 @@ import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
 import {useLessonMediaDownload} from '../logic/useLessonMediaDownload';
 import {useLessonSavedItems} from '../logic/useLessonSavedItems';
+import {useVideoLessons} from '../logic/useVideoLessons';
 import type {LessonFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<
@@ -177,6 +166,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const flowEntry = useFlowEntry(lessonId, snapshot);
+  // A public video lists the six-step lessons made from it.
+  const videoLessons = useVideoLessons(snapshot, offline);
   const lessonMedia = useLessonMediaDownload(snapshot);
   const downloadLessonMedia = lessonMedia.download;
   // Lesson media is only downloaded with consent; ask once, online, on the
@@ -403,6 +394,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         analysisStates={analysisStates}
         onSpeakText={handleSpeak}
         vocabularySave={savedItems.vocabulary}
+        videoLessons={videoLessons}
+        onOpenVideoLesson={appNavigation.openLesson}
       />
     ) : null;
 
@@ -473,51 +466,37 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       return renderPlayer({
         onRetryVideo: handleRetryVideo,
         videoSlot: (
-          <Suspense
-            fallback={
-              <ActivityIndicator testID="canonical-player-video-loading" />
-            }
-          >
-            <YouTubePlayer
-              key={videoMountKey}
-              ref={youtubePlayerRef}
-              videoId={snapshot.youtube!.video_id}
-              onPlayingChange={setVideoPlaying}
-              onTimeUpdate={handleTimeUpdate}
-              onError={() => {
-                setVideoAvailable(false);
-                setVideoPlaying(false);
-              }}
-            />
-          </Suspense>
+          <YouTubePlayer
+            key={videoMountKey}
+            ref={youtubePlayerRef}
+            videoId={snapshot.youtube!.video_id}
+            onPlayingChange={setVideoPlaying}
+            onTimeUpdate={handleTimeUpdate}
+            onError={() => {
+              setVideoAvailable(false);
+              setVideoPlaying(false);
+            }}
+          />
         ),
       });
     }
     if (isYouTubeLegacy) {
       return (
         <>
-          <Suspense
-            fallback={
-              <ActivityIndicator testID="canonical-player-video-loading" />
-            }
-          >
-            <YouTubePlayer
-              videoId={snapshot.youtube!.video_id}
-              onPlayingChange={setVideoPlaying}
-              onTimeUpdate={seconds =>
-                setPositionMs(Math.floor(seconds * 1000))
+          <YouTubePlayer
+            videoId={snapshot.youtube!.video_id}
+            onPlayingChange={setVideoPlaying}
+            onTimeUpdate={seconds => setPositionMs(Math.floor(seconds * 1000))}
+            onError={code => {
+              if (
+                code === 'YOUTUBE_VIDEO_NOT_FOUND' ||
+                code === 'YOUTUBE_NOT_EMBEDDABLE'
+              ) {
+                setVideoAvailable(false);
+                setVideoPlaying(false);
               }
-              onError={code => {
-                if (
-                  code === 'YOUTUBE_VIDEO_NOT_FOUND' ||
-                  code === 'YOUTUBE_NOT_EMBEDDABLE'
-                ) {
-                  setVideoAvailable(false);
-                  setVideoPlaying(false);
-                }
-              }}
-            />
-          </Suspense>
+            }}
+          />
           {renderPlayer()}
         </>
       );

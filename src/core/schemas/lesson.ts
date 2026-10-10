@@ -187,6 +187,12 @@ export const LessonCatalogItemSchema = z
     /** Sent with `include=card_meta`: lesson code and can-do statements. */
     code: z.string().nullable().optional(),
     can_do: z.array(z.string()).optional(),
+    /**
+     * Sent with `include=video_meta`: for a public video (admin YouTube
+     * lesson outside any unit), how many published unit lessons were made
+     * from it; null for any other lesson.
+     */
+    video_lesson_count: z.number().int().min(0).nullable().optional(),
   })
   .strict();
 
@@ -201,6 +207,21 @@ export const LessonCatalogResponseSchema = z
   .strict();
 
 export type LessonCatalogResponse = z.infer<typeof LessonCatalogResponseSchema>;
+
+/** `GET /api/v1/lessons/:id/video-lessons`: unit lessons made from the video. */
+export const LessonVideoLessonsResponseSchema = z
+  .object({
+    contract_version: LessonContractVersionSchema,
+    lessons: z.array(LessonCatalogItemSchema),
+  })
+  .strict();
+
+export type LessonVideoLessonsResponse = z.infer<
+  typeof LessonVideoLessonsResponseSchema
+>;
+
+/** Public catalog narrowing: public videos, or everything but them. */
+export type LessonCatalogKind = 'video' | 'lesson';
 
 const AudienceValues = ['all', 'kids', 'adults'] as const;
 
@@ -631,6 +652,19 @@ export function parseLessonCatalogResponse(body: unknown):
   const parsed = LessonCatalogResponseSchema.safeParse(body);
   if (!parsed.success) {
     return {ok: false, message: 'Lesson catalog response failed validation.'};
+  }
+  return {ok: true, response: parsed.data};
+}
+
+export function parseLessonVideoLessonsResponse(body: unknown):
+  | {
+      ok: true;
+      response: LessonVideoLessonsResponse;
+    }
+  | {ok: false; message: string} {
+  const parsed = LessonVideoLessonsResponseSchema.safeParse(body);
+  if (!parsed.success) {
+    return {ok: false, message: 'Video lessons response failed validation.'};
   }
   return {ok: true, response: parsed.data};
 }

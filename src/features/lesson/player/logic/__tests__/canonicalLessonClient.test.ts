@@ -8,6 +8,7 @@ import {
   fetchLessonRevisions,
   fetchLessonSnapshot,
   fetchSentenceAnalysis,
+  fetchVideoLessons,
   submitLessonCreation,
 } from '../canonicalLessonClient';
 
@@ -75,6 +76,33 @@ describe('canonical lesson client', () => {
     expect(url).toContain('limit=20');
     expect(url).toContain('origin=admin');
     expect(url).toContain('source_type=youtube');
+  });
+
+  it('asks for public videos with their lesson count', async () => {
+    authenticatedFetch.mockResolvedValue(
+      jsonResponse(200, {contract_version: 1, lessons: [], next_cursor: null}),
+    );
+    await fetchLessonCatalog({
+      limit: 20,
+      origin: 'admin',
+      sourceType: 'youtube',
+      kind: 'video',
+    });
+    const url = new URL(String(authenticatedFetch.mock.calls[0][0]));
+    expect(url.searchParams.get('kind')).toBe('video');
+    expect(url.searchParams.get('include')).toBe('card_meta,video_meta');
+  });
+
+  it('reads the six-step lessons of a video', async () => {
+    const lessonId = '33333333-3333-4333-8333-333333333301';
+    authenticatedFetch.mockResolvedValue(
+      jsonResponse(200, {contract_version: 1, lessons: []}),
+    );
+    const result = await fetchVideoLessons(lessonId);
+    expect(String(authenticatedFetch.mock.calls[0][0])).toContain(
+      `/api/v1/lessons/${lessonId}/video-lessons`,
+    );
+    expect(result).toEqual({ok: true, value: []});
   });
 
   it('leaves the catalog request unchanged without narrowing', async () => {
