@@ -31,7 +31,7 @@ export const featureRegistry = [
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
-    entryPoint: 'HomeScreen -> PasteText',
+    entryPoint: 'CreateHub -> ImageCapture -> OCRReview',
   },
   {
     key: 'shortPractice',
