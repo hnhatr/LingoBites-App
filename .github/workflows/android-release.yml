@@ -256,6 +256,11 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           PLAY_STORE_TRACK: ${{ inputs.track }}
           PLAY_STORE_RELEASE_STATUS: completed
+          # Embed the fingerprint computed above on the clean checkout. Computed
+          # inside Gradle it also hashes files the build itself creates (for
+          # example Kotlin's .kotlin/ session dirs), so the app would carry a
+          # runtime version no `eas update` ever matches.
+          EXPO_UPDATES_FINGERPRINT_OVERRIDE: ${{ steps.release-key.outputs.fingerprint }}
           # CMake (>= 3.17) reads these from the environment, so every native module
           # built by the NDK compiles through ccache.
           CMAKE_C_COMPILER_LAUNCHER: ccache
@@ -270,6 +275,18 @@ jobs:
       - name: Show ccache stats
         if: always() && steps.gate.outputs.build == 'true'
         run: ccache -s || true
+
+      - name: Verify embedded fingerprint
+        if: success() && steps.gate.outputs.build == 'true'
+        run: |
+          set -euo pipefail
+          aab="$(ls android/app/build/outputs/bundle/${{ inputs.env }}Release/*.aab | head -n 1)"
+          embedded="$(unzip -p "$aab" base/assets/fingerprint)"
+          echo "Embedded runtime version: $embedded"
+          if [ "$embedded" != "${{ steps.release-key.outputs.fingerprint }}" ]; then
+            echo "::error::The AAB embeds runtime version $embedded, expected ${{ steps.release-key.outputs.fingerprint }}. EAS updates will not reach this build."
+            exit 1
+          fi
 
       - name: Upload AAB artifact
         if: success() && steps.gate.outputs.build == 'true'

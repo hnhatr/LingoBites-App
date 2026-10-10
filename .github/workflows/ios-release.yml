@@ -328,6 +328,26 @@ jobs:
           IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           APPLE_ID: ${{ secrets.IOS_APPLE_ID }}
           APP_STORE_CONNECT_TEAM_ID: ${{ secrets.IOS_APP_STORE_CONNECT_TEAM_ID }}
+          # Embed the fingerprint from the checks job (the one the skip check and
+          # `eas update` use) instead of re-hashing the tree mid-build, when the
+          # build has already created files of its own.
+          EXPO_UPDATES_FINGERPRINT_OVERRIDE: ${{ env.FINGERPRINT }}
+
+      - name: Verify embedded fingerprint
+        if: success() && steps.gate.outputs.build == 'true'
+        run: |
+          set -euo pipefail
+          ipa="$(find . -name '*.ipa' -not -path './node_modules/*' | head -n 1)"
+          if [ -z "$ipa" ]; then
+            echo "::warning::No .ipa found; could not verify the embedded fingerprint."
+            exit 0
+          fi
+          embedded="$(unzip -p "$ipa" 'Payload/*.app/EXUpdates.bundle/fingerprint')"
+          echo "Embedded runtime version: $embedded"
+          if [ "$embedded" != "$FINGERPRINT" ]; then
+            echo "::error::The IPA embeds runtime version $embedded, expected $FINGERPRINT. EAS updates will not reach this build."
+            exit 1
+          fi
 
       - name: Show ccache stats
         if: always() && steps.gate.outputs.build == 'true'

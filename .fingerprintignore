@@ -2,3 +2,6 @@
 ios/tmp.xcconfig
 ios/.xcode.env.local
 android/local.properties
+
+# Kotlin 2.x Gradle daemon/session files, created during every Android build.
+**/.kotlin/**/*
