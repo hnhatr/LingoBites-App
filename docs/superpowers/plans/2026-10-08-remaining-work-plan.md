@@ -530,6 +530,15 @@ Google còn làm tròn mỗi lượt lên giây kế tiếp và vẫn tính ti�
 - [ ] S5.8 app: "Tả bức ảnh"
 - [ ] S5.9 admin: bài sinh từ ảnh
 
+> 2026-10-10: Stage 5 được thiết kế lại thành luồng "Học từ đời thường" (`2026-10-10-everyday-learning-redesign.md`), làm theo các PR E0–E6 dưới đây. Mỗi PR có plan riêng, **chờ duyệt** rồi mới code. Các mục S5.x ở trên được gộp vào E (ghi trong từng plan).
+- [ ] E0 app: sửa nhanh luồng nhập hiện có (`2026-10-10-e0-app-input-quick-fixes.md`)
+- [ ] E1 server: phân tích ảnh, kiểm duyệt ảnh, lưu tạm (`2026-10-10-e1-server-image-analyze.md`)
+- [ ] E2 server: "Dùng" theo tình huống, kiểm duyệt text, hạn mức "Hiểu" – gồm S5.1 tối thiểu, S5.3 (`2026-10-10-e2-server-situation-moment.md`)
+- [ ] E3 app: luồng mới Hiểu / Dùng – gồm S5.2 (`2026-10-10-e3-app-moment-flow.md`)
+- [ ] E4 server + app: "Tả" từ ảnh, ảnh trong bài – gồm S5.6, S5.7, S5.8 (`2026-10-10-e4-image-describe.md`)
+- [ ] E5 server + app: thư viện Khoảnh khắc, luyện lại, xoá bài – gồm S5.5 (`2026-10-10-e5-moments-library.md`)
+- [ ] E6 server + admin: theo dõi, danh mục, báo sai – gồm S5.9 (`2026-10-10-e6-admin-moments.md`)
+
 **Giai đoạn 4b – Stage 6–9**
 - [ ] S6 Game Hub
 - [ ] S7 game hỏi–đáp

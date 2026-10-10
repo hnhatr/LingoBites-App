@@ -1,6 +1,7 @@
 # Thiết kế lại: "Học từ đời thường" (ảnh có chữ, ảnh cảnh vật, tình huống)
 
 > Trạng thái: **THIẾT KẾ, chờ duyệt**. Chưa code. Ngày lập: 2026-10-10.
+> Plan chi tiết từng PR (cùng thư mục): `2026-10-10-e0-app-input-quick-fixes.md`, `2026-10-10-e1-server-image-analyze.md`, `2026-10-10-e2-server-situation-moment.md`, `2026-10-10-e3-app-moment-flow.md`, `2026-10-10-e4-image-describe.md`, `2026-10-10-e5-moments-library.md`, `2026-10-10-e6-admin-moments.md`. Khi plan và file này lệch nhau, **plan là bản đúng**.
 > Repo: `LingoBites-App` + `LingoBites-Server` (+ admin-web ở bước cuối).
 > Thay thế cách chia cũ thành nhiều luồng rời (OCR → bài, S5.3 tình huống, S5.7–S5.8 ảnh). Các mã việc S5.x vẫn giữ, chỉ được **gom lại dưới một trải nghiệm chung** (§8).
 > Liên quan: `2026-10-10-stage5-9-image-lesson-game-hub.md` §2, `2026-10-08-remaining-work-plan.md` (Stage 4–5, bảng chốt Q5–Q15, D1–D4), `2026-10-09-s4-3-learner-compose-six-step.md`, `2026-10-09-s4-compose-wait-ux-design.md`.
@@ -32,7 +33,7 @@
 
 1. **Một lối vào, hỏi một câu.** Người học không cần biết "OCR", "compose", "nguồn". Họ chỉ chụp / gõ, rồi trả lời một câu: **"Bạn muốn làm gì với cái này?"**
 2. **Ý định quyết định dạng bài**, không phải loại đầu vào. Cùng một tấm ảnh thực đơn có thể là "hiểu thực đơn" hoặc "gọi món".
-3. **Vừa trình độ.** Mọi nội dung AI viết ra theo `levelCode` trong hồ sơ (Pre-A1 / A1 / A2 / B1, quyết định C1). Nội dung **gốc** của người học (chữ trong ảnh, câu họ dán) không bị viết lại; chỉ phần AI tự viết mới theo trình độ.
+3. **Vừa trình độ.** Mọi nội dung AI viết ra theo `levelCode` trong hồ sơ (hiện server chỉ có `A1`, `A2` – `LevelCodeValues`; mở rộng khi C1 thêm trình độ). Nội dung **gốc** của người học (chữ trong ảnh, câu họ dán) không bị viết lại; chỉ phần AI tự viết mới theo trình độ.
 4. **Kết quả là việc làm được.** Mỗi bài kết thúc bằng một câu "Giờ bạn có thể…" (can-do, đã có trong `spec`) và ít nhất một nhiệm vụ nói / viết dùng ngay ngoài đời.
 5. **An toàn và riêng tư trước khi gọi AI.** Kiểm duyệt, cảnh báo thông tin cá nhân, nói rõ dữ liệu đi đâu. Bị từ chối thì **không tính lượt** (D2, Q13).
 6. **Dùng lại, không làm mới.** Pipeline tạo bài, `lessonComposer`, player 6 bước, màn chờ "gửi xong là đi tiếp", hạn mức, kho prompt đều đã có. Phần mới chỉ là: hỏi ý định, bước "AI viết nguồn" cho B và C, kiểm duyệt, và thư viện "khoảnh khắc".
@@ -154,7 +155,7 @@ Từ một khoảnh khắc: "Học lại", "Luyện nói lại tình huống" (S
 
   type MomentInput = {
     intent: 'understand' | 'describe' | 'use';
-    level: 'pre_a1' | 'a1' | 'a2' | 'b1';
+    level: 'A1' | 'A2';        // LevelCodeValues hiện có
     imageId?: string;          // ảnh đã upload qua §4.2, thuộc người học
     imageText?: string;        // chữ trong ảnh người học đã xác nhận
     situationId?: string;      // từ danh mục S5.1
@@ -165,7 +166,7 @@ Từ một khoảnh khắc: "Học lại", "Luyện nói lại tình huống" (S
 
 ### 4.2 Endpoint phân tích ảnh (thay vai trò của `POST /v1/ocr`)
 
-`POST /v1/images/analyze` (multipart). Giữ `POST /v1/ocr` một thời gian cho app cũ.
+`POST /api/v1/images/analyze` (multipart). Giữ `POST /v1/ocr` một thời gian cho app cũ.
 
 Các bước, **một lần gọi Google Vision** (đã tích hợp, không thêm dependency): thêm `SAFE_SEARCH_DETECTION` vào cùng request với `TEXT_DETECTION` hiện có (`googleVision.ts`).
 
@@ -291,7 +292,7 @@ Mỗi PR có plan chi tiết riêng, chờ duyệt rồi mới code (quy trình 
 | PR | Repo | Nội dung | Mã cũ | Cần trước |
 |---|---|---|---|---|
 | **E0** | app | Sửa nhanh luồng hiện có: giới hạn 500 từ thống nhất + bộ đếm số từ; hiện cảnh báo `text_exceeds_max_length`; bỏ "Ảnh gần đây" giả; chữ qua i18n; sửa câu minh bạch; sửa trạng thái cờ `ocrReviewEdit` trong registry | — | — |
-| **E1** | server | `POST /v1/images/analyze`: SafeSearch cùng lần gọi Vision, magic bytes, phân loại ảnh, phát hiện thông tin cá nhân, lưu ảnh tạm | phần S5.7 | Q12, Q13 |
+| **E1** | server | `POST /api/v1/images/analyze`: SafeSearch cùng lần gọi Vision, magic bytes, phân loại ảnh, phát hiện thông tin cá nhân, lưu ảnh tạm | phần S5.7 | Q12, Q13 |
 | **E2** | server | `moderateText`; nguồn `learner_situation`; prompt `moment.use` (cho phép tiếng Việt); `MomentInput`; nhánh "use" → composer | S5.3 | S5.1 (danh mục), Q-E1, Q-E2 |
 | **E3** | app | `MomentReviewScreen` (chọn ý định, chip trình độ, tô thông tin cá nhân), `SituationInputScreen`, `CreateScreen` mới, màn đồng ý | S5.2, S5.8 (một phần) | E1, E2 |
 | **E4** | server + app | Endpoint media người học; nguồn `learner_image`, prompt `moment.describe`, task "tả lại bức ảnh"; hub bài hiện ảnh | S5.6, S5.7, S5.8 | E1–E3, Q14, Q15 |
