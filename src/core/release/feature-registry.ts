@@ -34,6 +34,17 @@ export const featureRegistry = [
     entryPoint: 'CreateHub -> ImageCapture -> OCRReview',
   },
   {
+    key: 'momentFlow',
+    module: 'src/features/input',
+    required: false,
+    releaseGroup: 'expansion',
+    status: 'not_implemented',
+    limitations: [
+      'Code is in place; held off until the on-device test (plan E3 §4) passes',
+    ],
+    entryPoint: 'CreateHub -> SituationInput / ImageCapture -> MomentReview',
+  },
+  {
     key: 'shortPractice',
     module: 'src/features/practice',
     required: false,

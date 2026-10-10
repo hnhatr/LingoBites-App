@@ -16,7 +16,9 @@ import type {HomeStackParamList} from '@features/home';
 import type {
   CreateHubRouteParams,
   ImageCaptureRouteParams,
+  MomentReviewRouteParams,
   PasteTextRouteParams,
+  SituationInputRouteParams,
 } from '@features/input';
 import type {
   LessonsStackParamList,
@@ -84,6 +86,8 @@ export type RootStackParamList = {
   PasteText: PasteTextRouteParams;
   ImageCapture: ImageCaptureRouteParams;
   OCRReview: OCRReviewRouteParams;
+  MomentReview: MomentReviewRouteParams;
+  SituationInput: SituationInputRouteParams;
   LessonCreation: LessonCreationRouteParams;
   // Lessons
   CanonicalCatalog: CanonicalCatalogRouteParams;

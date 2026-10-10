@@ -10,6 +10,7 @@ export const featureDependencies: Record<FeatureKey, DependencyGroup[]> = {
   imageInput: [],
   ocrScanner: [['imageInput']],
   ocrReviewEdit: [['ocrScanner']],
+  momentFlow: [],
   shortPractice: [],
   pronunciationSupport: [],
 

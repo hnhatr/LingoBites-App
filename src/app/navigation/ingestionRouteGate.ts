@@ -5,6 +5,8 @@ export const INGESTION_ROUTE_REQUIREMENTS = {
   PasteText: 'pasteTextInput',
   ImageCapture: 'imageInput',
   OCRReview: 'ocrReviewEdit',
+  MomentReview: 'momentFlow',
+  SituationInput: 'momentFlow',
 } as const satisfies Record<string, FeatureKey>;
 
 export type IngestionRouteName = keyof typeof INGESTION_ROUTE_REQUIREMENTS;

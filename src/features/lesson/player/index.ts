@@ -41,13 +41,17 @@ export type {
   DownloadedLessonSummary,
 } from './logic/canonicalDownloadContent';
 export {
+  contentError,
+  errorFromStatus,
   fetchLessonCatalog,
   fetchLessonCreationStatus,
   fetchLessonRevisions,
   fetchLessonSnapshot,
   fetchSentenceAnalysis,
+  send,
   submitLessonCreation,
 } from './logic/canonicalLessonClient';
+export {fetchComposeQuota} from './logic/composeClient';
 export type {
   CanonicalLessonClientOptions,
   CanonicalLessonError,

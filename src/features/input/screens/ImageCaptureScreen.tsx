@@ -23,11 +23,15 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
+import {useFeatureFlags} from '@core/release';
+
 import {
   type PickedImage,
   pickImageFromCamera,
   pickImageFromGallery,
 } from '../logic/imagePicker';
+import {analyzeImage} from '../logic/momentClient';
+import {ensurePhotoConsent} from '../logic/photoConsent';
 import type {CreateFlowParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CreateFlowParamList, 'ImageCapture'>;
 
@@ -44,6 +48,8 @@ type ScreenState =
 export function ImageCaptureScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
+  const {config} = useFeatureFlags();
+  const momentFlow = config.features.momentFlow === true;
   const {sourceType} = route.params;
   const isGallery = sourceType === 'gallery';
   const [screenState, setScreenState] = useState<ScreenState>(
@@ -104,7 +110,40 @@ export function ImageCaptureScreen({navigation, route}: Props) {
     }
   }, [isGallery, launchPicker]);
 
+  /** E3 (P1, P8): with momentFlow on, the server reads and checks the photo, then the learner chooses. */
+  async function analyzeForMoment(image: PickedImage) {
+    const consented = await ensurePhotoConsent({
+      title: t('moment.consent_title'),
+      body: t('moment.consent_body'),
+      confirmLabel: t('moment.consent_confirm'),
+      cancelLabel: t('moment.consent_cancel'),
+    });
+    if (!consented) {
+      setScreenState({type: 'preview', image});
+      return;
+    }
+    setScreenState({type: 'ocr_loading', image});
+    const result = await analyzeImage(image, sourceType);
+    if (!result.ok) {
+      setScreenState({
+        type: 'error',
+        message: result.message || t('errors.ocr_failed'),
+        image,
+      });
+      return;
+    }
+    navigation.replace('MomentReview', {
+      sourceType,
+      image,
+      analysis: result.value,
+    });
+  }
+
   async function handleContinue(image: PickedImage) {
+    if (momentFlow) {
+      await analyzeForMoment(image);
+      return;
+    }
     ocrAbortRef.current?.abort();
     const controller = new AbortController();
     ocrAbortRef.current = controller;

@@ -33,6 +33,8 @@ export const ROOT_INGESTION_ROUTES = [
   'PasteText',
   'ImageCapture',
   'OCRReview',
+  'MomentReview',
+  'SituationInput',
 ] as const satisfies readonly RootRouteName[];
 
 /** Root routes mounted for an authenticated session with these flags. */

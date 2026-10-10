@@ -1,0 +1,16 @@
+{
+  "description": "Shared with the App (E3 piiDetect). Each case: input text and the expected lines. Keep in sync with src/features/input/logic/piiDetect.ts.",
+  "cases": [
+    { "name": "vn mobile with spaces", "text": "Call 0912 345 678 to book", "expected": [{ "line": 1, "type": "phone" }] },
+    { "name": "vn mobile with dots", "text": "Hotline: 090.123.4567", "expected": [{ "line": 1, "type": "phone" }] },
+    { "name": "international", "text": "WhatsApp +84 912345678", "expected": [{ "line": 1, "type": "phone" }] },
+    { "name": "email", "text": "Send to anna.nguyen@example.com", "expected": [{ "line": 1, "type": "email" }] },
+    { "name": "cccd 12 digits", "text": "ID 012345678901", "expected": [{ "line": 1, "type": "id_number" }] },
+    { "name": "card 16 digits grouped", "text": "Card 4111 1111 1111 1111", "expected": [{ "line": 1, "type": "id_number" }] },
+    { "name": "price is not an id", "text": "Iced latte $12.50", "expected": [] },
+    { "name": "year is not an id", "text": "Menu updated in 2024", "expected": [] },
+    { "name": "time is not an id", "text": "Open 07:00 - 22:30", "expected": [] },
+    { "name": "menu with price list", "text": "Espresso 45,000\nLatte 55,000", "expected": [] },
+    { "name": "mixed lines keep numbers", "text": "Menu\nSpecial 0912345678\nFree wifi", "expected": [{ "line": 2, "type": "phone" }] }
+  ]
+}
