@@ -1,4 +1,5 @@
 import {listAudioAssetLocalPaths} from '@features/audio';
+import {sweepLessonMedia} from '@features/lesson/player';
 import {
   clearSpeakingData,
   enqueueSpeakingAttemptTombstones,
@@ -121,6 +122,13 @@ export async function clearAllLocalDataWithFiles(
     });
   } catch {
     return buildResult({dbCleared: false, failedFilePaths: []});
+  }
+
+  // The lesson rows are gone, so every stored lesson media dir is swept.
+  try {
+    await sweepLessonMedia();
+  } catch {
+    // Best-effort; unreferenced media is swept again on the next lesson open.
   }
 
   requestRecordingUploadDrain();

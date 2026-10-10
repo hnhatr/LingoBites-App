@@ -61,9 +61,13 @@ export {
   getLessonDownloadsSignature,
   InvalidLessonSnapshotError,
   lessonMediaDirFor,
+  lessonMediaSizeBytes,
   listLessonDownloadKinds,
   listLessonDownloads,
+  listLessonMediaDownloads,
+  removeAllLessonMedia,
   removeLessonDownload,
+  removeLessonMedia,
   saveLessonSnapshotBody,
   stageLessonMedia,
   sweepLessonMedia,
@@ -72,10 +76,16 @@ export {
 export type {
   LessonDownloadKind,
   LessonDownloadRecord,
+  LessonMediaDownload,
   LessonMediaFileSystem,
   RevisionApplication,
   SaveLessonSnapshotInput,
 } from './logic/canonicalDownloadRepository';
+export {
+  type MediaDownloadConsent,
+  readMediaDownloadConsent,
+  setMediaDownloadConsent,
+} from './logic/mediaDownloadConsent';
 export {
   clearCreationIdempotencyKey,
   getOrCreateCreationIdempotencyKey,

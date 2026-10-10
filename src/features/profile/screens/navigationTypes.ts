@@ -6,6 +6,7 @@ export type ProgressReportRouteParams = undefined;
 export type FeatureStatusRouteParams = undefined;
 export type AccountSettingsRouteParams = undefined;
 export type DataSettingsRouteParams = undefined;
+export type OfflineDownloadsRouteParams = undefined;
 export type AppSettingsRouteParams = undefined;
 export type SupportAboutRouteParams = undefined;
 
@@ -16,6 +17,7 @@ export type ProfileStackParamList = {
   FeatureStatus: FeatureStatusRouteParams;
   AccountSettings: AccountSettingsRouteParams;
   DataSettings: DataSettingsRouteParams;
+  OfflineDownloads: OfflineDownloadsRouteParams;
   AppSettings: AppSettingsRouteParams;
   SupportAbout: SupportAboutRouteParams;
   TtsSpike: TtsSpikeRouteParams;

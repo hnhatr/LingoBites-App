@@ -15,13 +15,17 @@ import {SettingsGroup} from '@ui/components/SettingsGroup';
 import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
 
+import {OfflineStudySettingsGroup} from '../components/OfflineStudySettingsGroup';
 import {ProfileSubpage} from '../components/ProfileSubpage';
 import {useDataSettings} from '../logic/useDataSettings';
 import type {ProfileStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'DataSettings'>;
 
-/** Offline audio, speaking recordings and local-data deletion. */
+/**
+ * Offline audio, offline study downloads, speaking recordings and local-data
+ * deletion.
+ */
 export function DataSettingsScreen({navigation}: Props) {
   const {theme} = useAppTheme();
   const {
@@ -55,6 +59,10 @@ export function DataSettingsScreen({navigation}: Props) {
           trailing={{text: audioCacheTrailingLabel}}
         />
       </SettingsGroup>
+
+      <OfflineStudySettingsGroup
+        onOpenDownloads={() => navigation.navigate('OfflineDownloads')}
+      />
 
       <SettingsGroup title="Bản ghi giọng nói">
         <SpeakingRecordingsSettingsRow />

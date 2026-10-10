@@ -50,6 +50,7 @@ import {
   AppSettingsScreen,
   DataSettingsScreen,
   FeatureStatusScreen,
+  OfflineDownloadsScreen,
   PrivacyNoteScreen,
   ProfileScreen,
   ProgressReportScreen,
@@ -170,6 +171,11 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen
         component={DataSettingsScreen}
         name="DataSettings"
+        options={HIDDEN_HEADER}
+      />
+      <ProfileStack.Screen
+        component={OfflineDownloadsScreen}
+        name="OfflineDownloads"
         options={HIDDEN_HEADER}
       />
       <ProfileStack.Screen
