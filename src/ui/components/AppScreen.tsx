@@ -3,8 +3,19 @@ import {StyleSheet, View, type ViewProps} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {useAppTheme} from '../theme';
+import {OfflineBanner} from './OfflineBanner';
 
-export function AppScreen({style, children, ...rest}: ViewProps) {
+type Props = ViewProps & {
+  /** Screens that explain being offline themselves (boot gate) opt out. */
+  showOfflineBanner?: boolean;
+};
+
+export function AppScreen({
+  style,
+  children,
+  showOfflineBanner = true,
+  ...rest
+}: Props) {
   const {theme} = useAppTheme();
   return (
     <SafeAreaView
@@ -15,6 +26,7 @@ export function AppScreen({style, children, ...rest}: ViewProps) {
       ])}
       {...rest}
     >
+      {showOfflineBanner ? <OfflineBanner /> : null}
       <View style={styles.fill}>{children}</View>
     </SafeAreaView>
   );

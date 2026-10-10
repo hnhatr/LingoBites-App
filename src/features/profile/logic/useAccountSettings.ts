@@ -5,6 +5,8 @@ import {Alert} from 'react-native';
 import {useAccountStore} from '@features/account';
 import {formatLastSyncedLabel, readLastSyncedAt, syncNow} from '@features/sync';
 
+import {useConnectivityStore} from '@core/api/connectivity';
+
 export function useAccountSettings() {
   const {t} = useTranslation();
   const accountPhase = useAccountStore(state => state.phase);
@@ -39,9 +41,14 @@ export function useAccountSettings() {
   }
 
   function handleSignOut() {
+    // Offline mode (#32): signing out offline locks the app until the
+    // network is back, so the confirmation says so.
+    const offline = useConnectivityStore.getState().status === 'offline';
     Alert.alert(
       t('account.sign_out_confirm_title'),
-      t('account.sign_out_confirm_message'),
+      offline
+        ? t('offline.sign_out_warning')
+        : t('account.sign_out_confirm_message'),
       [
         {text: t('account.sign_out_cancel'), style: 'cancel'},
         {

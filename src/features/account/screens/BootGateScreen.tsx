@@ -22,7 +22,7 @@ export function BootGateScreen() {
 
   if (phase === 'bootstrapping') {
     return (
-      <AppScreen>
+      <AppScreen showOfflineBanner={false}>
         <View style={styles.center}>
           <ActivityIndicator size="large" />
         </View>
@@ -34,7 +34,7 @@ export function BootGateScreen() {
   // rejoins the existing retry/boot path exactly once per tap.
   if (phase === 'signed-out') {
     return (
-      <AppScreen>
+      <AppScreen showOfflineBanner={false}>
         <View style={styles.center}>
           <AppText variant="h3">{t('account.signed_out_title')}</AppText>
           <AppText color="secondary" style={styles.message}>
@@ -64,7 +64,7 @@ export function BootGateScreen() {
       : failureMessage ?? t('account.boot_failed');
 
   return (
-    <AppScreen>
+    <AppScreen showOfflineBanner={false}>
       <View style={styles.center}>
         <AppText variant="h3">
           {phase === 'offline' ? t('account.offline_title') : t('app.name')}

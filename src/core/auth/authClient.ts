@@ -1,4 +1,5 @@
 import {getAppConfig} from '../api/appConfig';
+import {trackReachability} from '../api/connectivity';
 import {createRequestId} from '../api/requestId';
 import type {
   ApiErrorBody,
@@ -83,7 +84,9 @@ function withTimeout(fetchImpl: typeof fetch, timeoutMs: number): typeof fetch {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      return await fetchImpl(input, {...init, signal: controller.signal});
+      return await trackReachability(
+        fetchImpl(input, {...init, signal: controller.signal}),
+      );
     } finally {
       clearTimeout(timer);
     }

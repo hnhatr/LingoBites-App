@@ -6,6 +6,10 @@ import ReactTestRenderer from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
 
+import {
+  resetConnectivityForTests,
+  useConnectivityStore,
+} from '@core/api/connectivity';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {getActiveSession} from '@core/auth/sessionStore';
 import {DB_NAME} from '@core/db/constants';
@@ -235,6 +239,28 @@ describe('AccountSettingsScreen (sync + TASK-006 confirmed sign-out)', () => {
     expect(logoutFetchCount()).toBe(0);
     expect(useAccountStore.getState().phase).toBe('authenticated');
     await expect(getActiveSession()).resolves.toMatchObject({ok: true});
+  });
+
+  it('warns that signing out offline locks the app until online (#32)', async () => {
+    await bootToAuthenticated();
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(async () => {
+      tree = renderScreen();
+    });
+    await ReactTestRenderer.act(async () => {
+      useConnectivityStore.setState({status: 'offline'});
+    });
+
+    await ReactTestRenderer.act(async () => {
+      findPressableByLabel(tree!.root, 'Đăng xuất')?.props.onPress();
+    });
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Đăng xuất?',
+      expect.stringContaining('offline'),
+      expect.any(Array),
+    );
+    resetConnectivityForTests();
   });
 
   it('confirming signs out once through the store and clears the session', async () => {

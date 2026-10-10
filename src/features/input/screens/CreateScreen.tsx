@@ -5,12 +5,14 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {LockedFeature} from '@ui/components/LockedFeature';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {getHardShadow} from '@ui/theme/hardShadow';
 
+import {useIsOffline} from '@core/api/connectivity';
 import {useAppNavigation} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 
@@ -93,6 +95,9 @@ export function CreateScreen(_props: Props) {
     });
   }
   const hasAnySource = imageInputEnabled || youtubeEnabled || pasteEnabled;
+  // Offline mode (#20–22): every source needs the Server (OCR, AI, YouTube
+  // transcript). The tiles stay visible but locked, with the reason above.
+  const offline = useIsOffline();
 
   return (
     <AppScreen>
@@ -122,14 +127,23 @@ export function CreateScreen(_props: Props) {
           </View>
         ) : (
           <>
+            {offline ? (
+              <LockedFeature
+                message={t('offline.locked_create')}
+                testID="create-offline-locked"
+              />
+            ) : null}
             {imageInputEnabled ? (
               <Pressable
                 accessibilityLabel={t('home.capture_photo_a11y')}
                 accessibilityRole="button"
+                accessibilityState={{disabled: offline}}
+                disabled={offline}
                 onPress={openCamera}
                 style={({pressed}) => [
                   styles.heroCamera,
                   pressed && styles.pressed,
+                  offline && styles.locked,
                 ]}
                 testID="create-hero-camera"
               >
@@ -161,11 +175,14 @@ export function CreateScreen(_props: Props) {
                   <Pressable
                     accessibilityLabel={t(tile.a11yKey)}
                     accessibilityRole="button"
+                    accessibilityState={{disabled: offline}}
+                    disabled={offline}
                     key={tile.testID}
                     onPress={tile.onPress}
                     style={({pressed}) => [
                       styles.sourceRow,
                       pressed && styles.pressed,
+                      offline && styles.locked,
                     ]}
                     testID={tile.testID}
                   >
@@ -359,6 +376,9 @@ function makeStyles(theme: AppTheme) {
     pressed: {
       transform: [{translateY: 3}],
       ...getHardShadow(1, theme.colors.ink),
+    },
+    locked: {
+      opacity: 0.5,
     },
   });
 }

@@ -5,6 +5,7 @@ import {
 
 import {createAuthClient} from '../auth/authClient';
 import {ensureValidSession} from '../auth/authSession';
+import {trackReachability} from './connectivity';
 
 function mergeHeaders(
   initHeaders?: any,
@@ -92,7 +93,10 @@ export async function authenticatedFetch(
   );
 
   await assertSendPreconditions(options);
-  let response = await fetchImpl(url, {...init, headers});
+  let response = await trackReachability<Response>(
+    fetchImpl(url, {...init, headers}),
+    init?.signal,
+  );
 
   if (response?.status === 401 && sessionResult.status === 'valid') {
     sessionResult = await ensureValidSession({
@@ -115,7 +119,10 @@ export async function authenticatedFetch(
         Authorization: `Bearer ${sessionResult.session.access_token}`,
       });
       await assertSendPreconditions(options);
-      response = await fetchImpl(url, {...init, headers: retryHeaders});
+      response = await trackReachability<Response>(
+        fetchImpl(url, {...init, headers: retryHeaders}),
+        init?.signal,
+      );
     }
   }
 
