@@ -7,6 +7,10 @@ import type {
 } from '@core/schemas/lesson';
 
 import {
+  type LessonDownloadRecord,
+  listLessonDownloads,
+} from './canonicalDownloadRepository';
+import {
   type CanonicalLessonError,
   fetchLessonCatalog,
 } from './canonicalLessonClient';
@@ -19,6 +23,8 @@ export type CanonicalCatalogState =
       lessons: LessonCatalogItem[];
       nextCursor: string | null;
       loadingMore: boolean;
+      /** Offline (#9): only lessons downloaded on this device. */
+      offline?: boolean;
     }
   | {status: 'error'; error: CanonicalLessonError};
 
@@ -32,6 +38,42 @@ export type CanonicalCatalogFilter = {
   sourceType?: LessonSourceType;
 };
 
+function toCatalogItem({snapshot}: LessonDownloadRecord): LessonCatalogItem {
+  return {
+    id: snapshot.id,
+    title: snapshot.title,
+    description: snapshot.description,
+    origin: snapshot.origin,
+    source_type: snapshot.source_type,
+    content_revision: snapshot.content_revision,
+    sentence_count: snapshot.sentences.length,
+    youtube_video_id: snapshot.youtube?.video_id ?? null,
+    unit: snapshot.unit,
+    updated_at: '',
+    youtube_duration_ms: snapshot.youtube?.duration_ms ?? null,
+  };
+}
+
+/**
+ * Offline mode (#9): the catalog falls back to the lessons downloaded on
+ * this device, which the player opens without the network.
+ */
+export function downloadedCatalogItems(
+  filter: CanonicalCatalogFilter = {},
+): LessonCatalogItem[] {
+  try {
+    return listLessonDownloads()
+      .map(toCatalogItem)
+      .filter(
+        item =>
+          (!filter.origin || item.origin === filter.origin) &&
+          (!filter.sourceType || item.source_type === filter.sourceType),
+      );
+  } catch {
+    return [];
+  }
+}
+
 export function useCanonicalCatalog(filter: CanonicalCatalogFilter = {}) {
   const {origin, sourceType} = filter;
   const [state, setState] = useState<CanonicalCatalogState>({status: 'idle'});
@@ -40,7 +82,21 @@ export function useCanonicalCatalog(filter: CanonicalCatalogFilter = {}) {
     setState({status: 'loading'});
     const result = await fetchLessonCatalog({limit: 20, origin, sourceType});
     if (!result.ok) {
-      setState({status: 'error', error: result});
+      const downloaded =
+        result.kind === 'network-error'
+          ? downloadedCatalogItems({origin, sourceType})
+          : [];
+      setState(
+        downloaded.length > 0
+          ? {
+              status: 'ready',
+              lessons: downloaded,
+              nextCursor: null,
+              loadingMore: false,
+              offline: true,
+            }
+          : {status: 'error', error: result},
+      );
       return;
     }
     setState({

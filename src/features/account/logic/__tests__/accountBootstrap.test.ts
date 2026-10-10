@@ -19,6 +19,7 @@ import {installKeychainVault, vault} from '@test/support/keychainVault';
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {
   bootAccount,
+  forgetRememberedUser,
   resetBootStateForTests,
   SIGNUP_IDEMPOTENCY_KEY,
   submitOnboardingName,
@@ -248,6 +249,112 @@ describe('accountBootstrap session restore (SETE-303 / T6)', () => {
         (url as string).endsWith('/v1/auth/bootstrap'),
       ),
     ).toBe(false);
+  });
+});
+
+describe('accountBootstrap offline mode (offline-mode.md #1)', () => {
+  /** Completes signup online with `session`, then forgets every fetch. */
+  async function seedSignedInInstall(session: AuthSession): Promise<void> {
+    mockFetch.mockResolvedValueOnce(ticketResponse());
+    await bootAccount({platform: 'ios', randomUuid: () => FALLBACK_UUID});
+    resetBootStateForTests();
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse(201, {request_id: 'c3', status: 'created', user, session}),
+    );
+    const submitted = await submitOnboardingName({
+      bootstrapTicket: 'bt_ticket_1',
+      displayName: 'An',
+    });
+    expect(submitted.status).toBe('authenticated');
+    resetBootStateForTests();
+    resetRefreshStateForTests();
+    mockFetch.mockReset();
+  }
+
+  function fetchedPaths(): string[] {
+    return mockFetch.mock.calls.map(([url]) => url as string);
+  }
+
+  it('opens the remembered account when /me cannot reach the Server', async () => {
+    await seedSignedInInstall(freshSession);
+    mockFetch.mockRejectedValue(new TypeError('Network request failed'));
+
+    const result = await bootAccount({platform: 'ios'});
+
+    expect(result).toEqual({status: 'authenticated', user, offline: true});
+    expect(fetchedPaths().some(url => url.endsWith('/v1/auth/bootstrap'))).toBe(
+      false,
+    );
+  });
+
+  it('opens the remembered account when an expired token cannot be refreshed', async () => {
+    await seedSignedInInstall({
+      ...freshSession,
+      access_expires_at: new Date(Date.now() - 60_000).toISOString(),
+    });
+    mockFetch.mockRejectedValue(new TypeError('Network request failed'));
+
+    const result = await bootAccount({platform: 'ios'});
+
+    expect(result).toEqual({status: 'authenticated', user, offline: true});
+    expect(fetchedPaths().some(url => url.endsWith('/v1/auth/refresh'))).toBe(
+      true,
+    );
+    // The stored session is kept for the next online boot.
+    const active = await getActiveSession();
+    expect(active.ok && active.value?.session_id).toBe(freshSession.session_id);
+  });
+
+  it('falls back to a placeholder user when none is remembered', async () => {
+    await seedSignedInInstall(freshSession);
+    forgetRememberedUser();
+    mockFetch.mockRejectedValue(new TypeError('Network request failed'));
+
+    const result = await bootAccount({platform: 'ios'});
+
+    expect(result.status).toBe('authenticated');
+    if (result.status !== 'authenticated') {
+      throw new Error('expected an offline session');
+    }
+    expect(result.offline).toBe(true);
+    expect(result.user.id).toBe(user.id);
+    expect(result.user.display_name).toBe('');
+  });
+
+  it('stays offline when the local data belongs to another account', async () => {
+    await seedSignedInInstall(freshSession);
+    getDatabase().execute(
+      'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      [
+        'current_account_id',
+        '99999999-9999-4999-8999-999999999999',
+        new Date().toISOString(),
+      ],
+    );
+    mockFetch.mockRejectedValue(new TypeError('Network request failed'));
+
+    await expect(bootAccount({platform: 'ios'})).resolves.toEqual({
+      status: 'offline',
+    });
+  });
+
+  it('does not open offline on an API error', async () => {
+    await seedSignedInInstall(freshSession);
+    mockFetch.mockImplementation(async (url: string) => {
+      if (url.endsWith('/v1/me')) {
+        return jsonResponse(503, {
+          request_id: 'm2',
+          status: 'failed',
+          error: {code: 'SERVICE_UNAVAILABLE', message: 'Down.'},
+          retryable: true,
+        });
+      }
+      throw new TypeError('Network request failed');
+    });
+
+    await expect(bootAccount({platform: 'ios'})).resolves.toEqual({
+      status: 'merge-in-progress',
+    });
   });
 });
 

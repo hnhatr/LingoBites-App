@@ -2,6 +2,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React, {useEffect, useMemo} from 'react';
+import {AppState} from 'react-native';
 
 import {
   AccountSwitchGateScreen,
@@ -328,6 +329,17 @@ export function AppNavigator() {
   useEffect(() => {
     boot().catch(() => {});
   }, [boot]);
+  // Offline mode (#1): an offline session re-checks the Server whenever the
+  // app returns to the foreground.
+  const revalidate = useAccountStore(state => state.revalidate);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', next => {
+      if (next === 'active') {
+        revalidate().catch(() => {});
+      }
+    });
+    return () => subscription.remove();
+  }, [revalidate]);
 
   const gateRoute = accountGateRouteForPhase(phase);
   const userId = useAccountStore(state => state.user?.id ?? null);

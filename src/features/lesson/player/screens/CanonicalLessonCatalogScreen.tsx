@@ -110,6 +110,17 @@ export function CanonicalLessonCatalogScreen({navigation}: Props) {
       ) : (
         <FlatList
           testID="canonical-catalog-list"
+          ListHeaderComponent={
+            state.offline ? (
+              <AppText
+                color="secondary"
+                variant="caption"
+                testID="canonical-catalog-offline"
+              >
+                {t('offline.downloaded_only')}
+              </AppText>
+            ) : null
+          }
           data={state.lessons}
           keyExtractor={item => item.id}
           renderItem={({item}) => {

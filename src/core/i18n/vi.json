@@ -222,6 +222,16 @@
     "done": "Xong",
     "clear_all": "Xóa tất cả"
   },
+  "offline": {
+    "banner": "Đang offline — tiến độ sẽ được đồng bộ khi có mạng.",
+    "locked_title": "Cần kết nối mạng",
+    "locked_create": "Tạo bài mới cần mạng để nhận diện chữ và phân tích. Bạn vẫn học và ôn được các bài đã có trên máy.",
+    "retry": "Thử lại",
+    "retry_hint": "Kiểm tra lại kết nối mạng",
+    "downloaded_only": "Đang offline — chỉ hiện các bài đã có trên máy.",
+    "checking": "Đang kiểm tra…",
+    "sign_out_warning": "Bạn đang offline. Sau khi đăng xuất, bạn sẽ không vào lại được cho đến khi có mạng."
+  },
   "errors": {
     "empty_vocabulary": "Đoạn này khá đơn giản, app chưa tìm thấy từ vựng khó đáng học.",
     "empty_grammar": "Đoạn này không có cấu trúc ngữ pháp nổi bật.",

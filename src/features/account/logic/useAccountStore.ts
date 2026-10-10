@@ -14,6 +14,7 @@ import {
   type BootResult,
   cancelAccountSwitch,
   confirmAccountSwitch,
+  forgetRememberedUser,
   retryAccountSwitch,
   submitOnboardingName,
 } from './accountBootstrap';
@@ -29,6 +30,10 @@ import {
  *   offers a Continue action that rejoins the normal boot path.
  * - `offline` / `merge-in-progress` / `failed`: explicit retry states, so a
  *   failed boot can never strand the app on the wrong stack.
+ *
+ * `offlineSession` marks an `authenticated` phase opened without reaching the
+ * Server (docs/architecture/offline-mode.md #1); `revalidate` re-runs boot in
+ * the background and only leaves the tabs when the Server decides so.
  *
  * The Zustand state only mirrors what Keychain/SQLite already persist — a
  * process restart re-runs `bootAccount`, which restores from the stored
@@ -50,12 +55,15 @@ export type AccountPhase =
 export type AccountState = {
   phase: AccountPhase;
   user: AuthUser | null;
+  offlineSession: boolean;
   bootstrapTicket: string | null;
   bootstrapTicketExpiresAt: string | null;
   switchContext: AccountSwitchConfirmation | null;
   failureCode: string | null;
   failureMessage: string | null;
-  boot: () => Promise<void>;
+  /** `background`: keep the offline session unless the Server decides. */
+  boot: (options?: {background?: boolean}) => Promise<void>;
+  revalidate: () => Promise<void>;
   submitDisplayName: (
     displayName: string,
     phone?: string | null,
@@ -74,6 +82,7 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
       return {
         phase: 'authenticated',
         user: result.user,
+        offlineSession: result.offline === true,
         bootstrapTicket: null,
         bootstrapTicketExpiresAt: null,
         switchContext: null,
@@ -83,6 +92,7 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
     case 'needs-onboarding':
       return {
         phase: 'needs-onboarding',
+        offlineSession: false,
         user: null,
         bootstrapTicket: result.bootstrapTicket,
         bootstrapTicketExpiresAt: result.bootstrapTicketExpiresAt,
@@ -93,6 +103,7 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
     case 'switch-confirmation':
       return {
         phase: 'switch-confirmation',
+        offlineSession: false,
         user: result.switch.sourceUser,
         switchContext: result.switch,
         failureCode: null,
@@ -101,6 +112,7 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
     case 'switch-failed':
       return {
         phase: 'switch-failed',
+        offlineSession: false,
         user: null,
         switchContext: null,
         failureCode: result.code,
@@ -109,6 +121,7 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
     case 'offline':
       return {
         phase: 'offline',
+        offlineSession: false,
         switchContext: null,
         failureCode: null,
         failureMessage: null,
@@ -116,6 +129,7 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
     case 'merge-in-progress':
       return {
         phase: 'merge-in-progress',
+        offlineSession: false,
         switchContext: null,
         failureCode: null,
         failureMessage: null,
@@ -123,11 +137,34 @@ function fromBootResult(result: BootResult): Partial<AccountState> {
     case 'failed':
       return {
         phase: 'failed',
+        offlineSession: false,
         switchContext: null,
         failureCode: result.code,
         failureMessage: result.message,
       };
   }
+}
+
+/**
+ * A background revalidation leaves an offline session only on a decisive
+ * answer (online account, onboarding, switch). Still offline, a transient
+ * failure or a merge in progress keeps the learner where they are.
+ */
+function appliesOverOfflineSession(
+  result: BootResult,
+  state: AccountState,
+): boolean {
+  if (state.phase !== 'authenticated' || !state.offlineSession) {
+    return false;
+  }
+  if (result.status === 'authenticated') {
+    return result.offline !== true;
+  }
+  return (
+    result.status !== 'offline' &&
+    result.status !== 'failed' &&
+    result.status !== 'merge-in-progress'
+  );
 }
 
 /**
@@ -157,13 +194,14 @@ function localSignOut(): Promise<{ok: boolean}> {
 export const useAccountStore = create<AccountState>()((set, get) => ({
   phase: 'bootstrapping',
   user: null,
+  offlineSession: false,
   bootstrapTicket: null,
   bootstrapTicketExpiresAt: null,
   switchContext: null,
   failureCode: null,
   failureMessage: null,
 
-  boot: async () => {
+  boot: async ({background = false} = {}) => {
     const committedAtStart = committedLogoutCount;
     await staleBootCleanup;
     if (inFlightStoreBoot) {
@@ -181,6 +219,9 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
         await cleanup;
         return;
       }
+      if (background && !appliesOverOfflineSession(result, get())) {
+        return;
+      }
       set(fromBootResult(result));
     };
     const task = run();
@@ -192,6 +233,14 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
         inFlightStoreBoot = null;
       }
     }
+  },
+
+  revalidate: async () => {
+    const {phase, offlineSession} = get();
+    if (phase !== 'authenticated' || !offlineSession || inFlightStoreBoot) {
+      return;
+    }
+    await get().boot({background: true});
   },
 
   submitDisplayName: async (displayName, phone) => {
@@ -334,6 +383,7 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
     set({
       phase: 'bootstrapping',
       user: null,
+      offlineSession: false,
       bootstrapTicket: null,
       bootstrapTicketExpiresAt: null,
       switchContext: null,
@@ -379,10 +429,12 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
           return;
         }
       }
+      forgetRememberedUser();
       committedLogoutCount += 1;
       set({
         phase: 'signed-out',
         user: null,
+        offlineSession: false,
         bootstrapTicket: null,
         bootstrapTicketExpiresAt: null,
         switchContext: null,
@@ -412,6 +464,7 @@ export function resetAccountStoreForTests(): void {
   useAccountStore.setState({
     phase: 'bootstrapping',
     user: null,
+    offlineSession: false,
     bootstrapTicket: null,
     bootstrapTicketExpiresAt: null,
     switchContext: null,

@@ -121,6 +121,17 @@ export function PublicLessonsList({
       onEndReached={state.nextCursor ? loadMore : undefined}
       onEndReachedThreshold={0.4}
       testID="public-lessons-list"
+      ListHeaderComponent={
+        state.offline ? (
+          <AppText
+            color="secondary"
+            variant="caption"
+            testID="public-lessons-offline"
+          >
+            Đang offline — chỉ hiện các bài đã có trên máy.
+          </AppText>
+        ) : null
+      }
       ListFooterComponent={
         state.loadingMore ? (
           <ActivityIndicator

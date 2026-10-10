@@ -10,11 +10,17 @@
  *
  * A curriculum lesson id is the same id `GET /api/v1/lessons/:id` serves (one
  * `lessons` table on the Server), so a lesson row opens the regular player.
+ *
+ * Offline mode (docs/architecture/offline-mode.md #17, #19): every validated
+ * answer is kept in `app_settings`; when the network fails the last one is
+ * served again, so curriculum screens open offline after one visit. The
+ * signed-in user's entitlements are kept per account.
  */
 import {z} from 'zod';
 
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {getDatabase} from '@core/db/database';
 import {
   type UnitSummativeTask,
   UnitSummativeTaskResponseSchema,
@@ -110,6 +116,54 @@ async function readJson(response: Response): Promise<unknown> {
   }
 }
 
+const CACHE_PREFIX = 'curriculum_cache.';
+
+/** `app_settings` key for one route; `/v1/me/…` answers belong to an account. */
+function cacheKey(path: string): string | null {
+  if (!path.startsWith('/v1/me/')) return `${CACHE_PREFIX}${path}`;
+  try {
+    const row = getDatabase()
+      .execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [
+        'current_account_id',
+      ])
+      .rows?.item(0) as {value?: string} | undefined;
+    return row?.value ? `${CACHE_PREFIX}${row.value}${path}` : null;
+  } catch {
+    return null;
+  }
+}
+
+function readCached<T>(
+  path: string,
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+): T | null {
+  const key = cacheKey(path);
+  if (!key) return null;
+  try {
+    const row = getDatabase()
+      .execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [key])
+      .rows?.item(0) as {value?: string} | undefined;
+    if (!row?.value) return null;
+    const parsed = schema.safeParse(JSON.parse(row.value));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCached(path: string, body: unknown): void {
+  const key = cacheKey(path);
+  if (!key) return;
+  try {
+    getDatabase().execute(
+      'INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, ?);',
+      [key, JSON.stringify(body), new Date().toISOString()],
+    );
+  } catch {
+    // Only the offline copy is lost.
+  }
+}
+
 async function getList<T>(
   path: string,
   schema: z.ZodType<T, z.ZodTypeDef, unknown>,
@@ -136,6 +190,8 @@ async function getList<T>(
     );
   } catch (error) {
     if (isAbortError(error) || options.signal?.aborted) return cancelled;
+    const cached = readCached(path, schema);
+    if (cached !== null) return {ok: true, value: cached};
     return {
       ok: false,
       kind: 'network-error',
@@ -159,6 +215,7 @@ async function getList<T>(
       message: 'Curriculum response failed validation.',
     };
   }
+  writeCached(path, body);
   return {ok: true, value: parsed.data};
 }
 

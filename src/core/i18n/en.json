@@ -222,6 +222,16 @@
     "done": "Done",
     "clear_all": "Clear all"
   },
+  "offline": {
+    "banner": "You're offline — progress will sync when you're back online.",
+    "locked_title": "Connection needed",
+    "locked_create": "Creating a lesson needs the internet for text recognition and analysis. You can still learn and review lessons already on this device.",
+    "retry": "Try again",
+    "retry_hint": "Checks the network connection again",
+    "downloaded_only": "Offline — showing only lessons on this device.",
+    "checking": "Checking…",
+    "sign_out_warning": "You're offline. After signing out you can't sign back in until you're online."
+  },
   "errors": {
     "empty_vocabulary": "This passage is fairly simple — the app didn't find any challenging vocabulary worth learning.",
     "empty_grammar": "This passage has no notable grammar structures.",

@@ -3,6 +3,10 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
 
+import {
+  resetConnectivityForTests,
+  useConnectivityStore,
+} from '@core/api/connectivity';
 import {FeatureFlagProvider} from '@core/release';
 import type {ReleaseConfig} from '@core/release/types';
 
@@ -154,5 +158,33 @@ describe('CreateScreen (SETE-247)', () => {
       tree.root.findAll(node => node.props.testID === 'create-hero-camera')
         .length,
     ).toBe(0);
+  });
+});
+
+describe('CreateScreen offline (offline-mode.md #20–22)', () => {
+  afterEach(() => {
+    resetConnectivityForTests();
+  });
+
+  it('keeps the sources visible but locked, with the reason', async () => {
+    useConnectivityStore.setState({status: 'offline'});
+    const tree = await renderCreate();
+    const byId = (id: string) =>
+      tree.root.findAll(node => node.props.testID === id);
+
+    expect(byId('create-offline-locked').length).toBeGreaterThan(0);
+    for (const id of ['create-hero-camera', 'create-tile-paste']) {
+      const pressable = byId(id).find(
+        node => typeof node.props.onPress === 'function',
+      );
+      expect(pressable?.props.disabled).toBe(true);
+    }
+  });
+
+  it('shows no lock online', async () => {
+    const tree = await renderCreate();
+    expect(
+      tree.root.findAll(node => node.props.testID === 'create-offline-locked'),
+    ).toHaveLength(0);
   });
 });

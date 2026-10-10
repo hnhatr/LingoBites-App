@@ -62,10 +62,15 @@ import {executeCanonicalLegacyClear, executeLegacyClear} from './legacyClear';
  *    crash or an offline blip replays the same signup instead of creating a
  *    duplicate. A 409 conflict re-bootstraps once to converge on the
  *    already-created account.
+ * 5. Offline mode (docs/architecture/offline-mode.md #1): when the network,
+ *    not the Server, fails a returning install, boot opens the account this
+ *    install's SQLite already belongs to with the last known user
+ *    (`offline: true`). API errors keep their normal handling.
  */
 
 export const FALLBACK_DEVICE_ID_KEY = 'account.fallback_device_id';
 export const SIGNUP_IDEMPOTENCY_KEY = 'account.signup_idempotency_key';
+export const CACHED_USER_KEY = 'account.cached_user';
 
 export type AccountSwitchConfirmation = {
   attemptId: string;
@@ -78,7 +83,12 @@ export type AccountSwitchConfirmation = {
 };
 
 export type BootResult =
-  | {status: 'authenticated'; user: AuthUser}
+  | {
+      status: 'authenticated';
+      user: AuthUser;
+      /** Opened from the stored session without reaching the Server. */
+      offline?: boolean;
+    }
   | {
       status: 'needs-onboarding';
       bootstrapTicket: string;
@@ -131,6 +141,64 @@ function writeSetting(key: string, value: string): void {
 function deleteSetting(key: string): void {
   const db = getDatabase();
   db.execute('DELETE FROM app_settings WHERE key = ?;', [key]);
+}
+
+/** Remembers the signed-in user so a later offline boot can show it. */
+function rememberUser(user: AuthUser): void {
+  try {
+    writeSetting(CACHED_USER_KEY, JSON.stringify(user));
+  } catch {
+    // Best-effort: without it an offline boot falls back to a placeholder.
+  }
+}
+
+/** Drops the remembered user (logout). */
+export function forgetRememberedUser(): void {
+  try {
+    deleteSetting(CACHED_USER_KEY);
+  } catch {
+    // Best-effort: an offline boot also requires a stored session.
+  }
+}
+
+function readRememberedUser(userId: string): AuthUser | null {
+  try {
+    const raw = readSetting(CACHED_USER_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw) as AuthUser | null;
+    return parsed?.id === userId ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Network failure on a returning install: opens the stored session's
+ * account only when this install's SQLite already belongs to it, else stays
+ * `offline`. Never used for API errors.
+ */
+function offlineBoot(sessionUserId: string | null): BootResult {
+  let localAccountId: string | null;
+  try {
+    localAccountId = readSetting('current_account_id');
+  } catch {
+    localAccountId = null;
+  }
+  if (!sessionUserId || localAccountId !== sessionUserId) {
+    return {status: 'offline'};
+  }
+  const user = readRememberedUser(sessionUserId) ?? {
+    id: sessionUserId,
+    public_code: '',
+    display_name: '',
+    phone_e164: null,
+    status: 'active',
+    created_at: new Date(0).toISOString(),
+    updated_at: new Date(0).toISOString(),
+  };
+  return {status: 'authenticated', user, offline: true};
 }
 
 let inFlightBoot: Promise<BootResult> | null = null;
@@ -240,7 +308,7 @@ async function runBoot(deps: BootDeps): Promise<BootResult> {
     } catch (error) {
       const clientError = error as AuthClientError;
       if (!isAuthApiError(clientError)) {
-        return {status: 'offline'};
+        return offlineBoot(ensured.userId);
       }
       if (clientError.code === 'MERGE_IN_PROGRESS' || clientError.retryable) {
         return {status: 'merge-in-progress'};
@@ -256,7 +324,9 @@ async function runBoot(deps: BootDeps): Promise<BootResult> {
     // Terminal refresh state already wiped local sessions; fall through to
     // device bootstrap to recover the account by locator.
   } else if (ensured.status === 'offline') {
-    return {status: 'offline'};
+    // Expired access token and no network to rotate it.
+    const active = await getActiveSession();
+    return offlineBoot(active.ok ? active.value?.user_id ?? null : null);
   } else if (ensured.status === 'refresh-failed') {
     return {
       status: 'failed',
@@ -427,6 +497,7 @@ async function runAccountSwitchRecoveryBoot(
       }
       await clearAccountSwitchJournal();
       setInstallMarker();
+      rememberUser(recovery.value.attempt.target_user_snapshot);
       return {
         status: 'authenticated',
         user: recovery.value.attempt.target_user_snapshot,
@@ -524,6 +595,7 @@ function applyAuthenticatedSession(input: {
       };
     }
     writeSetting('current_account_id', input.user.id);
+    rememberUser(input.user);
     return {status: 'authenticated', user: input.user};
   })();
 }
@@ -575,6 +647,7 @@ export async function confirmAccountSwitch(
 
   writeSetting('current_account_id', attempt.target_account_id);
   setInstallMarker();
+  rememberUser(attempt.target_user_snapshot);
   return {status: 'authenticated', user: attempt.target_user_snapshot};
 }
 
@@ -618,6 +691,7 @@ export async function retryAccountSwitch(
   await clearAccountSwitchJournal();
   writeSetting('current_account_id', attempt.target_account_id);
   setInstallMarker();
+  rememberUser(attempt.target_user_snapshot);
   return {status: 'authenticated', user: attempt.target_user_snapshot};
 }
 
