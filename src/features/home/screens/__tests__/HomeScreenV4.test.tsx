@@ -426,7 +426,7 @@ describe('Home today suggestion card (F12)', () => {
     }));
   });
 
-  it('renders the plan checklist under the hero with the weekly goal as its footer', async () => {
+  it('renders the compact plan under the hero with the weekly goal as its footer', async () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
@@ -441,7 +441,8 @@ describe('Home today suggestion card (F12)', () => {
     expect(heroAt).toBeGreaterThan(-1);
     expect(suggestionAt).toBeGreaterThan(heroAt);
     expect(goalAt).toBeGreaterThan(suggestionAt);
-    expect(stepRows(tree).length).toBeGreaterThan(0);
+    // The step list lives on Today; home only shows progress
+    expect(stepRows(tree).length).toBe(0);
     expect(text).toContain('home-today-progress');
     expect(text).toContain('bước');
     expect(text).toContain('home-weekly-goal-count');
@@ -465,83 +466,13 @@ describe('Home today suggestion card (F12)', () => {
     expect(text).not.toContain('🔥 45 phút');
   });
 
-  it('shows a continue step by its lesson name, without "Học tiếp:"', async () => {
-    writeStoredTodayPlan({
-      dayKey: localDayKey(new Date()),
-      mode: 'normal',
-      plan: {
-        mode: 'normal',
-        isConsolidation: false,
-        totalEstimatedMinutes: 10,
-        reasonCodes: [],
-        explanationVi: '',
-        activities: [
-          {
-            id: 'activity-continue-lesson',
-            type: 'continue_lesson',
-            titleVi: 'Học tiếp: Đổi trả hàng',
-            subtitleVi: '',
-            estimatedMinutes: 10,
-            targetId: 'lesson-1',
-            navigationTarget: {
-              screen: 'CanonicalLessonPlayer',
-              params: {lessonId: 'lesson-1'},
-            },
-          },
-        ],
-      },
-    });
-    const tree = await renderHome();
-    const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Đổi trả hàng');
-    expect(text).not.toContain('Học tiếp: Đổi trả hàng');
-  });
-
-  it('tags the step the hero points at as "Tiếp theo"', async () => {
-    seedCanonicalLessonDownload();
-    (getGamificationSnapshot as jest.Mock).mockReturnValue({
-      currentStreak: 0,
-      weeklyGoal: {completedThisWeek: 0, target: 6},
-      badges: [],
-    });
-    const tree = await renderHome();
-    const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('home-hero-next_activity');
-    expect(text).toContain('Tiếp theo');
-  });
-
-  it('starts an open step from the checklist', async () => {
-    const tree = await renderHome();
-    const activity = stepRows(tree).find(
-      node => typeof node.props.onPress === 'function',
-    );
-    if (!activity) throw new Error('No suggested activity found');
-    await act(async () => activity.props.onPress());
-    const calls = [
-      mockAppNavigation.openLesson,
-      mockAppNavigation.openCatalog,
-      mockAppNavigation.openReview,
-      mockAppNavigation.openSpeakingRoom,
-      mockAppNavigation.openShadowing,
-    ].reduce((sum, fn) => sum + (fn as jest.Mock).mock.calls.length, 0);
-    expect(calls).toBe(1);
-    expect(mockAppNavigation.openToday).not.toHaveBeenCalled();
-  });
-
-  it('shows a done step as ticked and not tappable', async () => {
+  it('shows a finished plan as done', async () => {
     seedCanonicalLessonDownload();
     seedFinishedTodayPlan();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('home-today-all-done');
     expect(text).toContain('Xong kế hoạch hôm nay 🎉');
-    const row = stepRows(tree).find(
-      node => node.props.testID === 'home-today-step-activity-due-review',
-    );
-    expect(row).toBeDefined();
-    expect(
-      stepRows(tree).some(node => typeof node.props.onPress === 'function'),
-    ).toBe(false);
   });
 
   it('"Xem chi tiết" opens Today with the selected mode', async () => {
@@ -608,7 +539,7 @@ describe('Home reduced motion (§VS-7, AC-004)', () => {
 // Speech bubble layout (§VS-2.3)
 // ---------------------------------------------------------------------------
 describe('Speech bubble layout (§VS-2.3)', () => {
-  it('bubble style has right=58, top=8, width=120, maxWidth=120', async () => {
+  it('bubble style has right=30, top=8, width=104, maxWidth=104', async () => {
     __resetMockDatabases();
     resetDatabaseForTests(open({name: DB_NAME}));
     jest.restoreAllMocks();
@@ -630,9 +561,9 @@ describe('Speech bubble layout (§VS-2.3)', () => {
     expect(bubbleNode).toBeDefined();
 
     const flattened = StyleSheet.flatten(bubbleNode!.props.style);
-    expect(flattened.right).toBe(58);
+    expect(flattened.right).toBe(30);
     expect(flattened.top).toBe(8);
-    expect(flattened.width).toBe(120);
-    expect(flattened.maxWidth).toBe(120);
+    expect(flattened.width).toBe(104);
+    expect(flattened.maxWidth).toBe(104);
   });
 });

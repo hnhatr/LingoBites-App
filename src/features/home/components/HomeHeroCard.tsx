@@ -463,7 +463,7 @@ export function HomeHeroCard({
         </Pressable>
       </View>
 
-      {/* Speech bubble: absolute at right 58, top 8, width 120, white bg, border 2 ink */}
+      {/* Speech bubble: absolute at right 30, top 8, width 104, white bg, border 2 ink */}
       <Animated.View
         style={[styles.bubble, bubbleAnimStyle]}
         testID="home-mascot-bubble"
@@ -647,13 +647,13 @@ function makeStyles(theme: AppTheme) {
       borderColor: theme.colors.ink,
       borderRadius: 14,
       borderWidth: 2,
-      maxWidth: 120,
-      paddingHorizontal: 9,
+      maxWidth: 104,
+      paddingHorizontal: 8,
       paddingVertical: 6,
       position: 'absolute',
-      right: 58,
+      right: 30,
       top: 8,
-      width: 120,
+      width: 104,
       zIndex: 3,
     },
     bubbleText: {
@@ -672,7 +672,7 @@ function makeStyles(theme: AppTheme) {
       bottom: -12,
       height: 0,
       position: 'absolute',
-      right: 16,
+      right: 22,
       width: 0,
     },
     bubbleTailInner: {
@@ -685,7 +685,7 @@ function makeStyles(theme: AppTheme) {
       bottom: -8,
       height: 0,
       position: 'absolute',
-      right: 18,
+      right: 24,
       width: 0,
     },
   });

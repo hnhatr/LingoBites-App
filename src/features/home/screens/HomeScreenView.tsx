@@ -5,7 +5,7 @@
  * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
  * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8);
  *    also carries the learning-path pill (Phase 2) and the "+1 🐾" tag
- * 3. HomeTodaySuggestion — "Kế hoạch hôm nay" checklist under the hero (F12),
+ * 3. HomeTodaySuggestion — compact "Kế hoạch hôm nay" card under the hero (F12),
  *    with HomeWeeklyGoal (one paw per target lesson, I3, P-004) as its footer
  * 5. HomeShortcutsGrid — "Lối tắt" + 4 real-destination shortcuts (DQ-005, D3, P-003)
  * 6. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
@@ -46,11 +46,9 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     railItems,
     todayMode,
     todayProgress,
-    currentStepId,
     heroNextStep,
     nextStepIsLesson,
     onTodayModeChange,
-    onStartTodayActivity,
     onViewTodayDetails,
     learningPathTitle,
     onOpenLearningPath,
@@ -149,9 +147,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           <HomeTodaySuggestion
             mode={todayMode}
             progress={todayProgress}
-            currentStepId={currentStepId}
             onModeChange={onTodayModeChange}
-            onStartActivity={onStartTodayActivity}
             onViewDetails={onViewTodayDetails}
             footer={
               <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
