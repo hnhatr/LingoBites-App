@@ -117,7 +117,10 @@ bị khoá.
 ### Học bài
 
 Một trình phát bài dùng chung cho mọi nơi mở bài (Home, Thư viện, Giáo trình,
-Today). Từ đó vào luồng hoạt động theo khối hoặc luyện ngắn.
+Today). Bài 6 bước mở `LessonFlowPlayer`. Bài tự tạo (văn bản, ảnh chữ,
+YouTube) mở chuỗi luyện 4 phần trên máy (nghe và nhắc lại, nghĩa từ, điền từ,
+dịch câu) ở màn `Practice`; làm xong mới tính hoàn thành bài, kèm gợi ý "Học
+sâu theo 6 bước" với câu chọn sẵn. Bài quá ít nội dung vẫn dùng nút ✓.
 
 - Màn hình: `CanonicalLessonPlayer`, `LessonFlowPlayer`, `Practice`, `CanonicalCatalog`
 - API: `GET /api/v1/lessons`, `GET|DELETE /api/v1/lessons/:id`,

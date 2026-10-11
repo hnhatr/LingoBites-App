@@ -1,6 +1,6 @@
 # Bài tự tạo có hoạt động tương tác thật (hướng B + C)
 
-> Trạng thái: **CHỜ DUYỆT**. Ngày lập: 2026-10-11. Repo: `LingoBites-App` (không đổi server).
+> Trạng thái: **ĐÃ CODE** (duyệt 2026-10-11, dùng các đề xuất D1–D7). Commit: PR 1 `89be3a3`, PR 2 `ec498ca`, PR 3 `53960f6`. Ngày lập: 2026-10-11. Repo: `LingoBites-App` (không đổi server).
 > Nhánh: `claude/loving-ptolemy-qns04i`.
 
 ## 1. Vấn đề
@@ -99,3 +99,12 @@ Phần nào không đủ dữ liệu thì bỏ (ví dụ bài không có từ v�
 ## 8. Kiểm tra trước mỗi PR
 
 `yarn typecheck`, `yarn lint` (gồm `lint:boundaries`), `yarn test` cho các file liên quan; chạy thử trên máy với một bài văn bản, một bài YouTube và một bài cũ đã tải offline.
+
+## 9. Ghi chú khi code
+
+- Chỉ áp dụng cho bài `origin = learner` chưa phải bài 6 bước (`hasLessonPracticeRun`). Bài giáo trình cũ không có 6 bước vẫn giữ quiz nhanh và nút ✓.
+- Bài YouTube (bố cục video, không có hub) mở chuỗi luyện bằng nút trên header.
+- Phần trắc nghiệm nghĩa hỏi theo chiều nghĩa tiếng Việt → chọn từ tiếng Anh (khớp schema `multiple_choice`).
+- Phần dịch chỉ lấy câu 2–8 từ để gõ trên điện thoại được.
+- `features/practice` dùng component của player 6 bước qua barrel `@features/lesson` (luật module không cho import `@features/lesson/flow`).
+- Thẻ C mở lại bài và dùng cơ chế `requestComposeSheet` có sẵn, thêm danh sách câu chọn sẵn; không đổi API điều hướng.
