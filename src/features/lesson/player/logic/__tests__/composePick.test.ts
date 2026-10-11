@@ -42,7 +42,12 @@ const progress = (charged: boolean) => ({
 
 describe('compose pick rules (S4.3 J8)', () => {
   it('runs the Server precheck on the App', () => {
-    expect(composePickIssue(['Hi, what can I get for you?'])).toBe('too_few');
+    expect(composePickIssue([])).toBe('too_few');
+    // One sentence is enough when it carries eight words, not a short one.
+    expect(
+      composePickIssue(['Can I have a large latte with oat milk, please?']),
+    ).toBeNull();
+    expect(composePickIssue(['Hi, what can I get for you?'])).toBe('too_thin');
     expect(composePickIssue(['Yeah.', 'Oh!', 'Can I have a latte?'])).toBe(
       'too_thin',
     );

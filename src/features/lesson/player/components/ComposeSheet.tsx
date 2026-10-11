@@ -33,7 +33,7 @@ export type ComposeSheetProps = {
 };
 
 /**
- * S4.3 "Học theo 6 bước": pick 2–8 sentences of this lesson, send them, and
+ * S4.3 "Học theo 6 bước": pick 1–8 sentences of this lesson, send them, and
  * follow the request (wait design §3). Closing the sheet never stops the
  * request: the compose tracker keeps following it and the lesson arrives in
  * the library either way.

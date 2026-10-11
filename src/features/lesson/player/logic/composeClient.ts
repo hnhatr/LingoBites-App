@@ -31,8 +31,8 @@ import {
 const LESSONS_PATH = '/api/v1/lessons';
 const LESSON_CREATIONS_PATH = '/api/v1/lesson-creations';
 
-/** Same bounds as the Server (S4.1 H1). */
-export const COMPOSE_PICK_MIN = 2;
+/** Same bounds as the Server (S4.1 H1; one sentence is enough since v2). */
+export const COMPOSE_PICK_MIN = 1;
 export const COMPOSE_PICK_MAX = 8;
 
 export type ComposeSubmitValue =

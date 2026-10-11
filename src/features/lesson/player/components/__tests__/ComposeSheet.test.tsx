@@ -124,7 +124,8 @@ describe('ComposeSheet (S4.3)', () => {
     expect(textOf(tree, 'compose-quota')).toBe('Còn 1 lượt hôm nay');
 
     press(tree, `compose-sentence-${S2}`);
-    expect(textOf(tree, 'compose-issue')).toBe('Chọn ít nhất 2 câu.');
+    // One sentence with enough words is a valid pick on its own.
+    expect(has(tree, 'compose-issue')).toBe(false);
     press(tree, `compose-sentence-${S1}`);
     expect(textOf(tree, 'compose-picked-count')).toBe('Đã chọn 2/8');
     expect(has(tree, 'compose-issue')).toBe(false);

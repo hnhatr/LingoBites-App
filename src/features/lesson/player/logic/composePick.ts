@@ -30,12 +30,17 @@ export function composePickIssue(texts: readonly string[]): ComposePickIssue {
     return 'too_long';
   }
   if (texts.some(text => !/[A-Za-z]/.test(text))) return 'too_thin';
-  const total = texts.reduce((sum, text) => sum + words(text).length, 0);
+  // A repeated line adds nothing: words are counted once per distinct text.
+  const distinct = new Map(
+    texts.map(text => [normalizeAnswer(text), text] as const),
+  );
+  const total = [...distinct.values()].reduce(
+    (sum, text) => sum + words(text).length,
+    0,
+  );
   if (total < COMPOSE_MIN_TOTAL_WORDS) return 'too_thin';
   const cries = texts.filter(text => words(text).length <= 2).length;
   if (cries * 2 > texts.length) return 'too_thin';
-  const distinct = new Set(texts.map(text => normalizeAnswer(text)));
-  if (distinct.size < COMPOSE_PICK_MIN) return 'too_thin';
   return null;
 }
 
