@@ -1,6 +1,6 @@
 # E3 – App: luồng "Học từ đời thường" (Hiểu / Dùng)
 
-> Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Trạng thái: **ĐÃ CODE** (2026-10-10 → 2026-10-11; xem `git log` ở cả hai repo). Dòng trạng thái cập nhật khi lưu trữ: plan này chưa có mục "điểm lệch".
 > Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10). P6 chốt phương án A (xác nhận ngay sau khi gõ, banner chỉ là dự phòng).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-App` (chỉ app). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.1–§3.5, §4.5, §5.3. Gộp S5.2 (bản tối thiểu) và phần app của S5.3.

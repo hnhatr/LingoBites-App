@@ -1,6 +1,6 @@
 # E2 – Server: khoảnh khắc "Dùng" (tình huống), kiểm duyệt text, hạn mức "Hiểu"
 
-> Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Trạng thái: **ĐÃ CODE** (2026-10-10 → 2026-10-11; xem `git log` ở cả hai repo). Dòng trạng thái cập nhật khi lưu trữ: plan này chưa có mục "điểm lệch".
 > Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10). N5 chốt phương án A (xác nhận ngay sau khi gõ).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-Server` (+ admin-web: chỉ hiện mã lỗi mới nếu có bảng request). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.4.1, §3.4.3, §4.1, §4.3, §4.4. Gộp S5.1 (bản tối thiểu) và S5.3.

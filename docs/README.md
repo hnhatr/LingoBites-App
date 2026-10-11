@@ -12,6 +12,8 @@ These are the active docs for the LingoBites Offline Review MVP (SETE-92 and rel
 | `02-investor/`                | Investor-facing overview, pitch outline, business model, GTM, FAQ                  |
 | `03-operations/`              | Cost estimate and operational notes outside BA                                     |
 | `architecture/feature-map.md` | Diagram of the features currently live in the app (screens, flows, server APIs)    |
+| `architecture/lesson-design.md` | Single spec of every lesson type, live and upcoming, with diagrams (read first) |
+| `content/`                    | Lesson spec template for content authors, with a filled example                    |
 | `superpowers/`                | Supporting specs and implementation plans, not part of the main reading flow       |
 | `implementation-notes/`       | Notes accumulated during MVP implementation                                        |
 | `tasks/`                      | Task briefs for the current MVP sprint                                             |

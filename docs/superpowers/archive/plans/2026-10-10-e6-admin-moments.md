@@ -1,6 +1,6 @@
 # E6 – Server + admin-web: theo dõi bài từ đời thường, danh mục tình huống, báo sai
 
-> Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Trạng thái: **ĐÃ CODE** (2026-10-10 → 2026-10-11; xem `git log` ở cả hai repo). Dòng trạng thái cập nhật khi lưu trữ: plan này chưa có mục "điểm lệch".
 > Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-Server` (+ `admin-web` trong cùng repo) + `LingoBites-App` (nút báo sai). Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §6, §7 (R1, R4). Gộp S5.9 và phần admin của S5.1.

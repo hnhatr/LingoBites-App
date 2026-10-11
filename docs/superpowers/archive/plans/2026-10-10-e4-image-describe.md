@@ -1,6 +1,6 @@
 # E4 – Server + app: ý định "Tả" (bài từ ảnh cảnh vật) và ảnh trong bài
 
-> Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Trạng thái: **ĐÃ CODE** (2026-10-10 → 2026-10-11; xem `git log` ở cả hai repo). Dòng trạng thái cập nhật khi lưu trữ: plan này chưa có mục "điểm lệch".
 > Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-Server` + `LingoBites-App`. Nhánh: `claude/beautiful-cerf-t6c9y1` ở cả hai repo.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.4.2, §4. Gộp S5.6, S5.7 (phần còn lại sau E1), S5.8.

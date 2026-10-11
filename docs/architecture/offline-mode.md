@@ -100,7 +100,7 @@ gửi khi có mạng · 🔒 khoá.
 | P1 | ✅ Xong | `core/api/connectivity.ts`; `OfflineBanner` trong mọi `AppScreen` (BootGate tắt); `LockedFeature`; Create hub khoá #20–22; cảnh báo đăng xuất offline #32 |
 | P2 | ✅ Xong | `courseClient.getList` lưu câu trả lời hợp lệ (`curriculum_cache.*`, entitlement theo tài khoản) và trả lại khi lỗi mạng; catalog / Home rơi về bài đã tải (#9) |
 | P3 | Chưa làm | — |
-| Đồng ý tải media | ✅ Xong | `mediaDownloadConsent.ts` (`app_settings`: `downloads.media_consent`), `useLessonMediaDownload`, `MediaDownloadConsentSheet`, `LessonMediaDownloadCard`, `OfflineStudySettingsGroup`, `OfflineDownloadsScreen`. Kế hoạch: `docs/superpowers/plans/2026-10-10-offline-download-consent.md` |
+| Đồng ý tải media | ✅ Xong | `mediaDownloadConsent.ts` (`app_settings`: `downloads.media_consent`), `useLessonMediaDownload`, `MediaDownloadConsentSheet`, `LessonMediaDownloadCard`, `OfflineStudySettingsGroup`, `OfflineDownloadsScreen`. Kế hoạch: `docs/superpowers/archive/plans/2026-10-10-offline-download-consent.md` |
 
 Khác với thiết kế ban đầu:
 
