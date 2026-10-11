@@ -14,10 +14,12 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
 import type {UseLessonPracticeRunResult} from '../logic/useLessonPracticeRun';
+import {ComposeSuggestionCard} from './ComposeSuggestionCard';
 
 const NO_ITEMS = new Map();
 
 export type LessonPracticeRunViewProps = {
+  lessonId: string;
   run: UseLessonPracticeRunResult;
   closeButton: React.ReactNode;
   onClose: () => void;
@@ -29,6 +31,7 @@ export type LessonPracticeRunViewProps = {
  * result with the words to save and the lesson marked complete.
  */
 export function LessonPracticeRunView({
+  lessonId,
   run,
   closeButton,
   onClose,
@@ -127,6 +130,12 @@ export function LessonPracticeRunView({
               ) : null}
             </View>
           ) : null}
+
+          <ComposeSuggestionCard
+            lessonId={lessonId}
+            onOpenLesson={onClose}
+            picks={run.composeSuggestion}
+          />
 
           <AppButton
             onPress={run.restart}

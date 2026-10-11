@@ -51,6 +51,7 @@ export function PracticeScreen({navigation, route}: PracticeScreenProps) {
     return (
       <LessonPracticeRunView
         closeButton={closeButton}
+        lessonId={lessonId}
         onClose={close}
         run={run}
       />

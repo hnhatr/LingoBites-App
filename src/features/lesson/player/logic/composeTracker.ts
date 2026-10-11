@@ -59,6 +59,8 @@ type ComposeTrackerState = {
   focusedRequestId: string | null;
   /** A card asked this lesson's screen to open its compose sheet. */
   sheetLessonId: string | null;
+  /** Sentences to start that sheet with (the practice result suggestion). */
+  sheetPicks: string[] | null;
 };
 
 export const useComposeTracker = create<ComposeTrackerState>()(() => ({
@@ -66,11 +68,21 @@ export const useComposeTracker = create<ComposeTrackerState>()(() => ({
   hydrated: false,
   focusedRequestId: null,
   sheetLessonId: null,
+  sheetPicks: null,
 }));
 
-/** "Đang tạo bài" card → the source lesson opens with its sheet showing. */
-export function requestComposeSheet(lessonId: string | null): void {
-  useComposeTracker.setState({sheetLessonId: lessonId});
+/**
+ * "Đang tạo bài" card → the source lesson opens with its sheet showing. The
+ * practice result (plan C) also passes the sentences to start with.
+ */
+export function requestComposeSheet(
+  lessonId: string | null,
+  picks: readonly string[] | null = null,
+): void {
+  useComposeTracker.setState({
+    sheetLessonId: lessonId,
+    sheetPicks: lessonId && picks ? [...picks] : null,
+  });
 }
 
 export function setFocusedCompose(requestId: string | null): void {
@@ -405,5 +417,6 @@ export function resetComposeTrackerForTests(): void {
     hydrated: false,
     focusedRequestId: null,
     sheetLessonId: null,
+    sheetPicks: null,
   });
 }

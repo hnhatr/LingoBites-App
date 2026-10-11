@@ -7,7 +7,11 @@ import {
   isSpeakingActivity,
   noSpeakingActive,
 } from '@features/lesson';
-import {getLessonDownload, useLessonCompletion} from '@features/lesson/player';
+import {
+  getLessonDownload,
+  suggestComposePick,
+  useLessonCompletion,
+} from '@features/lesson/player';
 import {requestSync} from '@features/sync';
 
 import {createRequestId} from '@core/api/requestId';
@@ -59,6 +63,8 @@ export type LessonPracticeRunState =
 export type UseLessonPracticeRunResult = {
   state: LessonPracticeRunState;
   youtubeVideoId: string | null;
+  /** Plan C: sentences to start "Học theo 6 bước" with; empty for none. */
+  composeSuggestion: readonly string[];
   completeSection: (reports: EntryReport[]) => void;
   /** D2: a speaking section can be left out; it never blocks the lesson. */
   skipSection: () => void;
@@ -105,6 +111,10 @@ export function useLessonPracticeRun(
     [snapshot],
   );
   const completion = useLessonCompletion(lessonId);
+  const composeSuggestion = useMemo(
+    () => (snapshot && available ? suggestComposePick(snapshot) : []),
+    [snapshot, available],
+  );
 
   const [attemptNo, setAttemptNo] = useState(() =>
     nextPracticeAttemptNo(lessonId),
@@ -295,6 +305,7 @@ export function useLessonPracticeRun(
   return {
     state,
     youtubeVideoId: snapshot?.youtube?.video_id ?? null,
+    composeSuggestion,
     completeSection,
     skipSection,
     restart,

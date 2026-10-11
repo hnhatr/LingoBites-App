@@ -10,6 +10,7 @@ import {
   composeRefusalKey,
   composeStageIndex,
   picksFarApart,
+  suggestComposePick,
   togglePick,
 } from '../composePick';
 
@@ -112,5 +113,72 @@ describe('compose pick rules (S4.3 J8)', () => {
     expect(composeStageIndex(null)).toBe(0);
     expect(composeStageIndex('writing')).toBe(2);
     expect(composeStageIndex('done')).toBe(0);
+  });
+});
+
+describe('suggestComposePick (plan C)', () => {
+  const plain = fixture('valid-lesson-snapshot-response.json');
+  const sentence = (n: number, textEn: string) => ({
+    id: `11111111-1111-4111-8111-${String(n).padStart(12, '0')}`,
+    position: n,
+    text_en: textEn,
+    text_vi: `Câu ${n}.`,
+    ipa: 'ə',
+    start_ms: null,
+    end_ms: null,
+  });
+  const lesson = (texts: string[]) => ({
+    ...plain,
+    sentences: texts.map((text, n) => sentence(n, text)),
+    analyses: {},
+    lesson_items: [],
+  });
+  const ids = (...positions: number[]) =>
+    positions.map(
+      n => `11111111-1111-4111-8111-${String(n).padStart(12, '0')}`,
+    );
+
+  it('picks every sentence of a short lesson that passes the checks', () => {
+    expect(
+      suggestComposePick(
+        lesson([
+          'I wake up at six every morning.',
+          'Then I drink a cup of coffee.',
+          'After that I walk to the office.',
+        ]),
+      ),
+    ).toEqual(ids(0, 1, 2));
+  });
+
+  it('caps the pick at eight sentences', () => {
+    const texts = Array.from(
+      {length: 12},
+      (_, n) => `This is the practice sentence number ${n}.`,
+    );
+    expect(suggestComposePick(lesson(texts))).toHaveLength(8);
+  });
+
+  it('keeps the longest run without a sentence too long to send', () => {
+    const tooLong = `${'very '.repeat(70)}long.`;
+    expect(
+      suggestComposePick(
+        lesson([
+          'I wake up at six every morning.',
+          tooLong,
+          'Then I drink a cup of coffee.',
+          'After that I walk to the office.',
+          'I start work at nine o clock.',
+        ]),
+      ),
+    ).toEqual(ids(2, 3, 4));
+  });
+
+  it('suggests nothing when the run would be refused or compose is not allowed', () => {
+    expect(suggestComposePick(lesson(['Hi.', 'Ok.', 'Yes.']))).toEqual([]);
+    expect(
+      suggestComposePick(
+        fixture('valid-lesson-snapshot-with-spec-response.json'),
+      ),
+    ).toEqual([]);
   });
 });

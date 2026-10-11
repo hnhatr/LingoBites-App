@@ -183,7 +183,11 @@
     "run_lesson_completed": "Bạn đã hoàn thành bài này.",
     "start": "Bắt đầu luyện",
     "start_again": "Luyện lại",
-    "start_hint": "Luyện nghe, từ vựng và viết câu từ chính bài này"
+    "start_hint": "Luyện nghe, từ vựng và viết câu từ chính bài này",
+    "compose_title": "Học sâu theo 6 bước",
+    "compose_body": "AI soạn một bài 6 bước từ {{count}} câu bạn vừa luyện. Bạn vẫn đổi được câu trước khi gửi.",
+    "compose_action": "Chọn câu và tạo bài",
+    "compose_hint": "Về bài học và mở phần chọn câu với các câu đã chọn sẵn"
   },
   "review": {
     "title": "Ôn tập hôm nay",

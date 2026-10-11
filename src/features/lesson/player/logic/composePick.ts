@@ -1,7 +1,8 @@
-import {normalizeAnswer} from '@core/learning';
+import {normalizeAnswer, pickStudyWindow} from '@core/learning';
 import type {
   LessonComposeProgress,
   LessonCreationError,
+  LessonSentence,
   LessonSnapshot,
 } from '@core/schemas/lesson';
 
@@ -71,6 +72,30 @@ export function canComposeFrom(snapshot: LessonSnapshot): boolean {
     !isFlowLesson(snapshot) &&
     snapshot.sentences.length >= COMPOSE_PICK_MIN
   );
+}
+
+/**
+ * Plan C (D7): the sentences to start "Học theo 6 bước" with after a practice
+ * run: the same study window as the practice, narrowed to its longest run of
+ * sentences short enough to send. Empty when that run would not pass the
+ * App-side checks; the learner then picks by hand.
+ */
+export function suggestComposePick(snapshot: LessonSnapshot): string[] {
+  if (!canComposeFrom(snapshot)) return [];
+  const window = pickStudyWindow(snapshot, snapshot.analyses, COMPOSE_PICK_MAX);
+  let best: LessonSentence[] = [];
+  let run: LessonSentence[] = [];
+  for (const sentence of window) {
+    if (sentence.text_en.length > COMPOSE_SENTENCE_CHARS_MAX) {
+      run = [];
+      continue;
+    }
+    run = [...run, sentence];
+    if (run.length > best.length) best = run;
+  }
+  return composePickIssue(best.map(sentence => sentence.text_en)) === null
+    ? best.map(sentence => sentence.id)
+    : [];
 }
 
 export type ComposeFailureCopy = {

@@ -19,6 +19,10 @@ import {
 } from '@test/support';
 import {seedSnapshot} from '@test/support/lessonFlow';
 
+import {
+  requestComposeSheet,
+  useComposeTracker,
+} from '../../logic/composeTracker';
 import {CanonicalLessonPlayerScreen} from '../CanonicalLessonPlayerScreen';
 
 const LESSON_ID = '33333333-3333-4333-8333-333333333301';
@@ -120,6 +124,11 @@ jest.mock('../../logic/useLessonMediaDownload', () => ({
     download: mockDownloadMedia,
     remove: jest.fn(),
   }),
+}));
+
+const mockComposeSheet = jest.fn((_props: Record<string, unknown>) => null);
+jest.mock('../../components/ComposeSheet', () => ({
+  ComposeSheet: (props: Record<string, unknown>) => mockComposeSheet(props),
 }));
 
 let mockCompletionState: 'unfinished' | 'finished' | 'error' = 'unfinished';
@@ -414,6 +423,20 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     expect(has(tree, 'canonical-hub-start-practice')).toBe(false);
     expect(has(tree, 'canonical-hub-start')).toBe(true);
     expect(has(tree, 'canonical-hub-complete')).toBe(true);
+  });
+
+  it('opens the compose sheet with the sentences the practice suggested (plan C)', () => {
+    const picks = snapshot.sentences.slice(0, 3).map(sentence => sentence.id);
+    requestComposeSheet(LESSON_ID, picks);
+    renderScreen();
+    const props = mockComposeSheet.mock.calls.at(-1)![0];
+    expect(props.visible).toBe(true);
+    expect(props.initialPicks).toEqual(picks);
+    // The request is used once.
+    expect(useComposeTracker.getState()).toMatchObject({
+      sheetLessonId: null,
+      sheetPicks: null,
+    });
   });
 
   it('starts the six-step player for a curriculum lesson (PR 10)', () => {

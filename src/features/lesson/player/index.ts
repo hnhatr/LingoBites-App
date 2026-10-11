@@ -14,6 +14,7 @@ export {ComposeTrackerHost} from './components/ComposeTrackerHost';
 export {
   dismissCompose,
   type ComposeEntry,
+  requestComposeSheet,
   resumeTrackedMoment,
   trackMoment,
   useComposeTracker,
@@ -65,6 +66,8 @@ export {ITEM_REPORT_REASONS, reportLessonItem} from './logic/itemReport';
 export type {ItemReportReason} from './logic/itemReport';
 export {deleteLearnerLesson} from './logic/learnerLessonDelete';
 export {useLessonCompletion} from './logic/useLessonCompletion';
+export {canComposeFrom, suggestComposePick} from './logic/composePick';
+export {useComposeAvailable} from './logic/useComposePick';
 export type {SourcePhoto} from './logic/sourcePhoto';
 export type {
   CanonicalLessonClientOptions,

@@ -183,7 +183,11 @@
     "run_lesson_completed": "You finished this lesson.",
     "start": "Start practice",
     "start_again": "Practise again",
-    "start_hint": "Practise listening, words and writing from this lesson"
+    "start_hint": "Practise listening, words and writing from this lesson",
+    "compose_title": "Go deeper in six steps",
+    "compose_body": "AI builds a six-step lesson from the {{count}} sentences you just practised. You can change them before sending.",
+    "compose_action": "Pick sentences and create",
+    "compose_hint": "Back to the lesson with the sentence picker open and these sentences ticked"
   },
   "review": {
     "title": "Review today",

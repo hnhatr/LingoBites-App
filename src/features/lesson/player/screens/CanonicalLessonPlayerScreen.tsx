@@ -143,6 +143,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const floatingClearance = useFloatingTabBarClearance();
   const composeAvailable = useComposeAvailable();
   const [composeOpen, setComposeOpen] = useState(false);
+  const [composePicks, setComposePicks] = useState<string[] | undefined>();
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -242,6 +243,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const composeSheetShown = snapshot !== null && canComposeFrom(snapshot);
   useEffect(() => {
     if (sheetRequested && composeSheetShown) {
+      setComposePicks(useComposeTracker.getState().sheetPicks ?? undefined);
       setComposeOpen(true);
       requestComposeSheet(null);
     }
@@ -717,8 +719,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       ) : null}
       {snapshot && (canCompose || (composeOpen && composeSheetShown)) ? (
         <ComposeSheet
+          initialPicks={composePicks}
           offline={state.status === 'ready' ? state.offline : false}
-          onClose={() => setComposeOpen(false)}
+          onClose={() => {
+            setComposeOpen(false);
+            setComposePicks(undefined);
+          }}
           onOpenLesson={appNavigation.openLesson}
           onSpeakText={handleSpeak}
           snapshot={snapshot}
