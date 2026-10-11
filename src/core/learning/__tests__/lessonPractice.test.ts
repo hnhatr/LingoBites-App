@@ -5,6 +5,7 @@ import {
   buildLessonPracticePlan,
   LESSON_PRACTICE_WINDOW_MAX,
   type LessonPracticeSection,
+  lessonPracticeSegments,
   pickStudyWindow,
 } from '../lessonPractice';
 import {practiceSeed} from '../practice';
@@ -284,5 +285,75 @@ describe('pickStudyWindow', () => {
   it('starts at the beginning when no words are found', () => {
     const sentences = Array.from({length: 12}, (_, n) => filler(n));
     expect(pickStudyWindow(snapshot(sentences, []))[0]!.id).toBe(id(1));
+  });
+});
+
+describe('lessonPracticeSegments', () => {
+  const lines = (count: number) =>
+    Array.from(
+      {length: count},
+      (_, n) => [`Sentence number ${n}.`, `Câu số ${n}.`] as const,
+    );
+  const sizes = (count: number) =>
+    lessonPracticeSegments(snapshot(lines(count), [])).map(
+      s => s.sentenceIds.length,
+    );
+
+  it('keeps a lesson of up to eight sentences as one segment', () => {
+    expect(sizes(5)).toEqual([5]);
+    expect(sizes(8)).toEqual([8]);
+  });
+
+  it('splits evenly so no segment is a lone sentence (K1)', () => {
+    expect(sizes(9)).toEqual([5, 4]);
+    expect(sizes(17)).toEqual([6, 6, 5]);
+    expect(sizes(100)).toEqual([...Array(9).fill(8), ...Array(4).fill(7)]);
+  });
+
+  it('covers every sentence once, in lesson order', () => {
+    const segments = lessonPracticeSegments(snapshot(lines(17), []));
+    expect(segments.map(s => s.index)).toEqual([0, 1, 2]);
+    expect(segments.flatMap(s => s.sentenceIds)).toEqual(
+      Array.from({length: 17}, (_, n) => id(n + 1)),
+    );
+    expect(segments[1]!.firstSentenceEn).toBe('Sentence number 6.');
+  });
+
+  it('gives the video span of timed sentences and null otherwise', () => {
+    const base = snapshot(lines(10), []);
+    expect(lessonPracticeSegments(base)[0]).toMatchObject({
+      startMs: null,
+      endMs: null,
+    });
+    const timed = lessonPracticeSegments({
+      ...base,
+      sentences: base.sentences.map((s, n) => ({
+        ...s,
+        start_ms: n * 2000,
+        end_ms: n * 2000 + 1500,
+      })),
+    });
+    expect(timed[1]).toMatchObject({startMs: 10_000, endMs: 19_500});
+  });
+
+  it('returns no segment for a lesson without sentences', () => {
+    expect(lessonPracticeSegments(snapshot([], []))).toEqual([]);
+  });
+
+  it('builds the practice of the segment it is given', () => {
+    const long = snapshot([...lines(8), ...SENTENCES]);
+    const segments = lessonPracticeSegments(long);
+    expect(segments).toHaveLength(2);
+    const plan = buildLessonPracticePlan(
+      long,
+      SEED,
+      long.analyses,
+      segments[1]!.sentenceIds,
+    )!;
+    expect(plan.sentenceIds).toEqual(segments[1]!.sentenceIds);
+    const listen = section(plan.sections, 'listen_and_repeat');
+    for (const prompt of listen.content.prompts) {
+      expect(segments[1]!.sentenceIds).toContain(prompt.sentenceId);
+    }
   });
 });

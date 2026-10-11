@@ -131,6 +131,53 @@ export function pickStudyWindow(
   return sentences.slice(bestStart, bestStart + max);
 }
 
+/** One part of a long lesson that a practice run can study on its own. */
+export type LessonPracticeSegment = {
+  /** 0-based position among the lesson's segments. */
+  index: number;
+  /** Consecutive sentences, in lesson order. */
+  sentenceIds: string[];
+  firstSentenceEn: string;
+  /** Video time span of the segment; null without timed sentences. */
+  startMs: number | null;
+  endMs: number | null;
+};
+
+/**
+ * K1: the lesson's sentences split in order into segments of at most `max`,
+ * as even as possible (17 sentences → 6, 6, 5), so the last segment is never
+ * a lone sentence or two. A lesson of `max` sentences or fewer is one segment.
+ */
+export function lessonPracticeSegments(
+  snapshot: LessonSnapshot,
+  max: number = LESSON_PRACTICE_WINDOW_MAX,
+): LessonPracticeSegment[] {
+  const sentences = sortedSentences(snapshot);
+  if (sentences.length === 0) {
+    return [];
+  }
+  const count = Math.ceil(sentences.length / max);
+  const base = Math.floor(sentences.length / count);
+  const larger = sentences.length % count;
+  const segments: LessonPracticeSegment[] = [];
+  let start = 0;
+  for (let index = 0; index < count; index += 1) {
+    const size = base + (index < larger ? 1 : 0);
+    const part = sentences.slice(start, start + size);
+    start += size;
+    const starts = part.flatMap(s => (s.start_ms === null ? [] : [s.start_ms]));
+    const ends = part.flatMap(s => (s.end_ms === null ? [] : [s.end_ms]));
+    segments.push({
+      index,
+      sentenceIds: part.map(sentence => sentence.id),
+      firstSentenceEn: part[0]!.text_en,
+      startMs: starts.length > 0 ? Math.min(...starts) : null,
+      endMs: ends.length > 0 ? Math.max(...ends) : null,
+    });
+  }
+  return segments;
+}
+
 /** The sentence's video clip, when it has a usable one. */
 function clipOf(
   sentence: LessonSentence,
@@ -321,13 +368,20 @@ function isValid(section: LessonPracticeSection): boolean {
  * The practice run of one lesson, or `null` when the lesson has too little
  * to practise (D5: the hub then keeps its manual "complete"). Sections keep a
  * fixed order: listen and repeat, word meaning, fill the blank, translate.
+ * `sentenceIds` studies one segment (`lessonPracticeSegments`); without it the
+ * run studies the window with the most lesson words.
  */
 export function buildLessonPracticePlan(
   snapshot: LessonSnapshot,
   seed: string,
   analyses: Record<string, LessonAnalysis> = snapshot.analyses,
+  sentenceIds?: readonly string[],
 ): LessonPracticePlan | null {
-  const window = pickStudyWindow(snapshot, analyses);
+  const window = sentenceIds
+    ? sortedSentences(snapshot).filter(sentence =>
+        sentenceIds.includes(sentence.id),
+      )
+    : pickStudyWindow(snapshot, analyses);
   if (window.length === 0) {
     return null;
   }

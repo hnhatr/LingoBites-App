@@ -20,6 +20,8 @@ export {
   type LessonPracticePlan,
   type LessonPracticeSection,
   type LessonPracticeSectionKind,
+  type LessonPracticeSegment,
+  lessonPracticeSegments,
   pickStudyWindow,
 } from './lessonPractice';
 export {
