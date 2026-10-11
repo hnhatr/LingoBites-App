@@ -1,4 +1,5 @@
 import React from 'react';
+import {Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {
@@ -73,6 +74,62 @@ describe('LaunchSplash', () => {
 
     act(() => {
       jest.advanceTimersByTime(1000);
+    });
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it('settles instead of fading out when the app is not ready', () => {
+    const onFinish = jest.fn();
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    act(() => {
+      tree = ReactTestRenderer.create(
+        <LaunchSplash
+          onFinish={onFinish}
+          ready={false}
+          status={<Text>waiting</Text>}
+        />,
+      );
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(LAUNCH_SPLASH_HOLD_MS + LAUNCH_SPLASH_EXIT_MS);
+    });
+    expect(onFinish).not.toHaveBeenCalled();
+    expect(lettersOf(tree)).toContain('waiting');
+
+    act(() => {
+      tree.update(
+        <LaunchSplash
+          onFinish={onFinish}
+          ready
+          status={<Text>waiting</Text>}
+        />,
+      );
+    });
+    act(() => {
+      jest.advanceTimersByTime(LAUNCH_SPLASH_EXIT_MS);
+    });
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for ready without an intro when skipIntro is set', () => {
+    const onFinish = jest.fn();
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    act(() => {
+      tree = ReactTestRenderer.create(
+        <LaunchSplash onFinish={onFinish} ready={false} skipIntro />,
+      );
+    });
+    act(() => {
+      jest.advanceTimersByTime(10000);
+    });
+    expect(onFinish).not.toHaveBeenCalled();
+
+    act(() => {
+      tree.update(<LaunchSplash onFinish={onFinish} ready skipIntro />);
+    });
+    act(() => {
+      jest.advanceTimersByTime(LAUNCH_SPLASH_EXIT_MS);
     });
     expect(onFinish).toHaveBeenCalledTimes(1);
   });

@@ -1,4 +1,5 @@
 import type {AccountPhase} from '@features/account';
+import type {LearnerProfileStatus} from '@features/onboarding';
 
 /**
  * Deterministic account gate mapping (SETE-303 / T6): exactly one root
@@ -29,4 +30,15 @@ export function accountGateRouteForPhase(
     return 'BootGate';
   }
   return 'BootGate';
+}
+
+/**
+ * A signed-in learner whose profile has not loaded yet: `AppNavigator` holds
+ * `Tabs` back and the launch gate keeps covering the app until it resolves.
+ */
+export function isLearnerProfilePending(
+  profileStatus: LearnerProfileStatus,
+  userId: string | null,
+): boolean {
+  return profileStatus === 'checking' || (profileStatus === 'idle' && !!userId);
 }

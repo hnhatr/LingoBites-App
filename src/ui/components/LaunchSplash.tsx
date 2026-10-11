@@ -7,10 +7,16 @@
  * ring pulses, sparkles and letter chips burst out, the "LingoBites" wordmark
  * rises letter by letter, then the whole overlay fades into the app.
  *
+ * When the app behind is not `ready` as the hold ends, the splash settles
+ * instead of fading: chips and sparkles fade, the tile and wordmark lift, and
+ * `status` appears underneath on the same background. It fades into the app
+ * once `ready` turns true. `skipIntro` mounts it already settled, for when the
+ * app needs the gate again after launch.
+ *
  * All motion is conditioned on useReducedMotion(): with reduced motion the
  * finished composition is shown statically and simply fades out.
  */
-import React, {useEffect, useRef} from 'react';
+import React, {type ReactNode, useEffect, useRef, useState} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import Animated, {
   Easing,
@@ -49,7 +55,12 @@ const BITES_START = 5;
 export const LAUNCH_SPLASH_HOLD_MS = 2100;
 /** Duration of the fade into the app (ms). */
 export const LAUNCH_SPLASH_EXIT_MS = 420;
+/** Duration of the settle into the waiting layout (ms). */
+export const LAUNCH_SPLASH_SETTLE_MS = 640;
 const REDUCED_HOLD_MS = 600;
+const REENTER_MS = 260;
+// How far the tile and wordmark lift when settling, to make room for status.
+const SETTLE_LIFT = 78;
 
 // Offsets from the tile centre; delays are relative to mount.
 const SPARKLES = [
@@ -68,23 +79,89 @@ const CHIPS = [
 type LaunchSplashProps = {
   /** Called once the overlay has fully faded out and can be unmounted. */
   onFinish: () => void;
+  /**
+   * Whether the app behind can be shown. Read when the hold ends: true fades
+   * into the app, false settles and waits for it to turn true.
+   */
+  ready?: boolean;
+  /** Shown under the wordmark once settled. */
+  status?: ReactNode;
+  /** Keeps the glow ring pulsing while settled, as an activity cue. */
+  busy?: boolean;
+  /** Mount already settled with a short fade-in instead of the intro. */
+  skipIntro?: boolean;
   testID?: string;
 };
 
-export function LaunchSplash({onFinish, testID}: LaunchSplashProps) {
+export function LaunchSplash({
+  onFinish,
+  ready = true,
+  status,
+  busy = false,
+  skipIntro = false,
+  testID,
+}: LaunchSplashProps) {
   const reducedMotion = useReducedMotion();
+  const still = reducedMotion || skipIntro;
   // The intro runs exactly once; a new onFinish identity must not restart it.
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
-  const overlayOpacity = useSharedValue(1);
+  const readyRef = useRef(ready);
+  readyRef.current = ready;
+  const [settled, setSettled] = useState(skipIntro);
+  const exitRef = useRef<(() => void) | null>(null);
+  const overlayOpacity = useSharedValue(skipIntro ? 0 : 1);
   const tileScale = useSharedValue(1);
   const tileRotate = useSharedValue(0);
   const tileFloat = useSharedValue(0);
   const ring = useSharedValue(0);
+  const ringOn = useSharedValue(busy ? 1 : 0);
+  const settle = useSharedValue(skipIntro ? 1 : 0);
 
   useEffect(() => {
     const hold = reducedMotion ? REDUCED_HOLD_MS : LAUNCH_SPLASH_HOLD_MS;
     const exit = reducedMotion ? 200 : LAUNCH_SPLASH_EXIT_MS;
+    let finishTimer: ReturnType<typeof setTimeout> | undefined;
+    let exiting = false;
+
+    exitRef.current = () => {
+      if (exiting) {
+        return;
+      }
+      exiting = true;
+      overlayOpacity.value = withTiming(0, {
+        duration: exit,
+        easing: Easing.in(Easing.quad),
+      });
+      if (!reducedMotion) {
+        tileScale.value = withTiming(1.18, {
+          duration: exit,
+          easing: Easing.in(Easing.quad),
+        });
+      }
+      finishTimer = setTimeout(() => onFinishRef.current(), exit);
+    };
+
+    if (!reducedMotion) {
+      ring.value = withDelay(
+        skipIntro ? 0 : 200,
+        withRepeat(
+          withTiming(1, {duration: 1100, easing: Easing.out(Easing.cubic)}),
+          -1,
+          false,
+        ),
+      );
+    }
+
+    if (skipIntro) {
+      overlayOpacity.value = withTiming(1, {
+        duration: reducedMotion ? 0 : REENTER_MS,
+      });
+      return () => {
+        exitRef.current = null;
+        clearTimeout(finishTimer);
+      };
+    }
 
     if (!reducedMotion) {
       // Anticipation squash, springy pop, then a gentle idle bob.
@@ -105,37 +182,59 @@ export function LaunchSplash({onFinish, testID}: LaunchSplashProps) {
           true,
         ),
       );
-      ring.value = withDelay(
-        200,
-        withRepeat(
-          withTiming(1, {duration: 1100, easing: Easing.out(Easing.cubic)}),
-          -1,
-          false,
-        ),
-      );
     }
 
-    const exitTimer = setTimeout(() => {
-      overlayOpacity.value = withTiming(0, {
-        duration: exit,
-        easing: Easing.in(Easing.quad),
-      });
-      if (!reducedMotion) {
-        tileScale.value = withTiming(1.18, {
-          duration: exit,
-          easing: Easing.in(Easing.quad),
-        });
+    const holdTimer = setTimeout(() => {
+      if (readyRef.current) {
+        exitRef.current?.();
+        return;
       }
+      settle.value = withTiming(1, {
+        duration: reducedMotion ? 0 : LAUNCH_SPLASH_SETTLE_MS,
+        easing: Easing.out(Easing.cubic),
+      });
+      setSettled(true);
     }, hold);
-    const finishTimer = setTimeout(() => onFinishRef.current(), hold + exit);
     return () => {
-      clearTimeout(exitTimer);
+      exitRef.current = null;
+      clearTimeout(holdTimer);
       clearTimeout(finishTimer);
     };
-  }, [overlayOpacity, reducedMotion, ring, tileFloat, tileRotate, tileScale]);
+    // The intro runs once per mount; `skipIntro` is fixed for its lifetime.
+  }, [
+    overlayOpacity,
+    reducedMotion,
+    ring,
+    settle,
+    skipIntro,
+    tileFloat,
+    tileRotate,
+    tileScale,
+  ]);
+
+  // Once settled, the splash leaves as soon as the app behind is ready.
+  useEffect(() => {
+    if (settled && ready) {
+      exitRef.current?.();
+    }
+  }, [ready, settled]);
+
+  useEffect(() => {
+    ringOn.value = withTiming(busy ? 1 : 0, {duration: 200});
+  }, [busy, ringOn]);
 
   const overlayStyle = useAnimatedStyle(() => ({
     opacity: overlayOpacity.value,
+  }));
+  const stageStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: settle.value * -SETTLE_LIFT}],
+  }));
+  const burstStyle = useAnimatedStyle(() => ({
+    opacity: 1 - settle.value,
+  }));
+  const statusStyle = useAnimatedStyle(() => ({
+    opacity: settle.value,
+    transform: [{translateY: (1 - settle.value) * 10}],
   }));
   const tileStyle = useAnimatedStyle(() => ({
     transform: [
@@ -145,7 +244,8 @@ export function LaunchSplash({onFinish, testID}: LaunchSplashProps) {
     ],
   }));
   const ringStyle = useAnimatedStyle(() => ({
-    opacity: 0.5 * (1 - ring.value),
+    // The ring always pulses during the intro; once settled only while busy.
+    opacity: 0.5 * (1 - ring.value) * Math.max(ringOn.value, 1 - settle.value),
     transform: [{scale: 1 + ring.value * 1.1}],
   }));
 
@@ -166,25 +266,23 @@ export function LaunchSplash({onFinish, testID}: LaunchSplashProps) {
       </Svg>
 
       <View pointerEvents="none" style={styles.center}>
-        <View style={styles.anchor}>
+        <Animated.View style={[styles.anchor, stageStyle]}>
           {reducedMotion ? null : (
             <Animated.View style={[styles.ring, ringStyle]} />
           )}
 
-          {CHIPS.map(chip => (
-            <LetterChip
-              key={chip.label}
-              reducedMotion={reducedMotion}
-              {...chip}
-            />
-          ))}
-          {SPARKLES.map(sparkle => (
-            <Sparkle
-              key={`${sparkle.x}:${sparkle.y}`}
-              reducedMotion={reducedMotion}
-              {...sparkle}
-            />
-          ))}
+          <Animated.View style={[styles.burst, burstStyle]}>
+            {CHIPS.map(chip => (
+              <LetterChip key={chip.label} reducedMotion={still} {...chip} />
+            ))}
+            {SPARKLES.map(sparkle => (
+              <Sparkle
+                key={`${sparkle.x}:${sparkle.y}`}
+                reducedMotion={still}
+                {...sparkle}
+              />
+            ))}
+          </Animated.View>
 
           <Animated.View style={[styles.tile, tileStyle]}>
             <Image
@@ -200,12 +298,23 @@ export function LaunchSplash({onFinish, testID}: LaunchSplashProps) {
                 key={id}
                 index={index}
                 letter={letter}
-                reducedMotion={reducedMotion}
+                reducedMotion={still}
               />
             ))}
           </View>
-        </View>
+        </Animated.View>
       </View>
+
+      {status ? (
+        <Animated.View
+          accessibilityElementsHidden={!settled}
+          importantForAccessibility={settled ? 'auto' : 'no-hide-descendants'}
+          pointerEvents={settled ? 'box-none' : 'none'}
+          style={[styles.status, statusStyle]}
+        >
+          {status}
+        </Animated.View>
+      ) : null}
     </Animated.View>
   );
 }
@@ -374,6 +483,13 @@ const styles = StyleSheet.create({
     height: 0,
     width: 0,
   },
+  burst: {
+    height: 0,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    width: 0,
+  },
   center: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
@@ -422,6 +538,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: (-TILE_SIZE * 1.3) / 2,
     width: TILE_SIZE * 1.3,
+  },
+  status: {
+    left: 36,
+    marginTop: 112,
+    position: 'absolute',
+    right: 36,
+    top: '50%',
   },
   tile: {
     height: TILE_SIZE,
