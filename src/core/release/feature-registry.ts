@@ -142,9 +142,8 @@ export const featureRegistry = [
     module: 'src/features/lesson/player',
     required: false,
     releaseGroup: 'expansion',
-    status: 'beta',
-    entryPoint:
-      'Home video card -> Lessons/LessonCreation (initialSource youtube) when unified catalog is ready',
+    status: 'ready',
+    entryPoint: 'CreateHub / VideoHub -> LessonCreation (youtube)',
   },
 ] as const satisfies readonly FeatureRegistryEntry[];
 
