@@ -3,9 +3,15 @@
     "name": "LingoBites"
   },
   "app_update": {
-    "title": "Updating",
-    "message": "LingoBites is downloading the latest version. This only takes a few seconds.",
-    "progress": "{{percent}}% downloaded"
+    "title": "Downloading the latest version",
+    "message": "This only takes a few seconds",
+    "percent": "{{percent}}%",
+    "reloading_title": "All set, reopening…",
+    "reloading_message": "The new version is ready"
+  },
+  "launch_gate": {
+    "loading": "Opening LingoBites…",
+    "loading_slow": "The network is a bit slow, hang on"
   },
   "nav": {
     "tab": {

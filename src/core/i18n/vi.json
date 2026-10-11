@@ -3,9 +3,15 @@
     "name": "LingoBites"
   },
   "app_update": {
-    "title": "Đang cập nhật",
-    "message": "LingoBites đang tải bản mới nhất, chỉ mất vài giây.",
-    "progress": "Đã tải {{percent}}%"
+    "title": "Đang tải bản mới",
+    "message": "Chỉ mất vài giây",
+    "percent": "{{percent}}%",
+    "reloading_title": "Xong rồi, đang mở lại…",
+    "reloading_message": "Bản mới đã sẵn sàng"
+  },
+  "launch_gate": {
+    "loading": "Đang mở LingoBites…",
+    "loading_slow": "Mạng hơi chậm, chờ thêm chút nhé"
   },
   "nav": {
     "tab": {

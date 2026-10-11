@@ -68,7 +68,7 @@ import {TodayScreen} from '@features/today';
 import {AppNavigationProvider} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
 
-import {accountGateRouteForPhase} from './accountGate';
+import {accountGateRouteForPhase, isLearnerProfilePending} from './accountGate';
 import {createAppNavigation, navigationRef} from './appNavigationAdapter';
 import {isIngestionRouteEnabled} from './ingestionRouteGate';
 import {TabBar} from './TabBar';
@@ -383,8 +383,7 @@ export function AppNavigator() {
       </NavigationContainer>
     );
   }
-  const profileUnknown =
-    profileStatus === 'checking' || (profileStatus === 'idle' && userId);
+  const profileUnknown = isLearnerProfilePending(profileStatus, userId);
   if (gateRoute !== 'Tabs' || profileUnknown) {
     return (
       <NavigationContainer>
