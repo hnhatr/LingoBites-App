@@ -70,13 +70,11 @@ describe(`${CHARACTERIZATION_INVARIANTS.INV_004} navigation mount matrix`, () =>
       'Tabs',
       'PasteText',
       'ImageCapture',
-      'OCRReview',
       ...ROOT_FLOW_ROUTES,
     ]);
     expect(beta.ingestionRoutes).toMatchObject({
       PasteText: true,
       ImageCapture: true,
-      OCRReview: true,
     });
 
     const fullFeatures = buildNavigationMountSnapshot(

@@ -1,5 +1,3 @@
-import type {OCRReviewRouteParams} from '@features/ocr';
-
 import type {OCRSourceType} from '@core/api/types';
 
 import type {PickedImage} from '../logic/imagePicker';
@@ -28,7 +26,6 @@ export type CreateFlowParamList = {
   CreateHub: CreateHubRouteParams;
   PasteText: PasteTextRouteParams;
   ImageCapture: ImageCaptureRouteParams;
-  OCRReview: OCRReviewRouteParams;
   MomentReview: MomentReviewRouteParams;
   SituationInput: SituationInputRouteParams;
 };

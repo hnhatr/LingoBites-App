@@ -66,8 +66,6 @@ jest.mock('react-native-config', () => ({
   default: {
     APP_ENV: 'local',
     API_BASE_URL: 'http://localhost:3000',
-    USE_MOCK_AI: 'true',
-    USE_MOCK_OCR: 'true',
     AI_SCHEMA_VERSION: 'ai-output-v1',
     SUPPORT_EMAIL: 'support@lingobites.app',
   },

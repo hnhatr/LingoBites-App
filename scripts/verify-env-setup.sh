@@ -29,8 +29,8 @@ if grep -R -E '^(AI_API_KEY|OCR_API_KEY)=' .env.example .env.development .env.st
   exit 1
 fi
 
-if grep -E '^USE_MOCK_AI=true$' .env.production >/dev/null 2>&1; then
-  echo "FAIL: production env must not enable mock AI" >&2
+if grep -E '^USE_MOCK_(AI|OCR)=' .env.example .env.development .env.staging .env.production 2>/dev/null; then
+  echo "FAIL: USE_MOCK_* was removed; the app always calls the server" >&2
   exit 1
 fi
 
