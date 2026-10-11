@@ -5,3 +5,7 @@ android/local.properties
 
 # Kotlin 2.x Gradle daemon/session files, created during every Android build.
 **/.kotlin/**/*
+
+# Xcode per-user state. The default ignore only covers xcuserdata in the
+# .xcworkspace, not the one inside the .xcodeproj's project.xcworkspace.
+ios/**/xcuserdata/**/*
