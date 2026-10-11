@@ -92,11 +92,28 @@ export const IMAGE_ANALYZE_TIMEOUT_MS = 30_000;
 
 export type AnalyzeImageOptions = CanonicalLessonClientOptions & {
   timeoutMs?: number;
+  /** Reads the picked file into memory (test seam). */
+  readImage?: (uri: string) => Promise<Blob>;
 };
 
+type FileFormData = {
+  append(name: string, value: Blob, fileName: string): void;
+};
+
+async function readImageFile(uri: string): Promise<Blob> {
+  const response = await fetch(uri);
+  return response.blob();
+}
+
+/**
+ * The global fetch is expo/fetch, which cannot send React Native's
+ * `{uri, name, type}` file parts (it throws before any request), so the photo
+ * goes up as a Blob read from the file.
+ */
 function imageAnalysisForm(
   image: PickedImage,
   sourceType: 'camera' | 'gallery',
+  bytes: Blob,
 ): FormData {
   const form = new FormData();
   form.append('request_id', createRequestId());
@@ -110,11 +127,14 @@ function imageAnalysisForm(
   if (platform) form.append('platform', platform);
   if (image.width) form.append('image_width', String(image.width));
   if (image.height) form.append('image_height', String(image.height));
-  form.append('image', {
-    uri: image.uri,
-    name: image.fileName ?? 'image.jpg',
-    type: image.type ?? 'image/jpeg',
-  } as unknown as Blob);
+  const type = image.type ?? 'image/jpeg';
+  // Expo's FormData takes the file name as the third argument (RN types omit
+  // it); without one the server reads the part as a field, not a file.
+  (form as unknown as FileFormData).append(
+    'image',
+    bytes.slice(0, bytes.size, type),
+    image.fileName ?? 'image.jpg',
+  );
   return form;
 }
 
@@ -128,7 +148,31 @@ export async function analyzeImage(
   sourceType: 'camera' | 'gallery',
   options: AnalyzeImageOptions = {},
 ): Promise<CanonicalLessonResult<ImageAnalysis>> {
-  const {timeoutMs = IMAGE_ANALYZE_TIMEOUT_MS, ...clientOptions} = options;
+  const {
+    timeoutMs = IMAGE_ANALYZE_TIMEOUT_MS,
+    readImage = readImageFile,
+    ...clientOptions
+  } = options;
+  let bytes: Blob;
+  try {
+    bytes = await readImage(image.uri);
+  } catch (error) {
+    if (__DEV__) {
+      console.warn(
+        '[api] photo not readable',
+        error instanceof Error ? `${error.name}: ${error.message}` : error,
+      );
+    }
+    // The file on the device, not the network: never "offline".
+    return {
+      ok: false,
+      kind: 'content-error',
+      errorCode: 'IMAGE_UNREADABLE',
+      message: 'The photo could not be read.',
+      retryable: false,
+    };
+  }
+
   const controller = new AbortController();
   let timedOut = false;
   const timer = setTimeout(() => {
@@ -143,7 +187,7 @@ export async function analyzeImage(
   try {
     answered = await send(
       '/api/v1/images/analyze',
-      {method: 'POST', body: imageAnalysisForm(image, sourceType)},
+      {method: 'POST', body: imageAnalysisForm(image, sourceType, bytes)},
       'IMAGE_NOT_FOUND',
       {...clientOptions, signal: controller.signal},
     );

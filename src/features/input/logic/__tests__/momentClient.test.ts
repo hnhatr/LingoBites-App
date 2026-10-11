@@ -147,6 +147,8 @@ describe('momentClient', () => {
 
   describe('analyzeImage', () => {
     const image = {uri: 'file:///a.jpg', fileName: 'a.jpg', type: 'image/jpeg'};
+    const bytes = new Blob(['jpeg-bytes']);
+    const readImage = jest.fn(async () => bytes);
     const analysis = {
       request_id: 'r',
       status: 'success',
@@ -160,12 +162,32 @@ describe('momentClient', () => {
 
     it('uploads the photo as multipart to the analyze route', async () => {
       authenticatedFetch.mockResolvedValue(jsonResponse(200, analysis));
-      const result = await analyzeImage(image, 'gallery');
+      const result = await analyzeImage(image, 'gallery', {readImage});
       expect(result).toEqual({ok: true, value: analysis});
       const [url, init] = authenticatedFetch.mock.calls[0];
       expect(url).toBe('https://api.test/api/v1/images/analyze');
       expect(init.method).toBe('POST');
       expect(init.body).toBeInstanceOf(FormData);
+      expect(readImage).toHaveBeenCalledWith('file:///a.jpg');
+      // A Blob part, not an RN `{uri}` object that expo/fetch cannot send.
+      const part = (init.body as FormData).getAll('image')[0];
+      expect(part).toBeInstanceOf(Blob);
+    });
+
+    it('reports an unreadable photo without marking the app offline', async () => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const result = await analyzeImage(image, 'gallery', {
+        readImage: async () => {
+          throw new Error('ENOENT');
+        },
+      });
+      warn.mockRestore();
+      expect(result).toMatchObject({
+        ok: false,
+        kind: 'content-error',
+        errorCode: 'IMAGE_UNREADABLE',
+      });
+      expect(authenticatedFetch).not.toHaveBeenCalled();
     });
 
     it('reports a request that got no response as a network error', async () => {
@@ -173,7 +195,7 @@ describe('momentClient', () => {
         new TypeError('Network request failed'),
       );
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-      const result = await analyzeImage(image, 'gallery');
+      const result = await analyzeImage(image, 'gallery', {readImage});
       warn.mockRestore();
       expect(result).toMatchObject({
         ok: false,
@@ -189,7 +211,7 @@ describe('momentClient', () => {
           error: {code: 'IMAGE_TOO_LARGE', message: 'Ảnh quá lớn.'},
         }),
       );
-      expect(await analyzeImage(image, 'camera')).toMatchObject({
+      expect(await analyzeImage(image, 'camera', {readImage})).toMatchObject({
         ok: false,
         kind: 'server-error',
         errorCode: 'IMAGE_TOO_LARGE',
@@ -208,7 +230,10 @@ describe('momentClient', () => {
             });
           }),
       );
-      const result = await analyzeImage(image, 'gallery', {timeoutMs: 10});
+      const result = await analyzeImage(image, 'gallery', {
+        timeoutMs: 10,
+        readImage,
+      });
       expect(result).toMatchObject({
         ok: false,
         errorCode: 'IMAGE_ANALYZE_TIMEOUT',
@@ -221,6 +246,7 @@ describe('momentClient', () => {
       controller.abort();
       const result = await analyzeImage(image, 'gallery', {
         signal: controller.signal,
+        readImage,
       });
       expect(result).toMatchObject({ok: false, cancelled: true});
       expect(authenticatedFetch).not.toHaveBeenCalled();

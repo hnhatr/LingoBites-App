@@ -199,7 +199,9 @@ describe('canonical lesson client', () => {
   });
 
   it('never reports a deletion on transport failure (gone needs HTTP 200)', async () => {
-    authenticatedFetch.mockRejectedValue(new Error('offline'));
+    authenticatedFetch.mockRejectedValue(
+      new TypeError('Network request failed'),
+    );
     const result = await fetchLessonRevisions([
       '33333333-3333-4333-8333-333333333301',
     ]);
@@ -208,5 +210,21 @@ describe('canonical lesson client', () => {
       expect(result.kind).toBe('network-error');
       expect(result.retryable).toBe(true);
     }
+  });
+
+  it('reports a failure on the device as a client error, not offline', async () => {
+    authenticatedFetch.mockRejectedValue(
+      new Error('Unsupported FormDataPart implementation'),
+    );
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const result = await fetchLessonRevisions([
+      '33333333-3333-4333-8333-333333333301',
+    ]);
+    warn.mockRestore();
+    expect(result).toMatchObject({
+      ok: false,
+      kind: 'client-error',
+      errorCode: 'CLIENT_ERROR',
+    });
   });
 });
