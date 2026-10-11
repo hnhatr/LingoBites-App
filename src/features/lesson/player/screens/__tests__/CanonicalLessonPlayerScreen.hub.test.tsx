@@ -144,6 +144,17 @@ jest.mock('../../logic/useLessonCompletion', () => ({
   }),
 }));
 
+// Plan "practice segments": null reads the device store as usual.
+let mockSegmentViews: unknown[] | null = null;
+jest.mock('../../../flow/logic/practiceSegments', () => {
+  const actual = jest.requireActual('../../../flow/logic/practiceSegments');
+  return {
+    ...actual,
+    practiceSegmentViews: (lesson: unknown) =>
+      mockSegmentViews ?? actual.practiceSegmentViews(lesson),
+  };
+});
+
 function renderScreen() {
   const navigation = {
     navigate: jest.fn(),
@@ -192,6 +203,7 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     mockSetMediaConsent.mockClear();
     mockPostponeMediaConsent.mockClear();
     mockDownloadMedia.mockClear();
+    mockSegmentViews = null;
   });
 
   it('asks before downloading lesson media and downloads on "Tự động tải"', () => {
@@ -410,6 +422,27 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     expect(has(tree, 'canonical-hub-completed')).toBe(true);
     expect(pressable(tree, 'canonical-hub-start-practice').props.label).toBe(
       'Luyện lại',
+    );
+  });
+
+  it('continues a long learner lesson at its next segment', () => {
+    const view = (index: number, practicedAt: string | null) => ({
+      index,
+      sentenceIds: [],
+      firstSentenceEn: '',
+      startMs: null,
+      endMs: null,
+      available: true,
+      practicedAt,
+    });
+    mockSegmentViews = [
+      view(0, '2026-10-11T08:00:00.000Z'),
+      view(1, null),
+      view(2, null),
+    ];
+    const {tree} = renderScreen();
+    expect(pressable(tree, 'canonical-hub-start-practice').props.label).toBe(
+      'Luyện tiếp · đoạn 2/3',
     );
   });
 

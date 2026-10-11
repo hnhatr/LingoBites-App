@@ -76,13 +76,22 @@ export function canComposeFrom(snapshot: LessonSnapshot): boolean {
 
 /**
  * Plan C (D7): the sentences to start "Học theo 6 bước" with after a practice
- * run: the same study window as the practice, narrowed to its longest run of
- * sentences short enough to send. Empty when that run would not pass the
+ * run: the segment just practised (plan "practice segments", K6), or the
+ * study window with the most words without one, narrowed to its longest run
+ * of sentences short enough to send. Empty when that run would not pass the
  * App-side checks; the learner then picks by hand.
  */
-export function suggestComposePick(snapshot: LessonSnapshot): string[] {
+export function suggestComposePick(
+  snapshot: LessonSnapshot,
+  sentenceIds?: readonly string[],
+): string[] {
   if (!canComposeFrom(snapshot)) return [];
-  const window = pickStudyWindow(snapshot, snapshot.analyses, COMPOSE_PICK_MAX);
+  const window = sentenceIds
+    ? [...snapshot.sentences]
+        .sort((a, b) => a.position - b.position)
+        .filter(sentence => sentenceIds.includes(sentence.id))
+        .slice(0, COMPOSE_PICK_MAX)
+    : pickStudyWindow(snapshot, snapshot.analyses, COMPOSE_PICK_MAX);
   let best: LessonSentence[] = [];
   let run: LessonSentence[] = [];
   for (const sentence of window) {

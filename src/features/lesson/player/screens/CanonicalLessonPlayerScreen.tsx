@@ -31,6 +31,11 @@ import {
   hasLessonPracticeRun,
   isFlowLesson,
 } from '../../flow/logic/practiceCompletion';
+import {
+  nextPracticeSegment,
+  type PracticeSegmentView,
+  practiceSegmentViews,
+} from '../../flow/logic/practiceSegments';
 import {useFlowEntry} from '../../flow/logic/useFlowEntry';
 import {
   CanonicalLessonHub,
@@ -177,6 +182,25 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       practiceEnabled && snapshot !== null && hasLessonPracticeRun(snapshot),
     [practiceEnabled, snapshot],
   );
+  // Plan "practice segments": a long lesson continues at its next segment;
+  // read again on focus, after a run finished a segment.
+  const [practiceSegments, setPracticeSegments] = useState<
+    PracticeSegmentView[]
+  >([]);
+  useFocusEffect(
+    useCallback(() => {
+      setPracticeSegments(
+        practiceRun && snapshot ? practiceSegmentViews(snapshot) : [],
+      );
+    }, [practiceRun, snapshot]),
+  );
+  const nextSegment = nextPracticeSegment(practiceSegments);
+  const continueSegment =
+    practiceSegments.length > 1 &&
+    nextSegment !== null &&
+    practiceSegments.some(segment => segment.practicedAt !== null)
+      ? nextSegment
+      : null;
   const openPractice = useCallback(
     () => appNavigation.openPractice(lessonId),
     [appNavigation, lessonId],
@@ -590,7 +614,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const studyReady = isYouTubeStudy && state.status === 'ready';
   // Curriculum lessons start the six-step player (PR 10, decision G1).
   const startLabel = practiceRun
-    ? completionState === 'finished'
+    ? continueSegment !== null
+      ? t('practice.start_segment', {
+          number: continueSegment + 1,
+          total: practiceSegments.length,
+        })
+      : completionState === 'finished'
       ? t('practice.start_again')
       : t('practice.start')
     : !flowEntry.available

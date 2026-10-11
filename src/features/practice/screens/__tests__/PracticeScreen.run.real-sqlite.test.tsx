@@ -58,7 +58,9 @@ const WORDS: Array<[string, string]> = [
 ];
 
 /** A learner's own text lesson (not six-step) with five words. */
-function seedLearnerLesson() {
+function seedLearnerLesson(
+  sentences: ReadonlyArray<readonly [string, string]> = SENTENCES,
+) {
   const body = JSON.parse(fs.readFileSync(FIXTURE, 'utf8')) as {
     contract_version: number;
     lesson: Record<string, unknown>;
@@ -71,7 +73,7 @@ function seedLearnerLesson() {
     source_type: 'learner_text',
     unit: null,
     content_revision: 4,
-    sentences: SENTENCES.map(([en, vi], index) => ({
+    sentences: sentences.map(([en, vi], index) => ({
       id: id(index + 1),
       position: index,
       text_en: en,
@@ -330,5 +332,66 @@ describe('PracticeScreen – practice run of a learner lesson', () => {
       rows('SELECT session_id FROM activity_attempts;').map(r => r.session_id),
     );
     expect(sessions.size).toBe(2);
+  });
+});
+
+describe('PracticeScreen – a long lesson practised by segment', () => {
+  // Ten sentences: two segments of five, each with every section.
+  const seedLongLesson = () => seedLearnerLesson([...SENTENCES, ...SENTENCES]);
+
+  function finishRun(tree: ReactTestRenderer.ReactTestRenderer) {
+    press(tree, 'practice-run-skip-speaking');
+    while (!has(tree, 'practice-run-result')) {
+      answerEntry(tree);
+    }
+  }
+
+  it('starts at the first segment, then offers the next one', async () => {
+    seedLongLesson();
+    const {tree} = await renderScreen();
+    expect(text(tree, 'practice-run-segment')).toBe('Đoạn 1/2');
+    finishRun(tree);
+
+    expect(text(tree, 'practice-segments-progress')).toBe('Đã luyện 1/2 đoạn');
+    const stored = JSON.parse(
+      rows(
+        `SELECT value FROM app_settings WHERE key = 'practice.segments.${LESSON_ID}';`,
+      )[0]!.value,
+    );
+    expect(stored.revision).toBe(4);
+    expect(Object.keys(stored.done)).toEqual(['0']);
+
+    press(tree, 'practice-next-segment');
+    expect(text(tree, 'practice-run-progress')).toBe('Phần 1/4');
+    expect(text(tree, 'practice-run-segment')).toBe('Đoạn 2/2');
+    finishRun(tree);
+    expect(text(tree, 'practice-segments-progress')).toBe('Đã luyện 2/2 đoạn');
+  });
+
+  it('reopens at the segment not practised yet', async () => {
+    seedLongLesson();
+    const first = await renderScreen();
+    finishRun(first.tree);
+    const {tree} = await renderScreen();
+    expect(text(tree, 'practice-run-segment')).toBe('Đoạn 2/2');
+  });
+
+  it('lets the learner pick another segment from the list', async () => {
+    seedLongLesson();
+    const {tree} = await renderScreen();
+    finishRun(tree);
+    expect(has(tree, 'practice-segment-list')).toBe(false);
+    press(tree, 'practice-pick-segment');
+    expect(has(tree, 'practice-segment-1')).toBe(true);
+    press(tree, 'practice-segment-0');
+    expect(text(tree, 'practice-run-segment')).toBe('Đoạn 1/2');
+  });
+
+  it('shows no segments for a short lesson', async () => {
+    seedLearnerLesson();
+    const {tree} = await renderScreen();
+    expect(has(tree, 'practice-run-segment')).toBe(false);
+    finishRun(tree);
+    expect(has(tree, 'practice-segments')).toBe(false);
   });
 });
