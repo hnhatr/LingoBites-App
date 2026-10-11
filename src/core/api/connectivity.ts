@@ -25,11 +25,29 @@ export function reportServerReachable(): void {
   }
 }
 
-/** A request failed before any HTTP response (no network, DNS, timeout). */
+/** A request failed before any HTTP response (no network, DNS, TLS). */
 export function reportServerUnreachable(): void {
   if (useConnectivityStore.getState().status !== 'offline') {
     useConnectivityStore.setState({status: 'offline'});
   }
+}
+
+/**
+ * True only for a request that could not reach the Server: React Native's
+ * fetch rejects with `TypeError: Network request failed`, expo/fetch (the
+ * global fetch under Expo) with a FetchError whose message starts with
+ * "fetch failed:". Anything else (a body the client could not encode, a
+ * session or storage error) is a bug on the device, not a lost connection.
+ */
+export function isNetworkFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (
+    error instanceof TypeError &&
+    /network request failed/i.test(error.message)
+  ) {
+    return true;
+  }
+  return error.message.startsWith('fetch failed:');
 }
 
 export function useIsOffline(): boolean {
@@ -49,7 +67,7 @@ export async function trackReachability<T>(
     reportServerReachable();
     return result;
   } catch (error) {
-    if (!callerSignal?.aborted) {
+    if (!callerSignal?.aborted && isNetworkFailure(error)) {
       reportServerUnreachable();
     }
     throw error;

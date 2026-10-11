@@ -18,6 +18,7 @@
  */
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {isNetworkFailure} from '@core/api/connectivity';
 import {
   type LearnerLessonCreationRequestBody,
   type LessonAnalysis,
@@ -51,6 +52,7 @@ export type CanonicalLessonErrorKind =
   | 'idempotency-conflict'
   | 'contract-mismatch'
   | 'network-error'
+  | 'client-error'
   | 'auth-error'
   | 'server-error';
 
@@ -85,6 +87,17 @@ function cancelledError(): CanonicalLessonError {
     message: 'Request cancelled.',
     retryable: false,
     cancelled: true,
+  };
+}
+
+/** The request failed on the device before reaching the network. */
+function clientError(): CanonicalLessonError {
+  return {
+    ok: false,
+    kind: 'client-error',
+    errorCode: 'CLIENT_ERROR',
+    message: 'The request could not be sent.',
+    retryable: true,
   };
 }
 
@@ -185,14 +198,14 @@ export async function send(
   } catch (error) {
     if (isAbortError(error) || options.signal?.aborted) return cancelledError();
     if (__DEV__) {
-      // The cause behind a "network" failure (no body, no token is logged).
+      // The cause behind a failure with no response (no body, no token is logged).
       console.warn(
         '[api] no response',
         path.split('?')[0],
         error instanceof Error ? `${error.name}: ${error.message}` : error,
       );
     }
-    return networkError();
+    return isNetworkFailure(error) ? networkError() : clientError();
   }
   return {status: response.status, body: await readJson(response)};
 }

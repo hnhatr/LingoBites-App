@@ -26,6 +26,28 @@ describe('connectivity (offline-mode.md)', () => {
     expect(status()).toBe('online');
   });
 
+  it('treats an expo/fetch transport failure as offline', async () => {
+    await expect(
+      trackReachability(
+        Promise.reject(
+          new Error(
+            'fetch failed: The Internet connection appears to be offline.',
+          ),
+        ),
+      ),
+    ).rejects.toThrow('fetch failed');
+    expect(status()).toBe('offline');
+  });
+
+  it('stays online when the request failed on the device', async () => {
+    await expect(
+      trackReachability(
+        Promise.reject(new Error('Unsupported FormDataPart implementation')),
+      ),
+    ).rejects.toThrow('Unsupported FormDataPart');
+    expect(status()).toBe('online');
+  });
+
   it('ignores an abort the caller asked for', async () => {
     const controller = new AbortController();
     controller.abort();
