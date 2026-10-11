@@ -3,7 +3,7 @@ import type {LessonSnapshot} from '@core/schemas/lesson';
 
 /**
  * The learner's choice about downloading lesson media (images, audio) for
- * offline study (docs/superpowers/plans/2026-10-10-offline-download-consent.md).
+ * offline study (docs/superpowers/archive/plans/2026-10-10-offline-download-consent.md).
  *
  * The lesson text is always stored, since offline study, review and progress
  * read it. Media files are heavier and are only downloaded with consent:

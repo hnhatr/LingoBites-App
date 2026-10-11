@@ -17,7 +17,7 @@ Remaining screens use hard-coded StyleSheet colors. Phase 1 applies HTML handoff
 
 ## Expected Behavior
 
-Per `docs/superpowers/plans/2026-06-05-lingobites-ui.md`: extended tokens (if needed), handoff components, custom TabBar, stores, all listed screens migrated to `App*` + tokens, ESLint clean on `src/components` + `src/modules`.
+Per `docs/superpowers/archive/plans/2026-06-05-lingobites-ui.md`: extended tokens (if needed), handoff components, custom TabBar, stores, all listed screens migrated to `App*` + tokens, ESLint clean on `src/components` + `src/modules`.
 
 ## Scope
 
@@ -37,6 +37,6 @@ Out of scope: useProgressStore, Review CTA, Scan/Vocabulary tab, re-implementing
 
 ## Notes / Evidence
 
-- Plan: `docs/superpowers/plans/2026-06-05-lingobites-ui.md`
-- Spec: `docs/superpowers/specs/2026-06-05-lingobites-ui-design.md`
+- Plan: `docs/superpowers/archive/plans/2026-06-05-lingobites-ui.md`
+- Spec: `docs/superpowers/archive/specs/2026-06-05-lingobites-ui-design.md`
 - M4 SQLite stays canonical for library persistence (not in-memory mock store)

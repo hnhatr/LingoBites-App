@@ -1,6 +1,6 @@
 # Thiết kế lại: "Học từ đời thường" (ảnh có chữ, ảnh cảnh vật, tình huống)
 
-> Trạng thái: **THIẾT KẾ, chờ duyệt**. Chưa code. Ngày lập: 2026-10-10.
+> Trạng thái: **ĐÃ CODE** qua các PR E0–E6 (2026-10-10 → 2026-10-11). Tóm tắt hiện trạng: `docs/architecture/lesson-design.md` §7. Ngày lập: 2026-10-10.
 > Plan chi tiết từng PR (cùng thư mục): `2026-10-10-e0-app-input-quick-fixes.md`, `2026-10-10-e1-server-image-analyze.md`, `2026-10-10-e2-server-situation-moment.md`, `2026-10-10-e3-app-moment-flow.md`, `2026-10-10-e4-image-describe.md`, `2026-10-10-e5-moments-library.md`, `2026-10-10-e6-admin-moments.md`. Khi plan và file này lệch nhau, **plan là bản đúng**.
 > Repo: `LingoBites-App` + `LingoBites-Server` (+ admin-web ở bước cuối).
 > Thay thế cách chia cũ thành nhiều luồng rời (OCR → bài, S5.3 tình huống, S5.7–S5.8 ảnh). Các mã việc S5.x vẫn giữ, chỉ được **gom lại dưới một trải nghiệm chung** (§8).

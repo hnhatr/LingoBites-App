@@ -1,8 +1,8 @@
 # Stage 5 (phần ảnh) và Stage 6–9: ảnh → bài, Game Hub, 3 nhóm game
 
-> Trạng thái: **THIẾT KẾ**, chưa code. Cần chốt các câu hỏi ở §5 trước khi viết plan chi tiết từng PR.
+> Trạng thái: §2 (ảnh → bài) **ĐÃ CODE** qua E0–E6 (`docs/superpowers/archive/plans/2026-10-10-everyday-learning-redesign.md`). §3–§5 (Game Hub, Stage 6–9) **THIẾT KẾ**, chưa code. Tổng quan: `docs/architecture/lesson-design.md` §8.1. Cần chốt các câu hỏi ở §5 trước khi viết plan chi tiết từng PR.
 > Ngày lập: 2026-10-10. Repo: `LingoBites-App` + `LingoBites-Server` (+ admin-web nếu cần).
-> Liên quan: `2026-10-08-backlog-remaining-work.md` (Stage 4–5, mục 4.3), `2026-10-08-remaining-work-plan.md` (thứ tự làm).
+> Liên quan: `docs/superpowers/archive/plans/2026-10-08-backlog-remaining-work.md` (Stage 4–5, mục 4.3), `docs/superpowers/archive/plans/2026-10-08-remaining-work-plan.md` (thứ tự làm).
 
 ## 1. Nguyên tắc chung: app có 3 "ổ cắm"
 

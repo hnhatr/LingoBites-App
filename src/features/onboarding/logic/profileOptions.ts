@@ -1,6 +1,6 @@
 /**
  * Phase 2 (P2.4): the choices asked at onboarding. Values match the Server's
- * learner profile (`docs/superpowers/plans/2026-10-09-phase2-step0-config.md`,
+ * learner profile (`docs/superpowers/archive/plans/2026-10-09-phase2-step0-config.md`,
  * decisions C1, C2, C5); labels live in i18n under `learnerOnboarding`.
  */
 

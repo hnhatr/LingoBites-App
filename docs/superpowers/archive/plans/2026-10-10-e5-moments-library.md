@@ -1,6 +1,6 @@
 # E5 – Server + app: thư viện "Khoảnh khắc", luyện lại tình huống, xoá bài tự tạo
 
-> Trạng thái: **PLAN, chờ duyệt**. Chưa code.
+> Trạng thái: **ĐÃ CODE** (2026-10-10 → 2026-10-11; xem `git log` ở cả hai repo). Dòng trạng thái cập nhật khi lưu trữ: plan này chưa có mục "điểm lệch".
 > Bảng quyết định §2: **dùng đề xuất** (chốt 2026-10-10).
 > Ngày lập: 2026-10-10. Repo: `LingoBites-App` + `LingoBites-Server`. Nhánh: `claude/beautiful-cerf-t6c9y1`.
 > Thiết kế chung: `2026-10-10-everyday-learning-redesign.md` §3.6, §5.2. Gộp S5.5.
