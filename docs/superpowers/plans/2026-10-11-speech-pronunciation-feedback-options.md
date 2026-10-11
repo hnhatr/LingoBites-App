@@ -2,7 +2,7 @@
 
 > Trạng thái: **THIẾT KẾ, LÀM SAU**. Chưa code. Cần chốt hướng (§6) và được duyệt dịch vụ, chi phí, dependency trước khi viết plan chi tiết.
 > Ngày lập: 2026-10-11. Repo: `LingoBites-App` + `LingoBites-Server`.
-> Đi trước: gói A + B + A2 (bật chấm nói bằng `SPEECH_EVALUATION_ENABLED=true` (chỉ chủ dự án test, không dùng danh sách `SPEECH_EVALUATION_USER_IDS`), bớt gửi câu mẫu làm gợi ý cho STT, hiện "Máy chưa nghe rõ: …"). Tài liệu này chỉ bàn bước tiếp theo: phản hồi phát âm thật.
+> Đi trước: gói A + B + A2 (bật chấm nói bằng `SPEECH_EVALUATION_ENABLED=true` (bật cho mọi tài khoản; danh sách `SPEECH_EVALUATION_USER_IDS` đã bị xoá khỏi server), bớt gửi câu mẫu làm gợi ý cho STT, hiện "Máy chưa nghe rõ: …"). Tài liệu này chỉ bàn bước tiếp theo: phản hồi phát âm thật.
 
 ## 1. Hiện trạng (để hiểu hai hướng gắn vào đâu)
 
