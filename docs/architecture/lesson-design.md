@@ -212,9 +212,9 @@ sequenceDiagram
   actor U as Người học
   participant A as App
   participant S as Server (lessonComposer)
-  U->>A: Bật "Chọn câu", tick 2–8 câu
+  U->>A: Bật "Chọn câu", tick 1–8 câu
   A->>S: POST /v1/lessons/:id/compose
-  S-->>A: request id (tính hạn mức khi thành công)
+  S-->>A: request id (tính hạn mức khi AI trả bài hoặc trả sai định dạng)
   A-->>U: Đi tiếp được, không phải chờ
   S->>S: AI sinh spec, item, task, block 6 bước
   S-->>A: Bài mới (nhãn "AI tạo", link "Bài gốc")
@@ -222,7 +222,11 @@ sequenceDiagram
 ```
 
 - Chọn câu được trên bài của chính người học và bài chung chưa có 6 bước. Bài đã sinh ra thì không chọn tiếp.
-- Hạn mức: `COMPOSE_LEARNER_DAILY_LIMIT` (mặc định 1 / ngày), trần chi phí tháng `COMPOSE_MONTHLY_CALL_CAP`.
+- Chọn **1–8 câu**; kiểm tra trước (không gọi AI, không tính lượt): mỗi câu ≤ 300 ký tự, tổng ≥ 8 từ (mỗi câu khác nhau đếm một lần), không quá nửa là câu cụt.
+- AI (prompt `lesson.compose`) chọn câu thuộc **một tình huống**, rồi sinh can-do, item, 1–2 mẫu câu có chỗ trống, nhiệm vụ có hướng dẫn, nhiệm vụ độc lập (đổi chi tiết) và **nhập vai 4–8 lượt** ở bước 5. Câu trả lời sai định dạng được gửi lại AI sửa một lần.
+- Nội dung **độc thoại** (vlog, bài nói, kể chuyện): prompt v2 biến thành tình huống "kể cho bạn bè / đồng nghiệp nghe" (người kia hỏi, người học trả lời bằng mẫu câu). Chỉ từ chối lời bài hát, thơ, danh sách, mảnh câu. Runbook kích hoạt v2: `LingoBites-Server/docs/03-operations/compose-prompt-v2.md`.
+- Hạn mức: `COMPOSE_LEARNER_DAILY_LIMIT` (mặc định 1 / ngày), trần số lần gọi AI theo tháng `COMPOSE_MONTHLY_CALL_CAP`. Tính lượt khi bài dựng xong, khi AI trả sai định dạng (`COMPOSE_AI_INVALID`) hoặc bài không qua spec-check. **Không** tính khi "không phù hợp" (`COMPOSE_NOT_SUITABLE`), quá thời gian hay lỗi nhà cung cấp.
+- Sắp làm (chờ duyệt): bước 5 dạng "kể lại bằng lời của bạn" cho bài độc thoại thay cho nhập vai, xem `superpowers/plans/2026-10-11-compose-monologue-lessons.md`.
 - Bài YouTube: bước 2 phát đúng đoạn video (`startMs` / `endMs`).
 - Màn chờ theo nguyên tắc "gửi xong là đi tiếp": bài tự về, thất bại thì nói rõ lý do và có việc làm tiếp.
 
