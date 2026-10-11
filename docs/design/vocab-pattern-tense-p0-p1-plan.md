@@ -1,7 +1,7 @@
 # Kế hoạch P0 + P1: migration và import CSV trên admin
 
 > Trạng thái: **chờ duyệt**. Chưa có code.
-> Thiết kế gốc: [`vocab-pattern-tense-path.md`](./vocab-pattern-tense-path.md) (mục 8.7, 9, 10).
+> Thiết kế gốc: [`vocab-pattern-tense-path.md`](./vocab-pattern-tense-path.md) (mục 8.7, 9, 10). Các giai đoạn sau: [`vocab-pattern-tense-p2-p7-plan.md`](./vocab-pattern-tense-p2-p7-plan.md).
 > Repo làm việc: **LingoBites-Server** (server + `admin-web`). App **không đổi** ở P0 + P1.
 
 ## 0. Quyết định đã chốt (2026-10-11)
@@ -118,7 +118,7 @@ Migration chèn sẵn các tag cơ bản: `list:oxford-3000`, `list:oxford-5000`
 |---|---|
 | `src/modules/items/model/item.ts` | Thêm `'grammar'` vào `ItemKindValues` |
 | `src/modules/items/model/itemPayload.ts` | Schema `GrammarPayloadSchema`: `family`, `time`, `aspect`, `forms{affirmative,negative,question}`, `signals[]`, `uses_vi[]`, `contrast_with[]` (item refs), `check{aux[],verb_form}`, `order` |
-| `src/modules/items/model/itemPayload.ts` | `PatternPayloadSchema` thêm trường tuỳ chọn `combo_subject_groups: string[]` |
+| `src/modules/items/model/itemPayload.ts` | `PatternPayloadSchema` thêm trường tuỳ chọn `combo_subject_groups: string[]` và `tense_mode: free \| clause \| locked` (dùng ở P4) |
 | `src/modules/items/repository/postgresItemStore.ts`, `adminItem.ts` | Đọc / ghi `cefr_level`, `frequency_rank`, tag; lọc theo `cefr_level`, `tag`, `import_batch_id` |
 | **Chặn gắn `grammar` vào bài học** | `lesson_items` / `task_items` từ chối item `kind = grammar` cho tới P5. Lý do: App kiểm loại item bằng danh sách cố định (`CatalogItemKindValues` trong `src/core/schemas/lesson.ts` của App); gặp `grammar` trong snapshot bài thì sẽ lỗi đọc bài. |
 
@@ -167,7 +167,7 @@ src/modules/imports/
 | Loại | Kiểm tra riêng | Ghi vào |
 |---|---|---|
 | **Từ vựng** | `kind` ∈ word/phrase; `cefr` ∈ A1…C1; `lists` là tag `list:*` đã có. Word có dấu cách (luật item hiện có) → đổi `"a, an"` thành text `a/an`. Tra IPA bằng cmudict ✅. | Có `meaning_vi` → item. Không có → `stage` (`enrichment_status = pending`) |
-| **Mẫu câu** | `frame` đọc được bằng `parseFrame` ✅; slot trong `slot_values` khớp đúng placeholder; `function` là tag có sẵn; có `example_en` + `example_vi` | Item `pattern` (text = frame, `note_vi` = usage + notes) + 1 `item_examples` + tag `function:*`, `exam:*`, `list:ielts-patterns` |
+| **Mẫu câu** | `frame` đọc được bằng `parseFrame` ✅; slot trong `slot_values` khớp đúng placeholder; `function` là tag có sẵn; có `example_en` + `example_vi` | Item `pattern` (text = frame, `note_vi` = usage + notes, `payload.combo_subject_groups`, `payload.tense_mode` ∈ free / clause / locked) + 1 `item_examples` + tag `function:*`, `exam:*`, `list:ielts-patterns` |
 | **Thì** | `time`, `aspect` hợp lệ; `contrast_with` trỏ tới mã có trong file hoặc DB (kiểm sau khi tạo hết, theo 2 lượt) | Item `grammar` + ví dụ |
 | **Tình huống** | `level` ∈ A1…C1; `audience`; `register`; `topics` là tag có sẵn | Bảng `situations` + `situation_tags`. Tình huống có sẵn: cập nhật các trường được gửi. |
 
