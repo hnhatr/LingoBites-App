@@ -2,7 +2,7 @@
 
 > Trạng thái: **THIẾT KẾ, LÀM SAU**. Chưa code. Cần chốt hướng (§6) và được duyệt dịch vụ, chi phí, dependency trước khi viết plan chi tiết.
 > Ngày lập: 2026-10-11. Repo: `LingoBites-App` + `LingoBites-Server`.
-> Đi trước: gói A + B + A2 (bật chấm nói cho nhóm chạy thử, bớt gửi câu mẫu làm gợi ý cho STT, hiện "Máy chưa nghe rõ: …"). Tài liệu này chỉ bàn bước tiếp theo: phản hồi phát âm thật.
+> Đi trước: gói A + B + A2 (bật chấm nói bằng `SPEECH_EVALUATION_ENABLED=true` (chỉ chủ dự án test, không dùng danh sách `SPEECH_EVALUATION_USER_IDS`), bớt gửi câu mẫu làm gợi ý cho STT, hiện "Máy chưa nghe rõ: …"). Tài liệu này chỉ bàn bước tiếp theo: phản hồi phát âm thật.
 
 ## 1. Hiện trạng (để hiểu hai hướng gắn vào đâu)
 
@@ -85,7 +85,7 @@
 
 ## 5. Cách đánh giá trước khi chốt
 
-1. Gom bộ bản ghi thử khoảng 50–100 câu từ nhóm chạy thử (có đồng ý), gồm người phát âm tốt và người phát âm còn yếu. Có người nghe gắn nhãn các từ phát âm sai.
+1. Gom bộ bản ghi thử khoảng 50–100 câu do chủ dự án tự ghi, có cả câu cố ý phát âm sai. Ghi lại các từ cố ý nói sai làm nhãn.
 2. Chạy cả D và C (dùng bậc miễn phí của Azure) trên cùng bộ.
 3. So: tỉ lệ bắt đúng từ sai, tỉ lệ báo nhầm từ đúng, độ trễ, chi phí thật mỗi phút.
 4. Chốt: nếu D bắt được phần lớn lỗi với tỉ lệ báo nhầm chấp nhận được thì làm D trước, C để sau. Nếu không thì đi C.
