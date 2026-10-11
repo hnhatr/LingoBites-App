@@ -27,7 +27,10 @@ import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
-import {isFlowLesson} from '../../flow/logic/practiceCompletion';
+import {
+  hasLessonPracticeRun,
+  isFlowLesson,
+} from '../../flow/logic/practiceCompletion';
 import {useFlowEntry} from '../../flow/logic/useFlowEntry';
 import {
   CanonicalLessonHub,
@@ -140,6 +143,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const floatingClearance = useFloatingTabBarClearance();
   const composeAvailable = useComposeAvailable();
   const [composeOpen, setComposeOpen] = useState(false);
+  const [composePicks, setComposePicks] = useState<string[] | undefined>();
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -166,6 +170,17 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
 
   const snapshot = state.status === 'ready' ? state.snapshot : null;
   const flowEntry = useFlowEntry(lessonId, snapshot);
+  // Plan B: a learner's own lesson practises on the device and completes
+  // through that practice instead of a one-tap "complete".
+  const practiceRun = useMemo(
+    () =>
+      practiceEnabled && snapshot !== null && hasLessonPracticeRun(snapshot),
+    [practiceEnabled, snapshot],
+  );
+  const openPractice = useCallback(
+    () => appNavigation.openPractice(lessonId),
+    [appNavigation, lessonId],
+  );
   // A public video lists the six-step lessons made from it.
   const videoLessons = useVideoLessons(snapshot, offline);
   const lessonMedia = useLessonMediaDownload(snapshot);
@@ -228,6 +243,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const composeSheetShown = snapshot !== null && canComposeFrom(snapshot);
   useEffect(() => {
     if (sheetRequested && composeSheetShown) {
+      setComposePicks(useComposeTracker.getState().sheetPicks ?? undefined);
       setComposeOpen(true);
       requestComposeSheet(null);
     }
@@ -519,9 +535,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               onOpenSection={openView}
               onOpenLesson={appNavigation.openLesson}
               onOpenPractice={
-                practiceEnabled
-                  ? () => appNavigation.openPractice(lessonId)
-                  : undefined
+                practiceEnabled && !practiceRun ? openPractice : undefined
               }
               onOpenCompose={openCompose}
               onSpeakText={handleSpeak}
@@ -575,7 +589,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
 
   const studyReady = isYouTubeStudy && state.status === 'ready';
   // Curriculum lessons start the six-step player (PR 10, decision G1).
-  const startLabel = !flowEntry.available
+  const startLabel = practiceRun
+    ? completionState === 'finished'
+      ? t('practice.start_again')
+      : t('practice.start')
+    : !flowEntry.available
     ? t('lessonPlayer.start_learning')
     : flowEntry.resumeAt !== null
     ? t('lessonFlow.continue_at', {step: flowEntry.resumeAt})
@@ -605,9 +623,18 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                 showTranslation={showTranslation}
               />
             </>
+          ) : isYouTubeStudy && practiceRun ? (
+            <HeaderIconButton
+              accessibilityHint={t('practice.start_hint')}
+              accessibilityLabel={t('practice.start')}
+              icon="fitness_center"
+              onPress={openPractice}
+              testID="canonical-youtube-practice"
+            />
           ) : showHub &&
             completionState !== 'finished' &&
-            !flowEntry.available ? (
+            !flowEntry.available &&
+            !practiceRun ? (
             <HeaderIconButton
               accessibilityHint={t('lessonPlayer.complete_lesson_hint')}
               accessibilityLabel={t('lessonPlayer.complete_lesson')}
@@ -670,14 +697,21 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           <PrimaryActionButton
             accessibilityLabel={startLabel}
             label={startLabel}
+            accessibilityHint={
+              practiceRun ? t('practice.start_hint') : undefined
+            }
             onPress={() =>
               flowEntry.available
                 ? appNavigation.openLessonFlow(lessonId)
+                : practiceRun
+                ? openPractice()
                 : openView('sentences')
             }
             testID={
               flowEntry.available
                 ? 'canonical-hub-start-flow'
+                : practiceRun
+                ? 'canonical-hub-start-practice'
                 : 'canonical-hub-start'
             }
           />
@@ -685,8 +719,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       ) : null}
       {snapshot && (canCompose || (composeOpen && composeSheetShown)) ? (
         <ComposeSheet
+          initialPicks={composePicks}
           offline={state.status === 'ready' ? state.offline : false}
-          onClose={() => setComposeOpen(false)}
+          onClose={() => {
+            setComposeOpen(false);
+            setComposePicks(undefined);
+          }}
           onOpenLesson={appNavigation.openLesson}
           onSpeakText={handleSpeak}
           snapshot={snapshot}

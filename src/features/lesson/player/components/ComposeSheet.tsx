@@ -28,6 +28,8 @@ export type ComposeSheetProps = {
   onClose: () => void;
   onOpenLesson: (lessonId: string) => void;
   onSpeakText: (text: string) => void;
+  /** Sentences already ticked when the sheet opens (plan C). */
+  initialPicks?: readonly string[];
 };
 
 /**
@@ -58,11 +60,12 @@ function ComposeSheetBody({
   onClose,
   onOpenLesson,
   onSpeakText,
+  initialPicks,
 }: Omit<ComposeSheetProps, 'visible'>) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const pick = useComposePick(snapshot);
+  const pick = useComposePick(snapshot, initialPicks);
   const {phase, entry} = pick;
   const [previewOpen, setPreviewOpen] = useState(false);
 

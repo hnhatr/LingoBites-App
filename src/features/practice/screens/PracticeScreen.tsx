@@ -14,6 +14,8 @@ import {useAppTheme} from '@ui/theme';
 
 import {useFeatureEnabled} from '@core/release';
 
+import {LessonPracticeRunView} from '../components/LessonPracticeRunView';
+import {useLessonPracticeRun} from '../logic/useLessonPracticeRun';
 import {usePracticeSession} from '../logic/usePracticeSession';
 import type {PracticeRouteParams} from './navigationTypes';
 
@@ -30,6 +32,7 @@ export function PracticeScreen({navigation, route}: PracticeScreenProps) {
   const enabled = useFeatureEnabled('shortPractice');
   const {lessonId} = route.params;
   const session = usePracticeSession(lessonId);
+  const run = useLessonPracticeRun(lessonId);
   const {state} = session;
 
   const close = () => navigation.goBack();
@@ -42,6 +45,18 @@ export function PracticeScreen({navigation, route}: PracticeScreenProps) {
       testID="practice-close"
     />
   );
+
+  // A learner's own lesson runs its sections; other lessons keep the quiz.
+  if (enabled && run.state.status !== 'unavailable') {
+    return (
+      <LessonPracticeRunView
+        closeButton={closeButton}
+        lessonId={lessonId}
+        onClose={close}
+        run={run}
+      />
+    );
+  }
 
   if (!enabled || state.status === 'unavailable') {
     const message = !enabled

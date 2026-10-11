@@ -13,7 +13,7 @@ Nguồn chính:
 
 ## 1. Toàn cảnh điều hướng
 
-Chú thích màu: xanh = tab chính, vàng = beta / cần server hỗ trợ, đỏ = chỉ bản dev.
+Chú thích màu: xanh = tab chính, đỏ = chỉ bản dev.
 
 ```mermaid
 flowchart TD
@@ -74,10 +74,8 @@ flowchart TD
   Set --> Off[OfflineDownloads]
   Profile -.->|chỉ dev| Dev[FeatureStatus, TtsSpike]
 
-  classDef beta fill:#fbefd9,stroke:#9a5b00,color:#3b2600
   classDef off fill:#f6e3e3,stroke:#8a3b3b,color:#3b1414
   classDef on fill:#e2f1ea,stroke:#1f7a5a,color:#0e2e22
-  class YT,VH beta
   class Dev off
   class Home,Courses,Lessons,Profile on
 ```
@@ -105,12 +103,12 @@ vào tab. Có thể làm lại từ Profile.
 4 nguồn trong `CreateHub`. Tất cả cần server; khi offline các ô vẫn hiện nhưng
 bị khoá.
 
-| Nguồn                   | Luồng                                                                         |
-| ----------------------- | ----------------------------------------------------------------------------- |
-| Ảnh (camera / thư viện) | `ImageCapture` → phân tích ảnh → `MomentReview` → xác nhận → `LessonCreation` |
-| Dán văn bản             | `PasteText` → `LessonCreation`                                                |
-| Kể tình huống           | `SituationInput` → tạo bài → mở bài                                           |
-| YouTube (beta)          | nhập link → `LessonCreation`; ô chỉ hiện khi server báo hỗ trợ                |
+| Nguồn                   | Luồng                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| Ảnh (camera / thư viện) | `ImageCapture` → phân tích ảnh → `MomentReview` → xác nhận → `LessonCreation`                 |
+| Dán văn bản             | `PasteText` → `LessonCreation`                                                                |
+| Kể tình huống           | `SituationInput` → tạo bài → mở bài                                                           |
+| YouTube                 | nhập link → `LessonCreation`; ô ẩn khi app chưa liên lạc được server (server luôn báo hỗ trợ) |
 
 - API: `POST /api/v1/images/analyze`, `POST /api/v1/lesson-creations`,
   `POST /api/v1/lesson-creations/:id/confirm`, `POST /api/v1/moments`,
@@ -119,7 +117,10 @@ bị khoá.
 ### Học bài
 
 Một trình phát bài dùng chung cho mọi nơi mở bài (Home, Thư viện, Giáo trình,
-Today). Từ đó vào luồng hoạt động theo khối hoặc luyện ngắn.
+Today). Bài 6 bước mở `LessonFlowPlayer`. Bài tự tạo (văn bản, ảnh chữ,
+YouTube) mở chuỗi luyện 4 phần trên máy (nghe và nhắc lại, nghĩa từ, điền từ,
+dịch câu) ở màn `Practice`; làm xong mới tính hoàn thành bài, kèm gợi ý "Học
+sâu theo 6 bước" với câu chọn sẵn. Bài quá ít nội dung vẫn dùng nút ✓.
 
 - Màn hình: `CanonicalLessonPlayer`, `LessonFlowPlayer`, `Practice`, `CanonicalCatalog`
 - API: `GET /api/v1/lessons`, `GET|DELETE /api/v1/lessons/:id`,
@@ -167,7 +168,6 @@ diện (7 theme màu), tải bài để học offline. Dữ liệu cục bộ đ
 
 | Mục                                           | Trạng thái              | Ghi chú                                                                                    |
 | --------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------ |
-| Tạo bài từ YouTube                            | Beta                    | Cờ `youtubeLearning` bật, nhưng ô chỉ hiện khi server trả capability.                      |
 | Hỗ trợ phát âm                                | Chưa làm                | Cờ `pronunciationSupport` có trong registry nhưng tắt ở production.                        |
 | Cờ `situationLearning`                        | Chưa làm                | Cờ vẫn tắt, nhưng ô "Kể tình huống" trong `CreateHub` không phụ thuộc cờ này nên vẫn hiện. |
 | `FeatureStatus`, `TtsSpike`                   | Chỉ dev                 | Chỉ đăng ký khi `__DEV__`.                                                                 |

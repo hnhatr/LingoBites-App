@@ -14,6 +14,15 @@ export {
   setLearnerAgeGroup,
 } from './learnerAudience';
 export {
+  buildLessonPracticePlan,
+  LESSON_PRACTICE_WINDOW_MAX,
+  type LessonPracticeEntryRef,
+  type LessonPracticePlan,
+  type LessonPracticeSection,
+  type LessonPracticeSectionKind,
+  pickStudyWindow,
+} from './lessonPractice';
+export {
   type ItemPayload,
   type ListeningPayload,
   parseItemPayload,

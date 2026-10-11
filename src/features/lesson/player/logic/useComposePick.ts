@@ -44,8 +44,11 @@ export type ComposePickPhase =
  * with one idempotency key per pick. After the Server accepts, the request is
  * handed to the compose tracker so it keeps going when the sheet closes.
  */
-export function useComposePick(snapshot: LessonSnapshot) {
-  const [picked, setPicked] = useState<string[]>([]);
+export function useComposePick(
+  snapshot: LessonSnapshot,
+  initialPicks: readonly string[] = [],
+) {
+  const [picked, setPicked] = useState<string[]>(() => [...initialPicks]);
   const [phase, setPhase] = useState<ComposePickPhase>({kind: 'pick'});
   const [quota, setQuota] = useState<ComposeQuota | null>(null);
   const keyRef = useRef<{pick: string; key: string} | null>(null);
