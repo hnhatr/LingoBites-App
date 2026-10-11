@@ -100,7 +100,7 @@ type Draft = Omit<
 const norm = (value: string) => normalizeItemKey(value);
 
 /** Distinct, non-empty texts that differ from `correct` once normalised. */
-function distinctOthers(
+export function distinctOthers(
   correct: string,
   candidates: readonly string[],
 ): string[] {
@@ -117,7 +117,8 @@ function distinctOthers(
   return result;
 }
 
-function wordPattern(word: string): RegExp {
+/** Matches `word` as a whole word or phrase (Unicode-aware, any case). */
+export function wordPattern(word: string): RegExp {
   const escaped = word.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, 'giu');
 }
