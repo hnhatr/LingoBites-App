@@ -179,19 +179,24 @@ Code chính: `features/lesson/flow/` (`useLessonFlow`, `practiceCompletion`, `le
 flowchart LR
   IN["Dán chữ · Ảnh có chữ · Link YouTube"] --> LC["LessonCreation<br/>pipeline: tách câu, dịch, IPA,<br/>từ vựng, ngữ pháp"]
   LC --> HUB["Hub bài<br/>đọc câu, phân tích, từ, ngữ pháp"]
-  HUB -->|"Bắt đầu học"| PR
-  subgraph PR["Practice: chuỗi 4 phần (offline, không gọi AI)"]
+  HUB -->|"Bắt đầu luyện / Luyện tiếp · đoạn N/M"| SEG["Chọn đoạn ≤ 8 câu<br/>đoạn chưa luyện tiếp theo"]
+  SEG --> PR
+  subgraph PR["Practice: chuỗi 4 phần của một đoạn (offline, không gọi AI)"]
     P1["1 · Nghe và nhắc lại<br/>3–4 câu, tự đánh giá"] --> P2["2 · Nghĩa của từ<br/>3–5 câu"]
     P2 --> P3["3 · Điền từ<br/>3–5 câu"]
     P3 --> P4["4 · Dịch câu VI → EN<br/>2–3 câu"]
   end
   PR --> RES["Màn kết quả<br/>điểm từng phần, từ sai → thẻ ôn"]
-  RES --> DONE(["Hoàn thành bài"])
+  RES --> DONE(["Hoàn thành bài<br/>(xong 1 đoạn bất kỳ)"])
+  RES -->|"Luyện đoạn tiếp theo / Chọn đoạn khác"| SEG
   RES -->|"Học sâu theo 6 bước<br/>(câu chọn sẵn)"| C3["③ Bài AI 6 bước"]
 ```
 
 - Chuỗi sinh trên máy từ dữ liệu bài (`core/learning/lessonPractice.ts`, `practice.ts`); áp dụng cả bài cũ.
-- Bài dài (transcript YouTube): lấy tối đa **8 câu liền nhau** nhiều từ vựng nhất.
+- **Bài dài chia đoạn** (`lessonPracticeSegments`): mỗi đoạn tối đa 8 câu, chia đều theo thứ tự (17 câu → 6, 6, 5). Bài ≤ 8 câu là một đoạn.
+  - "Bắt đầu luyện" mở đoạn chưa luyện tiếp theo (1 → 2 → 3); luyện hết thì quay lại đoạn luyện lâu nhất. Hub đổi nhãn thành "Luyện tiếp · đoạn N/M".
+  - Màn kết quả: "Đã luyện X/M đoạn", nút "Luyện đoạn tiếp theo", danh sách "Chọn đoạn khác" (câu đầu, khoảng thời gian video, đã luyện, đoạn ít nội dung bị mờ).
+  - Đoạn đã luyện lưu **trên máy** (`app_settings`, khoá `practice.segments.<lessonId>`, theo `content_revision`), không sync. Gợi ý "Học sâu theo 6 bước" lấy câu từ đoạn vừa luyện.
 - Phần nào thiếu dữ liệu thì bỏ; còn dưới 2 phần thì giữ nút ✓ một chạm.
 - Tắt luyện nói (`noSpeaking`) thì bỏ phần 1, không chặn hoàn thành.
 - Không có ngưỡng điểm: điểm chỉ để hiển thị và chọn từ cần ôn.
@@ -347,7 +352,7 @@ Các file dưới đây nằm trong [`docs/superpowers/archive/`](../superpowers
 | Hồ sơ, đầu vào, nội dung A1–A2 | `2026-10-09-phase2-product-trial-plan.md` |
 | Compose 6 bước, prompt AI, màn chờ | `2026-10-09-s4-*.md` |
 | Khoảnh khắc | `2026-10-10-everyday-learning-redesign.md`, `2026-10-10-e0` … `e6` |
-| Chuỗi luyện bài tự tạo | `2026-10-11-self-created-lesson-practice.md` |
+| Chuỗi luyện bài tự tạo | `2026-10-11-self-created-lesson-practice.md`, `2026-10-11-practice-segments.md` (chia đoạn) |
 | Backlog, bảng chốt quyết định Q/D | `2026-10-08-remaining-work-plan.md`, `2026-10-08-backlog-remaining-work.md` |
 | Cổng vào bài học, điều hướng | [`lesson-entry-points.md`](./lesson-entry-points.md), [`navigation.md`](./navigation.md) |
 | Tính năng đang chạy (toàn app) | [`feature-map.md`](./feature-map.md) |

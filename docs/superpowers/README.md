@@ -16,7 +16,6 @@ Thư mục này chỉ giữ thiết kế **chưa làm xong**. Plan đã code, đ
 | File | Nội dung | Trạng thái |
 | --- | --- | --- |
 | `plans/2026-10-10-stage5-9-image-lesson-game-hub.md` | Game Hub và 3 nhóm game (Stage 6–9). §2 (ảnh → bài) đã làm qua E0–E6 | Thiết kế, cần chốt §5 rồi viết plan từng PR |
-| `plans/2026-10-11-practice-segments.md` | Chuỗi luyện bài tự tạo: chia bài dài thành đoạn, luyện tiếp đoạn khác | Plan, chờ duyệt |
 | `specs/2026-10-02-youtube-lesson-ux-redesign.md` | UI bài YouTube (12 màn, bộ màn ở `docs/design/youtube-lesson/`) | Đã có một phần, cần rà lại phần còn thiếu |
 
 ## Cách thêm plan mới

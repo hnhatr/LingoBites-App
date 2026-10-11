@@ -1,8 +1,8 @@
 # Luyện bài dài theo đoạn (chuỗi luyện bài tự tạo)
 
-> Trạng thái: **PLAN, chờ duyệt**. Chưa code. Ngày lập: 2026-10-11.
+> Trạng thái: **ĐÃ CODE** (duyệt 2026-10-11, dùng các đề xuất K1–K7). Commit: `1da1e1d`, `1f66ad0`, `44c2128` + commit tài liệu. Xem §8 cho điểm lệch. Ngày lập: 2026-10-11.
 > Repo: `LingoBites-App` (không đổi server, không migration, không thêm dependency).
-> Nối tiếp `archive/plans/2026-10-11-self-created-lesson-practice.md` (quyết định D6, D7). Tổng quan: `docs/architecture/lesson-design.md` §5.
+> Nối tiếp `2026-10-11-self-created-lesson-practice.md` (quyết định D6, D7). Tổng quan: `docs/architecture/lesson-design.md` §5.
 
 ## 1. Vấn đề
 
@@ -83,3 +83,17 @@ flowchart LR
 ## 7. Kiểm tra trước khi push
 
 `yarn tsc`, `yarn lint`, `yarn format:check`, `yarn test` (các file test liên quan và toàn bộ Jest).
+
+## 8. Kết quả và điểm lệch so với plan
+
+| # | Plan | Thực tế | Lý do |
+|---|---|---|---|
+| L1 | `practiceSegments.ts` ở `features/practice/logic/` | Ở `features/lesson/flow/logic/practiceSegments.ts`, export qua `@features/lesson` | Hub (`features/lesson`) cũng đọc tiến độ đoạn; `features/practice` đã import `features/lesson`, đặt ngược lại sẽ tạo vòng import và vi phạm luật ranh giới module |
+| L2 | `PracticeSegmentSheet.tsx` (bottom sheet) | `PracticeSegmentList.tsx`: danh sách mở ra ngay trên màn kết quả bằng nút "Chọn đoạn khác" | `ui/` chưa có bottom sheet dùng chung; danh sách tại chỗ ít code hơn và dễ test hơn |
+| L3 | Test component riêng cho sheet | Danh sách được test qua `PracticeScreen.run.real-sqlite.test.tsx` (mở danh sách, chọn đoạn) | Đủ phủ hành vi; không thêm file test trùng |
+| L4 | — | Nhãn hub chỉ đổi thành "Luyện tiếp · đoạn N/M" **sau khi** đã luyện ít nhất một đoạn; lần đầu vẫn là "Bắt đầu luyện" | Tránh nhãn "Luyện tiếp" khi người học chưa luyện gì |
+| L5 | — | Lỗi ghi `app_settings` khi xong đoạn được bỏ qua (try/catch) | Tiến độ đoạn chỉ dùng để gợi ý; lượt làm và hoàn thành bài vẫn được ghi |
+
+**Kiểm tra:** `tsc` sạch; `yarn lint` đạt (175/281 warning, file mới không thêm warning); `yarn format:check` đạt; Jest toàn bộ 2469 pass (3 skip). Test mới: `lessonPractice.test.ts` (chia đoạn), `practiceSegments.real-sqlite.test.ts`, 4 ca trong `PracticeScreen.run.real-sqlite.test.tsx`, 1 ca trong `CanonicalLessonPlayerScreen.hub.test.tsx`.
+
+**Chưa kiểm:** chạy trên máy thật (giao diện danh sách đoạn, bài YouTube dài thật).
