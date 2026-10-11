@@ -1,9 +1,11 @@
 # Thiết kế: Lộ trình Từ · Mẫu câu · Thì
 
 > Trạng thái: **💭 đề xuất, chờ duyệt**. Chưa có code.
-> Cập nhật: 2026-10-11. Đối chiếu với [`architecture/lesson-design.md`](../architecture/lesson-design.md)
-> và schema server (`items`, `item_memory`, `lesson_items`, `tasks`).
-> Nguồn nội dung: danh sách **Oxford 3000** (A1–B2) và bảng **mẫu câu IELTS Writing**.
+> Cập nhật: 2026-10-11 (bản 2: làm lại **câu tổ hợp** theo yêu cầu mới).
+> Đối chiếu với [`architecture/lesson-design.md`](../architecture/lesson-design.md) và schema server
+> (`items`, `item_memory`, `situations`, `recordings`, `admin_settings`).
+> Nguồn nội dung: **Oxford 3000** (A1–B2) và bảng **mẫu câu IELTS Writing**.
+> Sơ đồ trực quan: artifact "Lộ trình Từ · Mẫu · Thì".
 
 Ký hiệu: ✅ đã có, dùng lại · 🔧 có rồi, cần mở rộng · 🆕 làm mới
 
@@ -11,369 +13,424 @@ Ký hiệu: ✅ đã có, dùng lại · 🔧 có rồi, cần mở rộng · �
 
 ## 1. Ý tưởng chính
 
-Người học thường học 3 thứ như 3 danh sách rời: từ, mẫu câu, thì. Thiết kế này nối chúng lại:
+Người học thường học từ, mẫu câu và thì như 3 danh sách rời. Thiết kế này nối chúng lại bằng **bộ câu tổ hợp**:
 
-- **Từ** là nguyên liệu.
-- **Mẫu câu** là khuôn để ghép nguyên liệu.
-- **Thì** cho biết câu nói về thời điểm nào.
-
-Mỗi lần luyện ở mức cao nhất là một **câu tổ hợp**: 1 từ + 1 mẫu + 1 thì trong cùng một câu do người học tự viết.
+> **Từ / cụm từ / mẫu câu** + **tình huống** (chọn từ danh mục) + **thì**
+> → server trả về **n câu** dùng đủ cả ba, chia đều theo **chủ ngữ** (I, he/she, they…).
+> Mỗi câu có **audio, IPA từng từ, nghe – đọc theo – chấm phát âm**.
 
 ```mermaid
 flowchart LR
-  W["Từ<br/>word / phrase"] -->|"lấp vào slot"| P["Mẫu câu<br/>pattern"]
-  G["Thì / ngữ pháp<br/>grammar 🆕"] -->|"chia động từ"| P
-  P --> C["Câu tổ hợp 🆕<br/>người học tự viết"]
-  W --> C
-  G --> C
-  C -->|"1 lượt ôn = ghi nhận cho cả 3 item"| M["item_memory ✅"]
+  W["Từ / cụm từ / mẫu câu"] --> K{"Khoá bộ câu<br/>item + tình huống + thì"}
+  S["Tình huống<br/>(danh mục server)"] --> K
+  G["Thì"] --> K
+  K --> POOL[("Kho câu dùng chung<br/>combo_sentences")]
+  POOL -->|"đủ câu"| SET["Bộ n câu<br/>chia theo chủ ngữ"]
+  POOL -->|"thiếu câu"| AI["AI sinh phần thiếu<br/>+ kiểm tra tự động"]
+  AI --> POOL
+  SET --> PR["Mỗi câu: nghe · IPA · đọc theo · chấm phát âm"]
+  PR --> M["item_memory ✅"]
 ```
 
 **Nguyên tắc: dùng lại tối đa những gì đã có.**
 
 | Cần | Đã có trong LingoBites |
 |---|---|
-| Danh mục từ, cụm từ, mẫu câu | `items` với `kind = word / phrase / pattern` ✅ |
-| Mẫu câu có chỗ trống, slot trỏ tới từ | `pattern` + `payload.slots[].item_refs` ✅ |
-| Ví dụ, biến thể, lỗi hay gặp | `item_examples`, `item_variants`, `item_errors` ✅ |
-| Lịch ôn theo người học | `item_memory` (stage, due_at, streak, stable_at) ✅ |
-| Khoá → cấp → unit → bài | `courses / levels / units / lessons` + `lesson_items` ✅ |
-| Bài 6 bước, nhiệm vụ tổng hợp, rubric | `LessonFlowPlayer`, `tasks`, `task_criteria` ✅ |
-| Chấm câu viết | `POST /v1/evaluations/text` ✅ |
-
-Phần thật sự mới chỉ có 4 thứ:
-1. Item loại `grammar` (thì và điểm ngữ pháp).
-2. Nhãn **cấp độ CEFR** và **chủ đề / chức năng** trên item.
-3. Hoạt động **câu tổ hợp**.
-4. **Thang bài ôn** theo mức nhớ.
+| Danh mục từ, cụm từ, mẫu câu | `items` (`word / phrase / pattern`) ✅ |
+| Mẫu câu có slot, slot trỏ tới từ | `pattern` + `payload.slots[].item_refs` ✅ |
+| Danh mục tình huống do admin soạn | `situations` (code, tên VI/EN, cấp, đối tượng, sở thích) ✅ |
+| IPA theo từ | `lessonText/service/ipa` (cmudict + LLM dự phòng) ✅ |
+| Đọc câu | `ttsService` trên máy (en-US, chỉnh tốc độ) ✅ |
+| Đọc theo | Shadowing: `SentenceCard`, `RecorderPanel`, `SelfCheckList` ✅ |
+| Chấm nói | Upload → STT (OpenAI) → so khớp từng từ (`wordMatch`) ✅ |
+| Kiểm duyệt chữ AI sinh | `moderateText` ✅ |
+| Cấu hình admin | `admin_settings` (key → JSON) ✅ |
+| Lịch ôn theo người học | `item_memory` ✅ |
+| Khoá → cấp → unit → bài, bài 6 bước | curriculum + `LessonFlowPlayer` ✅ |
 
 ---
 
-## 2. Tổ chức dữ liệu
+## 2. Phân tích yêu cầu câu tổ hợp
 
-### 2.1 Mô hình tổng thể
+### 2.1 Yêu cầu và cách hiểu
+
+| # | Yêu cầu | Cách hiểu trong thiết kế |
+|---|---|---|
+| R1 | Server **tự sinh** hoặc **lấy câu có sẵn** | Có một kho câu dùng chung cho mọi người học. Khi được yêu cầu, server lấy câu từ kho trước, chỉ gọi AI cho phần còn thiếu. Câu sinh ra được lưu lại cho người sau. |
+| R2 | **Số lượng và quy định theo chủ ngữ**, ví dụ 3 câu *I*, 3 câu *they*, 3 câu *he/she* | Một **hạn ngạch chủ ngữ** (subject quota) do admin cấu hình. Mỗi câu gắn 1 nhóm chủ ngữ. Server phát câu theo hạn ngạch. |
+| R3 | Đầu vào: **từ / cụm từ / câu + tình huống + thì**. Tình huống **có giới hạn từ server**, người dùng không tự đặt. | Người học chỉ được **chọn** trong `situations` đã publish và phù hợp với item. Không có ô nhập tự do (khác tính năng Khoảnh khắc). |
+| R4 | Ra **n câu** tuỳ setting, hoặc người dùng bấm **tải thêm** | `n` mặc định lấy từ admin. Người học được chọn trong các mức cho phép (3 / 6 / 9 / 12). "Tải thêm" lấy đợt tiếp theo, tiếp tục đúng vòng chủ ngữ. |
+| R5 | Mỗi câu có **phần đọc + IPA theo từ** | Câu lưu sẵn danh sách từ (token), mỗi token có IPA và vai trò (chủ ngữ / động từ / item). Audio đọc bằng TTS trên máy, có tốc độ chậm. |
+| R6 | **Đọc theo + kiểm tra phát âm** | Dùng luồng shadowing có sẵn và thêm chế độ ghi âm `combo_shadowing`. Server chấm theo từng từ. Không có consent thì tự đánh giá. |
+
+### 2.2 Những điểm cần lưu ý khi làm
+
+1. **Đổi chủ ngữ thì động từ đổi theo.** Đây chính là giá trị học: người học thấy rõ *I have placed* / *she has placed*, *I do* / *he does*. Câu nên tô màu phần động từ đã chia.
+2. **Không phải mẫu nào cũng hợp mọi chủ ngữ.** Mẫu IELTS trang trọng ("Many schools place a heavy emphasis on…") đi với *I* thì gượng. Vì vậy mỗi item có thể **ghi đè hạn ngạch**: ví dụ mẫu IELTS dùng nhóm chủ ngữ `noun_phrase` (Many schools, The government…) thay cho *I*.
+3. **Không phải tình huống nào cũng hợp mọi từ.** Ví dụ "emphasis" khó đi với "Gọi đồ uống". Server chỉ gợi ý các tình huống **trùng chủ đề** với item. Nếu AI báo câu không tự nhiên thì bỏ câu đó, và bộ câu có thể trả **ít câu hơn kèm lý do**.
+4. **Số tổ hợp có thể rất lớn**: ~4.500 item × 12 thì × ~50 tình huống × 5 nhóm chủ ngữ. Vì vậy **không sinh trước toàn bộ**. Chỉ sinh trước (prewarm) các tổ hợp nằm trong bài giáo trình. Phần còn lại sinh khi có người yêu cầu và lưu vào kho.
+5. **Chấm phát âm hiện tại là chấm theo từ, không theo âm.** STT nghe ra từ nào thì so với câu mẫu. Cách này bắt được từ bị thiếu hoặc nói thành từ khác, nhưng **không** bắt được lỗi âm cuối, trọng âm hay ngữ điệu, và STT còn hay tự "sửa" giúp người nói. Muốn chấm theo âm vị cần một dịch vụ chấm phát âm riêng: **dependency mới, có chi phí, cần bạn duyệt** (xem mục 9).
+
+---
+
+## 3. Tổ chức dữ liệu
+
+### 3.1 Mô hình tổng thể
 
 ```mermaid
 erDiagram
   ITEM ||--o{ ITEM_TAG : "chủ đề, chức năng 🆕"
-  TAG ||--o{ ITEM_TAG : ""
   ITEM ||--o{ ITEM_LINK : "từ ↔ cụm ↔ mẫu ↔ thì 🆕"
-  ITEM ||--o{ ITEM_EXAMPLE : "ví dụ (+ grammar_code 🔧)"
-  ITEM ||--o{ ITEM_VARIANT : "biến thể"
-  ITEM ||--o{ ITEM_ERROR : "lỗi hay gặp"
-  ITEM ||--o{ ITEM_MEMORY : "lịch ôn mỗi người"
-  ITEM ||--o{ LESSON_ITEM : ""
-  LESSON }o--|| UNIT : "1 unit = 1 chủ đề / tuần"
-  UNIT }o--|| LEVEL : "A1 · A2 · B1 · B2"
-  LEVEL }o--|| COURSE : "khoá 'Oxford 3000 + IELTS'"
-  USER ||--o{ ITEM_MEMORY : ""
-  USER ||--o{ COMBO_ATTEMPT : "câu tổ hợp 🆕"
+  ITEM ||--o{ ITEM_MEMORY : "lịch ôn ✅"
+  SITUATION ||--o{ SITUATION_TAG : "chủ đề 🆕"
+  ITEM ||--o{ COMBO_SENTENCE : "item chính"
+  ITEM ||--o{ COMBO_SENTENCE : "thì (grammar)"
+  SITUATION ||--o{ COMBO_SENTENCE : ""
+  COMBO_SENTENCE ||--o{ COMBO_SET_SENTENCE : ""
+  COMBO_SET ||--o{ COMBO_SET_SENTENCE : "thứ tự phát"
+  USER ||--o{ COMBO_SET : "bộ câu đã mở"
+  COMBO_SENTENCE ||--o{ RECORDING : "đọc theo ✅🔧"
+  COMBO_SENTENCE ||--o{ COMBO_REPORT : "báo câu sai 🆕"
 ```
 
-### 2.2 Bảng `items` 🔧: thêm 2 cột và 1 loại
+### 3.2 Bảng `items` 🔧
 
 | Thay đổi | Kiểu | Ý nghĩa |
 |---|---|---|
-| `cefr_level` 🆕 | `varchar(4)` null | `A1`, `A2`, `B1`, `B2`, `C1`. Lấy thẳng từ Oxford 3000. |
-| `frequency_rank` 🆕 | `int` null | Thứ tự ưu tiên trong cùng cấp (từ hay dùng học trước). |
-| `kind = 'grammar'` 🆕 | giá trị mới | Thì và điểm ngữ pháp. |
+| `cefr_level` 🆕 | `varchar(4)` null | `A1`…`C1`, lấy từ Oxford 3000 |
+| `frequency_rank` 🆕 | `int` null | Thứ tự ưu tiên trong cùng cấp |
+| `kind = 'grammar'` 🆕 | giá trị mới | Thì và điểm ngữ pháp |
 
-Cả hai cột mới đều cho phép null, nên migration **không đụng dữ liệu cũ**.
+Hai cột mới cho phép null, nên **không đụng dữ liệu cũ**.
 
-**Mã item (`code`).** Mã bị khoá sau khi publish, nên phải chọn đúng ngay từ đầu. Oxford 3000 có từ cùng chữ khác nghĩa, vì vậy cần thêm hậu tố nghĩa:
+**Mã item bị khoá sau khi publish.** Oxford 3000 có từ cùng chữ khác nghĩa, nên cần thêm hậu tố nghĩa vào mã: `word:bank-money`, `word:bank-river`, `word:close-verb`, `word:close-adj`. Mẫu câu đặt mã như `pattern:place-emphasis-on`, thì như `grammar:present-perfect`.
 
-| Oxford 3000 | `code` |
-|---|---|
-| bank (money) n. A1 | `word:bank-money` |
-| bank (river) n. B1 | `word:bank-river` |
-| close¹ v. A1 · close² adj. A2 | `word:close-verb`, `word:close-adj` |
-| a, an | `word:a-an` |
-| place a heavy emphasis on | `phrase:place-emphasis-on` |
-| S + place(s) a heavy emphasis on + N | `pattern:place-emphasis-on` |
-| Hiện tại hoàn thành | `grammar:present-perfect` |
-
-Một từ có nhiều cấp theo loại từ (ví dụ `account n. B1, v. B2`) thì tách thành 2 item theo loại từ. Mỗi item giữ đúng cấp của nó.
-
-### 2.3 Từ và cụm từ (`word`, `phrase`) ✅
-
-| Trường | Ví dụ `word:emphasis` |
-|---|---|
-| `text`, `part_of_speech`, `ipa` | emphasis · n. · /ˈemfəsɪs/ |
-| `meaning_vi` | sự nhấn mạnh, sự chú trọng |
-| `cefr_level` 🆕 | B2 |
-| `item_examples` | "Many schools place a heavy emphasis on academic performance." |
-| `item_links` 🆕 | → `phrase:place-emphasis-on` (`collocation`) |
-| `item_tags` 🆕 | `topic:education` |
-
-**Collocation là `phrase` riêng**, không nhét vào `word`, vì nó cần lịch ôn riêng. Biết "emphasis" không có nghĩa là dùng được "place emphasis on".
-
-### 2.4 Mẫu câu (`pattern`) ✅ dùng nguyên khung slot sẵn có
-
-Mẫu trong bảng IELTS chuyển sang khung `{slot}` mà server đã kiểm tra được:
+**Mẫu câu** dùng khung `{slot}` sẵn có:
 
 ```jsonc
-// items: kind = 'pattern', code = 'pattern:place-emphasis-on'
-{
+{ "kind": "pattern", "code": "pattern:place-emphasis-on",
   "text": "{subject} place a heavy emphasis on {thing}",
-  "meaning_vi": "Đặt sự chú trọng lớn vào…",
-  "note_vi": "Dùng khi một cá nhân/tổ chức coi một yếu tố là ưu tiên",
-  "cefr_level": "B2",
-  "payload": {
-    "slots": {
-      "subject": { "label_vi": "Ai / tổ chức", "values": ["Many schools", "The government", "Employers"] },
-      "thing":   { "label_vi": "Điều được chú trọng",
-                   "item_refs": ["phrase:academic-performance", "word:education"] }
-    }
-  }
-}
+  "meaning_vi": "Đặt sự chú trọng lớn vào…", "cefr_level": "B2",
+  "payload": { "slots": {
+    "subject": { "label_vi": "Ai / tổ chức", "values": ["Many schools", "The government"] },
+    "thing":   { "label_vi": "Điều được chú trọng", "item_refs": ["phrase:academic-performance"] } } } }
 ```
 
-- `item_tags`: `function:emphasis`, `register:formal`, `exam:ielts-writing`.
-- `item_examples` 🔧 thêm cột `grammar_code` (null được): ví dụ cùng mẫu ở các thì khác nhau. Đây là dữ liệu cho bài **"đổi thì"** mà không cần app tự chia động từ:
-
-| `text_en` | `grammar_code` |
-|---|---|
-| Many schools place a heavy emphasis on exams. | `grammar:present-simple` |
-| Many schools have placed a heavy emphasis on exams. | `grammar:present-perfect` |
-| In the past, schools placed a heavy emphasis on exams. | `grammar:past-simple` |
-
-**Nhóm chức năng** (tag `function:*`) để người học tra theo ý muốn nói:
-
-| Tag | Ví dụ mẫu |
-|---|---|
-| `function:emphasis` | place emphasis on, attach importance to |
-| `function:benefit` | gain a better understanding of, broaden one's horizons |
-| `function:cause-effect` | be accompanied by, lead to, result in |
-| `function:opinion` | It is widely believed that… |
-| `function:contrast` | While…, … ; On the other hand… |
-| `function:trend` | There has been a sharp rise in… |
-
-### 2.5 Thì và ngữ pháp (`grammar`) 🆕
+**Thì** (`grammar`) 🆕:
 
 ```jsonc
-// items: kind = 'grammar', code = 'grammar:present-perfect'
-{
-  "text": "Present perfect",
-  "meaning_vi": "Hiện tại hoàn thành",
-  "note_vi": "Việc bắt đầu trong quá khứ, còn liên quan tới bây giờ",
-  "cefr_level": "A2",
+{ "kind": "grammar", "code": "grammar:present-perfect",
+  "text": "Present perfect", "meaning_vi": "Hiện tại hoàn thành", "cefr_level": "A2",
   "payload": {
-    "family": "tense",
-    "time": "present",          // past | present | future
-    "aspect": "perfect",        // simple | continuous | perfect | perfect_continuous
-    "forms": {
-      "affirmative": "{subject} have/has + V3",
-      "negative":    "{subject} have/has not + V3",
-      "question":    "Have/Has + {subject} + V3?"
-    },
-    "signals": ["since", "for", "already", "yet", "over the past …", "recently"],
-    "uses_vi": ["Kinh nghiệm đến hiện tại", "Việc vừa xảy ra, có kết quả bây giờ"],
-    "contrast_with": ["grammar:past-simple"]
-  }
-}
+    "family": "tense", "time": "present", "aspect": "perfect",
+    "forms": { "affirmative": "{subject} have/has + V3",
+               "negative": "{subject} have/has not + V3",
+               "question": "Have/Has + {subject} + V3?" },
+    "signals": ["since", "for", "already", "yet", "over the past …"],
+    "contrast_with": ["grammar:past-simple"],
+    "check": { "aux": ["have", "has", "'ve", "'s"], "verb_form": "past_participle" } } }
 ```
 
-- `item_errors` ✅ chứa lỗi hay gặp, ví dụ "dùng *since* với thì quá khứ đơn".
-- `contrast_with` sinh bài **"chọn thì đúng"** giữa 2 thì hay nhầm.
-- `family` chừa chỗ cho ngữ pháp khác sau thì: `passive`, `conditional`, `relative-clause`, `modal`…
+Trường `check` 🆕 được server dùng để **tự kiểm tra thì** của câu AI sinh (mục 4.4).
 
-Bộ đầu tiên gồm 12 thì, xếp theo thứ tự dạy: hiện tại đơn → hiện tại tiếp diễn → quá khứ đơn → tương lai (will / be going to) → hiện tại hoàn thành → quá khứ tiếp diễn → quá khứ hoàn thành → hiện tại hoàn thành tiếp diễn → các thì còn lại.
+### 3.3 Tình huống: dùng bảng `situations` ✅ và thêm nhãn 🔧
 
-### 2.6 Bảng mới 🆕
+Bảng `situations` đã có `code`, `title_vi/en`, `description_en`, `level_code`, `audience`, `status`. Cần thêm:
+- `situation_tags` 🆕: gắn chủ đề (`topic:education`…) để gợi ý tình huống hợp với item.
+- `register` 🆕 (`casual` / `neutral` / `formal`): tránh ghép mẫu IELTS với tình huống đời thường.
+
+Người học **chỉ chọn**, không tạo mới. Admin soạn tình huống trong `admin-web` như hiện nay.
+
+### 3.4 Kho câu tổ hợp 🆕
 
 ```sql
--- Nhãn dùng chung: chủ đề, chức năng, kỳ thi
-CREATE TABLE tags (
-  code      varchar(64) PRIMARY KEY,      -- 'topic:education', 'function:emphasis'
-  label_vi  varchar(120) NOT NULL,
-  kind      varchar(16)  NOT NULL         -- topic | function | exam | register
+-- Một câu trong kho, dùng chung cho mọi người học
+CREATE TABLE combo_sentences (
+  id               uuid PRIMARY KEY,
+  item_id          uuid NOT NULL REFERENCES items,      -- từ / cụm từ / mẫu
+  grammar_item_id  uuid NOT NULL REFERENCES items,      -- thì
+  situation_id     uuid NOT NULL REFERENCES situations,
+  subject_group    varchar(16) NOT NULL,  -- i | you | he_she | we | they | noun_phrase
+  subject_text     varchar(80)  NOT NULL, -- 'I', 'She', 'Many schools'
+  polarity         varchar(12)  NOT NULL DEFAULT 'affirmative', -- affirmative | negative | question
+  text_en          varchar(300) NOT NULL,
+  text_vi          varchar(400) NOT NULL,
+  tokens           jsonb NOT NULL,   -- [{ "t": "has", "ipa": "/hæz/", "role": "aux" }, …]
+  level_code       varchar(4)  NOT NULL,
+  source           varchar(8)  NOT NULL,   -- admin | ai
+  status           varchar(12) NOT NULL,   -- draft | auto_ok | published | flagged | archived
+  checks           jsonb NOT NULL DEFAULT '{}', -- kết quả kiểm tra tự động
+  prompt_version   varchar(32),
+  created_at       timestamptz NOT NULL DEFAULT now()
 );
-CREATE TABLE item_tags (
-  item_id  uuid REFERENCES items ON DELETE CASCADE,
-  tag_code varchar(64) REFERENCES tags,
-  PRIMARY KEY (item_id, tag_code)
+CREATE UNIQUE INDEX ON combo_sentences (item_id, grammar_item_id, situation_id, lower(text_en));
+CREATE INDEX ON combo_sentences (item_id, grammar_item_id, situation_id, subject_group, status);
+
+-- Bộ câu người học đã mở: để "tải thêm" và học lại
+CREATE TABLE combo_sets (
+  id               uuid PRIMARY KEY,
+  user_id          uuid NOT NULL REFERENCES users ON DELETE CASCADE,
+  item_id          uuid NOT NULL REFERENCES items,
+  grammar_item_id  uuid NOT NULL REFERENCES items,
+  situation_id     uuid NOT NULL REFERENCES situations,
+  quota            jsonb NOT NULL,   -- hạn ngạch đã áp, ví dụ {"i":3,"he_she":3,"they":3}
+  next_cursor      int  NOT NULL DEFAULT 0,  -- vị trí trong vòng chủ ngữ
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE combo_set_sentences (
+  set_id      uuid REFERENCES combo_sets ON DELETE CASCADE,
+  sentence_id uuid REFERENCES combo_sentences,
+  position    int NOT NULL,
+  batch       int NOT NULL,              -- đợt 1, 2 (tải thêm)…
+  PRIMARY KEY (set_id, sentence_id)
 );
 
--- Liên kết có hướng giữa các item
-CREATE TABLE item_links (
-  from_item_id uuid REFERENCES items ON DELETE CASCADE,
-  to_item_id   uuid REFERENCES items ON DELETE RESTRICT,
-  relation     varchar(16) NOT NULL,  -- collocation | word_family | synonym | uses_grammar | contrast
-  position     int NOT NULL,
-  PRIMARY KEY (from_item_id, to_item_id, relation)
-);
-
--- Lượt câu tổ hợp (để xem lại bài viết, thống kê lỗi)
-CREATE TABLE combo_attempts (
-  id            uuid PRIMARY KEY,
-  user_id       uuid REFERENCES users ON DELETE CASCADE,
-  word_item_id    uuid REFERENCES items,
-  pattern_item_id uuid REFERENCES items,
-  grammar_item_id uuid REFERENCES items,
-  text_en       varchar(500) NOT NULL,
-  result        varchar(20)  NOT NULL,   -- dùng lại 4 kết quả: pass_independent | pass_with_support | not_yet | not_assessable
-  feedback      jsonb NOT NULL DEFAULT '{}',
-  created_at    timestamptz NOT NULL DEFAULT now()
+-- Người học báo câu sai / không tự nhiên (giống lesson_item_reports)
+CREATE TABLE combo_reports (
+  id uuid PRIMARY KEY, sentence_id uuid REFERENCES combo_sentences,
+  user_id uuid REFERENCES users ON DELETE SET NULL,
+  reason varchar(24) NOT NULL, note varchar(300), created_at timestamptz DEFAULT now()
 );
 ```
 
-Slot của pattern trỏ tới từ đã có sẵn trong `payload.slots[].item_refs`. `item_links` chỉ thêm các quan hệ mà slot chưa diễn tả được.
+Câu bị báo sai ≥ 2 lần thì tự chuyển `flagged`, không phát nữa và vào hàng đợi admin duyệt.
 
-### 2.7 Khoá học: dùng nguyên cấu trúc curriculum ✅
+### 3.5 Cấu hình (`admin_settings`) ✅ thêm key
+
+| Key | Mặc định | Ý nghĩa |
+|---|---|---|
+| `combo.subject_quota` | `{"i":3,"he_she":3,"they":3}` | Hạn ngạch mỗi đợt. `he_she` xen kẽ He / She. |
+| `combo.batch_sizes` | `[3, 6, 9, 12]` | Các mức người học được chọn |
+| `combo.default_batch` | `9` | Số câu đợt đầu |
+| `combo.max_per_set` | `27` | Tối đa sau nhiều lần "tải thêm" |
+| `combo.daily_ai_generations` | `5` | Số lần **gọi AI** mỗi ngày cho một người học. Lấy từ kho thì không tính. |
+| `combo.pronunciation_pass` | `0.8` | Ngưỡng độ khớp từ để coi là đọc đạt |
+| `combo.max_words` | `{"A1":8,"A2":12,"B1":16,"B2":20}` | Độ dài câu tối đa theo cấp |
+
+Item được ghi đè hạn ngạch qua `items.payload.combo_quota`. Ví dụ mẫu IELTS: `{"noun_phrase":3,"they":3,"we":3}`.
+
+### 3.6 Khoá học ✅
 
 ```
 Khoá "Oxford 3000 + IELTS"
- └─ Level A1 · A2 · B1 · B2               (theo cefr_level)
-     └─ Unit = 1 chủ đề = 1 tuần           (education, work, travel, environment…)
-         ├─ Bài 1–4: mỗi bài ≈ 12 từ + 1 mẫu + 1 thì   (lesson_items: required / extended)
-         └─ Nhiệm vụ tổng hợp = viết đoạn 120–150 từ   (tasks + rubric 4 tiêu chí)
+ └─ Cấp A1 · A2 · B1 · B2
+     └─ Unit = 1 chủ đề = 1 tuần (education, work, travel…)
+         ├─ Bài 1–4: ≈ 12 từ + 1 mẫu + 1 thì + 1–2 tình huống của chủ đề
+         └─ Nhiệm vụ tổng hợp: viết / nói đoạn ngắn
 ```
 
-Oxford 3000 có khoảng 3.000 mục. Với ~12 từ/bài × 4 bài/unit, cần khoảng **60–65 unit**, tức khoảng 15 unit mỗi cấp. Mẫu câu IELTS (B2+) chủ yếu nằm ở B1–B2. Các cấp A1–A2 dùng mẫu câu giao tiếp cơ bản đã có trong 42 bài hiện tại.
+Mỗi bài khai báo sẵn tình huống và thì, nên bộ câu tổ hợp của bài được **sinh trước** khi publish bài.
 
 ---
 
-## 3. Tính năng
+## 4. Luồng tạo bộ câu tổ hợp
 
-```mermaid
-flowchart TB
-  classDef new fill:#fff4e0,stroke:#d98b00,color:#321
-  classDef old fill:#e6f7ea,stroke:#2e8b57,color:#123
-
-  T["Today ✅<br/>bài tiếp theo + ôn đến hạn"]:::old
-  T --> F1["F1 · Lộ trình từ vựng 🆕"]:::new
-  T --> F4["F4 · Bài tuần chủ đề<br/>(6 bước) ✅🔧"]:::old
-  T --> F6["F6 · Ôn theo thang 🆕"]:::new
-  F1 --> F4
-  F2["F2 · Kho mẫu câu 🆕"]:::new --> F4
-  F3["F3 · Bản đồ thì 🆕"]:::new --> F4
-  F4 --> F5["F5 · Câu tổ hợp 🆕"]:::new
-  F4 --> F7["F7 · Viết đoạn cuối tuần<br/>= nhiệm vụ tổng hợp ✅"]:::old
-  F5 --> F6
-  F8["F8 · Bắt từ trong bài tự tạo 🔧"]:::new --> F6
-  F6 --> F9["F9 · Bảng tiến độ 🆕"]:::new
-```
-
-| # | Tính năng | Người học thấy gì | Dựa trên |
-|---|---|---|---|
-| **F1** | **Lộ trình từ vựng** | Bảng A1→B2, mỗi cấp chia theo chủ đề. Mỗi gói ≈ 12 từ. Có **kiểm tra nhanh "đã biết"**: chọn đúng nghĩa 2 lần thì bỏ qua từ đó, không bắt học lại. | `cefr_level`, `item_tags`, `item_memory` |
-| **F2** | **Kho mẫu câu theo chức năng** | Tra theo ý muốn nói ("muốn nhấn mạnh", "nêu nguyên nhân"…). Mỗi mẫu có khung slot, ví dụ ở nhiều thì, nút "Thêm vào ôn". | `pattern` + tag `function:*` |
-| **F3** | **Bản đồ thì 3 × 4** | Lưới thời gian × khía cạnh. Ô tô màu theo mức nhớ. Chạm vào ô để xem công thức, dấu hiệu, lỗi hay gặp, thì hay nhầm. | `grammar` + `item_memory` |
-| **F4** | **Bài tuần chủ đề** | Bài 6 bước như hiện nay; mỗi bài có từ + mẫu + thì. Bước 4 "luyện biến đổi" có thêm bài **đổi thì** của mẫu. | `LessonFlowPlayer` ✅, `item_examples.grammar_code` |
-| **F5** | **Câu tổ hợp** | App giao 1 từ + 1 mẫu + 1 thì (chủ yếu là item đến hạn). Người học tự viết câu. Server chấm từng phần: có dùng từ? đúng mẫu? đúng thì? đúng ngữ pháp? | `POST /v1/evaluations/text` 🔧, `combo_attempts` |
-| **F6** | **Ôn theo thang** | Hàng ôn hằng ngày trộn 3 loại. Dạng bài khó dần theo mức nhớ (xem mục 4). | `item_memory` ✅, `ItemReviewScreen` 🔧 |
-| **F7** | **Viết đoạn cuối tuần** | Viết 120–150 từ theo đề của unit, bắt buộc dùng ≥ 8 từ, ≥ 3 mẫu, ≥ 2 thì của tuần. App đếm và đánh dấu ngay trong bài viết. | `tasks` + `task_items` ✅ |
-| **F8** | **Bắt từ trong bài tự tạo** | Khi học bài YouTube / ảnh chữ, từ thuộc Oxford 3000 có nhãn cấp (A2, B1…) và nút "Đưa vào lộ trình". | `SentenceEnrichment.vocab` ✅ + tra theo `code` |
-| **F9** | **Bảng tiến độ** | "Đã nhớ 640 / 3.000 từ", thanh theo từng cấp, mẫu câu theo chức năng, lưới thì tô màu. Tách "đã học" với "nhớ ổn định". | `item_memory.stable_at` ✅ |
-
-### 3.1 Màn hình mới hoặc đổi
-
-| Màn | Loại | Ghi chú |
-|---|---|---|
-| `WordPathScreen` | 🆕 | Danh sách cấp → chủ đề → gói từ, kèm % đã nhớ |
-| `QuickKnownCheck` | 🆕 | 10 câu chọn nghĩa nhanh để bỏ qua từ đã biết |
-| `PatternLibraryScreen` | 🆕 | Lọc theo chức năng, cấp, kỳ thi |
-| `TenseMapScreen` | 🆕 | Lưới 3 × 4, chạm vào ô mở `GrammarDetail` |
-| `ComboSentence` activity | 🆕 | Thêm loại hoạt động thứ 7 vào `flow/components/activities/` |
-| `ItemReviewScreen` | 🔧 | Thêm dạng bài theo bậc thang (mục 4.2) |
-| `ProgressReportScreen` | 🔧 | Thêm F9 |
-
----
-
-## 4. Ôn luyện
-
-### 4.1 Lịch ôn: giữ nguyên ✅
-
-Giữ chuỗi khoảng `1 · 3 · 7 · 14 · 30 · 60 · 120` ngày, bảng `item_memory`, và luật **chỉ lượt `kind = review` mới dời lịch**. Game và luyện tự do không làm lệch lịch.
-
-### 4.2 Thang dạng bài theo mức nhớ 🆕
-
-Cùng một item, nhưng mỗi lần ôn sẽ **khó hơn lần trước**. Dạng bài được chọn theo `item_memory.stage`, nên **không cần thêm cột** vào DB.
+### 4.1 Người học chọn đầu vào
 
 ```mermaid
 flowchart LR
-  S0["Bậc 1 · Nhận ra<br/>stage 0–1<br/>(1–3 ngày)"] --> S1["Bậc 2 · Nhớ lại<br/>stage 2–3<br/>(7–14 ngày)"]
-  S1 --> S2["Bậc 3 · Vận dụng<br/>stage ≥ 4<br/>(30+ ngày)"]
-  S2 --> ST(["Nhớ ổn định<br/>đúng 2 lần liền ở mức ≥ 7 ngày"])
-  S0 -. "sai" .-> R["Về 1 ngày,<br/>làm lại bậc 1"]
-  S1 -. "sai" .-> R
-  S2 -. "sai" .-> R
+  A["Mở từ: bài học · thẻ ôn · kho mẫu · bản đồ thì"] --> B["Item đã chọn sẵn"]
+  B --> C["Chọn tình huống<br/>chip gợi ý theo chủ đề + cấp"]
+  C --> D["Chọn thì<br/>ưu tiên thì đã học"]
+  D --> E["Chọn số câu<br/>3 · 6 · 9 · 12"]
+  E --> F["Tạo bộ câu"]
 ```
 
-| Bậc | Từ / cụm từ | Mẫu câu | Thì | Chấm |
-|---|---|---|---|---|
-| **1 · Nhận ra** | Nghe hoặc đọc → chọn nghĩa | Chọn câu đúng khung trong 3 câu | Nhìn câu → chọn tên thì | App, offline |
-| **2 · Nhớ lại** | Nghĩa VI → gõ từ; điền chỗ trống trong ví dụ | Điền phần thiếu của khung ("attach great ___ to") | Chia động từ trong ngoặc; chọn giữa 2 thì hay nhầm (`contrast_with`) | App, offline (`acceptedAnswers`) |
-| **3 · Vận dụng** | Câu tổ hợp | Đổi thì của mẫu; dịch VI → EN có dùng mẫu | Câu tổ hợp với thì được giao | Server chấm, hoặc tự đánh giá khi hết lượt / offline |
+- Vào từ bài học: item, tình huống và thì đã điền sẵn theo bài, người học chỉ bấm "Luyện câu".
+- Danh sách tình huống lấy từ `GET /v1/combo/situations?item=…`: `published`, đúng `audience`, cấp ≤ cấp người học + 1, trùng chủ đề và register hợp.
+- Thì: các thì người học đã gặp được xếp trước. Thì chưa học có nhãn "Mới".
 
-### 4.3 Hàng ôn mỗi ngày 🔧
-
-Dùng giới hạn hiện có `DAILY_ITEM_REVIEW_LIMIT = 20`, và thêm luật trộn:
-
-1. **Ưu tiên** item đến hạn lâu nhất, rồi đến item thuộc bài hôm nay (bước 1 "Ôn liên quan" đã làm việc này).
-2. **Tỷ lệ gợi ý:** ~60% từ / cụm từ, ~25% mẫu câu, ~15% thì. Loại nào thiếu thì bù bằng loại khác.
-3. **Xen kẽ:** không để quá 2 thẻ cùng loại liền nhau. Học xen kẽ nhớ lâu hơn học dồn.
-4. **Gộp thành câu tổ hợp:** nếu trong hàng đợi có cùng lúc 1 từ bậc 3 + 1 mẫu bậc 3 + 1 thì, gộp thành **một** câu tổ hợp. Một lượt viết ghi nhận cho cả 3 item, nên đỡ mệt và tốn ít lượt chấm hơn.
-5. **Item khó (leech):** sai ≥ 4 lần thì gắn nhãn "từ khó". Lần sau hiện thẻ so sánh từ `item_errors` hoặc `contrast_with` trước khi hỏi.
-
-### 4.4 Chấm câu tổ hợp
+### 4.2 Server ghép bộ câu
 
 ```mermaid
 sequenceDiagram
   actor U as Người học
   participant A as App
   participant S as Server
-  A->>U: Giao: word:emphasis + pattern:place-emphasis-on + grammar:present-perfect
-  U->>A: "Over the past decade, schools have placed a heavy emphasis on exams."
-  A->>A: Kiểm tra nhanh offline: có chữ "emphasis"? khớp khung?
-  A->>S: POST /v1/evaluations/text (mode: combo)
-  S-->>A: {word: ✓, pattern: ✓, tense: ✓, grammar: ✓, result: pass_independent, sửa gợi ý}
-  A->>A: recordItemReview × 3 (kind = review) → outbox sync
-  A-->>U: Kết quả từng phần + câu sửa (nếu có)
+  participant DB as Kho câu
+  participant AI as AI
+  U->>A: item + tình huống + thì + 9 câu
+  A->>S: POST /v1/combo/sets
+  S->>S: Lập kế hoạch chủ ngữ: I×3, He/She×3, They×3
+  S->>DB: Lấy câu published/auto_ok theo từng nhóm, bỏ câu người này đã học
+  alt Kho đủ
+    DB-->>S: 9 câu
+  else Thiếu k câu
+    S->>AI: Sinh phần thiếu (+2 câu dự phòng mỗi nhóm), đúng chủ ngữ, thì, độ dài
+    AI-->>S: Câu + bản dịch + vai trò từ
+    S->>S: Kiểm tra tự động (4.4), gắn IPA, lưu vào kho
+  end
+  S-->>A: Bộ câu (đủ, hoặc thiếu kèm lý do)
+  U->>A: "Tải thêm"
+  A->>S: POST /v1/combo/sets/:id/more
+  S-->>A: Đợt 2, tiếp tục vòng chủ ngữ
 ```
 
-- Chỉ phần nào **sai** thì item đó mới tính "quên". Ví dụ đúng từ, đúng mẫu nhưng sai thì: chỉ `grammar:*` về 1 ngày.
-- Khi hết lượt chấm trong ngày, mất mạng, hoặc là tài khoản trẻ em: chuyển sang **tự đánh giá** với câu mẫu bên cạnh, giống bước 5 hiện nay.
-- `not_assessable` (server lỗi) **không tính là sai**, đúng luật hiện có.
+- **Thứ tự phát:** gom theo nhóm chủ ngữ (3 câu *I*, rồi 3 câu *He/She*…) để người học thấy động từ đổi theo chủ ngữ. Có nút xem "trộn" khi ôn.
+- **Tải thêm:** mỗi đợt lấy lại đúng hạn ngạch, không lặp câu đã phát trong bộ, dừng ở `combo.max_per_set`.
+- **Hết lượt AI trong ngày:** chỉ phát câu đang có trong kho. Nếu kho không đủ, trả số câu có được và báo "Hôm nay đã hết lượt tạo câu mới".
+- **Tài khoản trẻ em:** chỉ nhận câu `published` (đã được admin duyệt), không gọi AI.
+- **Offline:** bộ câu đã mở được tải về máy, học lại được. Chưa từng tải thì không tạo được.
+
+### 4.3 Prompt sinh câu (tóm tắt)
+
+AI nhận: item (chữ, nghĩa, khung slot), tình huống (`description_en`, register), thì (`forms`, `signals`), danh sách chủ ngữ cần sinh, cấp, độ dài tối đa. AI trả JSON, mỗi câu gồm `subject_group`, `subject_text`, `text_en`, `text_vi`, vai trò của từng token (`subject` / `aux` / `verb` / `item` / `other`) và cờ `natural: true/false`.
+
+Nội dung tình huống được nhúng như dữ liệu trong prompt, giống cách đang chống prompt injection cho Khoảnh khắc. Prompt quản lý trong `ai_prompts` ✅ với key mới `combo.generate`.
+
+### 4.4 Kiểm tra tự động trước khi vào kho
+
+| Kiểm tra | Cách làm | Sai thì |
+|---|---|---|
+| Có item | So token với chữ của item và các dạng biến đổi (`-s`, `-ed`, `-ing`, V3). Với mẫu câu thì khớp khung. | Bỏ câu |
+| Đúng chủ ngữ | Token `role = subject` khớp `subject_group` | Bỏ câu |
+| Đúng thì | Trợ động từ và dạng động từ khớp `grammar.payload.check` | Bỏ câu |
+| Hoà hợp chủ–động từ | Luật cho he/she/it + hiện tại đơn (`-s`, `has`, `does`) | Bỏ câu |
+| Độ dài, cấp từ | ≤ `combo.max_words`; từ ngoài Oxford 3000 hoặc trên cấp + 1 ≤ 2 từ | Bỏ câu |
+| An toàn | `moderateText` ✅ | Bỏ câu, ghi log |
+| IPA | cmudict cho từng token, thiếu thì dùng LLM như hiện nay ✅ | Thiếu IPA vẫn giữ câu, token đó hiện "—" |
+| Tự nhiên | `natural = false` do AI tự báo | Bỏ câu |
+
+Đạt hết thì câu nhận trạng thái `auto_ok` và được phát ngay. Admin duyệt thì chuyển `published`.
 
 ---
 
-## 5. Nạp nội dung
+## 5. Học một câu: nghe · IPA · đọc theo · chấm
+
+### 5.1 Thẻ câu
+
+```
+┌───────────────────────────────────────────────┐
+│ ● She  ·  Hiện tại hoàn thành  ·  Ở trường     │
+│                                               │
+│ She has placed a heavy emphasis on her exams. │
+│ /ʃi/ /hæz/ /pleɪst/ /ə/ /ˈhevi/ /ˈemfəsɪs/ …   │  ← IPA dưới từng từ (bật/tắt)
+│ Cô ấy đã rất chú trọng vào các kỳ thi.         │
+│                                               │
+│  ▶ Nghe   🐢 Chậm   🎙 Đọc theo   ⚑ Báo sai     │
+└───────────────────────────────────────────────┘
+```
+
+- **Tô màu theo vai trò:** item chính, trợ động từ + động từ (phần thể hiện thì), chủ ngữ.
+- **Chạm vào một từ:** hiện IPA, nghĩa và nghe riêng từ đó. Nếu từ là item trong kho thì có nút "Thêm vào ôn".
+- **Nghe:** TTS trên máy ✅, tốc độ thường và chậm (`DEFAULT_TTS_RATE`). Để sau: server tạo audio sẵn cho câu `published` để giọng đọc đồng nhất.
+
+### 5.2 Đọc theo và chấm phát âm
 
 ```mermaid
 flowchart LR
-  PDF["Oxford 3000 (PDF)"] --> CSV["Script tách: word, pos, level, nghĩa phân biệt"]
-  CSV --> IMP["yarn seed:oxford 🆕<br/>tạo item draft, source = admin"]
-  IMP --> AI["AI soạn nháp: meaning_vi, IPA,<br/>2 ví dụ, collocation, chủ đề<br/>source = ai, status = draft"]
-  AI --> REV["Admin duyệt theo lô<br/>(admin-web, có sẵn luồng draft → published)"]
-  REV --> PUB["published → vào lộ trình"]
-  IELTS["Bảng mẫu câu IELTS"] --> PAT["Admin nhập pattern + ví dụ theo thì"] --> REV
-  GR["12 thì"] --> GRI["Admin soạn grammar item"] --> REV
+  L["Nghe câu mẫu"] --> R["Ghi âm<br/>RecorderPanel ✅"]
+  R --> C{"Đã đồng ý<br/>chấm bằng máy?"}
+  C -->|"có"| UP["Upload, mode = combo_shadowing 🔧"]
+  UP --> STT["STT ✅ → so khớp từng từ ✅"]
+  STT --> RES["Kết quả: % khớp + từng từ<br/>xanh = đúng · đỏ = sai · xám = thiếu"]
+  C -->|"không / offline"| SELF["Tự đánh giá<br/>SelfCheckList ✅"]
+  RES --> NEXT["Từ đỏ: chạm để nghe lại + xem IPA<br/>Đọc lại hoặc sang câu tiếp"]
+  SELF --> NEXT
 ```
 
-Khối lượng ước tính: ~3.000 word + ~1.500 phrase (collocation) + ~150 pattern + ~12–30 grammar.
+- Chế độ ghi âm mới `combo_shadowing` tham chiếu `combo_sentence_id`. Áp các luật hiện có: ghi âm ≤ 35 giây, file xoá sau 30 ngày, chữ nhận dạng không lưu.
+- **Đạt** khi độ khớp từ ≥ `combo.pronunciation_pass`. Đọc lại thoải mái; lượt cao nhất được giữ.
+- Gợi ý STT (hints) gồm câu mẫu và từ của item, giống `sttHints` đang dùng cho bước 5.
+- `not_assessable` (lỗi âm thanh, lỗi server) **không tính là sai**.
+- **Giới hạn:** chấm theo từ chỉ cho biết người nghe có hiểu được không. Không chấm được âm cuối, trọng âm hay ngữ điệu (xem 2.2 và mục 9).
+
+### 5.3 Kết thúc bộ câu
+
+Màn tổng kết hiện: số câu đã đọc đạt, các từ hay đọc sai (gộp theo từ), và so sánh động từ theo chủ ngữ (*I have placed* ↔ *she has placed*). Có 3 nút: "Tải thêm", "Đổi tình huống", "Đổi thì".
 
 ---
 
-## 6. Chia giai đoạn
+## 6. Tính năng
+
+| # | Tính năng | Người học thấy gì | Dựa trên |
+|---|---|---|---|
+| **F1** | Lộ trình từ vựng | A1→B2 chia theo chủ đề, gói ≈ 12 từ, kiểm tra nhanh "đã biết" | `cefr_level`, tags, `item_memory` |
+| **F2** | Kho mẫu câu theo chức năng | Tra theo ý muốn nói (nhấn mạnh, nguyên nhân…). Mỗi mẫu có nút "Luyện câu tổ hợp". | `pattern` + tag `function:*` |
+| **F3** | Bản đồ thì 3 × 4 | Lưới thời gian × khía cạnh, tô màu theo mức nhớ. Chạm vào ô để xem công thức, dấu hiệu, thì hay nhầm, và nút "Luyện câu". | `grammar` |
+| **F4** | Bài tuần chủ đề | Bài 6 bước. Bước 2–4 dùng bộ câu tổ hợp của bài. | `LessonFlowPlayer` ✅ |
+| **F5** | **Bộ câu tổ hợp** | Chọn item + tình huống + thì + số câu. Server trả câu chia theo chủ ngữ. Có "Tải thêm". | Mục 3.4, 4 |
+| **F6** | **Đọc theo + chấm phát âm** | Mỗi câu: nghe, IPA từng từ, ghi âm, kết quả từng từ | Shadowing ✅, STT ✅, mục 5 |
+| **F7** | Ôn theo thang | Hàng ôn trộn 3 loại, dạng bài khó dần | `item_memory` ✅ |
+| **F8** | Viết / nói đoạn cuối tuần | Bắt buộc dùng đủ số từ, mẫu và thì của tuần | `tasks` ✅ |
+| **F9** | Bảng tiến độ | Đã nhớ x / 3.000 từ, lưới thì, tỷ lệ đọc đạt | `item_memory.stable_at` ✅ |
+
+**Màn mới hoặc đổi:**
+
+| Màn | Loại | Ghi chú |
+|---|---|---|
+| `WordPathScreen`, `QuickKnownCheck` | 🆕 | F1 |
+| `PatternLibraryScreen`, `TenseMapScreen` | 🆕 | F2, F3 |
+| `ComboSetupSheet` | 🆕 | Chọn tình huống, thì, số câu |
+| `ComboSetScreen` | 🆕 | Danh sách thẻ câu theo nhóm chủ ngữ, nút "Tải thêm" |
+| `ComboShadowingScreen` | 🔧 | Dùng lại `ShadowingSessionScreen`, thêm IPA và kết quả từng từ |
+| `ItemReviewScreen` | 🔧 | Thêm dạng bài bậc 3 (mục 7) |
+
+**API mới:**
+
+| Method | Path | Ghi chú |
+|---|---|---|
+| GET | `/v1/combo/situations?item=` | Tình huống phù hợp |
+| POST | `/v1/combo/sets` | `{item_code, grammar_code, situation_code, count}` |
+| POST | `/v1/combo/sets/:id/more` | Đợt tiếp theo |
+| GET | `/v1/combo/sets/:id` | Học lại / tải về offline |
+| POST | `/v1/combo/sentences/:id/reports` | Báo câu sai |
+| POST | `/v1/recordings` 🔧 | Thêm `mode = combo_shadowing` |
+
+---
+
+## 7. Ôn luyện
+
+Giữ lịch ôn `1 · 3 · 7 · 14 · 30 · 60 · 120` ngày ✅ và luật **chỉ lượt `kind = review` mới dời lịch**. Luyện bộ câu tự do là `practice`, không làm lệch lịch.
+
+Dạng bài thay đổi theo `item_memory.stage`, không cần thêm cột:
+
+| Bậc | Từ / cụm từ | Mẫu câu | Thì | Chấm |
+|---|---|---|---|---|
+| **1 · Nhận ra** (1–3 ngày) | Nghe / đọc → chọn nghĩa | Chọn câu đúng khung | Nhìn câu → chọn tên thì | App, offline |
+| **2 · Nhớ lại** (7–14 ngày) | Nghĩa VI → gõ từ; điền chỗ trống | Điền phần thiếu của khung | Chia động từ theo chủ ngữ cho sẵn | App, offline |
+| **3 · Vận dụng** (30+ ngày) | **Nghe câu tổ hợp → đọc theo** | **Nhìn câu VI → nói câu EN** (câu lấy từ kho) | **Đổi chủ ngữ:** "I have placed…" → nói với *She* | Server chấm theo từ, hoặc tự đánh giá |
+
+Câu cho bậc 3 lấy từ kho `combo_sentences` (những bộ người học đã mở), nên **không tốn thêm lượt AI**.
+
+**Hàng ôn mỗi ngày:**
+- Tối đa 20 thẻ (`DAILY_ITEM_REVIEW_LIMIT`).
+- Tỷ lệ ~60% từ · ~25% mẫu · ~15% thì.
+- Không để quá 2 thẻ cùng loại liền nhau.
+- Item sai ≥ 4 lần: hiện thẻ so sánh hoặc lỗi hay gặp trước khi hỏi.
+- Sai thì về ôn sau 1 ngày (luật hiện có).
+
+---
+
+## 8. Nạp nội dung và chia giai đoạn
+
+**Nạp nội dung:**
+1. Oxford 3000 → CSV → `yarn seed:oxford` 🆕 → item `draft`.
+2. AI soạn nghĩa, IPA, ví dụ, chủ đề.
+3. Admin duyệt theo lô.
+4. Mẫu IELTS và 12 thì do admin nhập.
+5. Tình huống: bổ sung nhãn chủ đề và `register` cho danh mục hiện có, thêm tình huống cho B1–B2.
+
+**Giai đoạn:**
 
 | GĐ | Nội dung | Repo | Rủi ro |
 |---|---|---|---|
-| **P0** | Migration: `cefr_level`, `frequency_rank`, `kind = 'grammar'`, `tags`, `item_tags`, `item_links`, `item_examples.grammar_code`. Mở rộng admin để sửa các trường này. | Server, admin-web | ⚠️ Migration DB. Chỉ thêm cột / bảng, cho phép null, không xoá gì. |
-| **P1** | Nhập Oxford 3000 + AI soạn nháp + duyệt. Đồng bộ trường mới xuống catalog trên app. | Server, App (`core/db`) | Khối lượng duyệt lớn |
-| **P2** | F1 Lộ trình từ + F6 thang ôn (bậc 1–2, chỉ chấm offline) | App | Thấp |
-| **P3** | F2 Kho mẫu câu + F3 Bản đồ thì + bài "đổi thì" trong F4 | App, nội dung | Thấp |
-| **P4** | F5 Câu tổ hợp + chấm `combo` + `combo_attempts` | Server, App | ⚠️ Chi phí AI, cần hạn mức ngày |
-| **P5** | F7 đếm item trong bài viết, F8 bắt từ, F9 tiến độ | App, Server | Thấp |
-
-Mỗi giai đoạn chạy được độc lập. P2 mang lại giá trị ngay cả khi chưa có AI chấm.
+| **P0** | Migration: cột `items`, `kind = grammar`, `tags`, `item_tags`, `item_links`, `situation_tags`, `situations.register` | Server, admin | ⚠️ Migration (chỉ thêm) |
+| **P1** | Nạp Oxford 3000, 12 thì, mẫu IELTS; admin duyệt | Server, admin | Khối lượng duyệt lớn |
+| **P2** | F1 lộ trình từ + ôn bậc 1–2 | App | Thấp |
+| **P3** | **Kho câu tổ hợp:** bảng `combo_*`, API, sinh + kiểm tra tự động, hạn ngạch chủ ngữ, tải thêm, admin duyệt/báo sai | Server, admin | ⚠️ Chi phí AI, chất lượng câu |
+| **P4** | **App bộ câu + đọc theo:** `ComboSetScreen`, IPA từng từ, `combo_shadowing`, kết quả từng từ | App, Server | Chấm nói chưa test máy thật |
+| **P5** | F2 kho mẫu, F3 bản đồ thì, ôn bậc 3, F8, F9 | App | Thấp |
+| **P6** (tuỳ chọn) | Chấm phát âm theo âm vị | Server | ⚠️ Dependency + chi phí mới |
 
 ---
 
-## 7. Cần chốt trước khi làm
+## 9. Cần chốt trước khi làm
 
-1. **Bản quyền Oxford 3000.** Danh sách thuộc Oxford University Press. Cần kiểm tra điều khoản trước khi dùng nguyên danh sách và nhãn cấp trong app thương mại. Phương án dự phòng: danh sách tần suất mở (ví dụ NGSL, CEFR-J) gắn cấp tương đương.
-2. **Đối tượng:** khoá này dành cho người lớn / IELTS, hay cả trẻ em? Ảnh hưởng tới mẫu câu (register formal) và việc có chấm bằng AI hay không.
-3. **Câu tổ hợp chấm bằng AI hay tự đánh giá?** Nếu dùng AI: bao nhiêu lượt / ngày cho gói miễn phí?
-4. **Ngữ pháp ngoài 12 thì** (bị động, câu điều kiện, mệnh đề quan hệ) đưa vào ngay P3 hay để sau?
-5. **Bắt đầu từ cấp nào?** Đề xuất làm A2–B1 trước, vì 42 bài hiện có đã phủ A1–A2.
+1. **Hạn ngạch chủ ngữ mặc định:** `I×3, He/She×3, They×3` đã đủ chưa? Có cần thêm *you*, *we*, và câu **phủ định / câu hỏi** (cột `polarity` đã chừa sẵn) không?
+2. **Ai duyệt câu AI sinh?** Đề xuất: câu `auto_ok` phát ngay cho người lớn, trẻ em chỉ nhận câu `published`. Có cần admin duyệt hết trước khi phát không?
+3. **Hạn mức AI mỗi ngày** (đề xuất 5 lần gọi AI / người / ngày, lấy từ kho thì không tính) và độ dài tối đa của bộ (27 câu)?
+4. **Chấm phát âm:** dùng chấm theo từ hiện có (không tốn thêm), hay đầu tư dịch vụ chấm theo âm vị? Ví dụ Azure Speech Pronunciation Assessment hoặc SpeechAce: là **dependency mới, có chi phí theo phút audio**, cần bạn duyệt.
+5. **Audio:** dùng TTS trên máy (miễn phí, giọng phụ thuộc máy), hay server tạo audio sẵn cho câu `published`?
+6. **Bản quyền Oxford 3000** khi dùng trong app thương mại. Phương án dự phòng: NGSL hoặc CEFR-J.
+7. **Bắt đầu từ cấp nào?** Đề xuất A2–B1, vì 42 bài hiện có đã phủ A1–A2.
