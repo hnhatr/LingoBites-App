@@ -1,11 +1,22 @@
-type Translate = (key: string) => string;
+type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 /** E3: what a failed moment says, by the server's error code (no credit was used for these). */
 export function momentFailureMessage(
   code: string | undefined,
   t: Translate,
+  limit?: number,
 ): string {
   switch (code) {
+    case 'COMPOSE_LIMIT_REACHED':
+      return limit !== undefined
+        ? t('moment.limit_reached', {limit})
+        : t('moment.limit_reached_plain');
+    case 'MOMENT_RUNNING':
+      return t('moment.running');
+    case 'MOMENT_DISABLED':
+      return t('moment.disabled');
+    case 'STORE_UNAVAILABLE':
+      return t('moment.unavailable');
     case 'MOMENT_CANCELLED':
     case 'MOMENT_EXPIRED':
       return t('moment.cancelled_no_credit');

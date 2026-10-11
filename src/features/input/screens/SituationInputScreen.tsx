@@ -1,5 +1,5 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
@@ -59,7 +59,9 @@ export function SituationInputScreen({navigation, route}: Props) {
   const [typed, setTyped] = useState('');
   const [requestId, setRequestId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [quota, setQuota] = useState<number | null>(null);
+  const [quota, setQuota] = useState<{limit: number; remaining: number} | null>(
+    null,
+  );
   const progress = useMomentProgress(requestId);
   const status = progress.status;
 
@@ -68,18 +70,36 @@ export function SituationInputScreen({navigation, route}: Props) {
     if (route.params?.requestId) setRequestId(route.params.requestId);
   }, [route.params?.requestId]);
 
+  const refreshQuota = useCallback(() => {
+    fetchComposeQuota().then(result => {
+      if (result.ok) {
+        setQuota({
+          limit: result.value.limit,
+          remaining: result.value.remaining,
+        });
+      }
+    });
+  }, []);
+
   useEffect(() => {
     if (kids) return;
     fetchSituations(level).then(result => {
       if (result.ok) setSituations(result.value);
     });
-    fetchComposeQuota().then(result => {
-      if (result.ok) setQuota(result.value.remaining);
-    });
+    refreshQuota();
     fetchActiveMoments().then(result => {
       if (result.ok && result.value[0]) setRequestId(result.value[0].id);
     });
-  }, [kids, level]);
+  }, [kids, level, refreshQuota]);
+
+  // The count changes once a moment ends (a credit is used only on success).
+  const finished =
+    status?.status === 'succeeded' || status?.status === 'failed';
+  useEffect(() => {
+    if (!kids && finished) refreshQuota();
+  }, [kids, finished, refreshQuota]);
+
+  const outOfQuota = quota !== null && quota.remaining === 0;
 
   async function start(body: {situation_id?: string; situation_note?: string}) {
     if (offline) return;
@@ -98,7 +118,8 @@ export function SituationInputScreen({navigation, route}: Props) {
         code: result.errorCode ?? 'unknown',
         stage: 'submit',
       });
-      setSubmitError(momentFailureMessage(result.errorCode, t));
+      setSubmitError(momentFailureMessage(result.errorCode, t, quota?.limit));
+      if (result.errorCode === 'COMPOSE_LIMIT_REACHED') refreshQuota();
       return;
     }
     setRequestId(result.value.moment_request_id);
@@ -112,7 +133,7 @@ export function SituationInputScreen({navigation, route}: Props) {
     if (!requestId) return;
     const result = await confirmMoment(requestId, accept);
     if (!result.ok) {
-      setSubmitError(momentFailureMessage(result.errorCode, t));
+      setSubmitError(momentFailureMessage(result.errorCode, t, quota?.limit));
       return;
     }
     if (!accept) {
@@ -185,7 +206,7 @@ export function SituationInputScreen({navigation, route}: Props) {
 
         {!kids && status?.status === 'failed' ? (
           <ErrorCard
-            message={momentFailureMessage(status.error?.code, t)}
+            message={momentFailureMessage(status.error?.code, t, quota?.limit)}
             onRetry={() => setRequestId(null)}
             retryLabel={t('moment.confirm_edit')}
           />
@@ -194,9 +215,33 @@ export function SituationInputScreen({navigation, route}: Props) {
         {!kids && !status?.status && !requestId ? (
           <>
             {quota !== null ? (
-              <AppText color="secondary" variant="caption">
-                {t('moment.quota', {count: quota})}
-              </AppText>
+              <View
+                style={[
+                  styles.quota,
+                  {
+                    backgroundColor: outOfQuota
+                      ? theme.colors.surfaceMuted
+                      : theme.colors.primaryContainer,
+                  },
+                ]}
+                testID="moment-quota"
+              >
+                <MaterialIcon
+                  color={
+                    outOfQuota ? theme.colors.danger : theme.colors.primary
+                  }
+                  name="bolt"
+                  size={20}
+                />
+                <AppText style={styles.grow} variant="label">
+                  {outOfQuota
+                    ? t('moment.limit_reached', {limit: quota.limit})
+                    : t('moment.quota_of', {
+                        count: quota.remaining,
+                        limit: quota.limit,
+                      })}
+                </AppText>
+              </View>
             ) : null}
             <AppText variant="h3">{t('moment.choose_situation')}</AppText>
             {situations.length === 0 ? (
@@ -210,7 +255,7 @@ export function SituationInputScreen({navigation, route}: Props) {
                 accessibilityHint={t('moment.situation_pick_hint')}
                 accessibilityLabel={situation.title_vi}
                 accessibilityRole="button"
-                disabled={offline}
+                disabled={offline || outOfQuota}
                 onPress={() => start({situation_id: situation.id})}
                 style={styles.situation}
                 testID={`situation-${situation.code}`}
@@ -235,7 +280,7 @@ export function SituationInputScreen({navigation, route}: Props) {
             <PrimaryActionButton
               accessibilityHint={t('moment.send_hint')}
               accessibilityLabel={t('moment.send')}
-              disabled={offline || typed.trim().length < 3}
+              disabled={offline || outOfQuota || typed.trim().length < 3}
               label={t('moment.send')}
               onPress={() => start({situation_note: typed.trim()})}
             />
@@ -264,5 +309,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   grow: {flex: 1},
+  quota: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
   input: {minHeight: 110, textAlignVertical: 'top'},
 });
