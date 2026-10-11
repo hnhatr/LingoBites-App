@@ -1,0 +1,193 @@
+name: EAS Update (OTA)
+
+# Manual dispatch only. Publishes the JS of the selected branch as an EAS
+# update to the `staging` or `production` channel, from a clean checkout, so
+# the runtime version (expo-updates fingerprint) is the one the release
+# workflows embed. A local `eas update` hashes the developer's working tree:
+# untracked native files, unpatched node_modules or Xcode state give another
+# runtime version, and the update never reaches installed builds.
+#
+# Before publishing, the workflow checks that ios-release / android-release
+# already uploaded a build with the same fingerprint (their release markers in
+# the Actions cache). With no such build the update would reach nobody: build
+# a binary first, or set `allow_no_build` (for example when the marker was
+# evicted from the cache after 7 days without use).
+#
+# The GitHub Environment matching `env` supplies EXPO_TOKEN (an Expo access
+# token: expo.dev > Account settings > Access tokens).
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: Update channel
+        type: choice
+        options: [staging, production]
+        default: staging
+      message:
+        description: Update message (shown in EAS)
+        type: string
+        required: true
+      allow_no_build:
+        description: Publish even if no uploaded build has this fingerprint
+        type: boolean
+        default: false
+
+concurrency:
+  group: eas-update-${{ inputs.env }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # Read the release markers (`gh cache list`).
+  actions: read
+
+env:
+  EAS_CLI_VERSION: 24.8.0
+
+jobs:
+  publish:
+    name: Publish ${{ inputs.env }} update
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.env }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required secrets are present
+        run: |
+          set -euo pipefail
+          if [ -z "${EXPO_TOKEN:-}" ]; then
+            echo "Missing EXPO_TOKEN in the '${{ inputs.env }}' environment." >&2
+            exit 1
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.1'
+          cache: yarn
+
+      - name: Install JS dependencies
+        # Runs patch-package (postinstall); patched native modules are part of
+        # the fingerprint.
+        run: yarn install --frozen-lockfile
+
+      - name: Check formatting
+        run: yarn format:check
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Test
+        run: yarn test --ci
+
+      - name: Compute expo-updates fingerprints
+        id: fingerprint
+        run: |
+          set -euo pipefail
+          hash_for() {
+            npx expo-updates fingerprint:generate --platform "$1" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))'
+          }
+          ios="$(hash_for ios)"
+          android="$(hash_for android)"
+          echo "iOS runtime version: $ios"
+          echo "Android runtime version: $android"
+          printf 'ios=%s\nandroid=%s\n' "$ios" "$android" >> "$GITHUB_OUTPUT"
+
+      - name: Check a build with these fingerprints was uploaded
+        # Release markers are saved on the release workflows' run branch; caches
+        # of the default branch are visible here. The keys are
+        # ios-release-<env>-<fingerprint>-<envhash> and
+        # android-release-<env>-<track>-<fingerprint>-<envhash>.
+        run: |
+          set -euo pipefail
+          keys="$(gh cache list --repo "$GITHUB_REPOSITORY" --limit 100 --key "ios-release-${ENV_NAME}-" --json key --jq '.[].key'; \
+                  gh cache list --repo "$GITHUB_REPOSITORY" --limit 100 --key "android-release-${ENV_NAME}-" --json key --jq '.[].key')"
+          missing=()
+          if ! grep -q "^ios-release-${ENV_NAME}-${IOS_FP}-" <<< "$keys"; then
+            missing+=("iOS ($IOS_FP)")
+          fi
+          if ! grep -qE "^android-release-${ENV_NAME}-[a-z]+-${ANDROID_FP}-" <<< "$keys"; then
+            missing+=("Android ($ANDROID_FP)")
+          fi
+          if [ "${#missing[@]}" -eq 0 ]; then
+            echo "Found uploaded ${ENV_NAME} builds for both fingerprints."
+            exit 0
+          fi
+          for item in "${missing[@]}"; do
+            echo "::warning::No uploaded ${ENV_NAME} build has the ${item} runtime version; installed apps on that platform will not receive this update."
+          done
+          if [ "$ALLOW_NO_BUILD" = "true" ]; then
+            echo "allow_no_build is set: publishing anyway."
+          else
+            echo "Run the release workflow for ${ENV_NAME} first, or re-run with allow_no_build." >&2
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENV_NAME: ${{ inputs.env }}
+          IOS_FP: ${{ steps.fingerprint.outputs.ios }}
+          ANDROID_FP: ${{ steps.fingerprint.outputs.android }}
+          ALLOW_NO_BUILD: ${{ inputs.allow_no_build }}
+
+      - name: Publish update
+        run: |
+          set -euo pipefail
+          case "$ENV_NAME" in
+            staging)    eas_environment=preview ;;
+            production) eas_environment=production ;;
+            *) echo "Unknown env: $ENV_NAME" >&2; exit 1 ;;
+          esac
+          npx --yes "eas-cli@${EAS_CLI_VERSION}" update \
+            --channel "$ENV_NAME" \
+            --environment "$eas_environment" \
+            --message "$UPDATE_MESSAGE" \
+            --json > "$RUNNER_TEMP/eas-update.json"
+          cat "$RUNNER_TEMP/eas-update.json"
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          ENV_NAME: ${{ inputs.env }}
+          # Passed through env, never interpolated into the script.
+          UPDATE_MESSAGE: ${{ inputs.message }}
+
+      - name: Verify published runtime versions
+        run: |
+          set -euo pipefail
+          node - "$RUNNER_TEMP/eas-update.json" <<'EOF'
+          const fs = require('fs');
+          const updates = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const expected = {ios: process.env.IOS_FP, android: process.env.ANDROID_FP};
+          const lines = [];
+          let ok = true;
+          for (const update of updates) {
+            const want = expected[update.platform];
+            const match = update.runtimeVersion === want;
+            ok = ok && match;
+            lines.push(`| ${update.platform} | \`${update.runtimeVersion}\` | ${match ? 'yes' : `no (expected \`${want}\`)`} | \`${update.group}\` |`);
+          }
+          const summary = [
+            `### EAS update published to \`${process.env.ENV_NAME}\``,
+            '',
+            `Commit \`${process.env.GITHUB_SHA}\``,
+            '',
+            '| Platform | Runtime version | Matches build | Group |',
+            '|---|---|---|---|',
+            ...lines,
+          ].join('\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + '\n');
+          console.log(summary);
+          if (updates.length === 0 || !ok) {
+            console.error('::error::The update was published to a runtime version no checked build embeds.');
+            process.exit(1);
+          }
+          EOF
+        env:
+          ENV_NAME: ${{ inputs.env }}
+          IOS_FP: ${{ steps.fingerprint.outputs.ios }}
+          ANDROID_FP: ${{ steps.fingerprint.outputs.android }}
