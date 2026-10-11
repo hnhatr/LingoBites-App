@@ -67,6 +67,23 @@ const snapshot: LessonSnapshot = {
   },
 };
 
+/**
+ * A non-flow lesson that is not the learner's own keeps the sentence study
+ * and the one-tap "complete" (only learner lessons get the practice run).
+ */
+const adminSnapshot: LessonSnapshot = {
+  ...snapshot,
+  origin: 'admin',
+  source_type: 'admin_text',
+};
+
+const ready = (lesson: LessonSnapshot) => ({
+  status: 'ready',
+  snapshot: lesson,
+  offline: false,
+  hasUpdate: false,
+});
+
 let mockState: {status: string; [key: string]: unknown} = {
   status: 'ready',
   snapshot,
@@ -237,6 +254,7 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
   });
 
   it('"Bắt đầu học" shows the sentence study and back returns to the hub', () => {
+    mockState = ready(adminSnapshot);
     const {tree, navigation} = renderScreen();
     act(() => {
       pressable(tree, 'canonical-hub-start').props.onPress();
@@ -259,6 +277,7 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
   });
 
   it('speaks a sentence with the en-US voice', () => {
+    mockState = ready(adminSnapshot);
     const {tree} = renderScreen();
     act(() => {
       pressable(tree, 'canonical-hub-start').props.onPress();
@@ -338,6 +357,7 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
   });
 
   it('shows "Hoàn thành bài" on the hub and wires the completion action', () => {
+    mockState = ready(adminSnapshot);
     const {tree} = renderScreen();
     expect(has(tree, 'canonical-hub-complete')).toBe(true);
     act(() => {
@@ -355,8 +375,44 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
 
   it('shows the error copy and keeps the action after a failed write (AC-004 S1)', () => {
     mockCompletionState = 'error';
+    mockState = ready(adminSnapshot);
     const {tree} = renderScreen();
     expect(has(tree, 'canonical-hub-complete-error')).toBe(true);
+    expect(has(tree, 'canonical-hub-complete')).toBe(true);
+  });
+
+  it('starts the practice run of a learner lesson instead of a one-tap complete', () => {
+    const {tree} = renderScreen();
+    expect(has(tree, 'canonical-hub-start')).toBe(false);
+    expect(has(tree, 'canonical-hub-complete')).toBe(false);
+    // The run replaces the separate quick-practice row.
+    expect(has(tree, 'canonical-hub-practice')).toBe(false);
+    const start = pressable(tree, 'canonical-hub-start-practice');
+    expect(start.props.label).toBe('Bắt đầu luyện');
+    act(() => {
+      start.props.onPress();
+    });
+    expect(mockAppNavigation.openPractice).toHaveBeenCalledWith(LESSON_ID);
+  });
+
+  it('offers to practise a finished learner lesson again', () => {
+    mockCompletionState = 'finished';
+    const {tree} = renderScreen();
+    expect(has(tree, 'canonical-hub-completed')).toBe(true);
+    expect(pressable(tree, 'canonical-hub-start-practice').props.label).toBe(
+      'Luyện lại',
+    );
+  });
+
+  it('keeps the one-tap complete for a learner lesson too small to practise (D5)', () => {
+    mockState = ready({
+      ...snapshot,
+      sentences: snapshot.sentences.slice(0, 1),
+      analyses: {},
+    });
+    const {tree} = renderScreen();
+    expect(has(tree, 'canonical-hub-start-practice')).toBe(false);
+    expect(has(tree, 'canonical-hub-start')).toBe(true);
     expect(has(tree, 'canonical-hub-complete')).toBe(true);
   });
 

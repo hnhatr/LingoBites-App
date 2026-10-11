@@ -170,7 +170,20 @@
     "entry_hint": "Take a short multiple-choice quiz from this lesson",
     "close_hint": "Leaves the quiz and returns to the lesson",
     "missed_save_hint": "Adds this word to your flashcards for review",
-    "option_hint": "Double tap to choose this answer"
+    "option_hint": "Double tap to choose this answer",
+    "run_title": "Lesson practice",
+    "run_progress": "Part {{current}}/{{total}}",
+    "run_instructions_listen_and_repeat": "Listen to each sentence, say it back, then judge yourself.",
+    "run_instructions_multiple_choice": "Pick the English word with this meaning.",
+    "run_instructions_fill_blank": "Pick the word that fills the blank.",
+    "run_instructions_translation": "Write this sentence in English.",
+    "run_skip_speaking_hint": "Skip speaking for now; the lesson still counts as done",
+    "run_section_score": "{{section}}: {{correct}}/{{total}}",
+    "run_section_skipped": "{{section}}: skipped",
+    "run_lesson_completed": "You finished this lesson.",
+    "start": "Start practice",
+    "start_again": "Practise again",
+    "start_hint": "Practise listening, words and writing from this lesson"
   },
   "review": {
     "title": "Review today",

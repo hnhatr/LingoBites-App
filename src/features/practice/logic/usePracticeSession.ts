@@ -2,7 +2,6 @@ import {useCallback, useMemo, useRef, useState} from 'react';
 
 import {recordPracticeSessionActivity} from '@features/engagement';
 import {getLessonDownload} from '@features/lesson/player';
-import {saveFlashcard} from '@features/review';
 import {requestSync} from '@features/sync';
 
 import {createRequestId} from '@core/api/requestId';
@@ -24,6 +23,8 @@ import {
   listActivityAttempts,
   recordActivityAttempt,
 } from '@core/sync/activityAttempts';
+
+import {saveMissedWord} from './saveMissedWord';
 
 export type PracticeUnavailableReason = 'not_downloaded' | 'not_enough_content';
 
@@ -57,7 +58,7 @@ export type UsePracticeSessionResult = {
 };
 
 /** One quiz per attempt; a new attempt number reshuffles the questions. */
-function nextAttemptNo(lessonId: string): number {
+export function nextPracticeAttemptNo(lessonId: string): number {
   try {
     const sessions = new Set(
       listActivityAttempts(lessonId)
@@ -88,7 +89,9 @@ export function usePracticeSession(lessonId: string): UsePracticeSessionResult {
     [source],
   );
 
-  const [attemptNo, setAttemptNo] = useState(() => nextAttemptNo(lessonId));
+  const [attemptNo, setAttemptNo] = useState(() =>
+    nextPracticeAttemptNo(lessonId),
+  );
   const sessionId = useRef(createRequestId());
   const shownAt = useRef(Date.now());
 
@@ -177,22 +180,7 @@ export function usePracticeSession(lessonId: string): UsePracticeSessionResult {
       if (!word || !source) {
         return;
       }
-      const sentence = source.sentences.find(candidate =>
-        word.sentenceIds.includes(candidate.id),
-      );
-      const result = saveFlashcard({
-        lessonId,
-        vocabulary: {
-          id: word.itemKey,
-          word: word.word,
-          meaningVi: word.meaningVi,
-          ipa: word.ipa,
-          wordType: word.pos,
-          sourceSentence: sentence?.textEn ?? null,
-        },
-        item: {itemKey: word.itemKey, itemId: word.itemId, kind: word.kind},
-      });
-      if (result.ok) {
+      if (saveMissedWord(lessonId, word, source.sentences)) {
         setSavedItemKeys(previous => new Set(previous).add(itemKey));
       }
     },

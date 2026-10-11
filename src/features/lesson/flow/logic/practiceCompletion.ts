@@ -1,3 +1,4 @@
+import {buildLessonPracticePlan, practiceSeed} from '@core/learning';
 import type {LessonBlock, LessonSnapshot} from '@core/schemas/lesson';
 import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 
@@ -24,6 +25,23 @@ type AttemptLike = Pick<LessonActivityAttemptRow, 'blockId' | 'outcome'>;
 export function isFlowLesson(snapshot: LessonSnapshot): boolean {
   return (
     snapshot.spec != null && snapshot.blocks.some(block => block.step != null)
+  );
+}
+
+/**
+ * A learner's own lesson that is not a six-step lesson practises on the
+ * device instead (plan "self-created lesson practice", B): true when the
+ * lesson has enough content for that run. Lessons without it keep the manual
+ * "complete" on their hub (D5).
+ */
+export function hasLessonPracticeRun(snapshot: LessonSnapshot): boolean {
+  return (
+    snapshot.origin === 'learner' &&
+    !isFlowLesson(snapshot) &&
+    buildLessonPracticePlan(
+      snapshot,
+      practiceSeed(snapshot.id, snapshot.content_revision, 1),
+    ) !== null
   );
 }
 
