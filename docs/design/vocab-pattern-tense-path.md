@@ -1,7 +1,7 @@
 # Thiết kế: Lộ trình Từ · Mẫu câu · Thì
 
 > Trạng thái: **💭 đề xuất, chờ duyệt**. Chưa có code.
-> Cập nhật: 2026-10-11 (bản 3: thêm **quản trị trên web admin** và **script import**).
+> Cập nhật: 2026-10-11 (bản 4: import CSV trên admin, giới hạn theo người dùng, không duyệt tay câu AI, chấm phát âm dời về giai đoạn cuối, kèm dữ liệu Oxford 3000/5000 và 25 mẫu câu).
 > Đối chiếu với [`architecture/lesson-design.md`](../architecture/lesson-design.md) và schema server
 > (`items`, `item_memory`, `situations`, `recordings`, `admin_settings`).
 > Nguồn nội dung: **Oxford 3000** (A1–B2) và bảng **mẫu câu IELTS Writing**.
@@ -61,7 +61,7 @@ flowchart LR
 | R3 | Đầu vào: **từ / cụm từ / câu + tình huống + thì**. Tình huống **có giới hạn từ server**, người dùng không tự đặt. | Người học chỉ được **chọn** trong `situations` đã publish và phù hợp với item. Không có ô nhập tự do (khác tính năng Khoảnh khắc). |
 | R4 | Ra **n câu** tuỳ setting, hoặc người dùng bấm **tải thêm** | `n` mặc định lấy từ admin. Người học được chọn trong các mức cho phép (3 / 6 / 9 / 12). "Tải thêm" lấy đợt tiếp theo, tiếp tục đúng vòng chủ ngữ. |
 | R5 | Mỗi câu có **phần đọc + IPA theo từ** | Câu lưu sẵn danh sách từ (token), mỗi token có IPA và vai trò (chủ ngữ / động từ / item). Audio đọc bằng TTS trên máy, có tốc độ chậm. |
-| R6 | **Đọc theo + kiểm tra phát âm** | Dùng luồng shadowing có sẵn và thêm chế độ ghi âm `combo_shadowing`. Server chấm theo từng từ. Không có consent thì tự đánh giá. |
+| R6 | **Đọc theo + kiểm tra phát âm** | ⏳ **Giai đoạn cuối (P7), thiết kế sau**, cùng với nguồn audio. Mục 5.2 chỉ ghi lại hạ tầng đang có để tham khảo. |
 
 ### 2.2 Những điểm cần lưu ý khi làm
 
@@ -69,7 +69,7 @@ flowchart LR
 2. **Không phải mẫu nào cũng hợp mọi chủ ngữ.** Mẫu IELTS trang trọng ("Many schools place a heavy emphasis on…") đi với *I* thì gượng. Vì vậy mỗi item có thể **ghi đè hạn ngạch**: ví dụ mẫu IELTS dùng nhóm chủ ngữ `noun_phrase` (Many schools, The government…) thay cho *I*.
 3. **Không phải tình huống nào cũng hợp mọi từ.** Ví dụ "emphasis" khó đi với "Gọi đồ uống". Server chỉ gợi ý các tình huống **trùng chủ đề** với item. Nếu AI báo câu không tự nhiên thì bỏ câu đó, và bộ câu có thể trả **ít câu hơn kèm lý do**.
 4. **Số tổ hợp có thể rất lớn**: ~4.500 item × 12 thì × ~50 tình huống × 5 nhóm chủ ngữ. Vì vậy **không sinh trước toàn bộ**. Chỉ sinh trước (prewarm) các tổ hợp nằm trong bài giáo trình. Phần còn lại sinh khi có người yêu cầu và lưu vào kho.
-5. **Chấm phát âm hiện tại là chấm theo từ, không theo âm.** STT nghe ra từ nào thì so với câu mẫu. Cách này bắt được từ bị thiếu hoặc nói thành từ khác, nhưng **không** bắt được lỗi âm cuối, trọng âm hay ngữ điệu, và STT còn hay tự "sửa" giúp người nói. Muốn chấm theo âm vị cần một dịch vụ chấm phát âm riêng: **dependency mới, có chi phí, cần bạn duyệt** (xem mục 9).
+5. **Chấm phát âm hiện tại là chấm theo từ, không theo âm.** STT nghe ra từ nào thì so với câu mẫu. Cách này bắt được từ bị thiếu hoặc nói thành từ khác, nhưng **không** bắt được lỗi âm cuối, trọng âm hay ngữ điệu, và STT còn hay tự "sửa" giúp người nói. Muốn chấm theo âm vị cần một dịch vụ chấm phát âm riêng. Việc này **để giai đoạn cuối** (P7).
 
 ---
 
@@ -158,7 +158,7 @@ CREATE TABLE combo_sentences (
   tokens           jsonb NOT NULL,   -- [{ "t": "has", "ipa": "/hæz/", "role": "aux" }, …]
   level_code       varchar(4)  NOT NULL,
   source           varchar(8)  NOT NULL,   -- admin | ai
-  status           varchar(12) NOT NULL,   -- draft | auto_ok | published | flagged | archived
+  status           varchar(12) NOT NULL,   -- published | flagged | archived (không có bước duyệt tay)
   checks           jsonb NOT NULL DEFAULT '{}', -- kết quả kiểm tra tự động
   prompt_version   varchar(32),
   created_at       timestamptz NOT NULL DEFAULT now()
@@ -193,11 +193,11 @@ CREATE TABLE combo_reports (
 );
 ```
 
-Câu bị báo sai ≥ 2 lần thì tự chuyển `flagged`, không phát nữa và vào hàng đợi admin duyệt.
+Câu bị báo sai ≥ `combo.report_flag_threshold` lần (mặc định 2) thì tự chuyển `flagged`, không phát nữa và vào hàng đợi báo sai của admin.
 
-### 3.5 Cấu hình (`admin_settings`) ✅ thêm key
+### 3.5 Cấu hình: mặc định hệ thống + giới hạn theo người dùng
 
-Sửa trên web admin, xem mục 8.5.
+Bảng dưới là **mặc định hệ thống** (`admin_settings` ✅). Các key về số lượng và hạn mức được **gói học của từng người dùng ghi đè**, xem mục 8.5.
 
 | Key | Mặc định | Ý nghĩa |
 |---|---|---|
@@ -206,10 +206,9 @@ Sửa trên web admin, xem mục 8.5.
 | `combo.default_batch` | `9` | Số câu đợt đầu |
 | `combo.max_per_set` | `27` | Tối đa sau nhiều lần "tải thêm" |
 | `combo.daily_ai_generations` | `5` | Số lần **gọi AI** mỗi ngày cho một người học. Lấy từ kho thì không tính. |
-| `combo.pronunciation_pass` | `0.8` | Ngưỡng độ khớp từ để coi là đọc đạt |
 | `combo.max_words` | `{"A1":8,"A2":12,"B1":16,"B2":20}` | Độ dài câu tối đa theo cấp |
 
-Item được ghi đè hạn ngạch qua `items.payload.combo_quota`. Ví dụ mẫu IELTS: `{"noun_phrase":3,"they":3,"we":3}`.
+Mẫu câu có thể **giới hạn nhóm chủ ngữ phù hợp** qua `items.payload.combo_quota` (ví dụ `be accompanied by` chỉ hợp chủ ngữ là sự việc: `noun_phrase`). Đây là luật ngôn ngữ, áp sau giới hạn của gói.
 
 ### 3.6 Khoá học ✅
 
@@ -254,7 +253,7 @@ sequenceDiagram
   U->>A: item + tình huống + thì + 9 câu
   A->>S: POST /v1/combo/sets
   S->>S: Lập kế hoạch chủ ngữ: I×3, He/She×3, They×3
-  S->>DB: Lấy câu published/auto_ok theo từng nhóm, bỏ câu người này đã học
+  S->>DB: Lấy câu published theo từng nhóm, bỏ câu người này đã học
   alt Kho đủ
     DB-->>S: 9 câu
   else Thiếu k câu
@@ -271,7 +270,7 @@ sequenceDiagram
 - **Thứ tự phát:** gom theo nhóm chủ ngữ (3 câu *I*, rồi 3 câu *He/She*…) để người học thấy động từ đổi theo chủ ngữ. Có nút xem "trộn" khi ôn.
 - **Tải thêm:** mỗi đợt lấy lại đúng hạn ngạch, không lặp câu đã phát trong bộ, dừng ở `combo.max_per_set`.
 - **Hết lượt AI trong ngày:** chỉ phát câu đang có trong kho. Nếu kho không đủ, trả số câu có được và báo "Hôm nay đã hết lượt tạo câu mới".
-- **Tài khoản trẻ em:** chỉ nhận câu `published` (đã được admin duyệt), không gọi AI.
+- **Hạn ngạch, số câu, số lần gọi AI** lấy từ giới hạn hiệu lực của người dùng (`resolveLimits`, mục 8.5).
 - **Offline:** bộ câu đã mở được tải về máy, học lại được. Chưa từng tải thì không tạo được.
 
 ### 4.3 Prompt sinh câu (tóm tắt)
@@ -293,11 +292,13 @@ Nội dung tình huống được nhúng như dữ liệu trong prompt, giống 
 | IPA | cmudict cho từng token, thiếu thì dùng LLM như hiện nay ✅ | Thiếu IPA vẫn giữ câu, token đó hiện "—" |
 | Tự nhiên | `natural = false` do AI tự báo | Bỏ câu |
 
-Đạt hết thì câu nhận trạng thái `auto_ok` và được phát ngay. Admin duyệt thì chuyển `published`.
+Đạt hết thì câu được `published` và phát ngay, không chờ admin. Chất lượng được giữ bằng prompt và case mẫu (mục 8.6).
 
 ---
 
 ## 5. Học một câu: nghe · IPA · đọc theo · chấm
+
+> 5.1 (chữ, bản dịch, IPA từng từ) làm ở P5. **Nguồn audio, đọc theo và chấm phát âm (5.2) để giai đoạn cuối (P7) và sẽ thiết kế lại.** Phần 5.2 dưới đây chỉ ghi hạ tầng đang có để tham khảo.
 
 ### 5.1 Thẻ câu
 
@@ -335,7 +336,7 @@ flowchart LR
 - **Đạt** khi độ khớp từ ≥ `combo.pronunciation_pass`. Đọc lại thoải mái; lượt cao nhất được giữ.
 - Gợi ý STT (hints) gồm câu mẫu và từ của item, giống `sttHints` đang dùng cho bước 5.
 - `not_assessable` (lỗi âm thanh, lỗi server) **không tính là sai**.
-- **Giới hạn:** chấm theo từ chỉ cho biết người nghe có hiểu được không. Không chấm được âm cuối, trọng âm hay ngữ điệu (xem 2.2 và mục 9).
+- **Giới hạn:** chấm theo từ chỉ cho biết người nghe có hiểu được không. Không chấm được âm cuối, trọng âm hay ngữ điệu (xem 2.2).
 
 ### 5.3 Kết thúc bộ câu
 
@@ -352,7 +353,7 @@ Màn tổng kết hiện: số câu đã đọc đạt, các từ hay đọc sai
 | **F3** | Bản đồ thì 3 × 4 | Lưới thời gian × khía cạnh, tô màu theo mức nhớ. Chạm vào ô để xem công thức, dấu hiệu, thì hay nhầm, và nút "Luyện câu". | `grammar` |
 | **F4** | Bài tuần chủ đề | Bài 6 bước. Bước 2–4 dùng bộ câu tổ hợp của bài. | `LessonFlowPlayer` ✅ |
 | **F5** | **Bộ câu tổ hợp** | Chọn item + tình huống + thì + số câu. Server trả câu chia theo chủ ngữ. Có "Tải thêm". | Mục 3.4, 4 |
-| **F6** | **Đọc theo + chấm phát âm** | Mỗi câu: nghe, IPA từng từ, ghi âm, kết quả từng từ | Shadowing ✅, STT ✅, mục 5 |
+| **F6** | **Đọc theo + chấm phát âm** ⏳ P7 | Thiết kế ở giai đoạn cuối | Mục 5.2 |
 | **F7** | Ôn theo thang | Hàng ôn trộn 3 loại, dạng bài khó dần | `item_memory` ✅ |
 | **F8** | Viết / nói đoạn cuối tuần | Bắt buộc dùng đủ số từ, mẫu và thì của tuần | `tasks` ✅ |
 | **F9** | Bảng tiến độ | Đã nhớ x / 3.000 từ, lưới thì, tỷ lệ đọc đạt | `item_memory.stable_at` ✅ |
@@ -365,7 +366,7 @@ Màn tổng kết hiện: số câu đã đọc đạt, các từ hay đọc sai
 | `PatternLibraryScreen`, `TenseMapScreen` | 🆕 | F2, F3 |
 | `ComboSetupSheet` | 🆕 | Chọn tình huống, thì, số câu |
 | `ComboSetScreen` | 🆕 | Danh sách thẻ câu theo nhóm chủ ngữ, nút "Tải thêm" |
-| `ComboShadowingScreen` | 🔧 | Dùng lại `ShadowingSessionScreen`, thêm IPA và kết quả từng từ |
+| `ComboShadowingScreen` | ⏳ P7 | Thiết kế ở giai đoạn cuối |
 | `ItemReviewScreen` | 🔧 | Thêm dạng bài bậc 3 (mục 7) |
 
 **API mới:**
@@ -377,7 +378,8 @@ Màn tổng kết hiện: số câu đã đọc đạt, các từ hay đọc sai
 | POST | `/v1/combo/sets/:id/more` | Đợt tiếp theo |
 | GET | `/v1/combo/sets/:id` | Học lại / tải về offline |
 | POST | `/v1/combo/sentences/:id/reports` | Báo câu sai |
-| POST | `/v1/recordings` 🔧 | Thêm `mode = combo_shadowing` |
+| POST | `/v1/recordings` ⏳ P7 | Thiết kế ở giai đoạn cuối |
+| GET | `/v1/me/limits` | Giới hạn hiệu lực và số lượt còn lại (mục 8.5) |
 
 ---
 
@@ -394,6 +396,8 @@ Dạng bài thay đổi theo `item_memory.stage`, không cần thêm cột:
 | **3 · Vận dụng** (30+ ngày) | **Nghe câu tổ hợp → đọc theo** | **Nhìn câu VI → nói câu EN** (câu lấy từ kho) | **Đổi chủ ngữ:** "I have placed…" → nói với *She* | Server chấm theo từ, hoặc tự đánh giá |
 
 Câu cho bậc 3 lấy từ kho `combo_sentences` (những bộ người học đã mở), nên **không tốn thêm lượt AI**.
+
+**Trước P7** (chưa có đọc theo / chấm nói), bậc 3 dùng dạng **viết** với câu từ kho, app chấm offline: nhìn câu VI → **sắp xếp từ** thành câu EN; đổi chủ ngữ → **gõ lại động từ** đã chia (*I have placed* → *She ___ placed*). Dạng nói ở bảng trên bật khi P7 xong.
 
 **Hàng ôn mỗi ngày:**
 - Tối đa 20 thẻ (`DAILY_ITEM_REVIEW_LIMIT`).
@@ -419,11 +423,11 @@ flowchart LR
     A4["Kho câu tổ hợp 🆕<br/>+ hàng đợi báo sai"]:::new
   end
   subgraph Config["Cấu hình"]
-    B1["Cài đặt câu tổ hợp 🆕<br/>hạn ngạch chủ ngữ, số câu, hạn mức"]:::new
+    B1["Gói học + giới hạn theo người dùng 🆕<br/>hạn ngạch chủ ngữ, số câu, hạn mức AI"]:::new
     B2["Prompt AI 🔧<br/>combo.generate"]:::old
   end
   subgraph Ops["Vận hành"]
-    C1["Lô import 🆕<br/>tiến độ duyệt"]:::new
+    C1["Import CSV 🆕<br/>xem trước, lô, làm giàu"]:::new
     C2["Sinh trước câu 🆕<br/>theo bài / unit"]:::new
   end
   C1 --> A1
@@ -467,158 +471,173 @@ Người học **chỉ thấy** tình huống `published` và có bật "dùng c
 
 | Phần | Nội dung |
 |---|---|
-| Bộ lọc | Item, tình huống, thì, nhóm chủ ngữ, trạng thái (`draft / auto_ok / published / flagged / archived`), nguồn (`admin / ai`), phiên bản prompt |
+| Bộ lọc | Item, tình huống, thì, nhóm chủ ngữ, trạng thái (`published / flagged / archived`), nguồn (`admin / ai`), phiên bản prompt |
 | Bảng | Câu EN + VI, chủ ngữ, kết quả kiểm tra tự động, số lần phát, tỷ lệ đọc đạt, số lần bị báo |
-| Thao tác | Duyệt (→ `published`), sửa câu (server chạy lại kiểm tra + IPA), archive, **thêm câu thủ công** (`source = admin`) |
+| Thao tác | Sửa câu (server chạy lại kiểm tra + IPA), archive, archive hàng loạt theo phiên bản prompt, **thêm câu thủ công** (`source = admin`). Không có bước duyệt. |
 | **Ma trận độ phủ** | Với 1 item + 1 thì: bảng tình huống × nhóm chủ ngữ, mỗi ô là số câu đang có. Ô thiếu bấm được để sinh thêm. |
 | Hàng đợi báo sai | Giống `ItemReportsPage` ✅: lý do, câu, người báo (ẩn danh), nút sửa / archive / bỏ qua |
 | Sinh trước | Chọn bài / unit / item → server liệt kê các tổ hợp còn thiếu, **ước tính số lần gọi AI** → bấm chạy (job nền, xem tiến độ) |
 
-### 8.5 Cài đặt câu tổ hợp 🆕 (`ComboSettingsPage`)
+### 8.5 Gói học, hạn ngạch và hạn mức theo người dùng 🆕 (`PlansPage`, `UserDetailPage` 🔧)
 
-Lưu trong `admin_settings` ✅. Các key mới được khai báo cạnh `LEARNING_SETTING_KEYS` (`src/common/settings/learningSettings.ts`), mỗi key có schema zod và giá trị mặc định.
-
-| Nhóm | Key | Giao diện |
-|---|---|---|
-| **Hạn ngạch chủ ngữ** | `combo.subject_quota` | Bảng các dòng *nhóm chủ ngữ → số câu*: thêm / bớt dòng, kéo để đổi thứ tự phát. Nhóm có sẵn: `i`, `you`, `he_she` (xen kẽ He/She), `we`, `they`, `noun_phrase`. |
-| | `combo.subject_quota_by_level` | Ghi đè theo cấp, ví dụ A1 chỉ dùng `I×3, He/She×3` |
-| | `combo.polarity_mix` | Tỷ lệ khẳng định / phủ định / câu hỏi (mặc định 100 / 0 / 0) |
-| Số câu | `combo.batch_sizes`, `combo.default_batch`, `combo.max_per_set` | Ô số |
-| Hạn mức | `combo.daily_ai_generations` | Theo gói: free / trả phí |
-| Chất lượng | `combo.max_words` theo cấp, `combo.max_offlevel_words`, `combo.auto_publish` (câu `auto_ok` có phát cho người lớn không), `combo.report_flag_threshold` | Ô số, công tắc |
-| Chấm đọc | `combo.pronunciation_pass` | Thanh trượt 0.5–1.0 |
-
-Ưu tiên khi áp hạn ngạch: **item** (`payload.combo_quota`) > **cấp** (`subject_quota_by_level`) > **mặc định** (`subject_quota`).
-
-### 8.6 Prompt sinh câu 🔧 (dùng nguyên trang Prompt AI)
-
-Hệ thống prompt đã có đủ: nhiều phiên bản, case mẫu (golden cases), chạy thử, kích hoạt, ghi lý do. Chỉ cần:
-- Đăng ký key `combo.generate` vào `PROMPT_REGISTRY`, khai báo các biến: `item`, `situation`, `tense`, `subjects[]`, `level`, `max_words`, `polarity`.
-- Thêm **case mẫu** bao các trường hợp khó: mẫu IELTS trang trọng, thì hoàn thành, he/she + hiện tại đơn, tình huống không hợp với item (phải trả `natural = false`).
-- **Chạy thử** thì chạy cả phần kiểm tra tự động (mục 4.4) trên kết quả, và hiện tỷ lệ câu đạt. Phiên bản có tỷ lệ đạt thấp thì không kích hoạt được (giống luật `PromptRunsNotPassingError` hiện có).
-- Mỗi câu lưu `prompt_version`, nên khi đổi prompt có thể lọc và duyệt lại câu do phiên bản cũ sinh.
-
-### 8.7 Lô import 🆕 (`ImportBatchesPage`)
-
-Chỉ để xem, vì việc import chạy bằng script (mục 9). Mỗi lô hiện: nguồn, ngày chạy, số item tạo mới / đã có / lỗi, **tiến độ duyệt** (đã duyệt x / y), và link sang danh sách item của lô đó (lọc sẵn).
-
----
-
-## 9. Script import
-
-Theo đúng khuôn script hiện có (`seed-curriculum.ts`, `canonical-lesson-import.ts`):
-- Mặc định **dry-run** (chỉ báo cáo, không ghi). Phải có `--apply` mới ghi.
-- **Chạy lại không tạo trùng** (khoá theo `code`).
-- Chọn môi trường bằng `--env staging` / `--env-file`.
-- Ghi qua store / service của server, nên đi qua cùng lớp kiểm tra dữ liệu như admin.
-- Output chỉ gồm số lượng và mã item. Không có dữ liệu người học.
+Hạn ngạch chủ ngữ và hạn mức AI là **thiết lập theo người dùng**, để sau này bán thành gói. Có 3 tầng, tầng trên thắng:
 
 ```mermaid
 flowchart LR
-  PDF["PDF Oxford 3000 / 5000"] -->|"① wordlist:extract"| CSV["CSV<br/>(người kiểm lại)"]
-  CSV -->|"② wordlist:enrich<br/>AI + cmudict, có cache"| JSONL["JSONL đã làm giàu"]
-  JSONL -->|"③ wordlist:import<br/>--dry-run / --apply"| DB[("items draft<br/>+ import_batches")]
-  PAT["Bảng mẫu câu<br/>(CSV / JSON)"] -->|"patterns:import"| DB
-  GR["tenses.json<br/>(trong repo)"] -->|"grammar:seed"| DB
-  SIT["situations.json"] -->|"situations:import"| DB
-  DB --> ADM["Admin duyệt theo lô"]
+  U["Ghi đè cho 1 người dùng<br/>user_limit_overrides 🆕<br/>(admin cấp, khuyến mãi, hỗ trợ)"] --> P["Gói của người dùng<br/>plans + user_plans 🆕<br/>(free, plus, pro…)"]
+  P --> D["Mặc định hệ thống<br/>admin_settings ✅"]
 ```
 
-### 9.1 Từ vựng Oxford 3000 / 5000
+Riêng hạn ngạch chủ ngữ của một mẫu câu (`payload.combo_quota`, ví dụ mẫu chỉ hợp chủ ngữ là sự việc) là **luật ngôn ngữ, không phải quyền lợi**. Nó luôn được áp sau cùng, để lọc bỏ nhóm chủ ngữ không hợp với mẫu.
 
-Chia 3 bước, để mỗi bước kiểm lại được và chạy lại không mất công:
+**Các giới hạn có trong gói** (lưu `limits jsonb`, mỗi key có schema zod và giá trị mặc định):
 
-**① `yarn wordlist:extract --pdf <file> --list oxford-3000 --out scripts/data/wordlists/oxford-3000.csv`**
+| Key | Ví dụ gói free | Ví dụ gói trả phí | Ý nghĩa |
+|---|---|---|---|
+| `combo.subject_quota` | `{"i":3,"he_she":3,"they":3}` | thêm `you`, `we` | Hạn ngạch mỗi đợt |
+| `combo.subject_groups_allowed` | `i, he_she, they` | tất cả | Nhóm chủ ngữ người dùng **được tự chọn** trong app |
+| `combo.polarity_allowed` | khẳng định | + phủ định, câu hỏi | |
+| `combo.batch_sizes` | `[3, 6, 9]` | `[3, 6, 9, 12]` | |
+| `combo.max_per_set` | 18 | 45 | Tổng câu tối đa sau nhiều lần "tải thêm" |
+| `combo.daily_ai_generations` | 3 | 30 | Lần gọi AI mỗi ngày. Lấy câu từ kho thì không tính. |
+| `combo.daily_sets` | 5 | không giới hạn | Số bộ câu mở mới mỗi ngày |
 
-Đọc PDF ra CSV, mỗi dòng là một cặp *từ + loại từ*:
+```sql
+CREATE TABLE plans (
+  code        varchar(32) PRIMARY KEY,   -- 'free', 'plus', 'pro'
+  name_vi     varchar(80) NOT NULL,
+  limits      jsonb NOT NULL,            -- chỉ chứa key khác mặc định
+  is_default  boolean NOT NULL DEFAULT false,
+  status      varchar(16) NOT NULL DEFAULT 'active',
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE user_plans (
+  user_id     uuid PRIMARY KEY REFERENCES users ON DELETE CASCADE,
+  plan_code   varchar(32) NOT NULL REFERENCES plans,
+  source      varchar(16) NOT NULL,      -- purchase | grant | promo (giống user_course_entitlements)
+  transaction_id varchar(200),
+  expires_at  timestamptz,
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE user_limit_overrides (
+  user_id     uuid PRIMARY KEY REFERENCES users ON DELETE CASCADE,
+  limits      jsonb NOT NULL,
+  reason      varchar(300) NOT NULL,
+  expires_at  timestamptz,
+  updated_by  varchar(80) NOT NULL,
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+```
 
-| headword | sense | pos | cefr | list | code (tự tính) |
-|---|---|---|---|---|---|
-| account | | n | B1 | oxford-3000 | `word:account-noun` |
-| account | | v | B2 | oxford-3000 | `word:account-verb` |
-| bank | money | n | A1 | oxford-3000 | `word:bank-money` |
-| close | 1 | v | A1 | oxford-3000 | `word:close-verb` |
-| all right | | adj/adv/exclam | A2 | oxford-3000 | `phrase:all-right` |
+- Không có `user_plans`, hoặc gói đã hết hạn: người dùng thuộc gói `is_default` (free).
+- Server tính **giới hạn hiệu lực** một lần mỗi request (`resolveLimits(userId)`). App nhận giới hạn qua `GET /v1/me/limits` để hiện đúng lựa chọn và số lượt còn lại.
+- `source` và `transaction_id` giống `user_course_entitlements` ✅, nên khi nối thanh toán store sau này dùng lại được luồng đó.
 
-Luật tách:
-- `account n. B1, v. B2` → 2 dòng.
-- `bank (money)` → sense `money`.
-- `close¹` / `close²` → sense theo số mũ.
-- Mục có dấu cách (`all right`, `according to`) → `phrase`.
-- Một từ có nhiều loại từ **cùng cấp** (`about prep., adv. A1`) → **1 item**, `part_of_speech = "prep, adv"`.
+**Trên admin:**
+- **Gói học** (`PlansPage` 🆕): tạo / sửa gói, form theo từng key (bảng hạn ngạch chủ ngữ thêm/bớt dòng, ô số, chọn nhiều). Xem trước "người dùng gói này sẽ thấy gì".
+- **Người dùng** (`UserDetailPage` 🔧): xem gói và giới hạn hiệu lực (ghi rõ lấy từ tầng nào), đổi gói, thêm ghi đè (bắt buộc ghi lý do, có hạn dùng), xem số lượt AI đã dùng hôm nay.
+- **Cài đặt câu tổ hợp** (`ComboSettingsPage` 🆕): giá trị mặc định hệ thống, và các tham số chất lượng không bán: `combo.max_words` theo cấp, `combo.max_offlevel_words`, `combo.report_flag_threshold`.
 
-Dòng không đọc được thì ghi vào `*.rejects.csv` để người sửa tay. Bước này **không gọi AI và không ghi DB**.
+Mọi thay đổi ghi `admin_audit_log` ✅.
 
-**② `yarn wordlist:enrich --in …csv --out …jsonl [--level A1] [--limit 200]`**
+### 8.6 Prompt sinh câu 🔧 (dùng nguyên trang Prompt AI)
 
-Làm giàu từng từ:
-- IPA lấy từ cmudict ✅; thiếu thì dùng LLM như hiện nay.
-- AI soạn: nghĩa tiếng Việt **đúng loại từ và nghĩa phân biệt**, 2 câu ví dụ (EN + VI), nhãn chủ đề, tối đa 3 collocation.
-- Chạy theo lô 50 từ. Có **cache** theo `code`, nên chạy lại chỉ làm phần chưa có.
-- Dry-run in **ước tính số lần gọi AI và chi phí**.
-- Prompt quản lý trong registry với key `wordlist.enrich`.
+**Không có bước duyệt tay câu AI sinh.** Chất lượng được bảo đảm ở prompt:
+- Đăng ký key `combo.generate` vào `PROMPT_REGISTRY`, khai báo các biến: `item`, `situation`, `tense`, `subjects[]`, `polarity`, `level`, `max_words`.
+- **Case mẫu** (golden cases) bao các trường hợp khó: mẫu trang trọng, mẫu cố định thì (`It is essential that` + động từ nguyên mẫu), he/she + hiện tại đơn, `one's` đổi theo chủ ngữ, tình huống không hợp với item (phải trả `natural = false`).
+- **Chạy thử** trên case mẫu thì chạy luôn phần kiểm tra tự động (4.4) và hiện tỷ lệ câu đạt. Phiên bản có tỷ lệ đạt dưới ngưỡng thì **không kích hoạt được** (giống `PromptRunsNotPassingError` hiện có).
+- Mỗi câu lưu `prompt_version`. Khi phát hiện lỗi, admin lọc theo phiên bản rồi archive cả loạt và sinh lại bằng phiên bản mới.
 
-**③ `yarn wordlist:import --in …jsonl [--apply] [--list oxford-5000] [--only-level B2,C1]`**
+Kiểm tra tự động ở 4.4 vẫn giữ làm **lưới an toàn**. Nó không gọi AI, không tốn chi phí, và chỉ loại câu sai rõ ràng (thiếu item, sai chủ ngữ…). Câu đạt được publish ngay.
 
-| Trường hợp | Xử lý |
-|---|---|
-| `code` chưa có | Tạo item `draft`, `source = ai`, gắn nhãn `list:<list>`, chủ đề, cấp. Kèm ví dụ. |
-| `code` đã có, **admin chưa duyệt** | Cập nhật các trường còn trống, thêm nhãn |
-| `code` đã có, **admin đã duyệt** (`reviewed_at`) | **Không ghi đè gì**, chỉ thêm nhãn `list:*`. Khác biệt ghi ra báo cáo. |
-| Collocation | Tạo `phrase` draft + `item_links (collocation)`. Phrase đã có thì chỉ nối liên kết. |
+### 8.7 Import CSV trên admin 🆕 (`ImportPage`)
 
-- **Oxford 5000** = Oxford 3000 + khoảng 2.000 từ B2–C1. Chạy cùng script với `--list oxford-5000`: từ đã có từ bản 3000 chỉ được thêm nhãn `list:oxford-5000`, **không tạo trùng**.
-- Mỗi lần `--apply` tạo 1 dòng `import_batches` 🆕 (nguồn, file, số lượng, người chạy). Item lưu `import_batch_id` để admin lọc theo lô.
+Không cần script. Admin upload CSV ngay trên web:
 
-### 9.2 Mẫu câu có sẵn
+```mermaid
+flowchart LR
+  UP["① Chọn loại + upload CSV"] --> PV["② Xem trước<br/>server kiểm từng dòng,<br/>không ghi gì"]
+  PV --> OK{"③ Xác nhận"}
+  OK --> RUN["④ Ghi vào DB<br/>job nền, xem tiến độ"]
+  RUN --> EN["⑤ Làm giàu bằng AI<br/>(chỉ với từ vựng, xem 9.2)"]
+  EN --> DONE["Lô import:<br/>số tạo / trùng / lỗi / đã làm giàu"]
+```
 
-**`yarn patterns:import --in scripts/data/patterns/ielts-writing.csv [--apply]`**
+- **Bước xem trước** hiện 4 nhóm: *tạo mới*, *đã có (không đổi)*, *đã có (sẽ cập nhật)*, *lỗi* (kèm số dòng và lý do). Có nút tải lại file dòng lỗi để sửa rồi upload lại.
+- **Chạy lại không tạo trùng** (khoá theo `code`). Item admin đã duyệt hoặc đã sửa tay (`reviewed_at`) thì **không bị ghi đè**, chỉ được thêm nhãn.
+- Mỗi lần xác nhận tạo 1 dòng `import_batches`. Admin lọc item theo lô ở trang Items.
+- File tối đa 10.000 dòng hoặc 5 MB. Xử lý theo lô 500 dòng trong một job nền, nên không bị timeout request.
+- Admin tải được **file mẫu** của từng loại ngay trên trang.
 
-Định dạng đầu vào: mỗi dòng là một mẫu, đúng các cột của bảng bạn gửi:
+---
 
-| structure | meaning_vi | usage_vi | example_en | function | level | exam |
-|---|---|---|---|---|---|---|
-| S + place(s) a heavy emphasis on + N | Đặt sự chú trọng lớn vào… | Dùng khi một cá nhân/tổ chức coi một yếu tố là ưu tiên | Many schools place a heavy emphasis on academic performance | emphasis | B2 | ielts-writing |
+## 9. Định dạng CSV và làm giàu dữ liệu
 
-Script tự chuyển **cấu trúc → khung `{slot}`**:
+### 9.1 Các loại CSV
 
-| Trong bảng | Thành |
-|---|---|
-| `S +` ở đầu | `{subject}` |
-| `+ N` / `+ N/V-ing` | `{thing}` |
-| `+ V` / `to V` / `V-ing` | `{verb}` / `to {verb}` / `{verb_ing}` |
-| `place(s)`, `attach(es)` | dạng gốc `place`, ghi chú "chia theo chủ ngữ" |
-| `one's` | giữ nguyên trong khung, khi sinh câu đổi thành my / his / her / their |
+| Loại | Cột bắt buộc | Cột tuỳ chọn | Ghi chú |
+|---|---|---|---|
+| **Từ vựng** | `code`, `kind`, `headword`, `pos`, `cefr`, `lists` | `sense`, `homograph`, `meaning_vi`, `ipa`, `topics` | `lists` cách nhau bằng `;`. Thiếu `meaning_vi` thì item chờ làm giàu (9.2). |
+| **Mẫu câu** | `code`, `structure`, `frame`, `slot_values`, `meaning_vi`, `example_en`, `function`, `cefr` | `usage_vi`, `exam`, `subject_groups`, `notes` | `frame` dùng `{slot}`; `slot_values` dạng `subject=Many schools\|thing=…` |
+| **Thì / ngữ pháp** | `code`, `name_en`, `name_vi`, `time`, `aspect`, `affirmative`, `negative`, `question` | `signals`, `uses_vi`, `contrast_with`, `check_aux`, `check_verb_form`, `cefr`, `order` | 12 thì; sau đó sửa trên trang Thì & ngữ pháp |
+| **Tình huống** | `code`, `title_vi`, `title_en`, `description_en`, `level`, `audience` | `topics`, `register`, `combo_enabled` | Bổ sung cho bảng `situations` có sẵn |
+| **Câu tổ hợp** (tuỳ chọn) | `item_code`, `grammar_code`, `situation_code`, `subject_group`, `text_en`, `text_vi` | `polarity` | Nhập câu viết tay vào kho. Vẫn chạy kiểm tra 4.4 và gắn IPA. |
 
-Mã sinh từ phần cố định: `pattern:place-heavy-emphasis-on`.
+**Luật đặt `code` cho từ vựng** (đã áp vào file CSV mục 12):
+- Gốc là headword viết thường, thay ký tự đặc biệt bằng `-`.
+- Có số chồng (homograph) thì thêm số: `ring1`, `ring2`.
+- Có nghĩa phân biệt thì thêm nghĩa: `bank-money`, `bank-river`.
+- Nếu gốc vẫn trùng giữa các dòng (cùng từ, khác loại từ có cấp khác nhau) thì thêm loại từ: `account-n`, `account-v`, `close1-v`, `close2-adj`.
+- Tên riêng trùng với từ thường thì thêm `-proper`: `march-proper` (tháng 3) ≠ `march`.
+- Mã duy nhất **trên cả 2 danh sách**: từ có thêm loại từ mới ở bản 5000 nhận mã mới (`arm-n` A1 ở bản 3000, `arm-v` C1 ở bản 5000).
 
-- Ví dụ trong bảng → `item_examples`. Script tự nhận thì của ví dụ bằng luật ở 8.2 và điền `grammar_code`.
-- Các từ khoá trong mẫu (emphasis, importance…) được **nối với item `word` sẵn có** nếu tìm thấy.
-- Mẫu không tự chuyển được (cấu trúc lạ, nhiều slot mơ hồ) → ghi vào `*.rejects.csv` để sửa tay.
-- Gắn nhãn `function:<function>`, `exam:<exam>`, `list:ielts-patterns`, và ghi đè hạn ngạch mặc định cho mẫu trang trọng (`noun_phrase`, `they`, `we`).
-- Bảng gốc là ảnh, nên cần chuyển sang CSV trước (gõ lại, hoặc OCR rồi người kiểm).
+### 9.2 Làm giàu từ vựng: đề xuất
 
-### 9.3 Thì và tình huống
+**Nguyên tắc: chỗ nào làm bằng máy được thì không dùng AI; chỉ làm giàu những gì sắp dạy.**
 
-| Script | Nguồn | Ghi chú |
+| Trường | Cách làm | Chi phí |
 |---|---|---|
-| `yarn grammar:seed` | `scripts/grammar/content/tenses.json` (soạn trong repo, giống `curriculum/content`) | 12 thì, đủ công thức, dấu hiệu, luật kiểm tra, thì hay nhầm. Sau đó admin sửa trên web. |
-| `yarn situations:import --in …json` | JSON danh sách tình huống | Bổ sung tình huống B1–B2 và nhãn chủ đề, `register` cho danh mục có sẵn |
-| `yarn combo:prewarm --unit <slug> [--apply]` | Bài trong unit | Sinh trước câu tổ hợp cho các tổ hợp của bài; dry-run in số lần gọi AI. Cũng chạy được từ admin (8.4). |
+| IPA | cmudict ✅ ngay lúc import. Từ không có trong từ điển (~3–5%) dùng LLM như hiện nay. | Gần như 0 |
+| Cấp CEFR, loại từ, danh sách | Có sẵn trong CSV | 0 |
+| Nghĩa tiếng Việt **đúng loại từ và nghĩa phân biệt** | AI, theo lô 50 từ / lần gọi | Thấp |
+| 2 câu ví dụ EN + VI, đúng cấp của từ | AI, cùng lần gọi | Thấp |
+| Nhãn chủ đề (từ danh sách `tags` có sẵn, không tự đặt nhãn mới) | AI, cùng lần gọi | Thấp |
+| Tối đa 3 collocation hay gặp | AI, cùng lần gọi; tạo `phrase` + `item_links` | Thấp |
+| Họ từ (`word family`: produce → production, producer) | Không cần AI: so khớp gốc từ trong chính danh sách Oxford | 0 |
 
-### 9.4 Bảng phụ cho import 🆕
+**Thứ tự đề xuất:**
+1. **Import cả 5.000 từ ngay**, chỉ có IPA + cấp. Tốn gần như 0, và có ngay danh sách để gắn vào bài và nhận diện từ trong bài tự tạo (F8).
+2. **Làm giàu theo cấp, theo nhu cầu:** A2 → B1 trước (khớp với cấp khoá học sẽ làm), rồi B2, A1, C1 sau. Mỗi lần bấm "Làm giàu" trên trang Lô import, admin chọn cấp, xem ước tính số lần gọi AI, rồi xác nhận.
+3. **Ưu tiên tự động:** từ đang được gắn vào bài học, hoặc được người học chạm vào trong bài tự tạo, sẽ được đưa lên đầu hàng đợi.
+4. **Kiểm tra chất lượng:** sau mỗi lô, admin xem **mẫu ngẫu nhiên 5%** trên màn duyệt nhanh. Tỷ lệ lỗi > 5% thì sửa prompt (`wordlist.enrich`, có case mẫu) và chạy lại lô đó.
+
+Về con số: ~5.000 từ ÷ 50 từ / lần ≈ **100 lần gọi AI** cho toàn bộ danh sách, chưa tính chạy lại. Làm theo cấp giúp chia nhỏ chi phí và kiểm được chất lượng sớm.
+
+Item chưa làm giàu vẫn ở `draft`. Chỉ item đủ **nghĩa + 1 ví dụ** mới được publish và gắn vào bài.
+
+### 9.3 Bảng phụ cho import 🆕
 
 ```sql
 CREATE TABLE import_batches (
   id          uuid PRIMARY KEY,
-  source      varchar(32) NOT NULL,   -- oxford-3000 | oxford-5000 | ielts-patterns | grammar | situations
+  kind        varchar(16) NOT NULL,   -- words | patterns | grammar | situations | combo_sentences
   file_name   varchar(200) NOT NULL,
   file_sha256 char(64) NOT NULL,
-  counts      jsonb NOT NULL,         -- {created, updated, unchanged, rejected}
+  status      varchar(16) NOT NULL,   -- previewed | running | done | failed
+  counts      jsonb NOT NULL,         -- {created, updated, unchanged, rejected, enriched}
   run_by      varchar(80) NOT NULL,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
-ALTER TABLE items ADD COLUMN import_batch_id uuid REFERENCES import_batches;  -- null được
+-- Dòng lỗi giữ lại để tải về sửa; xoá sau 30 ngày
+CREATE TABLE import_rejects (
+  batch_id uuid REFERENCES import_batches ON DELETE CASCADE,
+  line     int NOT NULL,
+  raw      jsonb NOT NULL,
+  reason   varchar(300) NOT NULL,
+  PRIMARY KEY (batch_id, line)
+);
+ALTER TABLE items ADD COLUMN import_batch_id uuid REFERENCES import_batches;      -- null được
+ALTER TABLE items ADD COLUMN enrichment_status varchar(12);                       -- null | pending | done | failed
 ```
 
 ---
@@ -627,27 +646,48 @@ ALTER TABLE items ADD COLUMN import_batch_id uuid REFERENCES import_batches;  --
 
 | GĐ | Nội dung | Repo | Rủi ro |
 |---|---|---|---|
-| **P0** | Migration: cột `items` (`cefr_level`, `frequency_rank`, `import_batch_id`), `kind = grammar`, `tags`, `item_tags`, `item_links`, `situation_tags`, `situations.register`, `import_batches` | Server | ⚠️ Migration (chỉ thêm) |
-| **P1a** | Script: `wordlist:extract / enrich / import`, `patterns:import`, `grammar:seed`, `situations:import` | Server | ⚠️ Chi phí AI khi làm giàu ~5.000 từ |
-| **P1b** | Admin: Items mở rộng + thao tác hàng loạt + màn duyệt nhanh, trang Thì & ngữ pháp, Tình huống mở rộng, Lô import | Server, admin-web | Khối lượng duyệt lớn |
-| **P2** | App: F1 lộ trình từ + ôn bậc 1–2 | App | Thấp |
-| **P3a** | Kho câu tổ hợp: bảng `combo_*`, API, sinh + kiểm tra tự động, hạn ngạch, tải thêm | Server | ⚠️ Chi phí AI, chất lượng câu |
-| **P3b** | Admin: Kho câu + ma trận độ phủ + báo sai + sinh trước, Cài đặt câu tổ hợp, prompt `combo.generate` | Server, admin-web | Thấp |
-| **P4** | App: bộ câu, IPA từng từ, đọc theo `combo_shadowing`, kết quả từng từ | App, Server | Chấm nói chưa test máy thật |
-| **P5** | App: F2 kho mẫu, F3 bản đồ thì, ôn bậc 3, F8, F9 | App | Thấp |
-| **P6** (tuỳ chọn) | Chấm phát âm theo âm vị | Server | ⚠️ Dependency + chi phí mới |
+| **P0** | Migration: cột `items` (`cefr_level`, `frequency_rank`, `import_batch_id`, `enrichment_status`), `kind = grammar`, `tags`, `item_tags`, `item_links`, `situation_tags`, `situations.register`, `import_batches`, `import_rejects` | Server | ⚠️ Migration (chỉ thêm) |
+| **P1** | **Import CSV trên admin** (5 loại, xem trước, job nền, dòng lỗi) + import 5.000 từ, 25 mẫu câu, 12 thì | Server, admin-web | Thấp |
+| **P2** | Làm giàu từ vựng (prompt `wordlist.enrich`, theo cấp, hàng đợi ưu tiên) + Items mở rộng, duyệt nhanh, trang Thì & ngữ pháp, Tình huống mở rộng | Server, admin-web | ⚠️ Chi phí AI (~100 lần gọi cho 5.000 từ) |
+| **P3** | **Gói học và giới hạn theo người dùng:** `plans`, `user_plans`, `user_limit_overrides`, `resolveLimits`, `GET /v1/me/limits`, trang Gói học + UserDetail | Server, admin-web | ⚠️ Ảnh hưởng mọi tính năng có hạn mức |
+| **P4** | **Kho câu tổ hợp:** bảng `combo_*`, API, prompt `combo.generate` + case mẫu, kiểm tra tự động, hạn ngạch theo gói, tải thêm, trang Kho câu + báo sai | Server, admin-web | ⚠️ Chi phí AI |
+| **P5** | App: lộ trình từ (F1) + ôn bậc 1–2, bộ câu tổ hợp (chữ, bản dịch, IPA từng từ, tải thêm, báo sai) | App | Thấp |
+| **P6** | App: kho mẫu (F2), bản đồ thì (F3), F8, F9 | App | Thấp |
+| **P7** | **Giai đoạn cuối, thiết kế sau:** nguồn audio, đọc theo, chấm phát âm, ôn bậc 3 dạng nói | App, Server | ⚠️ Có thể cần dịch vụ mới |
 
 ---
 
-## 11. Cần chốt trước khi làm
+## 11. Đã chốt
 
-1. **Hạn ngạch chủ ngữ mặc định:** `I×3, He/She×3, They×3` đã đủ chưa? Có cần thêm *you*, *we*, và câu **phủ định / câu hỏi** (cột `polarity` đã chừa sẵn) không?
-2. **Ai duyệt câu AI sinh?** Đề xuất: câu `auto_ok` phát ngay cho người lớn, trẻ em chỉ nhận câu `published`. Có cần admin duyệt hết trước khi phát không?
-3. **Hạn mức AI mỗi ngày** (đề xuất 5 lần gọi AI / người / ngày, lấy từ kho thì không tính) và độ dài tối đa của bộ (27 câu)?
-4. **Chấm phát âm:** dùng chấm theo từ hiện có (không tốn thêm), hay đầu tư dịch vụ chấm theo âm vị? Ví dụ Azure Speech Pronunciation Assessment hoặc SpeechAce: là **dependency mới, có chi phí theo phút audio**, cần bạn duyệt.
-5. **Audio:** dùng TTS trên máy (miễn phí, giọng phụ thuộc máy), hay server tạo audio sẵn cho câu `published`?
-6. **Bản quyền Oxford 3000 / 5000** khi dùng trong app thương mại. Phương án dự phòng: NGSL hoặc CEFR-J. Script import viết chung cho mọi danh sách, nên đổi nguồn không phải viết lại.
-7. **File nguồn:** cần file **Oxford 5000** (PDF hoặc CSV) và **toàn bộ bảng mẫu câu** (ảnh hiện chỉ có 5 dòng; bảng gốc ghi "100+"). Nếu chỉ có ảnh thì cần người gõ lại hoặc OCR rồi kiểm lại.
-8. **Import chạy bằng script (CLI) hay cần nút upload CSV trên admin?** Đề xuất làm script trước (theo khuôn hiện có), admin chỉ xem lô import. Nút upload để giai đoạn sau.
-9. **Làm giàu từ bằng AI cho ~5.000 từ:** chạy một lần cho cả danh sách, hay theo cấp (A1–A2 trước)?
-10. **Bắt đầu từ cấp nào?** Đề xuất A2–B1, vì 42 bài hiện có đã phủ A1–A2.
+| Câu hỏi | Quyết định |
+|---|---|
+| Import | **CSV upload trên admin**, không cần script |
+| Làm giàu dữ liệu | Theo đề xuất 9.2: IPA bằng từ điển, AI theo cấp, kiểm mẫu 5% |
+| Hạn ngạch chủ ngữ, hạn mức AI | **Theo người dùng** (gói + ghi đè), để bán sau này (8.5) |
+| Duyệt câu AI sinh | **Không duyệt tay**; tối ưu qua prompt + case mẫu, kiểm tra tự động làm lưới an toàn (8.6) |
+| Chấm phát âm, nguồn audio | **Giai đoạn cuối** (P7), thiết kế sau |
+| Mẫu câu còn lại | Bạn nhập dần trên admin (form hoặc CSV) |
+
+## 12. Dữ liệu đã chuẩn bị
+
+Tách từ file PDF bạn gửi, sẵn sàng import ở P1. Các file **không commit vào repo** vì nội dung thuộc bản quyền Oxford.
+
+| File | Nội dung | Số lượng |
+|---|---|---|
+| `oxford-3000.csv` | Oxford 3000, có `code`, cấp, loại từ, nghĩa phân biệt | 3.000 từ gốc → 3.308 dòng (A1 899 · A2 872 · B1 810 · B2 727) |
+| `oxford-5000-extra.csv` | Phần thêm của Oxford 5000 (B2–C1) | 1.999 từ gốc → 2.015 dòng |
+| `ielts-patterns.csv` | 25 mẫu câu IELTS từ 5 ảnh, có `frame`, `slot_values`, nhóm chủ ngữ phù hợp, ghi chú | 25 mẫu |
+
+Ghi chú khi tách PDF:
+- Đã sửa 6 mục bị **xuống dòng** trong PDF: `double`, `light`, `like`, `match`, `outside`, `second`.
+- Đã sửa 5 **lỗi gõ** trong PDF: `hatred n,` · `tragic adj.,` · `viable adj.,` · `terminal n B2` · `produce v. A2, v. B2` (sửa thành `n. B2`).
+- Bản 5000 có 1.999 từ gốc, trong khi PDF ghi "2000": có thể do cách PDF đếm; nên đối chiếu khi có thời gian.
+- Một từ có nhiều loại từ **cùng cấp** gộp 1 dòng (`about` prep, adv · A1). Khác cấp thì tách dòng (`account` n B1 / v B2).
+- Mẫu câu: `It is essential that` (động từ nguyên mẫu) và `should not be underestimated` được ghi chú **không ghép với thì khác**. Prompt và kiểm tra thì cần tôn trọng ghi chú này.
+
+## 13. Cần chốt tiếp
+
+1. **Gói học ban đầu:** chỉ 1 gói `free` cho mọi người, hay tạo sẵn `free` + `plus` để thử?
+2. **Giới hạn mặc định của gói free** ở bảng 8.5 (3 lần gọi AI / ngày, bộ tối đa 18 câu) có ổn không?
+3. **Bản quyền Oxford 3000 / 5000** khi dùng trong app thương mại.
+4. **Cấp khoá học làm trước:** đề xuất A2–B1 (quyết định thứ tự làm giàu từ ở 9.2).
