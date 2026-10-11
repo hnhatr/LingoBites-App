@@ -1,26 +1,22 @@
 /**
- * HomeTodaySuggestion — "Kế hoạch hôm nay" checklist under the hero (F12).
+ * HomeTodaySuggestion — compact "Kế hoạch hôm nay" card under the hero (F12).
  *
- * Shows the day's study plan as steps the learner ticks off:
+ * Shows only the day's plan progress; the step list lives on `Today`:
  *   [Kế hoạch hôm nay ................ 🎯 20 phút ▾]
- *   [✓ Step 1 ........................... 5m]
- *   [○ Step 2  (Tiếp theo) .............. 8m]
- *   [○ Step 3 ........................... 7m]
- *   [▓▓▓▓░░░░ 1/3 bước ........ Xem chi tiết]
+ *   [▓▓▓▓░░░░ 1/3 bước ....... Xem chi tiết ›]
  *   [footer: weekly goal row]
  *
  * The mode button opens the 5/20/45-minute chips in place; picking one closes
  * them. Progress counts steps, not minutes: a plan can be shorter than the
  * chosen mode when there is not enough to study. The hero owns the primary
- * action; the step it points at carries the "Tiếp theo" tag here so both
- * cards read as one flow. Open steps stay tappable as a secondary path.
- * "Xem chi tiết" opens the full `Today` route with the selected mode.
+ * action. The whole progress row opens the full `Today` route with the
+ * selected mode.
  */
 import React, {type ReactNode, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
-import type {StudyActivityItem, TodayMode} from '@features/today';
+import type {TodayMode} from '@features/today';
 
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
@@ -44,35 +40,16 @@ const MODE_OPTIONS: ReadonlyArray<{
 type Props = {
   mode: TodayMode;
   progress: TodayProgressModel | null;
-  /** Plan step the hero is pointing at, tagged "Tiếp theo". */
-  currentStepId: string | null;
   onModeChange: (mode: TodayMode) => void;
-  onStartActivity: (activity: StudyActivityItem) => void;
   onViewDetails: () => void;
   /** Rendered under the plan, e.g. the weekly goal row. */
   footer?: ReactNode;
 };
 
-/** Prefix the Today engine puts on a `continue_lesson` step title. */
-const CONTINUE_PREFIX = 'Học tiếp: ';
-
-/**
- * Home shows the lesson name alone: the hero already says "Học tiếp", and it
- * can point at another started lesson than the plan's step.
- */
-function stepTitle(step: StudyActivityItem): string {
-  return step.type === 'continue_lesson' &&
-    step.titleVi.startsWith(CONTINUE_PREFIX)
-    ? step.titleVi.slice(CONTINUE_PREFIX.length)
-    : step.titleVi;
-}
-
 export function HomeTodaySuggestion({
   mode,
   progress,
-  currentStepId,
   onModeChange,
-  onStartActivity,
   onViewDetails,
   footer,
 }: Props) {
@@ -103,10 +80,7 @@ export function HomeTodaySuggestion({
           accessibilityState={{expanded: modesOpen}}
           hitSlop={8}
           onPress={() => setModesOpen(open => !open)}
-          style={({pressed}) => [
-            styles.modeToggle,
-            pressed && styles.stepRowPressed,
-          ]}
+          style={({pressed}) => [styles.modeToggle, pressed && styles.pressed]}
           testID="home-today-mode-toggle"
         >
           <AppText style={styles.modeToggleText}>
@@ -142,105 +116,34 @@ export function HomeTodaySuggestion({
         </View>
       ) : null}
 
-      {hasSteps ? (
-        <View style={styles.stepList}>
-          {progress.steps.map(step => {
-            const done = progress.doneIds.has(step.id);
-            const current = !done && step.id === currentStepId;
-            const row = (
-              <>
-                {done ? (
-                  <View style={styles.checkSlot}>
-                    <MaterialIcon
-                      color={theme.colors.secondary}
-                      name="check_circle"
-                      size={22}
-                    />
-                  </View>
-                ) : (
-                  <View style={styles.checkSlot}>
-                    <View
-                      style={[styles.openDot, current && styles.openDotCurrent]}
-                    />
-                  </View>
-                )}
-                <View style={styles.stepCopy}>
-                  <AppText
-                    numberOfLines={1}
-                    style={[styles.stepTitle, done && styles.stepTitleDone]}
-                  >
-                    {stepTitle(step)}
-                  </AppText>
-                  {current ? (
-                    <AppText style={styles.currentTag}>
-                      {t('home.today_step_current')}
-                    </AppText>
-                  ) : null}
-                </View>
-                <AppText style={styles.stepMinutes}>
-                  ~{step.estimatedMinutes}m
-                </AppText>
-              </>
-            );
-            if (done) {
-              return (
-                <View
-                  key={step.id}
-                  accessibilityLabel={t('home.today_step_done_a11y', {
-                    title: stepTitle(step),
-                  })}
-                  accessible
-                  style={styles.stepRow}
-                  testID={`home-today-step-${step.id}`}
-                >
-                  {row}
-                </View>
-              );
-            }
-            return (
-              <Pressable
-                key={step.id}
-                accessibilityHint={t('home.today_start_hint')}
-                accessibilityLabel={t('home.today_start_a11y', {
-                  title: stepTitle(step),
-                  minutes: step.estimatedMinutes,
-                })}
-                accessibilityRole="button"
-                onPress={() => onStartActivity(step)}
-                style={({pressed}) => [
-                  styles.stepRow,
-                  current && styles.stepRowCurrent,
-                  pressed && styles.stepRowPressed,
-                ]}
-                testID={`home-today-step-${step.id}`}
-              >
-                {row}
-              </Pressable>
-            );
-          })}
-        </View>
-      ) : (
+      {hasSteps ? null : (
         <AppText style={styles.emptyText} testID="home-today-empty">
           {t('home.today_empty')}
         </AppText>
       )}
 
-      <View style={styles.footer}>
+      <Pressable
+        accessibilityHint={t('home.today_details_hint')}
+        accessibilityLabel={
+          hasSteps && !progress.allDone
+            ? `${t('home.today_progress_a11y', {
+                done: doneSteps,
+                total: totalSteps,
+              })}. ${t('home.today_details_a11y')}`
+            : t('home.today_details_a11y')
+        }
+        accessibilityRole="button"
+        onPress={onViewDetails}
+        style={({pressed}) => [styles.footer, pressed && styles.pressed]}
+        testID="home-today-details"
+      >
         {hasSteps ? (
           progress.allDone ? (
             <AppText style={styles.allDone} testID="home-today-all-done">
               {t('home.today_all_done')}
             </AppText>
           ) : (
-            <View
-              accessibilityLabel={t('home.today_progress_a11y', {
-                done: doneSteps,
-                total: totalSteps,
-              })}
-              accessible
-              style={styles.progressWrap}
-              testID="home-today-progress"
-            >
+            <View style={styles.progressWrap} testID="home-today-progress">
               <View style={styles.progressTrack}>
                 <View
                   style={[
@@ -260,19 +163,17 @@ export function HomeTodaySuggestion({
         ) : (
           <View style={styles.progressWrap} />
         )}
-        <Pressable
-          accessibilityHint={t('home.today_details_hint')}
-          accessibilityLabel={t('home.today_details_a11y')}
-          accessibilityRole="button"
-          hitSlop={8}
-          onPress={onViewDetails}
-          testID="home-today-details"
-        >
+        <View style={styles.detailsLinkRow}>
           <AppText style={styles.detailsLink}>
             {t('home.today_details')}
           </AppText>
-        </Pressable>
-      </View>
+          <MaterialIcon
+            color={theme.colors.primary}
+            name="chevron_right"
+            size={18}
+          />
+        </View>
+      </Pressable>
 
       {footer}
     </View>
@@ -295,6 +196,10 @@ function makeStyles(theme: AppTheme) {
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'space-between',
+    },
+    detailsLinkRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
     },
     detailsLink: {
       color: theme.colors.primary,
@@ -328,63 +233,11 @@ function makeStyles(theme: AppTheme) {
       flexWrap: 'wrap',
       gap: 8,
     },
-    stepList: {
-      gap: 6,
-    },
-    stepRow: {
-      alignItems: 'center',
-      borderRadius: 14,
-      flexDirection: 'row',
-      gap: 10,
-      minHeight: 44,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-    },
-    stepRowCurrent: {
-      backgroundColor: theme.colors.accentSoft,
-    },
     stepRowPressed: {
       opacity: theme.states.pressedOpacity,
     },
-    checkSlot: {
-      alignItems: 'center',
-      height: 22,
-      justifyContent: 'center',
-      width: 22,
-    },
-    openDot: {
-      borderColor: theme.colors.outline,
-      borderRadius: 9,
-      borderWidth: 2,
-      height: 18,
-      width: 18,
-    },
-    openDotCurrent: {
-      borderColor: theme.colors.primary,
-    },
-    stepCopy: {
-      flex: 1,
-      minWidth: 0,
-    },
-    stepTitle: {
-      color: theme.colors.text.primary,
-      fontSize: 14,
-      fontWeight: '700',
-    },
-    stepTitleDone: {
-      color: theme.colors.text.secondary,
-      textDecorationLine: 'line-through',
-    },
-    currentTag: {
-      color: theme.colors.primary,
-      fontSize: 11,
-      fontWeight: '800',
-      textTransform: 'uppercase',
-    },
-    stepMinutes: {
-      color: theme.colors.text.secondary,
-      fontSize: 12,
-      fontWeight: '600',
+    pressed: {
+      opacity: theme.states.pressedOpacity,
     },
     emptyText: {
       color: theme.colors.text.secondary,
@@ -394,6 +247,7 @@ function makeStyles(theme: AppTheme) {
       alignItems: 'center',
       flexDirection: 'row',
       gap: 10,
+      minHeight: 44,
     },
     progressWrap: {
       alignItems: 'center',
