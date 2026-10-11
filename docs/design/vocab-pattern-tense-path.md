@@ -499,7 +499,7 @@ Riêng hạn ngạch chủ ngữ của một mẫu câu (`payload.combo_quota`, 
 | `combo.polarity_allowed` | khẳng định | + phủ định, câu hỏi | |
 | `combo.batch_sizes` | `[3, 6, 9]` | `[3, 6, 9, 12]` | |
 | `combo.max_per_set` | 18 | 45 | Tổng câu tối đa sau nhiều lần "tải thêm" |
-| `combo.daily_ai_generations` | 3 | 30 | Lần gọi AI mỗi ngày. Lấy câu từ kho thì không tính. |
+| `combo.daily_ai_generations` | 10 | 30 | Lần gọi AI mỗi ngày. Lấy câu từ kho thì không tính. |
 | `combo.daily_sets` | 5 | không giới hạn | Số bộ câu mở mới mỗi ngày |
 
 ```sql
@@ -676,7 +676,8 @@ Tách từ file PDF bạn gửi, sẵn sàng import ở P1. Các file **không c
 |---|---|---|
 | `oxford-3000.csv` | Oxford 3000, có `code`, cấp, loại từ, nghĩa phân biệt | 3.000 từ gốc → 3.308 dòng (A1 899 · A2 872 · B1 810 · B2 727) |
 | `oxford-5000-extra.csv` | Phần thêm của Oxford 5000 (B2–C1) | 1.999 từ gốc → 2.015 dòng |
-| `ielts-patterns.csv` | 25 mẫu câu IELTS từ 5 ảnh, có `frame`, `slot_values`, nhóm chủ ngữ phù hợp, ghi chú | 25 mẫu |
+| `ielts-patterns.csv` | 25 mẫu câu IELTS từ 5 ảnh, có `frame`, `slot_values`, ví dụ EN + **bản dịch VI**, nhóm chủ ngữ phù hợp, ghi chú | 25 mẫu |
+| `tenses.csv` | 12 thì + be going to: công thức, dấu hiệu, cách dùng, thì hay nhầm, luật kiểm tra, ví dụ EN/VI | 13 thì |
 
 Ghi chú khi tách PDF:
 - Đã sửa 6 mục bị **xuống dòng** trong PDF: `double`, `light`, `like`, `match`, `outside`, `second`.
@@ -685,9 +686,13 @@ Ghi chú khi tách PDF:
 - Một từ có nhiều loại từ **cùng cấp** gộp 1 dòng (`about` prep, adv · A1). Khác cấp thì tách dòng (`account` n B1 / v B2).
 - Mẫu câu: `It is essential that` (động từ nguyên mẫu) và `should not be underestimated` được ghi chú **không ghép với thì khác**. Prompt và kiểm tra thì cần tôn trọng ghi chú này.
 
-## 13. Cần chốt tiếp
+## 13. Đã chốt thêm
 
-1. **Gói học ban đầu:** chỉ 1 gói `free` cho mọi người, hay tạo sẵn `free` + `plus` để thử?
-2. **Giới hạn mặc định của gói free** ở bảng 8.5 (3 lần gọi AI / ngày, bộ tối đa 18 câu) có ổn không?
-3. **Bản quyền Oxford 3000 / 5000** khi dùng trong app thương mại.
-4. **Cấp khoá học làm trước:** đề xuất A2–B1 (quyết định thứ tự làm giàu từ ở 9.2).
+| Câu hỏi | Quyết định |
+|---|---|
+| Gói học ban đầu | Chỉ gói `free` |
+| Lượt gọi AI mỗi ngày (gói free) | **10**, là setting, chỉnh lại sau. Thay cho con số 3 ở bảng 8.5. |
+| Bản quyền Oxford | Cứ dùng, xử lý sau |
+| Cấp làm giàu | **Tất cả các cấp** A1 → C1, không chia đợt (thay cho thứ tự ở 9.2) |
+
+Kế hoạch triển khai P0 + P1: [`vocab-pattern-tense-p0-p1-plan.md`](./vocab-pattern-tense-p0-p1-plan.md).
