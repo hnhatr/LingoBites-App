@@ -1,5 +1,5 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useEffect, useState} from 'react';
+import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
@@ -9,8 +9,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-
-import {getImageSizeCategory, trackEvent} from '@features/analytics';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
@@ -22,124 +20,65 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
 
-import {
-  type PickedImage,
-  pickImageFromCamera,
-  pickImageFromGallery,
-} from '../logic/imagePicker';
-import {analyzeImage} from '../logic/momentClient';
-import {ensurePhotoConsent} from '../logic/photoConsent';
+import {useImageAnalysisFlow} from '../logic/useImageAnalysisFlow';
 import type {CreateFlowParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CreateFlowParamList, 'ImageCapture'>;
 
 export type ImageCaptureScreenProps = Props;
 
-type ScreenState =
-  | {type: 'upload_idle'}
-  | {type: 'picking'}
-  | {type: 'preview'; image: PickedImage}
-  | {type: 'ocr_loading'; image: PickedImage}
-  | {type: 'permission_denied'}
-  | {type: 'error'; message: string; image?: PickedImage};
+function ExtractButton({onPress}: {onPress: () => void}) {
+  const {theme} = useAppTheme();
+  const {t} = useTranslation();
+  return (
+    <Pressable
+      accessibilityLabel={t('ocr.extract_a11y')}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({pressed}) => [
+        {
+          alignItems: 'center',
+          backgroundColor: theme.colors.primary,
+          borderRadius: theme.radius.lg,
+          flexDirection: 'row',
+          gap: 8,
+          justifyContent: 'center',
+          minHeight: 52,
+          opacity: pressed ? theme.states.pressedOpacity : 1,
+        },
+      ]}
+    >
+      <MaterialIcon
+        color={theme.colors.text.inverse}
+        name="document_scanner"
+        size={22}
+      />
+      <AppText style={[styles.actionText, {color: theme.colors.text.inverse}]}>
+        {t('ocr.extract')}
+      </AppText>
+    </Pressable>
+  );
+}
 
 export function ImageCaptureScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const {sourceType} = route.params;
-  const isGallery = sourceType === 'gallery';
-  const [screenState, setScreenState] = useState<ScreenState>(
-    isGallery ? {type: 'upload_idle'} : {type: 'picking'},
-  );
-  const launchPicker = useCallback(async () => {
-    setScreenState({type: 'picking'});
-    const result =
-      sourceType === 'camera'
-        ? await pickImageFromCamera()
-        : await pickImageFromGallery();
-
-    if (!result.ok) {
-      if (result.reason === 'permission_denied') {
-        setScreenState({type: 'permission_denied'});
-        return;
-      }
-
-      if (result.reason === 'cancelled') {
-        if (isGallery) {
-          setScreenState({type: 'upload_idle'});
-        } else {
-          navigation.goBack();
-        }
-        return;
-      }
-
-      setScreenState({
-        type: 'error',
-        message: result.message ?? t('errors.ocr_failed'),
-      });
-      return;
-    }
-
-    setScreenState({type: 'preview', image: result.image});
-    trackEvent('image_selected', {
-      source: sourceType,
-      image_size_category: getImageSizeCategory(
-        result.image.width,
-        result.image.height,
-      ),
-      has_permission: true,
-    });
-  }, [isGallery, navigation, sourceType, t]);
-
-  useEffect(() => {
-    if (!isGallery) {
-      launchPicker();
-    }
-  }, [isGallery, launchPicker]);
-
-  /** E3 (P1, P8): the server reads and checks the photo, then the learner chooses. */
-  async function analyzeForMoment(image: PickedImage) {
-    const consented = await ensurePhotoConsent({
-      title: t('moment.consent_title'),
-      body: t('moment.consent_body'),
-      confirmLabel: t('moment.consent_confirm'),
-      cancelLabel: t('moment.consent_cancel'),
-    });
-    if (!consented) {
-      setScreenState({type: 'preview', image});
-      return;
-    }
-    setScreenState({type: 'ocr_loading', image});
-    const result = await analyzeImage(image, sourceType);
-    if (!result.ok) {
-      trackEvent('moment_rejected', {
-        code: result.errorCode ?? 'unknown',
-        stage: 'analyze',
-      });
-      setScreenState({
-        type: 'error',
-        message: result.message || t('errors.ocr_failed'),
-        image,
-      });
-      return;
-    }
-    trackEvent('moment_analyzed', {
-      kind: result.value.kind,
-      has_image_id: result.value.image_id !== null,
-    });
-    navigation.replace('MomentReview', {
-      sourceType,
-      image,
-      analysis: result.value,
-    });
-  }
-
-  async function handleContinue(image: PickedImage) {
-    await analyzeForMoment(image);
-  }
+  const {
+    state: screenState,
+    isGallery,
+    pick,
+    analyze,
+    backToIdle,
+  } = useImageAnalysisFlow({
+    sourceType,
+    onAnalyzed: (image, analysis) =>
+      navigation.replace('MomentReview', {sourceType, image, analysis}),
+    onCameraCancelled: () => navigation.goBack(),
+  });
 
   function handleBack() {
     if (screenState.type === 'preview' && isGallery) {
-      setScreenState({type: 'upload_idle'});
+      backToIdle();
       return;
     }
     navigation.goBack();
@@ -149,7 +88,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
     ? t('ocr.title_gallery')
     : t('ocr.title_capture');
 
-  if (screenState.type === 'picking' || screenState.type === 'ocr_loading') {
+  if (screenState.type === 'picking' || screenState.type === 'analyzing') {
     return (
       <AppScreen>
         <ScreenHeader onBack={() => navigation.goBack()} title={headerTitle} />
@@ -164,7 +103,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
         >
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <AppText color="secondary" style={styles.centerText}>
-            {screenState.type === 'ocr_loading'
+            {screenState.type === 'analyzing'
               ? t('ocr.scanning')
               : isGallery
               ? t('ocr.opening_gallery')
@@ -190,7 +129,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           <ErrorCard
             message={t('errors.permission_denied')}
             onRetry={() => {
-              launchPicker();
+              pick();
             }}
           />
           <AppButton
@@ -231,7 +170,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             <AppButton
               title={t('ocr.retry')}
               onPress={() => {
-                handleContinue(screenState.image!);
+                analyze(screenState.image!);
               }}
             />
           ) : null}
@@ -239,7 +178,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             title={t('ocr.pick_again')}
             variant="secondary"
             onPress={() => {
-              launchPicker();
+              pick();
             }}
           />
           <AppButton
@@ -278,7 +217,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             title={t('ocr.pick_again')}
             variant="secondary"
             onPress={() => {
-              launchPicker();
+              pick();
             }}
           />
         </ScrollView>
@@ -289,40 +228,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             paddingBottom: theme.spacing.lg,
           }}
         >
-          <Pressable
-            accessibilityLabel={t('ocr.extract_a11y')}
-            accessibilityRole="button"
-            onPress={() => {
-              handleContinue(screenState.image);
-            }}
-            style={({pressed}) => [
-              {
-                alignItems: 'center',
-                backgroundColor: theme.colors.primary,
-                borderRadius: theme.radius.lg,
-                flexDirection: 'row',
-                gap: 8,
-                justifyContent: 'center',
-                minHeight: 52,
-                opacity: pressed ? theme.states.pressedOpacity : 1,
-              },
-            ]}
-          >
-            <MaterialIcon
-              color={theme.colors.text.inverse}
-              name="document_scanner"
-              size={22}
-            />
-            <AppText
-              style={{
-                color: theme.colors.text.inverse,
-                fontSize: 18,
-                fontWeight: '600',
-              }}
-            >
-              {t('ocr.extract')}
-            </AppText>
-          </Pressable>
+          <ExtractButton onPress={() => analyze(screenState.image)} />
         </BottomActionBar>
       </AppScreen>
     );
@@ -344,7 +250,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           accessibilityLabel={t('ocr.pick_from_gallery_a11y')}
           accessibilityRole="button"
           onPress={() => {
-            launchPicker();
+            pick();
           }}
           style={({pressed}) => [
             {
@@ -414,40 +320,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           paddingBottom: theme.spacing.lg,
         }}
       >
-        <Pressable
-          accessibilityLabel={t('ocr.extract_a11y')}
-          accessibilityRole="button"
-          onPress={() => {
-            launchPicker();
-          }}
-          style={({pressed}) => [
-            {
-              alignItems: 'center',
-              backgroundColor: theme.colors.primary,
-              borderRadius: theme.radius.lg,
-              flexDirection: 'row',
-              gap: 8,
-              justifyContent: 'center',
-              minHeight: 52,
-              opacity: pressed ? theme.states.pressedOpacity : 1,
-            },
-          ]}
-        >
-          <MaterialIcon
-            color={theme.colors.text.inverse}
-            name="document_scanner"
-            size={22}
-          />
-          <AppText
-            style={{
-              color: theme.colors.text.inverse,
-              fontSize: 18,
-              fontWeight: '600',
-            }}
-          >
-            {t('ocr.extract')}
-          </AppText>
-        </Pressable>
+        <ExtractButton onPress={() => pick()} />
       </BottomActionBar>
     </AppScreen>
   );

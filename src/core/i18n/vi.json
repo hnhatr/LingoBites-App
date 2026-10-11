@@ -246,6 +246,7 @@
     "text_too_long_words": "Đoạn văn quá dài. Vui lòng rút ngắn còn tối đa {{max}} từ.",
     "ai_analysis_failed": "App chưa tạo được bài học. Vui lòng thử lại.",
     "network_lost": "Mất kết nối mạng. Vui lòng thử lại sau khi có mạng.",
+    "session_expired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
     "sync_failed": "Chưa thể đồng bộ lịch sử ôn tập. App sẽ tự thử lại khi có mạng.",
     "ocr_failed": "App chưa nhận diện được chữ trong ảnh. Hãy thử ảnh rõ hơn hoặc nhập text thủ công.",
     "ocr_timeout": "Nhận diện chữ mất quá nhiều thời gian. Vui lòng thử lại.",
