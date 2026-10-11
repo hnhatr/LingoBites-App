@@ -187,7 +187,18 @@
     "compose_title": "Go deeper in six steps",
     "compose_body": "AI builds a six-step lesson from the {{count}} sentences you just practised. You can change them before sending.",
     "compose_action": "Pick sentences and create",
-    "compose_hint": "Back to the lesson with the sentence picker open and these sentences ticked"
+    "compose_hint": "Back to the lesson with the sentence picker open and these sentences ticked",
+    "run_segment": "Part {{number}} of {{total}}",
+    "segments_progress": "{{done}} of {{total}} parts practised",
+    "segment_next": "Practise the next part ({{number}})",
+    "segment_pick": "Choose another part",
+    "segment_pick_close": "Hide the parts",
+    "segment_pick_hint": "Start practising this part",
+    "segment_name": "Part {{number}}",
+    "segment_current": "Just practised",
+    "segment_done": "Practised",
+    "segment_thin": "Too little to practise here",
+    "start_segment": "Continue · part {{number}} of {{total}}"
   },
   "review": {
     "title": "Review today",

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
@@ -15,6 +15,7 @@ import {useAppTheme} from '@ui/theme';
 
 import type {UseLessonPracticeRunResult} from '../logic/useLessonPracticeRun';
 import {ComposeSuggestionCard} from './ComposeSuggestionCard';
+import {PracticeSegmentList} from './PracticeSegmentList';
 
 const NO_ITEMS = new Map();
 
@@ -38,7 +39,14 @@ export function LessonPracticeRunView({
 }: LessonPracticeRunViewProps) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
+  const [pickingSegment, setPickingSegment] = useState(false);
   const {state} = run;
+  const segmentCount = run.segments.length;
+  const segmented = segmentCount > 1 && run.segmentIndex !== null;
+  const startSegment = (index: number) => {
+    setPickingSegment(false);
+    run.startSegment(index);
+  };
 
   if (state.status === 'finished') {
     const {summary} = state;
@@ -131,6 +139,45 @@ export function LessonPracticeRunView({
             </View>
           ) : null}
 
+          {segmented ? (
+            <AppCard testID="practice-segments">
+              <View style={{gap: theme.spacing.sm}}>
+                <AppText testID="practice-segments-progress" variant="h3">
+                  {t('practice.segments_progress', {
+                    done: run.practicedCount,
+                    total: segmentCount,
+                  })}
+                </AppText>
+                {run.nextSegment !== null ? (
+                  <AppButton
+                    onPress={() => startSegment(run.nextSegment!)}
+                    testID="practice-next-segment"
+                    title={t('practice.segment_next', {
+                      number: run.nextSegment + 1,
+                    })}
+                  />
+                ) : null}
+                <AppButton
+                  onPress={() => setPickingSegment(value => !value)}
+                  testID="practice-pick-segment"
+                  title={
+                    pickingSegment
+                      ? t('practice.segment_pick_close')
+                      : t('practice.segment_pick')
+                  }
+                  variant="outline"
+                />
+                {pickingSegment ? (
+                  <PracticeSegmentList
+                    currentIndex={run.segmentIndex}
+                    onPick={startSegment}
+                    segments={run.segments}
+                  />
+                ) : null}
+              </View>
+            </AppCard>
+          ) : null}
+
           <ComposeSuggestionCard
             lessonId={lessonId}
             onOpenLesson={onClose}
@@ -179,6 +226,14 @@ export function LessonPracticeRunView({
             total: sectionCount,
           })}
         </AppText>
+        {segmented ? (
+          <AppText color="secondary" testID="practice-run-segment">
+            {t('practice.run_segment', {
+              number: run.segmentIndex! + 1,
+              total: segmentCount,
+            })}
+          </AppText>
+        ) : null}
         <AppCard testID={`practice-run-section-${section.kind}`}>
           <View style={{gap: theme.spacing.md}}>
             <View style={{gap: theme.spacing.xs}}>

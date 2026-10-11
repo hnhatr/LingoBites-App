@@ -187,7 +187,18 @@
     "compose_title": "Học sâu theo 6 bước",
     "compose_body": "AI soạn một bài 6 bước từ {{count}} câu bạn vừa luyện. Bạn vẫn đổi được câu trước khi gửi.",
     "compose_action": "Chọn câu và tạo bài",
-    "compose_hint": "Về bài học và mở phần chọn câu với các câu đã chọn sẵn"
+    "compose_hint": "Về bài học và mở phần chọn câu với các câu đã chọn sẵn",
+    "run_segment": "Đoạn {{number}}/{{total}}",
+    "segments_progress": "Đã luyện {{done}}/{{total}} đoạn",
+    "segment_next": "Luyện đoạn tiếp theo ({{number}})",
+    "segment_pick": "Chọn đoạn khác",
+    "segment_pick_close": "Ẩn danh sách đoạn",
+    "segment_pick_hint": "Bắt đầu luyện đoạn này",
+    "segment_name": "Đoạn {{number}}",
+    "segment_current": "Vừa luyện",
+    "segment_done": "Đã luyện",
+    "segment_thin": "Đoạn này ít nội dung",
+    "start_segment": "Luyện tiếp · đoạn {{number}}/{{total}}"
   },
   "review": {
     "title": "Ôn tập hôm nay",
