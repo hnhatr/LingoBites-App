@@ -1,4 +1,8 @@
-import {buildLessonPracticePlan, practiceSeed} from '@core/learning';
+import {
+  buildLessonPracticePlan,
+  lessonPracticeSegments,
+  practiceSeed,
+} from '@core/learning';
 import type {LessonBlock, LessonSnapshot} from '@core/schemas/lesson';
 import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 
@@ -30,18 +34,24 @@ export function isFlowLesson(snapshot: LessonSnapshot): boolean {
 
 /**
  * A learner's own lesson that is not a six-step lesson practises on the
- * device instead (plan "self-created lesson practice", B): true when the
- * lesson has enough content for that run. Lessons without it keep the manual
- * "complete" on their hub (D5).
+ * device instead (plan "self-created lesson practice", B): true when at least
+ * one of its segments has enough content for that run (plan "practice
+ * segments", K5). Lessons without it keep the manual "complete" on their hub
+ * (D5).
  */
 export function hasLessonPracticeRun(snapshot: LessonSnapshot): boolean {
-  return (
-    snapshot.origin === 'learner' &&
-    !isFlowLesson(snapshot) &&
-    buildLessonPracticePlan(
-      snapshot,
-      practiceSeed(snapshot.id, snapshot.content_revision, 1),
-    ) !== null
+  if (snapshot.origin !== 'learner' || isFlowLesson(snapshot)) {
+    return false;
+  }
+  const seed = practiceSeed(snapshot.id, snapshot.content_revision, 1);
+  return lessonPracticeSegments(snapshot).some(
+    segment =>
+      buildLessonPracticePlan(
+        snapshot,
+        seed,
+        snapshot.analyses,
+        segment.sentenceIds,
+      ) !== null,
   );
 }
 

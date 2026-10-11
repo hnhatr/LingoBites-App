@@ -5,7 +5,11 @@ import {
   type EntryReport,
   hasLessonPracticeRun,
   isSpeakingActivity,
+  markPracticeSegment,
+  nextPracticeSegment,
   noSpeakingActive,
+  type PracticeSegmentView,
+  practiceSegmentViews,
 } from '@features/lesson';
 import {
   getLessonDownload,
@@ -69,6 +73,16 @@ export type UseLessonPracticeRunResult = {
   /** D2: a speaking section can be left out; it never blocks the lesson. */
   skipSection: () => void;
   restart: () => void;
+  /** Every segment of the lesson (one for a short lesson). */
+  segments: readonly PracticeSegmentView[];
+  /** The segment this run studies. */
+  segmentIndex: number | null;
+  /** Segments finished at least once. */
+  practicedCount: number;
+  /** After a run: the segment to offer next; null for a one-segment lesson. */
+  nextSegment: number | null;
+  /** Starts a fresh run of another segment. */
+  startSegment: (index: number) => void;
   /** The lesson could not be marked complete when the run finished. */
   completionFailed: boolean;
   savedItemKeys: ReadonlySet<string>;
@@ -111,9 +125,20 @@ export function useLessonPracticeRun(
     [snapshot],
   );
   const completion = useLessonCompletion(lessonId);
+  const [segments, setSegments] = useState<PracticeSegmentView[]>(() =>
+    snapshot && available ? practiceSegmentViews(snapshot) : [],
+  );
+  const [segmentIndex, setSegmentIndex] = useState<number | null>(() =>
+    nextPracticeSegment(segments),
+  );
+  const segmentIds = useMemo(
+    () => segments.find(segment => segment.index === segmentIndex)?.sentenceIds,
+    [segments, segmentIndex],
+  );
   const composeSuggestion = useMemo(
-    () => (snapshot && available ? suggestComposePick(snapshot) : []),
-    [snapshot, available],
+    () =>
+      snapshot && available ? suggestComposePick(snapshot, segmentIds) : [],
+    [snapshot, available, segmentIds],
   );
 
   const [attemptNo, setAttemptNo] = useState(() =>
@@ -121,17 +146,19 @@ export function useLessonPracticeRun(
   );
   const [speakingOff, setSpeakingOff] = useState(() => noSpeakingActive());
   const sections = useMemo(() => {
-    if (!snapshot || !available) {
+    if (!snapshot || !available || !segmentIds) {
       return [];
     }
     const plan = buildLessonPracticePlan(
       snapshot,
       practiceSeed(snapshot.id, snapshot.content_revision, attemptNo),
+      snapshot.analyses,
+      segmentIds,
     );
     return (plan?.sections ?? []).filter(
       section => !(speakingOff && isSpeakingActivity(section.kind)),
     );
-  }, [snapshot, available, attemptNo, speakingOff]);
+  }, [snapshot, available, segmentIds, attemptNo, speakingOff]);
 
   const sessionId = useRef(createRequestId());
   const startedAt = useRef(Date.now());
@@ -157,8 +184,27 @@ export function useLessonPracticeRun(
       recordPracticeSessionActivity(lessonId);
       completeLesson();
       requestSync();
+      if (snapshot && segmentIndex !== null) {
+        try {
+          markPracticeSegment(
+            lessonId,
+            snapshot.content_revision,
+            segmentIndex,
+          );
+        } catch {
+          // Only steers the next segment; the run itself is recorded.
+        }
+        setSegments(practiceSegmentViews(snapshot));
+      }
     },
-    [outcomes, sections.length, lessonId, completeLesson],
+    [
+      outcomes,
+      sections.length,
+      lessonId,
+      completeLesson,
+      snapshot,
+      segmentIndex,
+    ],
   );
 
   const completeSection = useCallback(
@@ -221,6 +267,28 @@ export function useLessonPracticeRun(
     setAttemptNo(previous => previous + 1);
     setRunKey(previous => previous + 1);
   }, []);
+
+  const startSegment = useCallback(
+    (index: number) => {
+      if (
+        !segments.some(segment => segment.index === index && segment.available)
+      ) {
+        return;
+      }
+      setSegmentIndex(index);
+      restart();
+    },
+    [segments, restart],
+  );
+
+  const practicedCount = segments.filter(
+    segment => segment.practicedAt !== null,
+  ).length;
+  const followingSegment = nextPracticeSegment(segments);
+  const nextSegment =
+    segments.length > 1 && followingSegment !== segmentIndex
+      ? followingSegment
+      : null;
 
   const summary = useMemo((): LessonPracticeRunSummary | null => {
     if (!finished) {
@@ -309,6 +377,11 @@ export function useLessonPracticeRun(
     completeSection,
     skipSection,
     restart,
+    segments,
+    segmentIndex,
+    practicedCount,
+    nextSegment,
+    startSegment,
     completionFailed: completion.state === 'error',
     savedItemKeys,
     saveMissed,
