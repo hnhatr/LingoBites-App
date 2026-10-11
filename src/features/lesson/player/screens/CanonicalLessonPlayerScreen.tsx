@@ -636,6 +636,17 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         rightAction={
           studyReady ? (
             <>
+              {practiceRun ? (
+                // The practice run is the YouTube lesson's way to complete;
+                // the label carries the next segment of a long lesson.
+                <HeaderIconButton
+                  accessibilityHint={t('practice.start_hint')}
+                  accessibilityLabel={startLabel}
+                  icon="fitness_center"
+                  onPress={openPractice}
+                  testID="canonical-youtube-practice"
+                />
+              ) : null}
               {openCompose ? (
                 <HeaderIconButton
                   accessibilityHint={t('compose.entry_subtitle')}
@@ -652,14 +663,6 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                 showTranslation={showTranslation}
               />
             </>
-          ) : isYouTubeStudy && practiceRun ? (
-            <HeaderIconButton
-              accessibilityHint={t('practice.start_hint')}
-              accessibilityLabel={t('practice.start')}
-              icon="fitness_center"
-              onPress={openPractice}
-              testID="canonical-youtube-practice"
-            />
           ) : showHub &&
             completionState !== 'finished' &&
             !flowEntry.available &&
