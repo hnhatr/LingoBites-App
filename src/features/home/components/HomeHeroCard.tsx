@@ -5,6 +5,10 @@
  *   - I1 (bubble pop-in): scale 0 -> 1 with overshoot, 400ms, delay 500ms; static under RM
  *   - I2 (cat bob loop): 3s loop translateY -5, rotate -2°; tap: squash + 4 hearts; off under RM
  *   - I8 (CTA breathe loop): 2.4s halo pulse 0 to 6pt around CTA; off under RM
+ *
+ * The card also carries the learner's level (a small path pill above the
+ * kicker, opening that level's units) and the weekly-goal "+1 🐾" tag while
+ * the hero's step finishes a lesson, so Home needs no separate cards for them.
  */
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -48,6 +52,11 @@ type Props = {
   libraryCount?: number | null;
   /** Today's next plan step, shown in the `next_activity` state. */
   nextStep?: HeroNextStep | null;
+  /** True while the hero's step finishes a lesson that counts this week. */
+  showPawReward?: boolean;
+  /** Level chosen at onboarding, shown as a pill; hidden when null. */
+  pathTitle?: string | null;
+  onOpenPath?: () => void;
   onPrimary: () => void;
   testID?: string;
 };
@@ -108,14 +117,7 @@ function getStateContent(
         titleKey: startedLessonTitle
           ? undefined
           : 'home.hero_in_progress_title',
-        bodyKey:
-          startedLessonMinutes != null
-            ? 'home.hero_in_progress_body'
-            : undefined,
-        bodyParams:
-          startedLessonMinutes != null
-            ? {minutes: startedLessonMinutes}
-            : undefined,
+        // The minutes left live in the CTA only, not in a body line too.
         ctaKey:
           startedLessonMinutes != null
             ? 'home.hero_continue_cta'
@@ -176,6 +178,9 @@ export function HomeHeroCard({
   startedLessonMinutes,
   libraryCount,
   nextStep,
+  showPawReward,
+  pathTitle,
+  onOpenPath,
   onPrimary,
   testID,
 }: Props) {
@@ -351,17 +356,38 @@ export function HomeHeroCard({
 
       {/* Foreground (§VS-2.3): column text layout with paddingRight 138 */}
       <View style={styles.textColumn} testID="home-hero-copy">
+        {/* Learning path pill: the level from onboarding, opens its units */}
+        {pathTitle ? (
+          <Pressable
+            accessibilityLabel={t('home.hero_path_a11y', {title: pathTitle})}
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={onOpenPath}
+            style={({pressed}) => [
+              styles.pathPill,
+              pressed && styles.pathPillPressed,
+            ]}
+            testID="home-hero-path"
+          >
+            <HomeIcon name="school" size={14} color={HERO_TITLE} />
+            <AppText style={styles.pathText} numberOfLines={1}>
+              {pathTitle}
+            </AppText>
+            <HomeIcon name="chevron_right" size={14} color={HERO_TITLE} />
+          </Pressable>
+        ) : null}
+
         {/* Kicker: 12pt weight 800 uppercase */}
         <AppText
-          style={styles.kicker}
+          style={[styles.kicker, pathTitle ? styles.kickerUnderPath : null]}
           testID="home-hero-eyebrow"
           numberOfLines={1}
         >
           {eyebrowText}
         </AppText>
 
-        {/* Title: 20/25 weight 700, max 3 lines (EC-003) */}
-        <AppText style={styles.title} numberOfLines={3}>
+        {/* Title: 20/25 weight 700, max 2 lines (EC-003) */}
+        <AppText style={styles.title} numberOfLines={2}>
           {titleText}
         </AppText>
 
@@ -370,6 +396,15 @@ export function HomeHeroCard({
           <AppText style={styles.body} numberOfLines={2}>
             {bodyText}
           </AppText>
+        ) : null}
+
+        {/* Weekly-goal tag: finishing this lesson adds a paw */}
+        {showPawReward ? (
+          <View style={styles.pawReward} testID="home-hero-paw-reward">
+            <AppText style={styles.pawRewardText} numberOfLines={1}>
+              {t('home.weekly_goal_link')}
+            </AppText>
+          </View>
         ) : null}
 
         {/* CTA button with halo and icon */}
@@ -444,6 +479,7 @@ export function HomeHeroCard({
 
 const CARD_PALETTE = {
   paperSheet: '#ffffff22',
+  pathPillBg: '#ffffff2e',
   haloBg: '#ffd35e',
   bubbleBg: '#ffffff',
   bubbleTailInner: '#ffffff',
@@ -492,6 +528,26 @@ function makeStyles(theme: AppTheme) {
       minWidth: 0,
       zIndex: 1,
     },
+    pathPill: {
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: CARD_PALETTE.pathPillBg,
+      borderRadius: 999,
+      flexDirection: 'row',
+      gap: 4,
+      maxWidth: '100%',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    pathPillPressed: {
+      opacity: theme.states.pressedOpacity,
+    },
+    pathText: {
+      color: HERO_TITLE,
+      flexShrink: 1,
+      fontSize: 12,
+      fontWeight: '700',
+    },
     kicker: {
       color: HERO_TITLE,
       fontSize: 12,
@@ -500,6 +556,23 @@ function makeStyles(theme: AppTheme) {
       marginTop: 34,
       opacity: 0.9,
       textTransform: 'uppercase',
+    },
+    kickerUnderPath: {
+      marginTop: 10,
+    },
+    pawReward: {
+      alignSelf: 'flex-start',
+      backgroundColor: CARD_PALETTE.pathPillBg,
+      borderRadius: 999,
+      marginBottom: 4,
+      marginTop: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    pawRewardText: {
+      color: HERO_TITLE,
+      fontSize: 12,
+      fontWeight: '700',
     },
     title: {
       color: HERO_TITLE,
@@ -513,12 +586,12 @@ function makeStyles(theme: AppTheme) {
       color: HERO_TITLE,
       fontSize: 13,
       fontWeight: '500',
-      marginBottom: 14,
+      marginBottom: 8,
       opacity: 0.95,
     },
     ctaWrapper: {
       alignSelf: 'flex-start',
-      marginTop: 4,
+      marginTop: 10,
       position: 'relative',
     },
     ctaHalo: {

@@ -12,6 +12,7 @@
  * - Graceful degradation when progress percent unavailable (A-009)
  * - "Kế hoạch hôm nay" checklist from the Today study-block engine (F12),
  *   kept per day and ticked off from local study events
+ * - Learning path (level from onboarding) shown as a pill on the hero
  */
 import {useFocusEffect} from '@react-navigation/native';
 import {useCallback, useEffect, useMemo, useState} from 'react';
@@ -34,6 +35,7 @@ import {
   listDownloadedLessonSummaries,
   useCanonicalCatalog,
 } from '@features/lesson/player';
+import {useLearningPath} from '@features/onboarding';
 import {getDueFlashcards} from '@features/review';
 import {
   generateStudyBlock,
@@ -294,6 +296,17 @@ export function useHomeScreenController() {
     heroState === 'in_progress' ||
     (heroState === 'next_activity' && isLessonStep(nextActivity));
 
+  // Level chosen at onboarding; the hero pill opens its units
+  const learningPath = useLearningPath();
+  const onOpenLearningPath = useCallback(() => {
+    if (!learningPath) return;
+    navigation.openCourse({
+      kind: 'level',
+      levelId: learningPath.levelId,
+      title: learningPath.title,
+    });
+  }, [navigation, learningPath]);
+
   // Legacy flags preserved for existing HomeScreenView logic
   const showStarter =
     heroState === 'no_lessons' ||
@@ -437,6 +450,9 @@ export function useHomeScreenController() {
     onTodayModeChange: setTodayMode,
     onStartTodayActivity,
     onViewTodayDetails,
+    // Learning path (hero pill)
+    learningPathTitle: learningPath?.title ?? null,
+    onOpenLearningPath,
     // Navigation handlers
     goLessonsTab,
     openVideoCell,

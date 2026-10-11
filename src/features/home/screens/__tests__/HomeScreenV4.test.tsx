@@ -257,7 +257,7 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
     expect(continueBtn).toBeDefined();
   });
 
-  it('weekly goal links the in-progress lesson to the next paw', async () => {
+  it('hero tags the in-progress lesson with the next weekly-goal paw', async () => {
     seedCanonicalLessonDownload();
     recordLessonEvent({
       lessonId: '33333333-3333-4333-8333-333333333301',
@@ -265,7 +265,7 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
     });
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('home-weekly-goal-link');
+    expect(text).toContain('home-hero-paw-reward');
     expect(text).toContain('Xong bài này → +1 🐾');
     expect(
       tree.root.findAll(node => node.props.testID === 'home-paw-5').length,
@@ -275,12 +275,10 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
     ).toBe(0);
   });
 
-  it('weekly goal hides the lesson link when no lesson is the next step', async () => {
+  it('hero hides the paw tag when no lesson is the next step', async () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
-    expect(JSON.stringify(tree.toJSON())).not.toContain(
-      'home-weekly-goal-link',
-    );
+    expect(JSON.stringify(tree.toJSON())).not.toContain('home-hero-paw-reward');
   });
 
   it('state S4 youtube_disabled: renders disabled hero state', async () => {
@@ -428,14 +426,15 @@ describe('Home today suggestion card (F12)', () => {
     }));
   });
 
-  it('renders the plan checklist between the hero and the weekly goal', async () => {
+  it('renders the plan checklist under the hero with the weekly goal as its footer', async () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('Kế hoạch hôm nay');
-    expect(text).toContain('⚡ 5 phút');
+    // One mode button shows the selected mode; the other chips stay closed
     expect(text).toContain('🎯 20 phút');
-    expect(text).toContain('🔥 45 phút');
+    expect(text).not.toContain('⚡ 5 phút');
+    expect(text).not.toContain('🔥 45 phút');
     const heroAt = text.indexOf('home-hero-');
     const suggestionAt = text.indexOf('home-today-suggestion');
     const goalAt = text.indexOf('home-weekly-goal-card');
@@ -444,7 +443,58 @@ describe('Home today suggestion card (F12)', () => {
     expect(goalAt).toBeGreaterThan(suggestionAt);
     expect(stepRows(tree).length).toBeGreaterThan(0);
     expect(text).toContain('home-today-progress');
-    expect(text).toContain('0/');
+    expect(text).toContain('bước');
+    expect(text).toContain('home-weekly-goal-count');
+  });
+
+  it('the mode button opens the 5/20/45 chips and closes on a pick', async () => {
+    const tree = await renderHome();
+    const toggle = () =>
+      tree.root
+        .findAll(node => node.props.testID === 'home-today-mode-toggle')
+        .find(node => typeof node.props.onPress === 'function');
+    await act(async () => toggle()?.props.onPress());
+    const fiveChip = tree.root
+      .findAll(node => node.props.testID === 'home-today-mode-5-minute')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!fiveChip) throw new Error('No 5-minute chip found');
+    expect(JSON.stringify(tree.toJSON())).toContain('🔥 45 phút');
+    await act(async () => fiveChip.props.onPress());
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('⚡ 5 phút');
+    expect(text).not.toContain('🔥 45 phút');
+  });
+
+  it('shows a continue step by its lesson name, without "Học tiếp:"', async () => {
+    writeStoredTodayPlan({
+      dayKey: localDayKey(new Date()),
+      mode: 'normal',
+      plan: {
+        mode: 'normal',
+        isConsolidation: false,
+        totalEstimatedMinutes: 10,
+        reasonCodes: [],
+        explanationVi: '',
+        activities: [
+          {
+            id: 'activity-continue-lesson',
+            type: 'continue_lesson',
+            titleVi: 'Học tiếp: Đổi trả hàng',
+            subtitleVi: '',
+            estimatedMinutes: 10,
+            targetId: 'lesson-1',
+            navigationTarget: {
+              screen: 'CanonicalLessonPlayer',
+              params: {lessonId: 'lesson-1'},
+            },
+          },
+        ],
+      },
+    });
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Đổi trả hàng');
+    expect(text).not.toContain('Học tiếp: Đổi trả hàng');
   });
 
   it('tags the step the hero points at as "Tiếp theo"', async () => {
@@ -496,6 +546,11 @@ describe('Home today suggestion card (F12)', () => {
 
   it('"Xem chi tiết" opens Today with the selected mode', async () => {
     const tree = await renderHome();
+    const toggle = tree.root
+      .findAll(node => node.props.testID === 'home-today-mode-toggle')
+      .find(node => typeof node.props.onPress === 'function');
+    if (!toggle) throw new Error('No mode button found');
+    await act(async () => toggle.props.onPress());
     const deepChip = tree.root
       .findAll(node => node.props.testID === 'home-today-mode-deep-practice')
       .find(node => typeof node.props.onPress === 'function');
