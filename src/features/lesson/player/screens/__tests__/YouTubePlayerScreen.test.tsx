@@ -109,6 +109,55 @@ async function renderScreen() {
   return tree;
 }
 
+/** Five timed sentences and four words: enough for the practice run. */
+const PRACTICE_LINES = [
+  ['I wake up at six.', 'Tôi thức dậy lúc sáu giờ.'],
+  ['Then I drink coffee.', 'Sau đó tôi uống cà phê.'],
+  ['She reads a book.', 'Cô ấy đọc một cuốn sách.'],
+  ['We walk to the park.', 'Chúng tôi đi bộ đến công viên.'],
+  ['They play football.', 'Họ chơi bóng đá.'],
+] as const;
+const PRACTICE_WORDS = [
+  ['coffee', 'cà phê'],
+  ['book', 'cuốn sách'],
+  ['park', 'công viên'],
+  ['football', 'bóng đá'],
+] as const;
+const practiceSnapshot: LessonSnapshot = {
+  ...youtubeSnapshot,
+  sentences: PRACTICE_LINES.map(([en, vi], index) => ({
+    id: `11111111-1111-4111-8111-${String(index + 1).padStart(12, '0')}`,
+    position: index,
+    text_en: en,
+    text_vi: vi,
+    ipa: 'ə',
+    start_ms: index * 2000,
+    end_ms: index * 2000 + 1500,
+  })),
+  lesson_items: PRACTICE_WORDS.map(([text, meaningVi], index) => ({
+    role: 'required',
+    introduction: 'new',
+    position: index,
+    item: {
+      id: `22222222-2222-4222-8222-${String(index + 1).padStart(12, '0')}`,
+      code: `word:${text}`,
+      kind: 'word',
+      text,
+      meaning_vi: meaningVi,
+      ipa: null,
+      part_of_speech: null,
+      note_vi: null,
+      audience: 'all',
+      payload: {},
+      audio: null,
+      image: null,
+      examples: [],
+      variants: [],
+      errors: [],
+    },
+  })),
+} as LessonSnapshot;
+
 describe('CanonicalLessonPlayerScreen YouTube study', () => {
   beforeEach(() => {
     playerMountCount = 0;
@@ -142,6 +191,32 @@ describe('CanonicalLessonPlayerScreen YouTube study', () => {
       retry.props.onPress();
     });
     expect(playerMountCount).toBeGreaterThanOrEqual(2);
+  });
+
+  it('offers the practice run in the header of a ready YouTube lesson', async () => {
+    mockState = {
+      status: 'ready',
+      snapshot: practiceSnapshot,
+      offline: false,
+      hasUpdate: false,
+    };
+    const tree = await renderScreen();
+    const practice = tree.root.findAll(
+      node =>
+        node.props.testID === 'canonical-youtube-practice' &&
+        typeof node.props.onPress === 'function',
+    )[0];
+    expect(practice).toBeDefined();
+    expect(practice!.props.accessibilityLabel).toBe('Bắt đầu luyện');
+  });
+
+  it('shows no practice button when the lesson is too small to practise', async () => {
+    const tree = await renderScreen();
+    expect(
+      tree.root.findAll(
+        node => node.props.testID === 'canonical-youtube-practice',
+      ),
+    ).toHaveLength(0);
   });
 
   it('shows offline and update banners (AC-011 S3)', async () => {
