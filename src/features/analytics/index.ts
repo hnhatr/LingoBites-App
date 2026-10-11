@@ -1,5 +1,4 @@
 export {createConsoleAnalyticsAdapter} from './logic/adapters/ConsoleAnalyticsAdapter';
-export {createFirebaseAnalyticsAdapter} from './logic/adapters/FirebaseAnalyticsAdapter';
 export {
   createInMemoryAnalyticsAdapter,
   type RecordedAnalyticsEvent,

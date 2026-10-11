@@ -62,22 +62,24 @@ describe('validateReleaseConfig', () => {
     expect(production.features).toEqual(dev.features);
   });
 
-  it('rejects miniGame when reviewSystem is disabled', () => {
+  it('rejects ocrScanner when imageInput is disabled', () => {
     const config = makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW);
     const result = validateReleaseConfig(
       {
         ...config,
         features: {
           ...config.features,
-          miniGame: true,
-          reviewSystem: false,
+          ocrScanner: true,
+          imageInput: false,
         },
       },
       featureRegistry,
       featureDependencies,
     );
     expect(result.valid).toBe(false);
-    expect(result.errors.some(error => error.includes('miniGame'))).toBe(true);
+    expect(result.errors.some(error => error.includes('ocrScanner'))).toBe(
+      true,
+    );
   });
 
   it('rejects unknown feature keys', () => {

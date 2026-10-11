@@ -24,17 +24,7 @@ export const featureDependencies: Record<FeatureKey, DependencyGroup[]> = {
   stickerSoftTheme: [['themeSystem']],
 
   reviewSystem: [],
-  miniGame: [['reviewSystem']],
-  wordMatchGame: [['miniGame']],
-  fillBlankGame: [['miniGame']],
-  tenseQuizGame: [['miniGame']],
-  sentenceOrderGame: [['miniGame']],
-  flashcardChallenge: [['miniGame', 'reviewSystem']],
 
   situationLearning: [],
-  dialogueGenerator: [['situationLearning']],
-  phraseExtractor: [['situationLearning']],
-  situationPractice: [['situationLearning', 'reviewSystem']],
-
   youtubeLearning: [],
 };
