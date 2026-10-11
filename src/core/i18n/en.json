@@ -246,6 +246,7 @@
     "text_too_long_words": "The passage is too long. Please shorten it to at most {{max}} words.",
     "ai_analysis_failed": "The app couldn't create a lesson. Please try again.",
     "network_lost": "Network connection lost. Please try again once you're back online.",
+    "session_expired": "Your session has expired. Please sign in again.",
     "sync_failed": "Couldn't sync review history. The app will retry automatically once online.",
     "ocr_failed": "The app couldn't recognize text in the photo. Try a clearer photo or type the text manually.",
     "ocr_timeout": "Text recognition took too long. Please try again.",

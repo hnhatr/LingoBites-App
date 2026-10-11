@@ -28,7 +28,6 @@ export const CREATE_FLOW_ROUTES: ReadonlySet<string> = new Set([
   'CreateHub',
   'PasteText',
   'ImageCapture',
-  'OCRReview',
   'MomentReview',
   'SituationInput',
   'LessonCreation',

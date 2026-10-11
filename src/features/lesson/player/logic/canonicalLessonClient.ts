@@ -183,9 +183,16 @@ export async function send(
       options.fetchImpl,
     );
   } catch (error) {
-    return isAbortError(error) || options.signal?.aborted
-      ? cancelledError()
-      : networkError();
+    if (isAbortError(error) || options.signal?.aborted) return cancelledError();
+    if (__DEV__) {
+      // The cause behind a "network" failure (no body, no token is logged).
+      console.warn(
+        '[api] no response',
+        path.split('?')[0],
+        error instanceof Error ? `${error.name}: ${error.message}` : error,
+      );
+    }
+    return networkError();
   }
   return {status: response.status, body: await readJson(response)};
 }

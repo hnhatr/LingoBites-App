@@ -15,8 +15,6 @@ import {
   send,
 } from '@features/lesson/player';
 
-import {getAppConfig} from '@core/api/appConfig';
-import {authenticatedFetch} from '@core/api/authenticatedFetch';
 import {createRequestId} from '@core/api/requestId';
 
 import type {PickedImage} from './imagePicker';
@@ -89,13 +87,17 @@ function bodyOf(
   return {ok: true, value: answered.body};
 }
 
-/** Upload one photo for analysis. The file itself is never kept on the device by this call. */
-export async function analyzeImage(
+/** Upload + one provider call; the server's own limit is 60 s. */
+export const IMAGE_ANALYZE_TIMEOUT_MS = 30_000;
+
+export type AnalyzeImageOptions = CanonicalLessonClientOptions & {
+  timeoutMs?: number;
+};
+
+function imageAnalysisForm(
   image: PickedImage,
   sourceType: 'camera' | 'gallery',
-  options: CanonicalLessonClientOptions = {},
-): Promise<CanonicalLessonResult<ImageAnalysis>> {
-  const {apiBaseUrl} = getAppConfig();
+): FormData {
   const form = new FormData();
   form.append('request_id', createRequestId());
   form.append('source_type', sourceType);
@@ -113,32 +115,58 @@ export async function analyzeImage(
     name: image.fileName ?? 'image.jpg',
     type: image.type ?? 'image/jpeg',
   } as unknown as Blob);
+  return form;
+}
 
-  let response: Response;
+/**
+ * Upload one photo for analysis. The file itself is never kept on the device
+ * by this call. A caller abort is `cancelled`; running past `timeoutMs` is
+ * `IMAGE_ANALYZE_TIMEOUT` (retryable), and neither marks the app offline.
+ */
+export async function analyzeImage(
+  image: PickedImage,
+  sourceType: 'camera' | 'gallery',
+  options: AnalyzeImageOptions = {},
+): Promise<CanonicalLessonResult<ImageAnalysis>> {
+  const {timeoutMs = IMAGE_ANALYZE_TIMEOUT_MS, ...clientOptions} = options;
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  const onCallerAbort = () => controller.abort();
+  options.signal?.addEventListener('abort', onCallerAbort, {once: true});
+  if (options.signal?.aborted) controller.abort();
+
+  let answered: Awaited<ReturnType<typeof send>>;
   try {
-    response = await authenticatedFetch(
-      `${apiBaseUrl}/api/v1/images/analyze`,
-      {
-        method: 'POST',
-        headers: {Accept: 'application/json'},
-        body: form,
-        signal: options.signal,
-      },
-      options.fetchImpl,
+    answered = await send(
+      '/api/v1/images/analyze',
+      {method: 'POST', body: imageAnalysisForm(image, sourceType)},
+      'IMAGE_NOT_FOUND',
+      {...clientOptions, signal: controller.signal},
     );
-  } catch {
-    return {
-      ok: false,
-      kind: 'network-error',
-      errorCode: 'NETWORK_ERROR',
-      message: 'Mất kết nối. Thử lại khi có mạng.',
-      retryable: true,
-    };
+  } finally {
+    clearTimeout(timer);
+    options.signal?.removeEventListener('abort', onCallerAbort);
   }
-  const body = await response.json().catch(() => undefined);
-  const answered = bodyOf({status: response.status, body}, 'IMAGE_NOT_FOUND');
-  if (!answered.ok) return answered;
-  const parsed = ImageAnalysisSchema.safeParse(answered.value);
+
+  if (!('body' in answered)) {
+    if (answered.cancelled && timedOut) {
+      return {
+        ok: false,
+        kind: 'network-error',
+        errorCode: 'IMAGE_ANALYZE_TIMEOUT',
+        message: 'Image analysis timed out.',
+        retryable: true,
+      };
+    }
+    return answered;
+  }
+  const checked = bodyOf(answered, 'IMAGE_NOT_FOUND');
+  if (!checked.ok) return checked;
+  const parsed = ImageAnalysisSchema.safeParse(checked.value);
   return parsed.success
     ? {ok: true, value: parsed.data}
     : contentError('Image analysis failed validation.');

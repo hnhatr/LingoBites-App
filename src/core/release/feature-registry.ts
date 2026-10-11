@@ -19,7 +19,7 @@ export const featureRegistry = [
   },
   {
     key: 'ocrScanner',
-    module: 'src/features/ocr',
+    module: 'src/features/input',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
@@ -27,11 +27,11 @@ export const featureRegistry = [
   },
   {
     key: 'ocrReviewEdit',
-    module: 'src/features/ocr',
+    module: 'src/features/input',
     required: false,
     releaseGroup: 'foundation',
     status: 'ready',
-    entryPoint: 'CreateHub -> ImageCapture -> OCRReview',
+    entryPoint: 'CreateHub -> ImageCapture -> MomentReview',
   },
   {
     key: 'shortPractice',

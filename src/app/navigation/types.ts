@@ -31,7 +31,6 @@ import type {
   LessonCreationRouteParams,
   LessonFlowPlayerRouteParams,
 } from '@features/lesson/player';
-import type {OCRReviewRouteParams} from '@features/ocr';
 import type {
   LearnerOnboardingRouteParams,
   LearningProfileRouteParams,
@@ -85,7 +84,6 @@ export type RootStackParamList = {
   CreateHub: CreateHubRouteParams;
   PasteText: PasteTextRouteParams;
   ImageCapture: ImageCaptureRouteParams;
-  OCRReview: OCRReviewRouteParams;
   MomentReview: MomentReviewRouteParams;
   SituationInput: SituationInputRouteParams;
   LessonCreation: LessonCreationRouteParams;

@@ -32,7 +32,6 @@ export const ROOT_FLOW_ROUTES = [
 export const ROOT_INGESTION_ROUTES = [
   'PasteText',
   'ImageCapture',
-  'OCRReview',
   'MomentReview',
   'SituationInput',
 ] as const satisfies readonly RootRouteName[];

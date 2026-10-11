@@ -1,6 +1,7 @@
 import {getAppConfig} from '@core/api/appConfig';
 
 import {
+  analyzeImage,
   confirmMoment,
   fetchActiveMoments,
   fetchSituations,
@@ -142,5 +143,87 @@ describe('momentClient', () => {
       'https://api.test/api/v1/lesson-creations?kind=moment&active=true',
     );
     expect(result.ok && result.value[0].situation_vi).toBe('Bạn gọi trà đá.');
+  });
+
+  describe('analyzeImage', () => {
+    const image = {uri: 'file:///a.jpg', fileName: 'a.jpg', type: 'image/jpeg'};
+    const analysis = {
+      request_id: 'r',
+      status: 'success',
+      image_id: null,
+      kind: 'text',
+      text: 'Iced latte',
+      warnings: [],
+      pii_lines: [],
+      suggested_intent: 'understand',
+    };
+
+    it('uploads the photo as multipart to the analyze route', async () => {
+      authenticatedFetch.mockResolvedValue(jsonResponse(200, analysis));
+      const result = await analyzeImage(image, 'gallery');
+      expect(result).toEqual({ok: true, value: analysis});
+      const [url, init] = authenticatedFetch.mock.calls[0];
+      expect(url).toBe('https://api.test/api/v1/images/analyze');
+      expect(init.method).toBe('POST');
+      expect(init.body).toBeInstanceOf(FormData);
+    });
+
+    it('reports a request that got no response as a network error', async () => {
+      authenticatedFetch.mockRejectedValue(
+        new TypeError('Network request failed'),
+      );
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const result = await analyzeImage(image, 'gallery');
+      warn.mockRestore();
+      expect(result).toMatchObject({
+        ok: false,
+        kind: 'network-error',
+        errorCode: 'NETWORK_ERROR',
+      });
+    });
+
+    it('keeps the server error code and message for a rejected photo', async () => {
+      authenticatedFetch.mockResolvedValue(
+        jsonResponse(400, {
+          status: 'failed',
+          error: {code: 'IMAGE_TOO_LARGE', message: 'Ảnh quá lớn.'},
+        }),
+      );
+      expect(await analyzeImage(image, 'camera')).toMatchObject({
+        ok: false,
+        kind: 'server-error',
+        errorCode: 'IMAGE_TOO_LARGE',
+        message: 'Ảnh quá lớn.',
+      });
+    });
+
+    it('stops a slow upload with a retryable timeout, not a cancel', async () => {
+      authenticatedFetch.mockImplementation(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            init.signal?.addEventListener('abort', () => {
+              const error = new Error('Aborted');
+              error.name = 'AbortError';
+              reject(error);
+            });
+          }),
+      );
+      const result = await analyzeImage(image, 'gallery', {timeoutMs: 10});
+      expect(result).toMatchObject({
+        ok: false,
+        errorCode: 'IMAGE_ANALYZE_TIMEOUT',
+        retryable: true,
+      });
+    });
+
+    it('returns cancelled when the caller aborts', async () => {
+      const controller = new AbortController();
+      controller.abort();
+      const result = await analyzeImage(image, 'gallery', {
+        signal: controller.signal,
+      });
+      expect(result).toMatchObject({ok: false, cancelled: true});
+      expect(authenticatedFetch).not.toHaveBeenCalled();
+    });
   });
 });

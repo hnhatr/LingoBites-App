@@ -568,7 +568,6 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
       'ProgressReportScreen.tsx',
       'GrammarDetailScreen.tsx',
       'FeatureStatusScreen.tsx',
-      'OCRReviewScreen.tsx',
       'FlashcardListScreen.tsx',
       'ProgressiveLessonScreen.tsx',
       'HomeScreen.tsx',

@@ -19,3 +19,34 @@ export function momentFailureMessage(
       return t('moment.generic_failed');
   }
 }
+
+/** Codes whose server message is already written for the learner (Vietnamese). */
+const IMAGE_CODES_WITH_LEARNER_MESSAGE = new Set([
+  'IMAGE_TOO_LARGE',
+  'IMAGE_UNSUPPORTED',
+  'IMAGE_REJECTED',
+  'OCR_PROVIDER_ERROR',
+]);
+
+/** E3: what a failed photo analysis says (`analyzeImage` result). */
+export function imageAnalysisFailureMessage(
+  failure: {kind: string; errorCode: string; message: string},
+  t: Translate,
+): string {
+  if (failure.errorCode === 'IMAGE_ANALYZE_TIMEOUT') {
+    return t('errors.ocr_timeout');
+  }
+  if (failure.kind === 'network-error') {
+    return t('errors.network_lost');
+  }
+  if (failure.kind === 'auth-error') {
+    return t('errors.session_expired');
+  }
+  if (failure.errorCode === 'RATE_LIMIT_EXCEEDED') {
+    return t('errors.rate_limit_exceeded');
+  }
+  if (IMAGE_CODES_WITH_LEARNER_MESSAGE.has(failure.errorCode)) {
+    return failure.message;
+  }
+  return t('errors.ocr_failed');
+}

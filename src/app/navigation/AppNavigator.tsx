@@ -37,7 +37,6 @@ import {
   ComposeTrackerHost,
   LessonCreationScreen,
 } from '@features/lesson/player';
-import {OCRReviewScreen} from '@features/ocr';
 import {
   LearnerOnboardingScreen,
   LearningProfileScreen,
@@ -110,7 +109,7 @@ const HIDDEN_HEADER = {headerShown: false} as const;
  *   │  ├─ Lessons      LessonsList
  *   │  └─ Profile      ProfileMain + settings pages
  *   └─ task flows      cover the tab bar; back returns to the opening tab
- *      CreateHub, PasteText, ImageCapture, OCRReview, LessonCreation,
+ *      CreateHub, PasteText, ImageCapture, LessonCreation,
  *      CanonicalCatalog, CanonicalLessonPlayer, LibraryList, VideoHub,
  *      CourseLevels, LevelUnits, UnitLessons, DailyReview, Practice, Today,
  *      SpeakingRoom, ShadowingLessonPicker, ShadowingSession,
@@ -262,9 +261,6 @@ function AuthenticatedRootStack() {
       )}
       {canMount('ImageCapture') && (
         <RootStack.Screen component={ImageCaptureScreen} name="ImageCapture" />
-      )}
-      {canMount('OCRReview') && (
-        <RootStack.Screen component={OCRReviewScreen} name="OCRReview" />
       )}
       <RootStack.Screen component={MomentReviewScreen} name="MomentReview" />
       <RootStack.Screen

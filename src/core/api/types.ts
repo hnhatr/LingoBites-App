@@ -47,52 +47,6 @@ export type OCRSourceType = 'camera' | 'gallery';
 
 export type AnalyzeSourceType = 'paste_text' | 'camera' | 'gallery';
 
-export type OCRQualityBody = {
-  text_length: number;
-  text_length_bucket: string;
-  line_count: number;
-  has_english_signal: boolean;
-  low_confidence: boolean;
-};
-
-export type OCRSuccessBody = {
-  request_id: string;
-  status: 'success';
-  provider: string;
-  ocr_raw_text: string;
-  extracted_text: string;
-  confidence?: number;
-  quality: OCRQualityBody;
-  warnings: string[];
-};
-
-export type OCRImageInput = {
-  uri: string;
-  fileName?: string;
-  type?: string;
-  width?: number;
-  height?: number;
-  sourceType: OCRSourceType;
-};
-
-export type OCRTextResult =
-  | {
-      ok: true;
-      extractedText: string;
-      ocrRawText: string;
-      warnings: string[];
-      quality: OCRQualityBody;
-      confidence?: number;
-    }
-  | {ok: false; cancelled: true}
-  | {
-      ok: false;
-      cancelled?: false;
-      errorCode: ApiErrorCode;
-      message: string;
-      retryable?: boolean;
-    };
-
 export type AnalyzeTextRequestBody = {
   request_id: string;
   confirmed_text: string;
