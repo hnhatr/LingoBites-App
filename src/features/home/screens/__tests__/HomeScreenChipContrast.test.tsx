@@ -149,6 +149,7 @@ jest.mock('@ui/theme', () => {
 
 describe('HomeWeeklyGoal contrast (BUG-002, §VS-3)', () => {
   for (const id of themeIds) {
+    // The row sits in the "Kế hoạch hôm nay" card, so its background is surface.
     it(`weekly-goal count line is readable on surface in ${id} theme (≥ 4.5:1)`, () => {
       mockTheme = themes[id];
       const pawGoal = {totalPaws: 5, filledPaws: 2, goalMet: false};
@@ -168,21 +169,13 @@ describe('HomeWeeklyGoal contrast (BUG-002, §VS-3)', () => {
           <HomeWeeklyGoal pawGoal={pawGoal} card={card} />,
         );
       });
-      const cardView = renderer.root.findByProps({
-        testID: 'home-weekly-goal-card',
-      });
-      const cardStyle = StyleSheet.flatten(cardView.props.style);
-      const cardBg = cardStyle.backgroundColor;
+      const cardBg = mockTheme.colors.surface;
 
-      const textNodes = renderer.root.findAll(
-        node =>
-          node.props.style &&
-          StyleSheet.flatten(node.props.style).fontSize === 15 &&
-          StyleSheet.flatten(node.props.style).fontWeight === '700',
-      );
-      expect(textNodes.length).toBeGreaterThan(0);
-      const countLineStyle = StyleSheet.flatten(textNodes[0].props.style);
-      const countLineColor = countLineStyle.color;
+      const countNode = renderer.root
+        .findAll(node => node.props.testID === 'home-weekly-goal-count')
+        .find(node => node.props.style);
+      if (!countNode) throw new Error('No weekly-goal count found');
+      const countLineColor = StyleSheet.flatten(countNode.props.style).color;
 
       const bgRgb = parseColor(cardBg).rgb;
       const inkRgb = parseColor(countLineColor).rgb;

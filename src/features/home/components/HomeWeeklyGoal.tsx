@@ -1,12 +1,11 @@
 /**
- * HomeWeeklyGoal — paw weekly goal card (LING-256, LING-267, §VS-3).
+ * HomeWeeklyGoal — one-line weekly goal row (LING-256, LING-267, §VS-3).
  *
- * Layout:
- *   [Label -> paw row (one per target lesson) -> Count line -> Hint
- *    -> "Finish this lesson → +1" link] ... [26pt plain trophy]
+ * Layout (footer of the "Kế hoạch hôm nay" card):
+ *   [Mục tiêu tuần  🐾🐾🐾🐾🐾🐾 ........ 0/6 bài 🏆]
  *
- * The link line ties the card to the hero: it shows only while the next
- * step on Home is a lesson and the goal is not met yet.
+ * One paw per target lesson. The count line and the badge hint stay in the
+ * accessibility label; the "+1 🐾" link lives on the hero card.
  */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -17,18 +16,14 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {PawGoalModel, WeeklyGoalCardModel} from '../logic/homeScreenModel';
 import {HOME_EMPTY_PAW, HOME_TROPHY} from '../logic/homeScreenModel';
-import {getHardShadow} from './HomeDecorations';
-import {HomeSectionTitle} from './HomeSectionTitle';
 import {HomeIcon} from './HomeSvgIcons';
 
 type Props = {
   pawGoal: PawGoalModel;
   card: WeeklyGoalCardModel;
-  /** True when the hero's next step is a lesson that counts toward the goal. */
-  nextStepIsLesson?: boolean;
 };
 
-export function HomeWeeklyGoal({pawGoal, card, nextStepIsLesson}: Props) {
+export function HomeWeeklyGoal({pawGoal, card}: Props) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -37,11 +32,10 @@ export function HomeWeeklyGoal({pawGoal, card, nextStepIsLesson}: Props) {
   const hint = card.hintParams
     ? t(card.hintKey, card.hintParams)
     : t(card.hintKey);
-  const showLink = nextStepIsLesson === true && !pawGoal.goalMet;
   const accessibilityLabel = t('home.weekly_goal_a11y', {
     line: countLine,
     ring: card.ringPercent,
-    hint: showLink ? `${hint} ${t('home.weekly_goal_link')}` : hint,
+    hint,
   });
 
   return (
@@ -49,52 +43,48 @@ export function HomeWeeklyGoal({pawGoal, card, nextStepIsLesson}: Props) {
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="summary"
       importantForAccessibility="yes"
-      style={styles.card}
+      style={styles.row}
       testID="home-weekly-goal-card"
     >
-      {/* Goal text column (§VS-3) */}
-      <View style={styles.copy}>
-        <HomeSectionTitle title={t('home.weekly_goal_label')} />
+      <AppText style={styles.label} numberOfLines={1}>
+        {t('home.weekly_goal_label')}
+      </AppText>
 
-        {/* Paw row: one 22pt pets icon per lesson of the target */}
-        <View
-          style={styles.pawRow}
-          testID="home-paw-goal-row"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        >
-          {Array.from({length: pawGoal.totalPaws}).map((_, i) => {
-            const filled = i < pawGoal.filledPaws;
-            return (
-              <HomeIcon
-                key={i}
-                name="pets"
-                size={22}
-                color={filled ? theme.colors.secondary : HOME_EMPTY_PAW}
-                testID={`home-paw-${i}`}
-              />
-            );
-          })}
-        </View>
-
-        <AppText style={styles.countLine}>{countLine}</AppText>
-        <AppText style={styles.hint}>{hint}</AppText>
-        {showLink ? (
-          <View style={styles.link} testID="home-weekly-goal-link">
-            <AppText style={styles.linkText}>
-              {t('home.weekly_goal_link')}
-            </AppText>
-          </View>
-        ) : null}
+      {/* Paw row: one 16pt pets icon per lesson of the target */}
+      <View
+        style={styles.pawRow}
+        testID="home-paw-goal-row"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        {Array.from({length: pawGoal.totalPaws}).map((_, i) => {
+          const filled = i < pawGoal.filledPaws;
+          return (
+            <HomeIcon
+              key={i}
+              name="pets"
+              size={16}
+              color={filled ? theme.colors.secondary : HOME_EMPTY_PAW}
+              testID={`home-paw-${i}`}
+            />
+          );
+        })}
       </View>
 
-      {/* Right: Plain 26pt trophy (#d39b00), no background tile */}
+      <AppText
+        numberOfLines={1}
+        style={styles.count}
+        testID="home-weekly-goal-count"
+      >
+        {t('home.weekly_goal_compact', card.countLineParams)}
+      </AppText>
+
       <View
         accessibilityElementsHidden
         importantForAccessibility="no"
         style={styles.trophyWrap}
       >
-        <HomeIcon name="emoji_events" size={26} color={HOME_TROPHY} />
+        <HomeIcon name="emoji_events" size={20} color={HOME_TROPHY} />
       </View>
     </View>
   );
@@ -102,57 +92,36 @@ export function HomeWeeklyGoal({pawGoal, card, nextStepIsLesson}: Props) {
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    card: {
+    row: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
-      borderRadius: 20,
-      borderWidth: 2,
+      borderTopColor: theme.colors.surfaceHigh,
+      borderTopWidth: 1,
       flexDirection: 'row',
-      gap: 14,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      ...getHardShadow(4, theme.colors.ink),
+      gap: 8,
+      paddingTop: 10,
     },
-    copy: {
-      flex: 1,
-      minWidth: 0,
+    label: {
+      color: theme.colors.text.secondary,
+      flexShrink: 1,
+      fontSize: 12,
+      fontWeight: '700',
     },
     pawRow: {
       alignItems: 'center',
+      flex: 1,
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 4,
-      marginBottom: 2,
-      marginTop: 4,
+      gap: 2,
+      minWidth: 0,
     },
-    countLine: {
+    count: {
       color: theme.colors.text.primary,
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    hint: {
-      color: theme.colors.text.muted,
-      fontSize: 12,
-      fontWeight: '600',
-    },
-    link: {
-      alignSelf: 'flex-start',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: 999,
-      marginTop: 6,
-      paddingHorizontal: 10,
-      paddingVertical: 3,
-    },
-    linkText: {
-      color: theme.colors.text.primary,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
     },
     trophyWrap: {
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 4,
     },
   });
 }

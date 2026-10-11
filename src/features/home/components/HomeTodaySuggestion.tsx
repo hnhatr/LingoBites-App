@@ -2,19 +2,21 @@
  * HomeTodaySuggestion — "Kế hoạch hôm nay" checklist under the hero (F12).
  *
  * Shows the day's study plan as steps the learner ticks off:
- *   [Kế hoạch hôm nay ................. Xem chi tiết]
- *   [⚡ 5 phút] [🎯 20 phút] [🔥 45 phút]
+ *   [Kế hoạch hôm nay ................ 🎯 20 phút ▾]
  *   [✓ Step 1 ........................... 5m]
  *   [○ Step 2  (Tiếp theo) .............. 8m]
  *   [○ Step 3 ........................... 7m]
- *   [▓▓▓▓░░░░ 5/20 phút        +N hoạt động khác]
+ *   [▓▓▓▓░░░░ 1/3 bước ........ Xem chi tiết]
+ *   [footer: weekly goal row]
  *
- * The hero owns the primary action; the step it points at carries the
- * "Tiếp theo" tag here so both cards read as one flow. Open steps stay
- * tappable as a secondary path. "Xem chi tiết" opens the full `Today` route
- * with the selected mode.
+ * The mode button opens the 5/20/45-minute chips in place; picking one closes
+ * them. Progress counts steps, not minutes: a plan can be shorter than the
+ * chosen mode when there is not enough to study. The hero owns the primary
+ * action; the step it points at carries the "Tiếp theo" tag here so both
+ * cards read as one flow. Open steps stay tappable as a secondary path.
+ * "Xem chi tiết" opens the full `Today` route with the selected mode.
  */
-import React, {useMemo} from 'react';
+import React, {type ReactNode, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
@@ -47,7 +49,23 @@ type Props = {
   onModeChange: (mode: TodayMode) => void;
   onStartActivity: (activity: StudyActivityItem) => void;
   onViewDetails: () => void;
+  /** Rendered under the plan, e.g. the weekly goal row. */
+  footer?: ReactNode;
 };
+
+/** Prefix the Today engine puts on a `continue_lesson` step title. */
+const CONTINUE_PREFIX = 'Học tiếp: ';
+
+/**
+ * Home shows the lesson name alone: the hero already says "Học tiếp", and it
+ * can point at another started lesson than the plan's step.
+ */
+function stepTitle(step: StudyActivityItem): string {
+  return step.type === 'continue_lesson' &&
+    step.titleVi.startsWith(CONTINUE_PREFIX)
+    ? step.titleVi.slice(CONTINUE_PREFIX.length)
+    : step.titleVi;
+}
 
 export function HomeTodaySuggestion({
   mode,
@@ -56,49 +74,73 @@ export function HomeTodaySuggestion({
   onModeChange,
   onStartActivity,
   onViewDetails,
+  footer,
 }: Props) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
+  const [modesOpen, setModesOpen] = useState(false);
 
+  const selectedMode =
+    MODE_OPTIONS.find(option => option.mode === mode) ?? MODE_OPTIONS[1];
   const hasSteps = progress != null && progress.steps.length > 0;
-  const ratio =
-    progress && progress.totalMinutes > 0
-      ? Math.min(1, progress.doneMinutes / progress.totalMinutes)
-      : 0;
+  const totalSteps = progress
+    ? progress.steps.length + progress.hiddenStepCount
+    : 0;
+  const doneSteps = progress ? progress.doneIds.size : 0;
+  const ratio = totalSteps > 0 ? Math.min(1, doneSteps / totalSteps) : 0;
 
   return (
     <View style={styles.card} testID="home-today-suggestion">
       <View style={styles.headerRow}>
         <HomeSectionTitle title={t('home.today_label')} />
         <Pressable
-          accessibilityHint={t('home.today_details_hint')}
-          accessibilityLabel={t('home.today_details_a11y')}
+          accessibilityHint={t('home.today_mode_toggle_hint')}
+          accessibilityLabel={t('home.today_mode_toggle_a11y', {
+            minutes: selectedMode.minutes,
+          })}
           accessibilityRole="button"
+          accessibilityState={{expanded: modesOpen}}
           hitSlop={8}
-          onPress={onViewDetails}
-          testID="home-today-details"
+          onPress={() => setModesOpen(open => !open)}
+          style={({pressed}) => [
+            styles.modeToggle,
+            pressed && styles.stepRowPressed,
+          ]}
+          testID="home-today-mode-toggle"
         >
-          <AppText style={styles.detailsLink}>
-            {t('home.today_details')}
+          <AppText style={styles.modeToggleText}>
+            {t(selectedMode.labelKey)}
           </AppText>
+          <View style={modesOpen ? styles.chevronUp : styles.chevronDown}>
+            <MaterialIcon
+              color={theme.colors.text.primary}
+              name="chevron_right"
+              size={18}
+            />
+          </View>
         </Pressable>
       </View>
 
-      <View style={styles.modeRow}>
-        {MODE_OPTIONS.map(option => (
-          <Chip
-            key={option.mode}
-            accessibilityHint={t('home.today_mode_a11y', {
-              minutes: option.minutes,
-            })}
-            label={t(option.labelKey)}
-            selected={mode === option.mode}
-            onPress={() => onModeChange(option.mode)}
-            testID={`home-today-mode-${option.mode}`}
-          />
-        ))}
-      </View>
+      {modesOpen ? (
+        <View style={styles.modeRow}>
+          {MODE_OPTIONS.map(option => (
+            <Chip
+              key={option.mode}
+              accessibilityHint={t('home.today_mode_a11y', {
+                minutes: option.minutes,
+              })}
+              label={t(option.labelKey)}
+              selected={mode === option.mode}
+              onPress={() => {
+                onModeChange(option.mode);
+                setModesOpen(false);
+              }}
+              testID={`home-today-mode-${option.mode}`}
+            />
+          ))}
+        </View>
+      ) : null}
 
       {hasSteps ? (
         <View style={styles.stepList}>
@@ -127,7 +169,7 @@ export function HomeTodaySuggestion({
                     numberOfLines={1}
                     style={[styles.stepTitle, done && styles.stepTitleDone]}
                   >
-                    {step.titleVi}
+                    {stepTitle(step)}
                   </AppText>
                   {current ? (
                     <AppText style={styles.currentTag}>
@@ -145,7 +187,7 @@ export function HomeTodaySuggestion({
                 <View
                   key={step.id}
                   accessibilityLabel={t('home.today_step_done_a11y', {
-                    title: step.titleVi,
+                    title: stepTitle(step),
                   })}
                   accessible
                   style={styles.stepRow}
@@ -160,7 +202,7 @@ export function HomeTodaySuggestion({
                 key={step.id}
                 accessibilityHint={t('home.today_start_hint')}
                 accessibilityLabel={t('home.today_start_a11y', {
-                  title: step.titleVi,
+                  title: stepTitle(step),
                   minutes: step.estimatedMinutes,
                 })}
                 accessibilityRole="button"
@@ -183,17 +225,17 @@ export function HomeTodaySuggestion({
         </AppText>
       )}
 
-      {hasSteps ? (
-        progress.allDone ? (
-          <AppText style={styles.allDone} testID="home-today-all-done">
-            {t('home.today_all_done')}
-          </AppText>
-        ) : (
-          <View style={styles.footer}>
+      <View style={styles.footer}>
+        {hasSteps ? (
+          progress.allDone ? (
+            <AppText style={styles.allDone} testID="home-today-all-done">
+              {t('home.today_all_done')}
+            </AppText>
+          ) : (
             <View
               accessibilityLabel={t('home.today_progress_a11y', {
-                done: progress.doneMinutes,
-                total: progress.totalMinutes,
+                done: doneSteps,
+                total: totalSteps,
               })}
               accessible
               style={styles.progressWrap}
@@ -209,19 +251,30 @@ export function HomeTodaySuggestion({
               </View>
               <AppText style={styles.progressText}>
                 {t('home.today_progress', {
-                  done: progress.doneMinutes,
-                  total: progress.totalMinutes,
+                  done: doneSteps,
+                  total: totalSteps,
                 })}
               </AppText>
             </View>
-            {progress.hiddenStepCount > 0 ? (
-              <AppText style={styles.moreText}>
-                {t('home.today_more', {count: progress.hiddenStepCount})}
-              </AppText>
-            ) : null}
-          </View>
-        )
-      ) : null}
+          )
+        ) : (
+          <View style={styles.progressWrap} />
+        )}
+        <Pressable
+          accessibilityHint={t('home.today_details_hint')}
+          accessibilityLabel={t('home.today_details_a11y')}
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={onViewDetails}
+          testID="home-today-details"
+        >
+          <AppText style={styles.detailsLink}>
+            {t('home.today_details')}
+          </AppText>
+        </Pressable>
+      </View>
+
+      {footer}
     </View>
   );
 }
@@ -245,6 +298,28 @@ function makeStyles(theme: AppTheme) {
     },
     detailsLink: {
       color: theme.colors.primary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    modeToggle: {
+      alignItems: 'center',
+      borderColor: theme.colors.ink,
+      borderRadius: 999,
+      borderWidth: 2,
+      flexDirection: 'row',
+      gap: 2,
+      minHeight: 32,
+      paddingLeft: 10,
+      paddingRight: 6,
+    },
+    chevronDown: {
+      transform: [{rotate: '90deg'}],
+    },
+    chevronUp: {
+      transform: [{rotate: '-90deg'}],
+    },
+    modeToggleText: {
+      color: theme.colors.text.primary,
       fontSize: 13,
       fontWeight: '700',
     },
@@ -343,12 +418,9 @@ function makeStyles(theme: AppTheme) {
       fontSize: 12,
       fontWeight: '700',
     },
-    moreText: {
-      color: theme.colors.text.secondary,
-      fontSize: 12,
-    },
     allDone: {
       color: theme.colors.text.primary,
+      flex: 1,
       fontSize: 14,
       fontWeight: '700',
     },

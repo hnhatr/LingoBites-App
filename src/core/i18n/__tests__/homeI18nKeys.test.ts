@@ -32,6 +32,7 @@ const HOME_KEYS = [
   'home.weekly_goal_hint_kept',
   'home.weekly_goal_hint_last',
   'home.weekly_goal_link',
+  'home.weekly_goal_compact',
   'home.weekly_goal_a11y',
   // Hero states (§VS-2, §VS-8)
   'home.hero_eyebrow_no_lessons',
@@ -51,7 +52,7 @@ const HOME_KEYS = [
   'home.hero_saved_body_one',
   'home.hero_saved_body_other',
   'home.hero_in_progress_title',
-  'home.hero_in_progress_body',
+  'home.hero_path_a11y',
   'home.hero_in_progress_cta',
   'home.hero_continue_cta',
   'home.hero_continue_cta_a11y',
@@ -94,6 +95,8 @@ const HOME_KEYS = [
   'home.today_mode_20',
   'home.today_mode_45',
   'home.today_mode_a11y',
+  'home.today_mode_toggle_a11y',
+  'home.today_mode_toggle_hint',
   'home.today_details',
   'home.today_details_a11y',
   'home.today_details_hint',
@@ -104,7 +107,6 @@ const HOME_KEYS = [
   'home.today_step_done_a11y',
   'home.today_progress',
   'home.today_progress_a11y',
-  'home.today_more',
   'home.today_all_done',
 ];
 
