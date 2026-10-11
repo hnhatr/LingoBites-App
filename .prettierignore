@@ -14,3 +14,6 @@ src/core/db/__tests__/adversarial/adv-ling108-r1-atomic-replacement.adversarial.
 # Byte-identical copies of Server contract fixtures, pinned by SHA-256 in
 # src/core/schemas/fixtures.ts; never reformat them.
 src/core/schemas/__tests__/fixtures/
+# Byte-identical copy of Server test/fixtures/pii-cases.json (shared PII cases);
+# keep it in sync by copying, never reformat it.
+src/features/input/logic/__tests__/fixtures/pii-cases.json
