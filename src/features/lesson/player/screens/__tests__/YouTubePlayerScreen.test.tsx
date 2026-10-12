@@ -80,6 +80,7 @@ jest.mock('../../logic/useCanonicalLesson', () => ({
 
 jest.mock('@features/audio', () => ({
   speak: jest.fn(() => Promise.resolve({ok: true})),
+  useSpeak: () => ({speak: () => undefined, notice: null}),
 }));
 
 async function renderScreen() {

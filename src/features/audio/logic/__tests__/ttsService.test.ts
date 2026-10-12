@@ -43,6 +43,21 @@ describe('ttsService', () => {
     expect(mockTts.setDefaultRate).toHaveBeenCalledWith(0.5);
   });
 
+  it('stops any speech still playing before it speaks the next text', async () => {
+    const order: string[] = [];
+    mockTts.stop.mockImplementationOnce(async () => {
+      order.push('stop');
+      return true;
+    });
+    mockTts.speak.mockImplementationOnce(() => {
+      order.push('speak');
+      return 'utterance-2';
+    });
+
+    await expect(speak('Hello world.')).resolves.toEqual({ok: true});
+    expect(order).toEqual(['stop', 'speak']);
+  });
+
   it('reports a missing en-US voice without attempting speech', async () => {
     mockTts.voices.mockResolvedValue([]);
 
