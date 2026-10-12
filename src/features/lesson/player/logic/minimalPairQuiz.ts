@@ -28,7 +28,8 @@ export function buildMinimalPairQuestion(
   if (usable.length === 0) {
     return null;
   }
-  const pair = usable[Math.min(usable.length - 1, Math.floor(random() * usable.length))]!;
+  const pair =
+    usable[Math.min(usable.length - 1, Math.floor(random() * usable.length))]!;
   const target = pair[random() < 0.5 ? 0 : 1];
   const options: [string, string] =
     random() < 0.5 ? [pair[0], pair[1]] : [pair[1], pair[0]];

@@ -40,7 +40,10 @@ describe('minimalPairQuiz', () => {
 
   it('skips unquizable pairs when picking one', () => {
     const question = buildMinimalPairQuestion(
-      [['same', 'same'], ['eight', 'ate']],
+      [
+        ['same', 'same'],
+        ['eight', 'ate'],
+      ],
       sequence(0, 0, 0),
     );
     expect(question?.options).toEqual(['eight', 'ate']);
