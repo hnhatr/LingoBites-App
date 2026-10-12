@@ -108,7 +108,8 @@ export type ComboReportReason =
 
 export type OpenComboSetInput = {
   itemCode: string;
-  grammarCode: string;
+  /** Left out for a locked pattern, which has no tense. */
+  grammarCode?: string;
   situationCode: string;
   count: number;
   polarity: 'affirmative' | 'negative' | 'question';
@@ -151,7 +152,7 @@ export function openComboSet(
     '/v1/combo/sets',
     jsonBody({
       item_code: input.itemCode,
-      grammar_code: input.grammarCode,
+      ...(input.grammarCode ? {grammar_code: input.grammarCode} : {}),
       situation_code: input.situationCode,
       count: input.count,
       polarity: input.polarity,

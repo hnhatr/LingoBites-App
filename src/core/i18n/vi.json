@@ -1323,7 +1323,7 @@
       "title": "Bộ câu tổ hợp",
       "load_failed": "Chưa tải được các lựa chọn. Hãy thử lại khi có mạng.",
       "left": "Hôm nay: còn {{ai}} lượt AI, còn {{sets}} bộ câu",
-      "locked": "Mẫu này không có thì để ghép, nên chưa có bộ câu.",
+      "locked": "Mẫu cố định: không có thì để chọn.",
       "situation": "Tình huống",
       "tense": "Thì",
       "groups": "Chủ ngữ",

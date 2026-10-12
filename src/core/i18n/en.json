@@ -1323,7 +1323,7 @@
       "title": "Combo sentences",
       "load_failed": "The sentences could not be loaded. Try again when you are online.",
       "left": "Today: {{ai}} AI sets, {{sets}} sets left",
-      "locked": "This pattern has no tense to pair, so it has no combo sets yet.",
+      "locked": "Fixed pattern: it has no tense, so there is nothing to choose.",
       "situation": "Situation",
       "tense": "Tense",
       "groups": "Subject",

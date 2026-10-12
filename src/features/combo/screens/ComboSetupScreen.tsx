@@ -76,13 +76,13 @@ export function ComboSetupScreen({navigation, route}: Props) {
   }, [itemCode]);
 
   const locked = options?.tense_mode === 'locked';
+  // A locked pattern has no tense to pick: the Server uses its own placeholder.
   const ready =
     options !== null &&
-    !locked &&
     situation !== null &&
     count !== null &&
     groups.length > 0 &&
-    tense !== null;
+    (locked || tense !== null);
 
   const toggleGroup = (group: string) =>
     setGroups(current =>
@@ -95,7 +95,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
     if (!options || !ready || situation === null || count === null) return;
     setBusy(true);
     setStartFailed(false);
-    const grammarCode = tense ?? '';
+    const grammarCode = locked ? undefined : tense ?? undefined;
     const result = await openComboSet({
       itemCode,
       grammarCode,
@@ -113,7 +113,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
       {
         id: result.value.set_id,
         itemCode,
-        grammarCode,
+        grammarCode: grammarCode ?? '',
         situationCode: situation,
         sentences: result.value.sentences,
       },

@@ -152,7 +152,7 @@ describe('ComboSetupScreen', () => {
     expect(mockAppNavigation.openComboSet).toHaveBeenCalledWith(SET_ID);
   });
 
-  it('shows that a locked pattern has no combo set', async () => {
+  it('starts a locked pattern without a tense', async () => {
     mocked.fetchComboOptions.mockResolvedValue({
       ok: true,
       value: {
@@ -170,15 +170,52 @@ describe('ComboSetupScreen', () => {
     });
     mocked.fetchComboSituations.mockResolvedValue({
       ok: true,
-      value: {request_id: 'r', status: 'success', situations: []},
+      value: {
+        request_id: 'r',
+        status: 'success',
+        situations: [
+          {
+            code: 'cafe',
+            title_en: 'Cafe',
+            title_vi: 'Quán cà phê',
+            register: 'casual',
+            level_code: 'A1',
+          },
+        ],
+      },
+    });
+    mocked.openComboSet.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        set_id: SET_ID,
+        sentences: [sentence('s1', 'I can have tea.')],
+        missing: 0,
+        reason: null,
+      },
     });
     const tree = renderWithTheme(
-      <ComboSetupScreen route={{params: {itemCode: 'pattern:can-i'}}} />,
+      <ComboSetupScreen route={{params: {itemCode: 'pattern:can-i-have'}}} />,
     );
     await act(async () => {
       await Promise.resolve();
     });
     expect(has(tree, 'combo-setup-locked')).toBe(true);
+    expect(has(tree, 'combo-setup-tense-grammar:present-simple')).toBe(false);
+    press(tree, 'combo-setup-situation-cafe');
+    press(tree, 'combo-setup-count-3');
+    await act(async () => {
+      press(tree, 'combo-setup-start');
+    });
+    expect(mocked.openComboSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        itemCode: 'pattern:can-i-have',
+        situationCode: 'cafe',
+        count: 3,
+      }),
+    );
+    expect(mocked.openComboSet.mock.calls[0]![0].grammarCode).toBeUndefined();
   });
 });
 
