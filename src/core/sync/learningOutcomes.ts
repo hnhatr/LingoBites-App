@@ -246,12 +246,23 @@ function mapItemMemory(row: ItemMemoryRow): ItemMemory {
   };
 }
 
+/**
+ * Upserts the schedule. `lapses` is a device-only count and is left as it is:
+ * a pull or a review never resets it.
+ */
 function writeItemMemory(memory: ItemMemory, at: string): void {
   getDatabase().execute(
-    `INSERT OR REPLACE INTO item_memory (
+    `INSERT INTO item_memory (
       item_code, stage, due_at, stable_at, last_result, last_reviewed_at,
       updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT (item_code) DO UPDATE SET
+      stage = excluded.stage,
+      due_at = excluded.due_at,
+      stable_at = excluded.stable_at,
+      last_result = excluded.last_result,
+      last_reviewed_at = excluded.last_reviewed_at,
+      updated_at = excluded.updated_at;`,
     [
       memory.itemCode,
       memory.stage,
@@ -335,9 +346,26 @@ export function applyLocalItemReview(
 ): ItemMemory | null {
   const memory = getItemMemory(itemCode);
   if (!memory) return null;
+  // A wrong answer is a lapse even when the schedule does not move (a review before it is due).
+  if (result === 'incorrect') {
+    getDatabase().execute(
+      'UPDATE item_memory SET lapses = lapses + 1 WHERE item_code = ?;',
+      [itemCode],
+    );
+  }
   const next = nextItemMemory(memory, result, at);
   if (!next) return null;
   writeItemMemory(next, at.toISOString());
   notify();
   return next;
+}
+
+/** Wrong answers counted on this device for one item (vocab path P5). */
+export function lapsesOf(itemCode: string): number {
+  const row = getDatabase()
+    .execute('SELECT lapses FROM item_memory WHERE item_code = ? LIMIT 1;', [
+      itemCode,
+    ])
+    .rows?.item(0) as {lapses?: number} | undefined;
+  return row?.lapses ?? 0;
 }

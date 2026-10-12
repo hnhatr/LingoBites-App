@@ -5,6 +5,7 @@ import type {
   BootGateRouteParams,
   OnboardingRouteParams,
 } from '@features/account';
+import type {ComboSetRouteParams, ComboSetupRouteParams} from '@features/combo';
 import type {
   CourseLevelsRouteParams,
   CoursesStackParamList,
@@ -50,6 +51,11 @@ import type {
   SpeakingRoomRouteParams,
 } from '@features/speaking';
 import type {TodayRouteParams} from '@features/today';
+import type {
+  PackLearnRouteParams,
+  QuickKnownCheckRouteParams,
+  WordPackRouteParams,
+} from '@features/wordPath';
 
 export type {
   CoursesStackParamList,
@@ -101,6 +107,13 @@ export type RootStackParamList = {
   // Practice
   DailyReview: DailyReviewRouteParams;
   ItemReview: ItemReviewRouteParams;
+  WordPath: undefined;
+  WordPack: WordPackRouteParams;
+  PackLearn: PackLearnRouteParams;
+  QuickKnownCheck: QuickKnownCheckRouteParams;
+  ComboSetup: ComboSetupRouteParams;
+  ComboSet: ComboSetRouteParams;
+  ComboHistory: undefined;
   Practice: PracticeRouteParams;
   Today: TodayRouteParams;
   SpeakingRoom: SpeakingRoomRouteParams;

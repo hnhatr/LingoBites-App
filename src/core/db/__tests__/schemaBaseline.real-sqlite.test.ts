@@ -135,6 +135,7 @@ describe('baseline schema', () => {
          900, 'x', 'x', 2);`,
     );
     insertCard('c1', 'word:coffee');
+    db.execute('ALTER TABLE item_memory DROP COLUMN lapses;');
     db.execute('PRAGMA user_version = 7;');
 
     runMigrations(db);
@@ -165,6 +166,7 @@ describe('baseline schema', () => {
          occurred_at, updated_at, outcome)
        VALUES ('a8', 'lesson', 'role_play', 1, 'x', 'x', 'pass_independent');`,
     );
+    db.execute('ALTER TABLE item_memory DROP COLUMN lapses;');
     db.execute('PRAGMA user_version = 8;');
 
     runMigrations(db);
@@ -190,7 +192,7 @@ describe('baseline schema', () => {
 
     runMigrations(db);
 
-    expect(readAppSchemaVersion(db)).toBe(10);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
     expect(names('table')).toEqual([...BASELINE_TABLES].sort());
     expect(names('index')).toContain('idx_item_memory_due');
     expect(

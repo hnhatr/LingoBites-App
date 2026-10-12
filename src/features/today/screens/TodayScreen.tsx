@@ -3,6 +3,7 @@ import React, {useCallback, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {ComposeRequestCards} from '@features/lesson/player';
+import {nextDownloadedPack, type NextPack} from '@features/wordPath';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
@@ -47,10 +48,17 @@ export function TodayScreen({route}: Props = {}) {
   const [mode, setMode] = useState<TodayMode>(route?.params?.mode ?? 'normal');
   const [plan, setPlan] = useState<StudyBlockPlan | null>(null);
   const [hasDownloads, setHasDownloads] = useState(true);
+  const [nextPack, setNextPack] = useState<NextPack | null>(null);
 
   const loadPlan = useCallback((selectedMode: TodayMode) => {
     const snapshot = getLearnerStateSnapshot();
     setHasDownloads(snapshot.hasDownloadedLessons);
+    // Vocab path P5: the word pack to learn next, from the packs on this device.
+    try {
+      setNextPack(nextDownloadedPack());
+    } catch {
+      setNextPack(null);
+    }
     const newPlan = generateStudyBlock(snapshot, selectedMode);
     setPlan(newPlan);
   }, []);
@@ -124,6 +132,24 @@ export function TodayScreen({route}: Props = {}) {
             />
           </View>
         </View>
+
+        {nextPack ? (
+          <AppCard testID="today-next-pack">
+            <AppText color="secondary" variant="label">
+              Gói từ tiếp theo
+            </AppText>
+            <AppText variant="h3">{nextPack.titleVi}</AppText>
+            <AppText color="secondary">
+              Đã nhớ {nextPack.learned}/{nextPack.total} từ
+            </AppText>
+            <AppButton
+              onPress={() => navigation.openWordPack(nextPack.packId)}
+              testID="today-next-pack-open"
+              title="Mở gói"
+              variant="secondary"
+            />
+          </AppCard>
+        ) : null}
 
         {/* Backlog Control Banner (REQ-14) */}
         {plan?.isConsolidation ? (

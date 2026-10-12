@@ -36,7 +36,7 @@ export type WordLearningItem = LearningItemOrigin & {
 
 /** Patterns, pronunciation points and listening items (catalog only). */
 export type CatalogLearningItem = LearningItemOrigin & {
-  kind: 'pattern' | 'pronunciation' | 'listening';
+  kind: 'pattern' | 'grammar' | 'pronunciation' | 'listening';
   text: string;
   meaningVi: string;
   ipa: string | null;

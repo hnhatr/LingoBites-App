@@ -1,0 +1,105 @@
+/**
+ * Vocab path P5: the combo sets the learner opened, kept on the device so they
+ * can be read offline. A set is saved when it opens and again when a batch is
+ * added; its creation time stays the same.
+ */
+import {getDatabase} from '@core/db/database';
+
+import {type ComboSentence, ComboSentenceSchema} from './comboClient';
+
+export type LocalComboSet = {
+  id: string;
+  itemCode: string;
+  grammarCode: string;
+  situationCode: string;
+  sentences: ComboSentence[];
+  createdAt: string;
+};
+
+export type LocalComboSetSummary = Omit<LocalComboSet, 'sentences'> & {
+  sentenceCount: number;
+};
+
+type Row = {
+  id: string;
+  item_code: string;
+  grammar_code: string;
+  situation_code: string;
+  sentences_json: string;
+  created_at: string;
+};
+
+function rowsOf(result: {
+  rows?: {length: number; item: (index: number) => unknown};
+}): Row[] {
+  const out: Row[] = [];
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    out.push(result.rows!.item(index) as Row);
+  }
+  return out;
+}
+
+function sentencesOf(json: string): ComboSentence[] {
+  try {
+    const parsed = ComboSentenceSchema.array().safeParse(JSON.parse(json));
+    return parsed.success ? parsed.data : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Saves a set, or adds the sentences of a new batch to it. */
+export function saveComboSet(
+  set: Omit<LocalComboSet, 'createdAt'>,
+  now: Date,
+): void {
+  getDatabase().execute(
+    `INSERT INTO combo_sets_local (id, item_code, grammar_code, situation_code,
+       sentences_json, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT (id) DO UPDATE SET sentences_json = excluded.sentences_json;`,
+    [
+      set.id,
+      set.itemCode,
+      set.grammarCode,
+      set.situationCode,
+      JSON.stringify(set.sentences),
+      now.toISOString(),
+    ],
+  );
+}
+
+export function listLocalComboSets(): LocalComboSetSummary[] {
+  return rowsOf(
+    getDatabase().execute(
+      `SELECT id, item_code, grammar_code, situation_code, sentences_json, created_at
+         FROM combo_sets_local ORDER BY created_at DESC;`,
+    ),
+  ).map(row => ({
+    id: row.id,
+    itemCode: row.item_code,
+    grammarCode: row.grammar_code,
+    situationCode: row.situation_code,
+    sentenceCount: sentencesOf(row.sentences_json).length,
+    createdAt: row.created_at,
+  }));
+}
+
+export function readLocalComboSet(id: string): LocalComboSet | null {
+  const row = rowsOf(
+    getDatabase().execute(
+      `SELECT id, item_code, grammar_code, situation_code, sentences_json, created_at
+         FROM combo_sets_local WHERE id = ?;`,
+      [id],
+    ),
+  )[0];
+  if (!row) return null;
+  return {
+    id: row.id,
+    itemCode: row.item_code,
+    grammarCode: row.grammar_code,
+    situationCode: row.situation_code,
+    sentences: sentencesOf(row.sentences_json),
+    createdAt: row.created_at,
+  };
+}

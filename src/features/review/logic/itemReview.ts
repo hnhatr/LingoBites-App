@@ -1,3 +1,4 @@
+import {readCatalogItems} from '@core/db/catalogItems';
 import {getDatabase} from '@core/db/database';
 import {type CatalogItem, CatalogItemSchema} from '@core/schemas/lesson';
 import {recordActivityAttempt} from '@core/sync/activityAttempts';
@@ -6,6 +7,8 @@ import {
   type ItemMemory,
   listDueItemMemory,
 } from '@core/sync/learningOutcomes';
+
+import {mixReviewItems} from './itemReviewMix';
 
 /**
  * PR 16: review of lesson items on the Server's schedule (`item_memory`,
@@ -71,6 +74,11 @@ export function itemContents(
       // A broken row only hides that item.
     }
   }
+  // Vocab path P5: items of downloaded word packs, for the codes no lesson carries.
+  const missing = codes.filter(code => !found.has(code));
+  for (const [code, item] of readCatalogItems(missing)) {
+    found.set(code, item);
+  }
   return found;
 }
 
@@ -95,7 +103,7 @@ export function itemReviewQueue(now: Date = new Date()): ItemReviewQueue {
     return item ? [{memory, item}] : [];
   });
   return {
-    items: ready.slice(0, budget),
+    items: mixReviewItems(ready, budget),
     missing: due.length - ready.length,
     doneToday,
   };

@@ -31,6 +31,14 @@ const ItemRefListSchema = z.array(ItemRefSchema).max(ITEM_REFS_MAX);
 
 export const EmptyPayloadSchema = z.object({}).strict();
 
+/**
+ * A tense item (vocab path P5, shown in word packs). The server owns the full
+ * shape; the App reads the family and keeps the rest for the tense map (P6).
+ */
+export const GrammarPayloadSchema = z
+  .object({family: z.string().min(1)})
+  .passthrough();
+
 export const PatternSlotSchema = z
   .object({
     label_vi: shortText,
@@ -111,6 +119,7 @@ const payloadSchemaByKind = {
   pattern: PatternPayloadSchema,
   pronunciation: PronunciationPayloadSchema,
   listening: ListeningPayloadSchema,
+  grammar: GrammarPayloadSchema,
 } as const;
 
 function fail(path: string, message: string): ParsedPayload {

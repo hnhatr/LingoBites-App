@@ -995,7 +995,10 @@
     "summary": "Remembered {{correct}} · not yet {{incorrect}}",
     "missing": "{{count}} items need their lesson downloaded again",
     "back": "Back",
-    "back_hint": "Leaves the review"
+    "back_hint": "Leaves the review",
+    "compare_title": "Look at this one again: you got it wrong several times",
+    "compare_ok": "Got it",
+    "next": "Next"
   },
   "summativeTask": {
     "title": "Unit task",
@@ -1275,5 +1278,88 @@
     "replay_listen_hint": "Reads this sentence aloud.",
     "delete_lesson_hint": "Deletes this lesson from your account after you confirm.",
     "library_retry_hint": "Load the list of moments again."
+  },
+  "wordPath": {
+    "title": "Word path",
+    "offline": "You are offline: showing the packs on this device.",
+    "empty": "No word packs yet.",
+    "progress": "{{level}} · {{learned}}/{{total}} learned",
+    "next": "Next pack",
+    "open": "Open",
+    "download": "Download",
+    "download_failed": "The pack could not be downloaded. Try again when you are online.",
+    "combo_history": "Combo sets"
+  },
+  "wordPack": {
+    "title": "Word pack",
+    "not_downloaded": "This pack is not on the device yet.",
+    "learn": "Learn this pack",
+    "check": "Quick check",
+    "combo": "Make a combo set"
+  },
+  "quickCheck": {
+    "title": "Quick check",
+    "empty": "This pack has no words to check.",
+    "progress": "{{current}}/{{total}}",
+    "next": "Next",
+    "summary": "{{count}} words you already know",
+    "save": "Save",
+    "submit_failed": "The words could not be saved. Try again when you are online.",
+    "retry": "Try again"
+  },
+  "packLearn": {
+    "title": "Learn the pack",
+    "empty": "This pack has no words yet.",
+    "progress": "Card {{current}}/{{total}}",
+    "next": "Next",
+    "recognition": "Question {{current}}/{{total}}",
+    "finish": "Finish",
+    "save_failed": "The words could not be saved. Try again when you are online.",
+    "done": "{{count}} words added to your review",
+    "back": "Back"
+  },
+  "combo": {
+    "setup": {
+      "title": "Combo sentences",
+      "load_failed": "The sentences could not be loaded. Try again when you are online.",
+      "left": "Today: {{ai}} AI sets, {{sets}} sets left",
+      "locked": "Fixed pattern: it has no tense, so there is nothing to choose.",
+      "situation": "Situation",
+      "tense": "Tense",
+      "groups": "Subject",
+      "count": "How many sentences",
+      "start": "Start",
+      "start_failed": "The set could not be opened. Check your limits or try again."
+    },
+    "set": {
+      "title": "Combo set",
+      "loading": "Loading the set…",
+      "load_failed": "The set could not be loaded.",
+      "hide_vi": "Hide Vietnamese",
+      "show_vi": "Show Vietnamese",
+      "no_ipa": "No IPA for this word",
+      "report": "Report this sentence",
+      "already_reported": "Reported",
+      "more": "Add a batch",
+      "add_failed": "The batch could not be added. Try again when you are online.",
+      "short_batch": "Fewer sentences than asked were available.",
+      "reported": "Thank you. The sentence was reported.",
+      "report_failed": "The report could not be sent. Try again when you are online.",
+      "empty": "No sentences in this set yet.",
+      "back": "Back"
+    },
+    "report": {
+      "wrong_meaning": "The meaning is wrong",
+      "unnatural": "It does not sound natural",
+      "wrong_tense": "The tense is wrong",
+      "wrong_subject": "The subject is wrong",
+      "other": "Something else"
+    },
+    "history": {
+      "title": "Combo sets",
+      "empty": "No sets on this device yet.",
+      "count": "{{count}} sentences",
+      "open": "Open"
+    }
   }
 }

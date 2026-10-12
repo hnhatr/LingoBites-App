@@ -31,7 +31,9 @@ export interface LibrarySectionConfig {
   };
   /** E5: the learner's "Khoảnh khắc" moments, read from the server list. */
   moments?: boolean;
-  unit: 'bài' | 'từ' | 'quy tắc';
+  /** Vocab path P5: the combo sets kept on this device. */
+  combos?: boolean;
+  unit: 'bài' | 'từ' | 'quy tắc' | 'bộ câu';
 }
 
 /**
@@ -92,6 +94,16 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     description: 'Quy tắc bạn đã lưu',
     emptyHint: 'Bấm ♡ trong bài học để lưu quy tắc',
     unit: 'quy tắc',
+  },
+  {
+    id: 'combos',
+    group: 'mine',
+    icon: 'style',
+    title: 'Bộ câu đã học',
+    description: 'Bộ câu tổ hợp bạn đã mở, đọc được cả khi ngoại tuyến',
+    emptyHint: 'Mở một bộ câu từ gói từ để bắt đầu',
+    combos: true,
+    unit: 'bộ câu',
   },
   {
     id: 'public',

@@ -995,7 +995,10 @@
     "summary": "Nhớ {{correct}} · chưa nhớ {{incorrect}}",
     "missing": "{{count}} từ cần tải lại bài để ôn",
     "back": "Quay lại",
-    "back_hint": "Rời màn ôn"
+    "back_hint": "Rời màn ôn",
+    "compare_title": "Xem lại từ này: bạn đã trả lời sai nhiều lần",
+    "compare_ok": "Đã hiểu",
+    "next": "Tiếp"
   },
   "summativeTask": {
     "title": "Nhiệm vụ tổng hợp",
@@ -1275,5 +1278,88 @@
     "replay_listen_hint": "Đọc to câu này.",
     "delete_lesson_hint": "Xoá bài học khỏi tài khoản sau khi xác nhận.",
     "library_retry_hint": "Tải lại danh sách khoảnh khắc."
+  },
+  "wordPath": {
+    "title": "Lộ trình từ",
+    "offline": "Bạn đang ngoại tuyến: hiển thị các gói có trên máy.",
+    "empty": "Chưa có gói từ nào.",
+    "progress": "{{level}} · đã nhớ {{learned}}/{{total}}",
+    "next": "Gói tiếp theo",
+    "open": "Mở",
+    "download": "Tải về",
+    "download_failed": "Chưa tải được gói. Hãy thử lại khi có mạng.",
+    "combo_history": "Bộ câu đã học"
+  },
+  "wordPack": {
+    "title": "Gói từ",
+    "not_downloaded": "Gói này chưa có trên máy.",
+    "learn": "Học gói này",
+    "check": "Kiểm tra nhanh",
+    "combo": "Tạo bộ câu"
+  },
+  "quickCheck": {
+    "title": "Kiểm tra nhanh",
+    "empty": "Gói này chưa có từ để kiểm tra.",
+    "progress": "{{current}}/{{total}}",
+    "next": "Câu tiếp",
+    "summary": "{{count}} từ bạn đã biết",
+    "save": "Lưu",
+    "submit_failed": "Chưa lưu được các từ. Hãy thử lại khi có mạng.",
+    "retry": "Thử lại"
+  },
+  "packLearn": {
+    "title": "Học gói từ",
+    "empty": "Gói này chưa có từ.",
+    "progress": "Thẻ {{current}}/{{total}}",
+    "next": "Tiếp",
+    "recognition": "Câu {{current}}/{{total}}",
+    "finish": "Hoàn thành",
+    "save_failed": "Chưa lưu được các từ. Hãy thử lại khi có mạng.",
+    "done": "Đã thêm {{count}} từ vào lịch ôn",
+    "back": "Quay lại"
+  },
+  "combo": {
+    "setup": {
+      "title": "Bộ câu tổ hợp",
+      "load_failed": "Chưa tải được các lựa chọn. Hãy thử lại khi có mạng.",
+      "left": "Hôm nay: còn {{ai}} lượt AI, còn {{sets}} bộ câu",
+      "locked": "Mẫu cố định: không có thì để chọn.",
+      "situation": "Tình huống",
+      "tense": "Thì",
+      "groups": "Chủ ngữ",
+      "count": "Số câu",
+      "start": "Bắt đầu",
+      "start_failed": "Chưa mở được bộ câu. Hãy kiểm tra hạn mức hoặc thử lại."
+    },
+    "set": {
+      "title": "Bộ câu",
+      "loading": "Đang tải bộ câu…",
+      "load_failed": "Chưa tải được bộ câu.",
+      "hide_vi": "Ẩn tiếng Việt",
+      "show_vi": "Hiện tiếng Việt",
+      "no_ipa": "Từ này chưa có phiên âm",
+      "report": "Báo sai câu này",
+      "already_reported": "Đã báo",
+      "more": "Tải thêm",
+      "add_failed": "Chưa thêm được đợt câu. Hãy thử lại khi có mạng.",
+      "short_batch": "Số câu có sẵn ít hơn số đã hỏi.",
+      "reported": "Cảm ơn bạn. Câu đã được báo.",
+      "report_failed": "Chưa gửi được báo cáo. Hãy thử lại khi có mạng.",
+      "empty": "Bộ câu này chưa có câu nào.",
+      "back": "Quay lại"
+    },
+    "report": {
+      "wrong_meaning": "Nghĩa sai",
+      "unnatural": "Nghe không tự nhiên",
+      "wrong_tense": "Sai thì",
+      "wrong_subject": "Sai chủ ngữ",
+      "other": "Lý do khác"
+    },
+    "history": {
+      "title": "Bộ câu đã học",
+      "empty": "Chưa có bộ câu nào trên máy.",
+      "count": "{{count}} câu",
+      "open": "Mở"
+    }
   }
 }

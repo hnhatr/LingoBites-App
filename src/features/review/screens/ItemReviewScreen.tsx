@@ -14,12 +14,27 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {createRequestId} from '@core/api/requestId';
+import {questionFor, type QuizQuestion} from '@core/learning/packQuiz';
+import {lapsesOf} from '@core/sync/learningOutcomes';
 
 import {
   type ItemReviewQueue,
   itemReviewQueue,
   recordItemReview,
 } from '../logic/itemReview';
+
+/** Vocab path P5: a card at this stage or above is asked by recall; below it, by recognition (bậc 2 and bậc 1). */
+export const RECALL_FROM_STAGE = 2;
+/** A card the learner has got wrong this many times is compared before it is asked again. */
+export const COMPARE_FROM_LAPSES = 4;
+
+function lapsesFor(code: string): number {
+  try {
+    return lapsesOf(code);
+  } catch {
+    return 0;
+  }
+}
 
 type Props = {
   navigation?: {goBack?: () => void};
@@ -53,7 +68,30 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
   const [shownAt, setShownAt] = useState(() => Date.now());
   const [tally, setTally] = useState({correct: 0, incorrect: 0});
   const [failed, setFailed] = useState(false);
+  const [compared, setCompared] = useState(false);
+  const [chosen, setChosen] = useState<number | null>(null);
   const current = queue.items[index];
+  const recognition =
+    current !== undefined && current.memory.stage < RECALL_FROM_STAGE;
+  const lapses = current ? lapsesFor(current.item.code) : 0;
+  const showCompare =
+    current !== undefined && !compared && lapses >= COMPARE_FROM_LAPSES;
+  // Built once per card: the wrong choices are drawn when the card comes up.
+  const question = useMemo<QuizQuestion | null>(() => {
+    if (!current || !recognition) return null;
+    return questionFor(
+      current.item,
+      queue.items.map(entry => entry.item),
+    );
+  }, [current, recognition, queue.items]);
+
+  const advance = () => {
+    setIndex(value => value + 1);
+    setRevealed(false);
+    setChosen(null);
+    setCompared(false);
+    setShownAt(Date.now());
+  };
 
   const answer = (result: 'correct' | 'incorrect') => {
     if (!current) return;
@@ -69,9 +107,27 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
     }
     setFailed(false);
     setTally(value => ({...value, [result]: value[result] + 1}));
-    setIndex(value => value + 1);
-    setRevealed(false);
-    setShownAt(Date.now());
+    advance();
+    requestSync();
+  };
+
+  // Recognition: the learner picks the meaning; the pick is recorded and the next card waits for "Next".
+  const pickOption = (option: number) => {
+    if (!current || !question || chosen !== null) return;
+    setChosen(option);
+    const result = option === question.answerIndex ? 'correct' : 'incorrect';
+    const ok = recordItemReview({
+      itemCode: current.item.code,
+      result,
+      sessionId,
+      durationMs: Math.min(Date.now() - shownAt, 3_600_000),
+    });
+    if (!ok) {
+      setFailed(true);
+      return;
+    }
+    setFailed(false);
+    setTally(value => ({...value, [result]: value[result] + 1}));
     requestSync();
   };
 
@@ -91,7 +147,58 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
             {t('itemReview.missing', {count: queue.missing})}
           </AppText>
         ) : null}
-        {current ? (
+        {current && showCompare ? (
+          <AppCard testID={`item-review-compare-${current.item.code}`}>
+            <AppText variant="label" color="secondary">
+              {t('itemReview.compare_title')}
+            </AppText>
+            <AppText variant="h2">{current.item.text}</AppText>
+            <AppText color="secondary">{current.item.meaning_vi}</AppText>
+            <AppButton
+              onPress={() => setCompared(true)}
+              testID="item-review-compare-ok"
+              title={t('itemReview.compare_ok')}
+              variant="secondary"
+            />
+          </AppCard>
+        ) : null}
+        {current && !showCompare && recognition && question ? (
+          <AppCard testID={`item-review-question-${current.item.code}`}>
+            <AppText color="secondary" variant="label">
+              {t('itemReview.progress', {
+                current: index + 1,
+                total: queue.items.length,
+              })}
+            </AppText>
+            <AppText variant="h2">{question.prompt}</AppText>
+            {question.options.map((option, optionIndex) => (
+              <AppButton
+                key={`${current.item.code}-${optionIndex}`}
+                onPress={() => pickOption(optionIndex)}
+                testID={`item-review-option-${optionIndex}`}
+                title={option}
+                variant={
+                  chosen === null
+                    ? 'outline'
+                    : optionIndex === question.answerIndex
+                    ? 'secondary'
+                    : 'outline'
+                }
+              />
+            ))}
+            {chosen !== null ? (
+              <AppButton
+                onPress={advance}
+                testID="item-review-next"
+                title={t('itemReview.next')}
+              />
+            ) : null}
+            {failed ? (
+              <AppText color="danger">{t('itemReview.save_failed')}</AppText>
+            ) : null}
+          </AppCard>
+        ) : null}
+        {current && !showCompare && !recognition ? (
           <AppCard testID={`item-review-card-${current.item.code}`}>
             <AppText color="secondary" variant="label">
               {t('itemReview.progress', {
@@ -143,7 +250,8 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
               <AppText color="danger">{t('itemReview.save_failed')}</AppText>
             ) : null}
           </AppCard>
-        ) : (
+        ) : null}
+        {!current ? (
           <AppCard testID="item-review-done">
             <AppText variant="h3">
               {queue.items.length === 0
@@ -163,7 +271,7 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
               variant="outline"
             />
           </AppCard>
-        )}
+        ) : null}
       </ScrollView>
     </AppScreen>
   );

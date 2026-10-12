@@ -1,5 +1,6 @@
 import {useCallback, useRef, useState} from 'react';
 
+import {listLocalComboSets} from '@features/combo';
 import {
   getLessonDownloadsSignature,
   listLessonDownloadKinds,
@@ -25,6 +26,7 @@ interface CountsState {
   downloadsSignature: string;
   vocabularySignature: string;
   grammarSignature: string;
+  comboCount: number;
 }
 
 /**
@@ -53,11 +55,13 @@ function loadCounts(previous: CountsState | null): CountsState {
   const downloadsSignature = getLessonDownloadsSignature();
   const vocabulary = getSavedFlashcardsSignature();
   const grammar = getBookmarkedGrammarSignature();
+  const combos = listLocalComboSets().length;
   if (
     previous &&
     previous.downloadsSignature === downloadsSignature &&
     previous.vocabularySignature === vocabulary.signature &&
-    previous.grammarSignature === grammar.signature
+    previous.grammarSignature === grammar.signature &&
+    previous.comboCount === combos
   ) {
     return previous;
   }
@@ -84,6 +88,8 @@ function loadCounts(previous: CountsState | null): CountsState {
       counts[section.id] = vocabulary.count;
     } else if (section.id === 'grammar') {
       counts[section.id] = grammar.count;
+    } else if (section.id === 'combos') {
+      counts[section.id] = combos;
     } else {
       // Public sections live on the server: no local count.
       counts[section.id] = 0;
@@ -94,5 +100,6 @@ function loadCounts(previous: CountsState | null): CountsState {
     downloadsSignature,
     vocabularySignature: vocabulary.signature,
     grammarSignature: grammar.signature,
+    comboCount: combos,
   };
 }
