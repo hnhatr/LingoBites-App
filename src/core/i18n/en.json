@@ -1275,5 +1275,42 @@
     "replay_listen_hint": "Reads this sentence aloud.",
     "delete_lesson_hint": "Deletes this lesson from your account after you confirm.",
     "library_retry_hint": "Load the list of moments again."
+  },
+  "wordPath": {
+    "title": "Word path",
+    "offline": "You are offline: showing the packs on this device.",
+    "empty": "No word packs yet.",
+    "progress": "{{level}} · {{learned}}/{{total}} learned",
+    "next": "Next pack",
+    "open": "Open",
+    "download": "Download",
+    "download_failed": "The pack could not be downloaded. Try again when you are online."
+  },
+  "wordPack": {
+    "title": "Word pack",
+    "not_downloaded": "This pack is not on the device yet.",
+    "learn": "Learn this pack",
+    "check": "Quick check"
+  },
+  "quickCheck": {
+    "title": "Quick check",
+    "empty": "This pack has no words to check.",
+    "progress": "{{current}}/{{total}}",
+    "next": "Next",
+    "summary": "{{count}} words you already know",
+    "save": "Save",
+    "submit_failed": "The words could not be saved. Try again when you are online.",
+    "retry": "Try again"
+  },
+  "packLearn": {
+    "title": "Learn the pack",
+    "empty": "This pack has no words yet.",
+    "progress": "Card {{current}}/{{total}}",
+    "next": "Next",
+    "recognition": "Question {{current}}/{{total}}",
+    "finish": "Finish",
+    "save_failed": "The words could not be saved. Try again when you are online.",
+    "done": "{{count}} words added to your review",
+    "back": "Back"
   }
 }

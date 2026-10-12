@@ -1275,5 +1275,42 @@
     "replay_listen_hint": "Đọc to câu này.",
     "delete_lesson_hint": "Xoá bài học khỏi tài khoản sau khi xác nhận.",
     "library_retry_hint": "Tải lại danh sách khoảnh khắc."
+  },
+  "wordPath": {
+    "title": "Lộ trình từ",
+    "offline": "Bạn đang ngoại tuyến: hiển thị các gói có trên máy.",
+    "empty": "Chưa có gói từ nào.",
+    "progress": "{{level}} · đã nhớ {{learned}}/{{total}}",
+    "next": "Gói tiếp theo",
+    "open": "Mở",
+    "download": "Tải về",
+    "download_failed": "Chưa tải được gói. Hãy thử lại khi có mạng."
+  },
+  "wordPack": {
+    "title": "Gói từ",
+    "not_downloaded": "Gói này chưa có trên máy.",
+    "learn": "Học gói này",
+    "check": "Kiểm tra nhanh"
+  },
+  "quickCheck": {
+    "title": "Kiểm tra nhanh",
+    "empty": "Gói này chưa có từ để kiểm tra.",
+    "progress": "{{current}}/{{total}}",
+    "next": "Câu tiếp",
+    "summary": "{{count}} từ bạn đã biết",
+    "save": "Lưu",
+    "submit_failed": "Chưa lưu được các từ. Hãy thử lại khi có mạng.",
+    "retry": "Thử lại"
+  },
+  "packLearn": {
+    "title": "Học gói từ",
+    "empty": "Gói này chưa có từ.",
+    "progress": "Thẻ {{current}}/{{total}}",
+    "next": "Tiếp",
+    "recognition": "Câu {{current}}/{{total}}",
+    "finish": "Hoàn thành",
+    "save_failed": "Chưa lưu được các từ. Hãy thử lại khi có mạng.",
+    "done": "Đã thêm {{count}} từ vào lịch ôn",
+    "back": "Quay lại"
   }
 }

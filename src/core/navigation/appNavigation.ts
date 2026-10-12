@@ -86,6 +86,14 @@ export interface AppNavigation {
   openReview(): void;
   /** PR 16: today's lesson items on the Server's review schedule. */
   openItemReview(): void;
+  /** Vocab path P5: the word path (levels, topics, packs). */
+  openWordPath(): void;
+  /** Vocab path P5: one pack's words, with learn and check. */
+  openWordPack(packId: string): void;
+  /** Vocab path P5: learn a pack's words, card by card, then a recognition pass. */
+  openPackLearn(packId: string): void;
+  /** Vocab path P5: the quick known check of a pack. */
+  openQuickKnownCheck(packId: string): void;
   /** Open a quick-practice quiz generated from one downloaded lesson. */
   openPractice(lessonId: string): void;
   /**

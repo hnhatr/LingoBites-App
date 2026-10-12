@@ -64,6 +64,12 @@ import {
   SpeakingRoomScreen,
 } from '@features/speaking/screens/speakingUiPort';
 import {TodayScreen} from '@features/today';
+import {
+  PackLearnScreen,
+  QuickKnownCheckScreen,
+  WordPackScreen,
+  WordPathScreen,
+} from '@features/wordPath';
 
 import {AppNavigationProvider} from '@core/navigation';
 import {useFeatureFlags} from '@core/release';
@@ -310,6 +316,13 @@ function AuthenticatedRootStack() {
       {/* Practice */}
       <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
       <RootStack.Screen component={ItemReviewScreen} name="ItemReview" />
+      <RootStack.Screen component={WordPathScreen} name="WordPath" />
+      <RootStack.Screen component={WordPackScreen} name="WordPack" />
+      <RootStack.Screen component={PackLearnScreen} name="PackLearn" />
+      <RootStack.Screen
+        component={QuickKnownCheckScreen}
+        name="QuickKnownCheck"
+      />
       <RootStack.Screen component={PracticeScreen} name="Practice" />
       <RootStack.Screen component={TodayScreen} name="Today" />
       <RootStack.Screen component={SpeakingRoomScreen} name="SpeakingRoom" />
