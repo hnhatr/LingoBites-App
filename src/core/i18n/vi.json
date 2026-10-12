@@ -995,7 +995,10 @@
     "summary": "Nhớ {{correct}} · chưa nhớ {{incorrect}}",
     "missing": "{{count}} từ cần tải lại bài để ôn",
     "back": "Quay lại",
-    "back_hint": "Rời màn ôn"
+    "back_hint": "Rời màn ôn",
+    "compare_title": "Xem lại từ này: bạn đã trả lời sai nhiều lần",
+    "compare_ok": "Đã hiểu",
+    "next": "Tiếp"
   },
   "summativeTask": {
     "title": "Nhiệm vụ tổng hợp",

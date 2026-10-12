@@ -1,11 +1,10 @@
-import type {CatalogItem} from '@core/schemas/lesson';
-
 import {
   buildKnownCheck,
   buildRecognitionQuestions,
   KNOWN_CHECK_TIMES,
   knownCodesFrom,
-} from '../packQuiz';
+} from '@core/learning/packQuiz';
+import type {CatalogItem} from '@core/schemas/lesson';
 
 /** Vocab path P5: the pack quiz asks each word's meaning, and a word is known only when both checks are right. */
 

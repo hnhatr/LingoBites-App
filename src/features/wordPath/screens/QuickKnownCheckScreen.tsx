@@ -10,14 +10,14 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
-import {useAppNavigation} from '@core/navigation';
-import type {CatalogItem} from '@core/schemas/lesson';
-
 import {
   buildKnownCheck,
   knownCodesFrom,
   type QuizQuestion,
-} from '../logic/packQuiz';
+} from '@core/learning/packQuiz';
+import {useAppNavigation} from '@core/navigation';
+import type {CatalogItem} from '@core/schemas/lesson';
+
 import {findDownloadedPack} from '../logic/wordPackRepository';
 import {learnWordPack} from '../logic/wordPathClient';
 import type {QuickKnownCheckRouteParams} from './navigationTypes';

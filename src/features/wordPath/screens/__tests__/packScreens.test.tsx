@@ -1,11 +1,11 @@
 import type ReactTestRenderer from 'react-test-renderer';
 import {act} from 'react-test-renderer';
 
+import type {QuizQuestion} from '@core/learning/packQuiz';
 import type {CatalogItem} from '@core/schemas/lesson';
 
 import {has, press, renderWithTheme, textOf} from '@test/support/lessonFlow';
 
-import type {QuizQuestion} from '../../logic/packQuiz';
 import {learnWordPack} from '../../logic/wordPathClient';
 import {PackLearnScreen} from '../PackLearnScreen';
 import {QuickKnownCheckScreen} from '../QuickKnownCheckScreen';

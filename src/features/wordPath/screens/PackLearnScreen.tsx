@@ -10,10 +10,13 @@ import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
+import {
+  buildRecognitionQuestions,
+  type QuizQuestion,
+} from '@core/learning/packQuiz';
 import {useAppNavigation} from '@core/navigation';
 import type {CatalogItem} from '@core/schemas/lesson';
 
-import {buildRecognitionQuestions, type QuizQuestion} from '../logic/packQuiz';
 import {findDownloadedPack} from '../logic/wordPackRepository';
 import {learnWordPack} from '../logic/wordPathClient';
 import type {PackLearnRouteParams} from './navigationTypes';

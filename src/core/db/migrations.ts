@@ -11,7 +11,7 @@ import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
  * (`UPGRADE_STEPS`) on top of the baseline version; the baseline statements
  * always create the latest shape.
  */
-export const APP_SCHEMA_VERSION = 11;
+export const APP_SCHEMA_VERSION = 12;
 
 /** The version the baseline was folded at; older databases are reset. */
 export const BASELINE_SCHEMA_VERSION = 7;
@@ -172,6 +172,8 @@ const UPGRADE_STEPS: Record<number, readonly string[]> = {
   9: LEARNING_OUTCOMES_STATEMENTS,
   // v10 → v11: word packs and local combo sets, new tables only.
   10: WORD_PACK_STATEMENTS,
+  // v11 → v12: wrong answers counted on the device (kept across pulls).
+  11: ['ALTER TABLE item_memory ADD COLUMN lapses INTEGER NOT NULL DEFAULT 0;'],
 };
 
 /** Every table the baseline creates, in creation order. */
@@ -429,6 +431,8 @@ export const BASELINE_STATEMENTS: string[] = [
   ...TASK_ANSWERS_STATEMENTS,
   ...LEARNING_OUTCOMES_STATEMENTS,
   ...WORD_PACK_STATEMENTS,
+  // Fresh installs take v12's shape here; upgrades add it in the v11 step.
+  'ALTER TABLE item_memory ADD COLUMN lapses INTEGER NOT NULL DEFAULT 0;',
 ];
 
 export function readAppSchemaVersion(db: QuickSQLiteConnection): number {

@@ -995,7 +995,10 @@
     "summary": "Remembered {{correct}} · not yet {{incorrect}}",
     "missing": "{{count}} items need their lesson downloaded again",
     "back": "Back",
-    "back_hint": "Leaves the review"
+    "back_hint": "Leaves the review",
+    "compare_title": "Look at this one again: you got it wrong several times",
+    "compare_ok": "Got it",
+    "next": "Next"
   },
   "summativeTask": {
     "title": "Unit task",

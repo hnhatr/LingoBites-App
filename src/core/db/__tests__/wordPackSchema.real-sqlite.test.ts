@@ -21,6 +21,7 @@ it('upgrades a v10 database to v11 and keeps its flashcards', () => {
        is_saved, created_at, updated_at, tombstone, item_key)
      VALUES ('c1', 'L1', 'c1', 'coffee', 'cà phê', 1, 'x', 'x', 0, 'word:coffee');`,
   );
+  db.execute('ALTER TABLE item_memory DROP COLUMN lapses;');
   db.execute('PRAGMA user_version = 10;');
 
   runMigrations(db);

@@ -28,10 +28,11 @@ function shuffled<T>(values: readonly T[], rng: Rng): T[] {
   return out;
 }
 
-function questionFor(
+/** The meaning question for one word, with up to two other words' meanings as wrong choices. */
+export function questionFor(
   item: CatalogItem,
   pool: readonly CatalogItem[],
-  rng: Rng,
+  rng: Rng = Math.random,
 ): QuizQuestion {
   const wrong = [
     ...new Set(

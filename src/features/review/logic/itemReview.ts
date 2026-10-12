@@ -8,6 +8,8 @@ import {
   listDueItemMemory,
 } from '@core/sync/learningOutcomes';
 
+import {mixReviewItems} from './itemReviewMix';
+
 /**
  * PR 16: review of lesson items on the Server's schedule (`item_memory`,
  * decisions B7–B8, G7–G9). Each answer is a `kind = review` attempt keyed
@@ -101,7 +103,7 @@ export function itemReviewQueue(now: Date = new Date()): ItemReviewQueue {
     return item ? [{memory, item}] : [];
   });
   return {
-    items: ready.slice(0, budget),
+    items: mixReviewItems(ready, budget),
     missing: due.length - ready.length,
     doneToday,
   };
