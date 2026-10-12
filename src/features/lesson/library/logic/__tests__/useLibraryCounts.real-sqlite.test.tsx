@@ -83,6 +83,7 @@ describe('useLibraryCounts (real SQLite)', () => {
       vocabulary: 1,
       grammar: 1,
       combos: 0,
+      wordPath: 0,
       public: 0,
       publicVideo: 0,
     });

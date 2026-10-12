@@ -17,7 +17,7 @@ import {
   reportComboSentence,
 } from '../../logic/comboClient';
 import {listLocalComboSets, saveComboSet} from '../../logic/comboSetRepository';
-import {ComboHistoryScreen} from '../ComboHistoryScreen';
+import {ComboHistoryList, ComboHistoryScreen} from '../ComboHistoryScreen';
 import {ComboSetScreen} from '../ComboSetScreen';
 import {ComboSetupScreen} from '../ComboSetupScreen';
 
@@ -308,5 +308,31 @@ describe('ComboHistoryScreen', () => {
     expect(has(tree, `combo-history-${SET_ID}`)).toBe(true);
     press(tree, `combo-history-open-${SET_ID}`);
     expect(mockAppNavigation.openComboSet).toHaveBeenCalledWith(SET_ID);
+  });
+});
+
+describe('ComboHistoryList search', () => {
+  it('shows only the sets whose word matches the search', () => {
+    const sets = [
+      {
+        id: 'a1',
+        itemCode: 'word:play',
+        grammarCode: 'g',
+        situationCode: 'c',
+        sentenceCount: 2,
+        createdAt: 'x',
+      },
+      {
+        id: 'a2',
+        itemCode: 'word:tea',
+        grammarCode: 'g',
+        situationCode: 'c',
+        sentenceCount: 1,
+        createdAt: 'x',
+      },
+    ];
+    const tree = renderWithTheme(<ComboHistoryList sets={sets} query="PLA" />);
+    expect(has(tree, 'combo-history-a1')).toBe(true);
+    expect(has(tree, 'combo-history-a2')).toBe(false);
   });
 });

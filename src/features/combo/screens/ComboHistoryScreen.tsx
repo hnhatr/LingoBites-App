@@ -26,11 +26,21 @@ type Props = {
  * Vocab path P5, library "Bộ câu đã học": the sets kept on this device, newest
  * first. The list alone, so the Library can show it inside its own screen.
  */
-export function ComboHistoryList({sets}: {sets: LocalComboSetSummary[]}) {
+export function ComboHistoryList({
+  sets: all,
+  query = '',
+}: {
+  sets: LocalComboSetSummary[];
+  query?: string;
+}) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const appNavigation = useAppNavigation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const needle = query.trim().toLowerCase();
+  const sets = needle
+    ? all.filter(set => set.itemCode.toLowerCase().includes(needle))
+    : all;
   return (
     <ScrollView contentContainerStyle={themedStyles.container}>
       {sets.length === 0 ? (
