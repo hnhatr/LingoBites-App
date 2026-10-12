@@ -94,6 +94,12 @@ export interface AppNavigation {
   openPackLearn(packId: string): void;
   /** Vocab path P5: the quick known check of a pack. */
   openQuickKnownCheck(packId: string): void;
+  /** Vocab path P5: set up a combo set for one word. */
+  openComboSetup(itemCode: string): void;
+  /** Vocab path P5: one combo set (sentences, IPA, batches, reports). */
+  openComboSet(setId: string): void;
+  /** Vocab path P5: the combo sets kept on this device. */
+  openComboHistory(): void;
   /** Open a quick-practice quiz generated from one downloaded lesson. */
   openPractice(lessonId: string): void;
   /**

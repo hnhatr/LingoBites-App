@@ -1287,13 +1287,15 @@
     "next": "Next pack",
     "open": "Open",
     "download": "Download",
-    "download_failed": "The pack could not be downloaded. Try again when you are online."
+    "download_failed": "The pack could not be downloaded. Try again when you are online.",
+    "combo_history": "Combo sets"
   },
   "wordPack": {
     "title": "Word pack",
     "not_downloaded": "This pack is not on the device yet.",
     "learn": "Learn this pack",
-    "check": "Quick check"
+    "check": "Quick check",
+    "combo": "Make a combo set"
   },
   "quickCheck": {
     "title": "Quick check",
@@ -1315,5 +1317,49 @@
     "save_failed": "The words could not be saved. Try again when you are online.",
     "done": "{{count}} words added to your review",
     "back": "Back"
+  },
+  "combo": {
+    "setup": {
+      "title": "Combo sentences",
+      "load_failed": "The sentences could not be loaded. Try again when you are online.",
+      "left": "Today: {{ai}} AI sets, {{sets}} sets left",
+      "locked": "This pattern has no tense to pair, so it has no combo sets yet.",
+      "situation": "Situation",
+      "tense": "Tense",
+      "groups": "Subject",
+      "count": "How many sentences",
+      "start": "Start",
+      "start_failed": "The set could not be opened. Check your limits or try again."
+    },
+    "set": {
+      "title": "Combo set",
+      "loading": "Loading the set…",
+      "load_failed": "The set could not be loaded.",
+      "hide_vi": "Hide Vietnamese",
+      "show_vi": "Show Vietnamese",
+      "no_ipa": "No IPA for this word",
+      "report": "Report this sentence",
+      "already_reported": "Reported",
+      "more": "Add a batch",
+      "add_failed": "The batch could not be added. Try again when you are online.",
+      "short_batch": "Fewer sentences than asked were available.",
+      "reported": "Thank you. The sentence was reported.",
+      "report_failed": "The report could not be sent. Try again when you are online.",
+      "empty": "No sentences in this set yet.",
+      "back": "Back"
+    },
+    "report": {
+      "wrong_meaning": "The meaning is wrong",
+      "unnatural": "It does not sound natural",
+      "wrong_tense": "The tense is wrong",
+      "wrong_subject": "The subject is wrong",
+      "other": "Something else"
+    },
+    "history": {
+      "title": "Combo sets",
+      "empty": "No sets on this device yet.",
+      "count": "{{count}} sentences",
+      "open": "Open"
+    }
   }
 }

@@ -12,6 +12,11 @@ import {
 } from '@features/account';
 import {TtsSpikeScreen} from '@features/audio';
 import {
+  ComboHistoryScreen,
+  ComboSetScreen,
+  ComboSetupScreen,
+} from '@features/combo';
+import {
   CourseLevelsScreen,
   CourseListScreen,
   LevelUnitsScreen,
@@ -323,6 +328,9 @@ function AuthenticatedRootStack() {
         component={QuickKnownCheckScreen}
         name="QuickKnownCheck"
       />
+      <RootStack.Screen component={ComboSetupScreen} name="ComboSetup" />
+      <RootStack.Screen component={ComboSetScreen} name="ComboSet" />
+      <RootStack.Screen component={ComboHistoryScreen} name="ComboHistory" />
       <RootStack.Screen component={PracticeScreen} name="Practice" />
       <RootStack.Screen component={TodayScreen} name="Today" />
       <RootStack.Screen component={SpeakingRoomScreen} name="SpeakingRoom" />

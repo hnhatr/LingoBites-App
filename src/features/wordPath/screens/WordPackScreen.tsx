@@ -59,6 +59,12 @@ export function WordPackScreen({navigation, route, items: given}: Props) {
           <AppCard key={item.code} testID={`word-pack-item-${item.code}`}>
             <AppText variant="h3">{item.text}</AppText>
             <AppText color="secondary">{item.meaning_vi}</AppText>
+            <AppButton
+              onPress={() => appNavigation.openComboSetup(item.code)}
+              testID={`word-pack-combo-${item.code}`}
+              title={t('wordPack.combo')}
+              variant="outline"
+            />
           </AppCard>
         ))}
         {items.length > 0 ? (

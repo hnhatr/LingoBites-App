@@ -175,6 +175,12 @@ export function WordPathScreen({navigation}: Props) {
             )}
           </AppCard>
         ))}
+        <AppButton
+          onPress={() => appNavigation.openComboHistory()}
+          testID="word-path-combo-history"
+          title={t('wordPath.combo_history')}
+          variant="outline"
+        />
         {failed ? (
           <AppText color="danger">{t('wordPath.download_failed')}</AppText>
         ) : null}
