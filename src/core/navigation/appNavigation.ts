@@ -29,7 +29,8 @@ export type LibrarySectionKey =
   | 'grammar'
   | 'public'
   | 'publicVideo'
-  | 'combos';
+  | 'combos'
+  | 'wordPath';
 
 export type CreateEntry =
   /** Open the paste-text composer. */

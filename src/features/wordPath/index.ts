@@ -1,3 +1,4 @@
+export {listDownloadedPacks} from './logic/wordPackRepository';
 export {nextDownloadedPack} from './logic/nextPack';
 export type {NextPack} from './logic/nextPack';
 export {PackLearnScreen} from './screens/PackLearnScreen';
@@ -8,4 +9,4 @@ export type {
   WordPackRouteParams,
 } from './screens/navigationTypes';
 export {WordPackScreen} from './screens/WordPackScreen';
-export {WordPathScreen} from './screens/WordPathScreen';
+export {WordPathList, WordPathScreen} from './screens/WordPathScreen';

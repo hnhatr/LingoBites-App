@@ -68,12 +68,10 @@ function rowsFrom(
 }
 
 /**
- * Vocab path P5: the word path. Levels, topics and packs; a pack is downloaded
- * once and then learned offline. The first pack not yet learned is suggested.
- *
- * IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar.
+ * Vocab path P5: the packs to download and learn, as a list. The Library shows
+ * it inside its own screen; `query` filters the packs by title.
  */
-export function WordPathScreen({navigation}: Props) {
+export function WordPathList({query = ''}: {query?: string}) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const appNavigation = useAppNavigation();
@@ -112,79 +110,87 @@ export function WordPathScreen({navigation}: Props) {
     setBusy(null);
   };
 
-  if (rows === null) {
-    return (
-      <AppScreen>
-        <ScreenHeader
-          onBack={() => navigation?.goBack?.()}
-          title={t('wordPath.title')}
-        />
-      </AppScreen>
-    );
-  }
+  if (rows === null) return null;
 
+  const needle = query.trim().toLowerCase();
+  const shown = needle
+    ? rows.filter(row => row.title.toLowerCase().includes(needle))
+    : rows;
   const nextPack = rows.find(row => row.learned < row.total);
 
+  return (
+    <ScrollView contentContainerStyle={themedStyles.container}>
+      {offline ? (
+        <AppText color="secondary" testID="word-path-offline">
+          {t('wordPath.offline')}
+        </AppText>
+      ) : null}
+      {rows.length === 0 ? (
+        <AppCard testID="word-path-empty">
+          <AppText color="secondary">{t('wordPath.empty')}</AppText>
+        </AppCard>
+      ) : null}
+      {shown.map(row => (
+        <AppCard key={row.packId} testID={`word-path-pack-${row.packId}`}>
+          <AppText variant="h3">{row.title}</AppText>
+          <AppText color="secondary" variant="label">
+            {t('wordPath.progress', {
+              level: row.level,
+              learned: row.learned,
+              total: row.total,
+            })}
+          </AppText>
+          {nextPack?.packId === row.packId ? (
+            <AppText color="secondary" testID="word-path-next">
+              {t('wordPath.next')}
+            </AppText>
+          ) : null}
+          {row.downloaded ? (
+            <AppButton
+              onPress={() => appNavigation.openWordPack(row.packId)}
+              testID={`word-path-open-${row.packId}`}
+              title={t('wordPath.open')}
+              variant="secondary"
+            />
+          ) : (
+            <AppButton
+              disabled={busy !== null}
+              onPress={() => download(row.packId)}
+              testID={`word-path-download-${row.packId}`}
+              title={t('wordPath.download')}
+              variant="outline"
+            />
+          )}
+        </AppCard>
+      ))}
+      <AppButton
+        onPress={() => appNavigation.openComboHistory()}
+        testID="word-path-combo-history"
+        title={t('wordPath.combo_history')}
+        variant="outline"
+      />
+      {failed ? (
+        <AppText color="danger">{t('wordPath.download_failed')}</AppText>
+      ) : null}
+    </ScrollView>
+  );
+}
+
+/**
+ * Vocab path P5: the word path as its own screen (its list is also shown in the
+ * Library).
+ *
+ * IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar.
+ */
+export function WordPathScreen({navigation}: Props) {
+  const {t} = useTranslation();
   return (
     <AppScreen>
       <ScreenHeader
         onBack={() => navigation?.goBack?.()}
         title={t('wordPath.title')}
       />
-      <ScrollView contentContainerStyle={themedStyles.container}>
-        {offline ? (
-          <AppText color="secondary" testID="word-path-offline">
-            {t('wordPath.offline')}
-          </AppText>
-        ) : null}
-        {rows.length === 0 ? (
-          <AppCard testID="word-path-empty">
-            <AppText color="secondary">{t('wordPath.empty')}</AppText>
-          </AppCard>
-        ) : null}
-        {rows.map(row => (
-          <AppCard key={row.packId} testID={`word-path-pack-${row.packId}`}>
-            <AppText variant="h3">{row.title}</AppText>
-            <AppText color="secondary" variant="label">
-              {t('wordPath.progress', {
-                level: row.level,
-                learned: row.learned,
-                total: row.total,
-              })}
-            </AppText>
-            {nextPack?.packId === row.packId ? (
-              <AppText color="secondary" testID="word-path-next">
-                {t('wordPath.next')}
-              </AppText>
-            ) : null}
-            {row.downloaded ? (
-              <AppButton
-                onPress={() => appNavigation.openWordPack(row.packId)}
-                testID={`word-path-open-${row.packId}`}
-                title={t('wordPath.open')}
-                variant="secondary"
-              />
-            ) : (
-              <AppButton
-                disabled={busy !== null}
-                onPress={() => download(row.packId)}
-                testID={`word-path-download-${row.packId}`}
-                title={t('wordPath.download')}
-                variant="outline"
-              />
-            )}
-          </AppCard>
-        ))}
-        <AppButton
-          onPress={() => appNavigation.openComboHistory()}
-          testID="word-path-combo-history"
-          title={t('wordPath.combo_history')}
-          variant="outline"
-        />
-        {failed ? (
-          <AppText color="danger">{t('wordPath.download_failed')}</AppText>
-        ) : null}
-      </ScrollView>
+      <WordPathList />
     </AppScreen>
   );
 }

@@ -33,7 +33,9 @@ export interface LibrarySectionConfig {
   moments?: boolean;
   /** Vocab path P5: the combo sets kept on this device. */
   combos?: boolean;
-  unit: 'bài' | 'từ' | 'quy tắc' | 'bộ câu';
+  /** Vocab path P5: the word packs to download and learn. */
+  wordPath?: boolean;
+  unit: 'bài' | 'từ' | 'quy tắc' | 'bộ câu' | 'gói';
 }
 
 /**
@@ -104,6 +106,16 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     emptyHint: 'Mở một bộ câu từ gói từ để bắt đầu',
     combos: true,
     unit: 'bộ câu',
+  },
+  {
+    id: 'wordPath',
+    group: 'mine',
+    icon: 'style',
+    title: 'Học từ theo gói',
+    description: 'Tải gói từ về máy và học theo từng gói, cả khi ngoại tuyến',
+    emptyHint: 'Chưa có gói nào trên máy. Chạm để xem các gói có sẵn',
+    wordPath: true,
+    unit: 'gói',
   },
   {
     id: 'public',

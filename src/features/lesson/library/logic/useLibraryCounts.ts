@@ -9,6 +9,7 @@ import {
   getBookmarkedGrammarSignature,
   getSavedFlashcardsSignature,
 } from '@features/review';
+import {listDownloadedPacks} from '@features/wordPath';
 
 import type {LessonOrigin, LessonSourceType} from '@core/schemas/lesson';
 
@@ -27,6 +28,7 @@ interface CountsState {
   vocabularySignature: string;
   grammarSignature: string;
   comboCount: number;
+  packCount: number;
 }
 
 /**
@@ -56,12 +58,14 @@ function loadCounts(previous: CountsState | null): CountsState {
   const vocabulary = getSavedFlashcardsSignature();
   const grammar = getBookmarkedGrammarSignature();
   const combos = listLocalComboSets().length;
+  const packs = listDownloadedPacks().length;
   if (
     previous &&
     previous.downloadsSignature === downloadsSignature &&
     previous.vocabularySignature === vocabulary.signature &&
     previous.grammarSignature === grammar.signature &&
-    previous.comboCount === combos
+    previous.comboCount === combos &&
+    previous.packCount === packs
   ) {
     return previous;
   }
@@ -90,6 +94,8 @@ function loadCounts(previous: CountsState | null): CountsState {
       counts[section.id] = grammar.count;
     } else if (section.id === 'combos') {
       counts[section.id] = combos;
+    } else if (section.id === 'wordPath') {
+      counts[section.id] = packs;
     } else {
       // Public sections live on the server: no local count.
       counts[section.id] = 0;
@@ -101,5 +107,6 @@ function loadCounts(previous: CountsState | null): CountsState {
     vocabularySignature: vocabulary.signature,
     grammarSignature: grammar.signature,
     comboCount: combos,
+    packCount: packs,
   };
 }

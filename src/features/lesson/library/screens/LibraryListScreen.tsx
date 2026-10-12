@@ -9,6 +9,7 @@ import {
 
 import {ComboHistoryList, listLocalComboSets} from '@features/combo';
 import {ComposeRequestCards} from '@features/lesson/player';
+import {WordPathList} from '@features/wordPath';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
@@ -103,7 +104,9 @@ export function LibraryListScreen({navigation, route}: Props) {
         {section.moments ? (
           <MomentLibraryList emptyHint={section.emptyHint} />
         ) : section.combos ? (
-          <ComboHistoryList sets={listLocalComboSets()} />
+          <ComboHistoryList query={searchQuery} sets={listLocalComboSets()} />
+        ) : section.wordPath ? (
+          <WordPathList query={searchQuery} />
         ) : section.catalog ? (
           <PublicLessonsList
             origin={section.catalog.origin}
