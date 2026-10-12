@@ -28,7 +28,8 @@ export type LibrarySectionKey =
   | 'vocabulary'
   | 'grammar'
   | 'public'
-  | 'publicVideo';
+  | 'publicVideo'
+  | 'combos';
 
 export type CreateEntry =
   /** Open the paste-text composer. */

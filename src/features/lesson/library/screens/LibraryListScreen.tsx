@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 
+import {ComboHistoryList, listLocalComboSets} from '@features/combo';
 import {ComposeRequestCards} from '@features/lesson/player';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -101,6 +102,8 @@ export function LibraryListScreen({navigation, route}: Props) {
       <View style={styles.content} testID={`library-list-${section.id}`}>
         {section.moments ? (
           <MomentLibraryList emptyHint={section.emptyHint} />
+        ) : section.combos ? (
+          <ComboHistoryList sets={listLocalComboSets()} />
         ) : section.catalog ? (
           <PublicLessonsList
             origin={section.catalog.origin}
