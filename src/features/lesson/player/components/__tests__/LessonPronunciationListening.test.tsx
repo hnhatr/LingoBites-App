@@ -71,6 +71,43 @@ describe('LessonPronunciationSection', () => {
     expect(JSON.stringify(tree.toJSON())).toContain('Bật nhẹ âm /t/.');
   });
 
+  it('quizzes the pair: the played word is the correct choice', () => {
+    const onSpeakText = jest.fn();
+    const tree = render(
+      <LessonPronunciationSection
+        entries={[PRONUNCIATION]}
+        onSpeakText={onSpeakText}
+      />,
+    );
+    const quizId = `lesson-pronunciation-${PRONUNCIATION.key}-quiz`;
+    act(() => pressable(tree, `${quizId}-listen`).props.onPress());
+    const heard = onSpeakText.mock.calls.at(-1)?.[0];
+    expect(['eight', 'ate']).toContain(heard);
+
+    const options = [0, 1].map(index =>
+      pressable(tree, `${quizId}-option-${index}`),
+    );
+    const wrong = options.find(option => option.props.title !== heard)!;
+    act(() => wrong.props.onPress());
+    expect(JSON.stringify(tree.toJSON())).toContain('Chưa đúng');
+
+    act(() => pressable(tree, `${quizId}-next`).props.onPress());
+    act(() => pressable(tree, `${quizId}-listen`).props.onPress());
+    const nextHeard = onSpeakText.mock.calls.at(-1)?.[0];
+    const right = [0, 1]
+      .map(index => pressable(tree, `${quizId}-option-${index}`))
+      .find(option => option.props.title === nextHeard)!;
+    act(() => right.props.onPress());
+    expect(JSON.stringify(tree.toJSON())).toContain('Đúng rồi.');
+  });
+
+  it('hides the quiz when the screen cannot speak', () => {
+    const tree = render(<LessonPronunciationSection entries={[PRONUNCIATION]} />);
+    expect(
+      byTestId(tree, `lesson-pronunciation-${PRONUNCIATION.key}-quiz`),
+    ).toHaveLength(0);
+  });
+
   it('shows an empty state', () => {
     const tree = render(<LessonPronunciationSection entries={[]} />);
     expect(byTestId(tree, 'lesson-pronunciation-empty').length).toBeGreaterThan(
