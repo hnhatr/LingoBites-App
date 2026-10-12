@@ -280,6 +280,7 @@ export const CatalogItemKindValues = [
   'pattern',
   'pronunciation',
   'listening',
+  'grammar',
 ] as const;
 
 export const CatalogItemKindSchema = z.enum(CatalogItemKindValues);

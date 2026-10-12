@@ -59,7 +59,7 @@ describe('catalog item codes', () => {
     for (const bad of [
       'coffee',
       ':coffee',
-      'grammar:present simple',
+      'tense:present',
       'word:',
       'word:Coffee',
       'word: coffee',

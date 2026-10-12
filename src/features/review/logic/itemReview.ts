@@ -1,3 +1,4 @@
+import {readCatalogItems} from '@core/db/catalogItems';
 import {getDatabase} from '@core/db/database';
 import {type CatalogItem, CatalogItemSchema} from '@core/schemas/lesson';
 import {recordActivityAttempt} from '@core/sync/activityAttempts';
@@ -70,6 +71,11 @@ export function itemContents(
     } catch {
       // A broken row only hides that item.
     }
+  }
+  // Vocab path P5: items of downloaded word packs, for the codes no lesson carries.
+  const missing = codes.filter(code => !found.has(code));
+  for (const [code, item] of readCatalogItems(missing)) {
+    found.set(code, item);
   }
   return found;
 }

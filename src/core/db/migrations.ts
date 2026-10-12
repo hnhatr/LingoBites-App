@@ -11,7 +11,7 @@ import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
  * (`UPGRADE_STEPS`) on top of the baseline version; the baseline statements
  * always create the latest shape.
  */
-export const APP_SCHEMA_VERSION = 10;
+export const APP_SCHEMA_VERSION = 11;
 
 /** The version the baseline was folded at; older databases are reset. */
 export const BASELINE_SCHEMA_VERSION = 7;
@@ -114,6 +114,40 @@ const LEARNING_OUTCOMES_STATEMENTS = [
 ];
 
 /**
+ * Vocab path P5: word packs on the device. `catalog_items` holds the items of
+ * downloaded packs (the App reads them where a lesson snapshot has no item);
+ * `word_pack_downloads` lists the packs; `combo_sets_local` keeps the combo
+ * sets the learner opened, for review offline.
+ */
+const WORD_PACK_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS catalog_items (
+    item_code TEXT PRIMARY KEY NOT NULL,
+    item_json TEXT NOT NULL,
+    source TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );`,
+  `CREATE TABLE IF NOT EXISTS word_pack_downloads (
+    pack_id TEXT PRIMARY KEY NOT NULL,
+    cefr_level TEXT NOT NULL,
+    topic_code TEXT,
+    position INTEGER NOT NULL,
+    title_vi TEXT NOT NULL,
+    item_codes_json TEXT NOT NULL,
+    downloaded_at TEXT NOT NULL
+  );`,
+  `CREATE TABLE IF NOT EXISTS combo_sets_local (
+    id TEXT PRIMARY KEY NOT NULL,
+    item_code TEXT NOT NULL,
+    grammar_code TEXT NOT NULL,
+    situation_code TEXT NOT NULL,
+    sentences_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );`,
+  `CREATE INDEX IF NOT EXISTS idx_combo_sets_local_created
+    ON combo_sets_local (created_at DESC);`,
+];
+
+/**
  * Upgrade steps keyed by the version they start from; each runs in the
  * migration transaction and must keep the rows it touches.
  */
@@ -136,6 +170,8 @@ const UPGRADE_STEPS: Record<number, readonly string[]> = {
   8: TASK_ANSWERS_STATEMENTS,
   // v9 → v10: new tables only.
   9: LEARNING_OUTCOMES_STATEMENTS,
+  // v10 → v11: word packs and local combo sets, new tables only.
+  10: WORD_PACK_STATEMENTS,
 };
 
 /** Every table the baseline creates, in creation order. */
@@ -160,6 +196,9 @@ export const BASELINE_TABLES = [
   'lesson_outcomes',
   'unit_outcomes',
   'item_memory',
+  'catalog_items',
+  'word_pack_downloads',
+  'combo_sets_local',
 ] as const;
 
 export const BASELINE_STATEMENTS: string[] = [
@@ -389,6 +428,7 @@ export const BASELINE_STATEMENTS: string[] = [
     ON lesson_bookmarks (tombstone, saved_at DESC);`,
   ...TASK_ANSWERS_STATEMENTS,
   ...LEARNING_OUTCOMES_STATEMENTS,
+  ...WORD_PACK_STATEMENTS,
 ];
 
 export function readAppSchemaVersion(db: QuickSQLiteConnection): number {

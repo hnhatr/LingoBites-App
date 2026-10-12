@@ -1,0 +1,56 @@
+{
+  "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000006",
+  "code": "grammar:present-perfect",
+  "kind": "grammar",
+  "language": "en",
+  "text": "Present perfect",
+  "meaning_vi": "Hiện tại hoàn thành",
+  "ipa": null,
+  "part_of_speech": null,
+  "note_vi": null,
+  "audio_media_id": null,
+  "image_media_id": null,
+  "audience": "all",
+  "payload": {
+    "family": "tense",
+    "time": "present",
+    "aspect": "perfect",
+    "forms": {
+      "affirmative": "{subject} have/has + V3",
+      "negative": "{subject} have/has not + V3",
+      "question": "Have/Has + {subject} + V3?"
+    },
+    "signals": ["since", "for", "already", "yet"],
+    "uses_vi": [
+      "Hành động bắt đầu trong quá khứ và còn liên quan tới hiện tại"
+    ],
+    "contrast_with": ["grammar:past-simple"],
+    "check": {
+      "aux": ["have", "has", "'ve", "'s"],
+      "verb_form": "past_participle"
+    },
+    "order": 6
+  },
+  "source": "admin",
+  "status": "draft",
+  "published_at": null,
+  "cefr_level": "A2",
+  "frequency_rank": null,
+  "import_batch_id": null,
+  "tags": [],
+  "created_at": "2026-10-11T00:00:00.000Z",
+  "updated_at": "2026-10-11T00:00:00.000Z",
+  "examples": [
+    {
+      "id": "0b6f5f3e-2c1a-4d8e-9f00-000000000601",
+      "text_en": "I have lived here since 2020.",
+      "text_vi": "Tôi đã sống ở đây từ năm 2020.",
+      "audio_media_id": null,
+      "audience": "all",
+      "position": 0
+    }
+  ],
+  "variants": [],
+  "errors": [],
+  "preview": []
+}

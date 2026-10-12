@@ -8,6 +8,7 @@ export const ItemKindValues = [
   'pattern',
   'pronunciation',
   'listening',
+  'grammar',
 ] as const;
 export type ItemKind = (typeof ItemKindValues)[number];
 

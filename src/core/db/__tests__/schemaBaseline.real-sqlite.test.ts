@@ -190,7 +190,7 @@ describe('baseline schema', () => {
 
     runMigrations(db);
 
-    expect(readAppSchemaVersion(db)).toBe(10);
+    expect(readAppSchemaVersion(db)).toBe(APP_SCHEMA_VERSION);
     expect(names('table')).toEqual([...BASELINE_TABLES].sort());
     expect(names('index')).toContain('idx_item_memory_due');
     expect(
