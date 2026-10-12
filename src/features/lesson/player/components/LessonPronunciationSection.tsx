@@ -9,6 +9,8 @@ import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonPronunciationEntry} from '../logic/lessonHubContent';
+import {isQuizablePair} from '../logic/minimalPairQuiz';
+import {MinimalPairQuiz} from './MinimalPairQuiz';
 
 export type LessonPronunciationSectionProps = {
   entries: LessonPronunciationEntry[];
@@ -18,7 +20,8 @@ export type LessonPronunciationSectionProps = {
 
 /**
  * "Phát âm": the focus sound, a Vietnamese tip and minimal pairs to hear side
- * by side. Read-only: speaking is scored by the lesson flow player later.
+ * by side, plus a listen-and-choose quiz on those pairs. Nothing here records
+ * the learner; speaking is scored by the lesson flow player later.
  */
 export function LessonPronunciationSection({
   entries,
@@ -96,6 +99,13 @@ export function LessonPronunciationSection({
                     </View>
                   ))}
                 </View>
+              ) : null}
+              {onSpeakText && entry.minimalPairs.some(isQuizablePair) ? (
+                <MinimalPairQuiz
+                  onSpeakText={onSpeakText}
+                  pairs={entry.minimalPairs}
+                  testID={`${testID}-quiz`}
+                />
               ) : null}
               {entry.examples.length > 0 ? (
                 <View style={styles.block}>

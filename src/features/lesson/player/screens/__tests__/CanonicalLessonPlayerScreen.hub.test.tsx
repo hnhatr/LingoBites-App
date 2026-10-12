@@ -31,6 +31,10 @@ const S1 = '11111111-1111-4111-8111-111111111101';
 const mockSpeak = jest.fn(() => Promise.resolve({ok: true}));
 jest.mock('@features/audio', () => ({
   speak: (...args: unknown[]) => mockSpeak(...(args as [])),
+  useSpeak: () => ({
+    speak: (...args: unknown[]) => mockSpeak(...(args as [])),
+    notice: null,
+  }),
 }));
 
 const snapshot: LessonSnapshot = {

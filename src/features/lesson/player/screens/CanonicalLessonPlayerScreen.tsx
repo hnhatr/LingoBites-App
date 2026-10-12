@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import {speak} from '@features/audio';
+import {useSpeak} from '@features/audio';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -98,10 +98,6 @@ type Props = NativeStackScreenProps<
 >;
 
 type PlayerView = 'hub' | LessonHubSection;
-
-function fireAndForget(task: Promise<unknown>): void {
-  task.catch(() => undefined);
-}
 
 /**
  * One player route for every canonical source. Opens the snapshot (or the
@@ -289,9 +285,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     });
   }, [inSection, navigation, openView]);
 
-  const handleSpeak = useCallback((text: string) => {
-    fireAndForget(speak(text));
-  }, []);
+  const {speak: handleSpeak, notice: speechNotice} = useSpeak();
 
   const handleRequestAnalysis = useCallback(
     async (sentenceId: string) => {
@@ -677,6 +671,15 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           ) : undefined
         }
       />
+      {speechNotice ? (
+        <View style={themedStyles.speechNotice} testID="lesson-speech-notice">
+          <AppText color="danger">
+            {speechNotice === 'VOICE_UNAVAILABLE'
+              ? t('lessonPlayer.speech_voice_missing')
+              : t('lessonPlayer.speech_unavailable')}
+          </AppText>
+        </View>
+      ) : null}
       {studyReady ? (
         <View style={themedStyles.study} testID="canonical-player-screen">
           {renderBody()}
@@ -795,6 +798,13 @@ function makeStyles(theme: AppTheme) {
     },
     study: {
       flex: 1,
+    },
+    speechNotice: {
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: theme.radius.lg,
+      marginHorizontal: theme.spacing.lg,
+      marginTop: theme.spacing.sm,
+      padding: theme.spacing.md,
     },
     errorBox: {
       backgroundColor: theme.colors.surfaceMuted,

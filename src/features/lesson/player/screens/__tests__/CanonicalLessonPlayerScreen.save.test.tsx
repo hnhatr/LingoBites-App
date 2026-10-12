@@ -36,6 +36,7 @@ const WORD_KEY = 'phrase:wake up';
 
 jest.mock('@features/audio', () => ({
   speak: () => Promise.resolve({ok: true}),
+  useSpeak: () => ({speak: () => undefined, notice: null}),
 }));
 
 const snapshot: LessonSnapshot = {
