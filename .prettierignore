@@ -4,6 +4,7 @@
 .vibeguard/
 .worktrees/
 android/
+dist/
 docs/legacy/
 ios/
 node_modules/

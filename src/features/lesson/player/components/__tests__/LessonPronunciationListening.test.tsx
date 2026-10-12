@@ -102,7 +102,9 @@ describe('LessonPronunciationSection', () => {
   });
 
   it('hides the quiz when the screen cannot speak', () => {
-    const tree = render(<LessonPronunciationSection entries={[PRONUNCIATION]} />);
+    const tree = render(
+      <LessonPronunciationSection entries={[PRONUNCIATION]} />,
+    );
     expect(
       byTestId(tree, `lesson-pronunciation-${PRONUNCIATION.key}-quiz`),
     ).toHaveLength(0);

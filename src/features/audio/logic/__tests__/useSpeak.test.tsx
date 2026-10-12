@@ -35,7 +35,10 @@ describe('useSpeak', () => {
   });
 
   it('keeps the failure as a notice and clears it on the next success', async () => {
-    mockSpeak.mockResolvedValueOnce({ok: false, errorCode: 'VOICE_UNAVAILABLE'});
+    mockSpeak.mockResolvedValueOnce({
+      ok: false,
+      errorCode: 'VOICE_UNAVAILABLE',
+    });
     await mount();
 
     await act(async () => {

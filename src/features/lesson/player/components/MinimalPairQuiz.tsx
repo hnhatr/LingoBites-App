@@ -69,7 +69,9 @@ export function MinimalPairQuiz({
             onPress={() => setChosen(word)}
             testID={`${testID}-option-${index}`}
             title={word}
-            variant={answered && word === question.target ? 'primary' : 'outline'}
+            variant={
+              answered && word === question.target ? 'primary' : 'outline'
+            }
           />
         ))}
       </View>
