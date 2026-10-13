@@ -1322,14 +1322,64 @@
     "setup": {
       "title": "Combo sentences",
       "load_failed": "The sentences could not be loaded. Try again when you are online.",
-      "left": "Today: {{ai}} AI sets, {{sets}} sets left",
       "locked": "Fixed pattern: it has no tense, so there is nothing to choose.",
       "situation": "Situation",
       "tense": "Tense",
       "groups": "Subject",
       "count": "How many sentences",
       "start": "Start",
-      "start_failed": "The set could not be opened. Check your limits or try again."
+      "start_failed": "The set could not be opened. Check your limits or try again.",
+      "ai_left": "{{count}} AI sets left",
+      "sets_left": "{{count}} sets left today",
+      "locked_short": "Fixed pattern",
+      "situation_placeholder": "Choose a situation",
+      "situation_field_hint": "Opens the list of situations",
+      "situation_pick": "Choose a situation",
+      "situation_pick_hint": "Chooses this situation",
+      "situation_search": "Search situations…",
+      "situation_search_hint": "Filters the list by situation name",
+      "situation_saved": "Saved",
+      "situation_saved_hint": "Tap the bookmark next to a situation to keep it at the top.",
+      "situation_recent": "Recently used",
+      "situation_all": "All situations",
+      "situation_none": "No situation matches “{{query}}”.",
+      "bookmark": "Save {{name}}",
+      "unbookmark": "Remove {{name}} from saved",
+      "bookmark_hint": "Keeps this situation at the top of the list",
+      "close": "Close",
+      "close_hint": "Closes the list of situations",
+      "tense_hint": "Chooses this tense",
+      "tense_picked": "Chosen:",
+      "time": {
+        "past": "Past",
+        "present": "Present",
+        "future": "Future"
+      },
+      "aspect": {
+        "simple": "Simple",
+        "continuous": "Continuous",
+        "perfect": "Perfect",
+        "perfect_continuous": "Perf. cont."
+      },
+      "groups_many": "choose several",
+      "group": {
+        "i": "I",
+        "you": "You",
+        "he_she": "He / She",
+        "we": "We",
+        "they": "They",
+        "noun_phrase": "Noun (Tom, my mom…)"
+      },
+      "polarity": "Sentence type",
+      "polarity_value": {
+        "affirmative": "Statement",
+        "negative": "Negative",
+        "question": "Question"
+      },
+      "choice_hint": "Tap to choose",
+      "count_value": "{{count}} sentences",
+      "need_situation": "Choose a situation to start",
+      "need_group": "Choose at least one subject"
     },
     "set": {
       "title": "Combo set",

@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {act} from 'react-test-renderer';
 
 import {resetDatabaseForTests} from '@core/db/database';
@@ -17,6 +18,7 @@ import {
   reportComboSentence,
 } from '../../logic/comboClient';
 import {listLocalComboSets, saveComboSet} from '../../logic/comboSetRepository';
+import {SITUATION_BOOKMARKS_KEY} from '../../logic/situationBookmarks';
 import {ComboHistoryList, ComboHistoryScreen} from '../ComboHistoryScreen';
 import {ComboSetScreen} from '../ComboSetScreen';
 import {ComboSetupScreen} from '../ComboSetupScreen';
@@ -61,8 +63,9 @@ function sentence(id: string, text: string, batch = 1): ComboSentence {
   };
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   jest.clearAllMocks();
+  await AsyncStorage.clear();
   const db = openRealSqlite();
   resetDatabaseForTests(db);
   runMigrations(db);
@@ -130,8 +133,15 @@ describe('ComboSetupScreen', () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(textOf(tree, 'combo-setup-limits')).toContain('4');
+    expect(has(tree, 'combo-setup-limits')).toBe(true);
+    expect(JSON.stringify(tree.toJSON())).toContain('Còn 4 lượt AI');
+    expect(JSON.stringify(tree.toJSON())).toContain('He / She');
+    // A plan with one polarity has nothing to choose.
+    expect(has(tree, 'combo-setup-polarity-affirmative')).toBe(false);
+    press(tree, 'combo-setup-situation-field');
     press(tree, 'combo-setup-situation-club');
+    expect(has(tree, 'combo-setup-situation-sheet')).toBe(false);
+    expect(textOf(tree, 'combo-setup-summary')).toContain('Câu lạc bộ');
     press(tree, 'combo-setup-tense-grammar:present-simple');
     press(tree, 'combo-setup-count-3');
     await act(async () => {
@@ -203,6 +213,7 @@ describe('ComboSetupScreen', () => {
     });
     expect(has(tree, 'combo-setup-locked')).toBe(true);
     expect(has(tree, 'combo-setup-tense-grammar:present-simple')).toBe(false);
+    press(tree, 'combo-setup-situation-field');
     press(tree, 'combo-setup-situation-cafe');
     press(tree, 'combo-setup-count-3');
     await act(async () => {
@@ -216,6 +227,127 @@ describe('ComboSetupScreen', () => {
       }),
     );
     expect(mocked.openComboSet.mock.calls[0]![0].grammarCode).toBeUndefined();
+  });
+
+  it('lists bookmarked and recent situations first, searches without marks, and sends the chosen polarity', async () => {
+    await AsyncStorage.setItem(
+      SITUATION_BOOKMARKS_KEY,
+      JSON.stringify(['cafe']),
+    );
+    saveComboSet(
+      {
+        id: '0b1f6c1e-2d3a-4b5c-8d9e-555555555555',
+        itemCode: 'word:play',
+        grammarCode: 'grammar:present-simple',
+        situationCode: 'gym',
+        sentences: [sentence('s1', 'I play here.')],
+      },
+      new Date('2026-10-12T08:00:00.000Z'),
+    );
+    mocked.fetchComboOptions.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        tense_mode: 'free',
+        tenses: [
+          {
+            code: 'grammar:present-simple',
+            name_en: 'Present simple',
+            time: 'present',
+            aspect: 'simple',
+          },
+        ],
+        subject_groups: ['i'],
+        polarities: ['affirmative', 'negative', 'question'],
+        batch_sizes: [3],
+        max_per_set: 27,
+        ai_left_today: 4,
+        sets_left_today: 2,
+      },
+    });
+    const situation = (code: string, titleVi: string) => ({
+      code,
+      title_en: code,
+      title_vi: titleVi,
+      register: 'casual',
+      level_code: 'A1',
+    });
+    mocked.fetchComboSituations.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        situations: [
+          situation('club', 'Câu lạc bộ'),
+          situation('cafe', 'Quán cà phê'),
+          situation('gym', 'Phòng tập'),
+        ],
+      },
+    });
+    mocked.openComboSet.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        set_id: SET_ID,
+        sentences: [sentence('s1', 'I play here.')],
+        missing: 0,
+        reason: null,
+      },
+    });
+
+    const tree = renderWithTheme(
+      <ComboSetupScreen route={{params: {itemCode: 'word:play'}}} />,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    press(tree, 'combo-setup-situation-field');
+    const sheet = textOf(tree, 'combo-setup-situation-sheet');
+    const saved = sheet.indexOf('Đã lưu');
+    const recent = sheet.indexOf('Dùng gần đây');
+    const all = sheet.indexOf('Tất cả tình huống');
+    expect(saved).toBeGreaterThan(-1);
+    expect(sheet.indexOf('Quán cà phê')).toBeGreaterThan(saved);
+    expect(sheet.indexOf('Quán cà phê')).toBeLessThan(recent);
+    expect(sheet.indexOf('Phòng tập')).toBeGreaterThan(recent);
+    expect(sheet.indexOf('Phòng tập')).toBeLessThan(all);
+
+    await act(async () => {
+      press(tree, 'combo-setup-bookmark-club');
+    });
+    expect(
+      JSON.parse((await AsyncStorage.getItem(SITUATION_BOOKMARKS_KEY)) ?? ''),
+    ).toEqual(['cafe', 'club']);
+
+    const search = tree.root.find(
+      node =>
+        node.props.testID === 'combo-setup-situation-search' &&
+        typeof node.props.onChangeText === 'function',
+    );
+    act(() => {
+      search.props.onChangeText('quan ca');
+    });
+    expect(textOf(tree, 'combo-setup-situation-sheet')).not.toContain(
+      'Câu lạc bộ',
+    );
+    act(() => {
+      search.props.onChangeText('xyz');
+    });
+    expect(has(tree, 'combo-setup-situation-empty')).toBe(true);
+    act(() => {
+      search.props.onChangeText('quan ca');
+    });
+    press(tree, 'combo-setup-situation-cafe');
+
+    press(tree, 'combo-setup-polarity-question');
+    await act(async () => {
+      press(tree, 'combo-setup-start');
+    });
+    expect(mocked.openComboSet).toHaveBeenCalledWith(
+      expect.objectContaining({situationCode: 'cafe', polarity: 'question'}),
+    );
   });
 });
 

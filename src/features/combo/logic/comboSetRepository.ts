@@ -103,3 +103,18 @@ export function readLocalComboSet(id: string): LocalComboSet | null {
     createdAt: row.created_at,
   };
 }
+
+/** The situations of the newest sets on the device, newest first, no repeats. */
+export function listRecentSituationCodes(limit: number): string[] {
+  const result = getDatabase().execute(
+    `SELECT situation_code FROM combo_sets_local
+      GROUP BY situation_code ORDER BY MAX(created_at) DESC LIMIT ?;`,
+    [limit],
+  );
+  const out: string[] = [];
+  for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
+    const row = result.rows?.item(index) as {situation_code: string};
+    out.push(row.situation_code);
+  }
+  return out;
+}
