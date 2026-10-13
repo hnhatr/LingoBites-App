@@ -17,6 +17,14 @@ jest.mock('../../logic/useLibraryCounts', () => ({
   useLibraryCounts: () => ({counts: mockCounts, refresh: mockRefresh}),
 }));
 
+jest.mock('../../components/tabs/CreatedTab', () => ({
+  CreatedTab: () => null,
+}));
+
+jest.mock('../../components/tabs/MomentsTab', () => ({
+  MomentsTab: () => null,
+}));
+
 jest.mock('@react-navigation/native', () => {
   const ReactModule = require('react');
   return {
@@ -52,6 +60,8 @@ describe('LessonsHistoryScreen (Library hub)', () => {
       video: 1,
       vocabulary: 1,
       grammar: 0,
+      combos: 0,
+      wordPath: 3,
       public: 0,
       publicVideo: 0,
     };
@@ -59,59 +69,58 @@ describe('LessonsHistoryScreen (Library hub)', () => {
 
   const renderHub = () =>
     render(<LessonsHistoryScreen navigation={navigation} route={route} />);
-  const count = (tree: ReactTestRenderer.ReactTestRenderer, id: string) =>
-    tree.root.findByProps({testID: `library-card-${id}-count`}).props.children;
-
-  it('shows one card per section, with no tab bar', () => {
-    const tree = renderHub();
-    ['mine', 'video', 'vocabulary', 'grammar', 'public', 'publicVideo'].forEach(
-      id => {
-        expect(
-          tree.root.findByProps({testID: `library-card-${id}`}),
-        ).toBeDefined();
-      },
-    );
-    expect(tree.root.findAllByProps({testID: 'library-tab-bar'})).toHaveLength(
-      0,
-    );
-  });
-
-  it('splits the hub into "Của tôi" and "Khám phá"', () => {
-    const tree = renderHub();
-    const has = (group: string, id: string) =>
-      tree.root
-        .findByProps({testID: `library-group-${group}`})
-        .findAllByProps({testID: `library-card-${id}`}).length > 0;
-    expect(has('mine', 'video')).toBe(true);
-    expect(has('mine', 'publicVideo')).toBe(false);
-    expect(has('explore', 'publicVideo')).toBe(true);
-    expect(has('explore', 'video')).toBe(false);
-  });
-
-  it('shows each section count with its unit', () => {
-    const tree = renderHub();
-    expect(count(tree, 'mine')).toBe('2 bài');
-    expect(count(tree, 'video')).toBe('1 bài');
-    expect(count(tree, 'vocabulary')).toBe('1 từ');
-  });
-
-  it('marks public cards as needing a connection', () => {
-    const tree = renderHub();
-    expect(count(tree, 'public')).toBe('Cần kết nối mạng');
-    expect(count(tree, 'publicVideo')).toBe('Cần kết nối mạng');
-  });
-
-  it('shows an action hint on an empty section', () => {
-    const tree = renderHub();
-    expect(count(tree, 'grammar')).toBe('Bấm ♡ trong bài học để lưu quy tắc');
-  });
-
-  it('opens the section list when a card is pressed', () => {
-    const tree = renderHub();
+  const byId = (tree: ReactTestRenderer.ReactTestRenderer, id: string) =>
+    tree.root.findAllByProps({testID: id});
+  const press = (tree: ReactTestRenderer.ReactTestRenderer, id: string) =>
     act(() => {
-      tree.root.findByProps({testID: 'library-card-video'}).props.onPress();
+      tree.root.findByProps({testID: id}).props.onPress();
     });
-    expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith('video');
+
+  it('shows four icon tabs and opens "Khám phá" first', () => {
+    const tree = renderHub();
+    ['explore', 'saved', 'created', 'moments'].forEach(tab => {
+      expect(byId(tree, `library-tab-${tab}`)).not.toHaveLength(0);
+    });
+    expect(
+      tree.root.findByProps({testID: 'library-tab-explore'}).props
+        .accessibilityState,
+    ).toEqual({selected: true});
+    expect(
+      tree.root.findByProps({testID: 'library-tab-title'}).props.children,
+    ).toBe('Khám phá');
+  });
+
+  it('has no create-lesson button in the header', () => {
+    const tree = renderHub();
+    expect(byId(tree, 'library-create-lesson')).toHaveLength(0);
+  });
+
+  it('only mounts a tab once it is opened', () => {
+    const tree = renderHub();
+    expect(byId(tree, 'library-panel-explore')).not.toHaveLength(0);
+    expect(byId(tree, 'library-panel-saved')).toHaveLength(0);
+    press(tree, 'library-tab-saved');
+    expect(byId(tree, 'library-panel-saved')).not.toHaveLength(0);
+    expect(
+      tree.root.findByProps({testID: 'library-tab-title'}).props.children,
+    ).toBe('Đã lưu');
+  });
+
+  it('keeps a visited tab mounted but hidden', () => {
+    const tree = renderHub();
+    press(tree, 'library-tab-moments');
+    const explore = tree.root.findByProps({testID: 'library-panel-explore'});
+    expect(explore.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({display: 'none'})]),
+    );
+  });
+
+  it('gives each icon tab its name for screen readers', () => {
+    const tree = renderHub();
+    expect(
+      tree.root.findByProps({testID: 'library-tab-created'}).props
+        .accessibilityLabel,
+    ).toBe('Bài tôi tạo');
   });
 
   it('does not reload library data again on the first focus', () => {
@@ -120,11 +129,12 @@ describe('LessonsHistoryScreen (Library hub)', () => {
     expect(mockRefresh).not.toHaveBeenCalled();
   });
 
-  it('opens the create-lesson hub from the call to action', () => {
+  it('opens a section list from a tab', () => {
     const tree = renderHub();
-    act(() => {
-      tree.root.findByProps({testID: 'library-create-lesson'}).props.onPress();
-    });
-    expect(mockAppNavigation.openCreate).toHaveBeenCalledTimes(1);
+    press(tree, 'library-tab-saved');
+    press(tree, 'library-card-vocabulary');
+    expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith(
+      'vocabulary',
+    );
   });
 });
