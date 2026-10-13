@@ -56,6 +56,7 @@ import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from '../components/SentenceAnalysisPanel';
+import type {CurrentSentenceInfo} from '../components/YouTubeLessonStudy';
 // Imported statically: a dynamic import() loads a split bundle in dev, which
 // throws when the dev client has not set up HMR. Jest mocks the iframe module
 // in jest.setup.js.
@@ -63,6 +64,10 @@ import {
   YouTubePlayer,
   type YouTubePlayerRef,
 } from '../components/YouTubePlayer';
+import {
+  formatCueLabel,
+  nextStudyPlaybackRate,
+} from '../logic/canonicalYouTubeCues';
 import {canComposeFrom} from '../logic/composePick';
 import {
   markComposedLessonSeen,
@@ -131,7 +136,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoMountKey, setVideoMountKey] = useState(0);
   const [showTranslation, setShowTranslation] = useState(true);
-  const [showIpa, setShowIpa] = useState(true);
+  // IPA starts hidden to keep the card short; the display menu turns it on.
+  const [showIpa, setShowIpa] = useState(false);
+  const [loopSentence, setLoopSentence] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [currentSentence, setCurrentSentence] =
+    useState<CurrentSentenceInfo | null>(null);
   const youtubePlayerRef = useRef<YouTubePlayerRef>(null);
   const seekHoldMsRef = useRef<number | null>(null);
   const [view, setView] = useState<PlayerView>('hub');
@@ -387,6 +397,14 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     setPositionMs(ms);
   }, []);
 
+  const handlePlayVideo = useCallback(() => {
+    youtubePlayerRef.current?.play();
+  }, []);
+
+  const handleCyclePlaybackRate = useCallback(() => {
+    setPlaybackRate(rate => nextStudyPlaybackRate(rate));
+  }, []);
+
   const handlePauseVideo = useCallback(() => {
     youtubePlayerRef.current?.pause();
     setVideoPlaying(false);
@@ -430,6 +448,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         vocabularySave={savedItems.vocabulary}
         videoLessons={videoLessons}
         onOpenVideoLesson={appNavigation.openLesson}
+        onPlayVideo={handlePlayVideo}
+        loopSentence={loopSentence}
+        playbackRate={playbackRate}
+        onCyclePlaybackRate={handleCyclePlaybackRate}
+        onCurrentSentenceChange={setCurrentSentence}
       />
     ) : null;
 
@@ -504,6 +527,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             key={videoMountKey}
             ref={youtubePlayerRef}
             videoId={snapshot.youtube!.video_id}
+            playbackRate={playbackRate}
             onPlayingChange={setVideoPlaying}
             onTimeUpdate={handleTimeUpdate}
             onError={() => {
@@ -625,7 +649,16 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   return (
     <AppScreen>
       <ScreenHeader
-        title={title}
+        title={studyReady && snapshot ? snapshot.title : title}
+        subtitle={
+          studyReady && currentSentence && currentSentence.total > 0
+            ? t('youtube.study.header_subtitle', {
+                index: currentSentence.position,
+                total: currentSentence.total,
+                time: formatCueLabel(currentSentence.startMs),
+              })
+            : undefined
+        }
         onBack={() => (inSection ? openView('hub') : navigation.goBack())}
         rightAction={
           studyReady ? (
@@ -645,13 +678,15 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                 <HeaderIconButton
                   accessibilityHint={t('compose.entry_subtitle')}
                   accessibilityLabel={t('compose.entry_a11y')}
-                  icon="auto_awesome"
+                  icon="add"
                   onPress={openCompose}
                   testID="youtube-open-compose"
                 />
               ) : null}
               <LessonDisplayToggles
+                loopSentence={loopSentence}
                 onToggleIpa={() => setShowIpa(value => !value)}
+                onToggleLoop={() => setLoopSentence(value => !value)}
                 onToggleTranslation={() => setShowTranslation(value => !value)}
                 showIpa={showIpa}
                 showTranslation={showTranslation}

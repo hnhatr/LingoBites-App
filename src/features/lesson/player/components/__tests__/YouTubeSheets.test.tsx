@@ -124,6 +124,15 @@ function visibleModal(root: ReactTestRenderer.ReactTestInstance) {
   return root.findAllByType(Modal).find(modal => modal.props.visible);
 }
 
+/** "Câu x/y" now lives on the sentence progress strip's label. */
+function sentenceIndicator(root: ReactTestRenderer.ReactTestInstance) {
+  return root.findAll(
+    node =>
+      node.props.testID === 'youtube-study-progress' &&
+      typeof node.props.accessibilityLabel === 'string',
+  )[0].props.accessibilityLabel as string;
+}
+
 describe('YouTube sheets (AC-006, AC-008)', () => {
   it('shows stored analysis vocab and grammar in the sheet (AC-006 S1)', async () => {
     const tree = await renderStudy({
@@ -202,10 +211,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
     expect(tree.root.findByProps({testID: 'mock-video-slot'})).toBeDefined();
     pressByTestId(tree.root, 'youtube-sheet-close');
     expect(visibleModal(tree.root)).toBeUndefined();
-    expect(
-      tree.root.findByProps({testID: 'youtube-sentence-indicator'}).props
-        .children,
-    ).toContain('2/3');
+    expect(sentenceIndicator(tree.root)).toContain('2/3');
     expect(tree.root.findByProps({testID: 'mock-video-slot'})).toBeDefined();
   });
 
@@ -313,10 +319,7 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
       row.props.onPress();
     });
     expect(onSeek).toHaveBeenCalledWith(9000);
-    expect(
-      tree.root.findByProps({testID: 'youtube-sentence-indicator'}).props
-        .children,
-    ).toContain('3/3');
+    expect(sentenceIndicator(tree.root)).toContain('3/3');
   });
 
   it('does not log nested VirtualizedList errors when transcript opens in Modal', async () => {

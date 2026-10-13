@@ -7,6 +7,8 @@ import {HeaderIconButton} from './HeaderIconButton';
 
 type Props = {
   title: string;
+  /** Optional muted second line under the title (one line). */
+  subtitle?: string;
   onBack?: () => void;
   backLabel?: string;
   /**
@@ -23,6 +25,7 @@ type Props = {
  */
 export function ScreenHeader({
   title,
+  subtitle,
   onBack,
   backLabel = 'Quay lại',
   rightAction,
@@ -40,15 +43,36 @@ export function ScreenHeader({
           testID="screen-header-back"
         />
       ) : null}
-      <AppText
-        color="primary"
-        numberOfLines={1}
-        style={styles.title}
-        testID="screen-header-title"
-        variant="h3"
-      >
-        {title}
-      </AppText>
+      {subtitle ? (
+        <View style={styles.title}>
+          <AppText
+            color="primary"
+            numberOfLines={1}
+            testID="screen-header-title"
+            variant="h3"
+          >
+            {title}
+          </AppText>
+          <AppText
+            color="muted"
+            numberOfLines={1}
+            testID="screen-header-subtitle"
+            variant="caption"
+          >
+            {subtitle}
+          </AppText>
+        </View>
+      ) : (
+        <AppText
+          color="primary"
+          numberOfLines={1}
+          style={styles.title}
+          testID="screen-header-title"
+          variant="h3"
+        >
+          {title}
+        </AppText>
+      )}
       {rightAction ? (
         <View style={themedStyles.actions}>{rightAction}</View>
       ) : null}

@@ -72,3 +72,13 @@ export function findVocabularyForWord(
     }) ?? null
   );
 }
+
+/** The word as written, without the punctuation around it ("Teams." -> "Teams"). */
+export function bareWord(word: string): string {
+  return word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+}
+
+/** IPA without wrapping slashes or brackets ("/tim/" -> "tim"). */
+export function stripIpaDelimiters(ipa: string): string {
+  return ipa.trim().replace(/^[/[]+|[/\]]+$/g, '');
+}

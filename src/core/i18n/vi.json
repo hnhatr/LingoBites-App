@@ -516,7 +516,21 @@
       "sheet_close_a11y": "Đóng",
       "sheet_analysis_a11y": "Sheet phân tích",
       "video_lessons_title": "Bài học từ video này",
-      "video_lessons_hint": "Mở bài học 6 bước"
+      "video_lessons_hint": "Mở bài học 6 bước",
+      "analyze_short": "Phân tích",
+      "display_menu_a11y": "Tùy chọn hiển thị",
+      "display_menu_hint": "Bật hoặc tắt nghĩa tiếng Việt, IPA và lặp câu",
+      "display_translation": "Nghĩa tiếng Việt",
+      "display_ipa": "Phiên âm IPA",
+      "display_loop": "Lặp câu hiện tại",
+      "replay_sentence_a11y": "Phát lại câu này",
+      "replay_sentence_hint": "Tua về đầu câu và phát",
+      "playback_rate_a11y": "Tốc độ phát {{rate}}×",
+      "playback_rate_hint": "Đổi tốc độ: 1×, 0.75×, 0.5×",
+      "header_subtitle": "Câu {{index}}/{{total}} · {{time}}",
+      "progress_a11y": "Tiến độ câu, chạm để nhảy đến câu",
+      "word_hint": "Xem phiên âm và nghĩa của từ",
+      "word_bubble_close": "Đóng"
     }
   },
   "gamification": {
