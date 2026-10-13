@@ -106,13 +106,15 @@ export type ComboReportReason =
   | 'wrong_subject'
   | 'other';
 
+export type ComboPolarity = 'affirmative' | 'negative' | 'question';
+
 export type OpenComboSetInput = {
   itemCode: string;
   /** Left out for a locked pattern, which has no tense. */
   grammarCode?: string;
   situationCode: string;
-  count: number;
-  polarity: 'affirmative' | 'negative' | 'question';
+  /** Sentences of each polarity in a batch, e.g. 3 affirmative and 6 questions. */
+  polarityCounts: Partial<Record<ComboPolarity, number>>;
   /** The subject groups the learner picked; all the item allows when absent. */
   subjectGroups?: string[];
 };
@@ -154,23 +156,22 @@ export function openComboSet(
       item_code: input.itemCode,
       ...(input.grammarCode ? {grammar_code: input.grammarCode} : {}),
       situation_code: input.situationCode,
-      count: input.count,
-      polarity: input.polarity,
+      polarity_counts: input.polarityCounts,
       ...(input.subjectGroups ? {subject_groups: input.subjectGroups} : {}),
     }),
     options,
   );
 }
 
+/** "Tải thêm": the Server repeats the polarity mix the set was opened with. */
 export function addToComboSet(
   setId: string,
-  count: number,
   options: JsonRequestOptions = {},
 ): Promise<ApiResult<ComboSet>> {
   return requestJson(
     ComboSetSchema,
     `/v1/combo/sets/${encodeURIComponent(setId)}/more`,
-    jsonBody({count}),
+    jsonBody({}),
     options,
   );
 }

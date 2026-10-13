@@ -1371,14 +1371,86 @@
     "setup": {
       "title": "Bộ câu tổ hợp",
       "load_failed": "Chưa tải được các lựa chọn. Hãy thử lại khi có mạng.",
-      "left": "Hôm nay: còn {{ai}} lượt AI, còn {{sets}} bộ câu",
       "locked": "Mẫu cố định: không có thì để chọn.",
       "situation": "Tình huống",
       "tense": "Thì",
       "groups": "Chủ ngữ",
       "count": "Số câu",
       "start": "Bắt đầu",
-      "start_failed": "Chưa mở được bộ câu. Hãy kiểm tra hạn mức hoặc thử lại."
+      "start_failed": "Chưa mở được bộ câu. Hãy kiểm tra hạn mức hoặc thử lại.",
+      "ai_left": "Còn {{count}} lượt AI",
+      "sets_left": "Còn {{count}} bộ câu hôm nay",
+      "locked_short": "Mẫu cố định",
+      "situation_placeholder": "Chọn tình huống",
+      "situation_field_hint": "Mở danh sách tình huống",
+      "situation_pick": "Chọn tình huống",
+      "situation_pick_hint": "Chọn tình huống này",
+      "situation_search": "Tìm tình huống…",
+      "situation_search_hint": "Lọc danh sách theo tên tình huống",
+      "situation_saved": "Đã lưu",
+      "situation_saved_hint": "Chạm biểu tượng lưu cạnh một tình huống để giữ nó ở đầu danh sách.",
+      "situation_recent": "Dùng gần đây",
+      "situation_all": "Tất cả tình huống",
+      "situation_none": "Không có tình huống nào khớp “{{query}}”.",
+      "bookmark": "Lưu {{name}}",
+      "unbookmark": "Bỏ lưu {{name}}",
+      "bookmark_hint": "Giữ tình huống này ở đầu danh sách",
+      "close": "Đóng",
+      "close_hint": "Đóng danh sách tình huống",
+      "tense_hint": "Chọn thì này",
+      "tense_picked": "Đã chọn:",
+      "time": {
+        "past": "Quá khứ",
+        "present": "Hiện tại",
+        "future": "Tương lai"
+      },
+      "aspect": {
+        "simple": "Đơn",
+        "continuous": "Tiếp diễn",
+        "perfect": "Hoàn thành",
+        "perfect_continuous": "HT tiếp diễn"
+      },
+      "groups_many": "chọn nhiều",
+      "group": {
+        "i": "I",
+        "you": "You",
+        "he_she": "He / She",
+        "we": "We",
+        "they": "They",
+        "noun_phrase": "Danh từ (Tom, mẹ tôi…)"
+      },
+      "polarity_value": {
+        "affirmative": "Khẳng định",
+        "negative": "Phủ định",
+        "question": "Câu hỏi"
+      },
+      "choice_hint": "Chạm để chọn",
+      "count_value": "{{count}} câu",
+      "need_situation": "Chọn một tình huống để bắt đầu",
+      "need_group": "Chọn ít nhất một chủ ngữ",
+      "count_by_polarity": "Số câu theo dạng",
+      "count_mix": "{{count}} câu ({{parts}})",
+      "need_count": "Chọn ít nhất một dạng câu",
+      "polarity_short": {
+        "affirmative": "KĐ",
+        "negative": "PĐ",
+        "question": "CH"
+      },
+      "polarity_example": {
+        "affirmative": "I play… · She plays…",
+        "negative": "I don't play… · She doesn't play…",
+        "question": "Do you play…? · Does she play…?"
+      },
+      "mix_even": "Mỗi dạng {{count}} câu",
+      "mix_only": "Chỉ {{name}}",
+      "mix_empty": "Chọn ít nhất {{count}} câu.",
+      "mix_full": "Đã đủ {{count}} câu, tối đa cho một lần tạo. Bớt một dạng để thêm dạng khác.",
+      "mix_step": "Mỗi lần bấm thêm hoặc bớt {{count}} câu, để mỗi chủ ngữ đều có câu.",
+      "mix_less": "Bớt câu {{name}}",
+      "mix_more": "Thêm câu {{name}}",
+      "mix_less_hint": "Bớt {{count}} câu",
+      "mix_more_hint": "Thêm {{count}} câu",
+      "mix_preset_hint": "Dùng cách chia này"
     },
     "set": {
       "title": "Bộ câu",

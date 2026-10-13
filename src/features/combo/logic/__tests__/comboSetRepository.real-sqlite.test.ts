@@ -6,6 +6,7 @@ import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 import type {ComboSentence} from '../comboClient';
 import {
   listLocalComboSets,
+  listRecentSituationCodes,
   readLocalComboSet,
   saveComboSet,
 } from '../comboSetRepository';
@@ -93,4 +94,23 @@ it('leaves a set with broken sentences empty instead of failing', () => {
      VALUES ('bad', 'word:x', 'grammar:y', 'z', 'not json', 'x');`,
   );
   expect(readLocalComboSet('bad')?.sentences).toEqual([]);
+});
+
+it('lists the situations of the newest sets first, without repeats', () => {
+  const save = (id: string, situationCode: string, at: string) =>
+    saveComboSet(
+      {
+        id,
+        itemCode: 'word:play',
+        grammarCode: 'grammar:present-simple',
+        situationCode,
+        sentences: [sentence('s1', 'I play here.')],
+      },
+      new Date(at),
+    );
+  save('0b1f6c1e-2d3a-4b5c-8d9e-000000000001', 'club', '2026-10-10T08:00:00Z');
+  save('0b1f6c1e-2d3a-4b5c-8d9e-000000000002', 'cafe', '2026-10-11T08:00:00Z');
+  save('0b1f6c1e-2d3a-4b5c-8d9e-000000000003', 'club', '2026-10-12T08:00:00Z');
+  save('0b1f6c1e-2d3a-4b5c-8d9e-000000000004', 'gym', '2026-10-09T08:00:00Z');
+  expect(listRecentSituationCodes(2)).toEqual(['club', 'cafe']);
 });

@@ -1371,14 +1371,86 @@
     "setup": {
       "title": "Combo sentences",
       "load_failed": "The sentences could not be loaded. Try again when you are online.",
-      "left": "Today: {{ai}} AI sets, {{sets}} sets left",
       "locked": "Fixed pattern: it has no tense, so there is nothing to choose.",
       "situation": "Situation",
       "tense": "Tense",
       "groups": "Subject",
       "count": "How many sentences",
       "start": "Start",
-      "start_failed": "The set could not be opened. Check your limits or try again."
+      "start_failed": "The set could not be opened. Check your limits or try again.",
+      "ai_left": "{{count}} AI sets left",
+      "sets_left": "{{count}} sets left today",
+      "locked_short": "Fixed pattern",
+      "situation_placeholder": "Choose a situation",
+      "situation_field_hint": "Opens the list of situations",
+      "situation_pick": "Choose a situation",
+      "situation_pick_hint": "Chooses this situation",
+      "situation_search": "Search situations…",
+      "situation_search_hint": "Filters the list by situation name",
+      "situation_saved": "Saved",
+      "situation_saved_hint": "Tap the bookmark next to a situation to keep it at the top.",
+      "situation_recent": "Recently used",
+      "situation_all": "All situations",
+      "situation_none": "No situation matches “{{query}}”.",
+      "bookmark": "Save {{name}}",
+      "unbookmark": "Remove {{name}} from saved",
+      "bookmark_hint": "Keeps this situation at the top of the list",
+      "close": "Close",
+      "close_hint": "Closes the list of situations",
+      "tense_hint": "Chooses this tense",
+      "tense_picked": "Chosen:",
+      "time": {
+        "past": "Past",
+        "present": "Present",
+        "future": "Future"
+      },
+      "aspect": {
+        "simple": "Simple",
+        "continuous": "Continuous",
+        "perfect": "Perfect",
+        "perfect_continuous": "Perf. cont."
+      },
+      "groups_many": "choose several",
+      "group": {
+        "i": "I",
+        "you": "You",
+        "he_she": "He / She",
+        "we": "We",
+        "they": "They",
+        "noun_phrase": "Noun (Tom, my mom…)"
+      },
+      "polarity_value": {
+        "affirmative": "Statement",
+        "negative": "Negative",
+        "question": "Question"
+      },
+      "choice_hint": "Tap to choose",
+      "count_value": "{{count}} sentences",
+      "need_situation": "Choose a situation to start",
+      "need_group": "Choose at least one subject",
+      "count_by_polarity": "Sentences by type",
+      "count_mix": "{{count}} sentences ({{parts}})",
+      "need_count": "Choose at least one sentence type",
+      "polarity_short": {
+        "affirmative": "st.",
+        "negative": "neg.",
+        "question": "q."
+      },
+      "polarity_example": {
+        "affirmative": "I play… · She plays…",
+        "negative": "I don't play… · She doesn't play…",
+        "question": "Do you play…? · Does she play…?"
+      },
+      "mix_even": "{{count}} of each",
+      "mix_only": "Only {{name}}",
+      "mix_empty": "Choose at least {{count}} sentences.",
+      "mix_full": "{{count}} sentences, the most for one set. Lower one type to add another.",
+      "mix_step": "Each tap adds or removes {{count}} sentences, so every subject gets one.",
+      "mix_less": "Fewer {{name}} sentences",
+      "mix_more": "More {{name}} sentences",
+      "mix_less_hint": "Removes {{count}} sentences",
+      "mix_more_hint": "Adds {{count}} sentences",
+      "mix_preset_hint": "Uses this split"
     },
     "set": {
       "title": "Combo set",

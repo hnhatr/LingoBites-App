@@ -117,7 +117,7 @@ export function ComboSetScreen({navigation, route}: Props) {
     if (!set || batchSize === 0) return;
     setBusy(true);
     setNotice(null);
-    const result = await addToComboSet(setId, batchSize);
+    const result = await addToComboSet(setId);
     setBusy(false);
     if (!result.ok) {
       setNotice(t('combo.set.add_failed'));
