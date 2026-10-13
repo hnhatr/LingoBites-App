@@ -42,6 +42,7 @@ import {
   getLearnerStateSnapshot,
   type LearnerStateSnapshot,
   openStudyActivity,
+  readTodayFeatures,
   type StudyActivityItem,
   type StudyBlockPlan,
   type TodayMode,
@@ -226,7 +227,13 @@ export function useHomeScreenController() {
     );
     if (reused) return reused;
     try {
-      return generateStudyBlock(learnerSnapshot, todayMode);
+      // The admin's Today features, as last received (kept on the device).
+      return generateStudyBlock(
+        learnerSnapshot,
+        todayMode,
+        undefined,
+        readTodayFeatures(),
+      );
     } catch {
       return null;
     }

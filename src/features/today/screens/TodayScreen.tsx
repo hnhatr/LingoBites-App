@@ -1,27 +1,44 @@
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {ComposeRequestCards} from '@features/lesson/player';
 import {nextDownloadedPack, type NextPack} from '@features/wordPath';
 
-import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {SectionHeader} from '@ui/components/SectionHeader';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerFace} from '@ui/theme/hardShadow';
 
 import {useAppNavigation} from '@core/navigation';
 
 import {
+  AddLessonGrid,
+  type AddLessonKind,
+  AddLessonList,
+  AddLessonSheet,
+  enabledAddLessonOptions,
+} from '../components/AddLessonOptions';
+import {
+  ACTIVITY_CATEGORY_LABELS_VI,
+  ACTIVITY_CATEGORY_ORDER,
+  type ActivityCategory,
+  activityCategory,
+} from '../logic/activityCategory';
+import {
   generateStudyBlock,
+  MODE_BUDGETS_MINUTES,
   REASON_CODE_VI_LABELS,
 } from '../logic/adaptationEngine';
 import {getLearnerStateSnapshot} from '../logic/todayAdapter';
+import {
+  readTodayFeatures,
+  refreshTodayFeatures,
+  type TodayFeatures,
+} from '../logic/todayFeatures';
 import {openStudyActivity} from '../logic/todayNavigation';
 import type {
   StudyActivityItem,
@@ -30,15 +47,53 @@ import type {
 } from '../logic/types';
 import type {TodayRouteParams} from './navigationTypes';
 
-const TARGET_MINUTES: Record<TodayMode, number> = {
-  '5-minute': 5,
-  normal: 20,
-  'deep-practice': 45,
+const MODE_OPTIONS: readonly {
+  mode: TodayMode;
+  label: string;
+  caption: string;
+}[] = [
+  {mode: '5-minute', label: '5 phút', caption: 'Nhanh'},
+  {mode: 'normal', label: '20 phút', caption: 'Chuẩn'},
+  {mode: 'deep-practice', label: '45 phút', caption: 'Luyện sâu'},
+];
+
+const CATEGORY_ICONS: Record<ActivityCategory, HandoffIconName> = {
+  review: 'replay',
+  lesson: 'menu_book',
+  skill: 'record_voice_over',
+};
+
+const ACTIVITY_ICONS: Record<string, HandoffIconName> = {
+  due_review: 'replay',
+  error_remediation: 'rule',
+  active_recall: 'psychology',
+  continue_lesson: 'play_circle',
+  next_lesson: 'auto_stories',
+  prerequisite_lesson: 'school',
+  old_situation_practice: 'history_edu',
+  speaking_practice: 'mic',
+  listening_remediation: 'hearing',
+  interview_practice: 'person',
 };
 
 type Props = {
   route?: {params?: TodayRouteParams};
 };
+
+function categoryColors(theme: AppTheme, category: ActivityCategory) {
+  switch (category) {
+    case 'review':
+      return {ink: theme.colors.secondary, soft: theme.colors.secondarySoft};
+    case 'skill':
+      return {ink: theme.colors.tertiary, soft: theme.colors.tertiarySoft};
+    default:
+      return {ink: theme.colors.primary, soft: theme.colors.accentSoft};
+  }
+}
+
+function sameFeatures(a: TodayFeatures, b: TodayFeatures): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
 
 export function TodayScreen({route}: Props = {}) {
   const {theme} = useAppTheme();
@@ -49,34 +104,73 @@ export function TodayScreen({route}: Props = {}) {
   const [plan, setPlan] = useState<StudyBlockPlan | null>(null);
   const [hasDownloads, setHasDownloads] = useState(true);
   const [nextPack, setNextPack] = useState<NextPack | null>(null);
+  const [features, setFeatures] = useState<TodayFeatures>(readTodayFeatures);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const featuresRef = useRef(features);
 
-  const loadPlan = useCallback((selectedMode: TodayMode) => {
-    const snapshot = getLearnerStateSnapshot();
-    setHasDownloads(snapshot.hasDownloadedLessons);
-    // Vocab path P5: the word pack to learn next, from the packs on this device.
-    try {
-      setNextPack(nextDownloadedPack());
-    } catch {
-      setNextPack(null);
-    }
-    const newPlan = generateStudyBlock(snapshot, selectedMode);
-    setPlan(newPlan);
-  }, []);
+  const loadPlan = useCallback(
+    (selectedMode: TodayMode, activeFeatures: TodayFeatures) => {
+      const snapshot = getLearnerStateSnapshot();
+      setHasDownloads(snapshot.hasDownloadedLessons);
+      // Vocab path P5: the word pack to learn next, from the packs on this device.
+      try {
+        setNextPack(nextDownloadedPack());
+      } catch {
+        setNextPack(null);
+      }
+      setPlan(
+        generateStudyBlock(snapshot, selectedMode, undefined, activeFeatures),
+      );
+    },
+    [],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      loadPlan(mode);
+      let active = true;
+      loadPlan(mode, featuresRef.current);
+      // The admin's Today features: plan with the kept copy at once, then
+      // again only if the Server's answer differs.
+      refreshTodayFeatures().then(fresh => {
+        if (!active || sameFeatures(fresh, featuresRef.current)) return;
+        featuresRef.current = fresh;
+        setFeatures(fresh);
+        loadPlan(mode, fresh);
+      });
+      return () => {
+        active = false;
+      };
     }, [loadPlan, mode]),
   );
 
   function handleModeChange(newMode: TodayMode) {
     setMode(newMode);
-    loadPlan(newMode);
+    loadPlan(newMode, featuresRef.current);
   }
 
   function handleExecuteActivity(activity: StudyActivityItem) {
     openStudyActivity(navigation, activity);
   }
+
+  function handleAddLesson(kind: AddLessonKind) {
+    if (kind === 'create') navigation.openCreate();
+    else if (kind === 'library') navigation.openCatalog();
+    else navigation.openCourse();
+  }
+
+  const addOptions = enabledAddLessonOptions(features);
+  const targetMinutes = MODE_BUDGETS_MINUTES[mode];
+  const firstActivity = plan?.activities[0] ?? null;
+  const freeMinutes = plan
+    ? Math.max(0, targetMinutes - plan.totalEstimatedMinutes)
+    : 0;
+
+  const minutesByCategory = ACTIVITY_CATEGORY_ORDER.map(category => ({
+    category,
+    minutes: (plan?.activities ?? [])
+      .filter(activity => activityCategory(activity.type) === category)
+      .reduce((sum, activity) => sum + activity.estimatedMinutes, 0),
+  })).filter(entry => entry.minutes > 0);
 
   return (
     <AppScreen testID="today-screen">
@@ -88,67 +182,28 @@ export function TodayScreen({route}: Props = {}) {
       >
         {/* S4.3: six-step lessons still being made. */}
         <ComposeRequestCards testID="today-compose-cards" />
+
         {!hasDownloads ? (
-          <View
-            style={themedStyles.consolidationBanner}
-            testID="today-empty-downloads"
-          >
-            <AppText variant="h3">Chưa có bài học trên máy</AppText>
-            <AppText color="secondary" variant="body">
-              Hôm nay chỉ gợi ý bài đã tải về. Mở thư viện bài học để tải một
-              bài trước khi học.
-            </AppText>
-            <AppButton
-              title="Đi tới thư viện"
-              onPress={navigation.openCatalog}
-              testID="today-go-download"
-            />
+          <View style={styles.section} testID="today-empty-downloads">
+            <View style={themedStyles.emptyCard}>
+              <AppText variant="h3">Chưa có bài học trên máy</AppText>
+              <AppText color="secondary" variant="body">
+                Thêm một bài để có kế hoạch học hôm nay. Bài đã tải học được cả
+                khi offline.
+              </AppText>
+            </View>
+            {addOptions.length > 0 ? (
+              <AddLessonList
+                onSelect={handleAddLesson}
+                options={addOptions}
+                testIDPrefix="today-empty"
+              />
+            ) : (
+              <AppText color="secondary" variant="body">
+                Các cách thêm bài đang tạm tắt. Hãy quay lại sau.
+              </AppText>
+            )}
           </View>
-        ) : null}
-
-        {/* Mode Selector (REQ-12, REQ-13) */}
-        <View style={styles.modeBlock}>
-          <AppText variant="label" color="secondary">
-            Chọn thời gian học hôm nay:
-          </AppText>
-          <View style={styles.modeSelector} testID="mode-selector">
-            <Chip
-              label="⚡ 5 phút"
-              selected={mode === '5-minute'}
-              onPress={() => handleModeChange('5-minute')}
-              testID="mode-5-minute"
-            />
-            <Chip
-              label="🎯 Tiêu chuẩn (20m)"
-              selected={mode === 'normal'}
-              onPress={() => handleModeChange('normal')}
-              testID="mode-normal"
-            />
-            <Chip
-              label="🔥 Luyện sâu (45m)"
-              selected={mode === 'deep-practice'}
-              onPress={() => handleModeChange('deep-practice')}
-              testID="mode-deep-practice"
-            />
-          </View>
-        </View>
-
-        {nextPack ? (
-          <AppCard testID="today-next-pack">
-            <AppText color="secondary" variant="label">
-              Gói từ tiếp theo
-            </AppText>
-            <AppText variant="h3">{nextPack.titleVi}</AppText>
-            <AppText color="secondary">
-              Đã nhớ {nextPack.learned}/{nextPack.total} từ
-            </AppText>
-            <AppButton
-              onPress={() => navigation.openWordPack(nextPack.packId)}
-              testID="today-next-pack-open"
-              title="Mở gói"
-              variant="secondary"
-            />
-          </AppCard>
         ) : null}
 
         {/* Backlog Control Banner (REQ-14) */}
@@ -157,161 +212,461 @@ export function TodayScreen({route}: Props = {}) {
             style={themedStyles.consolidationBanner}
             testID="backlog-consolidation-banner"
           >
-            <View style={styles.inlineHeader}>
-              <MaterialIcon
-                color={theme.colors.primary}
-                name="warning"
-                size={24}
-              />
-              <AppText variant="h3" style={{color: theme.colors.primary}}>
-                Khối củng cố (Tồn đọng cao)
+            <MaterialIcon
+              color={theme.colors.secondary}
+              name="warning"
+              size={22}
+            />
+            <View style={styles.flexCopy}>
+              <AppText variant="h3">Đang ôn tồn đọng</AppText>
+              <AppText color="secondary" variant="caption">
+                Có nhiều bài đến hạn ôn (trên 20 mục hoặc hơn 10 phút). Bài mới
+                tạm dừng đến khi bạn ôn bớt.
               </AppText>
             </View>
-            <AppText color="secondary" variant="body">
-              Lượng bài cần ôn tập đang vượt ngưỡng (&gt; 20 mục hoặc thời gian
-              ôn &gt; 10 phút). Hệ thống đã tạm dừng bài học mới để giúp bạn tập
-              trung củng cố kiến thức cũ.
-            </AppText>
           </View>
         ) : null}
 
-        {/* Explainability UI Card (REQ-31) */}
-        {plan ? (
-          <AppCard testID="explainability-card" style={styles.explainCard}>
-            <View style={styles.inlineHeader}>
-              <MaterialIcon
-                color={theme.colors.tertiary}
-                name="auto_awesome"
-                size={22}
+        {/* Plan card: time, minutes by group, start (REQ-12, REQ-13). */}
+        <View style={themedStyles.planCard}>
+          <View
+            accessibilityRole="radiogroup"
+            style={themedStyles.modeSelector}
+            testID="mode-selector"
+          >
+            {MODE_OPTIONS.map(option => (
+              <ModeOption
+                caption={option.caption}
+                key={option.mode}
+                label={option.label}
+                onPress={() => handleModeChange(option.mode)}
+                selected={mode === option.mode}
+                testID={`mode-${option.mode}`}
               />
-              <AppText variant="h3">Lý do chọn bài học</AppText>
-            </View>
-            <AppText color="secondary" variant="body">
-              {plan.explanationVi}
-            </AppText>
+            ))}
+          </View>
 
-            {plan.reasonCodes.length > 0 ? (
-              <View style={styles.reasonCodeList}>
-                {plan.reasonCodes.map(code => (
-                  <View key={code} style={themedStyles.reasonCodeChip}>
-                    <AppText
-                      variant="caption"
-                      style={themedStyles.reasonCodeText}
-                    >
-                      {REASON_CODE_VI_LABELS[code]}
+          {plan ? (
+            <View style={styles.progress}>
+              <View style={styles.progressHeader}>
+                <AppText color="secondary" variant="label">
+                  Kế hoạch hôm nay
+                </AppText>
+                <AppText variant="h3" testID="today-plan-minutes">
+                  {plan.totalEstimatedMinutes} / {targetMinutes} phút
+                </AppText>
+              </View>
+              <View style={themedStyles.progressTrack}>
+                {minutesByCategory.map(entry => (
+                  <View
+                    key={entry.category}
+                    style={[
+                      styles.progressSegment,
+                      {
+                        backgroundColor: categoryColors(theme, entry.category)
+                          .ink,
+                        flexGrow: entry.minutes,
+                      },
+                    ]}
+                  />
+                ))}
+                {freeMinutes > 0 ? (
+                  <View
+                    style={[styles.progressSegment, {flexGrow: freeMinutes}]}
+                  />
+                ) : null}
+              </View>
+              <View style={styles.legend}>
+                {minutesByCategory.map(entry => (
+                  <View key={entry.category} style={styles.legendItem}>
+                    <View
+                      style={[
+                        styles.legendDot,
+                        {
+                          backgroundColor: categoryColors(theme, entry.category)
+                            .ink,
+                        },
+                      ]}
+                    />
+                    <AppText color="secondary" variant="caption">
+                      {ACTIVITY_CATEGORY_LABELS_VI[entry.category]}{' '}
+                      {entry.minutes} phút
                     </AppText>
                   </View>
                 ))}
               </View>
-            ) : null}
-          </AppCard>
-        ) : null}
+            </View>
+          ) : null}
 
-        {/* Executable Study Block Activity List */}
-        <View style={styles.activityList}>
-          <SectionHeader
-            title="Chuỗi bài học gợi ý"
-            action={
-              plan ? (
-                <AppText color="secondary" variant="caption">
-                  Tổng thời lượng: ~{plan.totalEstimatedMinutes} phút
-                </AppText>
-              ) : null
-            }
-          />
-
-          {plan?.activities.map((activity, index) => (
+          {firstActivity ? (
             <Pressable
-              key={activity.id}
+              accessibilityHint={`Mở ${firstActivity.titleVi}`}
+              accessibilityLabel="Bắt đầu học"
               accessibilityRole="button"
-              onPress={() => handleExecuteActivity(activity)}
+              onPress={() => handleExecuteActivity(firstActivity)}
               style={({pressed}) => [
-                themedStyles.activityItem,
-                pressed && themedStyles.pressedActivityItem,
+                themedStyles.startButton,
+                pressed && themedStyles.pressed,
               ]}
-              testID={`activity-item-${index}`}
+              testID="today-start"
             >
-              <View style={themedStyles.activityIndexBadge}>
-                <AppText style={styles.activityIndexText}>{index + 1}</AppText>
-              </View>
-
-              <View style={styles.activityCopy}>
-                <AppText variant="h3">{activity.titleVi}</AppText>
-                <AppText color="secondary" variant="caption">
-                  {activity.subtitleVi}
+              <MaterialIcon
+                color={theme.colors.text.inverse}
+                name="play_circle"
+                size={30}
+              />
+              <View style={styles.flexCopy}>
+                <AppText style={themedStyles.startTitle} variant="h3">
+                  Bắt đầu học
                 </AppText>
-              </View>
-
-              <View style={styles.activityMeta}>
-                <AppText variant="caption" color="secondary">
-                  ~{activity.estimatedMinutes}m
+                <AppText style={themedStyles.startCaption} variant="caption">
+                  {firstActivity.titleVi} · {firstActivity.estimatedMinutes}{' '}
+                  phút
                 </AppText>
-                <MaterialIcon
-                  color={theme.colors.primary}
-                  name="chevron_right"
-                  size={22}
-                />
               </View>
             </Pressable>
-          ))}
-          {plan && plan.totalEstimatedMinutes < TARGET_MINUTES[mode] ? (
-            <View
-              style={themedStyles.shortfallContainer}
-              testID="shortfall-container"
-            >
-              <AppText
-                color="secondary"
-                variant="body"
-                style={styles.shortfallText}
-              >
-                Chỉ còn ~{plan.totalEstimatedMinutes} phút nội dung đến hạn hôm
-                nay.
-              </AppText>
-              <AppButton
-                title="Thêm bài mới"
-                variant="outline"
-                onPress={() => navigation.openCreate()}
-                testID="shortfall-action"
+          ) : null}
+
+          {/* Explainability (REQ-31): one short line, tags to scan. */}
+          {plan ? (
+            <View style={themedStyles.whyRow} testID="explainability-card">
+              <MaterialIcon
+                color={theme.colors.tertiary}
+                name="auto_awesome"
+                size={18}
               />
+              <View style={styles.flexCopy}>
+                <AppText color="secondary" variant="caption">
+                  <AppText variant="caption" style={styles.bold}>
+                    Vì sao?{' '}
+                  </AppText>
+                  {plan.explanationVi}
+                </AppText>
+                {plan.reasonCodes.length > 0 ? (
+                  <View style={styles.reasonCodeList}>
+                    {plan.reasonCodes.map(code => (
+                      <View key={code} style={themedStyles.reasonCodeChip}>
+                        <AppText
+                          variant="caption"
+                          style={themedStyles.reasonCodeText}
+                        >
+                          {REASON_CODE_VI_LABELS[code]}
+                        </AppText>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
             </View>
           ) : null}
         </View>
+
+        {/* Activities grouped by kind; testIDs keep the plan order. */}
+        {ACTIVITY_CATEGORY_ORDER.map(category => {
+          const items = (plan?.activities ?? [])
+            .map((activity, index) => ({activity, index}))
+            .filter(
+              ({activity}) => activityCategory(activity.type) === category,
+            );
+          if (items.length === 0) return null;
+          const colors = categoryColors(theme, category);
+          const minutes = items.reduce(
+            (sum, {activity}) => sum + activity.estimatedMinutes,
+            0,
+          );
+          return (
+            <View
+              key={category}
+              style={styles.section}
+              testID={`today-group-${category}`}
+            >
+              <View style={styles.groupHeader}>
+                <View
+                  style={[
+                    themedStyles.groupIcon,
+                    {backgroundColor: colors.soft},
+                  ]}
+                >
+                  <MaterialIcon
+                    color={colors.ink}
+                    name={CATEGORY_ICONS[category]}
+                    size={17}
+                  />
+                </View>
+                <AppText style={styles.flexCopy} variant="h3">
+                  {ACTIVITY_CATEGORY_LABELS_VI[category]}
+                </AppText>
+                <AppText color="secondary" variant="caption">
+                  {items.length} mục · {minutes} phút
+                </AppText>
+              </View>
+              {items.map(({activity, index}) => (
+                <Pressable
+                  key={activity.id}
+                  accessibilityHint={activity.subtitleVi}
+                  accessibilityLabel={activity.titleVi}
+                  accessibilityRole="button"
+                  onPress={() => handleExecuteActivity(activity)}
+                  style={({pressed}) => [
+                    themedStyles.activityItem,
+                    index === 0 && {borderColor: colors.ink},
+                    pressed && themedStyles.pressed,
+                  ]}
+                  testID={`activity-item-${index}`}
+                >
+                  <View
+                    style={[
+                      themedStyles.activityIcon,
+                      {backgroundColor: colors.soft},
+                    ]}
+                  >
+                    <MaterialIcon
+                      color={colors.ink}
+                      name={ACTIVITY_ICONS[activity.type] ?? 'menu_book'}
+                      size={22}
+                    />
+                  </View>
+                  <View style={styles.flexCopy}>
+                    {index === 0 ? (
+                      <AppText style={{color: colors.ink}} variant="caption">
+                        Làm trước
+                      </AppText>
+                    ) : null}
+                    <AppText variant="h3">{activity.titleVi}</AppText>
+                    <AppText color="secondary" variant="caption">
+                      {activity.subtitleVi}
+                    </AppText>
+                  </View>
+                  <View style={themedStyles.minutesPill}>
+                    <AppText color="secondary" variant="caption">
+                      {activity.estimatedMinutes} phút
+                    </AppText>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          );
+        })}
+
+        {/* Add a lesson: create, library or course, as the admin allows. */}
+        {plan &&
+        hasDownloads &&
+        !plan.isConsolidation &&
+        addOptions.length > 0 ? (
+          freeMinutes > 0 ? (
+            <View style={themedStyles.addBlock} testID="shortfall-container">
+              <View style={styles.groupHeader}>
+                <MaterialIcon
+                  color={theme.colors.primary}
+                  name="add"
+                  size={20}
+                />
+                <AppText style={styles.flexCopy} variant="h3">
+                  Còn trống {freeMinutes} phút
+                </AppText>
+                <AppText color="secondary" variant="caption">
+                  Thêm bài cho đủ
+                </AppText>
+              </View>
+              <AddLessonGrid onSelect={handleAddLesson} options={addOptions} />
+            </View>
+          ) : (
+            <Pressable
+              accessibilityHint="Mở bảng chọn cách thêm bài"
+              accessibilityLabel="Thêm bài học"
+              accessibilityRole="button"
+              onPress={() => setSheetOpen(true)}
+              style={({pressed}) => [
+                styles.addLink,
+                pressed && themedStyles.pressed,
+              ]}
+              testID="add-lesson-open"
+            >
+              <MaterialIcon color={theme.colors.primary} name="add" size={20} />
+              <AppText style={themedStyles.addLinkText} variant="label">
+                Thêm bài học
+              </AppText>
+            </Pressable>
+          )
+        ) : null}
+
+        {features.word_pack && nextPack ? (
+          <View style={styles.section}>
+            <View style={styles.groupHeader}>
+              <View
+                style={[
+                  themedStyles.groupIcon,
+                  {backgroundColor: theme.colors.surfaceContainer},
+                ]}
+              >
+                <MaterialIcon
+                  color={theme.colors.primary}
+                  name="style"
+                  size={17}
+                />
+              </View>
+              <AppText style={styles.flexCopy} variant="h3">
+                Từ vựng
+              </AppText>
+              <AppText color="secondary" variant="caption">
+                Gói tiếp theo
+              </AppText>
+            </View>
+            <Pressable
+              accessibilityHint="Mở gói từ vựng"
+              accessibilityLabel={nextPack.titleVi}
+              accessibilityRole="button"
+              onPress={() => navigation.openWordPack(nextPack.packId)}
+              style={({pressed}) => [
+                themedStyles.activityItem,
+                pressed && themedStyles.pressed,
+              ]}
+              testID="today-next-pack"
+            >
+              <View
+                style={[
+                  themedStyles.activityIcon,
+                  {backgroundColor: theme.colors.surfaceContainer},
+                ]}
+              >
+                <MaterialIcon
+                  color={theme.colors.primary}
+                  name="style"
+                  size={22}
+                />
+              </View>
+              <View style={styles.flexCopy}>
+                <AppText variant="h3">{nextPack.titleVi}</AppText>
+                <AppText color="secondary" variant="caption">
+                  Đã nhớ {nextPack.learned}/{nextPack.total} từ
+                </AppText>
+                <View style={themedStyles.packTrack}>
+                  <View
+                    style={[
+                      themedStyles.packFill,
+                      {
+                        width: `${
+                          nextPack.total > 0
+                            ? Math.round(
+                                (nextPack.learned / nextPack.total) * 100,
+                              )
+                            : 0
+                        }%`,
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+              <MaterialIcon
+                color={theme.colors.primary}
+                name="chevron_right"
+                size={22}
+              />
+            </Pressable>
+          </View>
+        ) : null}
       </ScrollView>
+
+      <AddLessonSheet
+        onDismiss={() => setSheetOpen(false)}
+        onSelect={handleAddLesson}
+        options={addOptions}
+        visible={sheetOpen}
+      />
     </AppScreen>
   );
 }
 
+type ModeOptionProps = {
+  label: string;
+  caption: string;
+  selected: boolean;
+  onPress: () => void;
+  testID: string;
+};
+
+function ModeOption({
+  label,
+  caption,
+  selected,
+  onPress,
+  testID,
+}: ModeOptionProps) {
+  const {theme} = useAppTheme();
+  const themedStyles = React.useMemo(() => makeStyles(theme), [theme]);
+  return (
+    <Pressable
+      accessibilityHint={`Lập kế hoạch ${label}`}
+      accessibilityLabel={`${label}, ${caption}`}
+      accessibilityRole="radio"
+      accessibilityState={{selected}}
+      onPress={onPress}
+      style={[themedStyles.modeOption, selected && themedStyles.modeSelected]}
+      testID={testID}
+    >
+      <AppText
+        style={selected ? themedStyles.modeTextSelected : undefined}
+        variant="label"
+      >
+        {label}
+      </AppText>
+      <AppText
+        color={selected ? undefined : 'secondary'}
+        style={selected ? themedStyles.modeTextSelected : undefined}
+        variant="caption"
+      >
+        {caption}
+      </AppText>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  activityCopy: {
-    flex: 1,
+  addLink: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    flexDirection: 'row',
     gap: 4,
+    padding: 4,
   },
-  activityIndexText: {
-    fontSize: 18,
+  bold: {
     fontWeight: '700',
   },
-  activityList: {
-    gap: 12,
+  flexCopy: {
+    flex: 1,
+    gap: 2,
   },
-  activityMeta: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  explainCard: {
-    gap: 10,
-  },
-  inlineHeader: {
+  groupHeader: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 8,
   },
-  modeBlock: {
-    gap: 8,
-  },
-  modeSelector: {
+  legend: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
+  },
+  legendDot: {
+    borderRadius: 4,
+    height: 8,
+    width: 8,
+  },
+  legendItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+  progress: {
+    gap: 6,
+  },
+  progressHeader: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressSegment: {
+    flexBasis: 0,
+    height: '100%',
   },
   reasonCodeList: {
     flexDirection: 'row',
@@ -319,43 +674,119 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 4,
   },
-  shortfallText: {
-    textAlign: 'center',
+  section: {
+    gap: 8,
   },
 });
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    activityIndexBadge: {
+    activityIcon: {
       alignItems: 'center',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.pill,
-      height: 44,
+      borderRadius: theme.radius.md,
+      height: 40,
       justifyContent: 'center',
-      width: 44,
+      width: 40,
     },
     activityItem: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.lg,
-      borderWidth: 1,
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      opacity: 1,
-      padding: theme.spacing.lg,
-      ...theme.shadow.soft,
-    },
-    consolidationBanner: {
-      backgroundColor: theme.colors.accentSoft,
-      borderColor: theme.colors.accent,
+      borderColor: theme.colors.outlineVariant,
       borderRadius: theme.radius.lg,
       borderWidth: 1.5,
-      gap: theme.spacing.sm,
-      padding: theme.spacing.lg,
+      flexDirection: 'row',
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
+      ...theme.shadow.soft,
     },
-    pressedActivityItem: {
+    addBlock: {
+      backgroundColor: theme.colors.surfaceMuted,
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.radius.lg,
+      borderStyle: 'dashed',
+      borderWidth: 1.5,
+      gap: theme.spacing.sm,
+      padding: theme.spacing.md,
+    },
+    addLinkText: {
+      color: theme.colors.primary,
+    },
+    consolidationBanner: {
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.secondarySoft,
+      borderRadius: theme.radius.lg,
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      padding: theme.spacing.md,
+    },
+    emptyCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.xl,
+      gap: theme.spacing.xs,
+      padding: theme.spacing.lg,
+      ...getStickerFace(theme, 5),
+    },
+    groupIcon: {
+      alignItems: 'center',
+      borderRadius: theme.radius.sm,
+      height: 26,
+      justifyContent: 'center',
+      width: 26,
+    },
+    minutesPill: {
+      backgroundColor: theme.colors.surfaceContainer,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: 2,
+    },
+    modeOption: {
+      alignItems: 'center',
+      borderRadius: theme.radius.md,
+      flex: 1,
+      paddingVertical: theme.spacing.sm,
+    },
+    modeSelected: {
+      backgroundColor: theme.colors.primary,
+    },
+    modeSelector: {
+      backgroundColor: theme.colors.surfaceContainer,
+      borderRadius: theme.radius.lg,
+      flexDirection: 'row',
+      gap: 4,
+      padding: 4,
+    },
+    modeTextSelected: {
+      color: theme.colors.text.inverse,
+    },
+    packFill: {
+      backgroundColor: theme.colors.primary,
+      height: '100%',
+    },
+    packTrack: {
+      backgroundColor: theme.colors.surfaceContainer,
+      borderRadius: theme.radius.pill,
+      height: 6,
+      marginTop: 4,
+      overflow: 'hidden',
+    },
+    planCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.xl,
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
+      ...theme.shadow.soft,
+      ...getStickerFace(theme, 5),
+    },
+    pressed: {
       opacity: theme.states.pressedOpacity,
+    },
+    progressTrack: {
+      backgroundColor: theme.colors.surfaceContainer,
+      borderRadius: theme.radius.pill,
+      flexDirection: 'row',
+      gap: 2,
+      height: 10,
+      overflow: 'hidden',
     },
     reasonCodeChip: {
       backgroundColor: theme.colors.surface,
@@ -374,14 +805,28 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
     },
-    shortfallContainer: {
+    startButton: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.accentSoft,
+      backgroundColor: theme.colors.primary,
       borderRadius: theme.radius.lg,
-      borderWidth: 1,
-      gap: theme.spacing.md,
-      padding: theme.spacing.lg,
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      padding: theme.spacing.md,
+      ...theme.shadow.strong,
+    },
+    startCaption: {
+      color: theme.colors.text.inverse,
+    },
+    startTitle: {
+      color: theme.colors.text.inverse,
+    },
+    whyRow: {
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: theme.radius.md,
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      padding: theme.spacing.sm,
     },
   });
 }

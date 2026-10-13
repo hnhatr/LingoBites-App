@@ -1,3 +1,4 @@
+import type {TodayFeatures} from './todayFeatures';
 import type {
   LearnerStateSnapshot,
   ReasonCode,
@@ -106,11 +107,18 @@ function buildVietnameseExplanation(
     : 'Kế hoạch học tập tối ưu dựa trên trạng thái hiện tại của bạn.';
 }
 
+/**
+ * `features` are the Today features the admin left on: an activity whose
+ * feature is off is never planned, and its reason is not given. Without
+ * them every rule applies.
+ */
 export function generateStudyBlock(
   snapshot: LearnerStateSnapshot,
   mode: TodayMode = 'normal',
   nowIso?: string,
+  features?: TodayFeatures,
 ): StudyBlockPlan {
+  const isOn = (type: StudyActivityItem['type']) => features?.[type] !== false;
   const nowMs = nowIso ? new Date(nowIso).getTime() : Date.now();
   const maxBudgetMinutes = MODE_BUDGETS_MINUTES[mode] ?? 20;
 
@@ -167,7 +175,11 @@ export function generateStudyBlock(
   }
 
   // 2. Recent Errors / Remediation (REQ-30, REQ-33)
-  if (snapshot.recentErrors && snapshot.recentErrors.length > 0) {
+  if (
+    isOn('error_remediation') &&
+    snapshot.recentErrors &&
+    snapshot.recentErrors.length > 0
+  ) {
     reasonCodes.push('REMEDIATE_RECENT_ERRORS');
     candidateActivities.push({
       id: 'activity-error-remediation',
@@ -184,7 +196,7 @@ export function generateStudyBlock(
   const hasListeningError = snapshot.recentErrors?.some(
     e => e.category === 'listening',
   );
-  if (hasListeningError) {
+  if (isOn('listening_remediation') && hasListeningError) {
     reasonCodes.push('LISTENING_REMEDIATION');
     candidateActivities.push({
       id: 'activity-listening-remediation',
@@ -199,7 +211,10 @@ export function generateStudyBlock(
 
   // 4. Active Recall for Recognition Weakness (REQ-33)
   // 5. Prerequisite Micro-Lesson (REQ-33)
-  if (snapshot.lessonProgression?.prerequisiteGapLessonId) {
+  if (
+    isOn('prerequisite_lesson') &&
+    snapshot.lessonProgression?.prerequisiteGapLessonId
+  ) {
     reasonCodes.push('PREREQUISITE_NEEDED');
     candidateActivities.push({
       id: 'activity-prerequisite-lesson',
@@ -218,7 +233,7 @@ export function generateStudyBlock(
   }
 
   // 7. Speaking Gap Prioritization (REQ-33)
-  if (isSpeakingGap(snapshot, nowMs)) {
+  if (isOn('speaking_practice') && isSpeakingGap(snapshot, nowMs)) {
     reasonCodes.push('SPEAKING_GAP_PRIORITY');
     candidateActivities.push({
       id: 'activity-speaking-gap',
@@ -233,7 +248,7 @@ export function generateStudyBlock(
 
   // 8. Interview Portfolio Prioritization (REQ-33)
   // Safely degrades if profileData is null/undefined
-  if (snapshot.profileData?.hasInterviewTarget) {
+  if (isOn('interview_practice') && snapshot.profileData?.hasInterviewTarget) {
     reasonCodes.push('INTERVIEW_PORTFOLIO_PRIORITY');
     candidateActivities.push({
       id: 'activity-interview-portfolio',
@@ -248,6 +263,7 @@ export function generateStudyBlock(
 
   // 9. Next Lesson Progression (REQ-12) - STOPPED/REDUCED IF CONSOLIDATION
   if (
+    isOn('next_lesson') &&
     !isConsolidation &&
     snapshot.lessonProgression?.nextLessonId &&
     snapshot.lessonProgression.nextLessonId !== inProgressLessonId
@@ -272,6 +288,7 @@ export function generateStudyBlock(
 
   // 10. Old Situation Practice (REQ-12) if not consolidation and budget allows
   if (
+    isOn('old_situation_practice') &&
     !isConsolidation &&
     snapshot.lessonProgression?.oldLessonId &&
     !candidateActivities.some(a => a.type === 'old_situation_practice')
