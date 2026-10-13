@@ -1,6 +1,10 @@
 /**
- * HomeShortcutsGrid — "Lối tắt" section title + 2x2 grid of 4 compact sticker
- * shortcuts (LING-256, LING-267, §VS-4).
+ * HomeShortcutsGrid — "Luyện thêm" section title + one row of 4 sticker icons
+ * (LING-256, LING-267, §VS-4).
+ *
+ * Each cell is a tinted icon tile with a short title under it. A shortcut
+ * with something waiting (due review cards) carries a count badge and a
+ * status line; the full sub-line stays in the accessibility label.
  *
  * Color mapping matches mockup v4 (§VS-4):
  *   1. video    -> accentSoft / primary
@@ -122,31 +126,33 @@ function ShortcutCell({
         accessibilityRole="button"
         accessibilityState={isDisabled ? {disabled: true} : undefined}
         disabled={isDisabled}
-        hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+        hitSlop={{top: 8, bottom: 8, left: 2, right: 2}}
         onPress={onPress}
         onPressIn={handlePressIn}
         testID={item.testID}
         style={({pressed}) => [
           styles.tile,
-          {backgroundColor},
           isDisabled && styles.disabledTile,
           pressed && !isDisabled && styles.pressedTile,
         ]}
       >
-        {/* Icon box 44x44 with static tilt and border 2 ink */}
-        <Animated.View style={[styles.iconBox, iconTileAnimStyle]}>
-          <HomeIcon name={item.icon} size={24} color={ink} />
+        {/* Tinted icon tile 56x56 with static tilt and border 2 ink */}
+        <Animated.View
+          style={[styles.iconBox, {backgroundColor}, iconTileAnimStyle]}
+        >
+          <HomeIcon name={item.icon} size={26} color={ink} />
         </Animated.View>
 
-        {/* Title: 15pt weight 700 */}
-        <AppText style={[styles.title, {color: ink}]} numberOfLines={2}>
+        <AppText style={styles.title} numberOfLines={2}>
           {titleText}
         </AppText>
 
-        {/* Sub-line: 12pt weight 600 */}
-        <AppText style={[styles.subLine, {color: ink}]} numberOfLines={2}>
-          {subText}
-        </AppText>
+        {/* Status line only while something is waiting (§VS-4) */}
+        {item.badgeText ? (
+          <AppText style={styles.statusLine} numberOfLines={1}>
+            {t('home.shortcut_due_status')}
+          </AppText>
+        ) : null}
 
         {/* Badge in top-right corner for review when due > 0 (§VS-4) */}
         {item.badgeText ? (
@@ -166,9 +172,14 @@ export function HomeShortcutsGrid({shortcuts, onPress}: Props) {
 
   return (
     <View style={styles.section} testID="home-shortcuts-section">
-      <AppText style={styles.sectionTitle} testID="home-shortcuts-title">
-        {t('home.shortcuts_title')}
-      </AppText>
+      <View style={styles.headerRow}>
+        <AppText style={styles.sectionTitle} testID="home-shortcuts-title">
+          {t('home.shortcuts_title')}
+        </AppText>
+        <AppText style={styles.sectionHint} numberOfLines={1}>
+          {t('home.shortcuts_hint')}
+        </AppText>
+      </View>
       <View style={styles.grid} testID="home-shortcuts-grid">
         {shortcuts.map(item => (
           <ShortcutCell
@@ -185,74 +196,82 @@ export function HomeShortcutsGrid({shortcuts, onPress}: Props) {
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     section: {
-      gap: 10,
+      gap: 12,
+    },
+    headerRow: {
+      alignItems: 'baseline',
+      flexDirection: 'row',
+      gap: 8,
+      justifyContent: 'space-between',
     },
     sectionTitle: {
       color: theme.colors.text.primary,
       fontSize: 18,
       fontWeight: '700',
     },
+    sectionHint: {
+      color: theme.colors.text.secondary,
+      flexShrink: 1,
+      fontSize: 12,
+      fontWeight: '600',
+    },
     grid: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 12,
+      gap: 6,
     },
     cellWrapper: {
-      flexBasis: '47%',
-      flexGrow: 1,
-      minWidth: 140,
+      flex: 1,
+      minWidth: 0,
     },
     tile: {
-      borderColor: theme.colors.ink,
-      borderRadius: 20,
-      borderWidth: 2,
+      alignItems: 'center',
       gap: 6,
-      minHeight: 118,
-      padding: 14,
+      paddingTop: 4,
       position: 'relative',
-      ...getHardShadow(4, theme.colors.ink),
     },
     disabledTile: {
       opacity: 0.45,
-      ...getHardShadow(2, theme.colors.ink),
     },
     pressedTile: {
-      transform: [{translateY: 3}],
-      ...getHardShadow(1, theme.colors.ink),
+      transform: [{translateY: 2}],
     },
     iconBox: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface,
       borderColor: theme.colors.ink,
-      borderRadius: 14,
+      borderRadius: 18,
       borderWidth: 2,
-      height: 44,
+      height: 56,
       justifyContent: 'center',
-      width: 44,
+      width: 56,
+      ...getHardShadow(3, theme.colors.ink),
     },
     title: {
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    subLine: {
+      color: theme.colors.text.primary,
       fontSize: 12,
-      fontWeight: '600',
-      opacity: 0.85,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    statusLine: {
+      color: theme.colors.secondary,
+      fontSize: 11,
+      fontWeight: '700',
+      marginTop: -4,
+      textAlign: 'center',
     },
     badge: {
       backgroundColor: theme.colors.secondary,
       borderColor: theme.colors.ink,
       borderRadius: 999,
       borderWidth: 2,
-      paddingHorizontal: 9,
-      paddingVertical: 3,
+      paddingHorizontal: 7,
+      paddingVertical: 1,
       position: 'absolute',
-      right: 10,
-      top: 10,
+      right: 2,
+      top: -4,
     },
     badgeText: {
       color: GRID_PALETTE.badgeText,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '800',
     },
   });

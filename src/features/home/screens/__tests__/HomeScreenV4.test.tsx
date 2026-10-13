@@ -176,6 +176,47 @@ function seedFinishedTodayPlan() {
   ]);
 }
 
+/** Stores a two-step plan for today: review done, speaking practice next. */
+function seedOpenTodayPlan() {
+  writeStoredTodayPlan({
+    dayKey: localDayKey(new Date()),
+    mode: 'normal',
+    plan: {
+      mode: 'normal',
+      isConsolidation: false,
+      totalEstimatedMinutes: 9,
+      reasonCodes: [],
+      explanationVi: '',
+      activities: [
+        {
+          id: 'activity-due-review',
+          type: 'due_review',
+          titleVi: 'Ôn thẻ đến hạn',
+          subtitleVi: '',
+          estimatedMinutes: 5,
+          targetId: 'due_review',
+          navigationTarget: {screen: 'DailyReview'},
+        },
+        {
+          id: 'activity-speaking',
+          type: 'speaking_practice',
+          titleVi: 'Luyện nói 3 câu',
+          subtitleVi: '',
+          estimatedMinutes: 4,
+          navigationTarget: {screen: 'SpeakingRoom'},
+        },
+      ],
+    },
+  });
+  (listStudyEventsOn as jest.Mock).mockReturnValue([
+    {
+      eventType: 'review_session_completed',
+      sourceEventId: 'session-1',
+      createdAt: new Date().toISOString(),
+    },
+  ]);
+}
+
 describe('Home hero states (AC-002, §VS-2.4)', () => {
   beforeEach(() => {
     __resetMockDatabases();
@@ -430,7 +471,7 @@ describe('Home today suggestion card (F12)', () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Kế hoạch hôm nay');
+    expect(text).toContain('Hôm nay học gì?');
     // One mode button shows the selected mode; the other chips stay closed
     expect(text).toContain('🎯 20 phút');
     expect(text).not.toContain('⚡ 5 phút');
@@ -441,11 +482,27 @@ describe('Home today suggestion card (F12)', () => {
     expect(heroAt).toBeGreaterThan(-1);
     expect(suggestionAt).toBeGreaterThan(heroAt);
     expect(goalAt).toBeGreaterThan(suggestionAt);
-    // The step list lives on Today; home only shows progress
-    expect(stepRows(tree).length).toBe(0);
-    expect(text).toContain('home-today-progress');
-    expect(text).toContain('bước');
     expect(text).toContain('home-weekly-goal-count');
+  });
+
+  it("lists today's steps with the done one ticked and the next one startable", async () => {
+    seedCanonicalLessonDownload();
+    seedOpenTodayPlan();
+    const tree = await renderHome();
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('Còn 1 việc · khoảng 4 phút');
+    expect(text).toContain('home-today-progress');
+    expect(new Set(stepRows(tree).map(row => row.props.testID)).size).toBe(2);
+    expect(text).toContain('Tiếp theo');
+    expect(text).toContain('Bắt đầu ›');
+    const next = tree.root
+      .findAll(
+        node => node.props.testID === 'home-today-step-activity-speaking',
+      )
+      .find(node => typeof node.props.onPress === 'function');
+    if (!next) throw new Error('No next step row found');
+    await act(async () => next.props.onPress());
+    expect(mockAppNavigation.openSpeakingRoom).toHaveBeenCalled();
   });
 
   it('the mode button opens the 5/20/45 chips and closes on a pick', async () => {
