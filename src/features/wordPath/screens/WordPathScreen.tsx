@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
@@ -9,45 +9,23 @@ import {AppText} from '@ui/components/AppText';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import {readCatalogItems} from '@core/db/catalogItems';
 import {useAppNavigation} from '@core/navigation';
 
 import {
   continuePackOf,
-  type LocalPack,
   matchesQuery,
   type PackKind,
   type PackRow,
   type PackStatus,
-  rowsFrom,
 } from '../logic/packRows';
-import {
-  learnedCount,
-  listDownloadedPacks,
-  saveWordPack,
-} from '../logic/wordPackRepository';
-import {fetchWordPack, fetchWordPath} from '../logic/wordPathClient';
-import {kindSummary} from './packText';
+import {useWordPathRows} from '../logic/useWordPathRows';
+import {saveWordPack} from '../logic/wordPackRepository';
+import {fetchWordPack} from '../logic/wordPathClient';
+import {kindSummary, packTitle} from './packText';
 
 type Props = {navigation?: {goBack?: () => void}};
 
 type Translate = ReturnType<typeof useTranslation>['t'];
-
-/** The packs on the device, with their items and how many are learned. */
-function localPacks(): LocalPack[] {
-  return listDownloadedPacks().map(pack => {
-    const byCode = readCatalogItems(pack.itemCodes);
-    return {
-      pack,
-      learned: learnedCount(pack.itemCodes),
-      items: pack.itemCodes.flatMap(code => byCode.get(code) ?? []),
-    };
-  });
-}
-
-function packTitle(t: Translate, row: PackRow): string {
-  return row.topic ?? t('wordPath.pack_title', {position: row.position});
-}
 
 function actionLabel(t: Translate, status: PackStatus): string {
   switch (status) {
@@ -332,27 +310,10 @@ export function WordPathList({query = ''}: {query?: string}) {
   const {t} = useTranslation();
   const appNavigation = useAppNavigation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const [offline, setOffline] = useState(false);
-  const [rows, setRows] = useState<PackRow[] | null>(null);
+  const {rows, offline, reload: load} = useWordPathRows();
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [kind, setKind] = useState<PackKind>('word');
-
-  const load = useCallback(async () => {
-    const local = localPacks();
-    const result = await fetchWordPath();
-    if (result.ok) {
-      setOffline(false);
-      setRows(rowsFrom(result.value, local));
-    } else {
-      setOffline(true);
-      setRows(rowsFrom(null, local));
-    }
-  }, []);
-
-  useEffect(() => {
-    load().catch(() => setOffline(true));
-  }, [load]);
 
   /** Opens a pack on the device; downloads it first when it is not. */
   const openPack = async (row: PackRow) => {

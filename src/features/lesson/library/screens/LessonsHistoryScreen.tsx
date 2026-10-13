@@ -1,130 +1,94 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useMemo} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import React, {useMemo, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {
-  GRID_TILE_GAP,
-  GridTile,
-  gridTileToneAt,
-  useGridTileWidth,
-} from '@ui/components/GridTile';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import {useAppNavigation} from '@core/navigation';
-
-import {CreateLessonHeaderButton} from '../components/CreateLessonHeaderButton';
-import {
-  LIBRARY_SECTIONS,
-  type LibraryGroup,
-  type LibrarySectionConfig,
-} from '../logic/librarySections';
-import {useLibraryCounts} from '../logic/useLibraryCounts';
-import {useRefreshOnRefocus} from '../logic/useLibrarySegments';
+import {LibraryTabBar} from '../components/LibraryTabBar';
+import {CreatedTab} from '../components/tabs/CreatedTab';
+import {ExploreTab} from '../components/tabs/ExploreTab';
+import {MomentsTab} from '../components/tabs/MomentsTab';
+import {SavedTab} from '../components/tabs/SavedTab';
+import {LIBRARY_TABS, type LibraryTab} from '../logic/librarySections';
 import type {LessonsStackParamList} from './navigationTypes';
-
-const GROUPS: {id: LibraryGroup; title: string}[] = [
-  {id: 'mine', title: 'Của tôi'},
-  {id: 'explore', title: 'Khám phá'},
-];
 
 type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
 
 export type LessonsHistoryScreenProps = Props;
 
-/** The Library hub: one card per section, each opening its own list. */
+/**
+ * The Library hub: icon tabs for what LingoBites provides, the learner's
+ * saved items, the lessons they made and their moments. A tab is mounted on
+ * its first visit and kept, so switching back does not reload it.
+ */
 export function LessonsHistoryScreen(_props: Props) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const feedClearance = useFloatingTabBarClearance();
-  const appNavigation = useAppNavigation();
-  const tileWidth = useGridTileWidth();
-  // Only counts are read here; each section loads its items when opened.
-  const {counts, refresh} = useLibraryCounts();
+  const [selected, setSelected] = useState<LibraryTab>(LIBRARY_TABS[0].id);
+  const [visited, setVisited] = useState<ReadonlySet<LibraryTab>>(
+    () => new Set([LIBRARY_TABS[0].id]),
+  );
+  const selectedTab = LIBRARY_TABS.find(tab => tab.id === selected)!;
 
-  useRefreshOnRefocus(refresh);
-
-  const countLabel = (section: LibrarySectionConfig) =>
-    section.catalog
-      ? 'Cần kết nối mạng'
-      : counts[section.id] > 0
-      ? `${counts[section.id]} ${section.unit}`
-      : section.emptyHint;
+  const select = (tab: LibraryTab) => {
+    setSelected(tab);
+    setVisited(previous =>
+      previous.has(tab) ? previous : new Set(previous).add(tab),
+    );
+  };
 
   return (
     <AppScreen>
-      <ScreenHeader
-        title="Thư viện"
-        rightAction={
-          <CreateLessonHeaderButton
-            onPress={() => appNavigation.openCreate()}
-          />
-        }
+      <ScreenHeader title="Thư viện" />
+      <LibraryTabBar
+        onSelect={select}
+        selected={selected}
+        tabs={LIBRARY_TABS}
       />
-      <ScrollView
-        contentContainerStyle={[styles.content, {paddingBottom: feedClearance}]}
-        testID="library-hub"
-      >
-        {GROUPS.map(group => (
-          <View
-            key={group.id}
-            style={styles.group}
-            testID={`library-group-${group.id}`}
-          >
-            <AppText variant="h3" style={styles.groupTitle}>
-              {group.title}
-            </AppText>
-            <View style={styles.cards}>
-              {LIBRARY_SECTIONS.filter(
-                section => section.group === group.id,
-              ).map((section, index) => (
-                <GridTile
-                  key={section.id}
-                  icon={section.icon}
-                  title={section.title}
-                  subtitle={section.description}
-                  meta={countLabel(section)}
-                  tone={gridTileToneAt(
-                    index + (group.id === 'explore' ? 1 : 0),
-                  )}
-                  width={tileWidth}
-                  accessibilityLabel={`${section.title}. ${countLabel(
-                    section,
-                  )}`}
-                  accessibilityHint={section.description}
-                  onPress={() => appNavigation.openLibrarySection(section.id)}
-                  testID={`library-card-${section.id}`}
-                  metaTestID={`library-card-${section.id}-count`}
-                />
-              ))}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      <AppText style={styles.tabTitle} testID="library-tab-title" variant="h3">
+        {selectedTab.title}
+      </AppText>
+      {LIBRARY_TABS.filter(tab => visited.has(tab.id)).map(tab => (
+        <View
+          key={tab.id}
+          style={[styles.panel, tab.id !== selected && styles.hidden]}
+          testID={`library-panel-${tab.id}`}
+        >
+          {renderTab(tab.id)}
+        </View>
+      ))}
     </AppScreen>
   );
 }
 
+function renderTab(tab: LibraryTab) {
+  switch (tab) {
+    case 'explore':
+      return <ExploreTab />;
+    case 'saved':
+      return <SavedTab />;
+    case 'created':
+      return <CreatedTab />;
+    case 'moments':
+      return <MomentsTab />;
+  }
+}
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    content: {
-      gap: theme.spacing.sm,
-      padding: theme.gutter,
-    },
-    group: {
-      gap: theme.spacing.sm,
-      marginTop: theme.spacing.md,
-    },
-    groupTitle: {
+    tabTitle: {
       color: theme.colors.text.primary,
+      paddingHorizontal: theme.gutter,
+      paddingTop: theme.spacing.md,
     },
-    cards: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: GRID_TILE_GAP,
+    panel: {
+      flex: 1,
+    },
+    hidden: {
+      display: 'none',
     },
   });
 }

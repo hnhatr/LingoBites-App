@@ -1,6 +1,6 @@
 import type {useTranslation} from 'react-i18next';
 
-import type {PackKindCounts} from '../logic/packRows';
+import type {PackKindCounts, PackRow} from '../logic/packRows';
 
 type Translate = ReturnType<typeof useTranslation>['t'];
 
@@ -11,4 +11,9 @@ export function kindSummary(t: Translate, counts: PackKindCounts): string {
     .sort((a, b) => counts[b] - counts[a])
     .map(kind => t(`wordPath.kind_${kind}`, {count: counts[kind]}))
     .join(' · ');
+}
+
+/** A pack's topic, or "Gói 3" for a pack without one. */
+export function packTitle(t: Translate, row: PackRow): string {
+  return row.topic ?? t('wordPath.pack_title', {position: row.position});
 }

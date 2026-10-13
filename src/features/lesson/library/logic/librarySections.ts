@@ -9,12 +9,30 @@ import type {
 
 export type LibrarySectionId = LibrarySectionKey;
 
-/** `mine`: the learner's own data; `explore`: lessons everyone can see. */
-export type LibraryGroup = 'mine' | 'explore';
+/**
+ * The Library hub's icon tabs: `explore` lists what LingoBites provides
+ * (packs, public lessons and videos); the others hold the learner's own
+ * saved items, created lessons and moments.
+ */
+export type LibraryTab = 'explore' | 'saved' | 'created' | 'moments';
+
+export interface LibraryTabConfig {
+  id: LibraryTab;
+  icon: HandoffIconName;
+  title: string;
+}
+
+/** Tab order on the hub; the first one opens by default. */
+export const LIBRARY_TABS: readonly LibraryTabConfig[] = [
+  {id: 'explore', icon: 'language', title: 'Khám phá'},
+  {id: 'saved', icon: 'bookmark', title: 'Đã lưu'},
+  {id: 'created', icon: 'edit', title: 'Bài tôi tạo'},
+  {id: 'moments', icon: 'auto_awesome', title: 'Khoảnh khắc'},
+];
 
 export interface LibrarySectionConfig {
   id: LibrarySectionId;
-  group: LibraryGroup;
+  tab: LibraryTab;
   icon: HandoffIconName;
   title: string;
   description: string;
@@ -47,7 +65,7 @@ export interface LibrarySectionConfig {
 export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   {
     id: 'mine',
-    group: 'mine',
+    tab: 'created',
     icon: 'edit',
     title: 'Bài học của tôi',
     description: 'Bài bạn tạo từ văn bản và ảnh',
@@ -60,7 +78,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'moments',
-    group: 'mine',
+    tab: 'moments',
     icon: 'auto_awesome',
     title: 'Khoảnh khắc',
     description: 'Bài làm từ tình huống và ảnh',
@@ -71,7 +89,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'video',
-    group: 'mine',
+    tab: 'created',
     icon: 'play_circle',
     title: 'Video của tôi',
     description: 'Bài bạn tạo từ video YouTube',
@@ -81,7 +99,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'vocabulary',
-    group: 'mine',
+    tab: 'saved',
     icon: 'style',
     title: 'Từ vựng của tôi',
     description: 'Từ bạn đã lưu để ôn tập',
@@ -90,7 +108,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'grammar',
-    group: 'mine',
+    tab: 'saved',
     icon: 'rule',
     title: 'Ngữ pháp của tôi',
     description: 'Quy tắc bạn đã lưu',
@@ -99,7 +117,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'combos',
-    group: 'mine',
+    tab: 'saved',
     icon: 'style',
     title: 'Bộ câu đã học',
     description: 'Bộ câu tổ hợp bạn đã mở, đọc được cả khi ngoại tuyến',
@@ -109,7 +127,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'wordPath',
-    group: 'mine',
+    tab: 'explore',
     icon: 'style',
     title: 'Học theo gói',
     description:
@@ -120,7 +138,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'public',
-    group: 'explore',
+    tab: 'explore',
     icon: 'auto_stories',
     title: 'Bài học công khai',
     description: 'Bài do LingoBites biên soạn',
@@ -130,7 +148,7 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
   },
   {
     id: 'publicVideo',
-    group: 'explore',
+    tab: 'explore',
     icon: 'subtitles',
     title: 'Video công khai',
     description: 'Học qua video YouTube có phụ đề',
