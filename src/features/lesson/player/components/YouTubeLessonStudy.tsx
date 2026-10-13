@@ -259,6 +259,11 @@ export function YouTubeLessonStudy({
     [onSeek, orderedSentences],
   );
 
+  const handleTogglePlay = useCallback(() => {
+    if (videoPlaying) onPauseVideo?.();
+    else onPlayVideo?.();
+  }, [onPauseVideo, onPlayVideo, videoPlaying]);
+
   const handleReplay = useCallback(() => {
     if (currentStartMs === null) return;
     setFollowVideo(true);
@@ -491,7 +496,13 @@ export function YouTubeLessonStudy({
         onOpenTranscript={handleOpenTranscript}
         onPrev={goPrev}
         onReplay={currentStartMs !== null && onSeek ? handleReplay : undefined}
+        onTogglePlay={
+          (videoPlaying ? onPauseVideo : onPlayVideo)
+            ? handleTogglePlay
+            : undefined
+        }
         playbackRate={playbackRate}
+        videoPlaying={videoPlaying}
       />
 
       <YouTubeAnalysisSheet

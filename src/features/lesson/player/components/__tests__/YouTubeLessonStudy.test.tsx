@@ -392,6 +392,36 @@ describe('YouTubeLessonStudy', () => {
       });
     }
 
+    it('plays a paused video from the toolbar', async () => {
+      const onPlayVideo = jest.fn();
+      const onPauseVideo = jest.fn();
+      const tree = await renderStudy({onPlayVideo, onPauseVideo});
+      const [button] = tree.root.findAll(
+        node => node.props.testID === 'youtube-toggle-play' && node.props.icon,
+      );
+      expect(button.props.icon).toBe('play_arrow');
+      pressByTestId(tree.root, 'youtube-toggle-play');
+      expect(onPlayVideo).toHaveBeenCalledTimes(1);
+      expect(onPauseVideo).not.toHaveBeenCalled();
+    });
+
+    it('pauses a playing video from the toolbar', async () => {
+      const onPlayVideo = jest.fn();
+      const onPauseVideo = jest.fn();
+      const tree = await renderStudy({
+        onPlayVideo,
+        onPauseVideo,
+        videoPlaying: true,
+      });
+      const [button] = tree.root.findAll(
+        node => node.props.testID === 'youtube-toggle-play' && node.props.icon,
+      );
+      expect(button.props.icon).toBe('pause');
+      pressByTestId(tree.root, 'youtube-toggle-play');
+      expect(onPauseVideo).toHaveBeenCalledTimes(1);
+      expect(onPlayVideo).not.toHaveBeenCalled();
+    });
+
     it('replays the current sentence from its start and plays', async () => {
       const onSeek = jest.fn();
       const onPlayVideo = jest.fn();

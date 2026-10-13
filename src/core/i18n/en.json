@@ -541,6 +541,8 @@
       "display_translation": "Vietnamese translation",
       "display_ipa": "IPA transcription",
       "display_loop": "Loop current sentence",
+      "play_a11y": "Play video",
+      "pause_a11y": "Pause video",
       "replay_sentence_a11y": "Replay this sentence",
       "replay_sentence_hint": "Jump to the start of the sentence and play",
       "playback_rate_a11y": "Playback speed {{rate}}×",

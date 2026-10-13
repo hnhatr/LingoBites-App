@@ -14,6 +14,10 @@ export type LessonStudyToolbarProps = {
   onOpenTranscript: () => void;
   /** Replays the current sentence from its start; omitted = disabled. */
   onReplay?: () => void;
+  /** Whether the video is playing: the main button shows pause, else play. */
+  videoPlaying?: boolean;
+  /** Toggles play/pause; omitted = disabled. */
+  onTogglePlay?: () => void;
   /** Current video speed (1, 0.75, 0.5). */
   playbackRate?: number;
   /** Cycles the speed; omitted = no speed control. */
@@ -25,7 +29,7 @@ export function formatPlaybackRate(rate: number): string {
   return `${Number.isInteger(rate) ? rate.toFixed(0) : String(rate)}×`;
 }
 
-/** Bottom listening controls: transcript, prev, replay sentence, next, speed. */
+/** Bottom listening controls: transcript, prev, play/pause, replay sentence, next, speed. */
 export function LessonStudyToolbar({
   atFirst,
   atLast,
@@ -33,6 +37,8 @@ export function LessonStudyToolbar({
   onNext,
   onOpenTranscript,
   onReplay,
+  videoPlaying = false,
+  onTogglePlay,
   playbackRate = 1,
   onCyclePlaybackRate,
 }: LessonStudyToolbarProps) {
@@ -59,15 +65,25 @@ export function LessonStudyToolbar({
         tone="surface"
       />
       <IconButton
+        accessibilityLabel={t(
+          videoPlaying ? 'youtube.study.pause_a11y' : 'youtube.study.play_a11y',
+        )}
+        disabled={!onTogglePlay}
+        icon={videoPlaying ? 'pause' : 'play_arrow'}
+        iconSize={32}
+        onPress={onTogglePlay}
+        size={56}
+        testID="youtube-toggle-play"
+        tone="accent"
+      />
+      <IconButton
         accessibilityHint={t('youtube.study.replay_sentence_hint')}
         accessibilityLabel={t('youtube.study.replay_sentence_a11y')}
         disabled={!onReplay}
         icon="replay"
-        iconSize={28}
         onPress={onReplay}
-        size={56}
         testID="youtube-replay-sentence"
-        tone="accent"
+        tone="surface"
       />
       <IconButton
         accessibilityLabel={t('youtube.study.cards_next_a11y')}
