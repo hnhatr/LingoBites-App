@@ -1370,7 +1370,6 @@
         "they": "They",
         "noun_phrase": "Noun (Tom, my mom…)"
       },
-      "polarity": "Sentence type",
       "polarity_value": {
         "affirmative": "Statement",
         "negative": "Negative",
@@ -1379,7 +1378,30 @@
       "choice_hint": "Tap to choose",
       "count_value": "{{count}} sentences",
       "need_situation": "Choose a situation to start",
-      "need_group": "Choose at least one subject"
+      "need_group": "Choose at least one subject",
+      "count_by_polarity": "Sentences by type",
+      "count_mix": "{{count}} sentences ({{parts}})",
+      "need_count": "Choose at least one sentence type",
+      "polarity_short": {
+        "affirmative": "st.",
+        "negative": "neg.",
+        "question": "q."
+      },
+      "polarity_example": {
+        "affirmative": "I play… · She plays…",
+        "negative": "I don't play… · She doesn't play…",
+        "question": "Do you play…? · Does she play…?"
+      },
+      "mix_even": "{{count}} of each",
+      "mix_only": "Only {{name}}",
+      "mix_empty": "Choose at least {{count}} sentences.",
+      "mix_full": "{{count}} sentences, the most for one set. Lower one type to add another.",
+      "mix_step": "Each tap adds or removes {{count}} sentences, so every subject gets one.",
+      "mix_less": "Fewer {{name}} sentences",
+      "mix_more": "More {{name}} sentences",
+      "mix_less_hint": "Removes {{count}} sentences",
+      "mix_more_hint": "Adds {{count}} sentences",
+      "mix_preset_hint": "Uses this split"
     },
     "set": {
       "title": "Combo set",

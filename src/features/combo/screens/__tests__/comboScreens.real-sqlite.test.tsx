@@ -137,7 +137,7 @@ describe('ComboSetupScreen', () => {
     expect(JSON.stringify(tree.toJSON())).toContain('Còn 4 lượt AI');
     expect(JSON.stringify(tree.toJSON())).toContain('He / She');
     // A plan with one polarity has nothing to choose.
-    expect(has(tree, 'combo-setup-polarity-affirmative')).toBe(false);
+    expect(has(tree, 'combo-setup-mix')).toBe(false);
     press(tree, 'combo-setup-situation-field');
     press(tree, 'combo-setup-situation-club');
     expect(has(tree, 'combo-setup-situation-sheet')).toBe(false);
@@ -152,8 +152,7 @@ describe('ComboSetupScreen', () => {
       itemCode: 'word:play',
       grammarCode: 'grammar:present-simple',
       situationCode: 'club',
-      count: 3,
-      polarity: 'affirmative',
+      polarityCounts: {affirmative: 3},
       subjectGroups: ['i', 'he_she'],
     });
     expect(listLocalComboSets()).toEqual([
@@ -223,13 +222,13 @@ describe('ComboSetupScreen', () => {
       expect.objectContaining({
         itemCode: 'pattern:can-i-have',
         situationCode: 'cafe',
-        count: 3,
+        polarityCounts: {affirmative: 3},
       }),
     );
     expect(mocked.openComboSet.mock.calls[0]![0].grammarCode).toBeUndefined();
   });
 
-  it('lists bookmarked and recent situations first, searches without marks, and sends the chosen polarity', async () => {
+  it('lists bookmarked and recent situations first, searches without marks, and sends the polarity mix', async () => {
     await AsyncStorage.setItem(
       SITUATION_BOOKMARKS_KEY,
       JSON.stringify(['cafe']),
@@ -260,7 +259,7 @@ describe('ComboSetupScreen', () => {
         ],
         subject_groups: ['i'],
         polarities: ['affirmative', 'negative', 'question'],
-        batch_sizes: [3],
+        batch_sizes: [3, 6, 9, 12],
         max_per_set: 27,
         ai_left_today: 4,
         sets_left_today: 2,
@@ -341,12 +340,30 @@ describe('ComboSetupScreen', () => {
     });
     press(tree, 'combo-setup-situation-cafe');
 
-    press(tree, 'combo-setup-polarity-question');
+    // 3 affirmative to start; a quick pick fills the batch with questions.
+    expect(textOf(tree, 'combo-setup-mix-value-affirmative')).toBe('3');
+    press(tree, 'combo-setup-mix-preset-question');
+    expect(textOf(tree, 'combo-setup-mix-value-question')).toBe('12');
+    expect(textOf(tree, 'combo-setup-mix-value-affirmative')).toBe('0');
+    expect(textOf(tree, 'combo-setup-mix-hint')).toContain('Đã đủ 12 câu');
+    // A full batch takes no more: lower questions to add negatives.
+    press(tree, 'combo-setup-mix-more-negative');
+    expect(textOf(tree, 'combo-setup-mix-value-negative')).toBe('0');
+    press(tree, 'combo-setup-mix-less-question');
+    press(tree, 'combo-setup-mix-less-question');
+    press(tree, 'combo-setup-mix-more-negative');
+    press(tree, 'combo-setup-mix-more-affirmative');
+    expect(textOf(tree, 'combo-setup-summary')).toContain(
+      '12 câu (3 KĐ, 3 PĐ, 6 CH)',
+    );
     await act(async () => {
       press(tree, 'combo-setup-start');
     });
     expect(mocked.openComboSet).toHaveBeenCalledWith(
-      expect.objectContaining({situationCode: 'cafe', polarity: 'question'}),
+      expect.objectContaining({
+        situationCode: 'cafe',
+        polarityCounts: {question: 6, negative: 3, affirmative: 3},
+      }),
     );
   });
 });
@@ -390,7 +407,7 @@ describe('ComboSetScreen', () => {
     await act(async () => {
       press(tree, 'combo-set-more');
     });
-    expect(mocked.addToComboSet).toHaveBeenCalledWith(SET_ID, 2);
+    expect(mocked.addToComboSet).toHaveBeenCalledWith(SET_ID);
     expect(has(tree, 'combo-sentence-s3')).toBe(true);
     expect(listLocalComboSets()).toEqual([
       expect.objectContaining({id: SET_ID, sentenceCount: 4}),

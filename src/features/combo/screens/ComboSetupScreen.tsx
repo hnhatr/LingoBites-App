@@ -14,6 +14,11 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 
+import {
+  mixTotal,
+  type PolarityMix,
+  PolarityMixPicker,
+} from '../components/PolarityMixPicker';
 import {SegmentedChoice} from '../components/SegmentedChoice';
 import {
   type Situation,
@@ -22,6 +27,7 @@ import {
 import {TenseGrid} from '../components/TenseGrid';
 import {
   type ComboOptions,
+  type ComboPolarity,
   fetchComboOptions,
   fetchComboSituations,
   openComboSet,
@@ -43,10 +49,16 @@ type Props = {
 
 const RECENT_SITUATIONS = 3;
 
+const POLARITIES: readonly string[] = ['affirmative', 'negative', 'question'];
+
+function isPolarity(value: string): value is ComboPolarity {
+  return POLARITIES.includes(value);
+}
+
 /**
  * Vocab path P5: set up a combo set for one word. The learner picks the
  * situation, the tense (not for a locked pattern), the subject groups, the
- * polarity (only when the plan allows more than one) and how many sentences;
+ * how many sentences, per polarity when the plan allows more than one;
  * the Server's limits show under the title. The situation comes from a
  * searchable sheet with the learner's bookmarks and recent picks on top.
  *
@@ -64,8 +76,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const [situation, setSituation] = useState<string | null>(null);
   const [tense, setTense] = useState<string | null>(null);
   const [groups, setGroups] = useState<string[]>([]);
-  const [polarity, setPolarity] = useState<string>('affirmative');
-  const [count, setCount] = useState<number | null>(null);
+  const [mix, setMix] = useState<PolarityMix>({});
   const [busy, setBusy] = useState(false);
   const [startFailed, setStartFailed] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -99,8 +110,9 @@ export function ComboSetupScreen({navigation, route}: Props) {
         setOptions(opts.value);
         setSituations(sits.value.situations);
         setGroups(opts.value.subject_groups);
-        setPolarity(opts.value.polarities[0] ?? 'affirmative');
-        setCount(opts.value.batch_sizes[0] ?? null);
+        const first = opts.value.polarities.find(isPolarity);
+        const size = opts.value.batch_sizes[0];
+        setMix(first && size ? {[first]: size} : {});
         setTense(opts.value.tenses[0]?.code ?? null);
       })
       .catch(() => {
@@ -112,11 +124,14 @@ export function ComboSetupScreen({navigation, route}: Props) {
   }, [itemCode]);
 
   const locked = options?.tense_mode === 'locked';
+  const polarities = options?.polarities.filter(isPolarity) ?? [];
+  const batchSizes = options?.batch_sizes ?? [];
+  const total = mixTotal(mix);
   // A locked pattern has no tense to pick: the Server uses its own placeholder.
   const ready =
     options !== null &&
     situation !== null &&
-    count !== null &&
+    batchSizes.includes(total) &&
     groups.length > 0 &&
     (locked || tense !== null);
 
@@ -146,20 +161,37 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const tenseName = options?.tenses.find(
     entry => entry.code === tense,
   )?.name_en;
+  const countText =
+    polarities.length > 1
+      ? t('combo.setup.count_mix', {
+          count: total,
+          parts: polarities
+            .filter(polarity => (mix[polarity] ?? 0) > 0)
+            .map(
+              polarity =>
+                `${mix[polarity]} ${t(
+                  `combo.setup.polarity_short.${polarity}`,
+                )}`,
+            )
+            .join(', '),
+        })
+      : t('combo.setup.count_value', {count: total});
   const summary = !situationTitle
     ? t('combo.setup.need_situation')
     : groups.length === 0
     ? t('combo.setup.need_group')
+    : total === 0
+    ? t('combo.setup.need_count')
     : [
         situationTitle,
         locked ? t('combo.setup.locked_short') : tenseName,
-        count !== null ? t('combo.setup.count_value', {count}) : null,
+        countText,
       ]
         .filter(Boolean)
         .join(' · ');
 
   const start = async () => {
-    if (!options || !ready || situation === null || count === null) return;
+    if (!options || !ready || situation === null) return;
     setBusy(true);
     setStartFailed(false);
     const grammarCode = locked ? undefined : tense ?? undefined;
@@ -167,8 +199,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
       itemCode,
       grammarCode,
       situationCode: situation,
-      count,
-      polarity: polarity as 'affirmative' | 'negative' | 'question',
+      polarityCounts: mix,
       subjectGroups: groups,
     });
     setBusy(false);
@@ -288,40 +319,35 @@ export function ComboSetupScreen({navigation, route}: Props) {
             </View>
           </View>
         ) : null}
-        {options && options.polarities.length > 1 ? (
-          <View style={styles.section}>
-            <AppText color="secondary" style={styles.heading} variant="label">
-              {t('combo.setup.polarity')}
-            </AppText>
-            <SegmentedChoice
-              accessibilityHint={t('combo.setup.choice_hint')}
-              onSelect={setPolarity}
-              options={options.polarities.map(value => ({
-                key: value,
-                label: t(`combo.setup.polarity_value.${value}`, {
-                  defaultValue: value,
-                }),
-                testID: `combo-setup-polarity-${value}`,
-              }))}
-              selected={polarity}
-            />
-          </View>
-        ) : null}
         {options ? (
           <View style={styles.section}>
             <AppText color="secondary" style={styles.heading} variant="label">
-              {t('combo.setup.count')}
+              {polarities.length > 1
+                ? t('combo.setup.count_by_polarity')
+                : t('combo.setup.count')}
             </AppText>
-            <SegmentedChoice
-              accessibilityHint={t('combo.setup.choice_hint')}
-              onSelect={key => setCount(Number(key))}
-              options={options.batch_sizes.map(size => ({
-                key: String(size),
-                label: t('combo.setup.count_value', {count: size}),
-                testID: `combo-setup-count-${size}`,
-              }))}
-              selected={count === null ? null : String(count)}
-            />
+            {polarities.length > 1 ? (
+              <PolarityMixPicker
+                max={Math.max(...batchSizes)}
+                mix={mix}
+                onChange={setMix}
+                polarities={polarities}
+                step={Math.min(...batchSizes)}
+              />
+            ) : (
+              <SegmentedChoice
+                accessibilityHint={t('combo.setup.choice_hint')}
+                onSelect={key =>
+                  setMix(polarities[0] ? {[polarities[0]]: Number(key)} : {})
+                }
+                options={batchSizes.map(size => ({
+                  key: String(size),
+                  label: t('combo.setup.count_value', {count: size}),
+                  testID: `combo-setup-count-${size}`,
+                }))}
+                selected={String(total)}
+              />
+            )}
           </View>
         ) : null}
       </ScrollView>
@@ -329,7 +355,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
         <BottomActionBar>
           <AppText
             color={ready ? 'primary' : 'muted'}
-            numberOfLines={1}
+            numberOfLines={2}
             style={styles.summary}
             testID="combo-setup-summary"
             variant="label"

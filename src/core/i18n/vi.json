@@ -1370,7 +1370,6 @@
         "they": "They",
         "noun_phrase": "Danh từ (Tom, mẹ tôi…)"
       },
-      "polarity": "Dạng câu",
       "polarity_value": {
         "affirmative": "Khẳng định",
         "negative": "Phủ định",
@@ -1379,7 +1378,30 @@
       "choice_hint": "Chạm để chọn",
       "count_value": "{{count}} câu",
       "need_situation": "Chọn một tình huống để bắt đầu",
-      "need_group": "Chọn ít nhất một chủ ngữ"
+      "need_group": "Chọn ít nhất một chủ ngữ",
+      "count_by_polarity": "Số câu theo dạng",
+      "count_mix": "{{count}} câu ({{parts}})",
+      "need_count": "Chọn ít nhất một dạng câu",
+      "polarity_short": {
+        "affirmative": "KĐ",
+        "negative": "PĐ",
+        "question": "CH"
+      },
+      "polarity_example": {
+        "affirmative": "I play… · She plays…",
+        "negative": "I don't play… · She doesn't play…",
+        "question": "Do you play…? · Does she play…?"
+      },
+      "mix_even": "Mỗi dạng {{count}} câu",
+      "mix_only": "Chỉ {{name}}",
+      "mix_empty": "Chọn ít nhất {{count}} câu.",
+      "mix_full": "Đã đủ {{count}} câu, tối đa cho một lần tạo. Bớt một dạng để thêm dạng khác.",
+      "mix_step": "Mỗi lần bấm thêm hoặc bớt {{count}} câu, để mỗi chủ ngữ đều có câu.",
+      "mix_less": "Bớt câu {{name}}",
+      "mix_more": "Thêm câu {{name}}",
+      "mix_less_hint": "Bớt {{count}} câu",
+      "mix_more_hint": "Thêm {{count}} câu",
+      "mix_preset_hint": "Dùng cách chia này"
     },
     "set": {
       "title": "Bộ câu",
