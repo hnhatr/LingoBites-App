@@ -1,8 +1,8 @@
 /**
- * HomeWeeklyGoal — one-line weekly goal row (LING-256, LING-267, §VS-3).
+ * HomeWeeklyGoal — one-line weekly goal strip (LING-256, LING-267, §VS-3).
  *
- * Layout (footer of the "Kế hoạch hôm nay" card):
- *   [Mục tiêu tuần  🐾🐾🐾🐾🐾🐾 ........ 0/6 bài 🏆]
+ * Layout (footer of the "Hôm nay học gì?" card):
+ *   [🏆 Tuần này  🐾🐾🐾🐾🐾🐾 ........ 2/6 · còn 4 bài]
  *
  * One paw per target lesson. The count line and the badge hint stay in the
  * accessibility label; the "+1 🐾" link lives on the hero card.
@@ -46,6 +46,14 @@ export function HomeWeeklyGoal({pawGoal, card}: Props) {
       style={styles.row}
       testID="home-weekly-goal-card"
     >
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+        style={styles.trophyWrap}
+      >
+        <HomeIcon name="emoji_events" size={18} color={HOME_TROPHY} />
+      </View>
+
       <AppText style={styles.label} numberOfLines={1}>
         {t('home.weekly_goal_label')}
       </AppText>
@@ -76,16 +84,16 @@ export function HomeWeeklyGoal({pawGoal, card}: Props) {
         style={styles.count}
         testID="home-weekly-goal-count"
       >
-        {t('home.weekly_goal_compact', card.countLineParams)}
+        {pawGoal.goalMet
+          ? t('home.weekly_goal_compact', card.countLineParams)
+          : t('home.weekly_goal_compact_left', {
+              ...card.countLineParams,
+              k: Math.max(
+                0,
+                card.countLineParams.target - card.countLineParams.n,
+              ),
+            })}
       </AppText>
-
-      <View
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-        style={styles.trophyWrap}
-      >
-        <HomeIcon name="emoji_events" size={20} color={HOME_TROPHY} />
-      </View>
     </View>
   );
 }
@@ -94,11 +102,12 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     row: {
       alignItems: 'center',
-      borderTopColor: theme.colors.surfaceHigh,
-      borderTopWidth: 1,
+      backgroundColor: theme.colors.surfaceContainer,
+      borderRadius: 12,
       flexDirection: 'row',
       gap: 8,
-      paddingTop: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
     },
     label: {
       color: theme.colors.text.secondary,
