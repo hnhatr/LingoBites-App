@@ -31,6 +31,10 @@ export type PackRow = {
   position: number;
   /** The topic's label, or null for packs without a topic. */
   topic: string | null;
+  /** The topic code (`topic:food-drink`), which picks the default cover icon. */
+  topicCode: string | null;
+  /** The pack's cover picture; null shows the default cover. */
+  coverUrl: string | null;
   total: number;
   learned: number;
   downloaded: boolean;
@@ -117,6 +121,8 @@ export function rowsFrom(
             level: level.cefr_level,
             position: pack.position,
             topic: topicOf(topic.topic_code, topic.title_vi),
+            topicCode: topic.topic_code,
+            coverUrl: pack.cover_url ?? null,
             total: pack.item_count,
             learned,
             downloaded: Boolean(entry),
@@ -138,6 +144,9 @@ export function rowsFrom(
       level: pack.cefrLevel,
       position: pack.position,
       topic: topicLabelOf(pack.topicCode),
+      topicCode: pack.topicCode,
+      // Covers are not kept on the device: offline packs show the default.
+      coverUrl: null,
       total,
       learned,
       downloaded: true,

@@ -8,11 +8,13 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {
+  formatVideoDuration,
   LessonCard,
   lessonCardDurationLabel,
   lessonCardKind,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
+import {LibraryCover} from '@ui/components/LibraryCover';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
@@ -23,6 +25,7 @@ import type {
   LessonSourceType,
 } from '@core/schemas/lesson';
 
+import {catalogCoverUrl} from '../logic/catalogCover';
 import {
   EMPTY_LESSON_CARD_STATE,
   lessonContextLabel,
@@ -30,6 +33,9 @@ import {
   useLessonBookmarks,
 } from '../logic/lessonCardData';
 import {LibraryEmptyState} from './LibraryEmptyState';
+
+/** Lesson covers in the full list: a wide banner, like video covers. */
+const LIST_COVER_ASPECT = 16 / 9;
 
 export interface PublicLessonsListProps {
   origin: LessonOrigin;
@@ -168,6 +174,33 @@ export function PublicLessonsList({
             accessibilityHint={kind === 'video' ? 'Mở video' : 'Mở bài học'}
             bookmarked={isBookmarked(item.id)}
             context={contextLabel}
+            cover={
+              kind === 'video' ? (
+                <LibraryCover
+                  duration={
+                    item.youtube_duration_ms
+                      ? formatVideoDuration(item.youtube_duration_ms)
+                      : null
+                  }
+                  glyph="subtitles"
+                  imageUrl={catalogCoverUrl(item)}
+                  level={item.cefr_level}
+                  play
+                  shape="video"
+                  testID={`public-lesson-${item.id}-cover`}
+                />
+              ) : (
+                <LibraryCover
+                  aspectRatio={LIST_COVER_ASPECT}
+                  glyph="book"
+                  imageUrl={catalogCoverUrl(item)}
+                  level={item.cefr_level}
+                  shape="lesson"
+                  tag={item.unit?.unit_title ?? null}
+                  testID={`public-lesson-${item.id}-cover`}
+                />
+              )
+            }
             downloaded={localState.downloadedIds.has(item.id)}
             durationLabel={durationLabel}
             exerciseCount={

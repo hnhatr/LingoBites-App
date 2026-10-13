@@ -74,6 +74,7 @@ const path: WordPath = {
               item_count: 2,
               kind_counts: {word: 0, phrase: 1, pattern: 1, grammar: 0},
               preview: [{text: 'The bill, please.', meaning_vi: 'Tính tiền.'}],
+              cover_url: 'https://cdn.example/food.png',
             },
           ],
         },
@@ -143,6 +144,17 @@ describe('rowsFrom', () => {
       status: 'not_downloaded',
     });
     expect(rows[1]!.preview[0]!.text).toBe('The bill, please.');
+  });
+
+  it('carries the cover and topic code for the library card', () => {
+    const rows = rowsFrom(path, [local]);
+    expect(rows[0]).toMatchObject({coverUrl: null, topicCode: null});
+    expect(rows[1]).toMatchObject({
+      coverUrl: 'https://cdn.example/food.png',
+      topicCode: 'topic:food',
+    });
+    const [offline] = rowsFrom(null, [local]);
+    expect(offline!.coverUrl).toBeNull();
   });
 
   it('fills in kinds and preview from the device for an older Server', () => {

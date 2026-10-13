@@ -33,6 +33,8 @@ export const WordPackSummarySchema = z.object({
   preview: z
     .array(z.object({text: z.string(), meaning_vi: z.string()}))
     .optional(),
+  /** The pack's cover picture; absent from older Servers. */
+  cover_url: z.string().nullable().optional(),
 });
 
 export const WordPathSchema = z.object({

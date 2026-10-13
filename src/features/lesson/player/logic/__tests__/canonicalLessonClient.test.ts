@@ -56,6 +56,23 @@ function jsonResponse(status: number, body: unknown): Response {
   } as Response;
 }
 
+function catalogItem(overrides: Record<string, unknown> = {}) {
+  return {
+    id: '33333333-3333-4333-8333-333333333301',
+    title: 'Xin thử đồ',
+    description: '',
+    origin: 'admin',
+    source_type: 'admin_text',
+    content_revision: 1,
+    sentence_count: 10,
+    youtube_video_id: null,
+    unit: null,
+    updated_at: '2026-10-13T00:00:00.000Z',
+    cefr_level: 'A2',
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockedConfig.mockReturnValue({apiBaseUrl: 'https://api.example'});
@@ -90,7 +107,54 @@ describe('canonical lesson client', () => {
     });
     const url = new URL(String(authenticatedFetch.mock.calls[0][0]));
     expect(url.searchParams.get('kind')).toBe('video');
-    expect(url.searchParams.get('include')).toBe('card_meta,video_meta');
+    expect(url.searchParams.get('include')).toBe(
+      'card_meta,video_meta,cover_meta',
+    );
+  });
+
+  it('reads the card cover and level', async () => {
+    authenticatedFetch.mockResolvedValue(
+      jsonResponse(200, {
+        contract_version: 1,
+        lessons: [catalogItem({cover_url: 'https://cdn.example/c.png'})],
+        next_cursor: null,
+      }),
+    );
+    const result = await fetchLessonCatalog({limit: 20, origin: 'admin'});
+    const url = new URL(String(authenticatedFetch.mock.calls[0][0]));
+    expect(url.searchParams.get('include')).toBe('card_meta,cover_meta');
+    expect(result.ok && result.value.lessons[0]?.cover_url).toBe(
+      'https://cdn.example/c.png',
+    );
+    expect(result.ok && result.value.lessons[0]?.cefr_level).toBe('A2');
+  });
+
+  it('asks an older server again without the cover fields', async () => {
+    authenticatedFetch
+      .mockResolvedValueOnce(
+        jsonResponse(400, {
+          status: 'failed',
+          error: {
+            code: 'VALIDATION_LESSON_DELIVERY',
+            message: 'Invalid catalog query.',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(200, {
+          contract_version: 1,
+          lessons: [],
+          next_cursor: null,
+        }),
+      );
+    const result = await fetchLessonCatalog({limit: 20});
+    expect(authenticatedFetch).toHaveBeenCalledTimes(2);
+    const retry = new URL(String(authenticatedFetch.mock.calls[1][0]));
+    expect(retry.searchParams.get('include')).toBe('card_meta');
+    expect(result).toEqual({
+      ok: true,
+      value: {contract_version: 1, lessons: [], next_cursor: null},
+    });
   });
 
   it('reads the six-step lessons of a video', async () => {

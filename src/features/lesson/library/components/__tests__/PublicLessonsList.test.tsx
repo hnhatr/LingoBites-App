@@ -102,6 +102,27 @@ describe('PublicLessonsList', () => {
     expect(texts('fresh')).toHaveLength(0);
   });
 
+  it('puts a cover on each card: the server picture, else the thumbnail', () => {
+    mockState = {
+      ...mockState,
+      lessons: [
+        {...item('own', 'Own cover'), cover_url: 'https://cdn.example/c.png'},
+        {...item('thumb', 'Thumbnail'), cefr_level: 'B2'},
+      ],
+    };
+    const tree = renderList();
+    const source = (id: string) =>
+      tree.root.findByProps({testID: `public-lesson-${id}-cover-image`}).props
+        .source;
+    expect(source('own')).toEqual({uri: 'https://cdn.example/c.png'});
+    expect(source('thumb')).toEqual({
+      uri: 'https://i.ytimg.com/vi/abc/hqdefault.jpg',
+    });
+    expect(
+      tree.root.findAllByProps({testID: 'public-lesson-thumb-cover-level'}),
+    ).not.toHaveLength(0);
+  });
+
   it('opens a lesson through app navigation', () => {
     const tree = renderList();
     act(() => {

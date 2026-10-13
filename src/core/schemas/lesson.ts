@@ -193,6 +193,12 @@ export const LessonCatalogItemSchema = z
      * from it; null for any other lesson.
      */
     video_lesson_count: z.number().int().min(0).nullable().optional(),
+    /**
+     * Sent with `include=cover_meta`: the cover picture (the lesson's, else
+     * its unit's) and the CEFR level for the library card; null when none.
+     */
+    cover_url: z.string().nullable().optional(),
+    cefr_level: z.string().nullable().optional(),
   })
   .strict();
 
