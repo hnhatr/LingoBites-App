@@ -5,17 +5,7 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
-import {mockAppNavigation} from '@test/support';
-
 import {LessonsHistoryScreen} from '../LessonsHistoryScreen';
-
-const mockRefresh = jest.fn();
-
-let mockCounts: Record<string, number> = {};
-
-jest.mock('../../logic/useLibraryCounts', () => ({
-  useLibraryCounts: () => ({counts: mockCounts, refresh: mockRefresh}),
-}));
 
 jest.mock('../../components/tabs/CreatedTab', () => ({
   CreatedTab: () => null,
@@ -23,6 +13,10 @@ jest.mock('../../components/tabs/CreatedTab', () => ({
 
 jest.mock('../../components/tabs/ExploreTab', () => ({
   ExploreTab: () => null,
+}));
+
+jest.mock('../../components/tabs/SavedTab', () => ({
+  SavedTab: () => null,
 }));
 
 jest.mock('../../components/tabs/MomentsTab', () => ({
@@ -59,16 +53,6 @@ describe('LessonsHistoryScreen (Library hub)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCounts = {
-      mine: 2,
-      video: 1,
-      vocabulary: 1,
-      grammar: 0,
-      combos: 0,
-      wordPath: 3,
-      public: 0,
-      publicVideo: 0,
-    };
   });
 
   const renderHub = () =>
@@ -125,20 +109,5 @@ describe('LessonsHistoryScreen (Library hub)', () => {
       tree.root.findByProps({testID: 'library-tab-created'}).props
         .accessibilityLabel,
     ).toBe('Bài tôi tạo');
-  });
-
-  it('does not reload library data again on the first focus', () => {
-    mockRefresh.mockClear();
-    renderHub();
-    expect(mockRefresh).not.toHaveBeenCalled();
-  });
-
-  it('opens a section list from a tab', () => {
-    const tree = renderHub();
-    press(tree, 'library-tab-saved');
-    press(tree, 'library-card-vocabulary');
-    expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith(
-      'vocabulary',
-    );
   });
 });

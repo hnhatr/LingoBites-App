@@ -11,7 +11,7 @@ import {LibraryTabBar} from '../components/LibraryTabBar';
 import {CreatedTab} from '../components/tabs/CreatedTab';
 import {ExploreTab} from '../components/tabs/ExploreTab';
 import {MomentsTab} from '../components/tabs/MomentsTab';
-import {SectionTilesTab} from '../components/tabs/SectionTilesTab';
+import {SavedTab} from '../components/tabs/SavedTab';
 import {LIBRARY_TABS, type LibraryTab} from '../logic/librarySections';
 import type {LessonsStackParamList} from './navigationTypes';
 
@@ -68,12 +68,12 @@ function renderTab(tab: LibraryTab) {
   switch (tab) {
     case 'explore':
       return <ExploreTab />;
+    case 'saved':
+      return <SavedTab />;
     case 'created':
       return <CreatedTab />;
     case 'moments':
       return <MomentsTab />;
-    default:
-      return <SectionTilesTab tab={tab} />;
   }
 }
 
