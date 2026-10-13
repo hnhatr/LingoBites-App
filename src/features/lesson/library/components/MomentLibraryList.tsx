@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
@@ -19,16 +19,7 @@ import {useAppTheme} from '@ui/theme';
 import {useIsOffline} from '@core/api/connectivity';
 import {useAppNavigation} from '@core/navigation';
 
-import {
-  fetchMomentLibrary,
-  type MomentLibraryItem,
-  readCachedMomentLibrary,
-} from '../logic/momentLibrary';
-
-type State =
-  | {status: 'loading'}
-  | {status: 'error'; message: string}
-  | {status: 'ready'; moments: MomentLibraryItem[]; fromCache: boolean};
+import {useMomentLibrary} from '../logic/useMomentLibrary';
 
 /** E5 (S2): the "Khoảnh khắc" list: photo thumbnail, intent, situation, date. */
 export function MomentLibraryList({emptyHint}: {emptyHint: string}) {
@@ -37,27 +28,7 @@ export function MomentLibraryList({emptyHint}: {emptyHint: string}) {
   const navigation = useAppNavigation();
   const offline = useIsOffline();
   const clearance = useFloatingTabBarClearance();
-  const [state, setState] = useState<State>({status: 'loading'});
-
-  const load = useCallback(async () => {
-    setState({status: 'loading'});
-    const result = await fetchMomentLibrary();
-    if (result.ok) {
-      setState({status: 'ready', moments: result.value, fromCache: false});
-      return;
-    }
-    // Offline or the server is down: the last list this device saw still helps.
-    const cached = await readCachedMomentLibrary();
-    setState(
-      cached && cached.length > 0
-        ? {status: 'ready', moments: cached, fromCache: true}
-        : {status: 'error', message: result.message},
-    );
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const {state, load} = useMomentLibrary();
 
   if (state.status === 'loading') {
     return (
