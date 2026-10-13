@@ -541,6 +541,8 @@
       "display_translation": "Nghĩa tiếng Việt",
       "display_ipa": "Phiên âm IPA",
       "display_loop": "Lặp câu hiện tại",
+      "play_a11y": "Phát video",
+      "pause_a11y": "Tạm dừng video",
       "replay_sentence_a11y": "Phát lại câu này",
       "replay_sentence_hint": "Tua về đầu câu và phát",
       "playback_rate_a11y": "Tốc độ phát {{rate}}×",
