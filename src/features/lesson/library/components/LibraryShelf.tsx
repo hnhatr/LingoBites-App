@@ -9,11 +9,18 @@ import {
 
 import {AppText} from '@ui/components/AppText';
 import type {GridTileTone} from '@ui/components/GridTile';
+import {
+  LibraryCover,
+  type LibraryCoverProps,
+} from '@ui/components/LibraryCover';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
-import {getHardShadow} from '@ui/theme/hardShadow';
+import {getStickerFace, isStickerTheme} from '@ui/theme/hardShadow';
+import {levelTone} from '@ui/theme/levelColors';
+
+const CARD_RADIUS = 18;
 
 /** What a shelf shows while it has no cards to list. */
 export type ShelfStatus =
@@ -22,6 +29,8 @@ export type ShelfStatus =
 
 export interface LibraryShelfProps {
   title: string;
+  /** Icon before the title. */
+  icon?: HandoffIconName;
   /** Opens the full list; hidden when omitted. */
   onSeeAll?: () => void;
   /** Shown in place of the cards (loading, empty, error). */
@@ -33,6 +42,7 @@ export interface LibraryShelfProps {
 /** A titled row of cards that scrolls sideways, with a "Tất cả" link. */
 export function LibraryShelf({
   title,
+  icon,
   onSeeAll,
   status,
   children,
@@ -44,7 +54,12 @@ export function LibraryShelf({
   return (
     <View style={styles.shelf} testID={testID}>
       <View style={styles.head}>
-        <AppText style={styles.title}>{title}</AppText>
+        <View style={styles.titleRow}>
+          {icon ? (
+            <MaterialIcon color={theme.colors.primary} name={icon} size={20} />
+          ) : null}
+          <AppText style={styles.title}>{title}</AppText>
+        </View>
         {onSeeAll ? (
           <Pressable
             accessibilityHint={`Mở toàn bộ ${title}`}
@@ -52,9 +67,15 @@ export function LibraryShelf({
             accessibilityRole="button"
             hitSlop={8}
             onPress={onSeeAll}
+            style={styles.seeAllRow}
             testID={testID ? `${testID}-all` : undefined}
           >
             <AppText style={styles.seeAll}>Tất cả</AppText>
+            <MaterialIcon
+              color={theme.colors.primary}
+              name="chevron_right"
+              size={18}
+            />
           </Pressable>
         ) : null}
       </View>
@@ -101,86 +122,106 @@ export function LibraryShelf({
 
 export interface ShelfCardProps {
   title: string;
-  /** Icon drawn on the cover, unless `coverLabel` is given. */
-  icon: HandoffIconName;
-  /** Big text on the cover instead of the icon, e.g. a level "A1". */
-  coverLabel?: string;
-  /** Small line under the title, e.g. a duration. */
+  /** Lines the title may take; packs keep to one, under their sub line. */
+  titleLines?: 1 | 2;
+  /** Quiet line under the title, e.g. "Gói 1 · 12 từ". */
+  sub?: string | null;
+  /** Meta line with an icon, e.g. a duration or a lesson count. */
   meta?: string | null;
-  tone?: GridTileTone;
-  /** Round badge in the cover's corner, e.g. downloaded. */
-  badge?: HandoffIconName;
+  metaIcon?: HandoffIconName;
+  /** The cover picture with its level chip and badges. */
+  cover: LibraryCoverProps;
   /** Learning progress, 0–1; no bar when omitted. */
   progress?: number;
-  width?: number;
+  width: number;
   onPress: () => void;
   accessibilityHint: string;
   testID?: string;
 }
 
-/** One card on a shelf: tinted cover, then title and a short meta line. */
+/**
+ * One card on a shelf: the cover on top, then the title, a quiet sub line,
+ * a meta line and the progress bar, all inside one outlined card. Titles
+ * keep a fixed number of lines so the cards of a row stay the same height.
+ */
 export function ShelfCard({
   title,
-  icon,
-  coverLabel,
+  titleLines = 2,
+  sub,
   meta,
-  tone = 'accent',
-  badge,
+  metaIcon,
+  cover,
   progress,
-  width = 128,
+  width,
   onPress,
   accessibilityHint,
   testID,
 }: ShelfCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const {face, ink} = shelfTone(theme, tone);
+  const tone = levelTone(theme, cover.level);
+  const label = [cover.level, title, sub, meta].filter(Boolean).join('. ');
 
   return (
     <Pressable
       accessibilityHint={accessibilityHint}
-      accessibilityLabel={meta ? `${title}. ${meta}` : title}
+      accessibilityLabel={label}
       accessibilityRole="button"
       onPress={onPress}
-      style={({pressed}) => [{width}, pressed && styles.pressed]}
+      style={({pressed}) => [styles.card, {width}, pressed && styles.pressed]}
       testID={testID}
     >
-      <View style={[styles.cover, {backgroundColor: face}]}>
-        {coverLabel ? (
-          <AppText style={[styles.coverLabel, {color: ink}]}>
-            {coverLabel}
-          </AppText>
-        ) : (
-          <MaterialIcon color={ink} name={icon} size={32} />
-        )}
-        {badge ? (
-          <View style={styles.badge}>
-            <MaterialIcon color={theme.colors.primary} name={badge} size={16} />
-          </View>
-        ) : null}
-      </View>
-      <AppText numberOfLines={2} style={styles.cardTitle}>
-        {title}
-      </AppText>
-      {meta ? (
-        <AppText color="secondary" numberOfLines={1} variant="caption">
-          {meta}
-        </AppText>
-      ) : null}
-      {progress !== undefined ? (
-        <View style={styles.track}>
-          <View
+      <View style={styles.clip}>
+        <LibraryCover
+          {...cover}
+          testID={testID ? `${testID}-cover` : undefined}
+        />
+        <View style={styles.body}>
+          <AppText
+            numberOfLines={titleLines}
             style={[
-              styles.fill,
-              {
-                width: `${Math.round(
-                  Math.min(Math.max(progress, 0), 1) * 100,
-                )}%`,
-              },
+              styles.cardTitle,
+              {minHeight: styles.cardTitle.lineHeight * titleLines},
             ]}
-          />
+          >
+            {title}
+          </AppText>
+          {sub ? (
+            <AppText color="secondary" numberOfLines={1} variant="caption">
+              {sub}
+            </AppText>
+          ) : null}
+          {progress !== undefined ? (
+            <View style={styles.track}>
+              <View
+                style={[
+                  styles.fill,
+                  {
+                    backgroundColor: tone.strong,
+                    width: `${Math.round(
+                      Math.min(Math.max(progress, 0), 1) * 100,
+                    )}%`,
+                  },
+                ]}
+              />
+            </View>
+          ) : null}
+          {meta ? (
+            <View style={styles.meta}>
+              {metaIcon ? (
+                <MaterialIcon
+                  color={theme.colors.text.secondary}
+                  name={metaIcon}
+                  size={14}
+                />
+              ) : null}
+              <AppText color="secondary" numberOfLines={1} variant="caption">
+                {meta}
+              </AppText>
+            </View>
+          ) : null}
         </View>
-      ) : null}
+      </View>
     </Pressable>
   );
 }
@@ -253,47 +294,52 @@ function makeStyles(theme: AppTheme) {
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
-    cover: {
+    titleRow: {
       alignItems: 'center',
-      borderColor: theme.colors.ink,
-      borderRadius: 16,
-      borderWidth: 2,
-      height: 84,
-      justifyContent: 'center',
-      marginBottom: theme.spacing.xs + 2,
-      ...getHardShadow(3, theme.colors.ink),
+      flexDirection: 'row',
+      gap: theme.spacing.xs + 2,
     },
-    coverLabel: {
-      fontSize: 28,
-      fontWeight: '800',
-    },
-    badge: {
+    seeAllRow: {
       alignItems: 'center',
+      flexDirection: 'row',
+    },
+    card: {
       backgroundColor: theme.colors.surface,
+      borderRadius: CARD_RADIUS,
+      ...(getStickerFace(theme, 3, 2) ?? {
+        borderColor: theme.colors.outlineVariant,
+        borderWidth: 1,
+      }),
+    },
+    clip: {
+      borderRadius: CARD_RADIUS - 2,
+      overflow: 'hidden',
+    },
+    body: {
       borderColor: theme.colors.ink,
-      borderRadius: 12,
-      borderWidth: 1.5,
-      height: 24,
-      justifyContent: 'center',
-      position: 'absolute',
-      right: 6,
-      top: 6,
-      width: 24,
+      borderTopWidth: isStickerTheme(theme) ? 2 : 0,
+      gap: theme.spacing.xs,
+      paddingBottom: theme.spacing.md,
+      paddingHorizontal: theme.spacing.sm + 2,
+      paddingTop: theme.spacing.sm,
     },
     cardTitle: {
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '700',
-      lineHeight: 18,
+      lineHeight: 19,
+    },
+    meta: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 4,
     },
     track: {
       backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: 3,
-      height: 6,
-      marginTop: theme.spacing.xs,
+      borderRadius: 4,
+      height: 7,
       overflow: 'hidden',
     },
     fill: {
-      backgroundColor: theme.colors.primary,
       height: '100%',
     },
   });

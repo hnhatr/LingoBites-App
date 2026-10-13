@@ -6,6 +6,7 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {LibraryCover, topicGlyph} from '@ui/components/LibraryCover';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -82,24 +83,16 @@ function PackCard({row, busy, disabled, onPress}: PackCardProps) {
       <AppCard>
         <View style={styles.stack}>
           <View style={styles.topRow}>
-            <View
-              style={[
-                themedStyles.badge,
-                row.kind === 'sentence'
-                  ? themedStyles.badgeSentence
-                  : themedStyles.badgeWord,
-              ]}
-            >
-              <AppText
-                style={
-                  row.kind === 'sentence'
-                    ? themedStyles.badgeSentenceText
-                    : themedStyles.badgeWordText
-                }
-                variant="h3"
-              >
-                {row.position}
-              </AppText>
+            <View style={themedStyles.thumb}>
+              <LibraryCover
+                badge={row.downloaded ? 'check' : null}
+                compact
+                glyph={topicGlyph(row.topicCode)}
+                imageUrl={row.coverUrl}
+                level={row.level}
+                shape="pack"
+                testID={`word-path-cover-${row.packId}`}
+              />
             </View>
             <View style={styles.meta}>
               <AppText numberOfLines={1} variant="title">
@@ -465,24 +458,12 @@ function makeStyles(theme: AppTheme) {
     actionText: {
       color: theme.colors.primary,
     },
-    badge: {
-      alignItems: 'center',
+    thumb: {
+      borderColor: theme.colors.ink,
       borderRadius: theme.radius.md,
-      height: 44,
-      justifyContent: 'center',
-      width: 44,
-    },
-    badgeSentence: {
-      backgroundColor: theme.colors.secondarySoft,
-    },
-    badgeSentenceText: {
-      color: theme.colors.secondary,
-    },
-    badgeWord: {
-      backgroundColor: theme.colors.accentSoft,
-    },
-    badgeWordText: {
-      color: theme.colors.primary,
+      borderWidth: 1.5,
+      overflow: 'hidden',
+      width: 56,
     },
     chip: {
       backgroundColor: theme.colors.surfaceMuted,

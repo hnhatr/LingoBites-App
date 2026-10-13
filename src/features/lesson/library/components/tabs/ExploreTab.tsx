@@ -6,22 +6,26 @@ import {useCanonicalCatalog} from '@features/lesson/player';
 import {type PackRow, packTitle, useWordPathRows} from '@features/wordPath';
 
 import {AppText} from '@ui/components/AppText';
-import {gridTileToneAt} from '@ui/components/GridTile';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {
+  formatVideoDuration,
   lessonCardDurationLabel,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
+import {topicGlyph} from '@ui/components/LibraryCover';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
+import type {LessonCatalogItem} from '@core/schemas/lesson';
 
+import {catalogCoverUrl} from '../../logic/catalogCover';
 import {
   getLibrarySection,
   type LibrarySectionConfig,
 } from '../../logic/librarySections';
 import {useRefreshOnRefocus} from '../../logic/useLibrarySegments';
 import {LibraryShelf, ShelfCard, type ShelfStatus} from '../LibraryShelf';
+import {videoContextLabel} from '../PublicLessonsList';
 
 /** How many cards a shelf shows before "Tất cả". */
 export const SHELF_LIMIT = 10;
@@ -84,21 +88,26 @@ export function ExploreTab() {
         </AppText>
       ) : null}
       <LibraryShelf
+        icon="style"
         onSeeAll={() => appNavigation.openLibrarySection('wordPath')}
         status={packStatus}
         testID="library-shelf-packs"
         title="Gói học"
       >
-        {shelfPacks(packs.rows ?? []).map((row, index) => (
+        {shelfPacks(packs.rows ?? []).map(row => (
           <ShelfCard
             accessibilityHint={
               row.downloaded
                 ? t('wordPath.open_hint')
                 : 'Mở danh sách gói để tải về'
             }
-            badge={row.downloaded ? 'check_circle' : undefined}
-            coverLabel={row.level}
-            icon="style"
+            cover={{
+              shape: 'pack',
+              imageUrl: row.coverUrl,
+              level: row.level,
+              glyph: topicGlyph(row.topicCode),
+              badge: row.downloaded ? 'check' : 'download',
+            }}
             key={row.packId}
             meta={
               row.downloaded
@@ -118,22 +127,26 @@ export function ExploreTab() {
                 ? row.learned / row.total
                 : undefined
             }
+            sub={
+              row.topic
+                ? `${t('wordPath.pack_title', {position: row.position})} · ${
+                    row.total
+                  } từ`
+                : `${row.total} từ`
+            }
             testID={`library-pack-${row.packId}`}
             title={packTitle(t, row)}
-            tone={gridTileToneAt(index)}
-            width={116}
+            titleLines={1}
+            width={PACK_WIDTH}
           />
         ))}
       </LibraryShelf>
       <CatalogShelf
-        icon="subtitles"
         section={PUBLIC_VIDEOS}
         testID="library-shelf-videos"
         title="Video"
-        width={156}
       />
       <CatalogShelf
-        icon="auto_stories"
         section={PUBLIC_LESSONS}
         testID="library-shelf-lessons"
         title="Bài học"
@@ -142,22 +155,19 @@ export function ExploreTab() {
   );
 }
 
+const PACK_WIDTH = 148;
+const VIDEO_WIDTH = 232;
+const LESSON_WIDTH = 176;
+
 interface CatalogShelfProps {
   section: LibrarySectionConfig;
   title: string;
-  icon: 'subtitles' | 'auto_stories';
-  width?: number;
   testID: string;
 }
 
 /** A shelf of public lessons or videos from the server catalog. */
-function CatalogShelf({
-  section,
-  title,
-  icon,
-  width,
-  testID,
-}: CatalogShelfProps) {
+function CatalogShelf({section, title, testID}: CatalogShelfProps) {
+  const isVideo = section.catalog?.kind === 'video';
   const appNavigation = useAppNavigation();
   const {state, refresh} = useCanonicalCatalog({
     origin: section.catalog?.origin,
@@ -180,34 +190,70 @@ function CatalogShelf({
 
   return (
     <LibraryShelf
+      icon={isVideo ? 'subtitles' : 'menu_book'}
       onSeeAll={() => appNavigation.openLibrarySection(section.id)}
       status={status}
       testID={testID}
       title={title}
     >
       {state.status === 'ready'
-        ? state.lessons.slice(0, SHELF_LIMIT).map((item, index) => (
-            <ShelfCard
-              accessibilityHint={
-                section.catalog?.kind === 'video' ? 'Mở video' : 'Mở bài học'
-              }
-              icon={icon}
-              key={item.id}
-              meta={lessonCardDurationLabel({
-                estimatedMinutes: item.estimated_minutes,
-                youtubeDurationMs: item.youtube_duration_ms,
-                sentenceCount: item.sentence_count,
-              })}
-              onPress={() => appNavigation.openLesson(item.id)}
-              testID={`${testID}-${item.id}`}
-              title={splitLessonTitle(item.title).title}
-              tone={gridTileToneAt(index + 1)}
-              width={width}
-            />
-          ))
+        ? state.lessons.slice(0, SHELF_LIMIT).map(item =>
+            isVideo ? (
+              <ShelfCard
+                accessibilityHint="Mở video"
+                cover={{
+                  shape: 'video',
+                  imageUrl: catalogCoverUrl(item),
+                  level: item.cefr_level,
+                  glyph: 'subtitles',
+                  play: true,
+                  duration: item.youtube_duration_ms
+                    ? formatVideoDuration(item.youtube_duration_ms)
+                    : null,
+                }}
+                key={item.id}
+                meta={videoContextLabel(item)}
+                metaIcon="menu_book"
+                onPress={() => appNavigation.openLesson(item.id)}
+                testID={`${testID}-${item.id}`}
+                title={splitLessonTitle(item.title).title}
+                width={VIDEO_WIDTH}
+              />
+            ) : (
+              <ShelfCard
+                accessibilityHint="Mở bài học"
+                cover={{
+                  shape: 'lesson',
+                  imageUrl: catalogCoverUrl(item),
+                  level: item.cefr_level,
+                  glyph: 'book',
+                  tag: item.unit?.unit_title ?? null,
+                }}
+                key={item.id}
+                meta={lessonMeta(item)}
+                metaIcon="schedule"
+                onPress={() => appNavigation.openLesson(item.id)}
+                testID={`${testID}-${item.id}`}
+                title={splitLessonTitle(item.title).title}
+                width={LESSON_WIDTH}
+              />
+            ),
+          )
         : null}
     </LibraryShelf>
   );
+}
+
+/** "10 phút · 12 câu" on a lesson card. */
+function lessonMeta(item: LessonCatalogItem): string | null {
+  const duration = lessonCardDurationLabel({
+    estimatedMinutes: item.estimated_minutes,
+    youtubeDurationMs: item.youtube_duration_ms,
+    sentenceCount: item.sentence_count,
+  });
+  const sentences =
+    item.sentence_count > 0 ? `${item.sentence_count} câu` : null;
+  return [duration, sentences].filter(Boolean).join(' · ') || null;
 }
 
 function makeStyles(theme: AppTheme) {

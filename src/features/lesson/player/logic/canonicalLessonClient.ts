@@ -232,19 +232,24 @@ export async function fetchLessonCatalog(
     params.set('source_type', query.sourceType);
   }
   if (query.kind !== undefined) params.set('kind', query.kind);
-  // Lesson-card fields (duration, exercise count); older servers ignore it.
-  // Public videos also ask for their lesson count.
-  params.set(
-    'include',
-    query.kind === 'video' ? 'card_meta,video_meta' : 'card_meta',
-  );
-  const suffix = params.size > 0 ? `?${params.toString()}` : '';
-  const answered = await send(
-    `${LESSONS_PATH}${suffix}`,
-    {method: 'GET'},
-    'LESSON_NOT_FOUND',
-    options,
-  );
+  // Lesson-card fields (duration, exercise count) and the library card cover
+  // and level. Public videos also ask for their lesson count.
+  const include = query.kind === 'video' ? 'card_meta,video_meta' : 'card_meta';
+  const request = (withCover: boolean) => {
+    params.set('include', withCover ? `${include},cover_meta` : include);
+    return send(
+      `${LESSONS_PATH}?${params.toString()}`,
+      {method: 'GET'},
+      'LESSON_NOT_FOUND',
+      options,
+    );
+  };
+  let answered = await request(true);
+  // Servers from before library covers reject `cover_meta` as an invalid
+  // query; ask again without it, and the cards show their default covers.
+  if ('body' in answered && answered.status === 400) {
+    answered = await request(false);
+  }
   if (!('body' in answered)) return answered;
   const {status, body} = answered;
   if (status < 200 || status >= 300) {

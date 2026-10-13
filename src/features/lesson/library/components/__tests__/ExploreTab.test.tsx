@@ -45,6 +45,8 @@ const pack = (packId: string, status: string, downloaded = true) => ({
   level: 'A1',
   position: 1,
   topic: `Topic ${packId}`,
+  topicCode: 'topic:food',
+  coverUrl: packId === 'going' ? 'https://cdn.example/going.png' : null,
   total: 10,
   learned: status === 'learning' ? 4 : 0,
   downloaded,
@@ -54,7 +56,7 @@ const pack = (packId: string, status: string, downloaded = true) => ({
   status,
 });
 
-const lesson = (id: string) => ({
+const lesson = (id: string, overrides: Record<string, unknown> = {}) => ({
   id,
   title: `Lesson ${id}`,
   description: '',
@@ -65,6 +67,7 @@ const lesson = (id: string) => ({
   youtube_video_id: null,
   unit: null,
   updated_at: '2026-10-06T00:00:00.000Z',
+  ...overrides,
 });
 
 function render() {
@@ -169,6 +172,56 @@ describe('ExploreTab', () => {
     const tree = render();
     expect(
       tree.root.findAllByProps({testID: 'library-shelf-packs-loading'}),
+    ).not.toHaveLength(0);
+  });
+
+  it('draws covers: the pack picture, else its default, and level chips', () => {
+    const tree = render();
+    const image = tree.root.findByProps({
+      testID: 'library-pack-going-cover-image',
+    });
+    expect(image.props.source).toEqual({uri: 'https://cdn.example/going.png'});
+    expect(
+      tree.root.findAllByProps({testID: 'library-pack-new-cover-default'}),
+    ).not.toHaveLength(0);
+    expect(
+      tree.root.findAllByProps({testID: 'library-pack-new-cover-level'}),
+    ).not.toHaveLength(0);
+    expect(
+      tree.root.findAllByProps({
+        testID: 'library-pack-new-cover-badge-download',
+      }),
+    ).not.toHaveLength(0);
+  });
+
+  it('shows the YouTube thumbnail of a video without a cover', () => {
+    mockCatalog = {
+      status: 'ready',
+      lessons: [
+        lesson('vid', {youtube_video_id: 'abc123', cefr_level: 'A2'}),
+        lesson('own', {
+          youtube_video_id: 'abc123',
+          cover_url: 'https://cdn.example/own.png',
+        }),
+      ],
+      nextCursor: null,
+      loadingMore: false,
+    };
+    const tree = render();
+    const thumb = tree.root.findByProps({
+      testID: 'library-shelf-videos-vid-cover-image',
+    });
+    expect(thumb.props.source).toEqual({
+      uri: 'https://i.ytimg.com/vi/abc123/hqdefault.jpg',
+    });
+    const own = tree.root.findByProps({
+      testID: 'library-shelf-lessons-own-cover-image',
+    });
+    expect(own.props.source).toEqual({uri: 'https://cdn.example/own.png'});
+    expect(
+      tree.root.findAllByProps({
+        testID: 'library-shelf-videos-vid-cover-level',
+      }),
     ).not.toHaveLength(0);
   });
 });

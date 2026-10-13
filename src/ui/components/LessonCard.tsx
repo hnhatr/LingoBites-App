@@ -21,6 +21,8 @@ import {ShelfSurface} from './ShelfSurface';
  *                progress bar (only while in progress)
  *
  * `compact` is the 250pt-wide Home rail size; chips shrink to icons there.
+ * With a `cover` (the Library's "Tất cả" lists), the picture sits above the
+ * copy and replaces the type icon.
  */
 
 export type LessonCardKind = 'text' | 'video' | 'image';
@@ -53,6 +55,8 @@ export type LessonCardProps = {
   variant?: 'full' | 'compact';
   /** Extra row under the card body, e.g. a "Luyện tập" action. */
   footer?: React.ReactNode;
+  /** Picture above the copy, e.g. a `LibraryCover`; replaces the type icon. */
+  cover?: React.ReactNode;
   accessibilityHint?: string;
   testID?: string;
 };
@@ -253,12 +257,17 @@ export function LessonCard(props: LessonCardProps) {
     onPress,
     variant = 'full',
     footer,
+    cover,
     accessibilityHint,
     testID,
   } = props;
   const {theme} = useAppTheme();
   const compact = variant === 'compact';
-  const styles = useMemo(() => makeStyles(theme, compact), [theme, compact]);
+  const hasCover = Boolean(cover);
+  const styles = useMemo(
+    () => makeStyles(theme, compact, hasCover),
+    [theme, compact, hasCover],
+  );
   const [pressed, setPressed] = useState(false);
   const chips = buildStatusChips(props);
   const ratio = progressRatio(props.progress);
@@ -268,14 +277,17 @@ export function LessonCard(props: LessonCardProps) {
 
   const body = (
     <>
+      {cover ? <View style={styles.cover}>{cover}</View> : null}
       <View style={styles.head}>
-        <View style={[styles.thumb, {backgroundColor: kindColors.bg}]}>
-          <MaterialIcon
-            color={kindColors.fg}
-            name={KIND_ICON[kind]}
-            size={compact ? 22 : 24}
-          />
-        </View>
+        {cover ? null : (
+          <View style={[styles.thumb, {backgroundColor: kindColors.bg}]}>
+            <MaterialIcon
+              color={kindColors.fg}
+              name={KIND_ICON[kind]}
+              size={compact ? 22 : 24}
+            />
+          </View>
+        )}
         <View style={styles.copy}>
           {hasContext ? (
             <AppText numberOfLines={1} style={styles.context}>
@@ -412,7 +424,11 @@ export function LessonCard(props: LessonCardProps) {
           accessibilityState={{selected: bookmarked}}
           hitSlop={4}
           onPress={onToggleBookmark}
-          style={[styles.bookmark, bookmarked && styles.bookmarkOn]}
+          style={[
+            styles.bookmark,
+            hasCover && styles.bookmarkOnCover,
+            bookmarked && styles.bookmarkOn,
+          ]}
           testID={testID ? `${testID}-bookmark` : undefined}
         >
           <MaterialIcon
@@ -458,10 +474,11 @@ function chipTone(theme: AppTheme, tone: Tone) {
   }
 }
 
-function makeStyles(theme: AppTheme, compact: boolean) {
+function makeStyles(theme: AppTheme, compact: boolean, hasCover: boolean) {
   const thumbSize = compact ? 44 : 48;
-  // Full cards indent the rows under the copy column; compact ones do not.
-  const indent = compact ? 0 : thumbSize + 12;
+  // Full cards indent the rows under the copy column; compact ones and cards
+  // with a cover (no type icon) do not.
+  const indent = compact || hasCover ? 0 : thumbSize + 12;
   return StyleSheet.create({
     face: {
       backgroundColor: theme.colors.surface,
@@ -475,8 +492,15 @@ function makeStyles(theme: AppTheme, compact: boolean) {
       alignItems: 'flex-start',
       flexDirection: 'row',
       gap: compact ? 10 : 12,
-      // Room for the bookmark button in the top-right corner.
-      paddingRight: 36,
+      // Room for the bookmark button in the top-right corner, unless it
+      // sits on the cover.
+      paddingRight: hasCover ? 0 : 36,
+    },
+    cover: {
+      borderColor: theme.colors.ink,
+      borderRadius: 14,
+      borderWidth: 2,
+      overflow: 'hidden',
     },
     thumb: {
       alignItems: 'center',
@@ -584,6 +608,15 @@ function makeStyles(theme: AppTheme, compact: boolean) {
       right: compact ? 6 : 8,
       top: compact ? 6 : 8,
       width: 40,
+    },
+    bookmarkOnCover: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.ink,
+      borderWidth: 1.5,
+      height: 36,
+      right: compact ? 18 : 22,
+      top: compact ? 18 : 22,
+      width: 36,
     },
     bookmarkOn: {
       backgroundColor: theme.colors.tertiarySoft,
