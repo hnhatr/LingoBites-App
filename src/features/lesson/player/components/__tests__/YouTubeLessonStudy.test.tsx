@@ -7,7 +7,7 @@ import {AppThemeProvider} from '@ui/theme';
 
 import vi from '@core/i18n/vi.json';
 import {FeatureFlagProvider} from '@core/release';
-import type {LessonSnapshot} from '@core/schemas/lesson';
+import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
 import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
 
@@ -94,13 +94,19 @@ function pressByTestId(
   });
 }
 
+/** "Câu x/y" now lives on the sentence progress strip's label. */
+function sentenceIndicator(root: ReactTestRenderer.ReactTestInstance) {
+  return root.findAll(
+    node =>
+      node.props.testID === 'youtube-study-progress' &&
+      typeof node.props.accessibilityLabel === 'string',
+  )[0].props.accessibilityLabel as string;
+}
+
 describe('YouTubeLessonStudy', () => {
   it('shows sentence indicator and three cards (AC-005 S1)', async () => {
     const tree = await renderStudy();
-    expect(
-      tree.root.findByProps({testID: 'youtube-sentence-indicator'}).props
-        .children,
-    ).toBe(
+    expect(sentenceIndicator(tree.root)).toBe(
       vi.lessonPlayer.sentence_counter
         .replace('{{index}}', '1')
         .replace('{{total}}', '3'),
@@ -122,10 +128,7 @@ describe('YouTubeLessonStudy', () => {
     const prevInitial = tree.root.findByProps({testID: 'youtube-cards-prev'});
     expect(prevInitial.props.disabled).toBe(true);
     pressByTestId(tree.root, 'youtube-cards-next');
-    expect(
-      tree.root.findByProps({testID: 'youtube-sentence-indicator'}).props
-        .children,
-    ).toContain('2/3');
+    expect(sentenceIndicator(tree.root)).toContain('2/3');
     expect(
       tree.root.findByProps({testID: 'youtube-cards-prev'}).props.disabled,
     ).toBe(false);
@@ -227,9 +230,7 @@ describe('YouTubeLessonStudy', () => {
 
   it('follows the video cue while playing and stops after manual navigation', async () => {
     const tree = await renderStudy({videoPlaying: true, playbackPositionMs: 0});
-    const indicator = () =>
-      tree.root.findByProps({testID: 'youtube-sentence-indicator'}).props
-        .children as string;
+    const indicator = () => sentenceIndicator(tree.root) as string;
     expect(indicator()).toContain('1/3');
     const rerender = async (positionMs: number) => {
       await act(async () => {
@@ -329,5 +330,222 @@ describe('YouTubeLessonStudy', () => {
       .findAllByType(Modal)
       .filter(modal => modal.props.testID === 'youtube-sheet-transcript');
     expect(sheetModals).toHaveLength(1);
+  });
+  describe('listening controls and word lookup', () => {
+    const firstId = '11111111-1111-4111-8111-111111111101';
+
+    function pairedSnapshot(): LessonSnapshot {
+      const snapshot = snapshotWithSentenceCount(3);
+      snapshot.sentences[0] = {
+        ...snapshot.sentences[0],
+        text_en: 'We drink coffee.',
+        ipa: "w'i dɹ'ɪŋk k'ɒfi",
+      };
+      return snapshot;
+    }
+
+    const coffeeAnalysis: LessonAnalysis = {
+      sentence_id: firstId,
+      vocabulary: [
+        {
+          id: '22222222-2222-4222-8222-222222222201',
+          word: 'coffee',
+          pos: 'noun',
+          ipa: '/ˈkɒfi/',
+          meaning: 'cà phê',
+        },
+      ],
+      grammar: [
+        {
+          id: '22222222-2222-4222-8222-222222222202',
+          name: 'Present simple',
+          description: 'Habitual actions',
+          formula: 'S + V',
+          analysis: 'Used for routines',
+        },
+      ],
+      created_at: '2026-10-01T00:00:00.000Z',
+    };
+
+    async function rerenderStudy(
+      tree: ReactTestRenderer.ReactTestRenderer,
+      props: Partial<React.ComponentProps<typeof YouTubeLessonStudy>>,
+    ) {
+      await act(async () => {
+        tree.update(
+          <FeatureFlagProvider
+            releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+          >
+            <AppThemeProvider>
+              <YouTubeLessonStudy
+                snapshot={snapshotWithSentenceCount(3)}
+                analyses={{}}
+                playbackPositionMs={0}
+                videoAvailable
+                videoPlaying={false}
+                videoSlot={<React.Fragment />}
+                {...props}
+              />
+            </AppThemeProvider>
+          </FeatureFlagProvider>,
+        );
+      });
+    }
+
+    it('replays the current sentence from its start and plays', async () => {
+      const onSeek = jest.fn();
+      const onPlayVideo = jest.fn();
+      const tree = await renderStudy({onSeek, onPlayVideo});
+      pressByTestId(tree.root, 'youtube-cards-next');
+      pressByTestId(tree.root, 'youtube-replay-sentence');
+      expect(onSeek).toHaveBeenLastCalledWith(2000);
+      expect(onPlayVideo).toHaveBeenCalledTimes(1);
+    });
+
+    it('seeks back to the sentence start once its end is reached while looping', async () => {
+      const onSeek = jest.fn();
+      const base = {onSeek, loopSentence: true, videoPlaying: true};
+      const tree = await renderStudy({...base, playbackPositionMs: 500});
+      expect(onSeek).not.toHaveBeenCalled();
+      await rerenderStudy(tree, {...base, playbackPositionMs: 1900});
+      expect(onSeek).toHaveBeenCalledTimes(1);
+      expect(onSeek).toHaveBeenCalledWith(0);
+      // A late poll past the end must not send a second seek.
+      await rerenderStudy(tree, {...base, playbackPositionMs: 2100});
+      expect(onSeek).toHaveBeenCalledTimes(1);
+      expect(sentenceIndicator(tree.root)).toContain('1/3');
+      // Back inside the sentence, the next pass loops again.
+      await rerenderStudy(tree, {...base, playbackPositionMs: 300});
+      await rerenderStudy(tree, {...base, playbackPositionMs: 1950});
+      expect(onSeek).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not loop when the loop option is off', async () => {
+      const onSeek = jest.fn();
+      const tree = await renderStudy({onSeek, videoPlaying: true});
+      await rerenderStudy(tree, {
+        onSeek,
+        videoPlaying: true,
+        playbackPositionMs: 2500,
+      });
+      expect(onSeek).not.toHaveBeenCalled();
+      expect(sentenceIndicator(tree.root)).toContain('2/3');
+    });
+
+    it('shows the speed and cycles it from the toolbar', async () => {
+      const onCyclePlaybackRate = jest.fn();
+      const tree = await renderStudy({
+        playbackRate: 0.75,
+        onCyclePlaybackRate,
+      });
+      const pill = tree.root
+        .findAll(node => node.props.testID === 'youtube-playback-rate')
+        .find(node => typeof node.props.onPress === 'function');
+      expect(pill?.props.accessibilityLabel).toBe(
+        vi.youtube.study.playback_rate_a11y.replace('{{rate}}', '0.75'),
+      );
+      expect(
+        tree.root.findAllByProps({children: '0.75×'}).length,
+      ).toBeGreaterThan(0);
+      pressByTestId(tree.root, 'youtube-playback-rate');
+      expect(onCyclePlaybackRate).toHaveBeenCalledTimes(1);
+    });
+
+    it('jumps to a sentence from the progress strip', async () => {
+      const onSeek = jest.fn();
+      const tree = await renderStudy({onSeek});
+      const strip = tree.root
+        .findAll(node => node.props.testID === 'youtube-study-progress')
+        .find(node => typeof node.props.onLayout === 'function');
+      await act(async () => {
+        strip?.props.onLayout({nativeEvent: {layout: {width: 300}}});
+      });
+      // The strip maps the tap position to a sentence.
+      const pressable = tree.root
+        .findAll(node => node.props.testID === 'youtube-study-progress')
+        .find(node => typeof node.props.onPress === 'function');
+      act(() => {
+        pressable?.props.onPress({nativeEvent: {locationX: 250}});
+      });
+      expect(onSeek).toHaveBeenLastCalledWith(4000);
+      expect(sentenceIndicator(tree.root)).toContain('3/3');
+    });
+
+    it('puts IPA under each word when the IPA pairs with the words', async () => {
+      const tree = await renderStudy({
+        snapshot: pairedSnapshot(),
+        showIpa: true,
+      });
+      expect(
+        tree.root.findAllByProps({children: 'kˈɒfi'}).length,
+      ).toBeGreaterThan(0);
+      expect(
+        tree.root.findAll(node => node.props.children === "w'i dɹ'ɪŋk k'ɒfi"),
+      ).toHaveLength(0);
+      // Hidden by default.
+      const hidden = await renderStudy({
+        snapshot: pairedSnapshot(),
+        showIpa: false,
+      });
+      expect(hidden.root.findAllByProps({children: 'kˈɒfi'})).toHaveLength(0);
+    });
+
+    it('keeps vocabulary and grammar chips out of the card', async () => {
+      const tree = await renderStudy({
+        snapshot: pairedSnapshot(),
+        analyses: {[firstId]: coffeeAnalysis},
+      });
+      expect(
+        tree.root.findAll(node => node.props.children === 'Present simple'),
+      ).toHaveLength(0);
+    });
+
+    it('opens a word bubble with IPA, meaning and save for an analysed word', async () => {
+      const onPauseVideo = jest.fn();
+      const onToggle = jest.fn();
+      const tree = await renderStudy({
+        snapshot: pairedSnapshot(),
+        analyses: {[firstId]: coffeeAnalysis},
+        onPauseVideo,
+        vocabularySave: {isSaved: () => false, onToggle},
+      });
+      pressByTestId(tree.root, `youtube-word-${firstId}-2`);
+      expect(onPauseVideo).toHaveBeenCalledTimes(1);
+      expect(
+        tree.root.findByProps({testID: 'youtube-word-bubble-word'}).props
+          .children,
+      ).toBe('coffee');
+      expect(
+        tree.root.findByProps({testID: 'youtube-word-bubble-ipa'}).props
+          .children,
+      ).toBe('/ˈkɒfi/');
+      expect(
+        tree.root.findAllByProps({children: 'noun cà phê'}).length,
+      ).toBeGreaterThan(0);
+      pressByTestId(tree.root, 'youtube-word-bubble-save');
+      expect(onToggle).toHaveBeenCalledWith(coffeeAnalysis.vocabulary[0]);
+      pressByTestId(tree.root, 'youtube-word-bubble-close');
+      expect(
+        tree.root.findAll(node => node.props.testID === 'youtube-word-bubble'),
+      ).toHaveLength(0);
+    });
+
+    it('shows the paired IPA for a word without analysis', async () => {
+      const tree = await renderStudy({snapshot: pairedSnapshot()});
+      pressByTestId(tree.root, `youtube-word-${firstId}-1`);
+      expect(
+        tree.root.findByProps({testID: 'youtube-word-bubble-word'}).props
+          .children,
+      ).toBe('drink');
+      expect(
+        tree.root.findByProps({testID: 'youtube-word-bubble-ipa'}).props
+          .children,
+      ).toBe('/dɹˈɪŋk/');
+      expect(
+        tree.root.findAll(
+          node => node.props.testID === 'youtube-word-bubble-save',
+        ),
+      ).toHaveLength(0);
+    });
   });
 });

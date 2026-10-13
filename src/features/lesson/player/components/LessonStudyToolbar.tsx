@@ -1,39 +1,55 @@
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {StyleSheet, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 export type LessonStudyToolbarProps = {
-  /** 1-based position of the current sentence (0 when there are none). */
-  position: number;
-  total: number;
   atFirst: boolean;
   atLast: boolean;
   onPrev: () => void;
   onNext: () => void;
   onOpenTranscript: () => void;
+  /** Replays the current sentence from its start; omitted = disabled. */
+  onReplay?: () => void;
+  /** Current video speed (1, 0.75, 0.5). */
+  playbackRate?: number;
+  /** Cycles the speed; omitted = no speed control. */
+  onCyclePlaybackRate?: () => void;
 };
 
-/** Bottom bar: prev, "Câu x/y" with progress, transcript, next. */
+/** "0.75×" label; whole numbers drop the decimals ("1×"). */
+export function formatPlaybackRate(rate: number): string {
+  return `${Number.isInteger(rate) ? rate.toFixed(0) : String(rate)}×`;
+}
+
+/** Bottom listening controls: transcript, prev, replay sentence, next, speed. */
 export function LessonStudyToolbar({
-  position,
-  total,
   atFirst,
   atLast,
   onPrev,
   onNext,
   onOpenTranscript,
+  onReplay,
+  playbackRate = 1,
+  onCyclePlaybackRate,
 }: LessonStudyToolbarProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const progressRatio = total === 0 ? 0 : position / total;
+  const rateLabel = formatPlaybackRate(playbackRate);
 
   return (
     <View style={styles.bar} testID="youtube-study-toolbar">
+      <IconButton
+        accessibilityLabel={t('youtube.study.open_transcript_a11y')}
+        icon="subtitles"
+        onPress={onOpenTranscript}
+        testID="youtube-open-transcript"
+        tone="bare"
+      />
       <IconButton
         accessibilityLabel={t('youtube.study.cards_prev_a11y')}
         disabled={atFirst}
@@ -42,29 +58,16 @@ export function LessonStudyToolbar({
         testID="youtube-cards-prev"
         tone="surface"
       />
-      <View style={styles.center}>
-        <AppText testID="youtube-sentence-indicator" variant="label">
-          {t('lessonPlayer.sentence_counter', {index: position, total})}
-        </AppText>
-        <View
-          accessibilityRole="progressbar"
-          accessibilityValue={{min: 0, max: total, now: position}}
-          style={styles.track}
-          testID="youtube-study-progress"
-        >
-          <View
-            style={[styles.fill, {flex: progressRatio}]}
-            testID="youtube-study-progress-fill"
-          />
-          <View style={{flex: 1 - progressRatio}} />
-        </View>
-      </View>
       <IconButton
-        accessibilityLabel={t('youtube.study.open_transcript_a11y')}
-        icon="subtitles"
-        onPress={onOpenTranscript}
-        testID="youtube-open-transcript"
-        tone="ghost"
+        accessibilityHint={t('youtube.study.replay_sentence_hint')}
+        accessibilityLabel={t('youtube.study.replay_sentence_a11y')}
+        disabled={!onReplay}
+        icon="replay"
+        iconSize={28}
+        onPress={onReplay}
+        size={56}
+        testID="youtube-replay-sentence"
+        tone="accent"
       />
       <IconButton
         accessibilityLabel={t('youtube.study.cards_next_a11y')}
@@ -74,6 +77,28 @@ export function LessonStudyToolbar({
         testID="youtube-cards-next"
         tone="surface"
       />
+      {onCyclePlaybackRate ? (
+        <Pressable
+          accessibilityHint={t('youtube.study.playback_rate_hint')}
+          accessibilityLabel={t('youtube.study.playback_rate_a11y', {
+            rate: playbackRate,
+          })}
+          accessibilityRole="button"
+          onPress={onCyclePlaybackRate}
+          style={({pressed}) => [
+            styles.ratePill,
+            playbackRate !== 1 ? styles.ratePillActive : null,
+            pressed ? styles.pressed : null,
+          ]}
+          testID="youtube-playback-rate"
+        >
+          <AppText style={styles.rateText} variant="label">
+            {rateLabel}
+          </AppText>
+        </Pressable>
+      ) : (
+        <View style={styles.rateSpacer} />
+      )}
     </View>
   );
 }
@@ -86,26 +111,31 @@ function makeStyles(theme: AppTheme) {
       borderTopColor: theme.colors.outlineVariant,
       borderTopWidth: StyleSheet.hairlineWidth,
       flexDirection: 'row',
-      gap: theme.spacing.sm,
+      justifyContent: 'space-between',
       paddingHorizontal: theme.gutter,
       paddingVertical: theme.spacing.sm,
     },
-    center: {
-      flex: 1,
-      gap: theme.spacing.xs,
+    pressed: {
+      opacity: theme.states.pressedOpacity,
     },
-    fill: {
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.radius.pill,
-      minWidth: 4,
-    },
-    track: {
+    ratePill: {
+      alignItems: 'center',
       backgroundColor: theme.colors.surfaceHigh,
       borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      height: 4,
-      overflow: 'hidden',
-      width: '100%',
+      justifyContent: 'center',
+      minHeight: 44,
+      minWidth: 56,
+      paddingHorizontal: theme.spacing.sm,
+    },
+    ratePillActive: {
+      backgroundColor: theme.colors.accentSoft,
+    },
+    rateSpacer: {
+      width: 56,
+    },
+    rateText: {
+      color: theme.colors.primary,
+      fontVariant: ['tabular-nums'],
     },
   });
 }

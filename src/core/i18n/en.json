@@ -516,7 +516,21 @@
       "sheet_close_a11y": "Close",
       "sheet_analysis_a11y": "Analysis sheet",
       "video_lessons_title": "Lessons from this video",
-      "video_lessons_hint": "Open the six-step lesson"
+      "video_lessons_hint": "Open the six-step lesson",
+      "analyze_short": "Analyze",
+      "display_menu_a11y": "Display options",
+      "display_menu_hint": "Turn the Vietnamese translation, IPA and sentence loop on or off",
+      "display_translation": "Vietnamese translation",
+      "display_ipa": "IPA transcription",
+      "display_loop": "Loop current sentence",
+      "replay_sentence_a11y": "Replay this sentence",
+      "replay_sentence_hint": "Jump to the start of the sentence and play",
+      "playback_rate_a11y": "Playback speed {{rate}}×",
+      "playback_rate_hint": "Change speed: 1×, 0.75×, 0.5×",
+      "header_subtitle": "Sentence {{index}}/{{total}} · {{time}}",
+      "progress_a11y": "Sentence progress, tap to jump to a sentence",
+      "word_hint": "Show the word's IPA and meaning",
+      "word_bubble_close": "Close"
     }
   },
   "gamification": {

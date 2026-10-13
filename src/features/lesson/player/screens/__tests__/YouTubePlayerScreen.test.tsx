@@ -175,8 +175,12 @@ describe('CanonicalLessonPlayerScreen YouTube study', () => {
     const tree = await renderScreen();
     expect(tree.root.findByProps({testID: 'canonical-player'})).toBeDefined();
     expect(
-      tree.root.findByProps({testID: 'youtube-sentence-indicator'}),
+      tree.root.findByProps({testID: 'youtube-study-progress'}),
     ).toBeDefined();
+    // The header carries the video title and "Câu x/y · m:ss".
+    expect(
+      tree.root.findByProps({testID: 'screen-header-subtitle'}).props.children,
+    ).toMatch(/^Câu 1\/\d+ · \d+:\d{2}$/);
   });
 
   it('remounts the player when retry is pressed after unavailable (AC-011 S2)', async () => {

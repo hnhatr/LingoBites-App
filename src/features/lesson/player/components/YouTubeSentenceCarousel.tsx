@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import {useReducedMotion} from 'react-native-reanimated';
 
-import {AnalysisIconButton} from '@ui/components/AnalysisIconButton';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
@@ -20,6 +19,20 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import type {LessonAnalysis, LessonSentence} from '@core/schemas/lesson';
 
 import {formatCueLabel} from '../logic/canonicalYouTubeCues';
+import {
+  normalizeIpa,
+  pairWordsWithIpa,
+  splitSentenceWords,
+} from '../logic/sentenceIpa';
+
+/** A word the learner tapped in a sentence card. */
+export type SentenceWordSelection = {
+  sentenceId: string;
+  wordIndex: number;
+  word: string;
+  /** The word's own IPA token, when the sentence IPA pairs up. */
+  ipa: string | null;
+};
 
 export type YouTubeSentenceCarouselProps = {
   sentences: LessonSentence[];
@@ -32,6 +45,10 @@ export type YouTubeSentenceCarouselProps = {
   onSeek?: (positionMs: number) => void;
   onSpeakText?: (text: string) => void;
   onOpenAnalysis?: (sentenceId: string) => void;
+  /** Tapping a word in a card (opens the word bubble). */
+  onPressWord?: (selection: SentenceWordSelection) => void;
+  /** The highlighted word, if any. */
+  selectedWord?: Pick<SentenceWordSelection, 'sentenceId' | 'wordIndex'> | null;
   /** Called when a card is tapped, so the screen can pause the video. */
   onPauseVideo?: () => void;
   /** When true, the next currentIndex sync scrolls with animation (prev/next). */
@@ -48,7 +65,10 @@ type CardProps = {
   showTranslation: boolean;
   showIpa: boolean;
   analysis: LessonAnalysis | undefined;
+  /** Index of the highlighted (tapped) word in this card, or null. */
+  selectedWordIndex: number | null;
   onPressCard: (index: number, sentence: LessonSentence) => void;
+  onPressWord?: (selection: SentenceWordSelection) => void;
   onSpeakText?: (text: string) => void;
   onOpenAnalysis?: (sentenceId: string) => void;
   theme: AppTheme;
@@ -64,7 +84,9 @@ function SentenceCarouselCardBody({
   showTranslation,
   showIpa,
   analysis,
+  selectedWordIndex,
   onPressCard,
+  onPressWord,
   onSpeakText,
   onOpenAnalysis,
   theme,
@@ -72,8 +94,17 @@ function SentenceCarouselCardBody({
 }: CardProps) {
   const styles = useMemo(() => cardStyles(theme), [theme]);
   const cueTestSuffix = cueActive ? '-active' : '';
-  const vocabWords = analysis?.vocabulary.map(item => item.word) ?? [];
-  const grammarNames = analysis?.grammar.map(item => item.name) ?? [];
+  const pairs = useMemo(
+    () => pairWordsWithIpa(sentence.text_en, sentence.ipa),
+    [sentence.ipa, sentence.text_en],
+  );
+  const words = useMemo(
+    () =>
+      pairs ??
+      splitSentenceWords(sentence.text_en).map(word => ({word, ipa: null})),
+    [pairs, sentence.text_en],
+  );
+  const interlinear = showIpa && pairs !== null;
 
   return (
     <View
@@ -102,7 +133,7 @@ function SentenceCarouselCardBody({
             </AppText>
             <View style={styles.headerActions}>
               {onOpenAnalysis ? (
-                <AnalysisIconButton
+                <Pressable
                   accessibilityHint={
                     analysis
                       ? t('youtube.study.view_analysis_hint')
@@ -113,10 +144,24 @@ function SentenceCarouselCardBody({
                       ? t('youtube.study.view_analysis')
                       : t('lessonPlayer.analyze')
                   }
-                  analyzed={analysis !== undefined}
+                  accessibilityRole="button"
                   onPress={() => onOpenAnalysis(sentence.id)}
+                  style={({pressed}) => [
+                    styles.analyzePill,
+                    analysis ? styles.analyzePillDone : null,
+                    pressed ? styles.pressed : null,
+                  ]}
                   testID={`youtube-open-analysis-${sentence.id}`}
-                />
+                >
+                  <MaterialIcon
+                    color={theme.colors.primary}
+                    name="auto_awesome"
+                    size={16}
+                  />
+                  <AppText style={styles.analyzeText} variant="label">
+                    {t('youtube.study.analyze_short')}
+                  </AppText>
+                </Pressable>
               ) : null}
               {onSpeakText ? (
                 <IconButton
@@ -132,67 +177,51 @@ function SentenceCarouselCardBody({
               ) : null}
             </View>
           </View>
-          <AppText testID={`youtube-cue-text-${sentence.id}`} variant="h3">
-            {sentence.text_en}
-          </AppText>
-          {showIpa ? (
+          <View
+            accessibilityLabel={sentence.text_en}
+            style={[styles.words, interlinear ? styles.wordsInterlinear : null]}
+            testID={`youtube-cue-text-${sentence.id}`}
+          >
+            {words.map((entry, wordIndex) => (
+              <Pressable
+                key={`${wordIndex}-${entry.word}`}
+                accessibilityHint={t('youtube.study.word_hint')}
+                accessibilityLabel={entry.word}
+                accessibilityRole="button"
+                disabled={!onPressWord}
+                onPress={() =>
+                  onPressWord?.({
+                    sentenceId: sentence.id,
+                    wordIndex,
+                    word: entry.word,
+                    ipa: entry.ipa,
+                  })
+                }
+                style={[
+                  styles.word,
+                  selectedWordIndex === wordIndex ? styles.wordSelected : null,
+                ]}
+                testID={`youtube-word-${sentence.id}-${wordIndex}`}
+              >
+                <AppText variant="h3">{entry.word}</AppText>
+                {interlinear && entry.ipa ? (
+                  <AppText style={styles.wordIpa} variant="caption">
+                    {entry.ipa}
+                  </AppText>
+                ) : null}
+              </Pressable>
+            ))}
+          </View>
+          {showIpa && !interlinear && sentence.ipa ? (
             <AppText color="muted" variant="body">
-              {sentence.ipa}
+              {normalizeIpa(sentence.ipa)}
             </AppText>
           ) : null}
           {showTranslation ? (
-            <AppText color="secondary" variant="bodyLg">
-              {sentence.text_vi}
-            </AppText>
-          ) : null}
-          {vocabWords.length > 0 || grammarNames.length > 0 ? (
-            <View style={styles.chipsSection}>
-              {vocabWords.length > 0 ? (
-                <View
-                  accessibilityLabel={t('youtube.study.vocabulary_label')}
-                  style={styles.chipRow}
-                >
-                  <View style={styles.vocabBadge}>
-                    <MaterialIcon
-                      color={theme.colors.primary}
-                      name="menu_book"
-                      size={16}
-                    />
-                  </View>
-                  <View style={styles.chipWrap}>
-                    {vocabWords.map(word => (
-                      <View key={word} style={styles.chip}>
-                        <AppText style={styles.chipText} variant="label">
-                          {word}
-                        </AppText>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              ) : null}
-              {grammarNames.length > 0 ? (
-                <View
-                  accessibilityLabel={t('youtube.study.grammar_label')}
-                  style={styles.chipRow}
-                >
-                  <View style={styles.grammarBadge}>
-                    <MaterialIcon
-                      color={theme.colors.onTertiaryContainer}
-                      name="school"
-                      size={16}
-                    />
-                  </View>
-                  <View style={styles.chipWrap}>
-                    {grammarNames.map(name => (
-                      <View key={name} style={styles.grammarChip}>
-                        <AppText style={styles.grammarChipText} variant="label">
-                          {name}
-                        </AppText>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              ) : null}
+            <View style={styles.translation}>
+              <AppText color="secondary" variant="bodyLg">
+                {sentence.text_vi}
+              </AppText>
             </View>
           ) : null}
         </View>
@@ -214,6 +243,8 @@ export function YouTubeSentenceCarousel({
   onSeek,
   onSpeakText,
   onOpenAnalysis,
+  onPressWord,
+  selectedWord = null,
   onPauseVideo,
   scrollAnimated = false,
   onScrollAnimationConsumed,
@@ -223,7 +254,8 @@ export function YouTubeSentenceCarousel({
   const reducedMotion = useReducedMotion();
   const listStyles = useMemo(() => listStyleSheet(theme), [theme]);
   const [listWidth, setListWidth] = useState(0);
-  const cardWidth = Math.max(listWidth - theme.spacing.lg, 280);
+  // One full-width card per page: no edge of the next card peeks in.
+  const cardWidth = Math.max(listWidth, 280);
 
   const listRef = React.useRef<FlatList<LessonSentence>>(null);
   const pendingAnimatedScrollRef = React.useRef(false);
@@ -280,6 +312,10 @@ export function YouTubeSentenceCarousel({
         index={index}
         onOpenAnalysis={onOpenAnalysis}
         onPressCard={handlePressCard}
+        onPressWord={onPressWord}
+        selectedWordIndex={
+          selectedWord?.sentenceId === item.id ? selectedWord.wordIndex : null
+        }
         onSpeakText={onSpeakText}
         selected={currentIndex === index}
         sentence={item}
@@ -296,7 +332,9 @@ export function YouTubeSentenceCarousel({
       currentIndex,
       handlePressCard,
       onOpenAnalysis,
+      onPressWord,
       onSpeakText,
+      selectedWord,
       showIpa,
       showTranslation,
       t,
@@ -317,8 +355,8 @@ export function YouTubeSentenceCarousel({
   );
 
   const extraData = useMemo(
-    () => ({activeIndex, showTranslation, showIpa, currentIndex}),
-    [activeIndex, currentIndex, showIpa, showTranslation],
+    () => ({activeIndex, showTranslation, showIpa, currentIndex, selectedWord}),
+    [activeIndex, currentIndex, selectedWord, showIpa, showTranslation],
   );
 
   if (sentences.length === 0) {
@@ -362,12 +400,27 @@ export function YouTubeSentenceCarousel({
 
 function cardStyles(theme: AppTheme) {
   return StyleSheet.create({
+    analyzePill: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceHigh,
+      borderRadius: theme.radius.pill,
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
+      minHeight: 44,
+      paddingHorizontal: theme.spacing.md,
+    },
+    analyzePillDone: {
+      backgroundColor: theme.colors.accentSoft,
+    },
+    analyzeText: {
+      color: theme.colors.primary,
+    },
     card: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.outlineVariant,
       borderRadius: theme.radius.xl,
       borderWidth: 1,
-      gap: theme.spacing.xs,
+      gap: theme.spacing.sm,
       padding: theme.spacing.lg,
     },
     cardHeader: {
@@ -377,71 +430,48 @@ function cardStyles(theme: AppTheme) {
       minHeight: 24,
     },
     cardOuter: {
-      paddingRight: theme.spacing.sm,
+      paddingHorizontal: 2,
     },
     cardSelected: {
       borderColor: theme.colors.primary,
-      borderWidth: 2,
-    },
-    chip: {
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-    },
-    chipRow: {
-      alignItems: 'flex-start',
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-    },
-    chipText: {
-      color: theme.colors.primary,
-    },
-    chipWrap: {
-      flex: 1,
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs,
-    },
-    chipsSection: {
-      gap: theme.spacing.xs,
-      marginTop: theme.spacing.xs,
-    },
-    grammarBadge: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: theme.radius.pill,
-      height: 28,
-      justifyContent: 'center',
-      width: 28,
-    },
-    grammarChipText: {
-      color: theme.colors.onTertiaryContainer,
+      borderWidth: 1.5,
     },
     headerActions: {
       alignItems: 'center',
       flexDirection: 'row',
       gap: theme.spacing.xs,
     },
-    vocabBadge: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.pill,
-      height: 28,
-      justifyContent: 'center',
-      width: 28,
-    },
-    grammarChip: {
-      backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-    },
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
     timestamp: {
       color: theme.colors.primary,
+      fontVariant: ['tabular-nums'],
+    },
+    translation: {
+      borderTopColor: theme.colors.outlineVariant,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      paddingTop: theme.spacing.sm,
+    },
+    word: {
+      borderRadius: theme.radius.sm,
+    },
+    wordIpa: {
+      color: theme.colors.primary,
+      opacity: 0.8,
+    },
+    wordSelected: {
+      backgroundColor: theme.colors.accentSoft,
+    },
+    words: {
+      columnGap: 5,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      rowGap: 2,
+    },
+    wordsInterlinear: {
+      columnGap: theme.spacing.sm,
+      rowGap: theme.spacing.xs,
     },
   });
 }

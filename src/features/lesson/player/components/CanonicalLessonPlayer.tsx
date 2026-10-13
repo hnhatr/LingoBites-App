@@ -22,7 +22,10 @@ import {
   type SentenceAnalysisPanelError,
   type SentenceAnalysisPanelState,
 } from './SentenceAnalysisPanel';
-import {YouTubeLessonStudy} from './YouTubeLessonStudy';
+import {
+  type CurrentSentenceInfo,
+  YouTubeLessonStudy,
+} from './YouTubeLessonStudy';
 
 export type CanonicalLessonPlayerProps = {
   snapshot: LessonSnapshot;
@@ -63,6 +66,12 @@ export type CanonicalLessonPlayerProps = {
   /** Public video (YouTube study only): its six-step lessons. */
   videoLessons?: readonly LessonCatalogItem[];
   onOpenVideoLesson?: (lessonId: string) => void;
+  /** YouTube study listening controls (screen-owned). */
+  onPlayVideo?: () => void;
+  loopSentence?: boolean;
+  playbackRate?: number;
+  onCyclePlaybackRate?: () => void;
+  onCurrentSentenceChange?: (current: CurrentSentenceInfo) => void;
 };
 
 /**
@@ -97,6 +106,11 @@ export function CanonicalLessonPlayer({
   vocabularySave,
   videoLessons,
   onOpenVideoLesson,
+  onPlayVideo,
+  loopSentence,
+  playbackRate,
+  onCyclePlaybackRate,
+  onCurrentSentenceChange,
 }: CanonicalLessonPlayerProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -147,6 +161,11 @@ export function CanonicalLessonPlayer({
         vocabularySave={vocabularySave}
         videoLessons={videoLessons}
         onOpenVideoLesson={onOpenVideoLesson}
+        onPlayVideo={onPlayVideo}
+        loopSentence={loopSentence}
+        playbackRate={playbackRate}
+        onCyclePlaybackRate={onCyclePlaybackRate}
+        onCurrentSentenceChange={onCurrentSentenceChange}
       />
     );
   }
