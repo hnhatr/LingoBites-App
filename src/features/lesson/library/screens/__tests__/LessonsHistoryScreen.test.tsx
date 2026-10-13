@@ -21,6 +21,10 @@ jest.mock('../../components/tabs/CreatedTab', () => ({
   CreatedTab: () => null,
 }));
 
+jest.mock('../../components/tabs/ExploreTab', () => ({
+  ExploreTab: () => null,
+}));
+
 jest.mock('../../components/tabs/MomentsTab', () => ({
   MomentsTab: () => null,
 }));

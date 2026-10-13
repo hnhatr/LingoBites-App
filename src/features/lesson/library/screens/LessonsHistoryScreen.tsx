@@ -9,6 +9,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {LibraryTabBar} from '../components/LibraryTabBar';
 import {CreatedTab} from '../components/tabs/CreatedTab';
+import {ExploreTab} from '../components/tabs/ExploreTab';
 import {MomentsTab} from '../components/tabs/MomentsTab';
 import {SectionTilesTab} from '../components/tabs/SectionTilesTab';
 import {LIBRARY_TABS, type LibraryTab} from '../logic/librarySections';
@@ -65,6 +66,8 @@ export function LessonsHistoryScreen(_props: Props) {
 
 function renderTab(tab: LibraryTab) {
   switch (tab) {
+    case 'explore':
+      return <ExploreTab />;
     case 'created':
       return <CreatedTab />;
     case 'moments':
