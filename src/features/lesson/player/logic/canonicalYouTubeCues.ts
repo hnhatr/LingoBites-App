@@ -75,3 +75,30 @@ export function areCuesBoundedByDuration(
   }
   return true;
 }
+
+/**
+ * Where "loop this sentence" jumps back: the sentence's own end cue, else
+ * the next sentence's start. Null when the sentence has no start cue or no
+ * end can be found (looping is then not offered).
+ */
+export function sentenceLoopEndMs(
+  sentences: LessonSentence[],
+  index: number,
+): number | null {
+  const sentence = sentences[index];
+  if (!sentence || sentence.start_ms === null) return null;
+  if (sentence.end_ms !== null && sentence.end_ms > sentence.start_ms) {
+    return sentence.end_ms;
+  }
+  const nextStart = sentences[index + 1]?.start_ms ?? null;
+  return nextStart !== null && nextStart > sentence.start_ms ? nextStart : null;
+}
+
+/** Playback speeds the study toolbar cycles through, fastest first. */
+export const STUDY_PLAYBACK_RATES = [1, 0.75, 0.5] as const;
+
+/** The speed after `rate` in `STUDY_PLAYBACK_RATES` (wraps to 1×). */
+export function nextStudyPlaybackRate(rate: number): number {
+  const index = STUDY_PLAYBACK_RATES.findIndex(value => value === rate);
+  return STUDY_PLAYBACK_RATES[(index + 1) % STUDY_PLAYBACK_RATES.length];
+}

@@ -4,6 +4,8 @@ import {
   activeSentenceIndexAt,
   areCuesBoundedByDuration,
   formatCueTimestamp,
+  nextStudyPlaybackRate,
+  sentenceLoopEndMs,
   startedSentenceIndexAt,
 } from '../canonicalYouTubeCues';
 
@@ -72,5 +74,31 @@ describe('canonical YouTube cues', () => {
         9000,
       ),
     ).toBe(false);
+  });
+});
+
+describe('sentenceLoopEndMs', () => {
+  const cued = [
+    sentence({id: 'a', start_ms: 0, end_ms: 2000}),
+    sentence({id: 'b', start_ms: 2500, end_ms: null}),
+    sentence({id: 'c', start_ms: 4000, end_ms: null}),
+    sentence({id: 'd'}),
+  ];
+
+  it('uses the end cue, else the next start, else nothing', () => {
+    expect(sentenceLoopEndMs(cued, 0)).toBe(2000);
+    expect(sentenceLoopEndMs(cued, 1)).toBe(4000);
+    expect(sentenceLoopEndMs(cued, 2)).toBeNull();
+    expect(sentenceLoopEndMs(cued, 3)).toBeNull();
+    expect(sentenceLoopEndMs(cued, 9)).toBeNull();
+  });
+});
+
+describe('nextStudyPlaybackRate', () => {
+  it('cycles 1 -> 0.75 -> 0.5 -> 1', () => {
+    expect(nextStudyPlaybackRate(1)).toBe(0.75);
+    expect(nextStudyPlaybackRate(0.75)).toBe(0.5);
+    expect(nextStudyPlaybackRate(0.5)).toBe(1);
+    expect(nextStudyPlaybackRate(1.25)).toBe(1);
   });
 });
