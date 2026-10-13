@@ -7,6 +7,7 @@ import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 
 import {
   findDownloadedPack,
+  learnedCodes,
   learnedCount,
   listDownloadedPacks,
   saveWordPack,
@@ -121,4 +122,8 @@ it('counts the pack words already in the learner schedule', () => {
     ],
   );
   expect(learnedCount(['word:coffee', 'word:tea'])).toBe(1);
+  expect([...learnedCodes(['word:coffee', 'word:tea'])]).toEqual([
+    'word:coffee',
+  ]);
+  expect(learnedCodes([]).size).toBe(0);
 });

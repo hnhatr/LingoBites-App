@@ -20,6 +20,19 @@ export const WordPackSummarySchema = z.object({
   position: z.number().int(),
   title_vi: z.string(),
   item_count: z.number().int(),
+  /** How many items are of each kind; absent from older Servers. */
+  kind_counts: z
+    .object({
+      word: z.number().int(),
+      phrase: z.number().int(),
+      pattern: z.number().int(),
+      grammar: z.number().int(),
+    })
+    .optional(),
+  /** The pack's first items; absent from older Servers. */
+  preview: z
+    .array(z.object({text: z.string(), meaning_vi: z.string()}))
+    .optional(),
 });
 
 export const WordPathSchema = z.object({

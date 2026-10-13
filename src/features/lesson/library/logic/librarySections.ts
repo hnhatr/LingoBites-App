@@ -111,8 +111,9 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     id: 'wordPath',
     group: 'mine',
     icon: 'style',
-    title: 'Học từ theo gói',
-    description: 'Tải gói từ về máy và học theo từng gói, cả khi ngoại tuyến',
+    title: 'Học theo gói',
+    description:
+      'Gói từ và gói câu theo cấp độ, tải về máy để học cả khi ngoại tuyến',
     emptyHint: 'Chưa có gói nào trên máy. Chạm để xem các gói có sẵn',
     wordPath: true,
     unit: 'gói',

@@ -96,6 +96,21 @@ export function findDownloadedPack(packId: string): DownloadedPack | null {
   return row ? packOf(row) : null;
 }
 
+/** Which of these items are already in the learner's schedule (item memory). */
+export function learnedCodes(codes: readonly string[]): Set<string> {
+  if (codes.length === 0) return new Set();
+  const unique = [...new Set(codes)];
+  return new Set(
+    rowsOf<{item_code: string}>(
+      getDatabase().execute(
+        `SELECT item_code FROM item_memory
+          WHERE item_code IN (${unique.map(() => '?').join(', ')});`,
+        unique,
+      ),
+    ).map(row => row.item_code),
+  );
+}
+
 /** How many of these items are already in the learner's schedule (item memory). */
 export function learnedCount(codes: readonly string[]): number {
   if (codes.length === 0) return 0;
