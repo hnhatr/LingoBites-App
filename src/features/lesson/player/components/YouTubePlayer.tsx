@@ -6,7 +6,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
+import {Pressable, StyleSheet, View} from 'react-native';
 import YoutubeIframe, {
   PLAYER_ERRORS,
   type YoutubeIframeRef,
@@ -14,11 +15,15 @@ import YoutubeIframe, {
 
 const TIME_UPDATE_INTERVAL_MS = 250;
 const PLAYER_MIN_HEIGHT = 200;
+// Pause this close to the end so the player never reaches YouTube's
+// 'ended' state, which shows a grid of suggested videos.
+const END_GUARD_S = 0.5;
 
-// Quiet the embed: no captions, annotations, related videos or fullscreen
-// button. YouTube still draws its own share / "Watch on YouTube" chrome on
-// small embeds; that cannot be turned off from the IFrame API.
+// Quiet the embed: no controls bar, captions, annotations, related videos
+// or fullscreen button. The creator's end-screen cards cannot be turned off
+// from the IFrame API; the frame takes no touches so they cannot be opened.
 const INITIAL_PLAYER_PARAMS = {
+  controls: false,
   showClosedCaptions: false,
   iv_load_policy: 3,
   modestbranding: true,
@@ -84,6 +89,36 @@ const INJECTED_A11Y_JS = `
       document.head.appendChild(style);
     } catch(e) {}
   })();
+  (function() {
+    // cc_load_policy=0 only stops forcing captions; a video with default
+    // captions (or a viewer who enabled them on YouTube) still shows them.
+    // Unload the captions module whenever the player (re)loads it.
+    function hideCaptions() {
+      try {
+        player.unloadModule('captions');
+        player.setOption('captions', 'track', {});
+      } catch(e) {}
+    }
+    var attempts = 0;
+    var timer = setInterval(function() {
+      attempts += 1;
+      if (attempts > 120) {
+        clearInterval(timer);
+        return;
+      }
+      if (typeof player === 'undefined' || !player || !player.addEventListener || !player.unloadModule) {
+        return;
+      }
+      clearInterval(timer);
+      hideCaptions();
+      player.addEventListener('onApiChange', hideCaptions);
+      player.addEventListener('onStateChange', function(event) {
+        if (event && event.data === 1) {
+          hideCaptions();
+        }
+      });
+    }, 500);
+  })();
   true;
 `;
 
@@ -102,13 +137,18 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
     },
     ref,
   ) => {
+    const {t} = useTranslation();
     const playerRef = useRef<YoutubeIframeRef>(null);
     const [playing, setPlaying] = useState(false);
     const [ready, setReady] = useState(false);
+    const durationRef = useRef(0);
+    const endGuardHitRef = useRef(false);
     // SETE-328: the frame is exactly 16:9 — measured from the layout width
     // so it holds on every screen size. No overlay is ever placed above the
-    // iframe: tapping the frame toggles play/pause through the native
-    // player, and onPlayingChange keeps every shell button in sync.
+    // iframe. The WebView itself takes no touches (YouTube's own chrome —
+    // share, settings, end-screen cards — would open from them); a tap on
+    // the frame toggles play/pause through our state instead, and
+    // onPlayingChange keeps every shell button in sync.
     const [frameWidth, setFrameWidth] = useState(0);
 
     useImperativeHandle(ref, () => ({
@@ -170,7 +210,38 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
     );
 
     useEffect(() => {
-      if (!ready || !onTimeUpdate) {
+      durationRef.current = 0;
+      endGuardHitRef.current = false;
+    }, [videoId]);
+
+    // Stops just short of the end and reports it as ended, so YouTube's
+    // suggested-videos screen never appears.
+    const guardEnd = useCallback(
+      async (time: number) => {
+        if (durationRef.current <= 0) {
+          durationRef.current = (await playerRef.current?.getDuration()) ?? 0;
+        }
+        const duration = durationRef.current;
+        if (duration <= END_GUARD_S) {
+          return;
+        }
+        if (time < duration - END_GUARD_S) {
+          endGuardHitRef.current = false;
+          return;
+        }
+        if (endGuardHitRef.current) {
+          return;
+        }
+        endGuardHitRef.current = true;
+        setPlaying(false);
+        onPlayingChange?.(false);
+        onEnded?.();
+      },
+      [onEnded, onPlayingChange],
+    );
+
+    useEffect(() => {
+      if (!ready) {
         return undefined;
       }
 
@@ -178,8 +249,12 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 
       const pollCurrentTime = async () => {
         const time = await playerRef.current?.getCurrentTime();
-        if (!cancelled && time != null) {
-          onTimeUpdate(time);
+        if (cancelled || time == null) {
+          return;
+        }
+        onTimeUpdate?.(time);
+        if (playing) {
+          await guardEnd(time);
         }
       };
 
@@ -192,7 +267,11 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
         cancelled = true;
         clearInterval(intervalId);
       };
-    }, [ready, onTimeUpdate, videoId]);
+    }, [ready, onTimeUpdate, videoId, playing, guardEnd]);
+
+    const togglePlaying = useCallback(() => {
+      setPlaying(current => !current);
+    }, []);
 
     // Pre-layout fallback keeps a visible frame on the very first commit;
     // the measured width takes over immediately after.
@@ -204,23 +283,37 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
         onLayout={event => setFrameWidth(event.nativeEvent.layout.width)}
         style={styles.container}
       >
-        <YoutubeIframe
-          ref={playerRef}
-          height={frameHeight}
-          width={frameWidth > 0 ? frameWidth : undefined}
-          play={playing}
-          playbackRate={playbackRate}
-          initialPlayerParams={INITIAL_PLAYER_PARAMS}
-          videoId={videoId}
-          onChangeState={handleChangeState}
-          onReady={handleReady}
-          onError={handleError}
-          webViewProps={{
-            allowsInlineMediaPlayback: true,
-            mediaPlaybackRequiresUserAction: false,
-            injectedJavaScript: INJECTED_A11Y_JS,
-          }}
-        />
+        <Pressable
+          accessibilityHint={t('youtube.video_toggle_hint')}
+          accessibilityLabel={
+            playing
+              ? t('youtube.video_pause_a11y')
+              : t('youtube.video_play_a11y')
+          }
+          accessibilityRole="button"
+          onPress={togglePlaying}
+          testID="youtube-player-frame"
+        >
+          <View pointerEvents="none">
+            <YoutubeIframe
+              ref={playerRef}
+              height={frameHeight}
+              width={frameWidth > 0 ? frameWidth : undefined}
+              play={playing}
+              playbackRate={playbackRate}
+              initialPlayerParams={INITIAL_PLAYER_PARAMS}
+              videoId={videoId}
+              onChangeState={handleChangeState}
+              onReady={handleReady}
+              onError={handleError}
+              webViewProps={{
+                allowsInlineMediaPlayback: true,
+                mediaPlaybackRequiresUserAction: false,
+                injectedJavaScript: INJECTED_A11Y_JS,
+              }}
+            />
+          </View>
+        </Pressable>
       </View>
     );
   },
