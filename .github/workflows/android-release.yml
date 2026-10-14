@@ -46,7 +46,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22.13.1'
+          node-version: '22.22.0'
           cache: yarn
 
       - name: Install JS dependencies
@@ -133,7 +133,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22.13.1'
+          node-version: '22.22.0'
           cache: yarn
 
       - name: Enable Corepack
