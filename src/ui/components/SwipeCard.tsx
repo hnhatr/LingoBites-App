@@ -20,10 +20,12 @@ export interface SwipeCardProps {
   /** Swipes are ignored (the card stays put) while false. */
   enabled: boolean;
   onSwipe: (direction: SwipeDirection) => void;
-  /** Stamp shown while dragging left (e.g. "Quên"). */
+  /** Stamp shown while dragging left (e.g. "Quên"); none when empty. */
   leftLabel: string;
-  /** Stamp shown while dragging right (e.g. "Nhớ"). */
+  /** Stamp shown while dragging right (e.g. "Nhớ"); none when empty. */
   rightLabel: string;
+  /** Directions that commit; a drag the other way springs back (default both). */
+  directions?: readonly SwipeDirection[];
   /** Changing it plays the entrance animation (next card). */
   cardKey?: string;
   style?: ViewStyle;
@@ -31,6 +33,7 @@ export interface SwipeCardProps {
 }
 
 const SWIPE_THRESHOLD = 110;
+const BOTH: readonly SwipeDirection[] = ['left', 'right'];
 const SWIPE_VELOCITY = 0.8;
 
 /**
@@ -44,6 +47,7 @@ export function SwipeCard({
   onSwipe,
   leftLabel,
   rightLabel,
+  directions = BOTH,
   cardKey,
   style,
   testID = 'swipe-card',
@@ -81,8 +85,8 @@ export function SwipeCard({
   }, [cardKey, dragX, enter, reduceMotion]);
 
   // The responder is created once; read the latest props through a ref.
-  const latest = useRef({enabled, onSwipe, reduceMotion, width});
-  latest.current = {enabled, onSwipe, reduceMotion, width};
+  const latest = useRef({enabled, onSwipe, reduceMotion, width, directions});
+  latest.current = {enabled, onSwipe, reduceMotion, width, directions};
 
   const panResponder = useMemo(
     () =>
@@ -93,8 +97,11 @@ export function SwipeCard({
           Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
         onPanResponderMove: (_e, g) => dragX.setValue(g.dx),
         onPanResponderRelease: (_e, g) => {
+          const direction: SwipeDirection = g.dx > 0 ? 'right' : 'left';
           const commit =
-            Math.abs(g.dx) > SWIPE_THRESHOLD || Math.abs(g.vx) > SWIPE_VELOCITY;
+            (Math.abs(g.dx) > SWIPE_THRESHOLD ||
+              Math.abs(g.vx) > SWIPE_VELOCITY) &&
+            latest.current.directions.includes(direction);
           if (!commit || !latest.current.enabled) {
             Animated.spring(dragX, {
               toValue: 0,
@@ -103,7 +110,6 @@ export function SwipeCard({
             }).start();
             return;
           }
-          const direction: SwipeDirection = g.dx > 0 ? 'right' : 'left';
           if (latest.current.reduceMotion) {
             dragX.setValue(0);
             latest.current.onSwipe(direction);
@@ -160,28 +166,32 @@ export function SwipeCard({
         pointerEvents="none"
         style={StyleSheet.absoluteFill}
       >
-        <Animated.View
-          style={[
-            themedStyles.stamp,
-            themedStyles.stampRight,
-            {opacity: rightOpacity},
-          ]}
-        >
-          <AppText style={themedStyles.stampRightText} variant="h3">
-            {rightLabel}
-          </AppText>
-        </Animated.View>
-        <Animated.View
-          style={[
-            themedStyles.stamp,
-            themedStyles.stampLeft,
-            {opacity: leftOpacity},
-          ]}
-        >
-          <AppText style={themedStyles.stampLeftText} variant="h3">
-            {leftLabel}
-          </AppText>
-        </Animated.View>
+        {rightLabel ? (
+          <Animated.View
+            style={[
+              themedStyles.stamp,
+              themedStyles.stampRight,
+              {opacity: rightOpacity},
+            ]}
+          >
+            <AppText style={themedStyles.stampRightText} variant="h3">
+              {rightLabel}
+            </AppText>
+          </Animated.View>
+        ) : null}
+        {leftLabel ? (
+          <Animated.View
+            style={[
+              themedStyles.stamp,
+              themedStyles.stampLeft,
+              {opacity: leftOpacity},
+            ]}
+          >
+            <AppText style={themedStyles.stampLeftText} variant="h3">
+              {leftLabel}
+            </AppText>
+          </Animated.View>
+        ) : null}
       </View>
     </Animated.View>
   );

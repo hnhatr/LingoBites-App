@@ -9,6 +9,7 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
+import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
@@ -111,10 +112,23 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
     }
   };
 
-  const packLabel = pack
+  const topic = pack
     ? (topicLabelOf(pack.topicCode) ??
       t('wordPath.pack_title', {position: pack.position}))
     : null;
+  const packLabel = topic
+    ? topic.charAt(0).toUpperCase() + topic.slice(1)
+    : null;
+  const nextCard = () => {
+    if (cardIndex + 1 < items.length) {
+      setCardIndex(value => value + 1);
+    } else {
+      setStage('recognition');
+    }
+  };
+  const prevCard = () => setCardIndex(value => Math.max(0, value - 1));
+  const onSwipe = (direction: SwipeDirection) =>
+    direction === 'left' ? nextCard() : prevCard();
   const close = () => navigation?.goBack?.();
   const header =
     stage === 'cards'
@@ -159,15 +173,34 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
         ) : null}
 
         {stage === 'cards' && card ? (
-          <PackFlashCard
-            example={card.examples[0]?.text_en ?? null}
-            ipa={card.ipa}
-            meaning={card.meaning_vi}
-            onSpeak={() => say(card.text)}
-            packLabel={packLabel}
-            testID={`pack-learn-card-${card.code}`}
-            word={card.text}
-          />
+          <SwipeCard
+            cardKey={card.code}
+            directions={cardIndex === 0 ? ['left'] : ['left', 'right']}
+            enabled
+            leftLabel=""
+            onSwipe={onSwipe}
+            rightLabel=""
+            testID="pack-learn-swipe"
+          >
+            <PackFlashCard
+              example={card.examples[0]?.text_en ?? null}
+              ipa={card.ipa}
+              meaning={card.meaning_vi}
+              onSpeak={() => say(card.text)}
+              packLabel={packLabel}
+              testID={`pack-learn-card-${card.code}`}
+              word={card.text}
+            />
+          </SwipeCard>
+        ) : null}
+        {stage === 'cards' && card ? (
+          <AppText
+            color="muted"
+            style={themedStyles.swipeHint}
+            variant="caption"
+          >
+            {t('packLearn.swipe_hint')}
+          </AppText>
         ) : null}
 
         {stage !== 'cards' && stage !== 'done' && question ? (
@@ -208,20 +241,14 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
             accessibilityLabel={t('packLearn.prev')}
             disabled={cardIndex === 0}
             icon="chevron_left"
-            onPress={() => setCardIndex(value => Math.max(0, value - 1))}
+            onPress={prevCard}
             size={52}
             testID="pack-learn-prev-card"
             tone="ghost"
           />
           <AppButton
             iconRight="chevron_right"
-            onPress={() => {
-              if (cardIndex + 1 < items.length) {
-                setCardIndex(value => value + 1);
-              } else {
-                setStage('recognition');
-              }
-            }}
+            onPress={nextCard}
             style={themedStyles.grow}
             testID="pack-learn-next-card"
             title={t('packLearn.next')}
@@ -267,6 +294,9 @@ function makeStyles(theme: AppTheme) {
     },
     grow: {
       flex: 1,
+    },
+    swipeHint: {
+      textAlign: 'center',
     },
   });
 }

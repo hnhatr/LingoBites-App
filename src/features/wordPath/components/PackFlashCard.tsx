@@ -50,15 +50,17 @@ export function PackFlashCard({
   return (
     <View style={styles.card} testID={testID}>
       <View style={styles.face}>
-        <Svg height="100%" style={StyleSheet.absoluteFill} width="100%">
-          <Defs>
-            <LinearGradient id="packCardFace" x1="0" x2="1" y1="0" y2="1">
-              <Stop offset="0" stopColor={PACK_PALETTE.faceFrom} />
-              <Stop offset="1" stopColor={PACK_PALETTE.faceTo} />
-            </LinearGradient>
-          </Defs>
-          <Rect fill="url(#packCardFace)" height="100%" width="100%" />
-        </Svg>
+        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          <Svg height="100%" width="100%">
+            <Defs>
+              <LinearGradient id="packCardFace" x1="0" x2="1" y1="0" y2="1">
+                <Stop offset="0" stopColor={PACK_PALETTE.faceFrom} />
+                <Stop offset="1" stopColor={PACK_PALETTE.faceTo} />
+              </LinearGradient>
+            </Defs>
+            <Rect fill="url(#packCardFace)" height="100%" width="100%" />
+          </Svg>
+        </View>
         {packLabel ? (
           <View style={styles.chip}>
             <AppText numberOfLines={1} style={styles.chipText}>
