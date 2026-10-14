@@ -1,7 +1,6 @@
 import React, {useMemo} from 'react';
 import {
   ActivityIndicator,
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -14,7 +13,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
-import {getHardShadow} from '@ui/theme/hardShadow';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {LibraryTone} from '../logic/librarySections';
 import {libraryTone} from './libraryTones';
@@ -189,10 +188,7 @@ export function shelfTone(theme: AppTheme, tone: GridTileTone) {
  * there the same ink edge is a thick bottom border instead.
  */
 export function stickerCard(theme: AppTheme, offset = 3): ViewStyle {
-  if (Platform.OS === 'android') {
-    return {borderBottomWidth: offset, borderColor: theme.colors.ink};
-  }
-  return getHardShadow(offset, theme.colors.ink);
+  return getStickerEdge(offset, theme.colors.ink);
 }
 
 function makeStyles(theme: AppTheme) {

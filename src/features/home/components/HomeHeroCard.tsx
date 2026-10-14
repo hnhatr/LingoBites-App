@@ -36,7 +36,7 @@ import {
   HERO_TITLE,
 } from '../logic/homeScreenModel';
 import {
-  getHardShadow,
+  getStickerEdge,
   HeartBurst,
   HomeHeroSparks,
   HomeHeroWaves,
@@ -500,7 +500,7 @@ function makeStyles(theme: AppTheme) {
       paddingRight: 138,
       paddingTop: 20,
       position: 'relative',
-      ...getHardShadow(6, theme.colors.ink),
+      ...getStickerEdge(6, theme.colors.ink),
     },
     coralBlob: {
       backgroundColor: HERO_CORAL,
@@ -608,11 +608,11 @@ function makeStyles(theme: AppTheme) {
       paddingLeft: 14,
       paddingRight: 18,
       paddingVertical: 10,
-      ...getHardShadow(4, theme.colors.ink),
+      ...getStickerEdge(4, theme.colors.ink),
     },
     ctaPressed: {
       transform: [{translateY: 3}],
-      ...getHardShadow(1, theme.colors.ink),
+      ...getStickerEdge(1, theme.colors.ink),
     },
     ctaLabel: {
       color: HERO_CTA_INK,

@@ -28,7 +28,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {TodayProgressModel} from '../logic/todayProgress';
-import {getHardShadow} from './HomeDecorations';
+import {getStickerEdge} from './HomeDecorations';
 import {HomeSectionTitle} from './HomeSectionTitle';
 
 const MODE_OPTIONS: ReadonlyArray<{
@@ -290,7 +290,7 @@ function makeStyles(theme: AppTheme) {
       gap: 10,
       paddingHorizontal: 14,
       paddingVertical: 12,
-      ...getHardShadow(4, theme.colors.ink),
+      ...getStickerEdge(4, theme.colors.ink),
     },
     headerRow: {
       alignItems: 'flex-start',

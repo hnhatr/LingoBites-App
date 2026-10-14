@@ -31,7 +31,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 
 import type {ShortcutItem, ShortcutKey} from '../logic/homeScreenModel';
-import {getHardShadow} from './HomeDecorations';
+import {getStickerEdge} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
 const GRID_PALETTE = {
@@ -241,7 +241,7 @@ function makeStyles(theme: AppTheme) {
       height: 56,
       justifyContent: 'center',
       width: 56,
-      ...getHardShadow(3, theme.colors.ink),
+      ...getStickerEdge(3, theme.colors.ink),
     },
     title: {
       color: theme.colors.text.primary,

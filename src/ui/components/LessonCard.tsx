@@ -5,7 +5,7 @@ import type {LessonSourceType, LessonUnit} from '@core/schemas/lesson';
 
 import type {HandoffIconName} from '../icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '../theme';
-import {getStickerFace} from '../theme/hardShadow';
+import {getStickerEdge, isStickerTheme} from '../theme/hardShadow';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
 import {ShelfSurface} from './ShelfSurface';
@@ -506,7 +506,9 @@ function makeStyles(
   return StyleSheet.create({
     face: {
       backgroundColor: theme.colors.surface,
-      ...getStickerFace(theme, 4),
+      ...(isStickerTheme(theme)
+        ? getStickerEdge(4, theme.colors.ink)
+        : undefined),
     },
     body: {
       gap: compact ? 8 : 10,
