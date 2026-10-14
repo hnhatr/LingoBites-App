@@ -10,6 +10,7 @@ import {
   learnedCodes,
   learnedCount,
   listDownloadedPacks,
+  removeDownloadedPacks,
   saveWordPack,
 } from '../wordPackRepository';
 import type {WordPackDetail} from '../wordPathClient';
@@ -126,4 +127,25 @@ it('counts the pack words already in the learner schedule', () => {
     'word:coffee',
   ]);
   expect(learnedCodes([]).size).toBe(0);
+});
+
+it('forgets removed packs but keeps their items and what was learned', () => {
+  saveWordPack(detail(PACK_ID, [item('word:coffee', 'word', 'coffee')]), NOW);
+  saveWordPack(detail(OTHER_PACK_ID, [item('word:tea', 'word', 'tea')]), NOW);
+  getDatabase().execute(
+    `INSERT INTO item_memory (item_code, stage, due_at, updated_at)
+     VALUES ('word:coffee', 0, ?, ?);`,
+    [NOW.toISOString(), NOW.toISOString()],
+  );
+
+  removeDownloadedPacks([PACK_ID]);
+  removeDownloadedPacks([]);
+
+  expect(listDownloadedPacks().map(pack => pack.packId)).toEqual([
+    OTHER_PACK_ID,
+  ]);
+  expect(readCatalogItems(['word:coffee']).get('word:coffee')?.text).toBe(
+    'coffee',
+  );
+  expect(learnedCount(['word:coffee'])).toBe(1);
 });

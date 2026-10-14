@@ -84,6 +84,19 @@ export function listDownloadedPacks(): DownloadedPack[] {
   ).map(packOf);
 }
 
+/**
+ * Forgets these downloaded packs. Their items stay in the catalog and what the
+ * learner learned stays in item memory, which is kept by item, not by pack.
+ */
+export function removeDownloadedPacks(packIds: readonly string[]): void {
+  if (packIds.length === 0) return;
+  getDatabase().execute(
+    `DELETE FROM word_pack_downloads
+      WHERE pack_id IN (${packIds.map(() => '?').join(', ')});`,
+    [...packIds],
+  );
+}
+
 export function findDownloadedPack(packId: string): DownloadedPack | null {
   const row = rowsOf<PackRow>(
     getDatabase().execute(

@@ -3,6 +3,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {readCatalogItems} from '@core/db/catalogItems';
 
 import {type LocalPack, type PackRow, rowsFrom} from './packRows';
+import {dropStalePacks} from './syncDownloadedPacks';
 import {learnedCount, listDownloadedPacks} from './wordPackRepository';
 import {fetchWordPath} from './wordPathClient';
 
@@ -32,14 +33,14 @@ export function useWordPathRows(): {
   const [rows, setRows] = useState<PackRow[] | null>(null);
 
   const reload = useCallback(async () => {
-    const local = localPacks();
     const result = await fetchWordPath();
     if (result.ok) {
+      dropStalePacks(result.value);
       setOffline(false);
-      setRows(rowsFrom(result.value, local));
+      setRows(rowsFrom(result.value, localPacks()));
     } else {
       setOffline(true);
-      setRows(rowsFrom(null, local));
+      setRows(rowsFrom(null, localPacks()));
     }
   }, []);
 

@@ -32,13 +32,25 @@ jest.mock('@features/review', () => ({
   countItemsForReview: () => 0,
 }));
 
+type MockNextPack = {
+  packId: string;
+  titleVi: string;
+  learned: number;
+  total: number;
+} | null;
+
+const PACK_ONE: MockNextPack = {
+  packId: 'pack-1',
+  titleVi: 'Gói A1 · chung 1',
+  learned: 3,
+  total: 12,
+};
+let mockNextPack: MockNextPack = PACK_ONE;
+let mockSync: () => Promise<number> = () => Promise.resolve(0);
+
 jest.mock('@features/wordPath', () => ({
-  nextDownloadedPack: () => ({
-    packId: 'pack-1',
-    titleVi: 'Gói A1 · chung 1',
-    learned: 3,
-    total: 12,
-  }),
+  nextDownloadedPack: () => mockNextPack,
+  syncDownloadedPacks: () => mockSync(),
 }));
 
 jest.mock('../../logic/todayAdapter', () => ({
@@ -132,6 +144,8 @@ describe('TodayScreen add lesson', () => {
     jest.clearAllMocks();
     mockFeatures = {...DEFAULT_TODAY_FEATURES};
     mockMinutes = 10;
+    mockNextPack = PACK_ONE;
+    mockSync = () => Promise.resolve(0);
   });
 
   it('offers create, library and course where the plan has minutes to spare', async () => {
@@ -178,5 +192,26 @@ describe('TodayScreen add lesson', () => {
     mockFeatures = {...DEFAULT_TODAY_FEATURES, word_pack: false};
     const hidden = await renderToday();
     expect(pressables(hidden, 'today-next-pack')).toHaveLength(0);
+  });
+
+  it('picks the next pack again after stale packs are dropped', async () => {
+    mockSync = () => {
+      mockNextPack = null;
+      return Promise.resolve(1);
+    };
+    const tree = await renderToday();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(pressables(tree, 'today-next-pack')).toHaveLength(0);
+  });
+
+  it('keeps the next pack when the sync fails', async () => {
+    mockSync = () => Promise.reject(new Error('offline'));
+    const tree = await renderToday();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(pressables(tree, 'today-next-pack')).toHaveLength(1);
   });
 });

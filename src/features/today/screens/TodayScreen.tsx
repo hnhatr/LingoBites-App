@@ -3,7 +3,11 @@ import React, {useCallback, useRef, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {ComposeRequestCards} from '@features/lesson/player';
-import {nextDownloadedPack, type NextPack} from '@features/wordPath';
+import {
+  nextDownloadedPack,
+  type NextPack,
+  syncDownloadedPacks,
+} from '@features/wordPath';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
@@ -137,6 +141,14 @@ export function TodayScreen({route}: Props = {}) {
         setFeatures(fresh);
         loadPlan(mode, fresh);
       });
+      // Vocab path P5: drop packs the Server rebuilt away, then pick the next
+      // pack again so the card never opens a pack that no longer exists.
+      syncDownloadedPacks()
+        .then(dropped => {
+          if (!active || dropped === 0) return;
+          setNextPack(nextDownloadedPack());
+        })
+        .catch(() => {});
       return () => {
         active = false;
       };

@@ -98,6 +98,24 @@ export function topicLabelOf(topicCode: string | null): string | null {
 }
 
 /**
+ * The downloaded packs the Server's path no longer has (an admin rebuilt or
+ * emptied them). An empty path drops nothing, so a Server answering with no
+ * packs at all never wipes the device.
+ */
+export function stalePackIds(
+  path: WordPath,
+  downloadedIds: readonly string[],
+): string[] {
+  const onServer = new Set(
+    path.levels.flatMap(level =>
+      level.topics.flatMap(topic => topic.packs.map(pack => pack.id)),
+    ),
+  );
+  if (onServer.size === 0) return [];
+  return downloadedIds.filter(id => !onServer.has(id));
+}
+
+/**
  * The Server's path when it can be reached; otherwise what is on the device.
  * A downloaded pack fills in what an older Server does not send.
  */
