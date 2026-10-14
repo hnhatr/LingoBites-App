@@ -1,6 +1,7 @@
 import {create} from 'zustand';
 
 import {getAppConfig} from './appConfig';
+import {createTimeoutSignal} from './timeout';
 
 /**
  * Last known reachability of the Server (docs/architecture/offline-mode.md).
@@ -84,21 +85,20 @@ export async function probeConnectivity(
   fetchImpl: typeof fetch = fetch,
   timeoutMs: number = CONNECTIVITY_PROBE_TIMEOUT_MS,
 ): Promise<boolean> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = createTimeoutSignal(timeoutMs);
   try {
     const {apiBaseUrl} = getAppConfig();
     await trackReachability(
       fetchImpl(`${apiBaseUrl}/v1/capabilities`, {
         headers: {Accept: 'application/json'},
-        signal: controller.signal,
+        signal: timeout.signal,
       }),
     );
     return true;
   } catch {
     return false;
   } finally {
-    clearTimeout(timer);
+    timeout.cleanup();
   }
 }
 

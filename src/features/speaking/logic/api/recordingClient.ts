@@ -4,6 +4,7 @@ import {
   type AuthenticatedFetchOptions,
   UploadSendPreconditionError,
 } from '@core/api/authenticatedFetch';
+import {createTimeoutSignal} from '@core/api/timeout';
 import type {
   CreateLessonTaskRecordingRequest,
   CreateRecordingRequest,
@@ -163,13 +164,8 @@ export async function createRecordingMetadata(
   options: RecordingClientOptions = {},
 ): Promise<CreateRecordingResult> {
   const {apiBaseUrl} = getAppConfig();
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-  if (options.signal) {
-    if (options.signal.aborted) controller.abort();
-    else options.signal.addEventListener('abort', () => controller.abort());
-  }
-  const signal = controller.signal;
+  const timeout = createTimeoutSignal(15000, options.signal);
+  const signal = timeout.signal;
 
   try {
     const response = await authenticatedFetch(
@@ -186,7 +182,7 @@ export async function createRecordingMetadata(
       options.fetchImpl,
       recordingAuthenticatedFetchOptions(options),
     );
-    clearTimeout(timeoutId);
+    timeout.cleanup();
     const apiCode = response.ok ? null : await readApiErrorCode(response);
     if (!response.ok) {
       const permanent = isPermanentCreateFailure(response.status, apiCode);
@@ -201,7 +197,7 @@ export async function createRecordingMetadata(
     const data = (await response.json()) as CreateRecordingSuccessResponse;
     return {ok: true, data, status: response.status};
   } catch (error) {
-    clearTimeout(timeoutId);
+    timeout.cleanup();
     if (error instanceof UploadSendPreconditionError) {
       return consentWithdrawnResult();
     }
@@ -244,13 +240,8 @@ export async function uploadRecordingBinary(
     throw error;
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
-  if (options.signal) {
-    if (options.signal.aborted) controller.abort();
-    else options.signal.addEventListener('abort', () => controller.abort());
-  }
-  const signal = controller.signal;
+  const timeout = createTimeoutSignal(60000, options.signal);
+  const signal = timeout.signal;
 
   try {
     const response = await authenticatedFetch(
@@ -266,7 +257,7 @@ export async function uploadRecordingBinary(
       options.fetchImpl,
       recordingAuthenticatedFetchOptions(options),
     );
-    clearTimeout(timeoutId);
+    timeout.cleanup();
     const apiCode = response.ok ? null : await readApiErrorCode(response);
     if (response.ok) {
       return {ok: true, status: response.status};
@@ -283,7 +274,7 @@ export async function uploadRecordingBinary(
       httpStatus: response.status,
     };
   } catch (error) {
-    clearTimeout(timeoutId);
+    timeout.cleanup();
     if (error instanceof UploadSendPreconditionError) {
       return consentWithdrawnResult();
     }

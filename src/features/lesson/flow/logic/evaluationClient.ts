@@ -1,5 +1,6 @@
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {createTimeoutSignal} from '@core/api/timeout';
 import {
   EvaluationCapabilitiesResponseSchema,
   type EvaluationPayload,
@@ -26,16 +27,15 @@ async function request(
   init: RequestInit,
   fetchImpl?: typeof fetch,
 ): Promise<Response> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timeout = createTimeoutSignal(TIMEOUT_MS, init.signal);
   try {
     return await authenticatedFetch(
       url(path),
-      {...init, signal: controller.signal},
+      {...init, signal: timeout.signal},
       fetchImpl,
     );
   } finally {
-    clearTimeout(timeout);
+    timeout.cleanup();
   }
 }
 
