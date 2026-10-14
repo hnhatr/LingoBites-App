@@ -16,9 +16,12 @@
 
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import {Platform} from 'react-native';
-import AudioRecorderPlayer, {
+import {
+  AudioEncoderAndroidType,
   type AudioSet,
-} from 'react-native-audio-recorder-player';
+  createSound,
+  OutputFormatAndroidType,
+} from 'react-native-nitro-sound';
 import {check, PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 
 import type {SpeakingMode} from '@core/db/types';
@@ -52,7 +55,9 @@ export function sanitizeRecordingSegment(segment: string): string {
   return cleaned || 'recording';
 }
 
-let recorder: AudioRecorderPlayer | null = null;
+type Recorder = ReturnType<typeof createSound>;
+
+let recorder: Recorder | null = null;
 
 export async function preflightMicrophonePermission(): Promise<
   'granted' | 'denied' | 'not_requested' | 'unavailable'
@@ -83,9 +88,9 @@ export async function requestMicrophonePermission(): Promise<
   return 'denied';
 }
 
-function getRecorder(): AudioRecorderPlayer {
+function getRecorder(): Recorder {
   if (!recorder) {
-    recorder = new AudioRecorderPlayer();
+    recorder = createSound();
   }
   return recorder;
 }
@@ -108,20 +113,22 @@ export type StartRecordingResult =
  */
 /**
  * PR 14 (decision H13): spoken task answers go to speech recognition, which
- * needs no more than AAC, mono, 16 kHz at ~32 kbps (35 s ≈ 140 KB). Literal
- * values stand for the library's enums: MPEG_4 = 2, AAC = 3.
+ * needs no more than AAC, mono, 16 kHz at ~32 kbps (35 s ≈ 140 KB).
  */
 export const LESSON_TASK_AUDIO_SET: AudioSet = {
-  AudioEncoderAndroid: 3 as AudioSet['AudioEncoderAndroid'],
-  OutputFormatAndroid: 2 as AudioSet['OutputFormatAndroid'],
-  AudioSamplingRateAndroid: 16_000,
-  AudioEncodingBitRateAndroid: 32_000,
-  AudioChannelsAndroid: 1,
-  AVFormatIDKeyIOS: 'aac' as AudioSet['AVFormatIDKeyIOS'],
-  AVSampleRateKeyIOS: 16_000,
-  AVNumberOfChannelsKeyIOS: 1,
-  AVEncoderBitRateKeyIOS: 32_000,
+  AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+  OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
+  AVFormatIDKeyIOS: 'aac',
+  AudioSamplingRate: 16_000,
+  AudioChannels: 1,
+  AudioEncodingBitRate: 32_000,
 };
+
+/**
+ * Speaking Room recordings: AAC in .m4a, mono, 44.1 kHz at 128 kbps. Without
+ * an explicit set the recorder would default to 48 kHz stereo at 192 kbps.
+ */
+export const SPEAKING_AUDIO_SET: AudioSet = {AudioQuality: 'medium'};
 
 export async function startRecording(
   mode: SpeakingMode | 'lesson_task',
@@ -167,7 +174,7 @@ export async function startRecording(
   try {
     await getRecorder().startRecorder(
       filePath,
-      mode === 'lesson_task' ? LESSON_TASK_AUDIO_SET : undefined,
+      mode === 'lesson_task' ? LESSON_TASK_AUDIO_SET : SPEAKING_AUDIO_SET,
     );
     return {ok: true, filePath};
   } catch {

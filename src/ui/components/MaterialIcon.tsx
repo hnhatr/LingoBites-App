@@ -1,7 +1,8 @@
+import {createIconSet} from '@react-native-vector-icons/common';
+import glyphMap from '@react-native-vector-icons/material-icons/glyphmaps/MaterialIcons.json';
 import React from 'react';
 import type {StyleProp, TextStyle} from 'react-native';
 import Animated, {type AnimatedStyle} from 'react-native-reanimated';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import {
   type HandoffIconName,
@@ -9,6 +10,15 @@ import {
   resolveHandoffIconName,
 } from '../icons/iconRegistry';
 import {useAppTheme} from '../theme';
+
+// Built here instead of importing the package's component: that one passes a
+// fontSource, which makes it load the full upstream font through Expo at
+// runtime. The app ships its own subset font (`yarn icons:subset`).
+const MaterialIcons = createIconSet(
+  glyphMap as Record<string, number>,
+  'MaterialIcons-Regular',
+  'MaterialIcons.ttf',
+);
 
 const AnimatedMaterialIcons = Animated.createAnimatedComponent(MaterialIcons);
 

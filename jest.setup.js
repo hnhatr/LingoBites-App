@@ -148,24 +148,28 @@ jest.mock('react-native-sound', () => {
   return MockSound;
 });
 
-jest.mock('react-native-audio-recorder-player', () => {
-  class MockAudioRecorderPlayer {
-    startRecorder = jest.fn(async uri => uri ?? '/mock/recording.m4a');
-    stopRecorder = jest.fn(async () => '/mock/recording.m4a');
-    startPlayer = jest.fn(async () => '/mock/recording.m4a');
-    stopPlayer = jest.fn(async () => '/mock/recording.m4a');
-    addRecordBackListener = jest.fn();
-    removeRecordBackListener = jest.fn();
-    addPlayBackListener = jest.fn();
-    removePlayBackListener = jest.fn();
-  }
+jest.mock('react-native-nitro-sound', () => {
+  const createSound = () => ({
+    startRecorder: jest.fn(async uri => uri ?? '/mock/recording.m4a'),
+    stopRecorder: jest.fn(async () => '/mock/recording.m4a'),
+    startPlayer: jest.fn(async () => '/mock/recording.m4a'),
+    stopPlayer: jest.fn(async () => '/mock/recording.m4a'),
+    addRecordBackListener: jest.fn(),
+    removeRecordBackListener: jest.fn(),
+    addPlayBackListener: jest.fn(),
+    removePlayBackListener: jest.fn(),
+  });
   return {
     __esModule: true,
-    default: MockAudioRecorderPlayer,
+    createSound,
+    AudioEncoderAndroidType: {AAC: 3},
+    OutputFormatAndroidType: {MPEG_4: 2},
   };
 });
 
-jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
+jest.mock('@react-native-vector-icons/common', () => ({
+  createIconSet: () => 'MaterialIcons',
+}));
 
 // `react-native-tts` ships untranspiled ESM. The audio feature barrel
 // (`@features/audio`) re-exports `TtsSpikeScreen`, which imports it eagerly,
