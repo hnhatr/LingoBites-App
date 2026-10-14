@@ -59,7 +59,7 @@ function slotLabels(payload: Record<string, unknown>): Record<string, string> {
 }
 
 /** What an item card shows: a pattern's frame with its slot labels. */
-function itemCardText(item: BlockItem): string {
+export function itemCardText(item: BlockItem): string {
   return item.kind === 'pattern'
     ? renderFrameWithLabels(item.text, slotLabels(item.payload))
     : item.text;

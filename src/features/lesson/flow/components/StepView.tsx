@@ -19,6 +19,7 @@ import {isSpeakingActivity} from '../logic/noSpeaking';
 import {blocksOfStep} from '../logic/practiceCompletion';
 import {ActivityRunner} from './ActivityRunner';
 import {type GradedAttempt, IndependentTaskView} from './IndependentTaskView';
+import {ListenCardDeck} from './ListenCardDeck';
 
 export type StepViewProps = {
   snapshot: LessonSnapshot;
@@ -103,6 +104,9 @@ export function StepView({
               writeInstead={speakingOff && task.response_mode === 'speak'}
             />
           );
+        }
+        if (!activity && step === 2 && block.type === 'item_cards') {
+          return <ListenCardDeck block={block} items={items} key={block.id} />;
         }
         return activity ? (
           <ActivityRunner
