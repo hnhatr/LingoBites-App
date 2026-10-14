@@ -161,7 +161,6 @@ export function QuickKnownCheckScreen({
             disabled={chosen === null}
             iconRight="chevron_right"
             onPress={advance}
-            style={themedStyles.grow}
             testID="quick-check-next"
             title={t('quickCheck.next')}
             variant="primary"
@@ -182,9 +181,6 @@ function makeStyles(theme: AppTheme) {
       paddingBottom: theme.spacing.md,
       paddingHorizontal: theme.spacing.md,
       paddingTop: theme.spacing.sm,
-    },
-    grow: {
-      flex: 1,
     },
   });
 }
