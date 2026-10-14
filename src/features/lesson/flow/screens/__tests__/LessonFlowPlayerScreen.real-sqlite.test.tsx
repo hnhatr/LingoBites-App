@@ -61,13 +61,14 @@ afterEach(() => {
 });
 
 describe('LessonFlowPlayerScreen (shell)', () => {
-  it('opens a new lesson on step 1 and walks the steps', () => {
+  it('opens a new lesson past an empty step 1 and walks the steps', () => {
     const {tree} = renderScreen();
-    expect(textOf(tree, 'lesson-flow-step-title')).toBe('Bước 1: Ôn liên quan');
-
-    press(tree, 'lesson-flow-next');
     expect(textOf(tree, 'lesson-flow-step-title')).toBe('Bước 2: Nghe hiểu');
 
+    press(tree, 'lesson-flow-next');
+    expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 3');
+
+    press(tree, 'lesson-flow-step-4');
     press(tree, 'lesson-flow-step-3');
     expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 3');
     const activity = snapshot.blocks.find(
@@ -124,10 +125,16 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(has(tree, 'lesson-flow-back-to-lesson')).toBe(true);
   });
 
-  it('step 1 says when there is nothing to review', () => {
+  it('skips step 1 when there is nothing to review', () => {
     const {tree} = renderScreen();
-    expect(has(tree, 'lesson-flow-review-empty')).toBe(true);
+    expect(has(tree, 'lesson-flow-review-empty')).toBe(false);
     expect(has(tree, 'lesson-flow-step-empty')).toBe(false);
+    const stepOne = tree.root.find(
+      node =>
+        node.props.testID === 'lesson-flow-step-1' &&
+        typeof node.props.onPress === 'function',
+    );
+    expect(stepOne.props.disabled).toBe(true);
   });
 
   it('says when the lesson has no steps', () => {

@@ -814,6 +814,7 @@
     "previous_step_hint": "Opens the previous step",
     "next_step": "Next step",
     "next_step_hint": "Opens the next step",
+    "continue": "Continue",
     "entry_count": "Item {{current}} of {{total}}",
     "next_entry": "Next",
     "next_entry_hint": "Goes to the next item",

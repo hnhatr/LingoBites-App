@@ -814,6 +814,7 @@
     "previous_step_hint": "Mở bước trước",
     "next_step": "Bước tiếp",
     "next_step_hint": "Mở bước sau",
+    "continue": "Tiếp tục",
     "entry_count": "Câu {{current}}/{{total}}",
     "next_entry": "Tiếp",
     "next_entry_hint": "Sang câu tiếp theo",
