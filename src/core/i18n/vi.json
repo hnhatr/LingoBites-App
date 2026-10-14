@@ -664,6 +664,8 @@
     "explore_grammar_empty": "Phân tích một câu để xem ngữ pháp",
     "explore_items_vocabulary_title": "Từ & cụm",
     "explore_items_vocabulary_subtitle": "{{count}} từ và cụm",
+    "item_rail_all": "Tất cả {{count}} ›",
+    "item_rail_all_hint": "Mở danh sách từ và cụm của bài",
     "explore_patterns_title": "Mẫu câu",
     "explore_patterns_subtitle": "{{count}} mẫu câu",
     "explore_pronunciation_title": "Phát âm",

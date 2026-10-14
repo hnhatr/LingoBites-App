@@ -85,6 +85,8 @@ export interface LibraryCoverProps {
   imageUrl?: string | null;
   /** CEFR level: colours the default cover and shows the chip. */
   level?: string | null;
+  /** Colour by `level` but leave the chip out (the screen already says it). */
+  hideLevelChip?: boolean;
   /** Icon on the default cover. */
   glyph: CoverGlyph;
   /** Round corner badge, e.g. downloaded (`check`). */
@@ -106,6 +108,7 @@ export function LibraryCover({
   shape,
   imageUrl,
   level,
+  hideLevelChip = false,
   glyph,
   badge,
   duration,
@@ -118,7 +121,7 @@ export function LibraryCover({
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme, compact), [theme, compact]);
   const tone = levelTone(theme, level);
-  const chip = cefrLevelOf(level);
+  const chip = hideLevelChip ? null : cefrLevelOf(level);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const showImage = Boolean(imageUrl) && failedUrl !== imageUrl;
 
@@ -302,6 +305,8 @@ const coverStyles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 0,
     width: '52%',
+    // Wide banners (course and unit headers) keep the disc a badge, not a wall.
+    maxWidth: 96,
   },
   discLesson: {
     width: '40%',

@@ -30,7 +30,11 @@ export function LevelUnitsScreen({navigation, route}: Props) {
       <LevelUnitList
         levelId={levelId}
         onOpenUnit={unit =>
-          navigation.push('UnitLessons', {unitId: unit.id, title: unit.title})
+          navigation.push('UnitLessons', {
+            unitId: unit.id,
+            title: unit.title,
+            coverUrl: unit.coverUrl,
+          })
         }
         testID="level-units"
       />

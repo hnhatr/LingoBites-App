@@ -276,7 +276,144 @@ describe('Curriculum screens (F14)', () => {
     expect(nav().push).toHaveBeenCalledWith('UnitLessons', {
       unitId: 'unit-1',
       title: 'Unit unit-1',
+      coverUrl: null,
+      levelCode: 'A1',
     });
+  });
+
+  it('shows covers on courses, levels, units and lessons, else defaults', async () => {
+    const imageOf = (tree: ReactTestRenderer.ReactTestRenderer, id: string) =>
+      tree.root.findAll(node => node.props.testID === `${id}-image`)[0]?.props
+        .source?.uri;
+    const hasDefault = (
+      tree: ReactTestRenderer.ReactTestRenderer,
+      id: string,
+    ) =>
+      tree.root.findAll(node => node.props.testID === `${id}-default`).length >
+      0;
+
+    client.fetchCourses.mockResolvedValue({
+      ok: true,
+      value: [
+        {
+          id: 'course-1',
+          slug: 'travel',
+          title: 'Tiếng Anh du lịch',
+          description: '',
+          sourceLanguage: 'vi',
+          targetLanguage: 'en',
+          coverUrl: 'https://cdn.test/course.png',
+        },
+        {
+          id: 'course-2',
+          slug: 'daily',
+          title: 'Tiếng Anh giao tiếp',
+          description: '',
+          sourceLanguage: 'vi',
+          targetLanguage: 'en',
+          coverUrl: null,
+        },
+      ],
+    });
+    const list = await render(<CourseListContent />);
+    expect(imageOf(list, 'course-cover-course-1')).toBe(
+      'https://cdn.test/course.png',
+    );
+    expect(hasDefault(list, 'course-cover-course-2')).toBe(true);
+    press(list, 'course-list-row-course-1');
+    expect(mockAppNavigation.openCourse).toHaveBeenCalledWith({
+      kind: 'course',
+      courseSlug: 'travel',
+      title: 'Tiếng Anh du lịch',
+      coverUrl: 'https://cdn.test/course.png',
+    });
+
+    client.fetchCourseLevels.mockResolvedValue({
+      ok: true,
+      value: [
+        {
+          id: 'level-1',
+          courseId: 'course-1',
+          code: 'A1',
+          title: 'A1',
+          description: '',
+          position: 0,
+          coverUrl: null,
+        },
+      ],
+    });
+    client.fetchLevelUnits.mockResolvedValue({
+      ok: true,
+      value: [
+        {...unit('unit-1', 0), coverUrl: 'https://cdn.test/unit.png'},
+        {...unit('unit-2', 1), coverUrl: null},
+      ],
+    });
+    client.fetchUnitLessons.mockResolvedValue({ok: true, value: []});
+    const levels = await render(
+      <CourseLevelsScreen
+        navigation={navigation}
+        route={
+          {
+            key: 'screen',
+            params: {
+              courseSlug: 'travel',
+              title: 'Tiếng Anh du lịch',
+              coverUrl: 'https://cdn.test/course.png',
+            },
+          } as never
+        }
+      />,
+    );
+    // A level without its own cover shows the course's.
+    expect(imageOf(levels, 'course-levels-cover')).toBe(
+      'https://cdn.test/course.png',
+    );
+    expect(imageOf(levels, 'unit-cover-unit-1')).toBe(
+      'https://cdn.test/unit.png',
+    );
+    expect(hasDefault(levels, 'unit-cover-unit-2')).toBe(true);
+    press(levels, 'course-levels-units-row-unit-2');
+    expect(nav().push).toHaveBeenLastCalledWith('UnitLessons', {
+      unitId: 'unit-2',
+      title: 'Unit unit-2',
+      coverUrl: 'https://cdn.test/course.png',
+      levelCode: 'A1',
+    });
+
+    client.fetchUnitLessons.mockResolvedValue({
+      ok: true,
+      value: [
+        {...lesson('lesson-1', 0), coverUrl: 'https://cdn.test/lesson.png'},
+        {...lesson('lesson-2', 1), coverUrl: null},
+      ],
+    });
+    const lessons = await render(
+      <UnitLessonsScreen
+        navigation={navigation}
+        route={
+          {
+            key: 'screen',
+            params: {
+              unitId: 'unit-1',
+              title: 'Ở sân bay',
+              coverUrl: 'https://cdn.test/unit.png',
+              levelCode: 'A1',
+            },
+          } as never
+        }
+      />,
+    );
+    expect(imageOf(lessons, 'unit-lessons-cover')).toBe(
+      'https://cdn.test/unit.png',
+    );
+    expect(imageOf(lessons, 'unit-lessons-cover-lesson-1')).toBe(
+      'https://cdn.test/lesson.png',
+    );
+    // A lesson without its own cover shows the unit's.
+    expect(imageOf(lessons, 'unit-lessons-cover-lesson-2')).toBe(
+      'https://cdn.test/unit.png',
+    );
   });
 
   it('loads the level kept in the route', async () => {

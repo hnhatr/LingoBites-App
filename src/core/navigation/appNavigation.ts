@@ -52,7 +52,12 @@ export type CreateEntry =
  */
 export type CourseTarget =
   /** The levels of one course. */
-  | {kind: 'course'; courseSlug: string; title?: string}
+  | {
+      kind: 'course';
+      courseSlug: string;
+      title?: string;
+      coverUrl?: string | null;
+    }
   /** The units of one level, each with its progress bar. */
   | {kind: 'level'; levelId: string; title?: string}
   /** The lessons of one unit; a lesson opens with `openLesson`. */

@@ -36,6 +36,10 @@ export type CurriculumRow = {
   onPress: () => void;
   /** Replaces the default list card (e.g. a `LessonCard` for lessons). */
   card?: React.ReactElement;
+  /** Wide picture above the copy (course cards), e.g. a `LibraryCover`. */
+  cover?: React.ReactNode;
+  /** Square picture left of the copy (unit cards), e.g. a `LibraryCover`. */
+  thumbnail?: React.ReactNode;
 };
 
 type Props = {
@@ -142,35 +146,53 @@ export function CurriculumList({
             onPress={item.onPress}
           >
             <AppCard>
-              <View style={styles.cardContent}>
-                {item.eyebrow ? (
-                  <AppText color="secondary" variant="caption">
-                    {item.eyebrow}
-                  </AppText>
-                ) : null}
-                <View style={styles.titleRow}>
-                  <AppText style={styles.titleText} variant="h3">
-                    {item.title}
-                  </AppText>
-                  {item.locked ? (
-                    <MaterialIcon
-                      color={theme.colors.text.secondary}
-                      name="lock"
-                      size={18}
-                    />
-                  ) : null}
+              {item.cover ? (
+                <View
+                  style={themedStyles.cover}
+                  testID={`${testID}-cover-${item.id}`}
+                >
+                  {item.cover}
                 </View>
-                {item.description && item.description.trim().length > 0 ? (
-                  <AppText
-                    color="secondary"
-                    ellipsizeMode="tail"
-                    numberOfLines={2}
-                    variant="label"
+              ) : null}
+              <View style={styles.cardRow}>
+                {item.thumbnail ? (
+                  <View
+                    style={themedStyles.thumbnail}
+                    testID={`${testID}-thumbnail-${item.id}`}
                   >
-                    {item.description}
-                  </AppText>
+                    {item.thumbnail}
+                  </View>
                 ) : null}
-                {item.footer}
+                <View style={styles.cardContent}>
+                  {item.eyebrow ? (
+                    <AppText color="secondary" variant="caption">
+                      {item.eyebrow}
+                    </AppText>
+                  ) : null}
+                  <View style={styles.titleRow}>
+                    <AppText style={styles.titleText} variant="h3">
+                      {item.title}
+                    </AppText>
+                    {item.locked ? (
+                      <MaterialIcon
+                        color={theme.colors.text.secondary}
+                        name="lock"
+                        size={18}
+                      />
+                    ) : null}
+                  </View>
+                  {item.description && item.description.trim().length > 0 ? (
+                    <AppText
+                      color="secondary"
+                      ellipsizeMode="tail"
+                      numberOfLines={2}
+                      variant="label"
+                    >
+                      {item.description}
+                    </AppText>
+                  ) : null}
+                  {item.footer}
+                </View>
               </View>
             </AppCard>
           </Pressable>
@@ -186,6 +208,21 @@ export function CurriculumList({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    cover: {
+      borderColor: theme.colors.ink,
+      borderRadius: 14,
+      borderWidth: 2,
+      marginBottom: theme.spacing.md,
+      overflow: 'hidden',
+    },
+    thumbnail: {
+      alignSelf: 'flex-start',
+      borderColor: theme.colors.ink,
+      borderRadius: 14,
+      borderWidth: 2,
+      overflow: 'hidden',
+      width: 84,
+    },
     empty: {
       alignItems: 'center',
       gap: theme.spacing.md,
@@ -211,8 +248,14 @@ function makeStyles(theme: AppTheme) {
 }
 
 const styles = StyleSheet.create({
+  cardRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   cardContent: {
+    flex: 1,
     gap: 6,
+    minWidth: 0,
   },
   titleRow: {
     alignItems: 'center',
