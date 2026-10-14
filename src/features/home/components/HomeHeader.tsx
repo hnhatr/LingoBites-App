@@ -24,7 +24,7 @@ import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {FlameModel, GreetingModel} from '../logic/homeScreenModel';
-import {getHardShadow, TimeOfDayBadge} from './HomeDecorations';
+import {getStickerEdge, TimeOfDayBadge} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
 const PALETTE = {
@@ -274,7 +274,7 @@ function makeStyles(theme: AppTheme) {
       paddingLeft: 8,
       paddingRight: 12,
       paddingTop: 6,
-      ...getHardShadow(3, theme.colors.ink),
+      ...getStickerEdge(3, theme.colors.ink),
     },
     flameContainer: {
       alignItems: 'center',

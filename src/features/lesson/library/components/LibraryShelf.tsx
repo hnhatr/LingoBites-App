@@ -1,5 +1,11 @@
 import React, {useMemo} from 'react';
-import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import type {GridTileTone} from '@ui/components/GridTile';
@@ -7,7 +13,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
-import {getStickerFace} from '@ui/theme/hardShadow';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {LibraryTone} from '../logic/librarySections';
 import {libraryTone} from './libraryTones';
@@ -175,14 +181,14 @@ export function shelfTone(theme: AppTheme, tone: GridTileTone) {
   }
 }
 
-/** The sticker face of Library cards: a hard ink shadow, else a hairline. */
-export function stickerCard(theme: AppTheme, offset = 3) {
-  return (
-    getStickerFace(theme, offset) ?? {
-      borderColor: theme.colors.outlineVariant,
-      borderWidth: 1,
-    }
-  );
+/**
+ * The sticker face of Library cards: a hard ink shadow and no outline, in
+ * every theme, so the folders and cards keep the Library's paper look.
+ * Android cannot draw an unblurred shadow (elevation always blurs), so
+ * there the same ink edge is a thick bottom border instead.
+ */
+export function stickerCard(theme: AppTheme, offset = 3): ViewStyle {
+  return getStickerEdge(offset, theme.colors.ink);
 }
 
 function makeStyles(theme: AppTheme) {

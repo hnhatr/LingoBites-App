@@ -10,7 +10,7 @@ import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
-import {getHardShadow} from '@ui/theme/hardShadow';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 type Props = {
   count: number;
@@ -55,7 +55,7 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.sm,
       minHeight: 48,
       paddingHorizontal: theme.spacing.md,
-      ...getHardShadow(3, theme.colors.ink),
+      ...getStickerEdge(3, theme.colors.ink),
     },
     text: {color: theme.colors.text.primary, flex: 1},
     cta: {color: theme.colors.primary},

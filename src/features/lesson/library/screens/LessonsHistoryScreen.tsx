@@ -3,7 +3,6 @@ import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
-import {ScreenHeader} from '@ui/components/ScreenHeader';
 
 import {LibraryTabBar} from '../components/LibraryTabBar';
 import {CreatedTab} from '../components/tabs/CreatedTab';
@@ -37,7 +36,6 @@ export function LessonsHistoryScreen(_props: Props) {
 
   return (
     <AppScreen>
-      <ScreenHeader title="Thư viện" />
       <LibraryTabBar
         onSelect={select}
         selected={selected}

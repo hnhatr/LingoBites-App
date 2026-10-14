@@ -19,7 +19,7 @@ import Animated, {
 import {Circle, G, Line, Path, Svg} from 'react-native-svg';
 
 import {useAppTheme} from '@ui/theme';
-import {getHardShadow} from '@ui/theme/hardShadow';
+import {getHardShadow, getStickerEdge} from '@ui/theme/hardShadow';
 
 import {CONFETTI_COLORS, type TimeOfDay} from '../logic/homeScreenModel';
 import {HomeIcon} from './HomeSvgIcons';
@@ -27,7 +27,7 @@ import {HomeIcon} from './HomeSvgIcons';
 // ---------------------------------------------------------------------------
 // Hard shadow helper (§VS-0, R-001)
 // ---------------------------------------------------------------------------
-export {getHardShadow};
+export {getHardShadow, getStickerEdge};
 
 // ---------------------------------------------------------------------------
 // Time-of-day badge (§VS-1.1, I5)
@@ -92,7 +92,7 @@ export function TimeOfDayBadge({timeOfDay, testID}: TODBadgeProps) {
         styles.todBadgeContainer,
         {
           backgroundColor: TOD_BG[timeOfDay],
-          ...getHardShadow(3, theme.colors.ink),
+          ...getStickerEdge(3, theme.colors.ink),
         },
       ]}
       testID={testID ?? `home-tod-badge-${timeOfDay}`}

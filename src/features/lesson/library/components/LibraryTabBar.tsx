@@ -4,9 +4,9 @@ import {Pressable, StyleSheet, View} from 'react-native';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {getStickerFace} from '@ui/theme/hardShadow';
 
 import type {LibraryTab, LibraryTabConfig} from '../logic/librarySections';
+import {stickerCard} from './LibraryShelf';
 import {libraryTone} from './libraryTones';
 
 export interface LibraryTabBarProps {
@@ -16,8 +16,8 @@ export interface LibraryTabBarProps {
 }
 
 /**
- * The Library tabs: a pastel bubble per tab with its name underneath. The
- * open tab fills with its colour, tilts and lifts, with a dot below it.
+ * The Library tabs, at the top of the screen: a small pastel bubble per tab
+ * with its name underneath. The open tab fills with its colour and tilts.
  */
 export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
   const {theme} = useAppTheme();
@@ -50,7 +50,7 @@ export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
               <MaterialIcon
                 color={isSelected ? tone.onStrong : tone.ink}
                 name={tab.icon}
-                size={26}
+                size={20}
               />
             </View>
             <AppText
@@ -59,9 +59,6 @@ export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
             >
               {tab.title}
             </AppText>
-            <View
-              style={[styles.pip, isSelected && {backgroundColor: tone.strong}]}
-            />
           </Pressable>
         );
       })}
@@ -76,43 +73,34 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.xs,
       paddingBottom: theme.spacing.xs,
       paddingHorizontal: theme.spacing.md,
-      paddingTop: theme.spacing.md,
+      paddingTop: theme.spacing.sm,
     },
     tab: {
       alignItems: 'center',
       flex: 1,
-      gap: 6,
+      gap: 3,
     },
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
     bubble: {
       alignItems: 'center',
-      borderRadius: 20,
-      height: 54,
+      borderRadius: 14,
+      height: 38,
       justifyContent: 'center',
-      width: 54,
+      width: 38,
     },
     bubbleOn: {
-      transform: [{translateY: -3}, {rotate: '-6deg'}],
-      ...(getStickerFace(theme, 3) ?? {
-        borderColor: theme.colors.outlineVariant,
-        borderWidth: 1,
-      }),
+      transform: [{rotate: '-6deg'}],
+      ...stickerCard(theme, 2),
     },
     label: {
       color: theme.colors.text.muted,
-      fontSize: 12.5,
+      fontSize: 11.5,
       fontWeight: '800',
     },
     labelOn: {
       color: theme.colors.text.primary,
-    },
-    pip: {
-      borderRadius: 3,
-      height: 6,
-      marginTop: -2,
-      width: 6,
     },
   });
 }
