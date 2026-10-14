@@ -232,12 +232,14 @@ export function PhotoCard({
             testID={`${testID}-photo`}
           />
         ) : (
-          <Image
-            accessibilityIgnoresInvertColors
-            source={DEFAULT_COVERS.lesson}
-            style={styles.photo}
-            testID={`${testID}-default`}
-          />
+          <View style={[styles.photo, styles.photoDefault]}>
+            <Image
+              accessibilityIgnoresInvertColors
+              source={DEFAULT_COVERS.lesson}
+              style={styles.photoFill}
+              testID={`${testID}-default`}
+            />
+          </View>
         )}
         <AppText numberOfLines={2} style={styles.photoTitle}>
           {title}
@@ -354,6 +356,14 @@ function makeStyles(theme: AppTheme) {
     photo: {
       aspectRatio: 1,
       borderRadius: 17,
+      width: '100%',
+    },
+    photoDefault: {
+      overflow: 'hidden',
+    },
+    // A bundled picture brings its own pixel size; 100% keeps it in the box.
+    photoFill: {
+      height: '100%',
       width: '100%',
     },
     photoTitle: {

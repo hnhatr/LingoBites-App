@@ -157,7 +157,7 @@ export function LibraryCover({
           accessibilityIgnoresInvertColors
           resizeMode="cover"
           source={DEFAULT_COVERS[fallback ?? SHAPE_FALLBACK[shape]]}
-          style={StyleSheet.absoluteFill}
+          style={styles.fill}
           testID={testID ? `${testID}-default` : undefined}
         />
       )}
@@ -232,6 +232,15 @@ export function Glyph({
 function makeStyles(theme: AppTheme, compact: boolean) {
   const inset = compact ? 4 : 8;
   return StyleSheet.create({
+    // A bundled picture brings its own pixel size as width and height; the
+    // explicit 100% keeps it to the cover instead of drawing it full size.
+    fill: {
+      height: '100%',
+      left: 0,
+      position: 'absolute',
+      top: 0,
+      width: '100%',
+    },
     cover: {
       maxWidth: '100%',
       overflow: 'hidden',
