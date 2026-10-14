@@ -86,10 +86,12 @@ export function ActivityRunner({
     <AppCard testID={`lesson-flow-activity-${block.id}`}>
       <View style={themedStyles.body}>
         <View style={themedStyles.header}>
-          <Chip
-            label={t(`lessonFlow.kind_${activity.kind}`)}
-            tone="accentSoft"
-          />
+          {activity.titleVi === t(`lessonFlow.kind_${activity.kind}`) ? null : (
+            <Chip
+              label={t(`lessonFlow.kind_${activity.kind}`)}
+              tone="accentSoft"
+            />
+          )}
           {activity.titleVi ? (
             <AppText variant="h3">{activity.titleVi}</AppText>
           ) : null}
