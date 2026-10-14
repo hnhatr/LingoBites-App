@@ -224,10 +224,10 @@ export function LessonMap({
                       next
                         ? themedStyles.nodeNext
                         : skipped
-                        ? themedStyles.nodeSkipped
-                        : last
-                        ? themedStyles.nodeLast
-                        : themedStyles.nodeUpcoming,
+                          ? themedStyles.nodeSkipped
+                          : last
+                            ? themedStyles.nodeLast
+                            : themedStyles.nodeUpcoming,
                     ]}
                     testID={`lesson-flow-step-${step}`}
                   >
@@ -236,8 +236,8 @@ export function LessonMap({
                         next
                           ? theme.colors.accentInk
                           : skipped
-                          ? theme.colors.primary
-                          : theme.colors.text.muted
+                            ? theme.colors.primary
+                            : theme.colors.text.muted
                       }
                       name={skipped ? 'check_circle' : STEP_ICONS[step]}
                       size={next ? 32 : 26}

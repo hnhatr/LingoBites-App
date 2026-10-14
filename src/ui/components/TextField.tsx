@@ -72,8 +72,8 @@ export function TextField({
   const borderColor = invalid
     ? theme.colors.danger
     : focused
-    ? theme.colors.primary
-    : theme.components.input.border;
+      ? theme.colors.primary
+      : theme.components.input.border;
 
   const ringColor =
     focused && !invalid
@@ -114,7 +114,7 @@ export function TextField({
           }
           accessibilityLabelledBy={
             label
-              ? accessibilityLabelledBy ?? labelNativeId
+              ? (accessibilityLabelledBy ?? labelNativeId)
               : accessibilityLabelledBy
           }
           accessibilityHint={accessibilityHint ?? errorMessage}

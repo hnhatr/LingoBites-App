@@ -25,10 +25,7 @@ import {fetchActiveComposes, fetchActiveMomentRequests} from './composeClient';
  */
 
 export type ComposeEntryStatus =
-  | 'running'
-  | 'awaiting'
-  | 'succeeded'
-  | 'failed';
+  'running' | 'awaiting' | 'succeeded' | 'failed';
 
 export type ComposeEntry = {
   requestId: string;

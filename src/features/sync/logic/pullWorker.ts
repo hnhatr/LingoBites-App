@@ -209,8 +209,7 @@ export function applyLessonProgressRecord(
     [record.entity_id],
   );
   const existingRow = existingRes.rows?.item(0) as
-    | {status?: unknown}
-    | undefined;
+    {status?: unknown} | undefined;
   if (typeof existingRow?.status === 'string') {
     const localStatus = existingRow.status as 'in_progress' | 'completed';
     const localRank = lessonProgressRank(localStatus);
@@ -308,8 +307,8 @@ export function applySyncRecord(
       payload.reactivated_at !== undefined
         ? payload.reactivated_at
         : payload.active !== false
-        ? record.occurred_at
-        : null;
+          ? record.occurred_at
+          : null;
     payload.created_at = payload.created_at ?? record.occurred_at;
   } else if (record.collection === 'review_schedules') {
     payload.card_id = payload.card_id ?? record.entity_id;

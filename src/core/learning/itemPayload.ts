@@ -110,8 +110,7 @@ export type ItemPayload =
 export type PayloadIssue = {path: string; message: string};
 
 export type ParsedPayload =
-  | {ok: true; payload: ItemPayload}
-  | {ok: false; issues: PayloadIssue[]};
+  {ok: true; payload: ItemPayload} | {ok: false; issues: PayloadIssue[]};
 
 const payloadSchemaByKind = {
   word: EmptyPayloadSchema,

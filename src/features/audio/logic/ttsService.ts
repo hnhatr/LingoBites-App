@@ -11,8 +11,7 @@ export const DEFAULT_TTS_RATE = 0.5;
 export type TtsErrorCode = 'VOICE_UNAVAILABLE' | 'UNAVAILABLE';
 
 export type TtsVoiceAvailabilityResult =
-  | {ok: true; available: boolean}
-  | {ok: false; errorCode: 'UNAVAILABLE'};
+  {ok: true; available: boolean} | {ok: false; errorCode: 'UNAVAILABLE'};
 
 export type TtsSpeakResult = {ok: true} | {ok: false; errorCode: TtsErrorCode};
 

@@ -259,7 +259,7 @@ export async function signOut(input: {
   client: AuthHttpClient;
 }): Promise<{ok: true} | {ok: false; error: unknown}> {
   const stored = await getActiveSession();
-  const accessToken = stored.ok ? stored.value?.access_token ?? null : null;
+  const accessToken = stored.ok ? (stored.value?.access_token ?? null) : null;
   const result = await terminalReset({accessToken, client: input.client});
   return result.cleared ? {ok: true} : {ok: false, error: result.error};
 }

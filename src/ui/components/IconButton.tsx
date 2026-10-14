@@ -7,13 +7,7 @@ import type {AppTheme} from '../theme/types';
 import {MaterialIcon} from './MaterialIcon';
 
 export type IconButtonTone =
-  | 'accent'
-  | 'coral'
-  | 'ghost'
-  | 'surface'
-  | 'danger'
-  | 'tertiary'
-  | 'bare';
+  'accent' | 'coral' | 'ghost' | 'surface' | 'danger' | 'tertiary' | 'bare';
 
 type Props = {
   icon: HandoffIconName;

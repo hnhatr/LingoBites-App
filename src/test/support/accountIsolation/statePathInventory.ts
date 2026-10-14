@@ -7,10 +7,7 @@
  */
 
 export type AccountIsolationStateScope =
-  | 'sqlite'
-  | 'keychain'
-  | 'memory'
-  | 'filesystem';
+  'sqlite' | 'keychain' | 'memory' | 'filesystem';
 
 export type AccountIsolationStatePath = {
   id: string;

@@ -24,8 +24,7 @@ const CARD_RADIUS = 18;
 
 /** What a shelf shows while it has no cards to list. */
 export type ShelfStatus =
-  | {kind: 'loading'}
-  | {kind: 'message'; text: string; onRetry?: () => void};
+  {kind: 'loading'} | {kind: 'message'; text: string; onRetry?: () => void};
 
 export interface LibraryShelfProps {
   title: string;

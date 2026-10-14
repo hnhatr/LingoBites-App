@@ -206,16 +206,16 @@ function MessageStatus({message}: {message: LaunchGateMessage}) {
     message === 'offline'
       ? t('account.offline_title')
       : signedOut
-      ? t('account.signed_out_title')
-      : null;
+        ? t('account.signed_out_title')
+        : null;
   const body =
     message === 'offline'
       ? t('errors.network_lost')
       : message === 'merge-in-progress'
-      ? t('account.merge_in_progress')
-      : signedOut
-      ? t('account.signed_out_message')
-      : failureMessage ?? t('account.boot_failed');
+        ? t('account.merge_in_progress')
+        : signedOut
+          ? t('account.signed_out_message')
+          : (failureMessage ?? t('account.boot_failed'));
   const action = signedOut
     ? t('account.signed_out_continue')
     : t('common.retry');

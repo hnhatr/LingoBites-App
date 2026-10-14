@@ -7,9 +7,7 @@
  */
 
 export type M4MatrixEnvironment =
-  | 'real-sqlite+keychain-vault'
-  | 'deterministic-unit'
-  | 'device-native';
+  'real-sqlite+keychain-vault' | 'deterministic-unit' | 'device-native';
 
 export type M4MatrixAuthority = 'authoritative' | 'deferred' | 'quarantined';
 

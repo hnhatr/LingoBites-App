@@ -1,9 +1,5 @@
 export type ContentMasteryState =
-  | 'new'
-  | 'learning'
-  | 'reviewing'
-  | 'mastered'
-  | 'relearning';
+  'new' | 'learning' | 'reviewing' | 'mastered' | 'relearning';
 
 export type ContentPackageId = string;
 

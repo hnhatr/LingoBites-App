@@ -137,8 +137,8 @@ export function QuickKnownCheckScreen({
                   chosen === null
                     ? 'outline'
                     : optionIndex === current.answerIndex
-                    ? 'secondary'
-                    : 'outline'
+                      ? 'secondary'
+                      : 'outline'
                 }
               />
             ))}

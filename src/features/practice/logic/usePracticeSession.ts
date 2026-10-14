@@ -115,7 +115,7 @@ export function usePracticeSession(lessonId: string): UsePracticeSessionResult {
 
   const current = questions[index] ?? null;
   const currentAnswer = current
-    ? answers.find(answer => answer.questionId === current.id) ?? null
+    ? (answers.find(answer => answer.questionId === current.id) ?? null)
     : null;
 
   const select = useCallback(

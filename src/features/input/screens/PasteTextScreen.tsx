@@ -150,8 +150,8 @@ export function PasteTextScreen({navigation, route}: Props) {
             opacity: !hasText
               ? theme.states.disabledOpacity
               : pressed
-              ? theme.states.pressedOpacity
-              : 1,
+                ? theme.states.pressedOpacity
+                : 1,
             paddingHorizontal: theme.spacing.sm,
           })}
         >

@@ -50,10 +50,7 @@ export const GOLDEN_HOUR_CHANNEL_NAME = 'Nhắc ôn tập giờ vàng';
 
 /** Permission state as the app reasons about it (never throws). */
 export type ReminderPermissionStatus =
-  | 'granted'
-  | 'denied'
-  | 'not-determined'
-  | 'unavailable';
+  'granted' | 'denied' | 'not-determined' | 'unavailable';
 
 /** Structural slice of `@notifee/react-native` the adapter depends on. */
 export type NotifeeLike = {

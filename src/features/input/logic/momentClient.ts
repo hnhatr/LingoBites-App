@@ -123,8 +123,8 @@ function imageAnalysisForm(
     Platform.OS === 'ios'
       ? 'ios'
       : Platform.OS === 'android'
-      ? 'android'
-      : undefined;
+        ? 'android'
+        : undefined;
   if (platform) form.append('platform', platform);
   if (image.width) form.append('image_width', String(image.width));
   if (image.height) form.append('image_height', String(image.height));

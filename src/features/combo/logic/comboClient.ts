@@ -100,11 +100,7 @@ export type ComboSet = z.infer<typeof ComboSetSchema>;
 export type ComboOptions = z.infer<typeof ComboOptionsSchema>;
 export type ComboSetSummary = z.infer<typeof ComboSetsSchema>['sets'][number];
 export type ComboReportReason =
-  | 'wrong_meaning'
-  | 'unnatural'
-  | 'wrong_tense'
-  | 'wrong_subject'
-  | 'other';
+  'wrong_meaning' | 'unnatural' | 'wrong_tense' | 'wrong_subject' | 'other';
 
 export type ComboPolarity = 'affirmative' | 'negative' | 'question';
 

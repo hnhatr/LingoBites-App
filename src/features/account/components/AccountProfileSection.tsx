@@ -53,7 +53,7 @@ export function AccountProfileSection() {
   React.useEffect(() => {
     if (user) {
       setName(current => (current === '' ? user.display_name : current));
-      setPhone(current => (current === '' ? user.phone_e164 ?? '' : current));
+      setPhone(current => (current === '' ? (user.phone_e164 ?? '') : current));
     }
   }, [user]);
 
@@ -68,8 +68,8 @@ export function AccountProfileSection() {
       ? nameValidation.errorCode === 'TOO_LONG'
         ? t('account.name_too_long')
         : nameValidation.errorCode === 'INVALID_CHARACTERS'
-        ? t('account.name_invalid_characters')
-        : t('account.name_required')
+          ? t('account.name_invalid_characters')
+          : t('account.name_required')
       : undefined;
   const phoneError =
     phoneTouched && !phoneValidation.ok

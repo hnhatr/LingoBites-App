@@ -36,10 +36,10 @@ export function LessonMediaDownloadCard({
     status === 'saved'
       ? t('lessonMedia.saved')
       : status === 'failed'
-      ? t('lessonMedia.failed')
-      : offline
-      ? t('lessonMedia.missing_offline')
-      : t('lessonMedia.missing');
+        ? t('lessonMedia.failed')
+        : offline
+          ? t('lessonMedia.missing_offline')
+          : t('lessonMedia.missing');
 
   return (
     <View style={themedStyles.card} testID="lesson-media-card">

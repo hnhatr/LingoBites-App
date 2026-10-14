@@ -16,9 +16,7 @@ import {createRandom, shuffled} from './random';
  * Same `seed` + same lesson content => the same questions in the same order.
  */
 export type PracticeVariant =
-  | 'meaning_choice'
-  | 'cloze_choice'
-  | 'translation_choice';
+  'meaning_choice' | 'cloze_choice' | 'translation_choice';
 
 export const PRACTICE_VARIANTS: readonly PracticeVariant[] = [
   'meaning_choice',

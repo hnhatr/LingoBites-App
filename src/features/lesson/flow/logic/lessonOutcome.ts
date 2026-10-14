@@ -23,10 +23,7 @@ import {answerExpired} from './taskEvaluation';
  * spoken) or by a self- or rule-graded attempt.
  */
 export type LessonOutcomeLabel =
-  | 'passed'
-  | 'awaiting_result'
-  | 'practice_done'
-  | 'in_progress';
+  'passed' | 'awaiting_result' | 'practice_done' | 'in_progress';
 
 export type LessonOutcomeView = {
   label: LessonOutcomeLabel;

@@ -162,8 +162,8 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
                   chosen === null
                     ? 'outline'
                     : optionIndex === question.answerIndex
-                    ? 'secondary'
-                    : 'outline'
+                      ? 'secondary'
+                      : 'outline'
                 }
               />
             ))}

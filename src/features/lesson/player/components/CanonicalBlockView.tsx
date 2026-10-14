@@ -39,9 +39,8 @@ export type BlockItemLookup = ReadonlyMap<
   Pick<CatalogItem, 'text' | 'meaning_vi' | 'kind' | 'payload'>
 >;
 
-type BlockItem = BlockItemLookup extends ReadonlyMap<string, infer V>
-  ? V
-  : never;
+type BlockItem =
+  BlockItemLookup extends ReadonlyMap<string, infer V> ? V : never;
 
 /** Slot labels of a pattern payload (`{size: 'cỡ'}`), ignoring bad shapes. */
 export function slotLabels(
@@ -109,8 +108,8 @@ function activityLines(block: LessonBlock): ActivityLine[] {
   const raw = Array.isArray(data.lines)
     ? data.lines
     : Array.isArray(data.dialogueTurns)
-    ? data.dialogueTurns
-    : [];
+      ? data.dialogueTurns
+      : [];
   return raw.flatMap((item, index) => {
     if (item === null || typeof item !== 'object') return [];
     const turn = item as Record<string, unknown>;

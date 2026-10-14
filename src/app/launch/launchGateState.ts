@@ -4,10 +4,7 @@ import type {LaunchUpdatePhase} from '@features/appUpdate';
 import {accountGateRouteForPhase} from '../navigation/accountGate';
 
 export type LaunchGateMessage =
-  | 'offline'
-  | 'failed'
-  | 'merge-in-progress'
-  | 'signed-out';
+  'offline' | 'failed' | 'merge-in-progress' | 'signed-out';
 
 /**
  * What the launch gate shows over the app. `ready` lets the app through;

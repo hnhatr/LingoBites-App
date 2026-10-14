@@ -181,8 +181,8 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
                   chosen === null
                     ? 'outline'
                     : optionIndex === question.answerIndex
-                    ? 'secondary'
-                    : 'outline'
+                      ? 'secondary'
+                      : 'outline'
                 }
               />
             ))}

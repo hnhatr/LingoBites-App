@@ -231,8 +231,8 @@ describe('PracticeScreen – practice run of a learner lesson', () => {
         section.kind === 'translation'
           ? section.content.sentences.length
           : section.kind === 'listen_and_repeat'
-          ? section.content.prompts.length
-          : section.content.questions.length;
+            ? section.content.prompts.length
+            : section.content.questions.length;
       for (let entry = 0; entry < count; entry += 1) {
         answerEntry(tree);
       }
@@ -253,8 +253,8 @@ describe('PracticeScreen – practice run of a learner lesson', () => {
         (section.kind === 'translation'
           ? section.content.sentences.length
           : section.kind === 'listen_and_repeat'
-          ? section.content.prompts.length
-          : section.content.questions.length),
+            ? section.content.prompts.length
+            : section.content.questions.length),
       0,
     );
     expect(attempts).toHaveLength(entries);

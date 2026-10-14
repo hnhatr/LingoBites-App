@@ -77,8 +77,8 @@ function toAnswer(row: TaskAnswerRow): TaskAnswer {
     row.lesson_id && row.block_id
       ? {lesson_id: row.lesson_id, block_id: row.block_id}
       : row.unit_id && row.task_id
-      ? {unit_id: row.unit_id, task_id: row.task_id}
-      : null;
+        ? {unit_id: row.unit_id, task_id: row.task_id}
+        : null;
   return {
     attemptId: row.attempt_id,
     target,

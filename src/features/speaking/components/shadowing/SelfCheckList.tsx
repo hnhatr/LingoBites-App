@@ -113,8 +113,8 @@ export function SelfCheckList({
           opacity: saving
             ? theme.states.disabledOpacity
             : pressed
-            ? theme.states.pressedOpacity
-            : 1,
+              ? theme.states.pressedOpacity
+              : 1,
         })}
         testID="shadowing-save-continue"
       >

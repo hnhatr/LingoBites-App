@@ -127,10 +127,7 @@ export type RecordFlashcardRatingResult =
  *              manifest `url` + `checksum` so the UI can offer a retry.
  */
 export type AudioDownloadStatus =
-  | 'pending'
-  | 'downloading'
-  | 'ready'
-  | 'failed';
+  'pending' | 'downloading' | 'ready' | 'failed';
 
 export type AudioAssetRecord = {
   id: string;
@@ -252,10 +249,7 @@ export type SpeakingMode =
 
 /** Local upload lifecycle for a speaking recording (LING-224 / schema v4). */
 export type RecordingUploadState =
-  | 'local_only'
-  | 'pending'
-  | 'uploaded'
-  | 'failed';
+  'local_only' | 'pending' | 'uploaded' | 'failed';
 
 /** A row of the `speaking_recordings` table (SETE-110 / M5, REQ-20/21). */
 export type SpeakingRecordingRecord = {
@@ -367,8 +361,7 @@ export type SaveContentLessonInput = {
 
 /** Result of a save/unsave operation on packaged lesson state. */
 export type SaveContentLessonResult =
-  | {ok: true; duplicate: boolean}
-  | {ok: false; errorCode: 'LOCAL_DB_ERROR'};
+  {ok: true; duplicate: boolean} | {ok: false; errorCode: 'LOCAL_DB_ERROR'};
 
 /** Bookmark of a grammar item (not in SRS). Upsert/reactivate pattern. */
 export type GrammarBookmark = {
@@ -393,5 +386,4 @@ export type SaveGrammarBookmarkInput = {
 
 /** Result of a save/unsave operation on grammar bookmarks. */
 export type SaveGrammarBookmarkResult =
-  | {ok: true; duplicate: boolean}
-  | {ok: false; errorCode: 'LOCAL_DB_ERROR'};
+  {ok: true; duplicate: boolean} | {ok: false; errorCode: 'LOCAL_DB_ERROR'};

@@ -36,10 +36,7 @@ export type AccountSwitchOwnership = {
 };
 
 export type JournalParseErrorCode =
-  | 'INVALID_JSON'
-  | 'UNSUPPORTED_VERSION'
-  | 'INVALID_PAYLOAD'
-  | 'CONTAINS_TOKEN';
+  'INVALID_JSON' | 'UNSUPPORTED_VERSION' | 'INVALID_PAYLOAD' | 'CONTAINS_TOKEN';
 
 export type JournalResult<T> =
   | {ok: true; value: T}

@@ -62,8 +62,8 @@ export function PracticeScreen({navigation, route}: PracticeScreenProps) {
     const message = !enabled
       ? t('practice.unavailable_disabled')
       : state.status === 'unavailable' && state.reason === 'not_downloaded'
-      ? t('practice.unavailable_not_downloaded')
-      : t('practice.unavailable_not_enough');
+        ? t('practice.unavailable_not_downloaded')
+        : t('practice.unavailable_not_enough');
     return (
       <AppScreen testID="practice-screen">
         <ScreenHeader rightAction={closeButton} title={t('practice.title')} />
@@ -114,8 +114,8 @@ export function PracticeScreen({navigation, route}: PracticeScreenProps) {
               {summary.accuracy >= 80
                 ? t('practice.result_great')
                 : summary.accuracy >= 50
-                ? t('practice.result_ok')
-                : t('practice.result_retry_hint')}
+                  ? t('practice.result_ok')
+                  : t('practice.result_retry_hint')}
             </AppText>
           </AppCard>
 

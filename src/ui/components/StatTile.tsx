@@ -24,8 +24,8 @@ export function StatTile({icon, label, value, tone = 'teal'}: Props) {
     tone === 'coral'
       ? {bg: colors.secondarySoft, fg: colors.secondary}
       : tone === 'gold'
-      ? {bg: colors.tertiarySoft, fg: colors.tertiary}
-      : {bg: colors.accentSoft, fg: colors.primary};
+        ? {bg: colors.tertiarySoft, fg: colors.tertiary}
+        : {bg: colors.accentSoft, fg: colors.primary};
 
   return (
     <View

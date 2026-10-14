@@ -57,8 +57,7 @@ function makeDriver(submissionId: string) {
 
 function pressAlertButton(index: number) {
   const buttons = (Alert.alert as jest.Mock).mock.calls.at(-1)?.[2] as
-    | {onPress?: () => void}[]
-    | undefined;
+    {onPress?: () => void}[] | undefined;
   buttons?.[index]?.onPress?.();
 }
 

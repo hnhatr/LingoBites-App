@@ -4,8 +4,7 @@ export const MAX_INPUT_TEXT_LENGTH = 3000;
 export const MAX_LESSON_V2_WORDS = 500;
 
 export type TextValidationResult =
-  | {valid: true; value: string}
-  | {valid: false; message: string};
+  {valid: true; value: string} | {valid: false; message: string};
 
 export function validateConfirmedText(input: string): TextValidationResult {
   const value = input.trim();

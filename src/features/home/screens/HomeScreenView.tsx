@@ -135,10 +135,10 @@ export function HomeScreenView(props: HomeScreenViewModel) {
               heroState === 'in_progress'
                 ? onContinueStartedLesson
                 : heroState === 'next_activity'
-                ? onStartNextActivity
-                : heroState === 'saved_only'
-                ? onNavigateLessonList
-                : onNavigateCreate
+                  ? onStartNextActivity
+                  : heroState === 'saved_only'
+                    ? onNavigateLessonList
+                    : onNavigateCreate
             }
           />
         </View>

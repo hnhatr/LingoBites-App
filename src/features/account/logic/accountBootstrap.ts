@@ -326,7 +326,7 @@ async function runBoot(deps: BootDeps): Promise<BootResult> {
   } else if (ensured.status === 'offline') {
     // Expired access token and no network to rotate it.
     const active = await getActiveSession();
-    return offlineBoot(active.ok ? active.value?.user_id ?? null : null);
+    return offlineBoot(active.ok ? (active.value?.user_id ?? null) : null);
   } else if (ensured.status === 'refresh-failed') {
     return {
       status: 'failed',

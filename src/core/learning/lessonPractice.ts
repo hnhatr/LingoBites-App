@@ -40,10 +40,7 @@ const TRANSLATION_WORDS_MAX = 8;
 const MIN_SECTIONS = 2;
 
 export type LessonPracticeSectionKind =
-  | 'listen_and_repeat'
-  | 'multiple_choice'
-  | 'fill_blank'
-  | 'translation';
+  'listen_and_repeat' | 'multiple_choice' | 'fill_blank' | 'translation';
 
 /** What one entry practises, for attempts and "save as flashcard". */
 export type LessonPracticeEntryRef = {

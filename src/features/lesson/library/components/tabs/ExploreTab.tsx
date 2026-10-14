@@ -65,12 +65,12 @@ export function ExploreTab() {
     packs.rows === null
       ? {kind: 'loading'}
       : packs.rows.length === 0
-      ? {
-          kind: 'message',
-          text: packs.offline ? 'Cần mạng để xem gói học' : 'Chưa có gói học',
-          onRetry: packs.offline ? packs.reload : undefined,
-        }
-      : null;
+        ? {
+            kind: 'message',
+            text: packs.offline ? 'Cần mạng để xem gói học' : 'Chưa có gói học',
+            onRetry: packs.offline ? packs.reload : undefined,
+          }
+        : null;
 
   return (
     <ScrollView
@@ -183,10 +183,10 @@ function CatalogShelf({section, title, testID}: CatalogShelfProps) {
     state.status === 'idle' || state.status === 'loading'
       ? {kind: 'loading'}
       : state.status === 'error'
-      ? {kind: 'message', text: 'Cần mạng để xem', onRetry: refresh}
-      : state.lessons.length === 0
-      ? {kind: 'message', text: section.emptyHint}
-      : null;
+        ? {kind: 'message', text: 'Cần mạng để xem', onRetry: refresh}
+        : state.lessons.length === 0
+          ? {kind: 'message', text: section.emptyHint}
+          : null;
 
   return (
     <LibraryShelf

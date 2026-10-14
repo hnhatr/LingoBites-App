@@ -186,7 +186,7 @@ export function fillFrame(
   if (!parsed.ok) return frame;
   return parsed.segments
     .map(segment =>
-      segment.type === 'text' ? segment.value : values[segment.name] ?? '…',
+      segment.type === 'text' ? segment.value : (values[segment.name] ?? '…'),
     )
     .join('');
 }

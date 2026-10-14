@@ -179,22 +179,22 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const summary = !situationTitle
     ? t('combo.setup.need_situation')
     : groups.length === 0
-    ? t('combo.setup.need_group')
-    : total === 0
-    ? t('combo.setup.need_count')
-    : [
-        situationTitle,
-        locked ? t('combo.setup.locked_short') : tenseName,
-        countText,
-      ]
-        .filter(Boolean)
-        .join(' · ');
+      ? t('combo.setup.need_group')
+      : total === 0
+        ? t('combo.setup.need_count')
+        : [
+            situationTitle,
+            locked ? t('combo.setup.locked_short') : tenseName,
+            countText,
+          ]
+            .filter(Boolean)
+            .join(' · ');
 
   const start = async () => {
     if (!options || !ready || situation === null) return;
     setBusy(true);
     setStartFailed(false);
-    const grammarCode = locked ? undefined : tense ?? undefined;
+    const grammarCode = locked ? undefined : (tense ?? undefined);
     const result = await openComboSet({
       itemCode,
       grammarCode,

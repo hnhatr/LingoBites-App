@@ -412,8 +412,7 @@ export function listLessonMediaDownloads(
   const rows: LessonMediaDownload[] = [];
   for (let index = 0; index < (result.rows?.length ?? 0); index += 1) {
     const row = result.rows?.item(index) as
-      | {lesson_id: string; media_dir: string; title: string | null}
-      | undefined;
+      {lesson_id: string; media_dir: string; title: string | null} | undefined;
     if (!row) continue;
     rows.push({
       lessonId: row.lesson_id,

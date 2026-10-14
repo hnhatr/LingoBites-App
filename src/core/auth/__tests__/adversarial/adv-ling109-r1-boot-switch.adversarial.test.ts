@@ -107,8 +107,8 @@ const baseFetch = jest.fn(async (url: string, _init?: any) => {
         serverUser.id === userB.id
           ? sessionB
           : serverUser.id === userC.id
-          ? sessionC
-          : sessionA,
+            ? sessionC
+            : sessionA,
     });
   }
   if (url.endsWith('/v1/auth/logout')) return json(200, {status: 'success'});

@@ -183,8 +183,8 @@ export function createP2FetchMock(serverUser: {current: AuthUser}) {
         user.id === P2_USER_B.id
           ? P2_SESSION_B
           : user.id === P2_USER_C.id
-          ? P2_SESSION_C
-          : P2_SESSION_A;
+            ? P2_SESSION_C
+            : P2_SESSION_A;
       return jsonResponse(200, {
         request_id: 'b',
         status: 'authenticated',

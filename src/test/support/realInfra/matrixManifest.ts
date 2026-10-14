@@ -9,8 +9,7 @@
  */
 
 export type P2MatrixEnvironment =
-  | 'real-sqlite+keychain-vault'
-  | 'device-native';
+  'real-sqlite+keychain-vault' | 'device-native';
 
 export type P2MatrixAuthority = 'authoritative' | 'deferred';
 

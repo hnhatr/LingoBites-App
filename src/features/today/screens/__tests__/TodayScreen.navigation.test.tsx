@@ -108,7 +108,7 @@ const defaultStudyPlan = () =>
         navigationTarget: {screen: 'DailyReview'},
       },
     ],
-  } as StudyBlockPlan);
+  }) as StudyBlockPlan;
 
 const mockGenerateStudyBlock = jest.fn<StudyBlockPlan, []>(defaultStudyPlan);
 

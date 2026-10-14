@@ -95,8 +95,8 @@ function realFetchForPort(port: number): typeof fetch {
       typeof input === 'string'
         ? input
         : input instanceof URL
-        ? input.toString()
-        : input.url;
+          ? input.toString()
+          : input.url;
     const rewritten = url.replace(
       'http://localhost:3000',
       `http://127.0.0.1:${port}`,
