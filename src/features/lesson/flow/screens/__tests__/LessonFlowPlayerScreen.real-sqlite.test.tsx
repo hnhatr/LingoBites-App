@@ -70,6 +70,11 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(has(tree, 'lesson-flow-map')).toBe(false);
     expect(textOf(tree, 'lesson-flow-step-title')).toBe('Bước 2: Nghe hiểu');
 
+    // Step 2: the bottom button walks the card deck before leaving the step.
+    expect(has(tree, 'lesson-flow-next')).toBe(false);
+    while (has(tree, 'lesson-flow-card-understood')) {
+      press(tree, 'lesson-flow-card-understood');
+    }
     press(tree, 'lesson-flow-next');
     expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 3');
 
@@ -93,7 +98,7 @@ describe('LessonFlowPlayerScreen (shell)', () => {
 
   it('opens a step straight from a stop on the map', () => {
     const {tree} = renderScreen();
-    press(tree, 'lesson-flow-map-step-4');
+    press(tree, 'lesson-flow-step-4');
     expect(has(tree, 'lesson-flow-map')).toBe(false);
     expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 4');
   });
@@ -167,7 +172,13 @@ describe('LessonFlowPlayerScreen (shell)', () => {
   it('records one attempt per finished activity and resumes after them', () => {
     const {tree} = renderScreen();
     press(tree, 'lesson-flow-step-3');
-    for (let i = 0; i < 3; i += 1) {
+    expect(has(tree, 'lesson-flow-coach')).toBe(true);
+    press(tree, 'lesson-flow-self-pass');
+    // The result and "Tiếp" take over the pinned bottom bar.
+    expect(textOf(tree, 'lesson-flow-entry-feedback')).toContain('Tốt lắm!');
+    expect(has(tree, 'lesson-flow-next')).toBe(false);
+    press(tree, 'lesson-flow-entry-next');
+    for (let i = 0; i < 2; i += 1) {
       press(tree, 'lesson-flow-self-pass');
       press(tree, 'lesson-flow-entry-next');
     }
@@ -278,17 +289,11 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(textOf(again.tree, 'lesson-flow-result-title')).toBe(
       'Bạn đã hoàn thành bài!',
     );
-    expect(
-      again.tree.root.findAll(
-        node => node.props.accessibilityLabel === 'Hoạt động đạt: 2/3',
-      ).length,
-    ).toBeGreaterThan(0);
-    // Step 4 was judged "Chưa đạt": one activity to review.
-    expect(
-      again.tree.root.findAll(
-        node => node.props.accessibilityLabel === 'Cần ôn lại: 1',
-      ).length,
-    ).toBeGreaterThan(0);
+    // Step 4 was judged "Chưa đạt": 2 of 3 passed, one to review.
+    const stats = textOf(again.tree, 'lesson-flow-result-stats');
+    expect(stats).toContain('2/3');
+    expect(stats).toContain('Hoạt động đạt');
+    expect(stats).toContain('Cần ôn lại');
     expect(has(again.tree, 'lesson-flow-lesson-outcome-unconfirmed')).toBe(
       true,
     );

@@ -5,7 +5,6 @@ import {StyleSheet, View} from 'react-native';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {StatTile} from '@ui/components/StatTile';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
@@ -100,6 +99,12 @@ export function StepResult({
   return (
     <View style={themedStyles.container} testID="lesson-flow-result">
       <View style={themedStyles.hero} testID="lesson-flow-result-hero">
+        <View pointerEvents="none" style={themedStyles.confetti}>
+          <View style={[themedStyles.bit, themedStyles.bitA]} />
+          <View style={[themedStyles.bit, themedStyles.bitB]} />
+          <View style={[themedStyles.bit, themedStyles.bitC]} />
+          <View style={[themedStyles.bit, themedStyles.bitD]} />
+        </View>
         <View style={themedStyles.badge}>
           <MaterialIcon
             color={theme.colors.onTertiaryContainer}
@@ -119,7 +124,7 @@ export function StepResult({
           color="inverse"
           style={themedStyles.center}
           testID="lesson-flow-practice-status"
-          variant="title"
+          variant="h3"
         >
           {practiceDone
             ? t('lessonFlow.practice_done')
@@ -148,29 +153,24 @@ export function StepResult({
       </View>
       {rows.length > 0 ? (
         <View style={themedStyles.stats} testID="lesson-flow-result-stats">
-          <View style={themedStyles.stat}>
-            <StatTile
-              icon="check_circle"
-              label={t('lessonFlow.result_stat_passed')}
-              value={`${passedCount}/${rows.length}`}
-            />
+          <View accessible style={[themedStyles.stat, themedStyles.statGold]}>
+            <AppText variant="h1">{`${passedCount}/${rows.length}`}</AppText>
+            <AppText variant="caption">
+              {t('lessonFlow.result_stat_passed')}
+            </AppText>
           </View>
-          <View style={themedStyles.stat}>
-            <StatTile
-              icon="refresh"
-              label={t('lessonFlow.result_stat_review')}
-              tone="gold"
-              value={failedCount}
-            />
+          <View accessible style={[themedStyles.stat, themedStyles.statPlain]}>
+            <AppText variant="h1">{String(failedCount)}</AppText>
+            <AppText variant="caption">
+              {t('lessonFlow.result_stat_review')}
+            </AppText>
           </View>
           {streakDays ? (
-            <View style={themedStyles.stat}>
-              <StatTile
-                icon="local_fire_department"
-                label={t('lessonFlow.result_stat_streak')}
-                tone="coral"
-                value={streakDays}
-              />
+            <View accessible style={[themedStyles.stat, themedStyles.statPink]}>
+              <AppText variant="h1">{String(streakDays)}</AppText>
+              <AppText variant="caption">
+                {t('lessonFlow.result_stat_streak')}
+              </AppText>
             </View>
           ) : null}
         </View>
@@ -311,9 +311,66 @@ function makeStyles(theme: AppTheme) {
       padding: theme.spacing.lg,
       ...getStickerFace(theme, 4),
     },
+    bit: {
+      position: 'absolute',
+    },
+    bitA: {
+      backgroundColor: theme.colors.tertiaryFixed,
+      height: 12,
+      left: 24,
+      top: 22,
+      transform: [{rotate: '20deg'}],
+      width: 12,
+    },
+    bitB: {
+      backgroundColor: theme.colors.secondaryContainer,
+      borderRadius: 6,
+      height: 10,
+      right: 32,
+      top: 40,
+      width: 10,
+    },
+    bitC: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: 4,
+      height: 7,
+      right: 64,
+      top: 14,
+      transform: [{rotate: '-30deg'}],
+      width: 16,
+    },
+    bitD: {
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 5,
+      bottom: 28,
+      height: 9,
+      left: 40,
+      width: 9,
+    },
+    confetti: {
+      bottom: 0,
+      left: 0,
+      position: 'absolute',
+      right: 0,
+      top: 0,
+    },
     stat: {
-      flexBasis: 140,
+      alignItems: 'center',
+      borderRadius: theme.radius.lg,
+      flexBasis: 96,
       flexGrow: 1,
+      gap: 2,
+      paddingVertical: theme.spacing.md,
+      ...getStickerFace(theme, 4),
+    },
+    statGold: {
+      backgroundColor: theme.colors.tertiaryFixed,
+    },
+    statPink: {
+      backgroundColor: theme.colors.secondarySoft,
+    },
+    statPlain: {
+      backgroundColor: theme.colors.surface,
     },
     stats: {
       flexDirection: 'row',

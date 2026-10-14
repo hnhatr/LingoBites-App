@@ -68,7 +68,7 @@ export function RolePlayActivity({
               />
             ))}
             <TurnBubble>
-              <AppText testID="lesson-flow-prompt" variant="title">
+              <AppText testID="lesson-flow-prompt" variant="bodyLg">
                 {t('lessonFlow.your_turn', {
                   speaker: turn.speaker,
                   text: turn.textVi,

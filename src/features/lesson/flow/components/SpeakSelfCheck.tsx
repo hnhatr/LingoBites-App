@@ -7,7 +7,6 @@ import {speak} from '@features/audio';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
 
@@ -22,6 +21,8 @@ import {RecorderControls} from './RecorderControls';
 export type SpeakSelfCheckProps = {
   /** The model sentence (spoken with TTS, shown when revealed). */
   model: string;
+  /** Redesign: the model's Vietnamese, shown under it (listen and repeat). */
+  meaning?: string;
   /**
    * `null`: the model is the content (listen and repeat): its text shows and
    * "Nghe câu mẫu" is free. A ladder: the model only comes through the hints
@@ -35,10 +36,15 @@ export type SpeakSelfCheckProps = {
  * Speaking in Stage 2: hear the model, record yourself and listen back, then
  * judge it "Đạt" or "Chưa đạt" (decision G4). Without a microphone the
  * learner still judges; only the record buttons go away. Redesign: the model
- * in large type with normal and slow playback, a large mic, and a feedback
- * card once judged.
+ * on a card with normal and slow playback, a large mic; the result shows in
+ * the player's bottom sheet (EntrySequence).
  */
-export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
+export function SpeakSelfCheck({
+  model,
+  meaning,
+  hints,
+  onReport,
+}: SpeakSelfCheckProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
@@ -50,26 +56,22 @@ export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
     setJudged(result);
     onReport(result, support);
   };
-  const passed = judged !== null && judged !== 'not_yet';
 
   return (
     <View style={themedStyles.container}>
       {hints === null ? (
         <View style={themedStyles.model}>
-          <AppText testID="lesson-flow-model-sentence" variant="h2">
-            {model}
-          </AppText>
           <View style={themedStyles.listenRow}>
-            <AppButton
+            <IconButton
               accessibilityHint={t('lessonFlow.listen_model_hint')}
-              iconLeft="volume_up"
+              accessibilityLabel={t('lessonFlow.listen_model')}
+              icon="volume_up"
               onPress={() => {
                 speak(model).catch(() => undefined);
               }}
-              style={themedStyles.listen}
+              size={52}
               testID="lesson-flow-listen-model"
-              title={t('lessonFlow.listen_model')}
-              variant="secondary"
+              tone="accent"
             />
             <IconButton
               accessibilityHint={t('lessonFlow.listen_slow_hint')}
@@ -82,7 +84,27 @@ export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
               testID="lesson-flow-listen-model-slow"
               tone="ghost"
             />
+            <View style={themedStyles.wave}>
+              {WAVE.map((_, position) => (
+                <View
+                  key={position}
+                  style={[themedStyles.bar, waveStyles[position]]}
+                />
+              ))}
+            </View>
           </View>
+          <AppText testID="lesson-flow-model-sentence" variant="h1">
+            {model}
+          </AppText>
+          {meaning ? (
+            <AppText
+              color="secondary"
+              testID="lesson-flow-prompt"
+              variant="bodyLg"
+            >
+              {meaning}
+            </AppText>
+          ) : null}
         </View>
       ) : (
         <HintLadder
@@ -120,82 +142,28 @@ export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
             />
           </View>
         </View>
-      ) : (
-        <View
-          accessibilityLiveRegion="polite"
-          style={[
-            themedStyles.feedback,
-            passed ? themedStyles.feedbackPass : themedStyles.feedbackRetry,
-          ]}
-          testID="lesson-flow-self-feedback"
-        >
-          <View
-            style={[
-              themedStyles.feedbackIcon,
-              passed
-                ? themedStyles.feedbackIconPass
-                : themedStyles.feedbackIconRetry,
-            ]}
-          >
-            <MaterialIcon
-              color={theme.colors.text.inverse}
-              name={passed ? 'check_circle' : 'refresh'}
-              size={26}
-            />
-          </View>
-          <View style={themedStyles.flex}>
-            <AppText variant="title">
-              {passed
-                ? t('lessonFlow.self_feedback_pass')
-                : t('lessonFlow.self_feedback_retry')}
-            </AppText>
-            <AppText color="secondary" variant="label">
-              {passed
-                ? t('lessonFlow.self_feedback_pass_body')
-                : t('lessonFlow.self_feedback_retry_body')}
-            </AppText>
-          </View>
-        </View>
-      )}
+      ) : null}
     </View>
   );
 }
 
+/** Heights of the decorative waveform bars. */
+const WAVE = [10, 22, 30, 16, 26, 34, 20, 12, 24, 30, 18, 26, 14, 8];
+const waveStyles = WAVE.map(height => StyleSheet.create({bar: {height}}).bar);
+
 function makeStyles(theme: AppTheme) {
   const {colors} = theme;
   return StyleSheet.create({
+    bar: {
+      backgroundColor: colors.accent,
+      borderRadius: 2,
+      width: 4,
+    },
     center: {
       textAlign: 'center',
     },
     container: {
       gap: theme.spacing.md,
-    },
-    feedback: {
-      alignItems: 'center',
-      borderRadius: theme.radius.lg,
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      padding: theme.spacing.md,
-      ...getStickerFace(theme, 0),
-    },
-    feedbackIcon: {
-      alignItems: 'center',
-      borderRadius: theme.radius.pill,
-      height: 44,
-      justifyContent: 'center',
-      width: 44,
-    },
-    feedbackIconPass: {
-      backgroundColor: colors.primary,
-    },
-    feedbackIconRetry: {
-      backgroundColor: colors.secondary,
-    },
-    feedbackPass: {
-      backgroundColor: colors.accentSoft,
-    },
-    feedbackRetry: {
-      backgroundColor: colors.secondarySoft,
     },
     flex: {
       flex: 1,
@@ -203,24 +171,30 @@ function makeStyles(theme: AppTheme) {
     judge: {
       gap: theme.spacing.sm,
     },
-    listen: {
-      flexGrow: 1,
-    },
     listenRow: {
       alignItems: 'center',
       flexDirection: 'row',
       gap: theme.spacing.sm,
     },
     model: {
-      backgroundColor: colors.surfaceMuted,
-      borderRadius: theme.radius.lg,
+      backgroundColor: colors.surface,
+      borderRadius: theme.radius.xl,
       gap: theme.spacing.md,
-      padding: theme.spacing.md,
+      padding: theme.spacing.lg,
+      ...getStickerFace(theme, 5),
     },
     row: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: theme.spacing.sm,
+    },
+    wave: {
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+      gap: 3,
+      height: 36,
+      overflow: 'hidden',
     },
   });
 }

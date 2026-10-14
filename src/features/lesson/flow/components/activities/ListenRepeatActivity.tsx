@@ -1,7 +1,5 @@
 import React from 'react';
 
-import {AppText} from '@ui/components/AppText';
-
 import type {ListenAndRepeatContent} from '@core/schemas/activityContent';
 
 import type {EntryReport} from '../../logic/activityOutcome';
@@ -33,11 +31,9 @@ export function ListenRepeatActivity({
         return (
           <>
             {clip ? <SourceClipPlayer key={prompt.id} clip={clip} /> : null}
-            <AppText color="secondary" testID="lesson-flow-prompt">
-              {prompt.textVi}
-            </AppText>
             <SpeakSelfCheck
               hints={null}
+              meaning={prompt.textVi}
               model={prompt.textEn}
               onReport={report}
             />

@@ -3,7 +3,6 @@ import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -83,7 +82,7 @@ export function ActivityRunner({
   };
 
   return (
-    <AppCard testID={`lesson-flow-activity-${block.id}`}>
+    <View style={themedStyles.body} testID={`lesson-flow-activity-${block.id}`}>
       <View style={themedStyles.body}>
         <View style={themedStyles.header}>
           {activity.titleVi === t(`lessonFlow.kind_${activity.kind}`) ? null : (
@@ -93,7 +92,7 @@ export function ActivityRunner({
             />
           )}
           {activity.titleVi ? (
-            <AppText variant="h3">{activity.titleVi}</AppText>
+            <AppText variant="h2">{activity.titleVi}</AppText>
           ) : null}
           {activity.instructionsVi ? (
             <AppText color="secondary">{activity.instructionsVi}</AppText>
@@ -152,7 +151,7 @@ export function ActivityRunner({
           </View>
         )}
       </View>
-    </AppCard>
+    </View>
   );
 }
 
