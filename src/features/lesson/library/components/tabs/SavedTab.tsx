@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   ActivityIndicator,
   InteractionManager,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -12,13 +11,10 @@ import {listLocalComboSets} from '@features/combo';
 import {getDueFlashcards} from '@features/review';
 
 import {AppText} from '@ui/components/AppText';
-import type {GridTileTone} from '@ui/components/GridTile';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {solidOver} from '@ui/theme/colorUtils';
-import {getHardShadow} from '@ui/theme/hardShadow';
 
 import {type LibrarySectionKey, useAppNavigation} from '@core/navigation';
 
@@ -26,7 +22,10 @@ import {
   useLibrarySegments,
   useRefreshOnRefocus,
 } from '../../logic/useLibrarySegments';
-import {shelfTone} from '../LibraryShelf';
+import {ToneCard} from '../ExploreCards';
+import {LibraryShelf} from '../LibraryShelf';
+import type {CardTone} from '../libraryTones';
+import {KindCard} from '../ToneTiles';
 
 /** How many saved items a kind card previews. */
 export const SAVED_PREVIEW_LIMIT = 4;
@@ -40,7 +39,7 @@ interface SavedKind {
   id: LibrarySectionKey;
   title: string;
   icon: HandoffIconName;
-  tone: GridTileTone;
+  tone: CardTone;
   items: string[];
 }
 
@@ -123,99 +122,53 @@ export function SavedTab() {
       contentContainerStyle={[styles.content, {paddingBottom: feedClearance}]}
       testID="library-saved-tab"
     >
-      {dueCount > 0 ? (
-        <Pressable
-          accessibilityHint="Mở phần ôn tập"
-          accessibilityLabel={`Ôn hôm nay. ${dueCount} từ đến hạn ôn`}
-          accessibilityRole="button"
-          onPress={() => appNavigation.openReview()}
-          style={({pressed}) => [
-            styles.review,
-            {
-              backgroundColor: solidOver(
-                theme.colors.tertiarySoft,
-                theme.colors.surface,
-              ),
-            },
-            pressed && styles.pressed,
-          ]}
-          testID="library-saved-review"
-        >
-          <View style={styles.grow}>
-            <AppText style={styles.reviewTitle}>Ôn hôm nay</AppText>
-            <AppText
-              style={[
-                styles.reviewMeta,
-                {color: theme.colors.onTertiaryContainer},
-              ]}
-              testID="library-saved-due"
-            >
-              {`${dueCount} từ đến hạn ôn`}
+      <LibraryShelf
+        label="đã lưu"
+        subtitle="Từ, ngữ pháp và bộ câu bạn đã lưu"
+        title="Đã lưu"
+        tone="coral"
+      >
+        {dueCount > 0 ? (
+          <ToneCard
+            accessibilityHint="Mở phần ôn tập"
+            action={{label: 'Ôn ngay', glyph: 'play', solid: true}}
+            cover={{imageUrl: null, glyph: 'cards'}}
+            description={`${dueCount} từ đến hạn ôn`}
+            eyebrow="Ôn tập"
+            gutter={theme.gutter}
+            onPress={() => appNavigation.openReview()}
+            testID="library-saved-review"
+            title="Ôn hôm nay"
+            tone="tertiary"
+          />
+        ) : null}
+        {nothingSaved ? (
+          <View style={styles.hint} testID="library-saved-hint">
+            <MaterialIcon
+              color={theme.colors.secondary}
+              name="heart"
+              size={18}
+            />
+            <AppText color="secondary" style={styles.grow} variant="caption">
+              Bấm ♡ trong bài học để lưu từ và quy tắc
             </AppText>
           </View>
-          <View style={styles.play}>
-            <MaterialIcon
-              color={theme.colors.surface}
-              name="play_arrow"
-              size={28}
-            />
-          </View>
-        </Pressable>
-      ) : null}
-      {nothingSaved ? (
-        <View style={styles.hint} testID="library-saved-hint">
-          <MaterialIcon color={theme.colors.secondary} name="heart" size={18} />
-          <AppText color="secondary" style={styles.grow} variant="caption">
-            Bấm ♡ trong bài học để lưu từ và quy tắc
-          </AppText>
-        </View>
-      ) : null}
-      {kinds.map(kind => {
-        const {face, ink} = shelfTone(theme, kind.tone);
-        const preview = kind.items.slice(0, SAVED_PREVIEW_LIMIT);
-        return (
-          <Pressable
+        ) : null}
+        {kinds.map(kind => (
+          <KindCard
             accessibilityHint={`Mở danh sách ${kind.title}`}
-            accessibilityLabel={`${kind.title}. ${kind.items.length}`}
-            accessibilityRole="button"
+            count={kind.items.length}
+            emptyText="Chưa có mục nào"
+            icon={kind.icon}
+            items={kind.items.slice(0, SAVED_PREVIEW_LIMIT)}
             key={kind.id}
             onPress={() => appNavigation.openLibrarySection(kind.id)}
-            style={({pressed}) => [styles.kind, pressed && styles.pressedSoft]}
             testID={`library-saved-${kind.id}`}
-          >
-            <View style={styles.kindHead}>
-              <View style={[styles.kindIcon, {backgroundColor: face}]}>
-                <MaterialIcon color={ink} name={kind.icon} size={18} />
-              </View>
-              <AppText style={[styles.kindTitle, styles.grow]}>
-                {kind.title}
-              </AppText>
-              <AppText
-                style={styles.kindCount}
-                testID={`library-saved-${kind.id}-count`}
-              >
-                {kind.items.length}
-              </AppText>
-              <MaterialIcon
-                color={theme.colors.text.muted}
-                name="chevron_right"
-                size={22}
-              />
-            </View>
-            {preview.length > 0 ? (
-              <View style={styles.chips}>
-                {preview.map((item, index) => (
-                  <View key={`${item}-${index}`} style={styles.chip}>
-                    <AppText numberOfLines={1} style={styles.chipText}>
-                      {item}
-                    </AppText>
-                  </View>
-                ))}
-              </View>
-            ) : null}
-          </Pressable>
-        );
-      })}
+            title={kind.title}
+            tone={kind.tone}
+          />
+        ))}
+      </LibraryShelf>
     </ScrollView>
   );
 }
@@ -223,7 +176,6 @@ export function SavedTab() {
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     content: {
-      gap: theme.spacing.md,
       padding: theme.gutter,
     },
     loading: {
@@ -232,88 +184,10 @@ function makeStyles(theme: AppTheme) {
     grow: {
       flex: 1,
     },
-    review: {
-      alignItems: 'center',
-      borderRadius: 22,
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      paddingHorizontal: theme.spacing.lg,
-      paddingVertical: theme.spacing.md,
-      ...getHardShadow(4, theme.colors.ink),
-    },
-    pressed: {
-      transform: [{translateY: 3}],
-      ...getHardShadow(1, theme.colors.ink),
-    },
-    pressedSoft: {
-      opacity: theme.states.pressedOpacity,
-    },
-    reviewTitle: {
-      fontSize: 17,
-      fontWeight: '800',
-    },
-    reviewMeta: {
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    play: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.ink,
-      borderRadius: 23,
-      height: 46,
-      justifyContent: 'center',
-      width: 46,
-    },
     hint: {
       alignItems: 'center',
       flexDirection: 'row',
       gap: theme.spacing.sm,
-    },
-    kind: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 18,
-      gap: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.md + 2,
-      paddingVertical: theme.spacing.md,
-    },
-    kindHead: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-    },
-    kindIcon: {
-      alignItems: 'center',
-      borderRadius: 10,
-      height: 32,
-      justifyContent: 'center',
-      width: 32,
-    },
-    kindTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-    },
-    kindCount: {
-      fontSize: 15,
-      fontVariant: ['tabular-nums'],
-      fontWeight: '700',
-    },
-    chips: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs + 2,
-    },
-    chip: {
-      backgroundColor: theme.colors.background,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.pill,
-      borderWidth: 1.5,
-      maxWidth: '100%',
-      paddingHorizontal: theme.spacing.md - 2,
-      paddingVertical: 3,
-    },
-    chipText: {
-      fontSize: 13,
-      fontWeight: '700',
     },
   });
 }
