@@ -8,5 +8,6 @@ export type {
   AppTabName,
   CourseTarget,
   CreateEntry,
+  LessonUnitTarget,
   LibrarySectionKey,
 } from './appNavigation';

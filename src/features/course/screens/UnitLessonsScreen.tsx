@@ -25,6 +25,7 @@ import {useAppNavigation} from '@core/navigation';
 
 import {CurriculumList} from '../components/CurriculumList';
 import {UnitProgressBar} from '../components/UnitProgressBar';
+import {useCourseBreadcrumb} from '../logic/useCourseBreadcrumb';
 import {useUnitLessons} from '../logic/useCurriculum';
 import type {CourseFlowParamList} from './navigationTypes';
 
@@ -42,6 +43,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
   const {unitId, title} = route.params;
   const {state, refresh} = useUnitLessons(unitId);
   const {isBookmarked, toggleBookmark} = useLessonBookmarks();
+  const breadcrumb = useCourseBreadcrumb(navigation, route.key);
 
   useFocusEffect(
     useCallback(() => {
@@ -121,6 +123,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
   return (
     <AppScreen>
       <ScreenHeader
+        breadcrumb={breadcrumb}
         title={title ?? t('course.lessons_title')}
         onBack={() => navigation.goBack()}
       />

@@ -8,10 +8,12 @@ import {SummativeTaskView} from '@features/lesson';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {ErrorCard} from '@ui/components/ErrorCard';
+import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useSummativeTask} from '../logic/summativeTask';
+import {useCourseBreadcrumb} from '../logic/useCourseBreadcrumb';
 import type {CourseFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<CourseFlowParamList, 'UnitSummativeTask'>;
@@ -19,8 +21,7 @@ type Props = NativeStackScreenProps<CourseFlowParamList, 'UnitSummativeTask'>;
 /**
  * PR 16 (B4, G3–G6): the unit's summative task, opened from the unit's
  * lessons once every lesson's practice is complete.
- *
- * IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar.
+ * Lives in the Courses tab, so the content clears the floating tab bar.
  */
 export function UnitSummativeTaskScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
@@ -28,14 +29,22 @@ export function UnitSummativeTaskScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {unitId, title} = route.params;
   const {state, refresh} = useSummativeTask(unitId);
+  const breadcrumb = useCourseBreadcrumb(navigation, route.key);
+  const floatingClearance = useFloatingTabBarClearance();
 
   return (
     <AppScreen>
       <ScreenHeader
+        breadcrumb={breadcrumb}
         onBack={() => navigation.goBack()}
         title={title ?? t('summativeTask.title')}
       />
-      <ScrollView contentContainerStyle={themedStyles.container}>
+      <ScrollView
+        contentContainerStyle={[
+          themedStyles.container,
+          {paddingBottom: floatingClearance},
+        ]}
+      >
         {state.status === 'loading' ? (
           <AppText color="secondary" testID="unit-summative-loading">
             {t('summativeTask.loading')}

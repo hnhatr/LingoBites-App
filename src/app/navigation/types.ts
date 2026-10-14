@@ -6,13 +6,7 @@ import type {
   OnboardingRouteParams,
 } from '@features/account';
 import type {ComboSetRouteParams, ComboSetupRouteParams} from '@features/combo';
-import type {
-  CourseLevelsRouteParams,
-  CoursesStackParamList,
-  LevelUnitsRouteParams,
-  UnitLessonsRouteParams,
-  UnitSummativeTaskRouteParams,
-} from '@features/course';
+import type {CoursesStackParamList} from '@features/course';
 import type {HomeStackParamList} from '@features/home';
 import type {
   CreateHubRouteParams,
@@ -99,11 +93,6 @@ export type RootStackParamList = {
   LessonFlowPlayer: LessonFlowPlayerRouteParams;
   LibraryList: LibraryListRouteParams;
   VideoHub: VideoHubRouteParams;
-  // Structured curriculum (Course → Level → Unit → Lesson)
-  CourseLevels: CourseLevelsRouteParams;
-  LevelUnits: LevelUnitsRouteParams;
-  UnitLessons: UnitLessonsRouteParams;
-  UnitSummativeTask: UnitSummativeTaskRouteParams;
   // Practice
   DailyReview: DailyReviewRouteParams;
   ItemReview: ItemReviewRouteParams;
