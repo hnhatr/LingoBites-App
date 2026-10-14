@@ -3,6 +3,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
 
+import {setLearnerAgeGroup} from '@core/learning';
 import {FeatureFlagProvider} from '@core/release';
 
 import {mockAppNavigation} from '@test/support';
@@ -151,6 +152,44 @@ describe('Curriculum screens (F14)', () => {
       courseSlug: 'english-a1',
       title: 'English A1',
     });
+  });
+
+  it('hides a course for adults from a child, shows it to an adult', async () => {
+    const course = (id: string, audience: string) => ({
+      id,
+      slug: id,
+      title: id,
+      description: '',
+      sourceLanguage: 'vi',
+      targetLanguage: 'en',
+      audience,
+    });
+    client.fetchCourses.mockResolvedValue({
+      ok: true,
+      value: [course('everyday', 'all'), course('travel', 'adults')],
+    });
+    const rowIds = (tree: ReactTestRenderer.ReactTestRenderer) =>
+      tree.root
+        .findAll(
+          node =>
+            typeof node.props.testID === 'string' &&
+            node.props.testID.startsWith('course-list-row-') &&
+            typeof node.type === 'string',
+        )
+        .map(node => node.props.testID as string);
+
+    try {
+      setLearnerAgeGroup('kids');
+      const kidsTree = await render(<CourseListContent />);
+      expect(rowIds(kidsTree)).toContain('course-list-row-everyday');
+      expect(rowIds(kidsTree)).not.toContain('course-list-row-travel');
+
+      setLearnerAgeGroup('adults');
+      const adultTree = await render(<CourseListContent />);
+      expect(rowIds(adultTree)).toContain('course-list-row-travel');
+    } finally {
+      setLearnerAgeGroup(null);
+    }
   });
 
   it('blocks a locked course until the user is entitled to it', async () => {

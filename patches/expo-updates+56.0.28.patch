@@ -1,0 +1,14 @@
+diff --git a/node_modules/expo-updates/ios/EXUpdates.podspec b/node_modules/expo-updates/ios/EXUpdates.podspec
+index 7f37c4f..b108306 100644
+--- a/node_modules/expo-updates/ios/EXUpdates.podspec
++++ b/node_modules/expo-updates/ios/EXUpdates.podspec
+@@ -18,7 +18,8 @@ begin
+   # No dev client if we are using native debug
+   if ENV['EX_UPDATES_NATIVE_DEBUG'] != '1'
+     project_root = ENV['PROJECT_ROOT'] || Pod::Config.instance.installation_root.to_s
+-    use_dev_client = File.dirname(`node --print "require.resolve('expo-dev-client/package.json', { paths: ['#{__dir__}', '#{project_root}'] })"`).length > 0
++    dev_client_package = `node -e "try { console.log(require.resolve('expo-dev-client/package.json', { paths: ['#{__dir__}', '#{project_root}'] })) } catch {}" 2>/dev/null`.strip
++    use_dev_client = !dev_client_package.empty?
+   end
+ rescue
+   use_dev_client = false

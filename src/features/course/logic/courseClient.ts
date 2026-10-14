@@ -35,6 +35,8 @@ const CourseSchema = z.object({
   targetLanguage: z.string(),
   /** Paid course: needs an entitlement for the signed-in user. */
   isLocked: z.boolean().default(false),
+  /** `adults` courses are hidden from a child's profile (G5). */
+  audience: z.enum(['all', 'kids', 'adults']).default('all'),
   productId: z.string().nullable().default(null),
   priceAmount: z.number().int().nullable().default(null),
   priceCurrency: z.string().nullable().default(null),

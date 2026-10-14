@@ -60,14 +60,23 @@ function useCurriculumLoader<T>(
   return {state, refresh};
 }
 
-/** Published courses (Library "Khóa học" segment, course list screen). */
+/**
+ * Published courses (Library "Khóa học" segment, course list screen).
+ * Courses for adults are left out for a child's profile (G5), as units are.
+ */
 export type CourseWithAccess = Course & {unlocked: boolean};
 
 export function useCourses() {
   const load = useCallback(
     async (signal: AbortSignal): Promise<CourseResult<CourseWithAccess[]>> => {
-      const courses = await fetchCourses({signal});
-      if (!courses.ok) return courses;
+      const fetched = await fetchCourses({signal});
+      if (!fetched.ok) return fetched;
+      const courses = {
+        ...fetched,
+        value: fetched.value.filter(course =>
+          isAudienceVisible(course.audience),
+        ),
+      };
       const needsEntitlements = courses.value.some(course => course.isLocked);
       // A failed entitlement lookup keeps locked courses locked; it must not
       // hide the whole list.
