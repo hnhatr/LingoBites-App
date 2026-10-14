@@ -140,6 +140,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
               testID={`unit-lessons-row-${lesson.id}`}
               thumbnail={
                 <LibraryCover
+                  fallback="lesson"
                   glyph={curriculumGlyph(lesson.title, title)}
                   hideLevelChip
                   imageUrl={lesson.coverUrl ?? coverUrl}

@@ -25,7 +25,7 @@ type Props = {
 
 /**
  * The picture at the top of a course or unit, edge to edge and up under the
- * status bar (the admin's cover, else a default cover in the level colour),
+ * status bar (the admin's cover, else the default course picture),
  * with the page's content on a rounded sheet over its bottom edge. Used as
  * a list header: the screen leaves out the top safe-area edge and draws
  * `CurriculumHeroChrome` over the list.
@@ -48,6 +48,7 @@ export function CurriculumHeroCover({
       <View style={{height}}>
         <LibraryCover
           aspectRatio={width > 0 ? width / height : undefined}
+          fallback="course"
           glyph={glyph}
           hideLevelChip
           imageUrl={imageUrl}

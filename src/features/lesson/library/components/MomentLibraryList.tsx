@@ -11,6 +11,7 @@ import {
 
 import {trackEvent} from '@features/analytics';
 
+import {DEFAULT_COVERS} from '@ui/assets/covers';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
@@ -97,8 +98,10 @@ export function MomentLibraryList({emptyHint}: {emptyHint: string}) {
               style={styles.thumb}
             />
           ) : (
-            <View
-              style={[styles.thumb, {backgroundColor: theme.colors.accentSoft}]}
+            <Image
+              accessibilityIgnoresInvertColors
+              source={DEFAULT_COVERS.lesson}
+              style={styles.thumb}
             />
           )}
           <View style={styles.grow}>

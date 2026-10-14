@@ -77,6 +77,7 @@ export function LevelUnitList({
           accessibilityHint={t('course.unit_row_hint')}
           cover={
             <LibraryCover
+              fallback="course"
               glyph={curriculumGlyph(unit.title, unit.canDo[0])}
               hideLevelChip
               imageUrl={unit.coverUrl}

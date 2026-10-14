@@ -8,7 +8,8 @@
  *   [A1 – Du lịch cơ bản ›]                           (▶)
  *   [ ✓ Ôn thẻ ┄┄ ② Bài mới ┄┄ ③ Luyện nói ┄┄ +1 🐾 ]   white strip
  *
- * The picture is the lesson's cover, else the level's cover, else the cat.
+ * The picture is the lesson's cover, else the level's cover, else the
+ * default lesson picture.
  * The main row follows the six hero states; the route shows today's plan
  * steps (each opens its activity) and the "+1 🐾" tag while the step
  * finishes a lesson that counts this week. The summary chip opens the full
@@ -16,7 +17,7 @@
  */
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Image, Pressable, StyleSheet, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 import Svg, {
   Defs,
   G,
@@ -29,6 +30,7 @@ import Svg, {
 
 import type {StudyActivityItem, TodayMode} from '@features/today';
 
+import {DEFAULT_COVERS} from '@ui/assets/covers';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
@@ -58,7 +60,6 @@ const PALETTE = {
   sunShelf: '#e0a92e',
 };
 
-const CAT = require('@ui/assets/home-hero-cat.png');
 const ART_HEIGHT = 150;
 
 const MODE_OPTIONS: ReadonlyArray<{
@@ -465,7 +466,8 @@ export function HomeTodayCard({
 
 /**
  * The gradient face and, on its right, the picture fading into it: a cover
- * photo is masked to fade left and down; without one the cat sits there.
+ * picture (the cover, else the default lesson picture) is masked to fade
+ * left and down.
  */
 function CardBackground({
   coverUrl,
@@ -485,45 +487,35 @@ function CardBackground({
         </Defs>
         <Rect fill="url(#homeTodayFace)" height="100%" width="100%" />
       </Svg>
-      {coverUrl ? (
-        <Svg height={ART_HEIGHT} style={styles.art} width="100%">
-          <Defs>
-            <LinearGradient id="homeTodayFadeX" x1="0" x2="1" y1="0" y2="0">
-              <Stop offset="0" stopColor={PALETTE.white} stopOpacity={0} />
-              <Stop offset="0.45" stopColor={PALETTE.white} stopOpacity={1} />
-            </LinearGradient>
-            <LinearGradient id="homeTodayFadeY" x1="0" x2="0" y1="1" y2="0">
-              <Stop offset="0" stopColor={PALETTE.white} stopOpacity={0} />
-              <Stop offset="0.3" stopColor={PALETTE.white} stopOpacity={1} />
-            </LinearGradient>
-            <Mask id="homeTodayMaskX">
-              <Rect fill="url(#homeTodayFadeX)" height="100%" width="100%" />
-            </Mask>
-            <Mask id="homeTodayMaskY">
-              <Rect fill="url(#homeTodayFadeY)" height="100%" width="100%" />
-            </Mask>
-          </Defs>
-          <G mask="url(#homeTodayMaskX)">
-            <G mask="url(#homeTodayMaskY)">
-              <SvgImage
-                height="100%"
-                href={{uri: coverUrl}}
-                preserveAspectRatio="xMidYMid slice"
-                testID="home-today-cover"
-                width="100%"
-              />
-            </G>
+      <Svg height={ART_HEIGHT} style={styles.art} width="100%">
+        <Defs>
+          <LinearGradient id="homeTodayFadeX" x1="0" x2="1" y1="0" y2="0">
+            <Stop offset="0" stopColor={PALETTE.white} stopOpacity={0} />
+            <Stop offset="0.45" stopColor={PALETTE.white} stopOpacity={1} />
+          </LinearGradient>
+          <LinearGradient id="homeTodayFadeY" x1="0" x2="0" y1="1" y2="0">
+            <Stop offset="0" stopColor={PALETTE.white} stopOpacity={0} />
+            <Stop offset="0.3" stopColor={PALETTE.white} stopOpacity={1} />
+          </LinearGradient>
+          <Mask id="homeTodayMaskX">
+            <Rect fill="url(#homeTodayFadeX)" height="100%" width="100%" />
+          </Mask>
+          <Mask id="homeTodayMaskY">
+            <Rect fill="url(#homeTodayFadeY)" height="100%" width="100%" />
+          </Mask>
+        </Defs>
+        <G mask="url(#homeTodayMaskX)">
+          <G mask="url(#homeTodayMaskY)">
+            <SvgImage
+              height="100%"
+              href={coverUrl ? {uri: coverUrl} : DEFAULT_COVERS.lesson}
+              preserveAspectRatio="xMidYMid slice"
+              testID={coverUrl ? 'home-today-cover' : 'home-today-default'}
+              width="100%"
+            />
           </G>
-        </Svg>
-      ) : (
-        <Image
-          accessibilityIgnoresInvertColors
-          resizeMode="contain"
-          source={CAT}
-          style={styles.cat}
-          testID="home-today-cat"
-        />
-      )}
+        </G>
+      </Svg>
     </View>
   );
 }
@@ -633,13 +625,6 @@ function makeStyles(theme: AppTheme) {
       right: 0,
       top: 0,
       width: '56%',
-    },
-    cat: {
-      height: 132,
-      position: 'absolute',
-      right: 4,
-      top: 14,
-      width: '40%',
     },
     inner: {
       gap: 10,

@@ -128,7 +128,6 @@ function MomentCell({
   return (
     <PhotoCard
       accessibilityHint={t('moment.library_card_hint')}
-      icon="auto_awesome"
       imageUri={item.thumbnailUri ?? null}
       onPress={() => {
         trackEvent('moment_reopened', {intent: item.intent ?? 'unknown'});
