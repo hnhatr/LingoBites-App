@@ -377,6 +377,7 @@ export function IndependentTaskView({
                       speaker={turn.speaker}
                       testID="lesson-flow-partner-line"
                       textEn={turn.textEn}
+                      textVi={turn.textVi}
                     />
                   ),
                 )

@@ -1,6 +1,13 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {
+  type LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import Svg, {Path} from 'react-native-svg';
 
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
@@ -8,7 +15,7 @@ import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
 
-import type {LessonSnapshot} from '@core/schemas/lesson';
+import {itemCardIds, type LessonSnapshot} from '@core/schemas/lesson';
 
 import {flowActivity} from '../logic/flowContent';
 import {
@@ -22,8 +29,6 @@ export type LessonMapProps = {
   /** The step "Bắt đầu học" opens (2 when step 1 is skipped). */
   nextStep: FlowStep;
   skippedSteps: ReadonlySet<number>;
-  /** Current streak in days; nothing shown when 0 or unknown. */
-  streakDays: number | null;
   onOpenStep: (step: FlowStep) => void;
 };
 
@@ -32,134 +37,199 @@ const STEP_ICONS: Record<FlowStep, HandoffIconName> = {
   2: 'hearing',
   3: 'mic',
   4: 'repeat',
-  5: 'flag',
+  5: 'record_voice_over',
   6: 'emoji_events',
 };
 
+/** Centre of each stop: x as a share of the width, y in px. */
+const STOP_X = [0.26, 0.68, 0.3, 0.68, 0.3, 0.68];
+const ROW = 88;
+const TOP = 44;
+const PATH_HEIGHT = TOP + ROW * 5 + 52;
+const NODE = 60;
+const NEXT_NODE = 74;
+const HALO = 92;
+const LABEL_WIDTH = 168;
+
 /**
- * Redesign: the lesson's goal and its six steps as a path, shown the first
- * time a lesson is opened (no attempt yet). Each stop opens its step.
+ * Redesign: the lesson's goal and its six steps as a winding path, shown the
+ * first time a lesson is opened (no attempt yet). Each stop opens its step.
  */
 export function LessonMap({
   snapshot,
   nextStep,
   skippedSteps,
-  streakDays,
   onOpenStep,
 }: LessonMapProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const window = useWindowDimensions();
+  // Measured on layout; the window width stands in until then.
+  const [measured, setMeasured] = useState(0);
+  const width = measured || window.width - theme.gutter * 2;
   const spec = snapshot.spec;
+  const level = spec?.code?.split('-')[0] ?? null;
   const activityCount = useMemo(
     () => snapshot.blocks.filter(block => flowActivity(block) !== null).length,
     [snapshot],
   );
-  const stepActivities = (step: number) =>
-    blocksOfStep(snapshot, step).filter(block => flowActivity(block) !== null)
-      .length;
 
   const describe = (step: FlowStep): string => {
     if (skippedSteps.has(step)) return t('lessonFlow.map_skipped');
+    if (step === 1) return t('lessonFlow.map_review');
     if (step === 6) return t('lessonFlow.map_result');
-    const count = stepActivities(step);
-    return count > 0
-      ? t('lessonFlow.map_activities', {count})
+    const blocks = blocksOfStep(snapshot, step);
+    const activities = blocks.filter(block => flowActivity(block) !== null);
+    if (activities.length > 0) {
+      return t('lessonFlow.map_activities', {count: activities.length});
+    }
+    const cards = blocks.reduce(
+      (total, block) => total + itemCardIds(block).length,
+      0,
+    );
+    return cards > 0
+      ? t('lessonFlow.map_cards', {count: cards})
       : t('lessonFlow.map_read');
   };
+
+  const centers = STOP_X.map((share, index) => ({
+    x: share * width,
+    y: TOP + index * ROW,
+  }));
+  const segment = (from: number, to: number) =>
+    centers
+      .slice(from, to + 1)
+      .map((point, index, points) => {
+        if (index === 0) return `M ${point.x} ${point.y}`;
+        const previous = points[index - 1]!;
+        const middle = (previous.y + point.y) / 2;
+        return `C ${previous.x} ${middle}, ${point.x} ${middle}, ${point.x} ${point.y}`;
+      })
+      .join(' ');
+  const nextIndex = FLOW_STEPS.indexOf(nextStep);
 
   return (
     <View style={themedStyles.container} testID="lesson-flow-map">
       <View style={themedStyles.goal}>
-        <AppText style={themedStyles.goalLabel} variant="caption">
-          {t('lessonFlow.map_goal_label')}
-        </AppText>
-        <AppText style={themedStyles.goalTitle} variant="h2">
+        <View style={themedStyles.goalHeader}>
+          <AppText style={themedStyles.goalLabel} variant="caption">
+            {t('lessonFlow.map_goal_label')}
+          </AppText>
+          {level ? (
+            <View style={themedStyles.level}>
+              <AppText style={themedStyles.levelText} variant="caption">
+                {level}
+              </AppText>
+            </View>
+          ) : null}
+        </View>
+        <AppText style={themedStyles.onPrimary} variant="h1">
           {snapshot.title}
         </AppText>
         {spec && spec.can_do.length > 0 ? (
           <AppText style={themedStyles.goalText} testID="lesson-flow-map-goal">
-            {t('lessonFlow.map_can_do', {goal: spec.can_do.join(' · ')})}
+            {t('lessonFlow.map_can_do_lead')}{' '}
+            <AppText style={themedStyles.goalStrong}>
+              {spec.can_do.join(' · ')}
+            </AppText>
           </AppText>
         ) : null}
         <View style={themedStyles.pills}>
           {spec?.estimated_minutes ? (
             <View style={themedStyles.pill}>
-              <MaterialIcon
-                color={theme.colors.text.inverse}
-                name="schedule"
-                size={16}
-              />
               <AppText style={themedStyles.pillText} variant="caption">
-                {t('lessonFlow.map_minutes', {
-                  count: spec.estimated_minutes,
-                })}
+                {t('lessonFlow.map_minutes', {count: spec.estimated_minutes})}
               </AppText>
             </View>
           ) : null}
           {activityCount > 0 ? (
             <View style={themedStyles.pill}>
-              <MaterialIcon
-                color={theme.colors.text.inverse}
-                name="bolt"
-                size={16}
-              />
               <AppText style={themedStyles.pillText} variant="caption">
                 {t('lessonFlow.map_activities', {count: activityCount})}
-              </AppText>
-            </View>
-          ) : null}
-          {streakDays ? (
-            <View
-              style={[themedStyles.pill, themedStyles.streak]}
-              testID="lesson-flow-map-streak"
-            >
-              <MaterialIcon
-                color={theme.colors.onTertiaryContainer}
-                name="local_fire_department"
-                size={16}
-              />
-              <AppText style={themedStyles.streakText} variant="caption">
-                {t('lessonFlow.map_streak', {count: streakDays})}
               </AppText>
             </View>
           ) : null}
         </View>
       </View>
 
-      <View style={themedStyles.path}>
-        {FLOW_STEPS.map((step, index) => {
-          const skipped = skippedSteps.has(step);
-          const next = step === nextStep;
-          const label = t(`lessonFlow.step_${step}`);
-          return (
-            <View key={step}>
-              {index > 0 ? (
-                <View style={themedStyles.connector}>
-                  <View style={themedStyles.dot} />
-                  <View style={themedStyles.dot} />
-                </View>
-              ) : null}
-              <View style={offsetStyles[index]}>
-                <Pressable
-                  accessibilityHint={t('lessonFlow.step_chip_hint')}
-                  accessibilityLabel={`${label}. ${describe(step)}`}
-                  accessibilityRole="button"
-                  accessibilityState={{disabled: skipped}}
-                  disabled={skipped}
-                  onPress={() => onOpenStep(step)}
-                  style={themedStyles.stop}
-                  testID={`lesson-flow-map-step-${step}`}
-                >
-                  <View
+      <View
+        onLayout={(event: LayoutChangeEvent) =>
+          setMeasured(event.nativeEvent.layout.width)
+        }
+        style={themedStyles.path}
+      >
+        {width > 0 ? (
+          <Svg
+            height={PATH_HEIGHT}
+            pointerEvents="none"
+            style={StyleSheet.absoluteFill}
+            width={width}
+          >
+            <Path
+              d={segment(0, centers.length - 1)}
+              fill="none"
+              stroke={theme.colors.outlineVariant}
+              strokeDasharray="2 12"
+              strokeLinecap="round"
+              strokeWidth={5}
+            />
+            {nextIndex > 0 ? (
+              <Path
+                d={segment(0, nextIndex)}
+                fill="none"
+                stroke={theme.colors.accent}
+                strokeLinecap="round"
+                strokeWidth={5}
+              />
+            ) : null}
+          </Svg>
+        ) : null}
+        {width > 0
+          ? FLOW_STEPS.map((step, index) => {
+              const center = centers[index]!;
+              const skipped = skippedSteps.has(step);
+              const next = step === nextStep;
+              const last = step === 6;
+              const size = next ? NEXT_NODE : NODE;
+              const onLeft = STOP_X[index]! < 0.5;
+              const label = t(`lessonFlow.step_${step}`);
+              return (
+                <React.Fragment key={step}>
+                  {next ? (
+                    <View
+                      pointerEvents="none"
+                      style={[
+                        themedStyles.halo,
+                        {left: center.x - HALO / 2, top: center.y - HALO / 2},
+                      ]}
+                    />
+                  ) : null}
+                  <Pressable
+                    accessibilityHint={t('lessonFlow.step_chip_hint')}
+                    accessibilityLabel={`${label}. ${describe(step)}`}
+                    accessibilityRole="button"
+                    accessibilityState={{disabled: skipped}}
+                    disabled={skipped}
+                    onPress={() => onOpenStep(step)}
                     style={[
                       themedStyles.node,
+                      {
+                        borderRadius: size / 2,
+                        height: size,
+                        left: center.x - size / 2,
+                        top: center.y - size / 2,
+                        width: size,
+                      },
                       next
                         ? themedStyles.nodeNext
                         : skipped
                         ? themedStyles.nodeSkipped
+                        : last
+                        ? themedStyles.nodeLast
                         : themedStyles.nodeUpcoming,
                     ]}
+                    testID={`lesson-flow-step-${step}`}
                   >
                     <MaterialIcon
                       color={
@@ -170,10 +240,22 @@ export function LessonMap({
                           : theme.colors.text.muted
                       }
                       name={skipped ? 'check_circle' : STEP_ICONS[step]}
-                      size={next ? 30 : 24}
+                      size={next ? 32 : 26}
                     />
-                  </View>
-                  <View style={themedStyles.stopText}>
+                  </Pressable>
+                  <View
+                    pointerEvents="none"
+                    style={[
+                      themedStyles.label,
+                      onLeft ? null : themedStyles.labelRight,
+                      {
+                        left: onLeft
+                          ? center.x + HALO / 2 + 4
+                          : center.x - HALO / 2 - 4 - LABEL_WIDTH,
+                      },
+                      {top: center.y - (next ? 34 : 22)},
+                    ]}
+                  >
                     {next ? (
                       <View style={themedStyles.nextTag}>
                         <AppText
@@ -186,19 +268,28 @@ export function LessonMap({
                     ) : null}
                     <AppText
                       color={next ? 'primary' : 'secondary'}
-                      variant={next ? 'title' : 'label'}
+                      numberOfLines={1}
+                      style={[
+                        themedStyles.labelTitle,
+                        onLeft ? null : themedStyles.right,
+                      ]}
+                      variant={next ? 'h3' : 'body'}
                     >
                       {label}
                     </AppText>
-                    <AppText color="muted" variant="caption">
+                    <AppText
+                      color="muted"
+                      numberOfLines={1}
+                      style={onLeft ? null : themedStyles.right}
+                      variant="caption"
+                    >
                       {describe(step)}
                     </AppText>
                   </View>
-                </Pressable>
-              </View>
-            </View>
-          );
-        })}
+                </React.Fragment>
+              );
+            })
+          : null}
       </View>
     </View>
   );
@@ -207,42 +298,64 @@ export function LessonMap({
 function makeStyles(theme: AppTheme) {
   const {colors} = theme;
   return StyleSheet.create({
-    connector: {
-      gap: theme.spacing.xs,
-      paddingLeft: '30%',
-      paddingVertical: theme.spacing.xs,
-    },
     container: {
-      gap: theme.spacing.xl,
-    },
-    dot: {
-      backgroundColor: colors.outlineVariant,
-      borderRadius: theme.radius.pill,
-      height: 6,
-      width: 6,
+      gap: theme.spacing.md,
     },
     goal: {
       backgroundColor: colors.primary,
       borderRadius: theme.radius.xl,
-      gap: theme.spacing.sm,
+      gap: theme.spacing.md,
       padding: theme.spacing.lg,
-      ...getStickerFace(theme, 4),
+      ...getStickerFace(theme, 5),
+    },
+    goalHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
     goalLabel: {
-      color: colors.text.inverse,
+      color: colors.accent,
       fontWeight: theme.typography.weight.bold,
-      letterSpacing: 0.8,
-      opacity: 0.85,
+      letterSpacing: 1,
       textTransform: 'uppercase',
     },
-    goalText: {
+    goalStrong: {
       color: colors.text.inverse,
+      fontWeight: theme.typography.weight.bold,
     },
-    goalTitle: {
-      color: colors.text.inverse,
+    goalText: {
+      color: colors.accentSoft,
+    },
+    halo: {
+      borderColor: colors.accent,
+      borderRadius: HALO / 2,
+      borderWidth: 3,
+      height: HALO,
+      position: 'absolute',
+      width: HALO,
+    },
+    label: {
+      gap: 2,
+      position: 'absolute',
+      width: LABEL_WIDTH,
+    },
+    labelRight: {
+      alignItems: 'flex-end',
+    },
+    labelTitle: {
+      fontWeight: theme.typography.weight.bold,
+    },
+    level: {
+      backgroundColor: colors.accent,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: 2,
+    },
+    levelText: {
+      color: colors.accentInk,
+      fontWeight: theme.typography.weight.bold,
     },
     nextTag: {
-      alignSelf: 'flex-start',
       backgroundColor: colors.ink,
       borderRadius: theme.radius.pill,
       paddingHorizontal: theme.spacing.sm,
@@ -251,38 +364,43 @@ function makeStyles(theme: AppTheme) {
     nextTagText: {
       color: colors.tertiaryFixed,
       fontWeight: theme.typography.weight.bold,
+      letterSpacing: 0.6,
     },
     node: {
       alignItems: 'center',
-      borderRadius: theme.radius.pill,
-      height: 56,
       justifyContent: 'center',
-      width: 56,
+      position: 'absolute',
+    },
+    nodeLast: {
+      backgroundColor: colors.tertiaryFixed,
+      borderRadius: 20,
+      borderColor: colors.outlineVariant,
+      borderWidth: 2,
+      transform: [{rotate: '8deg'}],
     },
     nodeNext: {
       backgroundColor: colors.accent,
-      height: 68,
-      width: 68,
-      ...getStickerFace(theme, 4),
+      ...getStickerFace(theme, 5),
     },
     nodeSkipped: {
       backgroundColor: colors.accentSoft,
+      ...getStickerFace(theme, 0),
     },
     nodeUpcoming: {
       backgroundColor: colors.surface,
       borderColor: colors.outlineVariant,
       borderWidth: 2,
     },
+    onPrimary: {
+      color: colors.text.inverse,
+    },
     path: {
-      paddingBottom: theme.spacing.lg,
+      height: PATH_HEIGHT,
     },
     pill: {
-      alignItems: 'center',
       backgroundColor: colors.overlayLight,
       borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      gap: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
       paddingVertical: theme.spacing.xs,
     },
     pillText: {
@@ -294,41 +412,8 @@ function makeStyles(theme: AppTheme) {
       flexWrap: 'wrap',
       gap: theme.spacing.sm,
     },
-    stop: {
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-      minHeight: 44,
-    },
-    stopText: {
-      gap: 2,
-      maxWidth: 190,
-    },
-    streak: {
-      backgroundColor: colors.tertiaryFixed,
-    },
-    streakText: {
-      color: colors.onTertiaryContainer,
-      fontWeight: theme.typography.weight.bold,
+    right: {
+      textAlign: 'right',
     },
   });
 }
-
-/** Zig-zag offsets of the path's stops, as a share of the free width. */
-const offsets = StyleSheet.create({
-  stop1: {paddingLeft: '0%'},
-  stop2: {paddingLeft: '38%'},
-  stop3: {paddingLeft: '8%'},
-  stop4: {paddingLeft: '42%'},
-  stop5: {paddingLeft: '12%'},
-  stop6: {paddingLeft: '36%'},
-});
-const offsetStyles = [
-  offsets.stop1,
-  offsets.stop2,
-  offsets.stop3,
-  offsets.stop4,
-  offsets.stop5,
-  offsets.stop6,
-];

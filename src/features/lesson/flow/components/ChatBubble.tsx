@@ -1,10 +1,11 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
 import {speak} from '@features/audio';
 
 import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
 import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
@@ -30,25 +31,46 @@ export function PartnerBubble({
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const [showMeaning, setShowMeaning] = useState(false);
   return (
     <View style={themedStyles.partnerRow} testID={testID}>
       <View style={themedStyles.avatar}>
-        <AppText style={themedStyles.avatarText} variant="title">
+        <AppText style={themedStyles.avatarText} variant="h3">
           {speaker}
         </AppText>
       </View>
       <View style={themedStyles.partner}>
-        <AppText variant="bodyLg">{textEn}</AppText>
-        {textVi ? <AppText color="secondary">{textVi}</AppText> : null}
-        <IconButton
-          accessibilityHint={t('lessonFlow.listen_line_hint')}
-          accessibilityLabel={t('lessonFlow.listen_line')}
-          icon="volume_up"
-          onPress={() => {
-            speak(textEn).catch(() => undefined);
-          }}
-          tone="ghost"
-        />
+        <AppText color="secondary" variant="caption">
+          {t('lessonFlow.speaker_name', {speaker})}
+        </AppText>
+        <AppText style={themedStyles.line} variant="bodyLg">
+          {textEn}
+        </AppText>
+        {textVi && showMeaning ? (
+          <AppText color="secondary" testID="lesson-flow-partner-meaning">
+            {textVi}
+          </AppText>
+        ) : null}
+        <View style={themedStyles.actions}>
+          <IconButton
+            accessibilityHint={t('lessonFlow.listen_line_hint')}
+            accessibilityLabel={t('lessonFlow.listen_line')}
+            icon="volume_up"
+            onPress={() => {
+              speak(textEn).catch(() => undefined);
+            }}
+            tone="accent"
+          />
+          {textVi && !showMeaning ? (
+            <Chip
+              accessibilityHint={t('lessonFlow.show_meaning_hint')}
+              label={t('lessonFlow.show_meaning')}
+              onPress={() => setShowMeaning(true)}
+              testID="lesson-flow-partner-show-meaning"
+              tone="neutral"
+            />
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -63,9 +85,13 @@ export function TurnBubble({
   testID?: string;
 }) {
   const {theme} = useAppTheme();
+  const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={themedStyles.turn} testID={testID}>
+      <AppText style={themedStyles.turnLabel} variant="caption">
+        {t('lessonFlow.your_turn_label')}
+      </AppText>
       {children}
     </View>
   );
@@ -74,6 +100,19 @@ export function TurnBubble({
 function makeStyles(theme: AppTheme) {
   const {colors} = theme;
   return StyleSheet.create({
+    actions: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
+    line: {
+      fontWeight: theme.typography.weight.bold,
+    },
+    turnLabel: {
+      color: colors.primary,
+      fontWeight: theme.typography.weight.bold,
+      letterSpacing: 0.6,
+    },
     avatar: {
       alignItems: 'center',
       backgroundColor: colors.secondaryContainer,

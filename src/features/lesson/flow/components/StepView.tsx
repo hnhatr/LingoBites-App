@@ -1,8 +1,9 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonBlock, LessonSnapshot} from '@core/schemas/lesson';
@@ -18,6 +19,7 @@ import {isIndependentBlock} from '../logic/independent';
 import {isSpeakingActivity} from '../logic/noSpeaking';
 import {blocksOfStep} from '../logic/practiceCompletion';
 import {ActivityRunner} from './ActivityRunner';
+import {useFlowFooter} from './FlowFooter';
 import {type GradedAttempt, IndependentTaskView} from './IndependentTaskView';
 import {ListenCardDeck} from './ListenCardDeck';
 
@@ -53,7 +55,11 @@ export function latestOutcomes(
   return latest;
 }
 
-/** The blocks of one step 1–5: reading blocks as they are, activities live. */
+/**
+ * The blocks of one step 1–5: reading blocks as they are, activities live.
+ * Redesign: one activity at a time, opening on the first without a result;
+ * "Hoạt động tiếp" moves on once it has one.
+ */
 export function StepView({
   snapshot,
   step,
@@ -69,6 +75,26 @@ export function StepView({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const blocks = useMemo(() => blocksOfStep(snapshot, step), [snapshot, step]);
   const latest = useMemo(() => latestOutcomes(attempts), [attempts]);
+  const activityIds = useMemo(
+    () => blocks.filter(block => flowActivity(block) !== null).map(b => b.id),
+    [blocks],
+  );
+  const [focus, setFocus] = useState(() => {
+    const open = activityIds.findIndex(id => !latest.has(id));
+    return open < 0 ? 0 : open;
+  });
+  const focusedId = activityIds[focus];
+  useFlowFooter(
+    focusedId && latest.has(focusedId) && focus + 1 < activityIds.length
+      ? {
+          title: t('lessonFlow.next_activity'),
+          hint: t('lessonFlow.next_activity_hint'),
+          testID: 'lesson-flow-next-activity',
+          onPress: () => setFocus(current => current + 1),
+        }
+      : null,
+    1,
+  );
 
   if (blocks.length === 0) {
     return (
@@ -79,8 +105,27 @@ export function StepView({
   }
   return (
     <View style={themedStyles.container}>
+      {activityIds.length > 1 ? (
+        <View style={themedStyles.tabs} testID="lesson-flow-activity-tabs">
+          {activityIds.map((id, position) => (
+            <Chip
+              accessibilityHint={t('lessonFlow.open_activity_hint')}
+              key={id}
+              label={t('lessonFlow.activity_tab', {
+                current: position + 1,
+                total: activityIds.length,
+              })}
+              onPress={() => setFocus(position)}
+              selected={position === focus}
+              testID={`lesson-flow-activity-tab-${position + 1}`}
+              tone={latest.has(id) ? 'accentSoft' : 'default'}
+            />
+          ))}
+        </View>
+      ) : null}
       {blocks.map(block => {
         const activity = flowActivity(block);
+        if (activity && block.id !== focusedId) return null;
         const task = activity ? flowTask(snapshot, activity.taskId) : null;
         if (
           activity &&
@@ -139,6 +184,11 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
       gap: theme.spacing.lg,
+    },
+    tabs: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.sm,
     },
   });
 }

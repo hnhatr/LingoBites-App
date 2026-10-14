@@ -44,7 +44,9 @@ type BlockItem = BlockItemLookup extends ReadonlyMap<string, infer V>
   : never;
 
 /** Slot labels of a pattern payload (`{size: 'cỡ'}`), ignoring bad shapes. */
-function slotLabels(payload: Record<string, unknown>): Record<string, string> {
+export function slotLabels(
+  payload: Record<string, unknown>,
+): Record<string, string> {
   const slots = payload.slots;
   if (slots === null || typeof slots !== 'object') return {};
   return Object.fromEntries(

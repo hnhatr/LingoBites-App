@@ -9,10 +9,11 @@ import {getGamificationSnapshot} from '@features/engagement';
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {Chip} from '@ui/components/Chip';
 import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerFace} from '@ui/theme/hardShadow';
 
 import {useAppNavigation} from '@core/navigation';
 import type {LessonBlock} from '@core/schemas/lesson';
@@ -24,6 +25,12 @@ import type {
 import {isLessonNotDownloaded} from '../../player/logic/lessonNotDownloaded';
 import {useCanonicalLesson} from '../../player/logic/useCanonicalLesson';
 import type {LessonFlowParamList} from '../../player/screens/navigationTypes';
+import {CoachBubble} from '../components/CoachBubble';
+import {
+  FlowFooterBar,
+  FlowFooterProvider,
+  useFlowFooterHost,
+} from '../components/FlowFooter';
 import {FlowProgressBar} from '../components/FlowProgressBar';
 import {LessonMap} from '../components/LessonMap';
 import {StepResult} from '../components/StepResult';
@@ -99,6 +106,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
   /** Redesign: the lesson map, shown once before anything was done. */
   const [showMap, setShowMap] = useState(false);
   const [streakDays] = useState(readStreakDays);
+  const footer = useFlowFooterHost();
   const openStep = useCallback(
     (step: FlowStep) => {
       setShowMap(false);
@@ -202,60 +210,59 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
           onOpenStep={openStep}
           skippedSteps={skippedSteps}
           snapshot={snapshot}
-          streakDays={streakDays}
         />
       );
     }
     return (
       <>
-        <View style={themedStyles.titles}>
+        <View style={themedStyles.titleRow}>
           <AppText
-            color="secondary"
             numberOfLines={2}
-            testID="lesson-flow-lesson-title"
-            variant="label"
+            style={themedStyles.flex}
+            testID="lesson-flow-step-title"
+            variant="h3"
           >
-            {snapshot.title}
-          </AppText>
-          <AppText testID="lesson-flow-step-title" variant="h2">
             {t('lessonFlow.step_heading', {
               step,
               label: t(STEP_LABEL_KEYS[step]),
             })}
           </AppText>
+          {step >= 3 && step <= 5 && !noSpeaking.active ? (
+            <Chip
+              accessibilityHint={t('lessonFlow.no_speaking_hint')}
+              label={t('lessonFlow.no_speaking_short')}
+              onPress={noSpeaking.start}
+              testID="lesson-flow-cannot-speak"
+              tone="neutral"
+            />
+          ) : null}
         </View>
-        {step >= 3 && step <= 5 ? (
-          noSpeaking.active ? (
-            <View
-              style={themedStyles.noSpeaking}
-              testID="lesson-flow-no-speaking"
+        {step >= 3 && step <= 5 && noSpeaking.active ? (
+          <View
+            style={themedStyles.noSpeaking}
+            testID="lesson-flow-no-speaking"
+          >
+            <AppText
+              color="secondary"
+              style={themedStyles.flex}
+              variant="label"
             >
-              <AppText
-                color="secondary"
-                style={themedStyles.flex}
-                variant="label"
-              >
-                {t('lessonFlow.no_speaking_active')}
-              </AppText>
-              <Chip
-                accessibilityHint={t('lessonFlow.can_speak_again')}
-                label={t('lessonFlow.can_speak_again')}
-                onPress={noSpeaking.stop}
-                testID="lesson-flow-can-speak"
-                tone="accentSoft"
-              />
-            </View>
-          ) : (
-            <View style={themedStyles.noSpeakingOffer}>
-              <Chip
-                accessibilityHint={t('lessonFlow.no_speaking_hint')}
-                label={t('lessonFlow.no_speaking')}
-                onPress={noSpeaking.start}
-                testID="lesson-flow-cannot-speak"
-                tone="neutral"
-              />
-            </View>
-          )
+              {t('lessonFlow.no_speaking_active')}
+            </AppText>
+            <Chip
+              accessibilityHint={t('lessonFlow.can_speak_again')}
+              label={t('lessonFlow.can_speak_again')}
+              onPress={noSpeaking.stop}
+              testID="lesson-flow-can-speak"
+              tone="accentSoft"
+            />
+          </View>
+        ) : null}
+        {step <= 5 && !(step === 1 && reviewSkipped) ? (
+          <CoachBubble
+            testID="lesson-flow-coach"
+            text={t(`lessonFlow.coach_step_${step}`)}
+          />
         ) : null}
         {step === 1 ? (
           <StepReview
@@ -287,6 +294,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
         ) : step === 1 && blocksOfStep(snapshot, 1).length === 0 ? null : (
           <StepView
             attempts={flow.attempts}
+            key={step}
             items={items}
             onFinished={handleFinished}
             onOpenStep={next => openStep(next as FlowStep)}
@@ -302,60 +310,96 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
 
   const shownStep = state.status === 'ready' && runnable ? flow.step : null;
 
+  const defaultAction =
+    shownStep === null
+      ? null
+      : showMap
+      ? {
+          title: t('lessonFlow.map_start'),
+          hint: t('lessonFlow.map_start_hint'),
+          testID: 'lesson-flow-map-start',
+          onPress: () => openStep(shownStep),
+        }
+      : shownStep < 6
+      ? {
+          title: t('lessonFlow.continue'),
+          hint: t('lessonFlow.next_step_hint'),
+          testID: 'lesson-flow-next',
+          onPress: () => openStep((shownStep + 1) as FlowStep),
+        }
+      : null;
+  const footerAction = (!showMap && footer.action) || defaultAction;
+
   return (
     <AppScreen>
-      <View style={themedStyles.header}>
-        <IconButton
-          accessibilityHint={t('lessonFlow.close_lesson_hint')}
-          accessibilityLabel={t('lessonFlow.close_lesson')}
-          icon="close"
-          onPress={appNavigation.closeLesson}
-          testID="lesson-flow-close"
-          tone="bare"
-        />
-        {shownStep !== null ? (
-          <FlowProgressBar
-            doneSteps={doneSteps}
-            onSelect={openStep}
-            skippedSteps={skippedSteps}
-            step={shownStep}
-          />
+      <FlowFooterProvider register={footer.register}>
+        {shownStep !== null && showMap ? (
+          <View style={themedStyles.header}>
+            <IconButton
+              accessibilityHint={t('lessonFlow.close_lesson_hint')}
+              accessibilityLabel={t('lessonFlow.close_lesson')}
+              icon="close"
+              onPress={appNavigation.closeLesson}
+              style={themedStyles.mapClose}
+              testID="lesson-flow-close"
+              tone="surface"
+            />
+            <AppText
+              color="secondary"
+              numberOfLines={1}
+              style={themedStyles.flex}
+              variant="label"
+            >
+              {unit?.unit_title ?? t('lessonFlow.map_lesson')}
+            </AppText>
+            {streakDays ? (
+              <View style={themedStyles.streak} testID="lesson-flow-map-streak">
+                <MaterialIcon
+                  color={theme.colors.onTertiaryContainer}
+                  name="local_fire_department"
+                  size={18}
+                />
+                <AppText style={themedStyles.streakText} variant="label">
+                  {t('lessonFlow.map_streak_short', {count: streakDays})}
+                </AppText>
+              </View>
+            ) : null}
+          </View>
         ) : (
-          <AppText numberOfLines={1} style={themedStyles.flex} variant="h3">
-            {t('lessonFlow.title')}
-          </AppText>
+          <View style={themedStyles.header}>
+            <IconButton
+              accessibilityHint={t('lessonFlow.close_lesson_hint')}
+              accessibilityLabel={t('lessonFlow.close_lesson')}
+              icon="close"
+              onPress={appNavigation.closeLesson}
+              testID="lesson-flow-close"
+              tone="bare"
+            />
+            {shownStep !== null ? (
+              <FlowProgressBar
+                doneSteps={doneSteps}
+                onSelect={openStep}
+                skippedSteps={skippedSteps}
+                step={shownStep}
+              />
+            ) : (
+              <AppText numberOfLines={1} style={themedStyles.flex} variant="h3">
+                {t('lessonFlow.title')}
+              </AppText>
+            )}
+          </View>
         )}
-      </View>
-      <ScrollView
-        contentContainerStyle={themedStyles.content}
-        ref={scrollRef}
-        showsVerticalScrollIndicator={false}
-        style={themedStyles.scroll}
-        testID="lesson-flow-screen"
-      >
-        {renderBody()}
-      </ScrollView>
-      {shownStep !== null && showMap ? (
-        <BottomActionBar>
-          <AppButton
-            accessibilityHint={t('lessonFlow.map_start_hint')}
-            iconRight="chevron_right"
-            onPress={() => openStep(shownStep)}
-            testID="lesson-flow-map-start"
-            title={t('lessonFlow.map_start')}
-          />
-        </BottomActionBar>
-      ) : shownStep !== null && shownStep < 6 ? (
-        <BottomActionBar>
-          <AppButton
-            accessibilityHint={t('lessonFlow.next_step_hint')}
-            iconRight="chevron_right"
-            onPress={() => openStep((shownStep + 1) as FlowStep)}
-            testID="lesson-flow-next"
-            title={t('lessonFlow.continue')}
-          />
-        </BottomActionBar>
-      ) : null}
+        <ScrollView
+          contentContainerStyle={themedStyles.content}
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false}
+          style={themedStyles.scroll}
+          testID="lesson-flow-screen"
+        >
+          {renderBody()}
+        </ScrollView>
+        {footerAction ? <FlowFooterBar action={footerAction} /> : null}
+      </FlowFooterProvider>
     </AppScreen>
   );
 }
@@ -397,14 +441,30 @@ function makeStyles(theme: AppTheme) {
       flexDirection: 'row',
       gap: theme.spacing.sm,
     },
-    noSpeakingOffer: {
-      alignItems: 'flex-start',
+    mapClose: {
+      ...getStickerFace(theme, 3),
+    },
+    streak: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiaryFixed,
+      borderRadius: theme.radius.pill,
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      ...getStickerFace(theme, 0),
+    },
+    streakText: {
+      color: theme.colors.onTertiaryContainer,
+      fontWeight: theme.typography.weight.bold,
+    },
+    titleRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
     },
     scroll: {
       flex: 1,
-    },
-    titles: {
-      gap: theme.spacing.xs,
     },
   });
 }

@@ -7,14 +7,20 @@ import {speak} from '@features/audio';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {getStickerFace} from '@ui/theme/hardShadow';
 
+import {parseFrame} from '@core/learning';
 import {itemCardIds, type LessonBlock} from '@core/schemas/lesson';
 
-import {itemCardText} from '../../player/components/CanonicalBlockView';
+import {
+  itemCardText,
+  slotLabels,
+} from '../../player/components/CanonicalBlockView';
 import type {FlowItems} from '../logic/flowContent';
+import {useFlowFooter} from './FlowFooter';
 
 /** Text-to-speech rate of "Nghe chậm" (the default rate is 0.5). */
 export const SLOW_TTS_RATE = 0.3;
@@ -43,6 +49,18 @@ export function ListenCardDeck({block, items}: ListenCardDeckProps) {
   );
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(new Set());
+  // Redesign: the bottom button walks the deck before it leaves the step.
+  useFlowFooter(
+    index + 1 < cards.length
+      ? {
+          title: t('lessonFlow.card_understood'),
+          hint: t('lessonFlow.card_next_hint'),
+          testID: 'lesson-flow-card-understood',
+          onPress: () => setIndex(current => current + 1),
+        }
+      : null,
+    1,
+  );
 
   const card = cards[index];
   if (!card) return null;
@@ -90,7 +108,24 @@ export function ListenCardDeck({block, items}: ListenCardDeckProps) {
             style={themedStyles.face}
             testID="lesson-flow-card-reveal"
           >
-            <AppText variant="h2">{itemCardText(item)}</AppText>
+            <AppText variant="h1">
+              {item.kind === 'pattern'
+                ? frameParts(item.text, slotLabels(item.payload)).map(
+                    (part, position) =>
+                      part.slot ? (
+                        <AppText
+                          key={position}
+                          style={themedStyles.slot}
+                          variant="h1"
+                        >
+                          {` ${part.text} `}
+                        </AppText>
+                      ) : (
+                        part.text
+                      ),
+                  )
+                : itemCardText(item)}
+            </AppText>
             <View style={themedStyles.divider} />
             {shown ? (
               <AppText
@@ -108,34 +143,47 @@ export function ListenCardDeck({block, items}: ListenCardDeckProps) {
           </Pressable>
           {speakable ? (
             <View style={themedStyles.actions}>
-              <IconButton
+              <Pressable
                 accessibilityHint={t('lessonFlow.listen_model_hint')}
                 accessibilityLabel={t('lessonFlow.listen_model')}
-                icon="volume_up"
-                iconSize={30}
+                accessibilityRole="button"
                 onPress={() => {
                   speak(item.text).catch(() => undefined);
                 }}
-                size={64}
+                style={({pressed}) => [
+                  themedStyles.play,
+                  pressed && themedStyles.pressed,
+                ]}
                 testID="lesson-flow-card-listen"
-                tone="accent"
-              />
-              <IconButton
+              >
+                <MaterialIcon
+                  color={theme.colors.text.inverse}
+                  name="volume_up"
+                  size={34}
+                />
+              </Pressable>
+              <Pressable
                 accessibilityHint={t('lessonFlow.listen_slow_hint')}
                 accessibilityLabel={t('lessonFlow.listen_slow')}
-                icon="timer"
+                accessibilityRole="button"
                 onPress={() => {
                   speak(item.text, undefined, SLOW_TTS_RATE).catch(
                     () => undefined,
                   );
                 }}
-                size={52}
+                style={({pressed}) => [
+                  themedStyles.slow,
+                  pressed && themedStyles.pressed,
+                ]}
                 testID="lesson-flow-card-listen-slow"
-                tone="ghost"
-              />
-              <AppText color="secondary" variant="label">
-                {t('lessonFlow.listen_slow')}
-              </AppText>
+              >
+                <MaterialIcon
+                  color={theme.colors.text.primary}
+                  name="timer"
+                  size={20}
+                />
+                <AppText variant="label">{t('lessonFlow.listen_slow')}</AppText>
+              </Pressable>
             </View>
           ) : null}
         </View>
@@ -177,6 +225,20 @@ export function ListenCardDeck({block, items}: ListenCardDeckProps) {
   );
 }
 
+/** A pattern frame split into text and slot labels, to highlight slots. */
+function frameParts(
+  frame: string,
+  labels: Record<string, string>,
+): {text: string; slot: boolean}[] {
+  const parsed = parseFrame(frame);
+  if (!parsed.ok) return [{text: frame, slot: false}];
+  return parsed.segments.map(segment =>
+    segment.type === 'text'
+      ? {text: segment.value, slot: false}
+      : {text: labels[segment.name] ?? '…', slot: true},
+  );
+}
+
 function makeStyles(theme: AppTheme) {
   const {colors} = theme;
   return StyleSheet.create({
@@ -184,6 +246,33 @@ function makeStyles(theme: AppTheme) {
       alignItems: 'center',
       flexDirection: 'row',
       gap: theme.spacing.md,
+    },
+    play: {
+      alignItems: 'center',
+      backgroundColor: colors.primary,
+      borderRadius: 36,
+      height: 72,
+      justifyContent: 'center',
+      width: 72,
+      ...getStickerFace(theme, 5),
+    },
+    pressed: {
+      opacity: theme.states.pressedOpacity,
+    },
+    slot: {
+      backgroundColor: colors.tertiaryFixed,
+      color: colors.onTertiaryContainer,
+    },
+    slow: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderColor: colors.ink,
+      borderRadius: theme.radius.pill,
+      borderWidth: 2,
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
+      minHeight: 52,
+      paddingHorizontal: theme.spacing.md,
     },
     card: {
       backgroundColor: colors.surface,

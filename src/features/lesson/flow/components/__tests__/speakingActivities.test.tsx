@@ -130,15 +130,15 @@ describe('speaking activities (self-check)', () => {
       undefined,
       0.3,
     );
-    expect(has(tree, 'lesson-flow-self-feedback')).toBe(false);
+    expect(has(tree, 'lesson-flow-entry-feedback')).toBe(false);
     press(tree, 'lesson-flow-self-fail');
-    expect(textOf(tree, 'lesson-flow-self-feedback')).toContain(
+    expect(textOf(tree, 'lesson-flow-entry-feedback')).toContain(
       'Không sao, luyện thêm chút nữa',
     );
     expect(has(tree, 'lesson-flow-self-pass')).toBe(false);
     press(tree, 'lesson-flow-entry-next');
     press(tree, 'lesson-flow-self-pass');
-    expect(textOf(tree, 'lesson-flow-self-feedback')).toContain('Tốt lắm!');
+    expect(textOf(tree, 'lesson-flow-entry-feedback')).toContain('Tốt lắm!');
   });
 
   it('still lets the learner judge without a recorder', () => {

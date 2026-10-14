@@ -2,13 +2,17 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonSupportLevel} from '@core/schemas/sync';
 
 import type {EntryReport, EntryResult} from '../logic/activityOutcome';
+import {
+  type FlowFooterAction,
+  FlowFooterBar,
+  useFlowFooter,
+} from './FlowFooter';
 
 export type EntrySequenceProps = {
   count: number;
@@ -26,6 +30,8 @@ export type EntrySequenceProps = {
 /**
  * The entries of an activity one at a time: an entry reports its result,
  * then "Tiếp" moves on; after the last one the results go to `onComplete`.
+ * Redesign: "Tiếp" and the entry's result sit in the player's bottom sheet
+ * (inline when rendered outside the player).
  */
 export function EntrySequence({
   count,
@@ -48,6 +54,32 @@ export function EntrySequence({
       previous.length > index ? previous : [...previous, {result, support}],
     );
   };
+
+  const result = reported ? results[index]?.result : undefined;
+  const next: FlowFooterAction | null = reported
+    ? {
+        title: last
+          ? t('lessonFlow.finish_activity')
+          : t('lessonFlow.next_entry'),
+        hint: t('lessonFlow.next_entry_hint'),
+        testID: 'lesson-flow-entry-next',
+        icon: last ? 'check_circle' : 'chevron_right',
+        onPress: () => (last ? onComplete(results) : setIndex(index + 1)),
+        feedback:
+          result === 'not_yet'
+            ? {
+                tone: 'retry',
+                title: t('lessonFlow.entry_feedback_retry'),
+                body: t('lessonFlow.entry_feedback_retry_body'),
+              }
+            : {
+                tone: 'pass',
+                title: t('lessonFlow.entry_feedback_pass'),
+                body: t('lessonFlow.entry_feedback_pass_body'),
+              },
+      }
+    : null;
+  const hosted = useFlowFooter(next, 2);
 
   return (
     <View style={themedStyles.container}>
@@ -78,18 +110,7 @@ export function EntrySequence({
         ) : null}
       </View>
       <View key={index}>{renderEntry(index, report)}</View>
-      {reported ? (
-        <AppButton
-          accessibilityHint={t('lessonFlow.next_entry_hint')}
-          iconRight={last ? 'check_circle' : 'chevron_right'}
-          onPress={() => (last ? onComplete(results) : setIndex(index + 1))}
-          testID="lesson-flow-entry-next"
-          title={
-            last ? t('lessonFlow.finish_activity') : t('lessonFlow.next_entry')
-          }
-          variant="deep"
-        />
-      ) : null}
+      {next && !hosted ? <FlowFooterBar action={next} /> : null}
     </View>
   );
 }
