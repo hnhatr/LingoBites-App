@@ -10,6 +10,7 @@ import {
   LibraryCover,
   type LibraryCoverProps,
 } from '@ui/components/LibraryCover';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
@@ -27,7 +28,7 @@ const SHELF_HEIGHT = 5;
 /** The pill on a card, e.g. "Vào học" (solid) or "Tải về" (light). */
 export interface CardAction {
   label: string;
-  glyph: 'play' | 'download' | 'check';
+  glyph: 'play' | 'download' | 'check' | 'add';
   /** Ink pill with white text; false draws a white pill with ink text. */
   solid: boolean;
 }
@@ -57,6 +58,10 @@ export interface ToneCardProps {
   testID: string;
   /** Width of the list's side padding, to size the picture. */
   gutter: number;
+  /** Save toggle in the top right corner, its own button. */
+  bookmark?: {saved: boolean; onToggle: () => void};
+  /** Under the card, outside its button, e.g. a practice link. */
+  footer?: React.ReactNode;
 }
 
 /**
@@ -75,6 +80,8 @@ export function ToneCard({
   onPress,
   testID,
   gutter,
+  bookmark,
+  footer,
 }: ToneCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -84,7 +91,7 @@ export function ToneCard({
   const artWidth = Math.max(0, (width - gutter * 2) * ART_SHARE);
   const gradientId = `cardFade-${testID}`;
 
-  return (
+  const card = (
     <Pressable
       accessibilityHint={accessibilityHint}
       accessibilityLabel={[eyebrow, title, description, action.label]
@@ -150,6 +157,7 @@ export function ToneCard({
               color="secondary"
               numberOfLines={2}
               style={styles.description}
+              testID={`${testID}-description`}
             >
               {description}
             </AppText>
@@ -162,6 +170,35 @@ export function ToneCard({
         </View>
       </ShelfSurface>
     </Pressable>
+  );
+  if (!bookmark && !footer) return card;
+  return (
+    <View style={styles.cardWrap}>
+      {card}
+      {bookmark ? (
+        <Pressable
+          accessibilityHint={
+            bookmark.saved
+              ? 'Bỏ bài khỏi danh sách đã lưu'
+              : 'Thêm bài vào danh sách đã lưu'
+          }
+          accessibilityLabel={bookmark.saved ? 'Bỏ lưu bài' : 'Lưu bài'}
+          accessibilityRole="button"
+          accessibilityState={{selected: bookmark.saved}}
+          hitSlop={6}
+          onPress={bookmark.onToggle}
+          style={styles.bookmark}
+          testID={`${testID}-bookmark`}
+        >
+          <MaterialIcon
+            color={colors.ink}
+            name={bookmark.saved ? 'bookmark' : 'bookmark_add'}
+            size={20}
+          />
+        </Pressable>
+      ) : null}
+      {footer}
+    </View>
   );
 }
 
@@ -324,7 +361,11 @@ function ActionPill({
   const text = action.solid ? theme.colors.text.inverse : ink;
   return (
     <View style={[styles.pill, {backgroundColor: fill}]} testID={testID}>
-      <Glyph color={text} name={action.glyph} size={15} />
+      {action.glyph === 'add' ? (
+        <MaterialIcon color={text} name="add" size={16} />
+      ) : (
+        <Glyph color={text} name={action.glyph} size={15} />
+      )}
       <AppText style={[styles.pillText, {color: text}]}>{action.label}</AppText>
     </View>
   );
@@ -362,6 +403,20 @@ function makeStyles(theme: AppTheme) {
       position: 'absolute',
       top: -50,
       width: 140,
+    },
+    cardWrap: {
+      gap: theme.spacing.xs,
+    },
+    bookmark: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 18,
+      height: 36,
+      justifyContent: 'center',
+      position: 'absolute',
+      right: 10,
+      top: 10,
+      width: 36,
     },
     cardFace: {
       height: CARD_HEIGHT,

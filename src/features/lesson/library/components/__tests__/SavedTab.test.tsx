@@ -85,7 +85,9 @@ describe('SavedTab', () => {
 
   it('shows how many cards are due and opens the review', () => {
     const tree = render();
-    expect(textOf(tree, 'library-saved-due')).toBe('3 từ đến hạn ôn');
+    expect(textOf(tree, 'library-saved-review-description')).toBe(
+      '3 từ đến hạn ôn',
+    );
     act(() => {
       tree.root.findByProps({testID: 'library-saved-review'}).props.onPress();
     });
