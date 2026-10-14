@@ -215,15 +215,13 @@ jobs:
           key: ccache-ios-${{ runner.os }}-${{ github.run_id }}
           restore-keys: ccache-ios-${{ runner.os }}-
 
-      - name: Restore CocoaPods
+      - name: Restore CocoaPods cache
         if: steps.gate.outputs.build == 'true'
         uses: actions/cache@v4
         with:
-          path: |
-            ios/Pods
-            ~/Library/Caches/CocoaPods
-          key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock', 'yarn.lock') }}
-          restore-keys: pods-${{ runner.os }}-
+          path: ~/Library/Caches/CocoaPods
+          key: pods-cache-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock', 'yarn.lock') }}
+          restore-keys: pods-cache-${{ runner.os }}-
 
       - name: Install JS dependencies
         if: steps.gate.outputs.build == 'true'
