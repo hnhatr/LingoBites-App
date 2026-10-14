@@ -1,6 +1,7 @@
 import React, {useMemo, useState} from 'react';
 import {Image, Pressable, StyleSheet, View} from 'react-native';
 
+import {DEFAULT_COVERS} from '@ui/assets/covers';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
@@ -177,9 +178,8 @@ export function ActionTile({
 
 export interface PhotoCardProps {
   title: string;
+  /** The default lesson picture shows when there is no photo. */
   imageUri: string | null;
-  /** Shown on the tinted square when there is no photo. */
-  icon: HandoffIconName;
   tone: CardTone;
   width: number;
   onPress: () => void;
@@ -191,7 +191,6 @@ export interface PhotoCardProps {
 export function PhotoCard({
   title,
   imageUri,
-  icon,
   tone,
   width,
   onPress,
@@ -233,15 +232,12 @@ export function PhotoCard({
             testID={`${testID}-photo`}
           />
         ) : (
-          <View
-            style={[
-              styles.photo,
-              styles.photoEmpty,
-              {backgroundColor: colors.blob},
-            ]}
-          >
-            <MaterialIcon color={colors.ink} name={icon} size={36} />
-          </View>
+          <Image
+            accessibilityIgnoresInvertColors
+            source={DEFAULT_COVERS.lesson}
+            style={styles.photo}
+            testID={`${testID}-default`}
+          />
         )}
         <AppText numberOfLines={2} style={styles.photoTitle}>
           {title}
@@ -359,10 +355,6 @@ function makeStyles(theme: AppTheme) {
       aspectRatio: 1,
       borderRadius: 17,
       width: '100%',
-    },
-    photoEmpty: {
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     photoTitle: {
       color: theme.colors.text.primary,

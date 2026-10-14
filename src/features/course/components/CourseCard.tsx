@@ -102,6 +102,7 @@ export function CourseCard({
           <View style={{height}}>
             <LibraryCover
               aspectRatio={artWidth > 0 ? artWidth / height : undefined}
+              fallback="course"
               glyph={glyph}
               hideLevelChip
               imageUrl={imageUrl}

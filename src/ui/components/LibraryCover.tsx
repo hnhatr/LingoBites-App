@@ -1,7 +1,8 @@
 import React, {useMemo, useState} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
-import {Circle, Defs, Path, Pattern, Rect, Svg} from 'react-native-svg';
+import {Path, Svg} from 'react-native-svg';
 
+import {DEFAULT_COVERS, type DefaultCoverKind} from '../assets/covers';
 import {type AppTheme, useAppTheme} from '../theme';
 import {cefrLevelOf, levelTone} from '../theme/levelColors';
 import {AppText} from './AppText';
@@ -9,9 +10,9 @@ import {AppText} from './AppText';
 /**
  * The picture at the top of a Library card. A cover image when the server
  * has one (an admin upload, or a YouTube thumbnail); otherwise, or when the
- * image cannot load (offline, broken link), a default cover drawn in the
- * level colour with a pattern and an icon for the topic. The level chip,
- * duration, play button and corner badge sit on top of either.
+ * image cannot load (offline, broken link), a default picture for the kind
+ * of item (course, lesson, vocabulary, other). The level chip, duration,
+ * play button and corner badge sit on top of either.
  *
  *   pack   1:1   word pack        lesson 4:3   six-step lesson
  *   video  16:9  public video
@@ -73,6 +74,13 @@ export function youtubeThumbnailUrl(videoId: string): string {
   return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
 }
 
+/** The default picture of each shape, unless `fallback` names another. */
+const SHAPE_FALLBACK: Record<LibraryCoverShape, DefaultCoverKind> = {
+  pack: 'vocab',
+  video: 'default',
+  lesson: 'lesson',
+};
+
 const ASPECT: Record<LibraryCoverShape, number> = {
   pack: 1,
   video: 16 / 9,
@@ -87,8 +95,10 @@ export interface LibraryCoverProps {
   level?: string | null;
   /** Colour by `level` but leave the chip out (the screen already says it). */
   hideLevelChip?: boolean;
-  /** Icon on the default cover. */
+  /** Topic icon of the item; the default picture now stands in for it. */
   glyph: CoverGlyph;
+  /** Default picture when there is no image; by `shape` when left out. */
+  fallback?: DefaultCoverKind;
   /** Round corner badge, e.g. downloaded (`check`). */
   badge?: 'check' | 'download' | null;
   /** Video length, bottom right, e.g. "4:37". */
@@ -109,7 +119,7 @@ export function LibraryCover({
   imageUrl,
   level,
   hideLevelChip = false,
-  glyph,
+  fallback,
   badge,
   duration,
   play = false,
@@ -143,10 +153,11 @@ export function LibraryCover({
           testID={testID ? `${testID}-image` : undefined}
         />
       ) : (
-        <DefaultCover
-          color={tone.strong}
-          glyph={glyph}
-          shape={shape}
+        <Image
+          accessibilityIgnoresInvertColors
+          resizeMode="cover"
+          source={DEFAULT_COVERS[fallback ?? SHAPE_FALLBACK[shape]]}
+          style={StyleSheet.absoluteFill}
           testID={testID ? `${testID}-default` : undefined}
         />
       )}
@@ -217,95 +228,6 @@ export function Glyph({
     </Svg>
   );
 }
-
-/**
- * Level-coloured pattern (dots for packs and lessons, stripes for videos)
- * with the icon on a white disc, or bare for videos.
- */
-function DefaultCover({
-  shape,
-  color,
-  glyph,
-  testID,
-}: {
-  shape: LibraryCoverShape;
-  color: string;
-  glyph: CoverGlyph;
-  testID?: string;
-}) {
-  const {theme} = useAppTheme();
-  const patternId = `cover-${shape}`;
-  return (
-    <View style={StyleSheet.absoluteFill} testID={testID}>
-      <Svg height="100%" style={StyleSheet.absoluteFill} width="100%">
-        <Defs>
-          {shape === 'video' ? (
-            <Pattern
-              height={22}
-              id={patternId}
-              patternTransform="rotate(45)"
-              patternUnits="userSpaceOnUse"
-              width={22}
-            >
-              <Rect fill={color} height={22} opacity={0.18} width={10} />
-            </Pattern>
-          ) : (
-            <Pattern
-              height={14}
-              id={patternId}
-              patternUnits="userSpaceOnUse"
-              width={14}
-            >
-              <Circle cx={7} cy={7} fill={color} opacity={0.32} r={1.6} />
-            </Pattern>
-          )}
-        </Defs>
-        <Rect fill={`url(#${patternId})`} height="100%" width="100%" />
-      </Svg>
-      <View style={coverStyles.center}>
-        {shape === 'video' ? (
-          <Glyph color={color} name={glyph} size={44} />
-        ) : (
-          <View
-            style={[
-              coverStyles.disc,
-              {
-                backgroundColor: theme.colors.surface,
-              },
-              shape === 'lesson' ? coverStyles.discLesson : null,
-            ]}
-          >
-            <Glyph color={color} name={glyph} size={28} />
-          </View>
-        )}
-      </View>
-    </View>
-  );
-}
-
-const coverStyles = StyleSheet.create({
-  center: {
-    alignItems: 'center',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  disc: {
-    alignItems: 'center',
-    aspectRatio: 1,
-    borderRadius: 999,
-    justifyContent: 'center',
-    width: '52%',
-    // Wide banners (course and unit headers) keep the disc a badge, not a wall.
-    maxWidth: 96,
-  },
-  discLesson: {
-    width: '40%',
-  },
-});
 
 function makeStyles(theme: AppTheme, compact: boolean) {
   const inset = compact ? 4 : 8;
