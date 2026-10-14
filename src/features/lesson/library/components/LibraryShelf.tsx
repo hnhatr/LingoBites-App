@@ -1,227 +1,150 @@
 import React, {useMemo} from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import type {GridTileTone} from '@ui/components/GridTile';
-import {
-  LibraryCover,
-  type LibraryCoverProps,
-} from '@ui/components/LibraryCover';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {getStickerFace} from '@ui/theme/hardShadow';
-import {levelTone} from '@ui/theme/levelColors';
 
-const CARD_RADIUS = 18;
+import type {LibraryTone} from '../logic/librarySections';
+import {libraryTone} from './libraryTones';
 
 /** What a shelf shows while it has no cards to list. */
 export type ShelfStatus =
   {kind: 'loading'} | {kind: 'message'; text: string; onRetry?: () => void};
 
 export interface LibraryShelfProps {
+  /** Big heading inside the folder, e.g. "Gói từ vựng". */
   title: string;
-  /** Icon before the title. */
-  icon?: HandoffIconName;
+  /** Short name on the folder's tab, e.g. "Gói học". */
+  label: string;
+  /** Icon on the folder's tab. */
+  icon: HandoffIconName;
+  tone: LibraryTone;
+  /** Quiet line under the title. */
+  subtitle?: string;
+  /** Big number beside the title, e.g. "24" or "20+"; hidden when null. */
+  count?: string | null;
   /** Opens the full list; hidden when omitted. */
   onSeeAll?: () => void;
-  /** Shown in place of the cards (loading, empty, error). */
+  /** Text of the full-list button, e.g. "Xem cả 24 gói". */
+  seeAllLabel?: string;
+  /** Shown in place of the items (loading, empty, error). */
   status?: ShelfStatus | null;
   children?: React.ReactNode;
   testID?: string;
 }
 
-/** A titled row of cards that scrolls sideways, with a "Tất cả" link. */
+/**
+ * One Library section as a coloured folder: a tab with its name on top,
+ * then a big title with the item count, the items stacked down the page,
+ * and a button to the full list.
+ */
 export function LibraryShelf({
   title,
+  label,
   icon,
+  tone,
+  subtitle,
+  count,
   onSeeAll,
+  seeAllLabel = 'Xem tất cả',
   status,
   children,
   testID,
 }: LibraryShelfProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
+  const colors = libraryTone(theme, tone);
 
   return (
-    <View style={styles.shelf} testID={testID}>
-      <View style={styles.head}>
-        <View style={styles.titleRow}>
-          {icon ? (
-            <MaterialIcon color={theme.colors.primary} name={icon} size={20} />
+    <View testID={testID}>
+      <View style={[styles.tab, {backgroundColor: colors.soft}]}>
+        <MaterialIcon color={colors.ink} name={icon} size={15} />
+        <AppText style={[styles.tabText, {color: colors.ink}]}>
+          {label.toUpperCase()}
+        </AppText>
+      </View>
+      <View style={[styles.folder, {backgroundColor: colors.soft}]}>
+        <View style={styles.head}>
+          <View style={styles.headText}>
+            <AppText accessibilityRole="header" style={styles.title}>
+              {title}
+            </AppText>
+            {subtitle ? (
+              <AppText color="secondary" style={styles.subtitle}>
+                {subtitle}
+              </AppText>
+            ) : null}
+          </View>
+          {count ? (
+            <AppText
+              style={[styles.count, {color: colors.strong}]}
+              testID={testID ? `${testID}-count` : undefined}
+            >
+              {count}
+            </AppText>
           ) : null}
-          <AppText style={styles.title}>{title}</AppText>
         </View>
-        {onSeeAll ? (
+        {status?.kind === 'loading' ? (
+          <ActivityIndicator
+            color={colors.ink}
+            style={styles.loading}
+            testID={testID ? `${testID}-loading` : undefined}
+          />
+        ) : status?.kind === 'message' ? (
+          <View style={[styles.message, {borderColor: colors.strong}]}>
+            <AppText
+              style={styles.messageText}
+              testID={testID ? `${testID}-message` : undefined}
+            >
+              {status.text}
+            </AppText>
+            {status.onRetry ? (
+              <Pressable
+                accessibilityHint="Tải lại"
+                accessibilityLabel="Thử lại"
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={status.onRetry}
+                style={({pressed}) => [styles.retry, pressed && styles.pressed]}
+                testID={testID ? `${testID}-retry` : undefined}
+              >
+                <MaterialIcon
+                  color={theme.colors.text.inverse}
+                  name="refresh"
+                  size={16}
+                />
+                <AppText style={styles.retryText}>Thử lại</AppText>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : (
+          children
+        )}
+        {onSeeAll && !status ? (
           <Pressable
-            accessibilityHint={`Mở toàn bộ ${title}`}
-            accessibilityLabel={`Tất cả ${title}`}
+            accessibilityHint={`Mở toàn bộ ${label}`}
+            accessibilityLabel={seeAllLabel}
             accessibilityRole="button"
-            hitSlop={8}
             onPress={onSeeAll}
-            style={styles.seeAllRow}
+            style={({pressed}) => [
+              styles.seeAll,
+              pressed && styles.pressedDown,
+            ]}
             testID={testID ? `${testID}-all` : undefined}
           >
-            <AppText style={styles.seeAll}>Tất cả</AppText>
-            <MaterialIcon
-              color={theme.colors.primary}
-              name="chevron_right"
-              size={18}
-            />
+            <AppText style={[styles.seeAllText, {color: colors.ink}]}>
+              {seeAllLabel}
+            </AppText>
+            <MaterialIcon color={colors.ink} name="chevron_right" size={18} />
           </Pressable>
         ) : null}
       </View>
-      {status?.kind === 'loading' ? (
-        <ActivityIndicator
-          color={theme.colors.primary}
-          style={styles.loading}
-          testID={testID ? `${testID}-loading` : undefined}
-        />
-      ) : status?.kind === 'message' ? (
-        <View style={styles.message}>
-          <AppText
-            color="secondary"
-            style={styles.messageText}
-            testID={testID ? `${testID}-message` : undefined}
-          >
-            {status.text}
-          </AppText>
-          {status.onRetry ? (
-            <Pressable
-              accessibilityHint="Tải lại"
-              accessibilityLabel="Thử lại"
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={status.onRetry}
-              testID={testID ? `${testID}-retry` : undefined}
-            >
-              <AppText style={styles.seeAll}>Thử lại</AppText>
-            </Pressable>
-          ) : null}
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={styles.row}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
-      )}
     </View>
-  );
-}
-
-export interface ShelfCardProps {
-  title: string;
-  /** Lines the title may take; packs keep to one, under their sub line. */
-  titleLines?: 1 | 2;
-  /** Quiet line under the title, e.g. "Gói 1 · 12 từ". */
-  sub?: string | null;
-  /** Meta line with an icon, e.g. a duration or a lesson count. */
-  meta?: string | null;
-  metaIcon?: HandoffIconName;
-  /** The cover picture with its level chip and badges. */
-  cover: LibraryCoverProps;
-  /** Learning progress, 0–1; no bar when omitted. */
-  progress?: number;
-  width: number;
-  onPress: () => void;
-  accessibilityHint: string;
-  testID?: string;
-}
-
-/**
- * One card on a shelf: the cover on top, then the title, a quiet sub line,
- * a meta line and the progress bar, all inside one outlined card. Titles
- * keep a fixed number of lines so the cards of a row stay the same height.
- */
-export function ShelfCard({
-  title,
-  titleLines = 2,
-  sub,
-  meta,
-  metaIcon,
-  cover,
-  progress,
-  width,
-  onPress,
-  accessibilityHint,
-  testID,
-}: ShelfCardProps) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  const tone = levelTone(theme, cover.level);
-  const label = [cover.level, title, sub, meta].filter(Boolean).join('. ');
-
-  return (
-    <Pressable
-      accessibilityHint={accessibilityHint}
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({pressed}) => [styles.card, {width}, pressed && styles.pressed]}
-      testID={testID}
-    >
-      <View style={styles.clip}>
-        <LibraryCover
-          {...cover}
-          testID={testID ? `${testID}-cover` : undefined}
-        />
-        <View style={styles.body}>
-          <AppText
-            numberOfLines={titleLines}
-            style={[
-              styles.cardTitle,
-              {minHeight: styles.cardTitle.lineHeight * titleLines},
-            ]}
-          >
-            {title}
-          </AppText>
-          {sub ? (
-            <AppText color="secondary" numberOfLines={1} variant="caption">
-              {sub}
-            </AppText>
-          ) : null}
-          {progress !== undefined ? (
-            <View style={styles.track}>
-              <View
-                style={[
-                  styles.fill,
-                  {
-                    backgroundColor: tone.strong,
-                    width: `${Math.round(
-                      Math.min(Math.max(progress, 0), 1) * 100,
-                    )}%`,
-                  },
-                ]}
-              />
-            </View>
-          ) : null}
-          {meta ? (
-            <View style={styles.meta}>
-              {metaIcon ? (
-                <MaterialIcon
-                  color={theme.colors.text.secondary}
-                  name={metaIcon}
-                  size={14}
-                />
-              ) : null}
-              <AppText color="secondary" numberOfLines={1} variant="caption">
-                {meta}
-              </AppText>
-            </View>
-          ) : null}
-        </View>
-      </View>
-    </Pressable>
   );
 }
 
@@ -252,92 +175,121 @@ export function shelfTone(theme: AppTheme, tone: GridTileTone) {
   }
 }
 
+/** The sticker face of Library cards: a hard ink shadow, else a hairline. */
+export function stickerCard(theme: AppTheme, offset = 3) {
+  return (
+    getStickerFace(theme, offset) ?? {
+      borderColor: theme.colors.outlineVariant,
+      borderWidth: 1,
+    }
+  );
+}
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    shelf: {
-      gap: theme.spacing.sm,
+    tab: {
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      borderTopLeftRadius: 14,
+      borderTopRightRadius: 14,
+      flexDirection: 'row',
+      gap: 6,
+      height: 28,
+      paddingLeft: 12,
+      paddingRight: 16,
+    },
+    tabText: {
+      fontSize: 11,
+      fontWeight: '800',
+      letterSpacing: 1,
+    },
+    folder: {
+      borderBottomLeftRadius: 22,
+      borderBottomRightRadius: 22,
+      borderTopRightRadius: 22,
+      gap: theme.spacing.md,
+      padding: 14,
+      paddingTop: 18,
+      ...stickerCard(theme, 4),
     },
     head: {
-      alignItems: 'baseline',
+      alignItems: 'flex-end',
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.gutter,
+      gap: theme.spacing.sm,
+    },
+    headText: {
+      flex: 1,
+      gap: 4,
     },
     title: {
-      fontSize: 17,
-      fontWeight: '700',
+      color: theme.colors.text.primary,
+      fontSize: 26,
+      fontWeight: '800',
+      letterSpacing: -0.6,
+      lineHeight: 30,
     },
-    seeAll: {
-      color: theme.colors.primary,
-      fontSize: 14,
-      fontWeight: '700',
+    subtitle: {
+      fontSize: 13,
+      fontWeight: '600',
     },
-    row: {
-      gap: theme.spacing.md,
-      paddingBottom: theme.spacing.xs,
-      paddingHorizontal: theme.gutter,
+    count: {
+      fontSize: 46,
+      fontVariant: ['tabular-nums'],
+      fontWeight: '800',
+      letterSpacing: -1.5,
+      lineHeight: 48,
+      opacity: 0.85,
     },
     loading: {
       paddingVertical: theme.spacing.xl,
     },
     message: {
       alignItems: 'center',
+      borderRadius: 16,
+      borderStyle: 'dashed',
+      borderWidth: 2,
       flexDirection: 'row',
       gap: theme.spacing.md,
-      paddingHorizontal: theme.gutter,
-      paddingVertical: theme.spacing.md,
+      padding: 14,
     },
     messageText: {
       flex: 1,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    retry: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.text.primary,
+      borderRadius: 999,
+      flexDirection: 'row',
+      gap: 4,
+      height: 34,
+      paddingHorizontal: 12,
+    },
+    retryText: {
+      color: theme.colors.text.inverse,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    seeAll: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 14,
+      flexDirection: 'row',
+      gap: 4,
+      height: 46,
+      justifyContent: 'center',
+      ...stickerCard(theme),
+    },
+    seeAllText: {
+      fontSize: 14,
+      fontWeight: '800',
     },
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
-    titleRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.xs + 2,
-    },
-    seeAllRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-    },
-    card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: CARD_RADIUS,
-      ...(getStickerFace(theme, 3) ?? {
-        borderColor: theme.colors.outlineVariant,
-        borderWidth: 1,
-      }),
-    },
-    clip: {
-      borderRadius: CARD_RADIUS - 2,
-      overflow: 'hidden',
-    },
-    body: {
-      gap: theme.spacing.xs,
-      paddingBottom: theme.spacing.md,
-      paddingHorizontal: theme.spacing.sm + 2,
-      paddingTop: theme.spacing.sm,
-    },
-    cardTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-      lineHeight: 19,
-    },
-    meta: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 4,
-    },
-    track: {
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: 4,
-      height: 7,
-      overflow: 'hidden',
-    },
-    fill: {
-      height: '100%',
+    pressedDown: {
+      transform: [{translateY: 2}],
     },
   });
 }

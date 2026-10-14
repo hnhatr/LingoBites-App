@@ -64,7 +64,7 @@ describe('LessonsHistoryScreen (Library hub)', () => {
       tree.root.findByProps({testID: id}).props.onPress();
     });
 
-  it('shows four icon tabs and opens "Khám phá" first', () => {
+  it('shows four tabs and opens "Khám phá" first', () => {
     const tree = renderHub();
     ['explore', 'saved', 'created', 'moments'].forEach(tab => {
       expect(byId(tree, `library-tab-${tab}`)).not.toHaveLength(0);
@@ -73,9 +73,7 @@ describe('LessonsHistoryScreen (Library hub)', () => {
       tree.root.findByProps({testID: 'library-tab-explore'}).props
         .accessibilityState,
     ).toEqual({selected: true});
-    expect(
-      tree.root.findByProps({testID: 'library-tab-title'}).props.children,
-    ).toBe('Khám phá');
+    expect(byId(tree, 'library-tab-title')).toHaveLength(0);
   });
 
   it('has no create-lesson button in the header', () => {
@@ -90,8 +88,9 @@ describe('LessonsHistoryScreen (Library hub)', () => {
     press(tree, 'library-tab-saved');
     expect(byId(tree, 'library-panel-saved')).not.toHaveLength(0);
     expect(
-      tree.root.findByProps({testID: 'library-tab-title'}).props.children,
-    ).toBe('Đã lưu');
+      tree.root.findByProps({testID: 'library-tab-saved'}).props
+        .accessibilityState,
+    ).toEqual({selected: true});
   });
 
   it('keeps a visited tab mounted but hidden', () => {
@@ -103,7 +102,7 @@ describe('LessonsHistoryScreen (Library hub)', () => {
     );
   });
 
-  it('gives each icon tab its name for screen readers', () => {
+  it('gives each tab its name for screen readers', () => {
     const tree = renderHub();
     expect(
       tree.root.findByProps({testID: 'library-tab-created'}).props

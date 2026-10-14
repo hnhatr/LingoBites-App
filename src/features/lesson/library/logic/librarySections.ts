@@ -16,18 +16,22 @@ export type LibrarySectionId = LibrarySectionKey;
  */
 export type LibraryTab = 'explore' | 'saved' | 'created' | 'moments';
 
+/** Colour family of a Library tab or folder (see `libraryTone`). */
+export type LibraryTone = 'teal' | 'coral' | 'yellow' | 'violet';
+
 export interface LibraryTabConfig {
   id: LibraryTab;
   icon: HandoffIconName;
   title: string;
+  tone: LibraryTone;
 }
 
 /** Tab order on the hub; the first one opens by default. */
 export const LIBRARY_TABS: readonly LibraryTabConfig[] = [
-  {id: 'explore', icon: 'language', title: 'Khám phá'},
-  {id: 'saved', icon: 'bookmark', title: 'Đã lưu'},
-  {id: 'created', icon: 'edit', title: 'Bài tôi tạo'},
-  {id: 'moments', icon: 'auto_awesome', title: 'Khoảnh khắc'},
+  {id: 'explore', icon: 'language', title: 'Khám phá', tone: 'teal'},
+  {id: 'saved', icon: 'bookmark', title: 'Đã lưu', tone: 'coral'},
+  {id: 'created', icon: 'edit', title: 'Bài tôi tạo', tone: 'yellow'},
+  {id: 'moments', icon: 'auto_awesome', title: 'Khoảnh khắc', tone: 'violet'},
 ];
 
 export interface LibrarySectionConfig {

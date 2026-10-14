@@ -195,7 +195,8 @@ export function LibraryCover({
   );
 }
 
-function Glyph({
+/** One cover icon on its own, e.g. a topic icon or a download mark. */
+export function Glyph({
   name,
   color,
   size,
