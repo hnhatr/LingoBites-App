@@ -1,16 +1,17 @@
 import {useFocusEffect} from '@react-navigation/native';
 import React from 'react';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView} from 'react-native';
 
 import {hasDownloadedLessons} from '@features/lesson/player';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
+import {HeroResumeCard} from '@ui/components/HeroResumeCard';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {type CoverGlyph} from '@ui/components/LibraryCover';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {cardToneAt, ToneCard} from '@ui/components/ToneCard';
 import {useAppTheme} from '@ui/theme';
 
 import {findMostRecentInProgressShadowingLesson} from '../logic/shadowing/shadowingProgress';
@@ -101,130 +102,57 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
           </AppCard>
         ) : null}
         {shadowingContinue ? (
-          <Pressable
-            accessibilityRole="button"
+          <HeroResumeCard
+            accessibilityHint="Mở lại bài đang luyện nói dở"
+            chip={`Đang dở · câu ${shadowingContinue.resumeSentenceNumber}/${shadowingContinue.sentenceCount}`}
+            chipTestID="shadowing-continue-detail"
+            cta="Nói tiếp"
             onPress={handleShadowingContinue}
             testID="shadowing-continue-row"
-          >
-            <AppCard style={{gap: theme.spacing.xs}}>
-              <View
-                style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  gap: theme.spacing.sm,
-                }}
-              >
-                <Chip label="Đang dở" tone="gold" />
-                <AppText variant="h3">Tiếp tục</AppText>
-              </View>
-              <AppText testID="shadowing-continue-detail" variant="body">
-                {shadowingContinue.titleVi} · câu{' '}
-                {shadowingContinue.resumeSentenceNumber}/
-                {shadowingContinue.sentenceCount}
-              </AppText>
-            </AppCard>
-          </Pressable>
+            title={shadowingContinue.titleVi}
+          />
         ) : null}
-        {modes.map(mode => (
-          <Pressable
-            key={mode.mode}
-            accessibilityLabel={`${mode.titleVi}, ${mode.level}, ~${
-              mode.durationMin
-            } phút${mode.recommended ? ', Gợi ý hôm nay' : ''}${
-              mode.available ? '' : ', Chưa có sẵn'
-            }`}
-            accessibilityRole="button"
+        {modes.map((mode, index) => (
+          <ToneCard
+            accessibilityHint={
+              mode.available
+                ? 'Mở chế độ luyện nói này'
+                : 'Chế độ này chưa có sẵn'
+            }
+            action={
+              mode.available
+                ? {label: 'Bắt đầu', glyph: 'play', solid: true}
+                : {label: 'Sắp có', solid: false}
+            }
+            cover={{imageUrl: null, glyph: MODE_GLYPHS[mode.mode]}}
+            description={mode.descriptionVi}
             disabled={!mode.available}
+            eyebrow={[
+              mode.level,
+              `~${mode.durationMin} phút`,
+              mode.recommended ? 'Gợi ý hôm nay' : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+            gutter={theme.gutter}
+            key={mode.mode}
             onPress={() => handlePressMode(mode)}
             testID={`speaking-mode-${mode.mode}`}
-            style={({pressed}) => ({
-              opacity: !mode.available
-                ? 0.6
-                : pressed
-                  ? theme.states.pressedOpacity
-                  : 1,
-            })}
-          >
-            <AppCard style={{gap: theme.spacing.xs}}>
-              <View
-                style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  gap: theme.spacing.md,
-                }}
-              >
-                <View
-                  style={{
-                    alignItems: 'center',
-                    backgroundColor: theme.colors.accentSoft,
-                    borderRadius: 14,
-                    height: 46,
-                    justifyContent: 'center',
-                    width: 46,
-                  }}
-                >
-                  <MaterialIcon
-                    color={theme.colors.primary}
-                    name={mode.icon}
-                    size={22}
-                  />
-                </View>
-                <View style={styles.cardContent}>
-                  <AppText variant="h3">{mode.titleVi}</AppText>
-                  <AppText color="secondary">{mode.descriptionVi}</AppText>
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      flexWrap: 'wrap',
-                      gap: theme.spacing.xs,
-                      marginTop: theme.spacing.xs,
-                    }}
-                  >
-                    <Chip label={mode.level} tone="default" />
-                    <View style={styles.durationRow}>
-                      <MaterialIcon
-                        color={theme.colors.text.secondary}
-                        name="schedule"
-                        size={16}
-                      />
-                      <AppText color="muted" variant="caption">
-                        ~{mode.durationMin} phút
-                      </AppText>
-                    </View>
-                    {mode.recommended ? (
-                      <Chip label="Gợi ý hôm nay" tone="gold" />
-                    ) : null}
-                    {mode.available ? null : (
-                      <Chip label="Chưa có sẵn" tone="neutral" />
-                    )}
-                  </View>
-                </View>
-                <View style={{opacity: mode.available ? 1 : 0.4}}>
-                  <MaterialIcon
-                    color={theme.colors.text.secondary}
-                    name="chevron_right"
-                    size={22}
-                  />
-                </View>
-              </View>
-            </AppCard>
-          </Pressable>
+            title={mode.titleVi}
+            tone={cardToneAt(index)}
+          />
         ))}
       </ScrollView>
     </AppScreen>
   );
 }
 
-const styles = StyleSheet.create({
-  cardContent: {
-    flex: 1,
-    gap: 2,
-    minWidth: 0,
-  },
-  durationRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 4,
-  },
-});
+/** The picture on each mode's card, for modes without their own art. */
+const MODE_GLYPHS: Record<SpeakingModeInfo['mode'], CoverGlyph> = {
+  shadowing: 'chat',
+  quick_answer: 'chat',
+  standup: 'work',
+  app_description: 'work',
+  bug_report: 'work',
+  mock_interview: 'school',
+};

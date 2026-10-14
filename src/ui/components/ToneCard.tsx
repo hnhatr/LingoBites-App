@@ -65,7 +65,8 @@ export function shelfTone(theme: AppTheme, tone: GridTileTone) {
 /** The pill on a card, e.g. "Vào học" (solid) or "Tải về" (light). */
 export interface CardAction {
   label: string;
-  glyph: 'play' | 'download' | 'check' | 'add';
+  /** Left out for a pill with words only, e.g. "Sắp có". */
+  glyph?: 'play' | 'download' | 'check' | 'add';
   /** Ink pill with white text; false draws a white pill with ink text. */
   solid: boolean;
 }
@@ -271,9 +272,9 @@ export function ActionPill({
     <View style={[styles.pill, {backgroundColor: fill}]} testID={testID}>
       {action.glyph === 'add' ? (
         <MaterialIcon color={text} name="add" size={16} />
-      ) : (
+      ) : action.glyph ? (
         <Glyph color={text} name={action.glyph} size={15} />
-      )}
+      ) : null}
       <AppText style={[styles.pillText, {color: text}]}>{action.label}</AppText>
     </View>
   );

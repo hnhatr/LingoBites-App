@@ -11,11 +11,13 @@ import {
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {HeroFill} from '@ui/components/HeroFill';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {useAppNavigation} from '@core/navigation';
 
@@ -239,8 +241,10 @@ export function TodayScreen({route}: Props = {}) {
           </View>
         ) : null}
 
-        {/* Plan card: time, minutes by group, start (REQ-12, REQ-13). */}
-        <View style={themedStyles.planCard}>
+        {/* Plan card: time, minutes by group, start (REQ-12, REQ-13), on
+            the mint-to-sky face of Home's "Hôm nay" card. */}
+        <View style={themedStyles.planCard} testID="today-plan-card">
+          <HeroFill id="todayPlanFace" />
           <View
             accessibilityRole="radiogroup"
             style={themedStyles.modeSelector}
@@ -261,10 +265,14 @@ export function TodayScreen({route}: Props = {}) {
           {plan ? (
             <View style={styles.progress}>
               <View style={styles.progressHeader}>
-                <AppText color="secondary" variant="label">
+                <AppText style={styles.onHeroSoft} variant="label">
                   Kế hoạch hôm nay
                 </AppText>
-                <AppText variant="h3" testID="today-plan-minutes">
+                <AppText
+                  style={styles.onHero}
+                  testID="today-plan-minutes"
+                  variant="h3"
+                >
                   {plan.totalEstimatedMinutes} / {targetMinutes} phút
                 </AppText>
               </View>
@@ -300,7 +308,7 @@ export function TodayScreen({route}: Props = {}) {
                         },
                       ]}
                     />
-                    <AppText color="secondary" variant="caption">
+                    <AppText style={styles.onHeroSoft} variant="caption">
                       {ACTIVITY_CATEGORY_LABELS_VI[entry.category]}{' '}
                       {entry.minutes} phút
                     </AppText>
@@ -323,7 +331,7 @@ export function TodayScreen({route}: Props = {}) {
               testID="today-start"
             >
               <MaterialIcon
-                color={theme.colors.text.inverse}
+                color={HERO_PALETTE.white}
                 name="play_circle"
                 size={30}
               />
@@ -343,12 +351,12 @@ export function TodayScreen({route}: Props = {}) {
           {plan ? (
             <View style={themedStyles.whyRow} testID="explainability-card">
               <MaterialIcon
-                color={theme.colors.tertiary}
+                color={HERO_PALETTE.teal}
                 name="auto_awesome"
                 size={18}
               />
               <View style={styles.flexCopy}>
-                <AppText color="secondary" variant="caption">
+                <AppText style={styles.onHeroSoft} variant="caption">
                   <AppText variant="caption" style={styles.bold}>
                     Vì sao?{' '}
                   </AppText>
@@ -617,14 +625,17 @@ function ModeOption({
       testID={testID}
     >
       <AppText
-        style={selected ? themedStyles.modeTextSelected : undefined}
+        style={
+          selected ? themedStyles.modeTextSelected : themedStyles.modeLabel
+        }
         variant="label"
       >
         {label}
       </AppText>
       <AppText
-        color={selected ? undefined : 'secondary'}
-        style={selected ? themedStyles.modeTextSelected : undefined}
+        style={
+          selected ? themedStyles.modeTextSelected : themedStyles.modeCaption
+        }
         variant="caption"
       >
         {caption}
@@ -642,6 +653,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   bold: {
+    color: HERO_PALETTE.tealInk,
     fontWeight: '700',
   },
   flexCopy: {
@@ -667,6 +679,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 4,
+  },
+  onHero: {
+    color: HERO_PALETTE.ink,
+  },
+  onHeroSoft: {
+    color: HERO_PALETTE.tealInk,
   },
   progress: {
     gap: 6,
@@ -757,18 +775,24 @@ function makeStyles(theme: AppTheme) {
       flex: 1,
       paddingVertical: theme.spacing.sm,
     },
+    modeCaption: {
+      color: HERO_PALETTE.tealInk,
+    },
+    modeLabel: {
+      color: HERO_PALETTE.ink,
+    },
     modeSelected: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: HERO_PALETTE.teal,
     },
     modeSelector: {
-      backgroundColor: theme.colors.surfaceContainer,
+      backgroundColor: HERO_PALETTE.strip,
       borderRadius: theme.radius.lg,
       flexDirection: 'row',
       gap: 4,
       padding: 4,
     },
     modeTextSelected: {
-      color: theme.colors.text.inverse,
+      color: HERO_PALETTE.white,
     },
     packFill: {
       backgroundColor: theme.colors.primary,
@@ -782,18 +806,19 @@ function makeStyles(theme: AppTheme) {
       overflow: 'hidden',
     },
     planCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.xl,
+      backgroundColor: HERO_PALETTE.faceFrom,
+      borderBottomColor: HERO_PALETTE.shelf,
+      borderBottomWidth: 6,
+      borderRadius: 26,
       gap: theme.spacing.md,
+      overflow: 'hidden',
       padding: theme.spacing.md,
-      ...theme.shadow.soft,
-      ...getStickerFace(theme, 5),
     },
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
     progressTrack: {
-      backgroundColor: theme.colors.surfaceContainer,
+      backgroundColor: HERO_PALETTE.strip,
       borderRadius: theme.radius.pill,
       flexDirection: 'row',
       gap: 2,
@@ -801,15 +826,13 @@ function makeStyles(theme: AppTheme) {
       overflow: 'hidden',
     },
     reasonCodeChip: {
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.accentSoft,
+      backgroundColor: HERO_PALETTE.chipStrong,
       borderRadius: theme.radius.pill,
-      borderWidth: 1,
       paddingHorizontal: 10,
       paddingVertical: theme.spacing.xs,
     },
     reasonCodeText: {
-      color: theme.colors.primary,
+      color: HERO_PALETTE.teal,
     },
     scrollContent: {
       gap: theme.spacing.lg,
@@ -817,24 +840,27 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
     },
+    // The coral call to action of Home's card, with its shelf.
     startButton: {
       alignItems: 'center',
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.radius.lg,
+      backgroundColor: HERO_PALETTE.coral,
+      borderBottomColor: HERO_PALETTE.coralShelf,
+      borderBottomWidth: 4,
+      borderRadius: theme.radius.pill,
       flexDirection: 'row',
       gap: theme.spacing.sm,
-      padding: theme.spacing.md,
-      ...theme.shadow.strong,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm + 2,
     },
     startCaption: {
-      color: theme.colors.text.inverse,
+      color: HERO_PALETTE.white,
     },
     startTitle: {
-      color: theme.colors.text.inverse,
+      color: HERO_PALETTE.white,
     },
     whyRow: {
       alignItems: 'flex-start',
-      backgroundColor: theme.colors.surfaceMuted,
+      backgroundColor: HERO_PALETTE.strip,
       borderRadius: theme.radius.md,
       flexDirection: 'row',
       gap: theme.spacing.sm,

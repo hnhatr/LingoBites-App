@@ -1,9 +1,9 @@
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
-import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg';
 
 import {AppText} from '@ui/components/AppText';
+import {HeroFill} from '@ui/components/HeroFill';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {formatIpa} from '@ui/components/WordCard';
@@ -37,23 +37,6 @@ type FaceProps = {
   speakTestID: string;
   testID: string;
 };
-
-/** The mint-to-sky face shared with the pack flash card. */
-function HeroFill({id}: {id: string}) {
-  return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Svg height="100%" width="100%">
-        <Defs>
-          <LinearGradient id={id} x1="0" x2="1" y1="0" y2="1">
-            <Stop offset="0" stopColor={PALETTE.faceFrom} />
-            <Stop offset="1" stopColor={PALETTE.faceTo} />
-          </LinearGradient>
-        </Defs>
-        <Rect fill={`url(#${id})`} height="100%" width="100%" />
-      </Svg>
-    </View>
-  );
-}
 
 /**
  * Front: the recall cue only, on the pack card's mint-to-sky face — chips,

@@ -4,14 +4,14 @@ import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {type CoverGlyph} from '@ui/components/LibraryCover';
 import {
   lessonCardDurationLabel,
-  lessonCardKind,
   type LessonCardKind,
+  lessonCardKind,
   type LessonCardProgress,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
+import {type CoverGlyph} from '@ui/components/LibraryCover';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {cardToneAt, ToneCard} from '@ui/components/ToneCard';
 import {useAppTheme} from '@ui/theme';

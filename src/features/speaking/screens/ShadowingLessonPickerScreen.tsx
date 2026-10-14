@@ -9,13 +9,9 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {
-  LessonCard,
-  lessonCardKind,
-  type LessonCardProgress,
-  splitLessonTitle,
-} from '@ui/components/LessonCard';
+import {splitLessonTitle} from '@ui/components/LessonCard';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {type CardAction, cardToneAt, ToneCard} from '@ui/components/ToneCard';
 import {useAppTheme} from '@ui/theme';
 
 import {
@@ -33,22 +29,26 @@ export type ShadowingLessonPickerScreenProps = {
   };
 };
 
-/** Shadowing progress as the card's progress chip; "Chưa luyện" shows none. */
-function shadowingProgress(
+/** "Đã luyện 4/12" or "Đã luyện xong"; null before the first sentence. */
+function shadowingProgressLabel(
   lesson: ShadowingLessonProgressSummary,
-): LessonCardProgress | null {
-  if (lesson.statusChip === 'Xong') {
-    return {state: 'completed', label: 'Đã luyện xong'};
-  }
+): string | null {
+  if (lesson.statusChip === 'Xong') return 'Đã luyện xong';
   if (lesson.statusChip === 'Đang dở') {
-    return {
-      state: 'in_progress',
-      done: lesson.practicedSentenceCount,
-      total: lesson.sentenceCount,
-      label: `Đã luyện ${lesson.practicedSentenceCount}/${lesson.sentenceCount}`,
-    };
+    return `Đã luyện ${lesson.practicedSentenceCount}/${lesson.sentenceCount}`;
   }
   return null;
+}
+
+/** The card's pill: start, carry on or practise again. */
+function shadowingAction(lesson: ShadowingLessonProgressSummary): CardAction {
+  if (lesson.statusChip === 'Xong') {
+    return {label: 'Luyện lại', glyph: 'check', solid: true};
+  }
+  if (lesson.statusChip === 'Đang dở') {
+    return {label: 'Luyện tiếp', glyph: 'play', solid: true};
+  }
+  return {label: 'Luyện', glyph: 'play', solid: true};
 }
 
 export function ShadowingLessonPickerScreen({
@@ -104,35 +104,45 @@ export function ShadowingLessonPickerScreen({
             </AppText>
           </AppCard>
         ) : null}
-        {lessons.map(lesson => {
-          const {title, subtitle} = splitLessonTitle(lesson.titleVi);
+        {lessons.map((lesson, index) => {
           const sourceType = lesson.sourceType ?? 'admin_text';
           return (
-            <LessonCard
+            <ToneCard
               key={lesson.lessonId}
               accessibilityHint="Mở phiên luyện shadowing"
-              bookmarked={isBookmarked(lesson.lessonId)}
-              context={lesson.contextLabel}
-              downloaded
-              durationLabel={`~${lesson.estimatedMinutes} phút`}
-              kind={lessonCardKind(sourceType)}
+              action={shadowingAction(lesson)}
+              bookmark={{
+                saved: isBookmarked(lesson.lessonId),
+                onToggle: () =>
+                  toggleBookmark({
+                    lessonId: lesson.lessonId,
+                    title: lesson.titleVi,
+                    sourceType,
+                    sentenceCount: lesson.sentenceCount,
+                    estimatedMinutes: lesson.estimatedMinutes,
+                    contextLabel: lesson.contextLabel ?? null,
+                  }),
+              }}
+              cover={{
+                imageUrl: null,
+                glyph: sourceType === 'youtube' ? 'subtitles' : 'chat',
+              }}
+              description={[
+                `~${lesson.estimatedMinutes} phút`,
+                `${lesson.sentenceCount} câu`,
+                lesson.reviewSentenceCount
+                  ? `${lesson.reviewSentenceCount} câu cần ôn`
+                  : null,
+                shadowingProgressLabel(lesson),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              eyebrow={lesson.contextLabel}
+              gutter={theme.gutter}
               onPress={() => openLesson(lesson)}
-              onToggleBookmark={() =>
-                toggleBookmark({
-                  lessonId: lesson.lessonId,
-                  title: lesson.titleVi,
-                  sourceType,
-                  sentenceCount: lesson.sentenceCount,
-                  estimatedMinutes: lesson.estimatedMinutes,
-                  contextLabel: lesson.contextLabel ?? null,
-                })
-              }
-              progress={shadowingProgress(lesson)}
-              reviewDueCount={lesson.reviewSentenceCount}
-              sentenceCount={lesson.sentenceCount}
-              subtitle={subtitle}
               testID={`shadowing-lesson-${lesson.lessonId}`}
-              title={title}
+              title={splitLessonTitle(lesson.titleVi).title}
+              tone={cardToneAt(index)}
             />
           );
         })}

@@ -113,7 +113,6 @@ export function AppButton({
               // answers, large system text) grows the button instead of
               // being clipped.
               minHeight: spec.height,
-              paddingVertical: 8,
             },
             spec.border && {
               borderColor: spec.border,
@@ -167,6 +166,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 22,
+    paddingVertical: 8,
     flexDirection: 'row',
     gap: 8,
   },
