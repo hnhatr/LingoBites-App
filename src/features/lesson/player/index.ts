@@ -132,3 +132,4 @@ export {useLessonCreation} from './logic/useLessonCreation';
 export type {LessonCreationState} from './logic/useLessonCreation';
 export {startLessonFromConfirmedText} from './logic/startLessonFromConfirmedText';
 export type {NavigateFn} from './logic/startLessonFromConfirmedText';
+export {useLessonPictures} from './logic/lessonPictures';

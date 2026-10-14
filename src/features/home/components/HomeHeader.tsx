@@ -1,15 +1,17 @@
 /**
- * HomeHeader — time-of-day greeting with streak flame badge (LING-256, LING-267, §VS-1).
+ * HomeHeader — greeting with the cat and the streak flame (LING-256, §VS-1).
  *
- * Layout: [TOD badge 46] gap 10 [text column, minWidth 0] ... [streak pill]
+ * Layout: [cat 52] gap 12 [text column, minWidth 0] ... [streak pill]
+ * The cat says the state's line to screen readers; a tap makes it wiggle
+ * and pop hearts (off under Reduced motion).
  *
  * Motion (§VS-7):
  *   - I4 (flame flicker loop): duration (2.2 - 0.18*lv)s, rotate ±(1.6*lv)°, scale (1 ± 0.02*lv); off under RM
  *   - I5 (greeting fade-in): static under RM
  */
-import React, {useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {StyleSheet, View} from 'react-native';
+import {Image, Pressable, StyleSheet, View} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -24,11 +26,11 @@ import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {FlameModel, GreetingModel} from '../logic/homeScreenModel';
-import {getStickerEdge, TimeOfDayBadge} from './HomeDecorations';
+import {getStickerEdge, HeartBurst} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
 const PALETTE = {
-  highlight: '#FFD35E',
+  catBg: '#fff3c4',
   ember1: '#ffb03a',
   ember2: '#ff6a1a',
   flameGlow: 'rgba(255,110,0,0.75)',
@@ -38,9 +40,11 @@ type Props = {
   greeting: GreetingModel;
   streak: number;
   flame: FlameModel;
+  /** What the cat says, read out by screen readers. */
+  mascotLabel: string;
 };
 
-export function HomeHeader({greeting, streak, flame}: Props) {
+export function HomeHeader({greeting, streak, flame, mascotLabel}: Props) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const reducedMotion = useReducedMotion();
@@ -108,6 +112,31 @@ export function HomeHeader({greeting, streak, flame}: Props) {
     transform: [{rotate: `${flameRotate.value}deg`}, {scale: flameScale.value}],
   }));
 
+  // Cat tap: a quick wiggle and a burst of hearts
+  const catRotate = useSharedValue(0);
+  const [showHearts, setShowHearts] = useState(false);
+  const heartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleCatTap = useCallback(() => {
+    if (reducedMotion) return;
+    catRotate.value = withSequence(
+      withTiming(-8, {duration: 120}),
+      withTiming(8, {duration: 120}),
+      withTiming(0, {duration: 160}),
+    );
+    setShowHearts(true);
+    if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
+    heartTimerRef.current = setTimeout(() => setShowHearts(false), 1100);
+  }, [catRotate, reducedMotion]);
+  useEffect(
+    () => () => {
+      if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
+    },
+    [],
+  );
+  const catAnimStyle = useAnimatedStyle(() => ({
+    transform: [{rotate: `${catRotate.value}deg`}],
+  }));
+
   // Resolve accessible labels
   const greetingA11y = greeting.a11yParams
     ? t(greeting.a11yKey, greeting.a11yParams)
@@ -126,9 +155,27 @@ export function HomeHeader({greeting, streak, flame}: Props) {
 
   return (
     <View style={styles.header} testID="home-header">
-      {/* Left: 46pt Time-of-day badge (§VS-1.1) */}
-      <View style={styles.todBadge} testID="home-header-tod-badge">
-        <TimeOfDayBadge timeOfDay={greeting.timeOfDay} />
+      {/* Left: the cat, in a soft sun tile */}
+      <View style={styles.catWrap}>
+        <Pressable
+          accessibilityLabel={mascotLabel}
+          accessibilityRole="image"
+          hitSlop={6}
+          onPress={handleCatTap}
+          testID="home-hero-mascot-btn"
+        >
+          <Animated.View style={[styles.catTile, catAnimStyle]}>
+            <Image
+              accessibilityIgnoresInvertColors
+              resizeMode="contain"
+              source={require('@ui/assets/home-hero-cat.png')}
+              style={styles.catImage}
+            />
+          </Animated.View>
+        </Pressable>
+        <View pointerEvents="none" style={styles.hearts}>
+          <HeartBurst visible={showHearts} />
+        </View>
       </View>
 
       {/* Center: Greeting text column (§VS-1.1) */}
@@ -146,7 +193,6 @@ export function HomeHeader({greeting, streak, flame}: Props) {
               {greetingPrefixText}
             </AppText>
             <View style={styles.nameContainer}>
-              <View style={styles.nameHighlightBar} />
               <AppText
                 style={styles.nameText}
                 numberOfLines={1}
@@ -214,23 +260,43 @@ function makeStyles(theme: AppTheme) {
     header: {
       alignItems: 'center',
       flexDirection: 'row',
-      gap: 10,
-      paddingTop: 10,
+      gap: 12,
+      paddingTop: 6,
       paddingBottom: 14,
-      paddingHorizontal: 16,
     },
-    todBadge: {
-      alignItems: 'center',
-      justifyContent: 'center',
+    catWrap: {
+      position: 'relative',
+    },
+    catTile: {
+      backgroundColor: PALETTE.catBg,
+      borderRadius: 18,
+      height: 52,
+      overflow: 'hidden',
+      width: 52,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
+    },
+    catImage: {
+      height: 72,
+      left: -4,
+      position: 'absolute',
+      top: 2,
+      width: 60,
+    },
+    hearts: {
+      height: 52,
+      left: 0,
+      position: 'absolute',
+      top: 0,
+      width: 52,
     },
     greetingWrap: {
       flex: 1,
       minWidth: 0,
     },
     helloPrefix: {
-      color: theme.colors.text.secondary,
-      fontSize: 15,
-      lineHeight: 19,
+      color: theme.colors.text.muted,
+      fontSize: 14,
+      lineHeight: 18,
       fontWeight: '600',
     },
     nameContainer: {
@@ -238,28 +304,17 @@ function makeStyles(theme: AppTheme) {
       marginTop: 1,
       position: 'relative',
     },
-    nameHighlightBar: {
-      backgroundColor: PALETTE.highlight,
-      borderRadius: 6,
-      bottom: 3,
-      height: 9,
-      left: -2,
-      position: 'absolute',
-      right: -4,
-      transform: [{rotate: '-1.5deg'}],
-      zIndex: -1,
-    },
     nameText: {
-      color: theme.colors.primary,
-      fontSize: 28,
-      lineHeight: 32,
+      color: theme.colors.text.primary,
+      fontSize: 26,
+      lineHeight: 30,
       fontWeight: '900',
       letterSpacing: -0.5,
     },
     singleGreetingText: {
-      color: theme.colors.primary,
-      fontSize: 28,
-      lineHeight: 32,
+      color: theme.colors.text.primary,
+      fontSize: 26,
+      lineHeight: 30,
       fontWeight: '900',
       letterSpacing: -0.5,
     },
@@ -269,12 +324,12 @@ function makeStyles(theme: AppTheme) {
       borderRadius: 999,
       flexDirection: 'row',
       gap: 4,
-      height: 42,
+      height: 40,
       paddingBottom: 6,
       paddingLeft: 8,
       paddingRight: 12,
       paddingTop: 6,
-      ...getStickerEdge(3, theme.colors.ink),
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
     },
     flameContainer: {
       alignItems: 'center',

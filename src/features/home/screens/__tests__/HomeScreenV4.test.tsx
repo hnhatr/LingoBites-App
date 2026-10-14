@@ -8,7 +8,6 @@
  * - Dark and Sticker-soft theme contrast >= 4.5:1 (DQ-004, AC-004)
  */
 import React from 'react';
-import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {getGamificationSnapshot, listStudyEventsOn} from '@features/engagement';
@@ -263,7 +262,8 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('home-hero-next_activity');
-    expect(text).toContain('Việc tiếp theo');
+    // The main row names the step's place in today's plan
+    expect(text).toMatch(/Bước \d+\/\d+ · ~\d+ phút/);
     expect(text).toContain('Từng bước nhỏ thôi, meo!');
     const cta = tree.root
       .findAll(node => node.props.testID === 'home-next-action')
@@ -467,22 +467,26 @@ describe('Home today suggestion card (F12)', () => {
     }));
   });
 
-  it('renders the compact plan under the hero with the weekly goal as its footer', async () => {
+  it('renders one "Hôm nay" card holding the hero, with the weekly goal strip under it', async () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
-    expect(text).toContain('Hôm nay học gì?');
+    expect(text).toContain('home-today-summary');
     // One mode button shows the selected mode; the other chips stay closed
     expect(text).toContain('🎯 20 phút');
     expect(text).not.toContain('⚡ 5 phút');
     expect(text).not.toContain('🔥 45 phút');
-    const heroAt = text.indexOf('home-hero-');
     const suggestionAt = text.indexOf('home-today-suggestion');
+    const heroAt = text.search(
+      /home-hero-(no_lessons|saved_only|in_progress|next_activity|goal_met|youtube_disabled)/,
+    );
     const goalAt = text.indexOf('home-weekly-goal-card');
-    expect(heroAt).toBeGreaterThan(-1);
-    expect(suggestionAt).toBeGreaterThan(heroAt);
-    expect(goalAt).toBeGreaterThan(suggestionAt);
+    expect(suggestionAt).toBeGreaterThan(-1);
+    expect(heroAt).toBeGreaterThan(suggestionAt);
+    expect(goalAt).toBeGreaterThan(heroAt);
     expect(text).toContain('home-weekly-goal-count');
+    // Due cards no longer get their own banner above the card
+    expect(text).not.toContain('home-review-banner');
   });
 
   it("lists today's steps with the done one ticked and the next one startable", async () => {
@@ -493,8 +497,8 @@ describe('Home today suggestion card (F12)', () => {
     expect(text).toContain('Còn 1 việc · khoảng 4 phút');
     expect(text).toContain('home-today-progress');
     expect(new Set(stepRows(tree).map(row => row.props.testID)).size).toBe(2);
-    expect(text).toContain('Tiếp theo');
-    expect(text).toContain('Bắt đầu ›');
+    // Each stop of the route carries a short name for its step
+    expect(text).toContain('Luyện nói');
     const next = tree.root
       .findAll(
         node => node.props.testID === 'home-today-step-activity-speaking',
@@ -589,38 +593,5 @@ describe('Home reduced motion (§VS-7, AC-004)', () => {
       node => node.props.testID === 'home-heart-burst',
     );
     expect(hearts.length).toBe(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Speech bubble layout (§VS-2.3)
-// ---------------------------------------------------------------------------
-describe('Speech bubble layout (§VS-2.3)', () => {
-  it('bubble style has right=30, top=8, width=104, maxWidth=104', async () => {
-    __resetMockDatabases();
-    resetDatabaseForTests(open({name: DB_NAME}));
-    jest.restoreAllMocks();
-    jest.clearAllMocks();
-    jest
-      .spyOn(AuthSession, 'ensureValidSession')
-      .mockResolvedValue(validSession);
-    mockFetch.mockImplementation(async () => ({
-      ok: true,
-      status: 200,
-      headers: new Headers(),
-      json: async () => CONTINUE_NULL,
-    }));
-    seedCanonicalLessonDownload();
-    const tree = await renderHome();
-    const bubbleNode = tree.root
-      .findAll(node => node.props.testID === 'home-mascot-bubble')
-      .find(node => node.children != null);
-    expect(bubbleNode).toBeDefined();
-
-    const flattened = StyleSheet.flatten(bubbleNode!.props.style);
-    expect(flattened.right).toBe(30);
-    expect(flattened.top).toBe(8);
-    expect(flattened.width).toBe(104);
-    expect(flattened.maxWidth).toBe(104);
   });
 });

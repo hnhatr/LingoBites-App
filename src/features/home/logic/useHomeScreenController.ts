@@ -34,6 +34,7 @@ import {
   type DownloadedLessonSummary,
   listDownloadedLessonSummaries,
   useCanonicalCatalog,
+  useLessonPictures,
 } from '@features/lesson/player';
 import {useLearningPath} from '@features/onboarding';
 import {getDueFlashcards} from '@features/review';
@@ -52,7 +53,7 @@ import {useAppNavigation} from '@core/navigation';
 import {removeLessonBookmark} from '@core/sync/lessonBookmarks';
 import {listInProgressLessonIds} from '@core/sync/lessonProgress';
 
-import type {HeroNextStep} from '../components/HomeHeroCard';
+import type {HomeTodayStep} from '../components/HomeTodayCard';
 import {
   readStoredTodayPlan,
   writeStoredTodayPlan,
@@ -275,13 +276,14 @@ export function useHomeScreenController() {
     ],
   );
 
-  const heroNextStep: HeroNextStep | null = useMemo(() => {
+  const heroNextStep: HomeTodayStep | null = useMemo(() => {
     if (!todayPlan || !nextActivity) return null;
     return {
       title: nextActivity.titleVi,
       minutes: nextActivity.estimatedMinutes,
       step: todayPlan.activities.indexOf(nextActivity) + 1,
       total: todayPlan.activities.length,
+      type: nextActivity.type,
     };
   }, [todayPlan, nextActivity]);
 
@@ -302,6 +304,20 @@ export function useHomeScreenController() {
   const nextStepIsLesson =
     heroState === 'in_progress' ||
     (heroState === 'next_activity' && isLessonStep(nextActivity));
+
+  // Cover of the lesson the "Hôm nay" card points at, when it has one
+  const coverLessonId =
+    heroState === 'in_progress'
+      ? (startedDownload?.lessonId ?? null)
+      : heroState === 'next_activity' && isLessonStep(nextActivity)
+        ? (nextActivity?.targetId ?? null)
+        : null;
+  const coverPictures = useLessonPictures(
+    coverLessonId ?? '',
+    coverLessonId != null,
+    false,
+  );
+  const todayCoverUrl = coverLessonId ? coverPictures.coverUrl : null;
 
   // Level chosen at onboarding; the hero pill opens its units
   const learningPath = useLearningPath();
@@ -452,6 +468,7 @@ export function useHomeScreenController() {
     todayPlan,
     todayProgress,
     heroNextStep,
+    todayCoverUrl,
     currentStepId,
     nextStepIsLesson,
     onTodayModeChange: setTodayMode,

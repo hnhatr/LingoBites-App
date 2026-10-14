@@ -1,35 +1,45 @@
 /**
- * HomeScreenView — Home screen layout (LING-256, LING-267, §VS-0..§VS-8).
+ * HomeScreenView — Home screen layout (LING-256, LING-267, "hành trình").
  *
- * Renders in mockup v4 order (AC-1, FR-001):
- * 1. HomeHeader — time-of-day greeting + streak flame (DQ-008, I4, I5)
- * 2. HomeHeroCard — 5-state hero card with mascot (DQ-002, P-004, I2, I8);
- *    also carries the learning-path pill (Phase 2) and the "+1 🐾" tag
- * 3. HomeTodaySuggestion — "Hôm nay học gì?" plan card under the hero (F12):
- *    today's steps with done/next state, and HomeWeeklyGoal (one paw per
- *    target lesson, I3, P-004) as its footer
- * 5. HomeShortcutsGrid — "Luyện thêm" row of 4 real-destination shortcuts (DQ-005, D3, P-003)
+ * Order, top to bottom, all compact so "Luyện thêm" shows on open:
+ * 1. HomeHeader — the cat, time-of-day greeting and streak flame
+ * 2. HomeTodayCard — one teal card: the next thing to do (six hero states)
+ *    and today's plan as a route of stops, with the "+1 🐾" tag
+ * 3. HomeWeeklyGoal — one paw per target lesson, a thin strip
+ * 4. HomeCoursesRail — "Khóa học của bạn", short coloured course cards
+ * 5. HomeShortcutsGrid — "Luyện thêm", 4 tinted tiles; due cards show as
+ *    the review tile's badge
  * 6. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
  *
  * Header is inside the ScrollView and scrolls with the content.
  * Confetti (I7) is rendered once as a full-screen overlay when goal_met.
  */
 import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {HomeCoursesRail} from '../components/HomeCoursesRail';
 import {ConfettiOverlay} from '../components/HomeDecorations';
 import {HomeHeader} from '../components/HomeHeader';
-import {HomeHeroCard} from '../components/HomeHeroCard';
-import {HomeReviewBanner} from '../components/HomeReviewBanner';
 import {HomeSavedRail} from '../components/HomeSavedRail';
 import {HomeShortcutsGrid} from '../components/HomeShortcutsGrid';
-import {HomeTodaySuggestion} from '../components/HomeTodaySuggestion';
+import {HomeTodayCard} from '../components/HomeTodayCard';
 import {HomeWeeklyGoal} from '../components/HomeWeeklyGoal';
+import type {HeroState} from '../logic/homeScreenModel';
 import type {HomeScreenViewModel} from '../logic/useHomeScreenController';
+
+const MASCOT_SPEECH: Record<HeroState, string> = {
+  no_lessons: 'home.mascot_no_lessons',
+  saved_only: 'home.mascot_saved',
+  in_progress: 'home.mascot_in_progress',
+  next_activity: 'home.mascot_next',
+  goal_met: 'home.mascot_goal_met',
+  youtube_disabled: 'home.mascot_youtube_disabled',
+};
 
 export function HomeScreenView(props: HomeScreenViewModel) {
   const {
@@ -40,14 +50,13 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     weeklyGoalCard,
     pawGoalModel,
     shortcutItems,
-    dueFlashcardCount,
-    trimmedDisplayName,
     libraryCount,
     startedLesson,
     railItems,
     todayMode,
     todayProgress,
     heroNextStep,
+    todayCoverUrl,
     nextStepIsLesson,
     onTodayModeChange,
     onViewTodayDetails,
@@ -65,6 +74,7 @@ export function HomeScreenView(props: HomeScreenViewModel) {
     onNavigateReview,
     onNavigateSpeaking,
   } = props;
+  const {t} = useTranslation();
   const {theme} = useAppTheme();
   const feedClearance = useFloatingTabBarClearance();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -106,28 +116,18 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           greeting={greetingModel}
           streak={streak}
           flame={flameModel}
+          mascotLabel={t(MASCOT_SPEECH[heroState])}
         />
 
-        {/* Due cards: first thing under the header so it is seen at once */}
-        {dueFlashcardCount != null && dueFlashcardCount > 0 ? (
-          <View style={styles.reviewSection}>
-            <HomeReviewBanner
-              count={dueFlashcardCount}
-              onPress={onNavigateReview}
-            />
-          </View>
-        ) : null}
-
-        {/* Hero card (§VS-2) */}
-        <View style={styles.heroSection}>
-          <HomeHeroCard
+        {/* "Hôm nay": the next step and today's route in one card */}
+        <View style={styles.todaySection}>
+          <HomeTodayCard
             heroState={heroState}
-            streak={streak}
-            displayName={trimmedDisplayName}
+            nextStep={heroNextStep}
             startedLessonTitle={startedLesson?.titleVi}
             startedLessonMinutes={startedLesson?.estimatedDurationMinutes}
             libraryCount={libraryCount}
-            nextStep={heroNextStep}
+            coverUrl={todayCoverUrl}
             showPawReward={nextStepIsLesson && !pawGoalModel.goalMet}
             pathTitle={learningPathTitle}
             onOpenPath={onOpenLearningPath}
@@ -140,22 +140,22 @@ export function HomeScreenView(props: HomeScreenViewModel) {
                     ? onNavigateLessonList
                     : onNavigateCreate
             }
-          />
-        </View>
-
-        {/* "Hôm nay học gì?" (F12): the hero's step is one row of this plan;
-            the weekly goal (§VS-3) is its footer row */}
-        <View style={styles.todaySection}>
-          <HomeTodaySuggestion
             mode={todayMode}
             progress={todayProgress}
             onModeChange={onTodayModeChange}
             onViewDetails={onViewTodayDetails}
             onStartActivity={onStartTodayActivity}
-            footer={
-              <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
-            }
           />
+        </View>
+
+        {/* Weekly goal (§VS-3): a thin strip under the card */}
+        <View style={styles.weekSection}>
+          <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
+        </View>
+
+        {/* "Khóa học của bạn": hidden until courses load */}
+        <View style={styles.coursesSection}>
+          <HomeCoursesRail />
         </View>
 
         {/* Shortcuts grid (§VS-4) */}
@@ -186,17 +186,17 @@ function makeStyles(_theme: AppTheme) {
       flexGrow: 1,
       paddingHorizontal: 16,
     },
-    reviewSection: {
+    todaySection: {
       marginBottom: 14,
     },
-    heroSection: {
+    weekSection: {
       marginBottom: 18,
     },
-    todaySection: {
-      marginBottom: 18,
+    coursesSection: {
+      marginBottom: 14,
     },
     shortcutsSection: {
-      marginBottom: 22,
+      marginBottom: 18,
     },
     railSection: {
       marginBottom: 10,

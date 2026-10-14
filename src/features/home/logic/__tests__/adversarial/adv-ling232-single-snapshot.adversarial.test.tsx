@@ -37,6 +37,7 @@ jest.mock('@features/lesson/player', () => ({
     refresh: jest.fn(),
     state: {status: 'idle' as const},
   }),
+  useLessonPictures: () => ({coverUrl: null, itemImages: new Map()}),
 }));
 
 jest.mock('@react-navigation/native', () => {

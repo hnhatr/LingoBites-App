@@ -156,7 +156,21 @@
     "today_more_steps": "+{{count}} more tasks",
     "today_more_steps_one": "+{{count}} more task",
     "today_more_steps_other": "+{{count}} more tasks",
-    "weekly_goal_compact_left": "{{n}}/{{target}} · {{k}} to go"
+    "weekly_goal_compact_left": "{{n}}/{{target}} · {{k}} to go",
+    "today_step_meta": "Step {{step}} of {{total}} · ~{{minutes}} min",
+    "today_paw_tag": "+1 🐾",
+    "courses_title": "Your courses",
+    "courses_view_all_a11y": "See all courses",
+    "step_short_due_review": "Review",
+    "step_short_error_remediation": "Fix mistakes",
+    "step_short_listening_remediation": "Listening",
+    "step_short_active_recall": "Recall",
+    "step_short_prerequisite_lesson": "Basics",
+    "step_short_next_lesson": "New lesson",
+    "step_short_continue_lesson": "Continue",
+    "step_short_old_situation_practice": "Revisit",
+    "step_short_speaking_practice": "Speaking",
+    "step_short_interview_practice": "Interview"
   },
   "practice": {
     "quick_empty_cause": "No lessons are ready for quick practice yet.",

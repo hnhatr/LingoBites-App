@@ -1,7 +1,7 @@
 /**
  * HomeWeeklyGoal — one-line weekly goal strip (LING-256, LING-267, §VS-3).
  *
- * Layout (footer of the "Hôm nay học gì?" card):
+ * Layout (a thin strip under the "Hôm nay" card):
  *   [🏆 Tuần này  🐾🐾🐾🐾🐾🐾 ........ 2/6 · còn 4 bài]
  *
  * One paw per target lesson. The count line and the badge hint stay in the
@@ -16,6 +16,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {PawGoalModel, WeeklyGoalCardModel} from '../logic/homeScreenModel';
 import {HOME_EMPTY_PAW, HOME_TROPHY} from '../logic/homeScreenModel';
+import {getStickerEdge} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
 type Props = {
@@ -102,17 +103,18 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     row: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 18,
       flexDirection: 'row',
       gap: 8,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
     },
     label: {
-      color: theme.colors.text.secondary,
+      color: theme.colors.text.primary,
       flexShrink: 1,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
     },
     pawRow: {
@@ -124,8 +126,8 @@ function makeStyles(theme: AppTheme) {
       minWidth: 0,
     },
     count: {
-      color: theme.colors.text.primary,
-      fontSize: 13,
+      color: theme.colors.text.secondary,
+      fontSize: 12,
       fontWeight: '700',
     },
     trophyWrap: {

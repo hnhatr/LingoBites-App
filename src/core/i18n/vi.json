@@ -156,7 +156,21 @@
     "today_more_steps": "+{{count}} việc nữa",
     "today_more_steps_one": "+{{count}} việc nữa",
     "today_more_steps_other": "+{{count}} việc nữa",
-    "weekly_goal_compact_left": "{{n}}/{{target}} · còn {{k}} bài"
+    "weekly_goal_compact_left": "{{n}}/{{target}} · còn {{k}} bài",
+    "today_step_meta": "Bước {{step}}/{{total}} · ~{{minutes}} phút",
+    "today_paw_tag": "+1 🐾",
+    "courses_title": "Khóa học của bạn",
+    "courses_view_all_a11y": "Xem tất cả khóa học",
+    "step_short_due_review": "Ôn thẻ",
+    "step_short_error_remediation": "Sửa lỗi",
+    "step_short_listening_remediation": "Luyện nghe",
+    "step_short_active_recall": "Nhớ lại",
+    "step_short_prerequisite_lesson": "Bài nền",
+    "step_short_next_lesson": "Bài mới",
+    "step_short_continue_lesson": "Học tiếp",
+    "step_short_old_situation_practice": "Ôn tình huống",
+    "step_short_speaking_practice": "Luyện nói",
+    "step_short_interview_practice": "Phỏng vấn"
   },
   "practice": {
     "quick_empty_cause": "Chưa có bài học nào để luyện nhanh.",
