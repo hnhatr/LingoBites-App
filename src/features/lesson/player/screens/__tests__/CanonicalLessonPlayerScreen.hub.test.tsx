@@ -301,6 +301,40 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     expect(navigation.goBack).not.toHaveBeenCalled();
   });
 
+  it('closes the whole lesson from a section in one tap', () => {
+    mockState = ready(adminSnapshot);
+    const {tree, navigation} = renderScreen();
+    expect(has(tree, 'canonical-close-lesson')).toBe(false);
+    act(() => {
+      pressable(tree, 'canonical-hub-start').props.onPress();
+    });
+    act(() => {
+      pressable(tree, 'canonical-close-lesson').props.onPress();
+    });
+    expect(mockAppNavigation.closeLesson).toHaveBeenCalled();
+
+    // Back gestures from a section return to the hub; closing (a reset) leaves.
+    const calls = navigation.addListener.mock.calls as unknown as [
+      string,
+      (event: object) => void,
+    ][];
+    const onBeforeRemove = calls
+      .filter(([name]) => name === 'beforeRemove')
+      .at(-1)![1];
+    const resetEvent = {
+      data: {action: {type: 'RESET'}},
+      preventDefault: jest.fn(),
+    };
+    onBeforeRemove(resetEvent);
+    expect(resetEvent.preventDefault).not.toHaveBeenCalled();
+    const backEvent = {
+      data: {action: {type: 'GO_BACK'}},
+      preventDefault: jest.fn(),
+    };
+    act(() => onBeforeRemove(backEvent));
+    expect(backEvent.preventDefault).toHaveBeenCalled();
+  });
+
   it('speaks a sentence with the en-US voice', () => {
     mockState = ready(adminSnapshot);
     const {tree} = renderScreen();

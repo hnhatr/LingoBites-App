@@ -19,6 +19,7 @@ import {
 import {
   CourseLevelsScreen,
   CourseListScreen,
+  findNextUnitLesson,
   LevelUnitsScreen,
   UnitLessonsScreen,
   UnitSummativeTaskScreen,
@@ -114,15 +115,16 @@ const HIDDEN_HEADER = {headerShown: false} as const;
  * Navigation layout (one registration per screen):
  *
  *   RootStack
- *   ├─ Tabs            each tab holds only its hub screen
+ *   ├─ Tabs            each tab holds its hub screen
  *   │  ├─ Home         HomeMain
- *   │  ├─ Courses      CourseList
+ *   │  ├─ Courses      CourseList + CourseLevels, LevelUnits, UnitLessons,
+ *   │  │               UnitSummativeTask (tab bar stays while browsing)
  *   │  ├─ Lessons      LessonsList
  *   │  └─ Profile      ProfileMain + settings pages
  *   └─ task flows      cover the tab bar; back returns to the opening tab
  *      CreateHub, PasteText, ImageCapture, LessonCreation,
  *      CanonicalCatalog, CanonicalLessonPlayer, LibraryList, VideoHub,
- *      CourseLevels, LevelUnits, UnitLessons, DailyReview, Practice, Today,
+ *      LessonFlowPlayer, DailyReview, Practice, Today,
  *      SpeakingRoom, ShadowingLessonPicker, ShadowingSession,
  *      ShadowingSummary
  *
@@ -148,6 +150,27 @@ function CoursesStackNavigator() {
       <CoursesStack.Screen
         component={CourseListScreen}
         name="CourseList"
+        options={HIDDEN_HEADER}
+      />
+      {/* Curriculum: browsed inside the tab, so the tab bar stays. */}
+      <CoursesStack.Screen
+        component={CourseLevelsScreen}
+        name="CourseLevels"
+        options={HIDDEN_HEADER}
+      />
+      <CoursesStack.Screen
+        component={LevelUnitsScreen}
+        name="LevelUnits"
+        options={HIDDEN_HEADER}
+      />
+      <CoursesStack.Screen
+        component={UnitLessonsScreen}
+        name="UnitLessons"
+        options={HIDDEN_HEADER}
+      />
+      <CoursesStack.Screen
+        component={UnitSummativeTaskScreen}
+        name="UnitSummativeTask"
         options={HIDDEN_HEADER}
       />
     </CoursesStack.Navigator>
@@ -300,14 +323,6 @@ function AuthenticatedRootStack() {
       />
       <RootStack.Screen component={LibraryListScreen} name="LibraryList" />
       <RootStack.Screen component={VideoHubScreen} name="VideoHub" />
-      {/* Structured curriculum */}
-      <RootStack.Screen component={CourseLevelsScreen} name="CourseLevels" />
-      <RootStack.Screen component={LevelUnitsScreen} name="LevelUnits" />
-      <RootStack.Screen component={UnitLessonsScreen} name="UnitLessons" />
-      <RootStack.Screen
-        component={UnitSummativeTaskScreen}
-        name="UnitSummativeTask"
-      />
       {/* Phase 2: the learner profile from Profile, and a new placement test */}
       <RootStack.Screen
         component={LearningProfileScreen}
@@ -354,7 +369,10 @@ export function AppNavigator() {
   useFeatureFlags();
   const phase = useAccountStore(state => state.phase);
   const boot = useAccountStore(state => state.boot);
-  const appNavigation = useMemo(() => createAppNavigation(navigationRef), []);
+  const appNavigation = useMemo(
+    () => createAppNavigation(navigationRef, {findNextUnitLesson}),
+    [],
+  );
   useEffect(() => {
     boot().catch(() => {});
   }, [boot]);

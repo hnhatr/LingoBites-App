@@ -93,10 +93,26 @@ function allText(tree: ReactTestRenderer.ReactTestRenderer): string {
     .join('\n');
 }
 
-const navigation = {goBack: jest.fn(), navigate: jest.fn()} as never;
+type StackRoute = {key: string; name: string; params?: object};
+
+/** A Courses-tab stack whose top route is the screen under test. */
+function makeNavigation(routes: StackRoute[] = [{key: 'screen', name: 'X'}]) {
+  return {
+    goBack: jest.fn(),
+    navigate: jest.fn(),
+    push: jest.fn(),
+    pop: jest.fn(),
+    setParams: jest.fn(),
+    getState: jest.fn(() => ({routes})),
+  };
+}
+
+let navigation = makeNavigation() as never;
+const nav = () => navigation as unknown as ReturnType<typeof makeNavigation>;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  navigation = makeNavigation() as never;
   listCompletedLessons.mockReturnValue([]);
 });
 
@@ -170,7 +186,61 @@ describe('Curriculum screens (F14)', () => {
     });
   });
 
-  it('opens a level from the course levels screen', async () => {
+  it('shows the chosen level units under a level switcher', async () => {
+    const level = (id: string, code: string, position: number) => ({
+      id,
+      courseId: 'course-1',
+      code,
+      title: `${code} – Level`,
+      description: `${code} blurb`,
+      position,
+    });
+    client.fetchCourseLevels.mockResolvedValue({
+      ok: true,
+      value: [level('level-1', 'A1', 0), level('level-2', 'A2', 1)],
+    });
+    client.fetchLevelUnits.mockResolvedValue({
+      ok: true,
+      value: [unit('unit-1', 0)],
+    });
+    client.fetchUnitLessons.mockResolvedValue({ok: true, value: []});
+
+    const tree = await render(
+      <CourseLevelsScreen
+        navigation={navigation}
+        route={{key: 'screen', params: {courseSlug: 'english-a1'}} as never}
+      />,
+    );
+
+    expect(client.fetchCourseLevels).toHaveBeenCalledWith(
+      'english-a1',
+      expect.anything(),
+    );
+    // No level screen in between: the first level's units show at once.
+    expect(client.fetchLevelUnits).toHaveBeenCalledWith(
+      'level-1',
+      expect.anything(),
+    );
+    expect(nav().setParams).toHaveBeenCalledWith({
+      levelId: 'level-1',
+      levelCode: 'A1',
+    });
+    expect(allText(tree)).toContain('A1 blurb');
+
+    press(tree, 'course-levels-chip-level-2');
+    expect(nav().setParams).toHaveBeenLastCalledWith({
+      levelId: 'level-2',
+      levelCode: 'A2',
+    });
+
+    press(tree, 'course-levels-units-row-unit-1');
+    expect(nav().push).toHaveBeenCalledWith('UnitLessons', {
+      unitId: 'unit-1',
+      title: 'Unit unit-1',
+    });
+  });
+
+  it('loads the level kept in the route', async () => {
     client.fetchCourseLevels.mockResolvedValue({
       ok: true,
       value: [
@@ -178,30 +248,70 @@ describe('Curriculum screens (F14)', () => {
           id: 'level-1',
           courseId: 'course-1',
           code: 'A1',
-          title: 'Beginner',
+          title: 'A1',
           description: '',
           position: 0,
         },
+        {
+          id: 'level-2',
+          courseId: 'course-1',
+          code: 'A2',
+          title: 'A2',
+          description: '',
+          position: 1,
+        },
       ],
     });
+    client.fetchLevelUnits.mockResolvedValue({ok: true, value: []});
 
-    const tree = await render(
+    await render(
       <CourseLevelsScreen
         navigation={navigation}
-        route={{params: {courseSlug: 'english-a1'}} as never}
+        route={
+          {
+            key: 'screen',
+            params: {courseSlug: 'english-a1', levelId: 'level-2'},
+          } as never
+        }
       />,
     );
-    press(tree, 'course-levels-row-level-1');
 
-    expect(client.fetchCourseLevels).toHaveBeenCalledWith(
-      'english-a1',
+    expect(client.fetchLevelUnits).toHaveBeenCalledWith(
+      'level-2',
       expect.anything(),
     );
-    expect(mockAppNavigation.openCourse).toHaveBeenCalledWith({
-      kind: 'level',
-      levelId: 'level-1',
-      title: 'Beginner',
-    });
+    expect(client.fetchLevelUnits).not.toHaveBeenCalledWith(
+      'level-1',
+      expect.anything(),
+    );
+  });
+
+  it('jumps back to an ancestor screen from the header breadcrumb', async () => {
+    client.fetchUnitLessons.mockResolvedValue({ok: true, value: []});
+    navigation = makeNavigation([
+      {key: 'list', name: 'CourseList'},
+      {
+        key: 'course',
+        name: 'CourseLevels',
+        params: {courseSlug: 'english-a1', title: 'English', levelCode: 'A1'},
+      },
+      {key: 'unit', name: 'UnitLessons', params: {unitId: 'unit-1'}},
+    ]) as never;
+
+    const tree = await render(
+      <UnitLessonsScreen
+        navigation={navigation}
+        route={
+          {key: 'unit', params: {unitId: 'unit-1', title: 'Greetings'}} as never
+        }
+      />,
+    );
+
+    const text = allText(tree);
+    expect(text).toContain('English');
+    expect(text).toContain('A1');
+    press(tree, 'course-breadcrumb-course');
+    expect(nav().pop).toHaveBeenCalledWith(1);
   });
 
   it('shows each unit progress from completed lesson_progress rows', async () => {
@@ -239,8 +349,7 @@ describe('Curriculum screens (F14)', () => {
     ).toHaveLength(0);
 
     press(tree, 'level-units-row-unit-1');
-    expect(mockAppNavigation.openCourse).toHaveBeenCalledWith({
-      kind: 'unit',
+    expect(nav().push).toHaveBeenCalledWith('UnitLessons', {
       unitId: 'unit-1',
       title: 'Unit unit-1',
     });
@@ -307,9 +416,7 @@ describe('Curriculum screens (F14)', () => {
       />,
     );
     press(tree, 'unit-lessons-summative');
-    expect(
-      (navigation as unknown as {navigate: jest.Mock}).navigate,
-    ).toHaveBeenCalledWith('UnitSummativeTask', {
+    expect(nav().navigate).toHaveBeenCalledWith('UnitSummativeTask', {
       unitId: 'unit-1',
       title: 'Đồ uống',
     });

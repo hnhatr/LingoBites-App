@@ -22,6 +22,10 @@ export type StepResultProps = {
   practiceRemaining: number;
   onOpenStep: (step: FlowStep) => void;
   onClose: () => void;
+  /** A unit lesson: open the unit's next lesson in place of this one. */
+  onNextLesson?: () => void;
+  /** A unit lesson: close the lesson and show its unit's lessons. */
+  onBackToUnit?: () => void;
 };
 
 /**
@@ -36,6 +40,8 @@ export function StepResult({
   practiceRemaining,
   onOpenStep,
   onClose,
+  onNextLesson,
+  onBackToUnit,
 }: StepResultProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -154,6 +160,24 @@ export function StepResult({
           testID="lesson-flow-redo-independent"
           title={t('lessonFlow.redo_independent')}
           variant="secondary"
+        />
+      ) : null}
+      {onNextLesson ? (
+        <AppButton
+          accessibilityHint={t('lessonFlow.next_lesson_hint')}
+          iconRight="chevron_right"
+          onPress={onNextLesson}
+          testID="lesson-flow-next-lesson"
+          title={t('lessonFlow.next_lesson')}
+        />
+      ) : null}
+      {onBackToUnit ? (
+        <AppButton
+          accessibilityHint={t('lessonFlow.back_to_unit_hint')}
+          onPress={onBackToUnit}
+          testID="lesson-flow-back-to-unit"
+          title={t('lessonFlow.back_to_unit')}
+          variant="outline"
         />
       ) : null}
       <AppButton

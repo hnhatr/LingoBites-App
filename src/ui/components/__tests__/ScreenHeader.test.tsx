@@ -151,4 +151,35 @@ describe('HeaderIconButton', () => {
     );
     expect(on.backgroundColor).not.toBe(off.backgroundColor);
   });
+
+  it('shows tappable ancestor crumbs instead of the subtitle', async () => {
+    const toCourse = jest.fn();
+    const tree = await renderHeader('Chào hỏi', {
+      subtitle: 'ignored',
+      breadcrumb: [
+        {label: 'Tiếng Anh giao tiếp', onPress: toCourse, testID: 'crumb-1'},
+        {label: 'A1', onPress: jest.fn(), testID: 'crumb-2'},
+      ],
+    });
+
+    expect(findHostByTestID(tree, 'screen-header-subtitle')).toBeUndefined();
+    expect(findHostByTestID(tree, 'screen-header-breadcrumb')).toBeDefined();
+    const crumb = tree.root.find(
+      node =>
+        node.props.testID === 'crumb-1' &&
+        typeof node.props.onPress === 'function',
+    );
+    expect(crumb.props.accessibilityRole).toBe('link');
+    act(() => crumb.props.onPress());
+    expect(toCourse).toHaveBeenCalled();
+  });
+
+  it('falls back to the subtitle when the breadcrumb is empty', async () => {
+    const tree = await renderHeader('Chào hỏi', {
+      subtitle: 'Phụ đề',
+      breadcrumb: [],
+    });
+    expect(findHostByTestID(tree, 'screen-header-subtitle')).toBeDefined();
+    expect(findHostByTestID(tree, 'screen-header-breadcrumb')).toBeUndefined();
+  });
 });

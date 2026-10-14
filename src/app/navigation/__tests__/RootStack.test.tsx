@@ -56,6 +56,18 @@ describe('Root stack layout (navigation redesign)', () => {
     expect(countRegistrations(tabStacks, 'ProfileMain')).toBe(1);
   });
 
+  it('keeps the curriculum in the Courses tab, so the tab bar stays', () => {
+    for (const route of [
+      'CourseLevels',
+      'LevelUnits',
+      'UnitLessons',
+      'UnitSummativeTask',
+    ]) {
+      expect(countRegistrations(tabStacks, route)).toBe(1);
+      expect(countRegistrations(rootStack, route)).toBe(0);
+    }
+  });
+
   it('wraps the authenticated container in the app navigation provider', () => {
     expect(navigatorSource).toContain('<AppNavigationProvider');
     expect(navigatorSource).toContain('ref={navigationRef}');

@@ -14,6 +14,9 @@ import type {AppNavigation} from '@core/navigation';
 export const mockAppNavigation: jest.Mocked<AppNavigation> = {
   openLesson: jest.fn(),
   openLessonFlow: jest.fn(),
+  closeLesson: jest.fn(),
+  closeLessonToUnit: jest.fn(),
+  openNextUnitLesson: jest.fn(),
   openCatalog: jest.fn(),
   openLibrarySection: jest.fn(),
   openVideoHub: jest.fn(),
