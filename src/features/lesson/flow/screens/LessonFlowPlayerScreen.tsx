@@ -280,6 +280,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             practiceDone={flow.practiceDone}
             practiceRemaining={flow.practiceRemaining}
             snapshot={snapshot}
+            streakDays={streakDays}
           />
         ) : step === 1 && blocksOfStep(snapshot, 1).length === 0 ? null : (
           <StepView

@@ -85,6 +85,9 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(textOf(tree, 'lesson-flow-practice-status')).toBe(
       'Còn 2 hoạt động luyện',
     );
+    expect(textOf(tree, 'lesson-flow-result-title')).toBe(
+      'Cố lên, sắp xong rồi!',
+    );
     expect(has(tree, 'lesson-flow-next')).toBe(false);
   });
 
@@ -272,6 +275,20 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     );
     // PR 16: passed on the device, confirmed by the next sync.
     expect(textOf(again.tree, 'lesson-flow-lesson-outcome')).toBe('Đạt bài');
+    expect(textOf(again.tree, 'lesson-flow-result-title')).toBe(
+      'Bạn đã hoàn thành bài!',
+    );
+    expect(
+      again.tree.root.findAll(
+        node => node.props.accessibilityLabel === 'Hoạt động đạt: 2/3',
+      ).length,
+    ).toBeGreaterThan(0);
+    // Step 4 was judged "Chưa đạt": one activity to review.
+    expect(
+      again.tree.root.findAll(
+        node => node.props.accessibilityLabel === 'Cần ôn lại: 1',
+      ).length,
+    ).toBeGreaterThan(0);
     expect(has(again.tree, 'lesson-flow-lesson-outcome-unconfirmed')).toBe(
       true,
     );

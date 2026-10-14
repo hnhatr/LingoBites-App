@@ -3,9 +3,12 @@ import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {StatTile} from '@ui/components/StatTile';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerFace} from '@ui/theme/hardShadow';
 
 import type {LessonSnapshot} from '@core/schemas/lesson';
 import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
@@ -26,6 +29,8 @@ export type StepResultProps = {
   onNextLesson?: () => void;
   /** A unit lesson: close the lesson and show its unit's lessons. */
   onBackToUnit?: () => void;
+  /** Current streak in days, shown as a stat when known and above 0. */
+  streakDays?: number | null;
 };
 
 /**
@@ -42,6 +47,7 @@ export function StepResult({
   onClose,
   onNextLesson,
   onBackToUnit,
+  streakDays,
 }: StepResultProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -78,30 +84,97 @@ export function StepResult({
   });
   const lessonOutcome = useLessonOutcome(snapshot, attempts);
   const hasIndependent = rows.some(({block}) => block.step === 5);
+  const passedCount = rows.filter(({block}) =>
+    isPass(latest.get(block.id)),
+  ).length;
+  const failedCount = rows.filter(
+    ({block}) => latest.get(block.id) === 'fail',
+  ).length;
+  const heroKey =
+    lessonOutcome.label === 'passed'
+      ? 'lessonFlow.result_hero_passed'
+      : practiceDone
+      ? 'lessonFlow.result_hero_practice_done'
+      : 'lessonFlow.result_hero_in_progress';
 
   return (
     <View style={themedStyles.container} testID="lesson-flow-result">
-      <AppCard>
-        <AppText testID="lesson-flow-practice-status" variant="h3">
+      <View style={themedStyles.hero} testID="lesson-flow-result-hero">
+        <View style={themedStyles.badge}>
+          <MaterialIcon
+            color={theme.colors.onTertiaryContainer}
+            name={lessonOutcome.label === 'passed' ? 'emoji_events' : 'bolt'}
+            size={44}
+          />
+        </View>
+        <AppText
+          color="inverse"
+          style={themedStyles.center}
+          testID="lesson-flow-result-title"
+          variant="h2"
+        >
+          {t(heroKey)}
+        </AppText>
+        <AppText
+          color="inverse"
+          style={themedStyles.center}
+          testID="lesson-flow-practice-status"
+          variant="title"
+        >
           {practiceDone
             ? t('lessonFlow.practice_done')
             : t('lessonFlow.practice_remaining', {count: practiceRemaining})}
         </AppText>
         {lessonOutcome.label === 'in_progress' ? null : (
-          <AppText testID="lesson-flow-lesson-outcome" variant="body">
+          <AppText
+            color="inverse"
+            style={themedStyles.center}
+            testID="lesson-flow-lesson-outcome"
+            variant="body"
+          >
             {t(`lessonFlow.lesson_outcome_${lessonOutcome.label}`)}
           </AppText>
         )}
         {lessonOutcome.label === 'passed' && !lessonOutcome.confirmed ? (
           <AppText
-            color="secondary"
+            color="inverse"
+            style={themedStyles.center}
             testID="lesson-flow-lesson-outcome-unconfirmed"
             variant="label"
           >
             {t('lessonFlow.lesson_outcome_unconfirmed')}
           </AppText>
         ) : null}
-      </AppCard>
+      </View>
+      {rows.length > 0 ? (
+        <View style={themedStyles.stats} testID="lesson-flow-result-stats">
+          <View style={themedStyles.stat}>
+            <StatTile
+              icon="check_circle"
+              label={t('lessonFlow.result_stat_passed')}
+              value={`${passedCount}/${rows.length}`}
+            />
+          </View>
+          <View style={themedStyles.stat}>
+            <StatTile
+              icon="refresh"
+              label={t('lessonFlow.result_stat_review')}
+              tone="gold"
+              value={failedCount}
+            />
+          </View>
+          {streakDays ? (
+            <View style={themedStyles.stat}>
+              <StatTile
+                icon="local_fire_department"
+                label={t('lessonFlow.result_stat_streak')}
+                tone="coral"
+                value={streakDays}
+              />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
       {(
         [
           ['practice', rows.filter(({block}) => (block.step ?? 0) < 5)],
@@ -124,6 +197,17 @@ export function StepResult({
                   style={themedStyles.row}
                   testID={`lesson-flow-result-${block.id}`}
                 >
+                  <MaterialIcon
+                    color={
+                      isPass(outcome)
+                        ? theme.colors.primary
+                        : outcome === 'fail'
+                        ? theme.colors.secondary
+                        : theme.colors.text.muted
+                    }
+                    name={rowIcon(outcome)}
+                    size={22}
+                  />
                   <AppText style={themedStyles.flex} variant="body">
                     {block.step}.{' '}
                     {activity.titleVi || t(`lessonFlow.kind_${activity.kind}`)}
@@ -191,10 +275,50 @@ export function StepResult({
   );
 }
 
+function isPass(outcome: string | undefined): boolean {
+  return outcome === 'pass_independent' || outcome === 'pass_with_support';
+}
+
+function rowIcon(outcome: string | undefined): HandoffIconName {
+  if (isPass(outcome)) return 'check_circle';
+  if (outcome === 'fail') return 'refresh';
+  if (outcome === 'pending') return 'schedule';
+  return 'circle';
+}
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    badge: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiaryFixed,
+      borderRadius: theme.radius.pill,
+      height: 84,
+      justifyContent: 'center',
+      width: 84,
+      ...getStickerFace(theme, 4),
+    },
+    center: {
+      textAlign: 'center',
+    },
     container: {
       gap: theme.spacing.md,
+    },
+    hero: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.radius.xl,
+      gap: theme.spacing.sm,
+      padding: theme.spacing.lg,
+      ...getStickerFace(theme, 4),
+    },
+    stat: {
+      flexBasis: 140,
+      flexGrow: 1,
+    },
+    stats: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.sm,
     },
     flex: {
       flex: 1,
