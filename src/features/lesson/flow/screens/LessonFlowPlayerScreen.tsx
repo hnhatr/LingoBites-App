@@ -53,6 +53,8 @@ const STEP_LABEL_KEYS: Record<FlowStep, string> = {
  * PR 10: a curriculum lesson run step by step, 1 → 6 (decision G1). Opens
  * where the learner left off; every finished activity block is stored as one
  * attempt and synced. Works on the downloaded snapshot, offline included.
+ *
+ * IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar.
  */
 export function LessonFlowPlayerScreen({navigation, route}: Props) {
   const {lessonId} = route.params;
