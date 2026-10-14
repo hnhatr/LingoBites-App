@@ -1,5 +1,12 @@
 import React, {useMemo} from 'react';
-import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import type {GridTileTone} from '@ui/components/GridTile';
@@ -178,8 +185,13 @@ export function shelfTone(theme: AppTheme, tone: GridTileTone) {
 /**
  * The sticker face of Library cards: a hard ink shadow and no outline, in
  * every theme, so the folders and cards keep the Library's paper look.
+ * Android cannot draw an unblurred shadow (elevation always blurs), so
+ * there the same ink edge is a thick bottom border instead.
  */
-export function stickerCard(theme: AppTheme, offset = 3) {
+export function stickerCard(theme: AppTheme, offset = 3): ViewStyle {
+  if (Platform.OS === 'android') {
+    return {borderBottomWidth: offset, borderColor: theme.colors.ink};
+  }
   return getHardShadow(offset, theme.colors.ink);
 }
 
