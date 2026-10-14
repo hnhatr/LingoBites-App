@@ -44,9 +44,11 @@ cp .env.example .env.development
 
 Edit `.env.development` and set:
 
-- `API_BASE_URL`: The URL of your local or staging backend API proxy (e.g., `http://localhost:3000` or the Cloud Run URL).
-- `USE_MOCK_AI`: Set to `true` to use mock AI fixtures (no backend API request) or `false` to connect to the actual backend API.
-- `USE_MOCK_OCR`: Set to `true` to mock OCR extraction.
+- `APP_ENV`: `local` for development, or `staging` / `production`.
+- `API_BASE_URL`: The URL of the LingoBites-Server API (e.g., `http://localhost:3000` locally or the Cloud Run URL). Required; staging and production need HTTPS.
+- `SUPPORT_EMAIL`: Optional; the support address shown in the app.
+
+The other keys in `.env.example` are read by the native iOS/Android builds (app name, bundle IDs, versions, icon, launch screen). There is no mock mode in the app: AI and OCR always go through the server.
 
 ### Step 3: Run the Application
 
@@ -56,18 +58,21 @@ First, start Metro (the JavaScript bundler):
 yarn start
 ```
 
-In a new terminal window/pane, build and run the app:
-
-#### iOS
+In a new terminal window/pane, build and run the app for the development environment:
 
 ```sh
-yarn ios
+yarn ios:dev       # iOS simulator, Development scheme
+yarn android:dev   # Android, development flavor
 ```
 
-#### Android
+Use the `:staging` and `:production` variants (`yarn ios:staging`, `yarn android:production`, ...) to point at the other environments. Each one reads its own `.env.<environment>` file.
+
+### Checks
 
 ```sh
-yarn android
+yarn lint        # ESLint + module boundaries + warning budget
+yarn typecheck
+yarn test        # Jest
 ```
 
 ---
@@ -75,21 +80,18 @@ yarn android
 ## 📁 Repository Structure
 
 ```text
-android/                     # Android native project folder
-ios/                         # iOS native project folder
-src/                         # Mobile application source code
-  app/
-    navigation/              # Navigation config (React Navigation)
-  components/                # Common UI components (buttons, cards, etc.)
-  data/                      # Local data and constants
-  modules/                   # Feature modules (input, ocr, ai-analysis, lesson, etc.)
-  release/                   # Release config and feature registry
-  services/                  # Shared services (AI triggers, database)
-  shared/                    # Shareable utils, api client, database wrapper, fixtures
-  store/                     # Global state (e.g. Zustand)
-  theme/                     # Theme system and styles
-docs/                        # BA & Technical documentation
+android/, ios/   # Native projects (development / staging / production flavors)
+src/
+  app/           # App root, launch gate, navigation
+  features/      # One folder per feature; index.ts is its only public entry
+  ui/            # Design system: components, icons, theme
+  core/          # Infrastructure: api, auth, db (SQLite), sync, schemas, release flags, i18n
+  test/          # Test support and cross-feature integration tests
+tools/           # Content lint for lesson packages
+docs/            # Architecture, design, operations; older BA docs in docs/legacy/
 ```
+
+Imports only go down `app -> features -> ui -> core`; `yarn lint:boundaries` enforces it (see [docs/architecture/module-boundaries.md](docs/architecture/module-boundaries.md)).
 
 ---
 
@@ -98,6 +100,8 @@ docs/                        # BA & Technical documentation
 The BA (Business Analysis) and technical documentation are located in the [docs/](docs) directory:
 
 - [Product Overview](docs/01_Product_Overview.md): Project positioning, target users, and Phase 0 scope.
-- [BA README](docs/01-ba/README.md): Entry point for all documentation roles.
-- [Technical Implementation Spec](docs/01-ba/02-technical/01-technical-implementation-spec.md): Technical stack, database models, API specs, and directory structures.
-- [Phase 0 Implementation Plan](docs/01-ba/02-technical/02-implementation-plan-m1-m5.md): Step-by-step milestones (M0-M5) for building the application.
+- [Docs index](docs/README.md): Where each kind of documentation lives.
+- [Architecture](docs/architecture/): Module boundaries, navigation, offline mode, code conventions.
+- [BA README (legacy)](docs/legacy/01-ba/README.md): Entry point for all documentation roles.
+- [Technical Implementation Spec](docs/legacy/01-ba/02-technical/01-technical-implementation-spec.md): Technical stack, database models, API specs, and directory structures.
+- [Phase 0 Implementation Plan](docs/legacy/01-ba/02-technical/02-implementation-plan-m1-m5.md): Step-by-step milestones (M0-M5) for building the application.
