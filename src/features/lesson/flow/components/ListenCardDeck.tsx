@@ -266,9 +266,7 @@ function makeStyles(theme: AppTheme) {
     slow: {
       alignItems: 'center',
       backgroundColor: colors.surface,
-      borderColor: colors.ink,
       borderRadius: theme.radius.pill,
-      borderWidth: 2,
       flexDirection: 'row',
       gap: theme.spacing.xs,
       minHeight: 52,

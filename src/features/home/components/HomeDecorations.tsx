@@ -92,7 +92,6 @@ export function TimeOfDayBadge({timeOfDay, testID}: TODBadgeProps) {
         styles.todBadgeContainer,
         {
           backgroundColor: TOD_BG[timeOfDay],
-          borderColor: theme.colors.ink,
           ...getHardShadow(3, theme.colors.ink),
         },
       ]}
@@ -430,7 +429,6 @@ const styles = StyleSheet.create({
   todBadgeContainer: {
     alignItems: 'center',
     borderRadius: 23,
-    borderWidth: 2,
     height: 46,
     justifyContent: 'center',
     width: 46,

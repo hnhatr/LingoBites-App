@@ -79,7 +79,7 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     current: {
       backgroundColor: theme.colors.accent,
-      ...getStickerFace(theme, 0, 1.5),
+      ...getStickerFace(theme, 0),
     },
     done: {
       backgroundColor: theme.colors.primary,

@@ -470,9 +470,7 @@ function ExploreRow({
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     cover: {
-      borderColor: theme.colors.ink,
       borderRadius: 18,
-      borderWidth: 2,
       overflow: 'hidden',
     },
     listen: {alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center'},

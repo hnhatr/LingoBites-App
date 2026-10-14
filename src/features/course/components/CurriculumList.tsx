@@ -209,17 +209,13 @@ export function CurriculumList({
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     cover: {
-      borderColor: theme.colors.ink,
       borderRadius: 14,
-      borderWidth: 2,
       marginBottom: theme.spacing.md,
       overflow: 'hidden',
     },
     thumbnail: {
       alignSelf: 'flex-start',
-      borderColor: theme.colors.ink,
       borderRadius: 14,
-      borderWidth: 2,
       overflow: 'hidden',
       width: 84,
     },

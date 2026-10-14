@@ -492,9 +492,7 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     card: {
       backgroundColor: HERO_BLUE,
-      borderColor: theme.colors.ink,
       borderRadius: 24,
-      borderWidth: 2,
       minHeight: 190,
       overflow: 'hidden',
       paddingBottom: 20,
@@ -602,9 +600,7 @@ function makeStyles(theme: AppTheme) {
     cta: {
       alignItems: 'center',
       backgroundColor: HERO_CTA_BG,
-      borderColor: theme.colors.ink,
       borderRadius: 999,
-      borderWidth: 2,
       flexDirection: 'row',
       gap: 6,
       justifyContent: 'center',
@@ -644,9 +640,7 @@ function makeStyles(theme: AppTheme) {
     },
     bubble: {
       backgroundColor: CARD_PALETTE.bubbleBg,
-      borderColor: theme.colors.ink,
       borderRadius: 14,
-      borderWidth: 2,
       maxWidth: 104,
       paddingHorizontal: 8,
       paddingVertical: 6,
@@ -667,7 +661,7 @@ function makeStyles(theme: AppTheme) {
       borderLeftWidth: 6,
       borderRightColor: TRANSPARENT,
       borderRightWidth: 6,
-      borderTopColor: theme.colors.ink,
+      borderTopColor: CARD_PALETTE.bubbleBg,
       borderTopWidth: 12,
       bottom: -12,
       height: 0,

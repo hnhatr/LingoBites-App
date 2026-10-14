@@ -521,15 +521,11 @@ function makeStyles(
       paddingRight: hasCover ? 0 : 36,
     },
     cover: {
-      borderColor: theme.colors.ink,
       borderRadius: 14,
-      borderWidth: 2,
       overflow: 'hidden',
     },
     picture: {
-      borderColor: theme.colors.ink,
       borderRadius: 14,
-      borderWidth: 2,
       overflow: 'hidden',
       width: thumbSize,
     },
@@ -643,8 +639,6 @@ function makeStyles(
     },
     bookmarkOnCover: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
-      borderWidth: 1.5,
       height: 36,
       right: compact ? 18 : 22,
       top: compact ? 18 : 22,

@@ -237,9 +237,7 @@ function makeStyles(theme: AppTheme) {
     },
     iconBox: {
       alignItems: 'center',
-      borderColor: theme.colors.ink,
       borderRadius: 18,
-      borderWidth: 2,
       height: 56,
       justifyContent: 'center',
       width: 56,
@@ -260,9 +258,7 @@ function makeStyles(theme: AppTheme) {
     },
     badge: {
       backgroundColor: theme.colors.secondary,
-      borderColor: theme.colors.ink,
       borderRadius: 999,
-      borderWidth: 2,
       paddingHorizontal: 7,
       paddingVertical: 1,
       position: 'absolute',

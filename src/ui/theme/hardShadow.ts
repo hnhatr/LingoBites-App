@@ -22,21 +22,17 @@ export function isStickerTheme(theme: AppTheme): boolean {
 }
 
 /**
- * Ink outline (+ optional hard shadow) for sticker-style surfaces. Returns
- * `undefined` on other themes so callers can spread it unconditionally. A
- * shadow requires the surface to have an opaque background.
+ * Optional hard shadow for sticker-style surfaces (no ink outline: it read
+ * too heavy). Returns `undefined` on other themes so callers can spread it
+ * unconditionally. A shadow requires the surface to have an opaque
+ * background.
  */
 export function getStickerFace(
   theme: AppTheme,
   shadowOffset = 0,
-  borderWidth = 2,
 ): ViewStyle | undefined {
   if (!isStickerTheme(theme)) {
     return undefined;
   }
-  return {
-    borderColor: theme.colors.ink,
-    borderWidth,
-    ...(shadowOffset > 0 ? getHardShadow(shadowOffset, theme.colors.ink) : {}),
-  };
+  return shadowOffset > 0 ? getHardShadow(shadowOffset, theme.colors.ink) : {};
 }

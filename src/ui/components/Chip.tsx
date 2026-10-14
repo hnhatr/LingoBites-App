@@ -95,7 +95,7 @@ export function Chip({
         borderColor: style.border,
         borderRadius: theme.radius.pill,
         borderWidth: 1,
-        ...getStickerFace(theme, 0, 1.5),
+        ...getStickerFace(theme, 0),
         paddingHorizontal: theme.spacing.md,
         paddingVertical: theme.spacing.xs,
       }}
