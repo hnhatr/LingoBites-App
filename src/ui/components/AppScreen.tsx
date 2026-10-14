@@ -1,6 +1,10 @@
 import React from 'react';
 import {StyleSheet, View, type ViewProps} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {
+  type Edge,
+  SafeAreaInsetsContext,
+  SafeAreaView,
+} from 'react-native-safe-area-context';
 
 import {useAppTheme} from '../theme';
 import {OfflineBanner} from './OfflineBanner';
@@ -8,15 +12,23 @@ import {OfflineBanner} from './OfflineBanner';
 type Props = ViewProps & {
   /** Screens that explain being offline themselves (boot gate) opt out. */
   showOfflineBanner?: boolean;
+  /**
+   * Safe-area edges to pad (default: all). Screens whose picture runs under
+   * the status bar leave out `top`; the offline strip then clears it itself.
+   */
+  edges?: readonly Edge[];
 };
 
 export function AppScreen({
   style,
   children,
   showOfflineBanner = true,
+  edges,
   ...rest
 }: Props) {
   const {theme} = useAppTheme();
+  const insets = React.useContext(SafeAreaInsetsContext);
+  const padsTop = !edges || edges.includes('top');
   return (
     <SafeAreaView
       style={StyleSheet.flatten([
@@ -24,9 +36,12 @@ export function AppScreen({
         {backgroundColor: theme.colors.background},
         style,
       ])}
+      edges={edges}
       {...rest}
     >
-      {showOfflineBanner ? <OfflineBanner /> : null}
+      {showOfflineBanner ? (
+        <OfflineBanner topInset={padsTop ? 0 : (insets?.top ?? 0)} />
+      ) : null}
       <View style={styles.fill}>{children}</View>
     </SafeAreaView>
   );

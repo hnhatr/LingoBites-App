@@ -563,6 +563,12 @@ describe('Curriculum screens (F14)', () => {
     press(tree, 'unit-lessons-row-b');
     expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('b');
 
+    // The continue button opens the first lesson not learnt yet.
+    mockAppNavigation.openLesson.mockClear();
+    expect(allText(tree)).toContain('Học tiếp: Bài 2');
+    press(tree, 'unit-lessons-continue');
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('b');
+
     // PR 16 (B4): the summative task waits for every lesson's practice.
     const summative = tree.root.find(
       node =>

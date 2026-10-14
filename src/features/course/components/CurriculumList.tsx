@@ -3,6 +3,8 @@ import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Pressable,
   StyleSheet,
   View,
@@ -50,6 +52,10 @@ type Props = {
   /** Prefix for list/row test ids, e.g. `course-list`. */
   testID: string;
   header?: React.ReactElement;
+  /** Shown after the cards (e.g. the end of a unit route). */
+  footer?: React.ReactElement;
+  /** Scroll position, e.g. for `useHeroScroll`. */
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   /** `grid`: two-column tiles (course list); `list`: one card per row. */
   layout?: 'list' | 'grid';
 };
@@ -65,6 +71,8 @@ export function CurriculumList({
   onRetry,
   testID,
   header,
+  footer,
+  onScroll,
   layout = 'list',
 }: Props) {
   const {theme} = useAppTheme();
@@ -107,6 +115,9 @@ export function CurriculumList({
       data={rows}
       keyExtractor={item => item.id}
       ListHeaderComponent={header}
+      ListFooterComponent={rows.length > 0 ? footer : undefined}
+      onScroll={onScroll}
+      scrollEventThrottle={onScroll ? 16 : undefined}
       ListEmptyComponent={
         <View style={themedStyles.empty}>
           <Medallion label="🎓" />
@@ -170,7 +181,10 @@ export function CurriculumList({
                     </AppText>
                   ) : null}
                   <View style={styles.titleRow}>
-                    <AppText style={styles.titleText} variant="h3">
+                    <AppText
+                      style={styles.titleText}
+                      variant={item.cover ? 'h2' : 'h3'}
+                    >
                       {item.title}
                     </AppText>
                     {item.locked ? (
@@ -208,9 +222,13 @@ export function CurriculumList({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    // Course pictures run to the card's edges, under its rounded top.
     cover: {
-      borderRadius: 14,
+      borderTopLeftRadius: theme.components.card.radius,
+      borderTopRightRadius: theme.components.card.radius,
       marginBottom: theme.spacing.md,
+      marginHorizontal: -theme.components.card.padding,
+      marginTop: -theme.components.card.padding,
       overflow: 'hidden',
     },
     thumbnail: {

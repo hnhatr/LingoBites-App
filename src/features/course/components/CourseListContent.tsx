@@ -37,7 +37,7 @@ export function CourseListContent() {
           locked: !course.unlocked,
           cover: (
             <LibraryCover
-              aspectRatio={2}
+              aspectRatio={1.7}
               glyph={curriculumGlyph(course.title, course.description)}
               imageUrl={course.coverUrl}
               shape="lesson"
