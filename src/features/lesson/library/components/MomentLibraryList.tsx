@@ -1,28 +1,26 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
 
 import {trackEvent} from '@features/analytics';
 
-import {DEFAULT_COVERS} from '@ui/assets/covers';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
+import {GRID_TILE_GAP, useGridTileWidth} from '@ui/components/GridTile';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {cardToneAt} from '@ui/components/ToneCard';
 import {useAppTheme} from '@ui/theme';
 
 import {useIsOffline} from '@core/api/connectivity';
 import {useAppNavigation} from '@core/navigation';
 
 import {useMomentLibrary} from '../logic/useMomentLibrary';
+import {PhotoCard} from './ToneTiles';
 
-/** E5 (S2): the "Khoảnh khắc" list: photo thumbnail, intent, situation, date. */
+/**
+ * E5 (S2): the full "Khoảnh khắc" list, the same two-column photo cards as
+ * the Library's Moments tab.
+ */
 export function MomentLibraryList({emptyHint}: {emptyHint: string}) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
@@ -30,6 +28,7 @@ export function MomentLibraryList({emptyHint}: {emptyHint: string}) {
   const offline = useIsOffline();
   const clearance = useFloatingTabBarClearance();
   const {state, load} = useMomentLibrary();
+  const cellWidth = useGridTileWidth();
 
   if (state.status === 'loading') {
     return (
@@ -72,57 +71,28 @@ export function MomentLibraryList({emptyHint}: {emptyHint: string}) {
           </AppText>
         ) : null
       }
+      columnWrapperStyle={styles.row}
       contentContainerStyle={{
-        gap: theme.spacing.md,
+        gap: GRID_TILE_GAP + 4,
         padding: theme.gutter,
         paddingBottom: clearance,
       }}
       data={state.moments}
       keyExtractor={item => item.lessonId}
-      renderItem={({item}) => (
-        <Pressable
+      numColumns={2}
+      renderItem={({item, index}) => (
+        <PhotoCard
           accessibilityHint={t('moment.library_card_hint')}
-          accessibilityRole="button"
-          accessibilityLabel={item.title}
+          imageUri={item.thumbnailUri ?? null}
           onPress={() => {
             trackEvent('moment_reopened', {intent: item.intent ?? 'unknown'});
             navigation.openLesson(item.lessonId);
           }}
-          style={[styles.card, {borderColor: theme.colors.accentSoft}]}
           testID={`moment-card-${item.lessonId}`}
-        >
-          {item.thumbnailUri ? (
-            <Image
-              accessibilityIgnoresInvertColors
-              source={{uri: item.thumbnailUri}}
-              style={styles.thumb}
-            />
-          ) : (
-            <Image
-              accessibilityIgnoresInvertColors
-              source={DEFAULT_COVERS.lesson}
-              style={styles.thumb}
-            />
-          )}
-          <View style={styles.grow}>
-            <AppText variant="h3" numberOfLines={2}>
-              {item.title}
-            </AppText>
-            {item.intent ? (
-              <AppText color="secondary" variant="caption">
-                {t(`moment.intent_${item.intent}`)}
-              </AppText>
-            ) : null}
-            {item.situationTitleVi ? (
-              <AppText color="secondary" variant="caption">
-                {item.situationTitleVi}
-              </AppText>
-            ) : null}
-            <AppText color="muted" variant="caption">
-              {new Date(item.createdAt).toLocaleDateString()}
-            </AppText>
-          </View>
-        </Pressable>
+          title={item.title}
+          tone={cardToneAt(index + 1)}
+          width={cellWidth}
+        />
       )}
     />
   );
@@ -132,14 +102,5 @@ const styles = StyleSheet.create({
   loading: {marginTop: 32},
   notice: {paddingBottom: 4},
   box: {gap: 12, padding: 16},
-  card: {
-    alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 2,
-    flexDirection: 'row',
-    gap: 12,
-    padding: 12,
-  },
-  thumb: {borderRadius: 12, height: 72, width: 72},
-  grow: {flex: 1, gap: 2},
+  row: {gap: GRID_TILE_GAP},
 });

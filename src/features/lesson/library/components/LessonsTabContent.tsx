@@ -4,14 +4,16 @@ import {Pressable, SectionList, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
+import {type CoverGlyph} from '@ui/components/LibraryCover';
 import {
-  LessonCard,
   lessonCardDurationLabel,
   lessonCardKind,
+  type LessonCardKind,
   type LessonCardProgress,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
 import {SectionHeader} from '@ui/components/SectionHeader';
+import {cardToneAt, ToneCard} from '@ui/components/ToneCard';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
@@ -26,6 +28,11 @@ import {
   useLessonBookmarks,
 } from '../logic/lessonCardData';
 import {LibraryEmptyState} from './LibraryEmptyState';
+import {
+  createdAction,
+  createdProgressLabel,
+  createdSourceLabel,
+} from './tabs/CreatedTab';
 
 export interface LessonsTabContentProps {
   packagedLessons: LibraryLessonCardView[];
@@ -67,6 +74,12 @@ interface LessonSection {
   data: LessonItem[];
   type: LessonType;
 }
+
+const COVER_GLYPHS: Record<LessonCardKind, CoverGlyph> = {
+  video: 'subtitles',
+  image: 'chat',
+  text: 'book',
+};
 
 const LESSON_HINTS: Record<LessonType, string> = {
   packaged: 'Bài học đã tải về. Chạm để học.',
@@ -177,23 +190,48 @@ export function LessonsTabContent({
     return result;
   }, [packagedLessons, catalogLessons, packagedTitle]);
 
-  const renderLessonItem = ({item}: {item: LessonItem}) => {
-    const {title, subtitle} = splitLessonTitle(item.title);
+  const renderLessonItem = ({
+    item,
+    index,
+  }: {
+    item: LessonItem;
+    index: number;
+  }) => {
     const downloaded =
       item.type === 'packaged' || localState.downloadedIds.has(item.id);
     const progress: LessonCardProgress | undefined = localState.progress.get(
       item.id,
     );
     return (
-      <LessonCard
+      <ToneCard
         accessibilityHint={LESSON_HINTS[item.type]}
-        bookmarked={isBookmarked(item.id)}
-        context={item.contextLabel}
-        downloaded={downloaded}
-        durationLabel={item.durationLabel}
-        exerciseCount={
-          item.exerciseCount || localState.activityCounts.get(item.id)
-        }
+        action={createdAction(progress)}
+        bookmark={{
+          saved: isBookmarked(item.id),
+          onToggle: () =>
+            toggleBookmark({
+              lessonId: item.id,
+              title: item.title,
+              sourceType: item.sourceType,
+              sentenceCount: item.sentenceCount,
+              estimatedMinutes: item.estimatedMinutes,
+              contextLabel: item.contextLabel,
+            }),
+        }}
+        cover={{
+          imageUrl: null,
+          glyph: COVER_GLYPHS[lessonCardKind(item.sourceType)],
+        }}
+        description={[
+          item.sentenceCount > 0 ? `${item.sentenceCount} câu` : null,
+          item.durationLabel,
+          // Every own lesson is on the phone; say it only for the catalog.
+          item.type === 'catalog' && downloaded ? 'Đã tải' : null,
+          createdProgressLabel(progress),
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+        eyebrow={item.contextLabel ?? createdSourceLabel(item.sourceType)}
         footer={
           // Outside the card's open button, so it stays reachable.
           onPracticeLesson && item.practiceReady ? (
@@ -213,23 +251,11 @@ export function LessonsTabContent({
             </Pressable>
           ) : undefined
         }
-        kind={lessonCardKind(item.sourceType)}
+        gutter={theme.gutter}
         onPress={() => navigation.openLesson(item.id)}
-        onToggleBookmark={() =>
-          toggleBookmark({
-            lessonId: item.id,
-            title: item.title,
-            sourceType: item.sourceType,
-            sentenceCount: item.sentenceCount,
-            estimatedMinutes: item.estimatedMinutes,
-            contextLabel: item.contextLabel,
-          })
-        }
-        progress={progress}
-        sentenceCount={item.sentenceCount}
-        subtitle={subtitle}
         testID={`lesson-item-${item.id}`}
-        title={title}
+        title={splitLessonTitle(item.title).title}
+        tone={cardToneAt(index)}
       />
     );
   };

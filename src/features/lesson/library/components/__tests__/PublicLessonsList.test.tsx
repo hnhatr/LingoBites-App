@@ -94,12 +94,13 @@ describe('PublicLessonsList', () => {
 
   it('marks lessons already on the phone as downloaded', () => {
     const tree = renderList();
-    const texts = (id: string) =>
-      tree.root
-        .findByProps({testID: `public-lesson-${id}`})
-        .findAllByProps({children: 'Đã tải'});
-    expect(texts('downloaded').length).toBeGreaterThan(0);
-    expect(texts('fresh')).toHaveLength(0);
+    const description = (id: string) =>
+      String(
+        tree.root.findByProps({testID: `public-lesson-${id}-description`}).props
+          .children,
+      );
+    expect(description('downloaded')).toContain('Đã tải');
+    expect(description('fresh')).not.toContain('Đã tải');
   });
 
   it('puts a cover on each card: the server picture, else the thumbnail', () => {
@@ -119,8 +120,11 @@ describe('PublicLessonsList', () => {
       uri: 'https://i.ytimg.com/vi/abc/hqdefault.jpg',
     });
     expect(
-      tree.root.findAllByProps({testID: 'public-lesson-thumb-cover-level'}),
-    ).not.toHaveLength(0);
+      String(
+        tree.root.findByProps({testID: 'public-lesson-thumb-description'}).props
+          .children,
+      ),
+    ).toContain('B2');
   });
 
   it('opens a lesson through app navigation', () => {
