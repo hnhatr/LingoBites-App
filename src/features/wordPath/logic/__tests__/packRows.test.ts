@@ -7,6 +7,7 @@ import {
   packKindOf,
   packStatusOf,
   rowsFrom,
+  stalePackIds,
 } from '../packRows';
 import type {WordPath} from '../wordPathClient';
 
@@ -210,5 +211,18 @@ describe('continuePackOf and matchesQuery', () => {
     expect(matchesQuery(wordRow!, 'chung 1')).toBe(true);
     expect(matchesQuery(sentenceRow!, 'food')).toBe(true);
     expect(matchesQuery(sentenceRow!, 'hello')).toBe(false);
+  });
+});
+
+describe('stalePackIds', () => {
+  it('names the downloaded packs the Server no longer has', () => {
+    expect(stalePackIds(path, [WORD_PACK, 'old-pack'])).toEqual(['old-pack']);
+    expect(stalePackIds(path, [WORD_PACK, SENTENCE_PACK])).toEqual([]);
+  });
+
+  it('drops nothing when the Server path has no packs', () => {
+    expect(
+      stalePackIds({...path, levels: []}, [WORD_PACK, 'old-pack']),
+    ).toEqual([]);
   });
 });

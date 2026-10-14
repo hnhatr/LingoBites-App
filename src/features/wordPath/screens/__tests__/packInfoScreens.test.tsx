@@ -30,6 +30,7 @@ jest.mock('../../logic/wordPackRepository', () => ({
   learnedCodes: jest.fn(() => new Set()),
   learnedCount: jest.fn(() => 0),
   listDownloadedPacks: jest.fn(() => []),
+  removeDownloadedPacks: jest.fn(),
   saveWordPack: jest.fn(),
 }));
 

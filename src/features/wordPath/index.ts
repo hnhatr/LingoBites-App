@@ -1,5 +1,6 @@
 export {listDownloadedPacks} from './logic/wordPackRepository';
 export {nextDownloadedPack} from './logic/nextPack';
+export {syncDownloadedPacks} from './logic/syncDownloadedPacks';
 export type {NextPack} from './logic/nextPack';
 export {PackLearnScreen} from './screens/PackLearnScreen';
 export {QuickKnownCheckScreen} from './screens/QuickKnownCheckScreen';
