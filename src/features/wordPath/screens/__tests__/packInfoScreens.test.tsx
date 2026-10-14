@@ -119,10 +119,10 @@ describe('WordPathList', () => {
     const tree = await renderList();
     expect(has(tree, `word-path-pack-${WORD_PACK}`)).toBe(true);
     expect(has(tree, `word-path-pack-${SENTENCE_PACK}`)).toBe(false);
-    expect(textOf(tree, `word-path-preview-${WORD_PACK}`)).toContain('hello');
-    expect(textOf(tree, `word-path-status-${WORD_PACK}`)).toBe('Chưa tải');
-    expect(textOf(tree, `word-path-pack-${WORD_PACK}`)).toContain('12 từ');
-    expect(has(tree, 'word-path-next')).toBe(true);
+    expect(textOf(tree, `word-path-pack-${WORD_PACK}-description`)).toBe(
+      '12 từ · A1 · Chưa tải',
+    );
+    expect(has(tree, 'word-path-next')).toBe(false);
   });
 
   it('switches to sentence packs', async () => {
@@ -130,9 +130,9 @@ describe('WordPathList', () => {
     press(tree, 'word-path-tab-sentence');
     expect(has(tree, `word-path-pack-${SENTENCE_PACK}`)).toBe(true);
     expect(has(tree, `word-path-pack-${WORD_PACK}`)).toBe(false);
-    const text = textOf(tree, `word-path-pack-${SENTENCE_PACK}`);
-    expect(text).toContain('The bill, please.');
-    expect(text).toContain('5 cụm từ');
+    expect(
+      textOf(tree, `word-path-pack-${SENTENCE_PACK}-description`),
+    ).toContain('5 cụm từ');
   });
 
   it('downloads a pack that is not on the device, then opens it', async () => {
@@ -173,7 +173,9 @@ describe('WordPathList', () => {
       },
     ]);
     const tree = await renderList();
-    expect(textOf(tree, `word-path-status-${WORD_PACK}`)).toBe('Đã tải');
+    expect(textOf(tree, `word-path-pack-${WORD_PACK}-description`)).toContain(
+      'Đã tải',
+    );
     press(tree, `word-path-pack-${WORD_PACK}`);
     expect(mockPack).not.toHaveBeenCalled();
     expect(mockAppNavigation.openWordPack).toHaveBeenCalledWith(WORD_PACK);

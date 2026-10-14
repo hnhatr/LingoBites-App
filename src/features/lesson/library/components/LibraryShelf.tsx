@@ -8,10 +8,8 @@ import {
 } from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import type {GridTileTone} from '@ui/components/GridTile';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {solidOver} from '@ui/theme/colorUtils';
 import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {LibraryTone} from '../logic/librarySections';
@@ -140,33 +138,6 @@ export function LibraryShelf({
       )}
     </View>
   );
-}
-
-/** Cover face and ink for a tone, matching the Library's sticker tiles. */
-export function shelfTone(theme: AppTheme, tone: GridTileTone) {
-  const {colors} = theme;
-  switch (tone) {
-    case 'accent':
-      return {
-        face: solidOver(colors.accentSoft, colors.surface),
-        ink: colors.primary,
-      };
-    case 'tertiary':
-      return {
-        face: solidOver(colors.tertiarySoft, colors.surface),
-        ink: colors.onTertiaryContainer,
-      };
-    case 'secondary':
-      return {
-        face: solidOver(colors.secondarySoft, colors.surface),
-        ink: colors.secondary,
-      };
-    default:
-      return {
-        face: solidOver(colors.surfaceContainer, colors.surface),
-        ink: colors.text.primary,
-      };
-  }
 }
 
 /**

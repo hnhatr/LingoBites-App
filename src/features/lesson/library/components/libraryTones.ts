@@ -25,15 +25,7 @@ export interface LibraryToneColors {
   ink: string;
 }
 
-/** Colours of the Explore cards, the same three as the Courses cards. */
-export type CardTone = 'accent' | 'tertiary' | 'secondary';
-
-const CARD_TONES: readonly CardTone[] = ['accent', 'tertiary', 'secondary'];
-
-/** Cycles card colours down a list so neighbours differ. */
-export function cardToneAt(index: number): CardTone {
-  return CARD_TONES[index % CARD_TONES.length];
-}
+export {type CardTone, cardToneAt} from '@ui/components/ToneCard';
 
 export function libraryTone(
   theme: AppTheme,
