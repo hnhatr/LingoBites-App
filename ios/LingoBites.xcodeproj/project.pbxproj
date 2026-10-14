@@ -10,12 +10,12 @@
 		0A169C7D8271152CAA812B84 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		319E764998BF47AF950FC02F /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4FAAED88B7834D3FACA9C2F2 /* MaterialIcons.ttf */; };
+		4D6DA242B6D2D1B8FB6476EC /* libPods-LingoBites.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A335C8C9F4BAC1434A0F9F25 /* libPods-LingoBites.a */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		790660A959394128A2616E75 /* Quicksand-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1CFFAB53F474DD49B16DD9E /* Quicksand-Medium.ttf */; };
 		7D11E5032CC04AA100A4B2D1 /* DeviceIdentity.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A3C06E6D3B947DBEF45D0676 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB4D8FDB386CB31325726DAE /* ExpoModulesProvider.swift */; };
-		B9E1B08363294390C4EE65A4 /* libPods-LingoBites.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB2939CDD8ADB78578A08C5E /* libPods-LingoBites.a */; };
 		D5149D079B854F6C8FD34EFE /* Lexend-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 130DFB3A84AD4CCF98E486E3 /* Lexend-Bold.ttf */; };
 		E7A0C0DE00000000000000A2 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = E7A0C0DE00000000000000A1 /* Expo.plist */; };
 		F17F8B9ACB55453CABFFE16C /* Lexend-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */; };
@@ -27,16 +27,16 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = LingoBites/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = LingoBites/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = LingoBites/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2579BD24E07FAEF7BE715F37 /* Pods-LingoBites.releasestag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasestag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasestag.xcconfig"; sourceTree = "<group>"; };
 		2EEBB31F76CE4AFD88E9611C /* Lexend-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Lexend-SemiBold.ttf"; path = "../assets/fonts/Lexend-SemiBold.ttf"; sourceTree = "<group>"; };
-		354AE5F4CD1F97FAEA00DAA4 /* Pods-LingoBites.debugdev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugdev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugdev.xcconfig"; sourceTree = "<group>"; };
-		418E57231472C05C59CCF194 /* Pods-LingoBites.releasedev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasedev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasedev.xcconfig"; sourceTree = "<group>"; };
-		4E2DBC0039154A9858B311DC /* Pods-LingoBites.debugstag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugstag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugstag.xcconfig"; sourceTree = "<group>"; };
+		397EBD8C7F380F3242ED15AF /* Pods-LingoBites.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugprod.xcconfig"; sourceTree = "<group>"; };
+		4359E8AF7C61FF195566CDB2 /* Pods-LingoBites.debugdev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugdev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugdev.xcconfig"; sourceTree = "<group>"; };
 		4FAAED88B7834D3FACA9C2F2 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = ../assets/fonts/MaterialIcons.ttf; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LingoBites/AppDelegate.swift; sourceTree = "<group>"; };
 		7D11E5002CC04AA100A4B2D1 /* DeviceIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceIdentity.h; path = LingoBites/DeviceIdentity.h; sourceTree = "<group>"; };
 		7D11E5022CC04AA100A4B2D1 /* DeviceIdentity.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = DeviceIdentity.mm; path = LingoBites/DeviceIdentity.mm; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = LingoBites/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		966B252CEED08A17DCA46763 /* Pods-LingoBites.releasestag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasestag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasestag.xcconfig"; sourceTree = "<group>"; };
+		89D2EC84551618F3175E201E /* Pods-LingoBites.releaseprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releaseprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releaseprod.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000201 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		A00000000000000000000202 /* Config-DebugDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-DebugDev.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000203 /* Config-ReleaseDev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseDev.xcconfig"; sourceTree = "<group>"; };
@@ -44,13 +44,13 @@
 		A00000000000000000000205 /* Config-ReleaseStag.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseStag.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000206 /* Config-DebugProd.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-DebugProd.xcconfig"; sourceTree = "<group>"; };
 		A00000000000000000000207 /* Config-ReleaseProd.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-ReleaseProd.xcconfig"; sourceTree = "<group>"; };
-		B0ECB9D556C7A725A1300995 /* Pods-LingoBites.releaseprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releaseprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releaseprod.xcconfig"; sourceTree = "<group>"; };
+		A1C7E69DE75714C475E80DB7 /* Pods-LingoBites.debugstag.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugstag.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugstag.xcconfig"; sourceTree = "<group>"; };
+		A335C8C9F4BAC1434A0F9F25 /* libPods-LingoBites.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LingoBites.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1CFFAB53F474DD49B16DD9E /* Quicksand-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Quicksand-Medium.ttf"; path = "../assets/fonts/Quicksand-Medium.ttf"; sourceTree = "<group>"; };
 		CB4D8FDB386CB31325726DAE /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-LingoBites/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		D111E2E5CEA6BE3443A8394C /* Pods-LingoBites.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.debugprod.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.debugprod.xcconfig"; sourceTree = "<group>"; };
-		DB2939CDD8ADB78578A08C5E /* libPods-LingoBites.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LingoBites.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7A0C0DE00000000000000A1 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Expo.plist; path = LingoBites/Supporting/Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F0EFFB449ED0B1C5E63F4EF8 /* Pods-LingoBites.releasedev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LingoBites.releasedev.xcconfig"; path = "Target Support Files/Pods-LingoBites/Pods-LingoBites.releasedev.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,7 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B9E1B08363294390C4EE65A4 /* libPods-LingoBites.a in Frameworks */,
+				4D6DA242B6D2D1B8FB6476EC /* libPods-LingoBites.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,7 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				DB2939CDD8ADB78578A08C5E /* libPods-LingoBites.a */,
+				A335C8C9F4BAC1434A0F9F25 /* libPods-LingoBites.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -157,12 +157,12 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				354AE5F4CD1F97FAEA00DAA4 /* Pods-LingoBites.debugdev.xcconfig */,
-				418E57231472C05C59CCF194 /* Pods-LingoBites.releasedev.xcconfig */,
-				4E2DBC0039154A9858B311DC /* Pods-LingoBites.debugstag.xcconfig */,
-				966B252CEED08A17DCA46763 /* Pods-LingoBites.releasestag.xcconfig */,
-				D111E2E5CEA6BE3443A8394C /* Pods-LingoBites.debugprod.xcconfig */,
-				B0ECB9D556C7A725A1300995 /* Pods-LingoBites.releaseprod.xcconfig */,
+				4359E8AF7C61FF195566CDB2 /* Pods-LingoBites.debugdev.xcconfig */,
+				F0EFFB449ED0B1C5E63F4EF8 /* Pods-LingoBites.releasedev.xcconfig */,
+				A1C7E69DE75714C475E80DB7 /* Pods-LingoBites.debugstag.xcconfig */,
+				2579BD24E07FAEF7BE715F37 /* Pods-LingoBites.releasestag.xcconfig */,
+				397EBD8C7F380F3242ED15AF /* Pods-LingoBites.debugprod.xcconfig */,
+				89D2EC84551618F3175E201E /* Pods-LingoBites.releaseprod.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -174,15 +174,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "LingoBites" */;
 			buildPhases = (
-				D99484565B6DEEA4AEA5B57F /* [CP] Check Pods Manifest.lock */,
+				C4699C53F1342AF98F034F66 /* [CP] Check Pods Manifest.lock */,
 				41E359DD3115A9A91CBBE0FF /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				E7A0C0DE00000000000000A3 /* [Expo] Set updates channel */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				3517ADD2CEA588B9E4265B4C /* [CP] Embed Pods Frameworks */,
-				FCD55CD5CF48D93902F95D0C /* [CP] Copy Pods Resources */,
+				5612B5B5213DAF07F3AD8B9B /* [CP] Embed Pods Frameworks */,
+				E84F27F85233B2CF686C1C6F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -259,23 +259,6 @@
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli')\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n";
 		};
-		3517ADD2CEA588B9E4265B4C /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		41E359DD3115A9A91CBBE0FF /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -299,7 +282,24 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-LingoBites/expo-configure-project.sh\"\n";
 		};
-		D99484565B6DEEA4AEA5B57F /* [CP] Check Pods Manifest.lock */ = {
+		5612B5B5213DAF07F3AD8B9B /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LingoBites/Pods-LingoBites-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C4699C53F1342AF98F034F66 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -340,7 +340,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n# Sets the expo-updates channel in the bundled Expo.plist based on the build configuration.\nPLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Expo.plist\"\nif [ ! -f \"$PLIST\" ]; then\n  echo \"error: Expo.plist not found in app bundle: $PLIST\"\n  exit 1\nfi\ncase \"$CONFIGURATION\" in\n  *Prod) CHANNEL=production ;;\n  *Stag) CHANNEL=staging ;;\n  *) CHANNEL=development ;;\nesac\n/usr/libexec/PlistBuddy -c \"Set :EXUpdatesRequestHeaders:expo-channel-name $CHANNEL\" \"$PLIST\"\necho \"expo-updates channel: $CHANNEL\"\n";
 		};
-		FCD55CD5CF48D93902F95D0C /* [CP] Copy Pods Resources */ = {
+		E84F27F85233B2CF686C1C6F /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
