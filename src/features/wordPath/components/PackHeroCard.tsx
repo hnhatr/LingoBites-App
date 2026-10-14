@@ -29,24 +29,9 @@ import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
-/** The card keeps its own colours in every theme, as Home's card does. */
-export const PACK_PALETTE = {
-  faceFrom: '#34dcc3',
-  faceTo: '#5fc8ff',
-  shelf: '#1fa597',
-  ink: '#1c1c10',
-  tealInk: '#00413a',
-  teal: '#006b5f',
-  white: '#ffffff',
-  chip: 'rgba(255,255,255,0.88)',
-  strip: 'rgba(255,255,255,0.88)',
-  track: '#dfeee9',
-  coral: '#fe7488',
-  coralShelf: '#e2506a',
-  sun: '#ffd166',
-  ghostShelf: 'rgba(0,74,65,0.25)',
-};
+export const PACK_PALETTE = HERO_PALETTE;
 
 const ART_HEIGHT = 150;
 

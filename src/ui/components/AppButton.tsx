@@ -21,7 +21,9 @@ export type AppButtonVariant =
   | 'secondary-coral'
   | 'outline'
   | 'ghost'
-  | 'deep';
+  | 'deep'
+  /** Destructive action: the theme's danger colour on the primary shape. */
+  | 'danger';
 
 type Props = Omit<PressableProps, 'style' | 'children'> & {
   title: string;
@@ -46,12 +48,22 @@ export function AppButton({
   ...rest
 }: Props) {
   const {theme} = useAppTheme();
-  const spec =
-    theme.components.button[variant] ||
-    theme.components.button['primary-accent'] ||
+  const primarySpec =
     theme.components.button.primary ||
     Object.values(theme.components.button)[0];
-  if (__DEV__ && !theme.components.button[variant]) {
+  const spec =
+    variant === 'danger'
+      ? {
+          ...primarySpec,
+          background: theme.colors.danger,
+          text: theme.colors.text.inverse,
+          border: undefined,
+        }
+      : theme.components.button[variant] ||
+        theme.components.button['primary-accent'] ||
+        theme.components.button.primary ||
+        Object.values(theme.components.button)[0];
+  if (__DEV__ && variant !== 'danger' && !theme.components.button[variant]) {
     console.warn(
       `[AppButton] variant "${variant}" is not defined in theme "${theme.id}" — fell back. Add it to components.button instead of relying on fallback.`,
     );
@@ -97,7 +109,11 @@ export function AppButton({
             styles.base,
             {
               backgroundColor: spec.background,
-              height: spec.height,
+              // A floor, not a fixed height: a title that wraps (long
+              // answers, large system text) grows the button instead of
+              // being clipped.
+              minHeight: spec.height,
+              paddingVertical: 8,
             },
             spec.border && {
               borderColor: spec.border,

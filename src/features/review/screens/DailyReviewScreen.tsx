@@ -23,13 +23,13 @@ import {AppText} from '@ui/components/AppText';
 import {Banner} from '@ui/components/Banner';
 import {ErrorCard} from '@ui/components/ErrorCard';
 import {FlipCard} from '@ui/components/FlipCard';
-import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
 import {ProgressRing} from '@ui/components/ProgressRing';
 import {RatingControl} from '@ui/components/RatingControl';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {SessionHeader} from '@ui/components/StudySession';
 import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
 import {useAppTheme} from '@ui/theme';
 
@@ -423,15 +423,17 @@ export function DailyReviewScreen({
 
   return (
     <AppScreen>
-      <ScreenHeader rightAction={closeButton} title={t('review.title')} />
-      <View
-        style={[styles.progress, {paddingHorizontal: theme.gutter}]}
+      <SessionHeader
+        closeLabel={t('review.close_a11y')}
+        closeHint={t('review.title')}
+        closeTestID="review-close"
+        current={currentIndex + 1}
+        onClose={requestExit}
+        progressLabel={`${t('review.title')} ${currentIndex + 1}/${sessionCards.length}`}
         testID="review-progress"
-      >
-        <HandoffProgressTrack
-          label={`${currentIndex + 1} / ${sessionCards.length}`}
-          progress={(currentIndex + 1) / sessionCards.length}
-        />
+        total={sessionCards.length}
+      />
+      <View style={[styles.progress, {paddingHorizontal: theme.gutter}]}>
         {carryOverCount > 0 ? (
           <AppText
             color="muted"

@@ -97,6 +97,8 @@ export interface ToneCardProps {
   testID: string;
   /** Width of the list's side padding, to size the picture. */
   gutter: number;
+  /** Fixed card width, e.g. in a horizontal rail; else the screen's. */
+  width?: number;
   /** Save toggle in the top right corner, its own button. */
   bookmark?: {saved: boolean; onToggle: () => void};
   /** Under the card, outside its button, e.g. a practice link. */
@@ -122,13 +124,15 @@ export function ToneCard({
   gutter,
   bookmark,
   footer,
+  width: fixedWidth,
 }: ToneCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const {width} = useWindowDimensions();
   const [pressed, setPressed] = useState(false);
   const colors = cardColors(theme, tone);
-  const artWidth = Math.max(0, (width - gutter * 2) * ART_SHARE);
+  const cardWidth = fixedWidth ?? width - gutter * 2;
+  const artWidth = Math.max(0, cardWidth * ART_SHARE);
   const gradientId = `cardFade-${testID}`;
 
   const card = (
@@ -143,6 +147,7 @@ export function ToneCard({
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
+      style={fixedWidth !== undefined ? {width: fixedWidth} : undefined}
       testID={testID}
     >
       <ShelfSurface
@@ -215,7 +220,12 @@ export function ToneCard({
   );
   if (!bookmark && !footer) return card;
   return (
-    <View style={styles.cardWrap}>
+    <View
+      style={[
+        styles.cardWrap,
+        fixedWidth !== undefined ? {width: fixedWidth} : null,
+      ]}
+    >
       {card}
       {bookmark ? (
         <Pressable

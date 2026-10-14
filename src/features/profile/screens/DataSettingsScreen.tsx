@@ -192,9 +192,9 @@ export function DataSettingsScreen({navigation}: Props) {
               <AppButton
                 disabled={clearDataConfirmText !== 'XOA'}
                 onPress={confirmClearData}
-                style={[styles.flex1, {backgroundColor: theme.colors.danger}]}
+                style={styles.flex1}
                 title="Xóa"
-                variant="primary"
+                variant="danger"
               />
             </View>
           </AppCard>

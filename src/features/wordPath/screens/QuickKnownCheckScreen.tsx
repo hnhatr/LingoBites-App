@@ -8,6 +8,7 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {SessionHeader, StudyQuestion} from '@ui/components/StudySession';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
@@ -19,7 +20,6 @@ import {
 import {useAppNavigation} from '@core/navigation';
 import type {CatalogItem} from '@core/schemas/lesson';
 
-import {PackQuestion, PackSessionHeader} from '../components/PackSessionParts';
 import {findDownloadedPack} from '../logic/wordPackRepository';
 import {learnWordPack} from '../logic/wordPathClient';
 import type {QuickKnownCheckRouteParams} from './navigationTypes';
@@ -113,7 +113,7 @@ export function QuickKnownCheckScreen({
 
   return (
     <AppScreen>
-      <PackSessionHeader
+      <SessionHeader
         current={shownIndex}
         onClose={() => navigation?.goBack?.()}
         progressLabel={t('quickCheck.title')}
@@ -126,7 +126,7 @@ export function QuickKnownCheckScreen({
           </AppCard>
         ) : null}
         {current && !finished ? (
-          <PackQuestion
+          <StudyQuestion
             answerIndex={current.answerIndex}
             chosen={chosen}
             onChoose={choose}

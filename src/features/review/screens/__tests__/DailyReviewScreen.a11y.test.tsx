@@ -210,9 +210,9 @@ describe('DailyReviewScreen - Accessibility', () => {
       });
 
       const progress = tree.root.findByProps({testID: 'review-progress'});
-      expect(
-        progress.findAllByProps({children: '1 / 1'}).length,
-      ).toBeGreaterThan(0);
+      expect(progress.findAllByProps({children: '1/1'}).length).toBeGreaterThan(
+        0,
+      );
       expect(tree.root.findAllByProps({testID: 'review-summary'}).length).toBe(
         0,
       );
@@ -226,9 +226,9 @@ describe('DailyReviewScreen - Accessibility', () => {
 
       const progress = tree.root.findByProps({testID: 'review-progress'});
       expect(progress).toBeTruthy();
-      expect(
-        progress.findAllByProps({children: '1 / 3'}).length,
-      ).toBeGreaterThan(0);
+      expect(progress.findAllByProps({children: '1/3'}).length).toBeGreaterThan(
+        0,
+      );
       // The counter is a real progressbar, not plain text (SETE-255).
       expect(
         progress.findAllByProps({accessibilityRole: 'progressbar'}).length,

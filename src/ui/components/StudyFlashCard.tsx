@@ -1,5 +1,5 @@
 /**
- * PackFlashCard — one word of a pack while learning it.
+ * StudyFlashCard — one word while learning a pack or reviewing flashcards.
  *
  *   ┌──────────────────────────────┐
  *   │ [Daily life]                 │  mint-to-sky face
@@ -17,12 +17,11 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg';
 
-import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {formatIpa} from '@ui/components/WordCard';
-import {type AppTheme, useAppTheme} from '@ui/theme';
-
-import {PACK_PALETTE} from './PackHeroCard';
+import {type AppTheme, useAppTheme} from '../theme';
+import {HERO_PALETTE as PALETTE} from '../theme/heroPalette';
+import {AppText} from './AppText';
+import {MaterialIcon} from './MaterialIcon';
+import {formatIpa} from './WordCard';
 
 type Props = {
   word: string;
@@ -35,7 +34,7 @@ type Props = {
   testID: string;
 };
 
-export function PackFlashCard({
+export function StudyFlashCard({
   word,
   ipa,
   meaning,
@@ -54,8 +53,8 @@ export function PackFlashCard({
           <Svg height="100%" width="100%">
             <Defs>
               <LinearGradient id="packCardFace" x1="0" x2="1" y1="0" y2="1">
-                <Stop offset="0" stopColor={PACK_PALETTE.faceFrom} />
-                <Stop offset="1" stopColor={PACK_PALETTE.faceTo} />
+                <Stop offset="0" stopColor={PALETTE.faceFrom} />
+                <Stop offset="1" stopColor={PALETTE.faceTo} />
               </LinearGradient>
             </Defs>
             <Rect fill="url(#packCardFace)" height="100%" width="100%" />
@@ -84,11 +83,7 @@ export function PackFlashCard({
             <AppText style={styles.ipaText}>{formatIpa(ipa)}</AppText>
           ) : null}
           <View style={styles.speak}>
-            <MaterialIcon
-              color={PACK_PALETTE.white}
-              name="volume_up"
-              size={16}
-            />
+            <MaterialIcon color={PALETTE.white} name="volume_up" size={16} />
           </View>
         </Pressable>
       </View>
@@ -121,14 +116,14 @@ function makeStyles(theme: AppTheme) {
     },
     face: {
       alignItems: 'center',
-      backgroundColor: PACK_PALETTE.faceFrom,
+      backgroundColor: PALETTE.faceFrom,
       gap: 10,
       paddingBottom: 20,
       paddingHorizontal: 18,
       paddingTop: 48,
     },
     chip: {
-      backgroundColor: PACK_PALETTE.chip,
+      backgroundColor: PALETTE.chip,
       borderRadius: theme.radius.pill,
       left: 12,
       maxWidth: '70%',
@@ -138,12 +133,12 @@ function makeStyles(theme: AppTheme) {
       top: 12,
     },
     chipText: {
-      color: PACK_PALETTE.tealInk,
+      color: PALETTE.tealInk,
       fontSize: 12,
       fontWeight: '700',
     },
     word: {
-      color: PACK_PALETTE.ink,
+      color: PALETTE.ink,
       fontSize: 42,
       fontWeight: '800',
       lineHeight: 48,
@@ -151,7 +146,7 @@ function makeStyles(theme: AppTheme) {
     },
     ipaPill: {
       alignItems: 'center',
-      backgroundColor: PACK_PALETTE.chip,
+      backgroundColor: PALETTE.chip,
       borderRadius: theme.radius.pill,
       flexDirection: 'row',
       gap: 8,
@@ -163,12 +158,12 @@ function makeStyles(theme: AppTheme) {
       opacity: theme.states.pressedOpacity,
     },
     ipaText: {
-      color: PACK_PALETTE.tealInk,
+      color: PALETTE.tealInk,
       fontSize: 15,
     },
     speak: {
       alignItems: 'center',
-      backgroundColor: PACK_PALETTE.coral,
+      backgroundColor: PALETTE.coral,
       borderRadius: 15,
       height: 30,
       justifyContent: 'center',

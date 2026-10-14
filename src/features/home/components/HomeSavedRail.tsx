@@ -3,7 +3,8 @@
  *
  * Section title: "Bài đã lưu" (§VS-0 style)
  * "Xem tất cả ›" only when items.length > 0.
- * Cards are the shared compact `LessonCard`; the bookmark unsaves.
+ * Cards are the Library's tone cards at rail width, colours cycling as in
+ * the Library; the bookmark unsaves.
  * Empty state: dashed container with one sentence, no button.
  */
 import React, {useMemo} from 'react';
@@ -11,15 +12,15 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {
-  LessonCard,
-  lessonCardKind,
-  splitLessonTitle,
-} from '@ui/components/LessonCard';
+import {splitLessonTitle} from '@ui/components/LessonCard';
+import {cardToneAt, ToneCard} from '@ui/components/ToneCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {LINK_HIT_SLOP, type RecentItem} from '../logic/homeScreenModel';
 import {HomeIcon} from './HomeSvgIcons';
+
+/** Width of one rail card: the next one peeks in at the edge. */
+const RAIL_CARD_WIDTH = 270;
 
 type Props = {
   items: RecentItem[];
@@ -71,31 +72,46 @@ export function HomeSavedRail({items, onItem, onViewAll, onUnsave}: Props) {
           showsHorizontalScrollIndicator={false}
           testID="home-continue-rail"
         >
-          {items.map(item => {
+          {items.map((item, index) => {
             const {title, subtitle} = splitLessonTitle(item.title);
+            const meta = [
+              item.minutes != null
+                ? t('home.rail_minutes', {minutes: item.minutes})
+                : null,
+              item.isDownloaded ? t('home.rail_downloaded') : null,
+            ]
+              .filter(Boolean)
+              .join(' · ');
+            const inProgress = item.progress?.state === 'in_progress';
             return (
-              <View key={item.id} style={styles.cardWrap}>
-                <LessonCard
-                  bookmarked
-                  context={item.levelTitle}
-                  downloaded={item.isDownloaded}
-                  durationLabel={
-                    item.minutes != null
-                      ? t('home.rail_minutes', {minutes: item.minutes})
-                      : null
-                  }
-                  exerciseCount={item.exerciseCount}
-                  kind={lessonCardKind(item.sourceType ?? 'admin_text')}
-                  onPress={() => onItem(item)}
-                  onToggleBookmark={onUnsave ? () => onUnsave(item) : undefined}
-                  progress={item.progress}
-                  sentenceCount={item.sentenceCount}
-                  subtitle={subtitle}
-                  testID={`home-recent-item-${item.id}`}
-                  title={title}
-                  variant="compact"
-                />
-              </View>
+              <ToneCard
+                accessibilityHint={t('home.rail_open_hint')}
+                action={{
+                  label: inProgress
+                    ? t('home.rail_continue')
+                    : t('home.rail_open'),
+                  glyph: 'play',
+                  solid: true,
+                }}
+                bookmark={
+                  onUnsave
+                    ? {saved: true, onToggle: () => onUnsave(item)}
+                    : undefined
+                }
+                cover={{
+                  imageUrl: null,
+                  glyph: item.sourceType === 'youtube' ? 'subtitles' : 'book',
+                }}
+                description={[subtitle, meta].filter(Boolean).join(' · ')}
+                eyebrow={item.levelTitle ?? t(item.typeLabelKey)}
+                gutter={theme.gutter}
+                key={item.id}
+                onPress={() => onItem(item)}
+                testID={`home-recent-item-${item.id}`}
+                title={title}
+                tone={cardToneAt(index)}
+                width={RAIL_CARD_WIDTH}
+              />
             );
           })}
         </ScrollView>
@@ -144,9 +160,6 @@ function makeStyles(theme: AppTheme) {
       paddingBottom: 8,
       paddingRight: 16,
       paddingTop: 4,
-    },
-    cardWrap: {
-      width: 250,
     },
     emptyBox: {
       alignItems: 'center',
