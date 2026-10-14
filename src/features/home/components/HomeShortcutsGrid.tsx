@@ -1,8 +1,8 @@
 /**
- * HomeShortcutsGrid — "Luyện thêm" section title + one row of 4 sticker icons
+ * HomeShortcutsGrid — "Luyện thêm" section title + one row of 4 coloured tiles
  * (LING-256, LING-267, §VS-4).
  *
- * Each cell is a tinted icon tile with a short title under it. A shortcut
+ * Each cell is a tinted tile: a white icon square with a short title under it. A shortcut
  * with something waiting (due review cards) carries a count badge and a
  * status line; the full sub-line stays in the accessibility label.
  *
@@ -13,7 +13,7 @@
  *   4. create   -> surfaceContainer / text.primary
  *
  * Motion (§VS-7):
- *   - I6 (press wiggle +/-10° over 500ms): off under RM
+ *   - I6 (press wiggle +/-10° on the icon over 500ms): off under RM
  */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -27,11 +27,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import {AppText} from '@ui/components/AppText';
+import {withAlpha} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 
 import type {ShortcutItem, ShortcutKey} from '../logic/homeScreenModel';
-import {getStickerEdge} from './HomeDecorations';
 import {HomeIcon} from './HomeSvgIcons';
 
 const GRID_PALETTE = {
@@ -41,14 +41,6 @@ const GRID_PALETTE = {
 type Props = {
   shortcuts: ShortcutItem[];
   onPress: (key: ShortcutKey) => void;
-};
-
-// Static tilt: -6° on tiles 1 & 3, +5° on tiles 2 & 4 (§VS-4)
-const STATIC_TILT: Record<ShortcutKey, number> = {
-  video: -6,
-  review: 5,
-  speaking: -6,
-  create: 5,
 };
 
 const BG_MAP: Record<
@@ -84,7 +76,6 @@ function ShortcutCell({
   const styles = useMemo(() => makeStyles(theme), [theme]);
 
   // I6: Press wiggle +/-10° over 500ms (§VS-7)
-  const baseTilt = reducedMotion ? 0 : STATIC_TILT[item.key];
   const wiggle = useSharedValue(0);
 
   const handlePressIn = () => {
@@ -99,10 +90,10 @@ function ShortcutCell({
   };
 
   const iconTileAnimStyle = useAnimatedStyle(() => ({
-    transform: [{rotate: `${baseTilt + wiggle.value}deg`}],
+    transform: [{rotate: `${wiggle.value}deg`}],
   }));
 
-  // Opaque: the hard shadow would otherwise bleed through the tint.
+  // Opaque: the shelf would otherwise bleed through the tint.
   const backgroundColor = solidOver(
     theme.colors[BG_MAP[item.key]],
     theme.colors.surface,
@@ -112,6 +103,8 @@ function ShortcutCell({
     inkKey === 'text.primary'
       ? theme.colors.text.primary
       : theme.colors[inkKey];
+
+  const shelfColor = solidOver(withAlpha(ink, 0.22), backgroundColor);
 
   const titleText = t(item.titleKey);
   const subText = item.subKey ? t(item.subKey, item.metaParams) : '';
@@ -132,15 +125,14 @@ function ShortcutCell({
         testID={item.testID}
         style={({pressed}) => [
           styles.tile,
+          {backgroundColor, borderBottomColor: shelfColor},
           isDisabled && styles.disabledTile,
           pressed && !isDisabled && styles.pressedTile,
         ]}
       >
-        {/* Tinted icon tile 56x56 with static tilt and border 2 ink */}
-        <Animated.View
-          style={[styles.iconBox, {backgroundColor}, iconTileAnimStyle]}
-        >
-          <HomeIcon name={item.icon} size={26} color={ink} />
+        {/* White icon square on the tinted tile */}
+        <Animated.View style={[styles.iconBox, iconTileAnimStyle]}>
+          <HomeIcon name={item.icon} size={22} color={ink} />
         </Animated.View>
 
         <AppText style={styles.title} numberOfLines={2}>
@@ -206,7 +198,7 @@ function makeStyles(theme: AppTheme) {
     },
     sectionTitle: {
       color: theme.colors.text.primary,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '700',
     },
     sectionHint: {
@@ -217,7 +209,7 @@ function makeStyles(theme: AppTheme) {
     },
     grid: {
       flexDirection: 'row',
-      gap: 6,
+      gap: 10,
     },
     cellWrapper: {
       flex: 1,
@@ -225,28 +217,35 @@ function makeStyles(theme: AppTheme) {
     },
     tile: {
       alignItems: 'center',
+      borderBottomWidth: 4,
+      borderRadius: 20,
       gap: 6,
-      paddingTop: 4,
+      minHeight: 92,
+      paddingBottom: 8,
+      paddingHorizontal: 4,
+      paddingTop: 10,
       position: 'relative',
     },
     disabledTile: {
       opacity: 0.45,
     },
     pressedTile: {
-      transform: [{translateY: 2}],
+      borderBottomWidth: 1,
+      transform: [{translateY: 3}],
     },
     iconBox: {
       alignItems: 'center',
-      borderRadius: 18,
-      height: 56,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 13,
+      height: 40,
       justifyContent: 'center',
-      width: 56,
-      ...getStickerEdge(3, theme.colors.ink),
+      width: 40,
     },
     title: {
       color: theme.colors.text.primary,
       fontSize: 12,
       fontWeight: '700',
+      lineHeight: 15,
       textAlign: 'center',
     },
     statusLine: {
@@ -258,12 +257,14 @@ function makeStyles(theme: AppTheme) {
     },
     badge: {
       backgroundColor: theme.colors.secondary,
+      borderColor: theme.colors.background,
       borderRadius: 999,
-      paddingHorizontal: 7,
+      borderWidth: 2,
+      paddingHorizontal: 6,
       paddingVertical: 1,
       position: 'absolute',
       right: 2,
-      top: -4,
+      top: -7,
     },
     badgeText: {
       color: GRID_PALETTE.badgeText,

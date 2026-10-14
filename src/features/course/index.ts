@@ -16,3 +16,7 @@ export {CourseListContent} from './components/CourseListContent';
 export {fetchCourseLevels} from './logic/courseClient';
 export {findNextUnitLesson} from './logic/nextUnitLesson';
 export type {CourseLevel} from './logic/courseClient';
+export {CourseCard, courseCardToneAt} from './components/CourseCard';
+export {curriculumGlyph} from './logic/curriculumCover';
+export {useCourses} from './logic/useCurriculum';
+export type {CourseWithAccess} from './logic/useCurriculum';

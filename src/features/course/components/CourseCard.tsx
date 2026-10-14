@@ -20,6 +20,8 @@ export function courseCardToneAt(index: number): CourseCardTone {
 }
 
 const HEIGHT = 168;
+/** Home's rail card: shorter, one-line title and blurb. */
+const COMPACT_HEIGHT = 112;
 /** Share of the card the picture takes, on the right. */
 const ART_SHARE = 0.5;
 const RADIUS = 26;
@@ -39,6 +41,10 @@ type Props = {
   coverTestID: string;
   /** Width of the list's side padding, to size the picture. */
   gutter: number;
+  /** Fixed card width, e.g. in a horizontal rail; else the screen's. */
+  width?: number;
+  /** Short card for Home's rail. */
+  compact?: boolean;
 };
 
 /**
@@ -59,13 +65,16 @@ export function CourseCard({
   testID,
   coverTestID,
   gutter,
+  width: cardWidth,
+  compact = false,
 }: Props) {
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {width} = useWindowDimensions();
   const [pressed, setPressed] = useState(false);
   const colors = toneColors(theme, tone);
-  const artWidth = Math.max(0, (width - gutter * 2) * ART_SHARE);
+  const height = compact ? COMPACT_HEIGHT : HEIGHT;
+  const artWidth = Math.max(0, (cardWidth ?? width - gutter * 2) * ART_SHARE);
   const gradientId = `courseFade-${testID}`;
 
   return (
@@ -80,7 +89,8 @@ export function CourseCard({
     >
       <ShelfSurface
         borderRadius={RADIUS}
-        faceStyle={[themedStyles.face, {backgroundColor: colors.face}]}
+        containerStyle={cardWidth != null ? {width: cardWidth} : undefined}
+        faceStyle={[themedStyles.face, {backgroundColor: colors.face, height}]}
         isPressed={pressed}
         shelfColor={colors.shelf}
         shelfHeight={5}
@@ -89,9 +99,9 @@ export function CourseCard({
           style={[styles.art, {width: artWidth}]}
           testID={`${testID}-cover`}
         >
-          <View style={styles.artFill}>
+          <View style={{height}}>
             <LibraryCover
-              aspectRatio={artWidth > 0 ? artWidth / HEIGHT : undefined}
+              aspectRatio={artWidth > 0 ? artWidth / height : undefined}
               glyph={glyph}
               hideLevelChip
               imageUrl={imageUrl}
@@ -100,7 +110,7 @@ export function CourseCard({
             />
           </View>
           <Svg
-            height={HEIGHT}
+            height={height}
             pointerEvents="none"
             style={StyleSheet.absoluteFill}
             width={artWidth}
@@ -118,15 +128,24 @@ export function CourseCard({
           pointerEvents="none"
           style={[themedStyles.blob, {backgroundColor: colors.blob}]}
         />
-        <View style={styles.copy}>
-          <AppText numberOfLines={2} style={themedStyles.title}>
+        <View
+          style={[
+            styles.copy,
+            compact && styles.copyCompact,
+            {minHeight: height},
+          ]}
+        >
+          <AppText
+            numberOfLines={compact ? 1 : 2}
+            style={[themedStyles.title, compact && themedStyles.titleCompact]}
+          >
             {title}
           </AppText>
           {description && description.trim().length > 0 ? (
             <AppText
               color="secondary"
               ellipsizeMode="tail"
-              numberOfLines={2}
+              numberOfLines={compact ? 1 : 2}
               style={themedStyles.description}
             >
               {description}
@@ -182,17 +201,19 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  artFill: {
-    height: HEIGHT,
-  },
   copy: {
     gap: 4,
     justifyContent: 'center',
-    minHeight: HEIGHT,
     paddingLeft: 18,
     paddingRight: 8,
     paddingVertical: 14,
     width: '58%',
+  },
+  copyCompact: {
+    gap: 2,
+    paddingLeft: 14,
+    paddingVertical: 10,
+    width: '64%',
   },
 });
 
@@ -212,7 +233,6 @@ function makeStyles(theme: AppTheme) {
       lineHeight: 17,
     },
     face: {
-      height: HEIGHT,
       overflow: 'hidden',
     },
     pill: {
@@ -236,6 +256,10 @@ function makeStyles(theme: AppTheme) {
       fontSize: 19,
       fontWeight: '800',
       lineHeight: 24,
+    },
+    titleCompact: {
+      fontSize: 16,
+      lineHeight: 21,
     },
   });
 }

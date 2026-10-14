@@ -36,7 +36,12 @@ function renderHeader(hour: number, displayName: string | null, streak = 0) {
         releaseConfig={makeTestReleaseConfig(CORE_WITH_REVIEW)}
       >
         <AppThemeProvider>
-          <HomeHeader greeting={greeting} streak={streak} flame={flame} />
+          <HomeHeader
+            greeting={greeting}
+            streak={streak}
+            flame={flame}
+            mascotLabel="Meo!"
+          />
         </AppThemeProvider>
       </FeatureFlagProvider>,
     );
