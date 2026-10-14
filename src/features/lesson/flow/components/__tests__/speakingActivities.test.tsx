@@ -14,9 +14,11 @@ import {
 import {flowActivity, flowItems, flowTask} from '../../logic/flowContent';
 import {ActivityRunner} from '../ActivityRunner';
 
-const mockSpeak = jest.fn((_text: string) => Promise.resolve({ok: true}));
+const mockSpeak = jest.fn((_text: string, ..._options: unknown[]) =>
+  Promise.resolve({ok: true}),
+);
 jest.mock('@features/audio', () => ({
-  speak: (text: string) => mockSpeak(text),
+  speak: (text: string, ...options: unknown[]) => mockSpeak(text, ...options),
 }));
 
 const mockRecorder = {
@@ -118,6 +120,25 @@ describe('speaking activities (self-check)', () => {
     expect(mockRecorder.deleteRecordingFile).toHaveBeenCalledWith(
       '/tmp/take.m4a',
     );
+  });
+
+  it('plays the model slowly and shows feedback once judged', () => {
+    const {tree} = run(blockOn(3));
+    press(tree, 'lesson-flow-listen-model-slow');
+    expect(mockSpeak).toHaveBeenCalledWith(
+      'Can I have a small coffee, please?',
+      undefined,
+      0.3,
+    );
+    expect(has(tree, 'lesson-flow-self-feedback')).toBe(false);
+    press(tree, 'lesson-flow-self-fail');
+    expect(textOf(tree, 'lesson-flow-self-feedback')).toContain(
+      'Không sao, luyện thêm chút nữa',
+    );
+    expect(has(tree, 'lesson-flow-self-pass')).toBe(false);
+    press(tree, 'lesson-flow-entry-next');
+    press(tree, 'lesson-flow-self-pass');
+    expect(textOf(tree, 'lesson-flow-self-feedback')).toContain('Tốt lắm!');
   });
 
   it('still lets the learner judge without a recorder', () => {

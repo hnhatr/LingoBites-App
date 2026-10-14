@@ -4,8 +4,9 @@ import {StyleSheet, View} from 'react-native';
 
 import {speak} from '@features/audio';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
+import {Chip} from '@ui/components/Chip';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonSupportLevel} from '@core/schemas/sync';
@@ -30,7 +31,8 @@ const TYPE_LABEL_KEYS: Record<HintStep['type'], string> = {
 /**
  * "Gợi ý (n/3)": opens one level at a time (decision G1). A level with
  * `speak` reads the model sentence aloud. Every level opened raises the
- * entry's support level (decision G2).
+ * entry's support level (decision G2). Redesign: one compact "Kẹt?" row
+ * with a dot per level, the opened levels listed above it.
  */
 export function HintLadder({
   steps,
@@ -56,34 +58,92 @@ export function HintLadder({
 
   return (
     <View style={themedStyles.container}>
-      {steps.slice(0, opened).map(step => (
-        <AppText key={step.level} testID={`lesson-flow-hint-${step.level}`}>
-          <AppText color="secondary" variant="label">
-            {t(TYPE_LABEL_KEYS[step.type])}:{' '}
-          </AppText>
-          {step.text}
-        </AppText>
-      ))}
+      {opened > 0 ? (
+        <View style={themedStyles.opened}>
+          {steps.slice(0, opened).map(step => (
+            <AppText key={step.level} testID={`lesson-flow-hint-${step.level}`}>
+              <AppText color="secondary" variant="label">
+                {t(TYPE_LABEL_KEYS[step.type])}:{' '}
+              </AppText>
+              {step.text}
+            </AppText>
+          ))}
+        </View>
+      ) : null}
       {opened < steps.length ? (
-        <AppButton
-          accessibilityHint={t('lessonFlow.hint_hint')}
-          disabled={disabled}
-          iconLeft="lightbulb"
-          onPress={open}
-          testID="lesson-flow-hint"
-          title={t('lessonFlow.hint', {opened, total: steps.length})}
-          variant="ghost"
-        />
+        <View style={themedStyles.row}>
+          <MaterialIcon
+            color={theme.colors.tertiary}
+            name="lightbulb"
+            size={20}
+          />
+          <AppText color="secondary" style={themedStyles.flex} variant="label">
+            {t('lessonFlow.hint_stuck')}
+          </AppText>
+          <View style={themedStyles.dots}>
+            {steps.map(step => (
+              <View
+                key={step.level}
+                style={[
+                  themedStyles.dot,
+                  step.level <= opened ? themedStyles.dotOpen : null,
+                ]}
+              />
+            ))}
+          </View>
+          {disabled ? null : (
+            <Chip
+              accessibilityHint={t('lessonFlow.hint_hint')}
+              label={t('lessonFlow.hint', {opened, total: steps.length})}
+              onPress={open}
+              testID="lesson-flow-hint"
+              tone="gold"
+            />
+          )}
+        </View>
       ) : null}
     </View>
   );
 }
 
 function makeStyles(theme: AppTheme) {
+  const {colors} = theme;
   return StyleSheet.create({
     container: {
-      alignItems: 'flex-start',
+      gap: theme.spacing.sm,
+    },
+    dot: {
+      backgroundColor: colors.outlineVariant,
+      borderRadius: theme.radius.pill,
+      height: 8,
+      width: 8,
+    },
+    dotOpen: {
+      backgroundColor: colors.tertiary,
+    },
+    dots: {
+      flexDirection: 'row',
+      gap: 3,
+    },
+    flex: {
+      flex: 1,
+    },
+    opened: {
+      backgroundColor: colors.tertiarySoft,
+      borderRadius: theme.radius.md,
       gap: theme.spacing.xs,
+      padding: theme.spacing.md,
+    },
+    row: {
+      alignItems: 'center',
+      borderColor: colors.outlineVariant,
+      borderRadius: theme.radius.lg,
+      borderStyle: 'dashed',
+      borderWidth: 1.5,
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      paddingLeft: theme.spacing.md,
+      paddingRight: theme.spacing.xs,
     },
   });
 }

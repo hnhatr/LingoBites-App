@@ -6,13 +6,17 @@ import {speak} from '@features/audio';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerFace} from '@ui/theme/hardShadow';
 
 import type {LessonSupportLevel} from '@core/schemas/sync';
 
 import type {EntryResult} from '../logic/activityOutcome';
 import type {HintStep} from '../logic/hints';
 import {HintLadder} from './HintLadder';
+import {SLOW_TTS_RATE} from './ListenCardDeck';
 import {RecorderControls} from './RecorderControls';
 
 export type SpeakSelfCheckProps = {
@@ -30,7 +34,9 @@ export type SpeakSelfCheckProps = {
 /**
  * Speaking in Stage 2: hear the model, record yourself and listen back, then
  * judge it "Đạt" or "Chưa đạt" (decision G4). Without a microphone the
- * learner still judges; only the record buttons go away.
+ * learner still judges; only the record buttons go away. Redesign: the model
+ * in large type with normal and slow playback, a large mic, and a feedback
+ * card once judged.
  */
 export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
   const {theme} = useAppTheme();
@@ -44,26 +50,40 @@ export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
     setJudged(result);
     onReport(result, support);
   };
+  const passed = judged !== null && judged !== 'not_yet';
 
   return (
     <View style={themedStyles.container}>
       {hints === null ? (
-        <>
-          <AppText testID="lesson-flow-model-sentence" variant="bodyLg">
+        <View style={themedStyles.model}>
+          <AppText testID="lesson-flow-model-sentence" variant="h2">
             {model}
           </AppText>
-          <AppButton
-            accessibilityHint={t('lessonFlow.listen_model_hint')}
-            iconLeft="volume_up"
-            onPress={() => {
-              speak(model).catch(() => undefined);
-            }}
-            style={themedStyles.start}
-            testID="lesson-flow-listen-model"
-            title={t('lessonFlow.listen_model')}
-            variant="secondary"
-          />
-        </>
+          <View style={themedStyles.listenRow}>
+            <AppButton
+              accessibilityHint={t('lessonFlow.listen_model_hint')}
+              iconLeft="volume_up"
+              onPress={() => {
+                speak(model).catch(() => undefined);
+              }}
+              style={themedStyles.listen}
+              testID="lesson-flow-listen-model"
+              title={t('lessonFlow.listen_model')}
+              variant="secondary"
+            />
+            <IconButton
+              accessibilityHint={t('lessonFlow.listen_slow_hint')}
+              accessibilityLabel={t('lessonFlow.listen_slow')}
+              icon="timer"
+              onPress={() => {
+                speak(model, undefined, SLOW_TTS_RATE).catch(() => undefined);
+              }}
+              size={52}
+              testID="lesson-flow-listen-model-slow"
+              tone="ghost"
+            />
+          </View>
+        </View>
       ) : (
         <HintLadder
           disabled={judged !== null}
@@ -72,42 +92,130 @@ export function SpeakSelfCheck({model, hints, onReport}: SpeakSelfCheckProps) {
         />
       )}
       <RecorderControls />
-      <AppText color="secondary" variant="label">
-        {t('lessonFlow.self_check_question')}
-      </AppText>
-      <View style={themedStyles.row}>
-        <AppButton
-          accessibilityHint={t('lessonFlow.self_pass_hint')}
-          disabled={judged !== null}
-          onPress={() => judge('first_try')}
-          style={themedStyles.flex}
-          testID="lesson-flow-self-pass"
-          title={t('lessonFlow.self_pass')}
-        />
-        <AppButton
-          accessibilityHint={t('lessonFlow.self_fail_hint')}
-          disabled={judged !== null}
-          onPress={() => judge('not_yet')}
-          style={themedStyles.flex}
-          testID="lesson-flow-self-fail"
-          title={t('lessonFlow.self_fail')}
-          variant="outline"
-        />
-      </View>
+      {judged === null ? (
+        <View style={themedStyles.judge}>
+          <AppText
+            color="secondary"
+            style={themedStyles.center}
+            variant="label"
+          >
+            {t('lessonFlow.self_check_question')}
+          </AppText>
+          <View style={themedStyles.row}>
+            <AppButton
+              accessibilityHint={t('lessonFlow.self_pass_hint')}
+              iconLeft="check_circle"
+              onPress={() => judge('first_try')}
+              style={themedStyles.flex}
+              testID="lesson-flow-self-pass"
+              title={t('lessonFlow.self_pass')}
+            />
+            <AppButton
+              accessibilityHint={t('lessonFlow.self_fail_hint')}
+              onPress={() => judge('not_yet')}
+              style={themedStyles.flex}
+              testID="lesson-flow-self-fail"
+              title={t('lessonFlow.self_fail')}
+              variant="outline"
+            />
+          </View>
+        </View>
+      ) : (
+        <View
+          accessibilityLiveRegion="polite"
+          style={[
+            themedStyles.feedback,
+            passed ? themedStyles.feedbackPass : themedStyles.feedbackRetry,
+          ]}
+          testID="lesson-flow-self-feedback"
+        >
+          <View
+            style={[
+              themedStyles.feedbackIcon,
+              passed
+                ? themedStyles.feedbackIconPass
+                : themedStyles.feedbackIconRetry,
+            ]}
+          >
+            <MaterialIcon
+              color={theme.colors.text.inverse}
+              name={passed ? 'check_circle' : 'refresh'}
+              size={26}
+            />
+          </View>
+          <View style={themedStyles.flex}>
+            <AppText variant="title">
+              {passed
+                ? t('lessonFlow.self_feedback_pass')
+                : t('lessonFlow.self_feedback_retry')}
+            </AppText>
+            <AppText color="secondary" variant="label">
+              {passed
+                ? t('lessonFlow.self_feedback_pass_body')
+                : t('lessonFlow.self_feedback_retry_body')}
+            </AppText>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
 
 function makeStyles(theme: AppTheme) {
+  const {colors} = theme;
   return StyleSheet.create({
+    center: {
+      textAlign: 'center',
+    },
     container: {
-      gap: theme.spacing.sm,
+      gap: theme.spacing.md,
+    },
+    feedback: {
+      alignItems: 'center',
+      borderRadius: theme.radius.lg,
+      flexDirection: 'row',
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
+      ...getStickerFace(theme, 0),
+    },
+    feedbackIcon: {
+      alignItems: 'center',
+      borderRadius: theme.radius.pill,
+      height: 44,
+      justifyContent: 'center',
+      width: 44,
+    },
+    feedbackIconPass: {
+      backgroundColor: colors.primary,
+    },
+    feedbackIconRetry: {
+      backgroundColor: colors.secondary,
+    },
+    feedbackPass: {
+      backgroundColor: colors.accentSoft,
+    },
+    feedbackRetry: {
+      backgroundColor: colors.secondarySoft,
     },
     flex: {
       flex: 1,
     },
-    start: {
-      alignSelf: 'flex-start',
+    judge: {
+      gap: theme.spacing.sm,
+    },
+    listen: {
+      flexGrow: 1,
+    },
+    listenRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
+    model: {
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: theme.radius.lg,
+      gap: theme.spacing.md,
+      padding: theme.spacing.md,
     },
     row: {
       flexDirection: 'row',

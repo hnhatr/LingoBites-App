@@ -4,6 +4,7 @@ import {StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 /**
@@ -23,10 +24,15 @@ export function EvaluationConsentPrompt({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={themedStyles.box} testID="lesson-flow-evaluation-consent">
-      <AppText variant="label">
-        {t('lessonFlow.evaluation_consent_title')}
+      <View style={themedStyles.title}>
+        <MaterialIcon color={theme.colors.primary} name="lock" size={18} />
+        <AppText variant="label">
+          {t('lessonFlow.evaluation_consent_title')}
+        </AppText>
+      </View>
+      <AppText color="secondary">
+        {t('lessonFlow.evaluation_consent_body')}
       </AppText>
-      <AppText>{t('lessonFlow.evaluation_consent_body')}</AppText>
       <View style={themedStyles.row}>
         <AppButton
           accessibilityHint={t('lessonFlow.evaluation_consent_agree')}
@@ -52,9 +58,14 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     box: {
       backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: theme.radius.md,
+      borderRadius: theme.radius.lg,
       gap: theme.spacing.sm,
       padding: theme.spacing.md,
+    },
+    title: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
     },
     row: {
       flexDirection: 'row',

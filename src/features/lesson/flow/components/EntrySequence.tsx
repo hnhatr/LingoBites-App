@@ -51,23 +51,43 @@ export function EntrySequence({
 
   return (
     <View style={themedStyles.container}>
-      <AppText
-        color="secondary"
-        testID="lesson-flow-entry-count"
-        variant="label"
-      >
-        {t('lessonFlow.entry_count', {current: index + 1, total: count})}
-      </AppText>
+      <View style={themedStyles.header}>
+        <AppText
+          color="secondary"
+          testID="lesson-flow-entry-count"
+          variant="label"
+        >
+          {t('lessonFlow.entry_count', {current: index + 1, total: count})}
+        </AppText>
+        {count > 1 ? (
+          <View style={themedStyles.dots}>
+            {Array.from({length: count}, (_, position) => (
+              <View
+                key={position}
+                style={[
+                  themedStyles.dot,
+                  position < index || (position === index && reported)
+                    ? themedStyles.dotDone
+                    : position === index
+                    ? themedStyles.dotCurrent
+                    : null,
+                ]}
+              />
+            ))}
+          </View>
+        ) : null}
+      </View>
       <View key={index}>{renderEntry(index, report)}</View>
       {reported ? (
         <AppButton
           accessibilityHint={t('lessonFlow.next_entry_hint')}
+          iconRight={last ? 'check_circle' : 'chevron_right'}
           onPress={() => (last ? onComplete(results) : setIndex(index + 1))}
           testID="lesson-flow-entry-next"
           title={
             last ? t('lessonFlow.finish_activity') : t('lessonFlow.next_entry')
           }
-          variant="secondary"
+          variant="deep"
         />
       ) : null}
     </View>
@@ -78,6 +98,28 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
       gap: theme.spacing.md,
+    },
+    dot: {
+      backgroundColor: theme.colors.surfaceHigh,
+      borderRadius: theme.radius.pill,
+      height: 8,
+      width: 8,
+    },
+    dotCurrent: {
+      backgroundColor: theme.colors.accent,
+      width: 20,
+    },
+    dotDone: {
+      backgroundColor: theme.colors.primary,
+    },
+    dots: {
+      flexDirection: 'row',
+      gap: theme.spacing.xs,
+    },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
   });
 }

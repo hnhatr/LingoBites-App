@@ -61,13 +61,19 @@ afterEach(() => {
 });
 
 describe('LessonFlowPlayerScreen (shell)', () => {
-  it('opens a new lesson on step 1 and walks the steps', () => {
+  it('opens a new lesson on its map, past an empty step 1, and walks the steps', () => {
     const {tree} = renderScreen();
-    expect(textOf(tree, 'lesson-flow-step-title')).toBe('Bước 1: Ôn liên quan');
+    expect(has(tree, 'lesson-flow-map')).toBe(true);
+    expect(has(tree, 'lesson-flow-step-title')).toBe(false);
 
-    press(tree, 'lesson-flow-next');
+    press(tree, 'lesson-flow-map-start');
+    expect(has(tree, 'lesson-flow-map')).toBe(false);
     expect(textOf(tree, 'lesson-flow-step-title')).toBe('Bước 2: Nghe hiểu');
 
+    press(tree, 'lesson-flow-next');
+    expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 3');
+
+    press(tree, 'lesson-flow-step-4');
     press(tree, 'lesson-flow-step-3');
     expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 3');
     const activity = snapshot.blocks.find(
@@ -79,7 +85,17 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(textOf(tree, 'lesson-flow-practice-status')).toBe(
       'Còn 2 hoạt động luyện',
     );
+    expect(textOf(tree, 'lesson-flow-result-title')).toBe(
+      'Cố lên, sắp xong rồi!',
+    );
     expect(has(tree, 'lesson-flow-next')).toBe(false);
+  });
+
+  it('opens a step straight from a stop on the map', () => {
+    const {tree} = renderScreen();
+    press(tree, 'lesson-flow-map-step-4');
+    expect(has(tree, 'lesson-flow-map')).toBe(false);
+    expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 4');
   });
 
   it('closes from the result step', () => {
@@ -124,10 +140,16 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(has(tree, 'lesson-flow-back-to-lesson')).toBe(true);
   });
 
-  it('step 1 says when there is nothing to review', () => {
+  it('skips step 1 when there is nothing to review', () => {
     const {tree} = renderScreen();
-    expect(has(tree, 'lesson-flow-review-empty')).toBe(true);
+    expect(has(tree, 'lesson-flow-review-empty')).toBe(false);
     expect(has(tree, 'lesson-flow-step-empty')).toBe(false);
+    const stepOne = tree.root.find(
+      node =>
+        node.props.testID === 'lesson-flow-step-1' &&
+        typeof node.props.onPress === 'function',
+    );
+    expect(stepOne.props.disabled).toBe(true);
   });
 
   it('says when the lesson has no steps', () => {
@@ -253,6 +275,20 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     );
     // PR 16: passed on the device, confirmed by the next sync.
     expect(textOf(again.tree, 'lesson-flow-lesson-outcome')).toBe('Đạt bài');
+    expect(textOf(again.tree, 'lesson-flow-result-title')).toBe(
+      'Bạn đã hoàn thành bài!',
+    );
+    expect(
+      again.tree.root.findAll(
+        node => node.props.accessibilityLabel === 'Hoạt động đạt: 2/3',
+      ).length,
+    ).toBeGreaterThan(0);
+    // Step 4 was judged "Chưa đạt": one activity to review.
+    expect(
+      again.tree.root.findAll(
+        node => node.props.accessibilityLabel === 'Cần ôn lại: 1',
+      ).length,
+    ).toBeGreaterThan(0);
     expect(has(again.tree, 'lesson-flow-lesson-outcome-unconfirmed')).toBe(
       true,
     );

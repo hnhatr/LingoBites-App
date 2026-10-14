@@ -47,6 +47,15 @@ function readDueItems(snapshot: LessonSnapshot): Set<string> {
   }
 }
 
+/** Whether step 1 has anything to show; an empty step 1 is skipped. */
+export function hasRelatedReview(snapshot: LessonSnapshot): boolean {
+  if ((snapshot.spec?.prerequisites ?? []).length > 0) return true;
+  return (
+    relatedReviewRows(snapshot, readDueCards(snapshot), readDueItems(snapshot))
+      .length > 0
+  );
+}
+
 /**
  * Step 1 "Ôn liên quan" (decision G5): prerequisite lessons, the items this
  * lesson builds on and lesson items whose cards are due. Due cards are rated

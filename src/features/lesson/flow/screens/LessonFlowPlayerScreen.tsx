@@ -1,16 +1,17 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
 
 import {speak} from '@features/audio';
+import {getGamificationSnapshot} from '@features/engagement';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {HeaderIconButton} from '@ui/components/HeaderIconButton';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {BottomActionBar} from '@ui/components/BottomActionBar';
+import {Chip} from '@ui/components/Chip';
+import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
@@ -23,9 +24,10 @@ import type {
 import {isLessonNotDownloaded} from '../../player/logic/lessonNotDownloaded';
 import {useCanonicalLesson} from '../../player/logic/useCanonicalLesson';
 import type {LessonFlowParamList} from '../../player/screens/navigationTypes';
-import {StepRail} from '../components/StepRail';
+import {FlowProgressBar} from '../components/FlowProgressBar';
+import {LessonMap} from '../components/LessonMap';
 import {StepResult} from '../components/StepResult';
-import {StepReview} from '../components/StepReview';
+import {hasRelatedReview, StepReview} from '../components/StepReview';
 import {StepView} from '../components/StepView';
 import {flowActivity, flowItems} from '../logic/flowContent';
 import {useNoSpeaking} from '../logic/noSpeaking';
@@ -51,13 +53,14 @@ const STEP_LABEL_KEYS: Record<FlowStep, string> = {
  * PR 10: a curriculum lesson run step by step, 1 → 6 (decision G1). Opens
  * where the learner left off; every finished activity block is stored as one
  * attempt and synced. Works on the downloaded snapshot, offline included.
+ *
+ * IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar.
  */
 export function LessonFlowPlayerScreen({navigation, route}: Props) {
   const {lessonId} = route.params;
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const floatingClearance = useFloatingTabBarClearance();
   const scrollRef = useRef<ScrollView>(null);
   const {state, open} = useCanonicalLesson(lessonId);
   const appNavigation = useAppNavigation();
@@ -74,6 +77,16 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
     open();
   }, [open]);
 
+  /** Step 1 with nothing to review is skipped (redesign: no empty screen). */
+  const reviewSkipped = useMemo(
+    () => (snapshot && runnable ? !hasRelatedReview(snapshot) : false),
+    [snapshot, runnable],
+  );
+  const skippedSteps = useMemo(
+    () => new Set<number>(reviewSkipped ? [1] : []),
+    [reviewSkipped],
+  );
+
   // A curriculum lesson knows its unit: step 6 offers the next lesson.
   const unit = snapshot?.unit ?? null;
   const unitTarget = useMemo(
@@ -83,13 +96,26 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
   );
 
   const goTo = flow.goTo;
+  /** Redesign: the lesson map, shown once before anything was done. */
+  const [showMap, setShowMap] = useState(false);
+  const [streakDays] = useState(readStreakDays);
   const openStep = useCallback(
     (step: FlowStep) => {
+      setShowMap(false);
       goTo(step);
       scrollRef.current?.scrollTo({y: 0, animated: false});
     },
     [goTo],
   );
+
+  // A new lesson opens on its map; step 1 with nothing to review is skipped.
+  const firstStepChecked = useRef(false);
+  useEffect(() => {
+    if (firstStepChecked.current || flow.step === null) return;
+    firstStepChecked.current = true;
+    if (flow.attempts.length === 0) setShowMap(true);
+    if (flow.step === 1 && reviewSkipped) goTo(2);
+  }, [flow.step, flow.attempts.length, reviewSkipped, goTo]);
 
   const handleSpeak = useCallback((text: string) => {
     speak(text).catch(() => undefined);
@@ -169,47 +195,66 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
     }
     const step = flow.step;
     if (step === null) return null;
+    if (showMap) {
+      return (
+        <LessonMap
+          nextStep={step}
+          onOpenStep={openStep}
+          skippedSteps={skippedSteps}
+          snapshot={snapshot}
+          streakDays={streakDays}
+        />
+      );
+    }
     return (
       <>
-        <AppText
-          numberOfLines={2}
-          testID="lesson-flow-lesson-title"
-          variant="h3"
-        >
-          {snapshot.title}
-        </AppText>
-        <StepRail doneSteps={doneSteps} onSelect={openStep} step={step} />
-        <AppText testID="lesson-flow-step-title" variant="h2">
-          {t('lessonFlow.step_heading', {
-            step,
-            label: t(STEP_LABEL_KEYS[step]),
-          })}
-        </AppText>
+        <View style={themedStyles.titles}>
+          <AppText
+            color="secondary"
+            numberOfLines={2}
+            testID="lesson-flow-lesson-title"
+            variant="label"
+          >
+            {snapshot.title}
+          </AppText>
+          <AppText testID="lesson-flow-step-title" variant="h2">
+            {t('lessonFlow.step_heading', {
+              step,
+              label: t(STEP_LABEL_KEYS[step]),
+            })}
+          </AppText>
+        </View>
         {step >= 3 && step <= 5 ? (
           noSpeaking.active ? (
             <View
               style={themedStyles.noSpeaking}
               testID="lesson-flow-no-speaking"
             >
-              <AppText color="secondary" style={themedStyles.flex}>
+              <AppText
+                color="secondary"
+                style={themedStyles.flex}
+                variant="label"
+              >
                 {t('lessonFlow.no_speaking_active')}
               </AppText>
-              <AppButton
+              <Chip
                 accessibilityHint={t('lessonFlow.can_speak_again')}
+                label={t('lessonFlow.can_speak_again')}
                 onPress={noSpeaking.stop}
                 testID="lesson-flow-can-speak"
-                title={t('lessonFlow.can_speak_again')}
-                variant="ghost"
+                tone="accentSoft"
               />
             </View>
           ) : (
-            <AppButton
-              accessibilityHint={t('lessonFlow.no_speaking_hint')}
-              onPress={noSpeaking.start}
-              testID="lesson-flow-cannot-speak"
-              title={t('lessonFlow.no_speaking')}
-              variant="ghost"
-            />
+            <View style={themedStyles.noSpeakingOffer}>
+              <Chip
+                accessibilityHint={t('lessonFlow.no_speaking_hint')}
+                label={t('lessonFlow.no_speaking')}
+                onPress={noSpeaking.start}
+                testID="lesson-flow-cannot-speak"
+                tone="neutral"
+              />
+            </View>
           )
         ) : null}
         {step === 1 ? (
@@ -237,6 +282,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             practiceDone={flow.practiceDone}
             practiceRemaining={flow.practiceRemaining}
             snapshot={snapshot}
+            streakDays={streakDays}
           />
         ) : step === 1 && blocksOfStep(snapshot, 1).length === 0 ? null : (
           <StepView
@@ -250,51 +296,38 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             step={step}
           />
         )}
-        <View style={themedStyles.nav}>
-          <AppButton
-            accessibilityHint={t('lessonFlow.previous_step_hint')}
-            disabled={step === 1}
-            onPress={() => openStep((step - 1) as FlowStep)}
-            style={themedStyles.flex}
-            testID="lesson-flow-previous"
-            title={t('lessonFlow.previous_step')}
-            variant="outline"
-          />
-          {step < 6 ? (
-            <AppButton
-              accessibilityHint={t('lessonFlow.next_step_hint')}
-              onPress={() => openStep((step + 1) as FlowStep)}
-              style={themedStyles.flex}
-              testID="lesson-flow-next"
-              title={t('lessonFlow.next_step')}
-            />
-          ) : null}
-        </View>
       </>
     );
   };
 
+  const shownStep = state.status === 'ready' && runnable ? flow.step : null;
+
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={navigation.goBack}
-        rightAction={
-          <HeaderIconButton
-            accessibilityHint={t('lessonFlow.close_lesson_hint')}
-            accessibilityLabel={t('lessonFlow.close_lesson')}
-            icon="close"
-            onPress={appNavigation.closeLesson}
-            testID="lesson-flow-close"
+      <View style={themedStyles.header}>
+        <IconButton
+          accessibilityHint={t('lessonFlow.close_lesson_hint')}
+          accessibilityLabel={t('lessonFlow.close_lesson')}
+          icon="close"
+          onPress={appNavigation.closeLesson}
+          testID="lesson-flow-close"
+          tone="bare"
+        />
+        {shownStep !== null ? (
+          <FlowProgressBar
+            doneSteps={doneSteps}
+            onSelect={openStep}
+            skippedSteps={skippedSteps}
+            step={shownStep}
           />
-        }
-        subtitle={unit?.unit_title}
-        title={t('lessonFlow.title')}
-      />
+        ) : (
+          <AppText numberOfLines={1} style={themedStyles.flex} variant="h3">
+            {t('lessonFlow.title')}
+          </AppText>
+        )}
+      </View>
       <ScrollView
-        contentContainerStyle={[
-          themedStyles.content,
-          {paddingBottom: floatingClearance},
-        ]}
+        contentContainerStyle={themedStyles.content}
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         style={themedStyles.scroll}
@@ -302,8 +335,37 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
       >
         {renderBody()}
       </ScrollView>
+      {shownStep !== null && showMap ? (
+        <BottomActionBar>
+          <AppButton
+            accessibilityHint={t('lessonFlow.map_start_hint')}
+            iconRight="chevron_right"
+            onPress={() => openStep(shownStep)}
+            testID="lesson-flow-map-start"
+            title={t('lessonFlow.map_start')}
+          />
+        </BottomActionBar>
+      ) : shownStep !== null && shownStep < 6 ? (
+        <BottomActionBar>
+          <AppButton
+            accessibilityHint={t('lessonFlow.next_step_hint')}
+            iconRight="chevron_right"
+            onPress={() => openStep((shownStep + 1) as FlowStep)}
+            testID="lesson-flow-next"
+            title={t('lessonFlow.continue')}
+          />
+        </BottomActionBar>
+      ) : null}
     </AppScreen>
   );
+}
+
+function readStreakDays(): number | null {
+  try {
+    return getGamificationSnapshot().currentStreak;
+  } catch {
+    return null;
+  }
 }
 
 function makeStyles(theme: AppTheme) {
@@ -315,23 +377,34 @@ function makeStyles(theme: AppTheme) {
     },
     content: {
       gap: theme.spacing.lg,
+      paddingBottom: theme.spacing.xl,
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
     },
     flex: {
       flex: 1,
     },
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.sm,
+      paddingRight: theme.gutter,
+      paddingTop: theme.spacing.xs,
+    },
     noSpeaking: {
       alignItems: 'center',
       flexDirection: 'row',
       gap: theme.spacing.sm,
     },
-    nav: {
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
+    noSpeakingOffer: {
+      alignItems: 'flex-start',
     },
     scroll: {
       flex: 1,
+    },
+    titles: {
+      gap: theme.spacing.xs,
     },
   });
 }
