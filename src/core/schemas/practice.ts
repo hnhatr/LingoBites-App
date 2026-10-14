@@ -101,10 +101,10 @@ export const PracticeSetSchema = z.object({
   set_revision: z.number(),
   generator: PracticeGeneratorSchema,
   questions: z.array(PracticeQuestionSchema),
-  validation_summary: z.record(z.unknown()).optional(),
+  validation_summary: z.record(z.string(), z.unknown()).optional(),
   created_at: z.string(),
   ready_at: z.string().optional(),
-  error: z.record(z.unknown()).optional(),
+  error: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const PracticeSessionSchema = z.object({

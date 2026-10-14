@@ -16,7 +16,7 @@ import {
 import {CatalogItemSchema} from '@core/schemas/lesson';
 
 export const WordPackSummarySchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   position: z.number().int(),
   title_vi: z.string(),
   item_count: z.number().int(),
@@ -58,7 +58,7 @@ export const WordPackDetailSchema = z.object({
   request_id: z.string(),
   status: z.literal('success'),
   pack: z.object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     cefr_level: z.string(),
     topic_code: z.string().nullable(),
     position: z.number().int(),

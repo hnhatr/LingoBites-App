@@ -23,9 +23,9 @@ export const CreateRecordingRequestSchema = z.object({
   mime_type: z.string().min(1).max(127),
   byte_size: z.number().int(),
   sha256: z.string().length(64),
-  client_recording_id: z.string().uuid(),
-  lesson_id: z.string().uuid(),
-  sentence_id: z.string().uuid(),
+  client_recording_id: z.string().guid(),
+  lesson_id: z.string().guid(),
+  sentence_id: z.string().guid(),
   mode: SpeakingModeRecordingSchema,
   duration_ms: z.number().int().min(1).max(35000),
 });
@@ -36,12 +36,12 @@ export const CreateRecordingRequestSchema = z.object({
  */
 export const CreateLessonTaskRecordingRequestSchema = z
   .object({
-    client_recording_id: z.string().uuid(),
+    client_recording_id: z.string().guid(),
     mode: z.literal('lesson_task'),
-    attempt_id: z.string().uuid(),
+    attempt_id: z.string().guid(),
     target: z.union([
-      z.object({lesson_id: z.string().uuid(), block_id: z.string().uuid()}),
-      z.object({unit_id: z.string().uuid(), task_id: z.string().uuid()}),
+      z.object({lesson_id: z.string().guid(), block_id: z.string().guid()}),
+      z.object({unit_id: z.string().guid(), task_id: z.string().guid()}),
     ]),
     support_level: z.enum(['none', 'hint_1', 'hint_2', 'model']),
     duration_ms: z.number().int().min(1).max(90_000),
@@ -56,7 +56,7 @@ export type CreateLessonTaskRecordingRequest = z.infer<
 >;
 
 export const RecordingViewSchema = z.object({
-  recording_id: z.string().uuid(),
+  recording_id: z.string().guid(),
   status: RecordingStatusSchema,
   mime_type: z.string(),
   byte_size: z.number().int(),
@@ -64,14 +64,14 @@ export const RecordingViewSchema = z.object({
   upload_expires_at: z.string(),
   created_at: z.string(),
   completed_at: z.string().nullable(),
-  client_recording_id: z.string().uuid().optional(),
-  lesson_id: z.string().uuid().optional(),
-  sentence_id: z.string().uuid().optional(),
+  client_recording_id: z.string().guid().optional(),
+  lesson_id: z.string().guid().optional(),
+  sentence_id: z.string().guid().optional(),
   mode: z
     .enum([...SpeakingModeRecordingSchema.options, 'lesson_task'])
     .optional(),
   duration_ms: z.number().int().optional(),
-  attempt_id: z.string().uuid().optional(),
+  attempt_id: z.string().guid().optional(),
 });
 
 export const CreateRecordingSuccessResponseSchema = z.object({
@@ -100,7 +100,7 @@ export const ListRecordingsSuccessResponseSchema = z.object({
 export const DeleteRecordingSuccessResponseSchema = z.object({
   request_id: z.string(),
   status: z.literal('success'),
-  recording_id: z.string().uuid(),
+  recording_id: z.string().guid(),
   deleted: z.literal(true),
 });
 

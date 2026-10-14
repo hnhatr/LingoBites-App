@@ -43,11 +43,11 @@ const CriterionResultSchema = z.object({
 });
 
 export const EvaluationPayloadSchema = z.object({
-  attempt_id: z.string().uuid(),
-  lesson_id: z.string().uuid().nullable(),
-  unit_id: z.string().uuid().nullable(),
-  block_id: z.string().uuid().nullable(),
-  task_id: z.string().uuid(),
+  attempt_id: z.string().guid(),
+  lesson_id: z.string().guid().nullable(),
+  unit_id: z.string().guid().nullable(),
+  block_id: z.string().guid().nullable(),
+  task_id: z.string().guid(),
   source: z.enum(['text', 'speech']),
   substitute: z.boolean(),
   support_level: z.enum(LessonSupportLevelValues),
@@ -86,8 +86,8 @@ export type EvaluationPayload = z.infer<typeof EvaluationPayloadSchema>;
 
 /** Where an answer belongs: a lesson's step-5 block or a unit's task. */
 export const EvaluationTargetSchema = z.union([
-  z.object({lesson_id: z.string().uuid(), block_id: z.string().uuid()}),
-  z.object({unit_id: z.string().uuid(), task_id: z.string().uuid()}),
+  z.object({lesson_id: z.string().guid(), block_id: z.string().guid()}),
+  z.object({unit_id: z.string().guid(), task_id: z.string().guid()}),
 ]);
 export type EvaluationTarget = z.infer<typeof EvaluationTargetSchema>;
 

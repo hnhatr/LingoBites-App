@@ -72,12 +72,12 @@ export const ListenAndRepeatContentSchema = z
           id: entryId,
           textEn,
           textVi,
-          itemId: z.string().uuid().optional(),
+          itemId: z.string().guid().optional(),
           /**
            * S4.1: the lesson sentence this prompt replays and, for a video
            * lesson, its clip.
            */
-          sentenceId: z.string().uuid().optional(),
+          sentenceId: z.string().guid().optional(),
           startMs: clipMs.optional(),
           endMs: clipMs.optional(),
         })
@@ -114,7 +114,7 @@ export const ListenAndRepeatContentSchema = z
 
 export const SpeakingDrillContentSchema = z
   .object({
-    patternItemId: z.string().uuid(),
+    patternItemId: z.string().guid(),
     combos: entries(
       z
         .object({
@@ -145,7 +145,7 @@ export const FillBlankContentSchema = z
             .max(ACTIVITY_OPTIONS_MAX)
             .optional(),
           textVi,
-          patternItemId: z.string().uuid().optional(),
+          patternItemId: z.string().guid().optional(),
           slot: slotName.optional(),
         })
         .strict()
@@ -209,7 +209,7 @@ export const TranslationContentSchema = z
           id: entryId,
           textVi,
           modelEn: textEn,
-          patternItemId: z.string().uuid().optional(),
+          patternItemId: z.string().guid().optional(),
         })
         .strict(),
     ),
@@ -226,7 +226,7 @@ export const RolePlayContentSchema = z
           speaker: z.enum(['A', 'B']),
           textEn,
           textVi,
-          patternItemId: z.string().uuid().optional(),
+          patternItemId: z.string().guid().optional(),
         })
         .strict(),
       2,

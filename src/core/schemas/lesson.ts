@@ -69,7 +69,7 @@ export const NonBlankTextSchema = z
 
 export const LessonSentenceSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     position: z.number().int().min(0),
     text_en: NonBlankTextSchema,
     text_vi: NonBlankTextSchema,
@@ -83,11 +83,11 @@ export type LessonSentence = z.infer<typeof LessonSentenceSchema>;
 
 export const LessonUnitSchema = z
   .object({
-    course_id: z.string().uuid(),
+    course_id: z.string().guid(),
     course_title: z.string(),
-    level_id: z.string().uuid(),
+    level_id: z.string().guid(),
     level_title: z.string(),
-    unit_id: z.string().uuid(),
+    unit_id: z.string().guid(),
     unit_title: z.string(),
     unit_position: z.number().int(),
     lesson_position: z.number().int(),
@@ -107,7 +107,7 @@ export type LessonYoutube = z.infer<typeof LessonYoutubeSchema>;
 
 export const LessonBlockSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     type: CanonicalLessonBlockTypeSchema,
     position: z.number().int().min(0),
     title: z.string().nullable(),
@@ -133,7 +133,7 @@ export function itemCardIds(block: LessonBlock): string[] {
 
 export const AnalysisVocabularyItemSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     word: NonBlankTextSchema,
     pos: NonBlankTextSchema,
     ipa: NonBlankTextSchema,
@@ -147,7 +147,7 @@ export type AnalysisVocabularyItem = z.infer<
 
 export const AnalysisGrammarItemSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     name: NonBlankTextSchema,
     description: NonBlankTextSchema,
     formula: NonBlankTextSchema,
@@ -159,7 +159,7 @@ export type AnalysisGrammarItem = z.infer<typeof AnalysisGrammarItemSchema>;
 
 export const LessonAnalysisSchema = z
   .object({
-    sentence_id: z.string().uuid(),
+    sentence_id: z.string().guid(),
     vocabulary: z.array(AnalysisVocabularyItemSchema),
     grammar: z.array(AnalysisGrammarItemSchema),
     created_at: z.string(),
@@ -170,7 +170,7 @@ export type LessonAnalysis = z.infer<typeof LessonAnalysisSchema>;
 
 export const LessonCatalogItemSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     title: z.string(),
     description: z.string(),
     origin: LessonOriginSchema,
@@ -238,7 +238,7 @@ export type Audience = z.infer<typeof AudienceSchema>;
 /** Media embedded in a snapshot (the shape a media block carries). */
 export const SnapshotMediaSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     title: z.string(),
     mime_type: z.string(),
     object_key: z.string(),
@@ -269,7 +269,7 @@ export const LessonSpecSchema = z
     prerequisites: z.array(
       z
         .object({
-          lesson_id: z.string().uuid(),
+          lesson_id: z.string().guid(),
           code: z.string().nullable(),
           title: z.string(),
         })
@@ -299,7 +299,7 @@ export type CatalogItemKind = z.infer<typeof CatalogItemKindSchema>;
  */
 export const CatalogItemSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     code: z.string(),
     kind: CatalogItemKindSchema,
     text: z.string(),
@@ -361,7 +361,7 @@ export type LessonItemEntry = z.infer<typeof LessonItemEntrySchema>;
 
 export const LessonTaskSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     kind: z.enum(['guided', 'variation', 'independent']),
     title_vi: z.string(),
     prompt_vi: z.string(),
@@ -390,7 +390,7 @@ export type LessonTask = z.infer<typeof LessonTaskSchema>;
  */
 export const UnitSummativeTaskSchema = LessonTaskSchema.extend({
   kind: z.literal('summative'),
-  unit_id: z.string().uuid(),
+  unit_id: z.string().guid(),
 });
 
 export type UnitSummativeTask = z.infer<typeof UnitSummativeTaskSchema>;
@@ -403,7 +403,7 @@ export const UnitSummativeTaskResponseSchema = z.object({
 
 export const LessonSnapshotSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     slug: z.string(),
     title: z.string(),
     description: z.string(),
@@ -429,7 +429,7 @@ export const LessonSnapshotSchema = z
      * whether the situation came from it or the AI inferred one.
      */
     generated: z.literal(true).optional(),
-    derived_from_lesson_id: z.string().uuid().nullable().optional(),
+    derived_from_lesson_id: z.string().guid().nullable().optional(),
     situation_source: z.enum(['source', 'inferred']).nullable().optional(),
   })
   .strict();
@@ -464,7 +464,7 @@ export type LessonRevisionState = z.infer<typeof LessonRevisionStateSchema>;
 
 export const LessonRevisionItemSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.string().guid(),
     state: LessonRevisionStateSchema,
     content_revision: z.number().int().min(1).nullable(),
   })
@@ -474,7 +474,7 @@ export type LessonRevisionItem = z.infer<typeof LessonRevisionItemSchema>;
 
 export const LessonRevisionsRequestSchema = z
   .object({
-    lesson_ids: z.array(z.string().uuid()).min(1).max(100),
+    lesson_ids: z.array(z.string().guid()).min(1).max(100),
   })
   .strict();
 
@@ -540,7 +540,7 @@ export const LessonCreationAcceptedResponseSchema = z
     contract_version: LessonContractVersionSchema,
     request: z
       .object({
-        id: z.string().uuid(),
+        id: z.string().guid(),
         status: LessonCreationStatusSchema,
       })
       .strict(),
@@ -575,7 +575,7 @@ export const LessonComposeProgressSchema = z
     quota_charged: z.boolean(),
     reason_vi: z.string().nullable(),
     suggestion_vi: z.string().nullable(),
-    dropped_sentence_ids: z.array(z.string().uuid()),
+    dropped_sentence_ids: z.array(z.string().guid()),
   })
   .strict();
 
@@ -585,7 +585,7 @@ export const LessonCreationStatusResponseSchema = z
   .object({
     contract_version: LessonContractVersionSchema,
     status: LessonCreationStatusSchema,
-    lesson_id: z.string().uuid().nullable(),
+    lesson_id: z.string().guid().nullable(),
     error: LessonCreationErrorSchema.nullable(),
     compose: LessonComposeProgressSchema.optional(),
     /** E2: the situation the AI understood, while awaiting the learner's confirmation. */
@@ -602,7 +602,7 @@ export type LessonCreationStatusResponse = z.infer<
 export const ComposeCachedResponseSchema = z
   .object({
     contract_version: z.literal(1),
-    lesson_id: z.string().uuid(),
+    lesson_id: z.string().guid(),
     cached: z.literal(true),
   })
   .strict();
@@ -629,11 +629,11 @@ export const ActiveComposeResponseSchema = z
     requests: z.array(
       z
         .object({
-          id: z.string().uuid(),
+          id: z.string().guid(),
           status: LessonCreationStatusSchema,
-          source_lesson_id: z.string().uuid(),
+          source_lesson_id: z.string().guid(),
           source_lesson_title: z.string().nullable(),
-          sentence_ids: z.array(z.string().uuid()),
+          sentence_ids: z.array(z.string().guid()),
           compose: LessonComposeProgressSchema,
         })
         .strict(),
