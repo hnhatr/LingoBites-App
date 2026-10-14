@@ -1,12 +1,13 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
+
+import {useSpeak} from '@features/audio';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
@@ -18,6 +19,7 @@ import {
 import {useAppNavigation} from '@core/navigation';
 import type {CatalogItem} from '@core/schemas/lesson';
 
+import {PackQuestion, PackSessionHeader} from '../components/PackSessionParts';
 import {findDownloadedPack} from '../logic/wordPackRepository';
 import {learnWordPack} from '../logic/wordPathClient';
 import type {QuickKnownCheckRouteParams} from './navigationTypes';
@@ -48,6 +50,7 @@ export function QuickKnownCheckScreen({
   const {t} = useTranslation();
   const appNavigation = useAppNavigation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const {speak: say} = useSpeak();
   const packId = route?.params.packId ?? '';
   const [questions] = useState<QuizQuestion[]>(() => {
     if (given) return given;
@@ -106,11 +109,15 @@ export function QuickKnownCheckScreen({
 
   const finished = known !== null;
 
+  const shownIndex = finished ? questions.length : index + 1;
+
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={() => navigation?.goBack?.()}
-        title={t('quickCheck.title')}
+      <PackSessionHeader
+        current={shownIndex}
+        onClose={() => navigation?.goBack?.()}
+        progressLabel={t('quickCheck.title')}
+        total={questions.length}
       />
       <ScrollView contentContainerStyle={themedStyles.container}>
         {questions.length === 0 ? (
@@ -119,37 +126,16 @@ export function QuickKnownCheckScreen({
           </AppCard>
         ) : null}
         {current && !finished ? (
-          <AppCard testID={`quick-check-question-${index}`}>
-            <AppText color="secondary" variant="label">
-              {t('quickCheck.progress', {
-                current: index + 1,
-                total: questions.length,
-              })}
-            </AppText>
-            <AppText variant="h2">{current.prompt}</AppText>
-            {current.options.map((option, optionIndex) => (
-              <AppButton
-                key={`${index}-${optionIndex}`}
-                onPress={() => choose(optionIndex)}
-                testID={`quick-check-option-${optionIndex}`}
-                title={option}
-                variant={
-                  chosen === null
-                    ? 'outline'
-                    : optionIndex === current.answerIndex
-                      ? 'secondary'
-                      : 'outline'
-                }
-              />
-            ))}
-            {chosen !== null && index + 1 < questions.length ? (
-              <AppButton
-                onPress={advance}
-                testID="quick-check-next"
-                title={t('quickCheck.next')}
-              />
-            ) : null}
-          </AppCard>
+          <PackQuestion
+            answerIndex={current.answerIndex}
+            chosen={chosen}
+            onChoose={choose}
+            onSpeak={() => say(current.prompt)}
+            optionTestID="quick-check-option"
+            options={current.options}
+            prompt={current.prompt}
+            containerTestID={`quick-check-question-${index}`}
+          />
         ) : null}
         {finished ? (
           <AppCard testID="quick-check-done">
@@ -169,6 +155,19 @@ export function QuickKnownCheckScreen({
           </AppCard>
         ) : null}
       </ScrollView>
+      {current && !finished ? (
+        <View style={themedStyles.footer}>
+          <AppButton
+            disabled={chosen === null}
+            iconRight="chevron_right"
+            onPress={advance}
+            style={themedStyles.grow}
+            testID="quick-check-next"
+            title={t('quickCheck.next')}
+            variant="primary"
+          />
+        </View>
+      ) : null}
     </AppScreen>
   );
 }
@@ -178,6 +177,14 @@ function makeStyles(theme: AppTheme) {
     container: {
       gap: theme.spacing.md,
       padding: theme.spacing.md,
+    },
+    footer: {
+      paddingBottom: theme.spacing.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingTop: theme.spacing.sm,
+    },
+    grow: {
+      flex: 1,
     },
   });
 }

@@ -1,12 +1,14 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
+
+import {useSpeak} from '@features/audio';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
@@ -17,6 +19,13 @@ import {
 import {useAppNavigation} from '@core/navigation';
 import type {CatalogItem} from '@core/schemas/lesson';
 
+import {PackFlashCard} from '../components/PackFlashCard';
+import {
+  PackQuestion,
+  PackSessionHeader,
+  PackSessionSteps,
+} from '../components/PackSessionParts';
+import {topicLabelOf} from '../logic/packRows';
 import {findDownloadedPack} from '../logic/wordPackRepository';
 import {learnWordPack} from '../logic/wordPathClient';
 import type {PackLearnRouteParams} from './navigationTypes';
@@ -43,10 +52,11 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
   const {t} = useTranslation();
   const appNavigation = useAppNavigation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const {speak: say} = useSpeak();
   const packId = route?.params.packId ?? '';
+  const [pack] = useState(() => (given ? null : findDownloadedPack(packId)));
   const [items] = useState<CatalogItem[]>(() => {
     if (given) return given;
-    const pack = findDownloadedPack(packId);
     if (!pack) return [];
     const byCode = readCatalogItems(pack.itemCodes);
     return pack.itemCodes.flatMap(code => byCode.get(code) ?? []);
@@ -101,11 +111,38 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
     }
   };
 
+  const packLabel = pack
+    ? (topicLabelOf(pack.topicCode) ??
+      t('wordPath.pack_title', {position: pack.position}))
+    : null;
+  const close = () => navigation?.goBack?.();
+  const header =
+    stage === 'cards'
+      ? {
+          current: Math.min(cardIndex + 1, items.length),
+          total: items.length,
+          label: t('packLearn.progress', {
+            current: cardIndex + 1,
+            total: items.length,
+          }),
+        }
+      : {
+          current:
+            stage === 'recognition' ? questionIndex + 1 : questions.length,
+          total: questions.length,
+          label: t('packLearn.recognition', {
+            current: questionIndex + 1,
+            total: questions.length,
+          }),
+        };
+
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={() => navigation?.goBack?.()}
-        title={t('packLearn.title')}
+      <PackSessionHeader
+        current={header.current}
+        onClose={close}
+        progressLabel={header.label}
+        total={header.total}
       />
       <ScrollView contentContainerStyle={themedStyles.container}>
         {items.length === 0 ? (
@@ -114,74 +151,39 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
           </AppCard>
         ) : null}
 
-        {stage === 'cards' && card ? (
-          <AppCard testID={`pack-learn-card-${card.code}`}>
-            <AppText color="secondary" variant="label">
-              {t('packLearn.progress', {
-                current: cardIndex + 1,
-                total: items.length,
-              })}
-            </AppText>
-            <AppText variant="h2">{card.text}</AppText>
-            {card.ipa ? <AppText color="secondary">{card.ipa}</AppText> : null}
-            <AppText>{card.meaning_vi}</AppText>
-            {card.examples[0] ? (
-              <AppText color="secondary">{card.examples[0].text_en}</AppText>
-            ) : null}
-            <AppButton
-              onPress={() => {
-                if (cardIndex + 1 < items.length) {
-                  setCardIndex(value => value + 1);
-                } else {
-                  setStage('recognition');
-                }
-              }}
-              testID="pack-learn-next-card"
-              title={t('packLearn.next')}
-              variant="secondary"
-            />
-          </AppCard>
+        {items.length > 0 && stage !== 'done' ? (
+          <PackSessionSteps
+            active={stage === 'cards' ? 0 : 1}
+            labels={[t('packLearn.step_cards'), t('packLearn.step_quiz')]}
+          />
         ) : null}
 
-        {stage === 'recognition' && question ? (
-          <AppCard testID={`pack-learn-question-${questionIndex}`}>
-            <AppText color="secondary" variant="label">
-              {t('packLearn.recognition', {
-                current: questionIndex + 1,
-                total: questions.length,
-              })}
-            </AppText>
-            <AppText variant="h2">{question.prompt}</AppText>
-            {question.options.map((option, optionIndex) => (
-              <AppButton
-                key={`${questionIndex}-${optionIndex}`}
-                onPress={() => answer(optionIndex)}
-                testID={`pack-learn-option-${optionIndex}`}
-                title={option}
-                variant={
-                  chosen === null
-                    ? 'outline'
-                    : optionIndex === question.answerIndex
-                      ? 'secondary'
-                      : 'outline'
-                }
-              />
-            ))}
-            {chosen !== null ? (
-              <AppButton
-                onPress={nextQuestion}
-                testID="pack-learn-next-question"
-                title={
-                  questionIndex + 1 < questions.length
-                    ? t('packLearn.next')
-                    : t('packLearn.finish')
-                }
-              />
-            ) : null}
-            {failed ? (
-              <AppText color="danger">{t('packLearn.save_failed')}</AppText>
-            ) : null}
-          </AppCard>
+        {stage === 'cards' && card ? (
+          <PackFlashCard
+            example={card.examples[0]?.text_en ?? null}
+            ipa={card.ipa}
+            meaning={card.meaning_vi}
+            onSpeak={() => say(card.text)}
+            packLabel={packLabel}
+            testID={`pack-learn-card-${card.code}`}
+            word={card.text}
+          />
+        ) : null}
+
+        {stage !== 'cards' && stage !== 'done' && question ? (
+          <PackQuestion
+            answerIndex={question.answerIndex}
+            chosen={chosen}
+            onChoose={answer}
+            onSpeak={() => say(question.prompt)}
+            optionTestID="pack-learn-option"
+            options={question.options}
+            prompt={question.prompt}
+            containerTestID={`pack-learn-question-${questionIndex}`}
+          />
+        ) : null}
+        {failed ? (
+          <AppText color="danger">{t('packLearn.save_failed')}</AppText>
         ) : null}
 
         {stage === 'done' ? (
@@ -198,6 +200,53 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
           </AppCard>
         ) : null}
       </ScrollView>
+
+      {stage === 'cards' && card ? (
+        <View style={themedStyles.footer}>
+          <IconButton
+            accessibilityHint={t('packLearn.prev_hint')}
+            accessibilityLabel={t('packLearn.prev')}
+            disabled={cardIndex === 0}
+            icon="chevron_left"
+            onPress={() => setCardIndex(value => Math.max(0, value - 1))}
+            size={52}
+            testID="pack-learn-prev-card"
+            tone="ghost"
+          />
+          <AppButton
+            iconRight="chevron_right"
+            onPress={() => {
+              if (cardIndex + 1 < items.length) {
+                setCardIndex(value => value + 1);
+              } else {
+                setStage('recognition');
+              }
+            }}
+            style={themedStyles.grow}
+            testID="pack-learn-next-card"
+            title={t('packLearn.next')}
+            variant="secondary-coral"
+          />
+        </View>
+      ) : null}
+
+      {(stage === 'recognition' || stage === 'saving') && question ? (
+        <View style={themedStyles.footer}>
+          <AppButton
+            disabled={chosen === null || stage === 'saving'}
+            loading={stage === 'saving'}
+            onPress={nextQuestion}
+            style={themedStyles.grow}
+            testID="pack-learn-next-question"
+            title={
+              questionIndex + 1 < questions.length
+                ? t('packLearn.next')
+                : t('packLearn.finish')
+            }
+            variant="primary"
+          />
+        </View>
+      ) : null}
     </AppScreen>
   );
 }
@@ -207,6 +256,17 @@ function makeStyles(theme: AppTheme) {
     container: {
       gap: theme.spacing.md,
       padding: theme.spacing.md,
+    },
+    footer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 10,
+      paddingBottom: theme.spacing.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingTop: theme.spacing.sm,
+    },
+    grow: {
+      flex: 1,
     },
   });
 }
