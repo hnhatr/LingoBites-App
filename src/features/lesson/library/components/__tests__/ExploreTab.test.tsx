@@ -7,7 +7,7 @@ import {FeatureFlagProvider} from '@core/release';
 
 import {mockAppNavigation} from '@test/support';
 
-import {ExploreTab, shelfPacks} from '../tabs/ExploreTab';
+import {ExploreTab, groupByUnit, shelfPacks} from '../tabs/ExploreTab';
 
 const mockReload = jest.fn();
 const mockRefresh = jest.fn();
@@ -175,21 +175,21 @@ describe('ExploreTab', () => {
     ).not.toHaveLength(0);
   });
 
-  it('draws covers: the pack picture, else its default, and level chips', () => {
+  it('draws pack tiles: the pack picture, else its icon, and level chips', () => {
     const tree = render();
     const image = tree.root.findByProps({
-      testID: 'library-pack-going-cover-image',
+      testID: 'library-pack-going-image',
     });
     expect(image.props.source).toEqual({uri: 'https://cdn.example/going.png'});
     expect(
-      tree.root.findAllByProps({testID: 'library-pack-new-cover-default'}),
+      tree.root.findAllByProps({testID: 'library-pack-new-default'}),
     ).not.toHaveLength(0);
     expect(
-      tree.root.findAllByProps({testID: 'library-pack-new-cover-level'}),
+      tree.root.findAllByProps({testID: 'library-pack-new-level'}),
     ).not.toHaveLength(0);
     expect(
       tree.root.findAllByProps({
-        testID: 'library-pack-new-cover-badge-download',
+        testID: 'library-pack-new-status-download',
       }),
     ).not.toHaveLength(0);
   });
@@ -215,7 +215,7 @@ describe('ExploreTab', () => {
       uri: 'https://i.ytimg.com/vi/abc123/hqdefault.jpg',
     });
     const own = tree.root.findByProps({
-      testID: 'library-shelf-lessons-own-cover-image',
+      testID: 'library-shelf-videos-own-cover-image',
     });
     expect(own.props.source).toEqual({uri: 'https://cdn.example/own.png'});
     expect(
@@ -223,5 +223,43 @@ describe('ExploreTab', () => {
         testID: 'library-shelf-videos-vid-cover-level',
       }),
     ).not.toHaveLength(0);
+  });
+
+  it('counts each folder, with a plus when the server has more', () => {
+    mockCatalog = {
+      status: 'ready',
+      lessons: [lesson('one'), lesson('two')],
+      nextCursor: 'next',
+      loadingMore: false,
+    };
+    const tree = render();
+    expect(
+      tree.root.findByProps({testID: 'library-shelf-packs-count'}).props
+        .children,
+    ).toBe('2');
+    expect(
+      tree.root.findByProps({testID: 'library-shelf-lessons-count'}).props
+        .children,
+    ).toBe('2+');
+  });
+
+  it('groups lessons under their unit, numbered by their place in it', () => {
+    const unit = (id: string, position: number) => ({
+      unit_id: id,
+      unit_title: `Unit ${id}`,
+      unit_position: 1,
+      lesson_position: position,
+    });
+    const groups = groupByUnit([
+      lesson('a', {unit: unit('u1', 1)}),
+      lesson('b', {unit: unit('u1', 2)}),
+      lesson('c', {unit: null}),
+      lesson('d', {unit: unit('u2', 3)}),
+    ] as never);
+    expect(groups.map(group => [group.title, group.items.length])).toEqual([
+      ['Unit u1', 2],
+      [null, 1],
+      ['Unit u2', 1],
+    ]);
   });
 });

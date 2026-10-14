@@ -1,11 +1,9 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useMemo, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
-import {AppText} from '@ui/components/AppText';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {LibraryTabBar} from '../components/LibraryTabBar';
 import {CreatedTab} from '../components/tabs/CreatedTab';
@@ -20,18 +18,15 @@ type Props = NativeStackScreenProps<LessonsStackParamList, 'LessonsList'>;
 export type LessonsHistoryScreenProps = Props;
 
 /**
- * The Library hub: icon tabs for what LingoBites provides, the learner's
+ * The Library hub: tabs for what LingoBites provides, the learner's
  * saved items, the lessons they made and their moments. A tab is mounted on
  * its first visit and kept, so switching back does not reload it.
  */
 export function LessonsHistoryScreen(_props: Props) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [selected, setSelected] = useState<LibraryTab>(LIBRARY_TABS[0].id);
   const [visited, setVisited] = useState<ReadonlySet<LibraryTab>>(
     () => new Set([LIBRARY_TABS[0].id]),
   );
-  const selectedTab = LIBRARY_TABS.find(tab => tab.id === selected)!;
 
   const select = (tab: LibraryTab) => {
     setSelected(tab);
@@ -48,9 +43,6 @@ export function LessonsHistoryScreen(_props: Props) {
         selected={selected}
         tabs={LIBRARY_TABS}
       />
-      <AppText style={styles.tabTitle} testID="library-tab-title" variant="h3">
-        {selectedTab.title}
-      </AppText>
       {LIBRARY_TABS.filter(tab => visited.has(tab.id)).map(tab => (
         <View
           key={tab.id}
@@ -77,18 +69,13 @@ function renderTab(tab: LibraryTab) {
   }
 }
 
-function makeStyles(theme: AppTheme) {
-  return StyleSheet.create({
-    tabTitle: {
-      color: theme.colors.text.primary,
-      paddingHorizontal: theme.gutter,
-      paddingTop: theme.spacing.md,
-    },
-    panel: {
-      flex: 1,
-    },
-    hidden: {
-      display: 'none',
-    },
-  });
-}
+const styles = StyleSheet.create({
+  panel: {
+    flex: 1,
+    // Keeps scrolled content from drawing over the tabs.
+    overflow: 'hidden',
+  },
+  hidden: {
+    display: 'none',
+  },
+});

@@ -1,10 +1,13 @@
 import React, {useMemo} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerFace} from '@ui/theme/hardShadow';
 
 import type {LibraryTab, LibraryTabConfig} from '../logic/librarySections';
+import {libraryTone} from './libraryTones';
 
 export interface LibraryTabBarProps {
   tabs: readonly LibraryTabConfig[];
@@ -13,8 +16,8 @@ export interface LibraryTabBarProps {
 }
 
 /**
- * Icon-only tabs under the Library title; the selected tab is tinted and
- * underlined. Each icon carries its tab name for screen readers.
+ * The Library tabs: a pastel bubble per tab with its name underneath. The
+ * open tab fills with its colour, tilts and lifts, with a dot below it.
  */
 export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
   const {theme} = useAppTheme();
@@ -24,6 +27,7 @@ export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
     <View accessibilityRole="tablist" style={styles.bar} testID="library-tabs">
       {tabs.map(tab => {
         const isSelected = tab.id === selected;
+        const tone = libraryTone(theme, tab.tone);
         return (
           <Pressable
             accessibilityHint={`Mở tab ${tab.title}`}
@@ -33,18 +37,30 @@ export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
             hitSlop={4}
             key={tab.id}
             onPress={() => onSelect(tab.id)}
-            style={styles.tab}
+            style={({pressed}) => [styles.tab, pressed && styles.pressed]}
             testID={`library-tab-${tab.id}`}
           >
-            <MaterialIcon
-              color={
-                isSelected ? theme.colors.primary : theme.colors.text.muted
-              }
-              name={tab.icon}
-              size={26}
-            />
             <View
-              style={[styles.underline, isSelected && styles.underlineOn]}
+              style={[
+                styles.bubble,
+                {backgroundColor: isSelected ? tone.strong : tone.soft},
+                isSelected && styles.bubbleOn,
+              ]}
+            >
+              <MaterialIcon
+                color={isSelected ? tone.onStrong : tone.ink}
+                name={tab.icon}
+                size={26}
+              />
+            </View>
+            <AppText
+              numberOfLines={1}
+              style={[styles.label, isSelected && styles.labelOn]}
+            >
+              {tab.title}
+            </AppText>
+            <View
+              style={[styles.pip, isSelected && {backgroundColor: tone.strong}]}
             />
           </Pressable>
         );
@@ -56,24 +72,47 @@ export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     bar: {
-      borderBottomColor: theme.colors.outlineVariant,
-      borderBottomWidth: StyleSheet.hairlineWidth,
       flexDirection: 'row',
+      gap: theme.spacing.xs,
+      paddingBottom: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      paddingTop: theme.spacing.md,
     },
     tab: {
       alignItems: 'center',
       flex: 1,
-      paddingTop: theme.spacing.sm,
+      gap: 6,
     },
-    underline: {
-      borderTopLeftRadius: 3,
-      borderTopRightRadius: 3,
-      height: 3,
-      marginTop: theme.spacing.sm,
-      width: '64%',
+    pressed: {
+      opacity: theme.states.pressedOpacity,
     },
-    underlineOn: {
-      backgroundColor: theme.colors.primary,
+    bubble: {
+      alignItems: 'center',
+      borderRadius: 20,
+      height: 54,
+      justifyContent: 'center',
+      width: 54,
+    },
+    bubbleOn: {
+      transform: [{translateY: -3}, {rotate: '-6deg'}],
+      ...(getStickerFace(theme, 3) ?? {
+        borderColor: theme.colors.outlineVariant,
+        borderWidth: 1,
+      }),
+    },
+    label: {
+      color: theme.colors.text.muted,
+      fontSize: 12.5,
+      fontWeight: '800',
+    },
+    labelOn: {
+      color: theme.colors.text.primary,
+    },
+    pip: {
+      borderRadius: 3,
+      height: 6,
+      marginTop: -2,
+      width: 6,
     },
   });
 }
