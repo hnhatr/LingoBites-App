@@ -12,7 +12,7 @@ import {MaterialIcon} from './MaterialIcon';
  * Thin strip shown while the Server is unreachable
  * (docs/architecture/offline-mode.md §3). Renders nothing online.
  */
-export function OfflineBanner() {
+export function OfflineBanner({topInset = 0}: {topInset?: number}) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const offline = useIsOffline();
@@ -23,7 +23,10 @@ export function OfflineBanner() {
     <View
       accessibilityLiveRegion="polite"
       accessibilityRole="alert"
-      style={[styles.container, {backgroundColor: theme.colors.surfaceMuted}]}
+      style={[
+        styles.container,
+        {backgroundColor: theme.colors.surfaceMuted, paddingTop: 6 + topInset},
+      ]}
       testID="offline-banner"
     >
       <MaterialIcon color={theme.colors.text.secondary} name="info" size={16} />

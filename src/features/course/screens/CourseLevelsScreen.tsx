@@ -6,12 +6,16 @@ import {StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {
+  CurriculumHeroChrome,
+  useHeroScroll,
+} from '../components/CurriculumHeroChrome';
 import {CurriculumHeroCover} from '../components/CurriculumHeroCover';
 import {CurriculumList} from '../components/CurriculumList';
+import {levelName, LevelPassSwitcher} from '../components/LevelPassSwitcher';
 import {LevelUnitList} from '../components/LevelUnitList';
 import {curriculumGlyph} from '../logic/curriculumCover';
 import {useCourseLevels} from '../logic/useCurriculum';
@@ -20,8 +24,8 @@ import type {CourseFlowParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CourseFlowParamList, 'CourseLevels'>;
 
 /**
- * One course (F14): its cover (the level's, else the course's), its levels as
- * a switcher, then the chosen level's units,
+ * One course (F14): its cover (the level's, else the course's) edge to edge,
+ * its levels as boarding passes, then the chosen level's units as a route,
  * so a unit is one tap from the course instead of a separate level screen.
  * The chosen level is kept in the route, so back from a unit keeps it.
  */
@@ -31,6 +35,8 @@ export function CourseLevelsScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {courseSlug, title, levelId, coverUrl} = route.params;
   const {state, refresh} = useCourseLevels(courseSlug);
+  const {solid, onScroll} = useHeroScroll();
+  const screenTitle = title ?? t('course.levels_title');
 
   useFocusEffect(
     useCallback(() => {
@@ -55,69 +61,51 @@ export function CourseLevelsScreen({navigation, route}: Props) {
 
   const heroUrl = selected?.coverUrl ?? coverUrl ?? null;
   const header = selected ? (
-    <View style={themedStyles.levels}>
+    <View style={themedStyles.header}>
       <CurriculumHeroCover
         glyph={curriculumGlyph(title, selected.title, selected.description)}
         imageUrl={heroUrl}
         level={selected.code}
         testID="course-levels-cover"
-      />
-      {levels.length > 1 ? (
-        <View style={themedStyles.chips} testID="course-levels-switcher">
-          {levels.map(level => (
-            <Chip
-              accessibilityHint={t('course.level_switch_hint')}
-              key={level.id}
-              label={level.title}
-              onPress={() =>
-                navigation.setParams({
-                  levelId: level.id,
-                  levelCode: level.code,
-                })
-              }
-              selected={level.id === selected.id}
-              testID={`course-levels-chip-${level.id}`}
-            />
-          ))}
-        </View>
-      ) : null}
-      {levels.length > 1 && selected.description.trim().length > 0 ? (
-        <AppText
-          color="secondary"
-          testID="course-levels-description"
-          variant="label"
-        >
-          {selected.description}
+      >
+        <AppText testID="course-levels-title" variant="h1">
+          {screenTitle}
         </AppText>
-      ) : null}
+        {levels.length > 1 ? (
+          <LevelPassSwitcher
+            accessibilityHint={t('course.level_switch_hint')}
+            levels={levels}
+            onSelect={level =>
+              navigation.setParams({
+                levelId: level.id,
+                levelCode: level.code,
+              })
+            }
+            selectedId={selected.id}
+            testID="course-levels-switcher"
+          />
+        ) : (
+          <AppText color="secondary" variant="label">
+            {selected.code} · {levelName(selected)}
+          </AppText>
+        )}
+        {selected.description.trim().length > 0 ? (
+          <AppText
+            color="secondary"
+            testID="course-levels-description"
+            variant="label"
+          >
+            {selected.description}
+          </AppText>
+        ) : null}
+      </CurriculumHeroCover>
     </View>
   ) : undefined;
 
-  return (
-    <AppScreen>
-      <ScreenHeader
-        title={title ?? t('course.levels_title')}
-        subtitle={selected && levels.length === 1 ? selected.title : undefined}
-        onBack={() => navigation.goBack()}
-      />
-      {selected ? (
-        <LevelUnitList
-          // A new level starts from its own loading state, never the old list.
-          key={selected.id}
-          header={header}
-          levelCode={selected.code}
-          levelId={selected.id}
-          onOpenUnit={unit =>
-            navigation.push('UnitLessons', {
-              unitId: unit.id,
-              title: unit.title,
-              coverUrl: unit.coverUrl ?? heroUrl,
-              levelCode: selected.code,
-            })
-          }
-          testID="course-levels-units"
-        />
-      ) : (
+  if (!selected) {
+    return (
+      <AppScreen>
+        <ScreenHeader title={screenTitle} onBack={() => navigation.goBack()} />
         <CurriculumList
           emptyMessage={t('course.levels_empty')}
           onRetry={refresh}
@@ -125,20 +113,42 @@ export function CourseLevelsScreen({navigation, route}: Props) {
           status={state.status}
           testID="course-levels"
         />
-      )}
+      </AppScreen>
+    );
+  }
+
+  // The level's picture runs up under the status bar.
+  return (
+    <AppScreen edges={['left', 'right', 'bottom']}>
+      <LevelUnitList
+        // A new level starts from its own loading state, never the old list.
+        key={selected.id}
+        header={header}
+        levelCode={selected.code}
+        levelId={selected.id}
+        onOpenUnit={unit =>
+          navigation.push('UnitLessons', {
+            unitId: unit.id,
+            title: unit.title,
+            coverUrl: unit.coverUrl ?? heroUrl,
+            levelCode: selected.code,
+          })
+        }
+        onScroll={onScroll}
+        testID="course-levels-units"
+      />
+      <CurriculumHeroChrome
+        onBack={() => navigation.goBack()}
+        solid={solid}
+        title={screenTitle}
+      />
     </AppScreen>
   );
 }
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    chips: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.sm,
-    },
-    levels: {
-      gap: theme.spacing.md,
+    header: {
       paddingBottom: theme.spacing.sm,
     },
   });

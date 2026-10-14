@@ -1,32 +1,37 @@
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {StyleSheet, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import {
   readLessonCardLocalState,
   useLessonBookmarks,
 } from '@features/lesson/library';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {
-  LessonCard,
   lessonCardDurationLabel,
-  lessonCardKind,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
 import {LibraryCover} from '@ui/components/LibraryCover';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 
+import {
+  CurriculumHeroChrome,
+  useHeroScroll,
+} from '../components/CurriculumHeroChrome';
 import {CurriculumHeroCover} from '../components/CurriculumHeroCover';
 import {CurriculumList} from '../components/CurriculumList';
-import {UnitProgressBar} from '../components/UnitProgressBar';
+import {LessonStep, type LessonStepState} from '../components/LessonStep';
+import {SummativeMissionCard} from '../components/SummativeMissionCard';
+import {UnitProgressRing} from '../components/UnitProgressRing';
 import {curriculumGlyph} from '../logic/curriculumCover';
 import {useCourseBreadcrumb} from '../logic/useCourseBreadcrumb';
 import {useUnitLessons} from '../logic/useCurriculum';
@@ -34,10 +39,16 @@ import type {CourseFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<CourseFlowParamList, 'UnitLessons'>;
 
+/** Width of the lesson rail (the step dot). */
+const RAIL_WIDTH = 36;
+
 /**
- * Lessons of one unit in order (F14), under the unit's cover; each lesson
- * shows its own cover, else the unit's, else a default cover. A curriculum lesson id is the id the
- * regular player loads, so a row opens the same lesson player.
+ * Lessons of one unit in order (F14), under the unit's cover edge to edge:
+ * a "continue" button to the first unlearnt lesson, the lessons as steps on
+ * one line, and the unit's summative task as the reward at its end. Each
+ * lesson shows its own cover, else the unit's, else a default cover. A
+ * curriculum lesson id is the id the regular player loads, so a step opens
+ * the same lesson player.
  */
 export function UnitLessonsScreen({navigation, route}: Props) {
   const appNavigation = useAppNavigation();
@@ -48,6 +59,9 @@ export function UnitLessonsScreen({navigation, route}: Props) {
   const {state, refresh} = useUnitLessons(unitId);
   const {isBookmarked, toggleBookmark} = useLessonBookmarks();
   const breadcrumb = useCourseBreadcrumb(navigation, route.key);
+  const {solid, onScroll} = useHeroScroll();
+  const [continuePressed, setContinuePressed] = useState(false);
+  const screenTitle = title ?? t('course.lessons_title');
 
   useFocusEffect(
     useCallback(() => {
@@ -61,6 +75,11 @@ export function UnitLessonsScreen({navigation, route}: Props) {
     () => (ready ? readLessonCardLocalState() : null),
     [ready],
   );
+  const nextIndex = ready
+    ? ready.lessons.findIndex(lesson => !ready.completedIds.has(lesson.id))
+    : -1;
+  const nextLesson = ready && nextIndex >= 0 ? ready.lessons[nextIndex] : null;
+
   const rows = ready
     ? ready.lessons.map((lesson, index) => {
         const completed = ready.completedIds.has(lesson.id);
@@ -69,6 +88,11 @@ export function UnitLessonsScreen({navigation, route}: Props) {
         const sentenceCount = download?.sentenceCount ?? null;
         const lessonNumber = t('course.lesson_number', {number: index + 1});
         const split = splitLessonTitle(lesson.title);
+        const stepState: LessonStepState = completed
+          ? 'done'
+          : index === nextIndex
+            ? 'current'
+            : 'upcoming';
         const onPress = () => appNavigation.openLesson(lesson.id);
         return {
           id: lesson.id,
@@ -76,38 +100,26 @@ export function UnitLessonsScreen({navigation, route}: Props) {
           accessibilityHint: t('course.lesson_row_hint'),
           onPress,
           card: (
-            <LessonCard
+            <LessonStep
               accessibilityHint={t('course.lesson_row_hint')}
+              accessibilityLabel={`${lessonNumber}: ${lesson.title}`}
               bookmarked={isBookmarked(lesson.id)}
-              contextLead={lessonNumber}
+              canDo={
+                lesson.canDo[0]
+                  ? t('course.unit_can_do', {text: lesson.canDo[0]})
+                  : split.subtitle
+              }
+              canDoTestID={
+                lesson.canDo[0] ? `unit-lessons-can-do-${lesson.id}` : undefined
+              }
               downloaded={localState?.downloadedIds.has(lesson.id)}
               durationLabel={lessonCardDurationLabel({
                 estimatedMinutes: lesson.estimatedMinutes,
                 sentenceCount,
               })}
               exerciseCount={localState?.activityCounts.get(lesson.id)}
-              footer={
-                lesson.canDo[0] ? (
-                  <AppText
-                    color="secondary"
-                    numberOfLines={2}
-                    testID={`unit-lessons-can-do-${lesson.id}`}
-                  >
-                    {t('course.unit_can_do', {text: lesson.canDo[0]})}
-                  </AppText>
-                ) : undefined
-              }
-              kind={lessonCardKind(sourceType)}
-              thumbnail={
-                <LibraryCover
-                  glyph={curriculumGlyph(lesson.title, title)}
-                  hideLevelChip
-                  imageUrl={lesson.coverUrl ?? coverUrl}
-                  level={levelCode}
-                  shape="pack"
-                  testID={`unit-lessons-cover-${lesson.id}`}
-                />
-              }
+              gap={theme.spacing.md}
+              number={index + 1}
               onPress={onPress}
               onToggleBookmark={() =>
                 toggleBookmark({
@@ -124,9 +136,18 @@ export function UnitLessonsScreen({navigation, route}: Props) {
                   ? {state: 'completed'}
                   : localState?.progress.get(lesson.id)
               }
-              sentenceCount={sentenceCount}
-              subtitle={split.subtitle}
+              state={stepState}
               testID={`unit-lessons-row-${lesson.id}`}
+              thumbnail={
+                <LibraryCover
+                  glyph={curriculumGlyph(lesson.title, title)}
+                  hideLevelChip
+                  imageUrl={lesson.coverUrl ?? coverUrl}
+                  level={levelCode}
+                  shape="pack"
+                  testID={`unit-lessons-cover-${lesson.id}`}
+                />
+              }
               title={split.title}
             />
           ),
@@ -134,67 +155,217 @@ export function UnitLessonsScreen({navigation, route}: Props) {
       })
     : [];
 
+  const hasLessons = ready !== null && ready.lessons.length > 0;
+  const header = hasLessons ? (
+    <View style={themedStyles.header}>
+      <CurriculumHeroCover
+        glyph={curriculumGlyph(title)}
+        imageUrl={coverUrl}
+        level={levelCode}
+        testID="unit-lessons-cover"
+      >
+        <View style={styles.titleRow}>
+          <View style={styles.titleCopy}>
+            {breadcrumb.length > 0 ? (
+              <View accessibilityRole="toolbar" style={styles.crumbs}>
+                {breadcrumb.map((crumb, index) => (
+                  <React.Fragment key={`${index}-${crumb.label}`}>
+                    {index > 0 ? (
+                      <AppText color="muted" variant="caption">
+                        ›
+                      </AppText>
+                    ) : null}
+                    <Pressable
+                      accessibilityHint="Quay thẳng về màn này"
+                      accessibilityLabel={crumb.label}
+                      accessibilityRole="link"
+                      hitSlop={CRUMB_HIT_SLOP}
+                      onPress={crumb.onPress}
+                      style={styles.crumb}
+                      testID={crumb.testID}
+                    >
+                      <AppText
+                        numberOfLines={1}
+                        style={themedStyles.crumbText}
+                        variant="caption"
+                      >
+                        {crumb.label}
+                      </AppText>
+                    </Pressable>
+                  </React.Fragment>
+                ))}
+              </View>
+            ) : null}
+            <AppText testID="unit-lessons-title" variant="h1">
+              {screenTitle}
+            </AppText>
+          </View>
+          <UnitProgressRing
+            progress={ready.progress}
+            testID="unit-lessons-progress"
+          />
+        </View>
+        {nextLesson ? (
+          <Pressable
+            accessibilityHint={t('course.lesson_row_hint')}
+            accessibilityLabel={`${t(
+              nextIndex === 0 && ready.progress.completed === 0
+                ? 'course.start_lesson'
+                : 'course.continue_lesson',
+              {number: nextIndex + 1},
+            )}: ${nextLesson.title}`}
+            accessibilityRole="button"
+            onPress={() => appNavigation.openLesson(nextLesson.id)}
+            onPressIn={() => setContinuePressed(true)}
+            onPressOut={() => setContinuePressed(false)}
+            testID="unit-lessons-continue"
+          >
+            <ShelfSurface
+              borderRadius={22}
+              faceStyle={themedStyles.continueFace}
+              isPressed={continuePressed}
+              shelfColor={theme.shelf?.accent.color}
+              shelfHeight={theme.shelf?.accent.height}
+            >
+              <View style={themedStyles.play}>
+                <MaterialIcon
+                  color={theme.colors.text.inverse}
+                  name="play_arrow"
+                  size={24}
+                />
+              </View>
+              <View style={styles.titleCopy}>
+                <AppText style={themedStyles.continueTitle}>
+                  {t(
+                    nextIndex === 0 && ready.progress.completed === 0
+                      ? 'course.start_lesson'
+                      : 'course.continue_lesson',
+                    {number: nextIndex + 1},
+                  )}
+                </AppText>
+                <AppText numberOfLines={1} style={themedStyles.continueText}>
+                  {[
+                    splitLessonTitle(nextLesson.title).title,
+                    nextLesson.estimatedMinutes
+                      ? t('course.lesson_minutes', {
+                          count: nextLesson.estimatedMinutes,
+                        })
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </AppText>
+              </View>
+            </ShelfSurface>
+          </Pressable>
+        ) : null}
+      </CurriculumHeroCover>
+    </View>
+  ) : undefined;
+
   return (
-    <AppScreen>
-      <ScreenHeader
-        breadcrumb={breadcrumb}
-        title={title ?? t('course.lessons_title')}
-        onBack={() => navigation.goBack()}
-      />
+    <AppScreen edges={hasLessons ? ['left', 'right', 'bottom'] : undefined}>
+      {hasLessons ? null : (
+        <ScreenHeader
+          breadcrumb={breadcrumb}
+          title={screenTitle}
+          onBack={() => navigation.goBack()}
+        />
+      )}
       <CurriculumList
         emptyMessage={t('course.lessons_empty')}
-        header={
-          ready && ready.lessons.length > 0 ? (
-            <View style={themedStyles.progress}>
-              <CurriculumHeroCover
-                glyph={curriculumGlyph(title)}
-                imageUrl={coverUrl}
-                level={levelCode}
-                testID="unit-lessons-cover"
-              />
-              <UnitProgressBar
-                progress={ready.progress}
-                testID="unit-lessons-progress"
-              />
-              {/* PR 16 (B4): the summative task opens after every lesson's practice. */}
-              <AppButton
-                accessibilityHint={t(
-                  `course.summative_${ready.summative}_hint`,
-                )}
-                disabled={ready.summative === 'locked'}
-                onPress={() =>
-                  navigation.navigate('UnitSummativeTask', {unitId, title})
-                }
-                testID="unit-lessons-summative"
-                title={t(`course.summative_${ready.summative}`)}
-                variant={ready.summative === 'open' ? 'primary' : 'outline'}
-              />
-              {ready.summative === 'locked' ? (
-                <AppText
-                  color="secondary"
-                  testID="unit-lessons-summative-locked"
-                  variant="caption"
-                >
-                  {t('course.summative_locked_note')}
-                </AppText>
-              ) : null}
-            </View>
+        footer={
+          ready ? (
+            // PR 16 (B4): the summative task opens after every lesson's practice.
+            <SummativeMissionCard
+              onPress={() =>
+                navigation.navigate('UnitSummativeTask', {unitId, title})
+              }
+              progress={ready.progress}
+              railWidth={RAIL_WIDTH}
+              state={ready.summative}
+            />
           ) : undefined
         }
+        header={header}
         onRetry={refresh}
+        onScroll={hasLessons ? onScroll : undefined}
         rows={rows}
         status={state.status}
         testID="unit-lessons"
       />
+      {hasLessons ? (
+        <CurriculumHeroChrome
+          onBack={() => navigation.goBack()}
+          solid={solid}
+          title={screenTitle}
+        />
+      ) : null}
     </AppScreen>
   );
 }
 
+/** Lifts a one-line caption link to the 44px minimum touch target. */
+const CRUMB_HIT_SLOP = {top: 14, bottom: 14, left: 4, right: 4};
+
+const styles = StyleSheet.create({
+  crumb: {
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  crumbs: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 2,
+  },
+  titleCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  titleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
+});
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    progress: {
-      gap: theme.spacing.sm,
+    continueFace: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accent,
+      flexDirection: 'row',
+      gap: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    continueText: {
+      color: theme.colors.accentInk,
+      fontSize: 13,
+      fontWeight: '700',
+      lineHeight: 18,
+    },
+    continueTitle: {
+      color: theme.colors.accentInk,
+      fontSize: 16,
+      fontWeight: '800',
+      lineHeight: 21,
+    },
+    crumbText: {
+      color: theme.colors.primary,
+      fontWeight: '700',
+    },
+    header: {
       paddingBottom: theme.spacing.sm,
+    },
+    play: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 21,
+      height: 42,
+      justifyContent: 'center',
+      width: 42,
     },
   });
 }
