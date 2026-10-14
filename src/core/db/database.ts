@@ -1,14 +1,13 @@
-import {open, type QuickSQLiteConnection} from 'react-native-quick-sqlite';
-
 import {DB_NAME} from './constants';
 import {runMigrations} from './migrations';
+import {type DatabaseConnection, openDatabase} from './sqlite';
 
-let dbInstance: QuickSQLiteConnection | null = null;
+let dbInstance: DatabaseConnection | null = null;
 let migrationsApplied = false;
 
-export function getDatabase(): QuickSQLiteConnection {
+export function getDatabase(): DatabaseConnection {
   if (!dbInstance) {
-    dbInstance = open({name: DB_NAME});
+    dbInstance = openDatabase({name: DB_NAME});
   }
 
   if (!migrationsApplied) {
@@ -20,7 +19,7 @@ export function getDatabase(): QuickSQLiteConnection {
 }
 
 export function resetDatabaseForTests(
-  connection: QuickSQLiteConnection | null = null,
+  connection: DatabaseConnection | null = null,
 ): void {
   dbInstance = connection;
   migrationsApplied = false;
@@ -29,7 +28,7 @@ export function resetDatabaseForTests(
 /**
  * Runs `run` between `BEGIN`/`COMMIT`, rolling back when it throws.
  *
- * `react-native-quick-sqlite` exposes a callback-style `transaction()`, but it
+ * `op-sqlite` (like `react-native-quick-sqlite` before it) has a `transaction()`, but it
  * returns a promise; keeping the raw-BEGIN form lets repository functions stay
  * synchronous (the current codebase contract) while still giving the atomicity
  * the outbox design (ADR-2) relies on for the review write + outbox insert.
@@ -42,7 +41,7 @@ let savepointCounter = 0;
  * Use it for repository writes that callers may already wrap in
  * `withTransaction`; `withTransaction` itself cannot nest.
  */
-export function withSavepoint<T>(db: QuickSQLiteConnection, run: () => T): T {
+export function withSavepoint<T>(db: DatabaseConnection, run: () => T): T {
   savepointCounter += 1;
   const name = `sp_${savepointCounter}`;
   db.execute(`SAVEPOINT ${name};`);
@@ -61,7 +60,7 @@ export function withSavepoint<T>(db: QuickSQLiteConnection, run: () => T): T {
   }
 }
 
-export function withTransaction<T>(db: QuickSQLiteConnection, run: () => T): T {
+export function withTransaction<T>(db: DatabaseConnection, run: () => T): T {
   db.execute('BEGIN');
   try {
     const result = run();
@@ -82,10 +81,7 @@ export function withTransaction<T>(db: QuickSQLiteConnection, run: () => T): T {
 const INSTALL_MARKER_KEY = 'account.install_completed_v1';
 const CURRENT_ACCOUNT_ID_KEY = 'current_account_id';
 
-function withForeignKeysDisabled<T>(
-  db: QuickSQLiteConnection,
-  run: () => T,
-): T {
+function withForeignKeysDisabled<T>(db: DatabaseConnection, run: () => T): T {
   db.execute('PRAGMA foreign_keys = OFF;');
   try {
     return run();
@@ -94,7 +90,7 @@ function withForeignKeysDisabled<T>(
   }
 }
 
-function deleteRowsFromAllUserTables(db: QuickSQLiteConnection): void {
+function deleteRowsFromAllUserTables(db: DatabaseConnection): void {
   const result = db.execute(
     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';",
   );
@@ -120,7 +116,7 @@ export type AccountReplacementOptions = {
  * (TASK-021); the pointer does not change until commit succeeds.
  */
 export function executeAccountReplacementTransaction(
-  db: QuickSQLiteConnection,
+  db: DatabaseConnection,
   targetAccountId: string,
   options: AccountReplacementOptions = {},
 ): void {
@@ -142,7 +138,7 @@ export function executeAccountReplacementTransaction(
   });
 }
 
-export function wipeDatabase(db: QuickSQLiteConnection): void {
+export function wipeDatabase(db: DatabaseConnection): void {
   withForeignKeysDisabled(db, () => {
     const result = db.execute(
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';",

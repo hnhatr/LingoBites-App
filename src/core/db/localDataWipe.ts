@@ -1,7 +1,6 @@
-import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
-
 import {clearLessonTokens} from '../security/lessonTokenStore';
 import {getDatabase, withTransaction} from './database';
+import type {DatabaseConnection} from './sqlite';
 
 const CURRENT_ACCOUNT_ID_KEY = 'current_account_id';
 
@@ -10,10 +9,10 @@ export type ClearAllLocalDatabaseRowsOptions = {
    * Runs inside the wipe transaction after learner tables are cleared and
    * before `current_account_id` is restored (AD-007).
    */
-  afterWipe?: (db: QuickSQLiteConnection) => void;
+  afterWipe?: (db: DatabaseConnection) => void;
 };
 
-function readCurrentAccountId(db: QuickSQLiteConnection): string | null {
+function readCurrentAccountId(db: DatabaseConnection): string | null {
   const row = db
     .execute('SELECT value FROM app_settings WHERE key = ? LIMIT 1;', [
       CURRENT_ACCOUNT_ID_KEY,
@@ -22,7 +21,7 @@ function readCurrentAccountId(db: QuickSQLiteConnection): string | null {
   return row?.value ?? null;
 }
 
-function deleteLearnerOwnedRows(db: QuickSQLiteConnection): void {
+function deleteLearnerOwnedRows(db: DatabaseConnection): void {
   db.execute('DELETE FROM review_sessions;');
   db.execute('DELETE FROM review_schedule;');
   db.execute('DELETE FROM flashcards;');

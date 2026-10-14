@@ -1,6 +1,6 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {listPendingSyncEvents} from '@features/sync/logic/adapters/SyncOutboxRepository';
+
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 import {DB_NAME} from '../constants';

@@ -76,8 +76,8 @@ jest.mock('react-native-image-picker', () => ({
   launchImageLibrary: jest.fn(),
 }));
 
-jest.mock('react-native-quick-sqlite', () =>
-  require('./test-utils/sqliteMock'),
+jest.mock('@op-engineering/op-sqlite', () =>
+  require('./test-utils/opSqliteMock'),
 );
 
 // Native device-integration modules (SETE-90). Each adapter injects its own

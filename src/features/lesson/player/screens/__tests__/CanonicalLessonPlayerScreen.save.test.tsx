@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import React from 'react';
-import {open as openSqlite} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {
@@ -16,6 +15,7 @@ import {AppThemeProvider} from '@ui/theme';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+import {openDatabase as openSqlite} from '@core/db/sqlite';
 import {FeatureFlagProvider} from '@core/release';
 import {
   type LessonSnapshot,

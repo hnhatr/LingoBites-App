@@ -1,5 +1,4 @@
 import React from 'react';
-import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
@@ -8,6 +7,7 @@ import {resetRefreshStateForTests} from '@core/auth/authSession';
 import type {AuthUser} from '@core/auth/authTypes';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import {FeatureFlagProvider} from '@core/release';
 
 import {installKeychainVault} from '@test/support/keychainVault';

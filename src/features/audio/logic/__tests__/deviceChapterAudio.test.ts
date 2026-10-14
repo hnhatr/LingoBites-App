@@ -1,9 +1,8 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {getReadyAudioAsset} from '@features/audio/logic/data/AudioAssetRepository';
 
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {insertAudioAssetRow} from '@test/support/audioAssetSeed';
 

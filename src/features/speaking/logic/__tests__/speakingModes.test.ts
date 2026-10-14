@@ -3,11 +3,10 @@
  * (LING-149 TASK-008: canonical `lesson_downloads` sentences).
  */
 
-import {open} from 'react-native-quick-sqlite';
-
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {seedCanonicalLessonDownload} from '@test/support/canonicalDownloadSeed';
 

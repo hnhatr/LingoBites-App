@@ -1,7 +1,6 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import type {GamificationEventRecord} from '@core/db/types';
 
 import {__resetMockDatabases} from '../../../../../../test-utils/sqliteMock';

@@ -1,7 +1,7 @@
-import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
+import type {DatabaseConnection} from '@core/db/sqlite';
 
 /**
- * LING-93 adversarial review: a `react-native-quick-sqlite`-shaped connection
+ * LING-93 adversarial review: a `DatabaseConnection` (`@core/db/sqlite`)
  * backed by a real SQLite engine (Node `node:sqlite`). Production repositories,
  * migrations and `withTransaction` run unchanged against it, so BEGIN/COMMIT/
  * ROLLBACK, PRIMARY KEY/UNIQUE constraints and ALTER TABLE have real SQLite
@@ -21,7 +21,8 @@ function normalizeParam(value: Param): string | number | null | bigint {
   return value;
 }
 
-export type RealSqliteConnection = QuickSQLiteConnection & {
+export type RealSqliteConnection = DatabaseConnection & {
+  close: () => void;
   raw: {exec: (sql: string) => void};
   path: string;
 };

@@ -3,8 +3,6 @@ jest.mock('../legacyClear', () => ({
   executeLegacyClear: jest.fn().mockResolvedValue(undefined),
   executeCanonicalLegacyClear: jest.fn().mockResolvedValue(undefined),
 }));
-import {open} from 'react-native-quick-sqlite';
-
 import * as authSession from '@core/auth/authSession';
 import {resetRefreshStateForTests} from '@core/auth/authSession';
 import type {AuthSession, AuthUser} from '@core/auth/authTypes';
@@ -12,6 +10,7 @@ import {getActiveSession} from '@core/auth/sessionStore';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {hasInstallMarker} from '@core/db/installMarker';
+import {openDatabase as open} from '@core/db/sqlite';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 
 import {installKeychainVault, vault} from '@test/support/keychainVault';

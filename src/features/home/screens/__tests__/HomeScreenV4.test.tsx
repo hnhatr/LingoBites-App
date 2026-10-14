@@ -9,7 +9,6 @@
  */
 import React from 'react';
 import {StyleSheet} from 'react-native';
-import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {getGamificationSnapshot, listStudyEventsOn} from '@features/engagement';
@@ -19,6 +18,7 @@ import {AppThemeProvider} from '@ui/theme';
 import * as AuthSession from '@core/auth/authSession';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import {FeatureFlagProvider} from '@core/release';
 import {recordLessonEvent} from '@core/sync/lessonProgress';
 

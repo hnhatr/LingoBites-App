@@ -2,14 +2,14 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
+import type {DatabaseConnection} from '@core/db/sqlite';
 
 import type {RealSqliteConnection} from '@test/support/adversarial/realSqlite';
 
 type Runtime = {
   connection: RealSqliteConnection;
   diligentKey: string;
-  getDatabase: () => QuickSQLiteConnection;
+  getDatabase: () => DatabaseConnection;
   getGamificationSnapshot: (now?: Date) => {
     badges: Array<{id: string}>;
   };
@@ -18,7 +18,7 @@ type Runtime = {
 let directory: string;
 let databasePath: string;
 let activeConnection: RealSqliteConnection | null;
-let activeReset: ((connection?: QuickSQLiteConnection | null) => void) | null;
+let activeReset: ((connection?: DatabaseConnection | null) => void) | null;
 
 function startFreshRuntime(): Runtime {
   jest.resetModules();

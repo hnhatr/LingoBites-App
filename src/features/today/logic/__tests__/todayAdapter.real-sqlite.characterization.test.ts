@@ -1,5 +1,3 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {captureErrorEvent} from '@features/speaking/logic/data/SpeakingRepository';
 
 import {DB_NAME} from '@core/db/constants';
@@ -9,6 +7,7 @@ import {
   readAppSchemaVersion,
   runMigrations,
 } from '@core/db/migrations';
+import {openDatabase as open} from '@core/db/sqlite';
 import {recordLessonEvent} from '@core/sync/lessonProgress';
 
 import {

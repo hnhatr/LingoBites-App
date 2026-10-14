@@ -1,11 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {open} from 'react-native-quick-sqlite';
 
 import {YOUTUBE_DISCLOSURE_KEY} from '@features/lesson/player/logic/youtubeDisclosure';
 
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {clearAllLocalDatabaseRows} from '@core/db/localDataWipe';
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {__resetMockDatabases} from '../../../../test-utils/sqliteMock';
 

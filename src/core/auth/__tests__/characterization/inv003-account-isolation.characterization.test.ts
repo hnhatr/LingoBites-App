@@ -1,7 +1,6 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {
   DEFAULT_CANONICAL_LESSON_ID,
