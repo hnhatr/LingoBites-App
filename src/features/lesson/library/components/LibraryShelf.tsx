@@ -10,7 +10,6 @@ import {
 import {AppText} from '@ui/components/AppText';
 import type {GridTileTone} from '@ui/components/GridTile';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {getStickerEdge} from '@ui/theme/hardShadow';
@@ -23,20 +22,18 @@ export type ShelfStatus =
   {kind: 'loading'} | {kind: 'message'; text: string; onRetry?: () => void};
 
 export interface LibraryShelfProps {
-  /** Big heading inside the folder, e.g. "Gói từ vựng". */
+  /** Section heading, e.g. "Gói từ vựng". */
   title: string;
-  /** Short name on the folder's tab, e.g. "Gói học". */
+  /** What the section holds, for the full-list hint, e.g. "gói học". */
   label: string;
-  /** Icon on the folder's tab. */
-  icon: HandoffIconName;
   tone: LibraryTone;
   /** Quiet line under the title. */
   subtitle?: string;
-  /** Big number beside the title, e.g. "24" or "20+"; hidden when null. */
+  /** Item count shown in the full-list link, e.g. "24" or "20+". */
   count?: string | null;
   /** Opens the full list; hidden when omitted. */
   onSeeAll?: () => void;
-  /** Text of the full-list button, e.g. "Xem cả 24 gói". */
+  /** Spoken name of the full-list link, e.g. "Xem cả 24 gói". */
   seeAllLabel?: string;
   /** Shown in place of the items (loading, empty, error). */
   status?: ShelfStatus | null;
@@ -45,14 +42,13 @@ export interface LibraryShelfProps {
 }
 
 /**
- * One Library section as a coloured folder: a tab with its name on top,
- * then a big title with the item count, the items stacked down the page,
- * and a button to the full list.
+ * One Library section on the page background, like the Courses tab: a
+ * heading with its subtitle, a "Tất cả" link with the count beside it,
+ * then the cards stacked down the page.
  */
 export function LibraryShelf({
   title,
   label,
-  icon,
   tone,
   subtitle,
   count,
@@ -67,89 +63,81 @@ export function LibraryShelf({
   const colors = libraryTone(theme, tone);
 
   return (
-    <View testID={testID}>
-      <View style={[styles.tab, {backgroundColor: colors.soft}]}>
-        <MaterialIcon color={colors.ink} name={icon} size={15} />
-        <AppText style={[styles.tabText, {color: colors.ink}]}>
-          {label.toUpperCase()}
-        </AppText>
-      </View>
-      <View style={[styles.folder, {backgroundColor: colors.soft}]}>
-        <View style={styles.head}>
-          <View style={styles.headText}>
-            <AppText accessibilityRole="header" style={styles.title}>
-              {title}
-            </AppText>
-            {subtitle ? (
-              <AppText color="secondary" style={styles.subtitle}>
-                {subtitle}
-              </AppText>
-            ) : null}
-          </View>
-          {count ? (
-            <AppText
-              style={[styles.count, {color: colors.strong}]}
-              testID={testID ? `${testID}-count` : undefined}
-            >
-              {count}
+    <View style={styles.shelf} testID={testID}>
+      <View style={styles.head}>
+        <View style={styles.headText}>
+          <AppText accessibilityRole="header" style={styles.title}>
+            {title}
+          </AppText>
+          {subtitle ? (
+            <AppText color="secondary" style={styles.subtitle}>
+              {subtitle}
             </AppText>
           ) : null}
         </View>
-        {status?.kind === 'loading' ? (
-          <ActivityIndicator
-            color={colors.ink}
-            style={styles.loading}
-            testID={testID ? `${testID}-loading` : undefined}
-          />
-        ) : status?.kind === 'message' ? (
-          <View style={[styles.message, {borderColor: colors.strong}]}>
-            <AppText
-              style={styles.messageText}
-              testID={testID ? `${testID}-message` : undefined}
-            >
-              {status.text}
-            </AppText>
-            {status.onRetry ? (
-              <Pressable
-                accessibilityHint="Tải lại"
-                accessibilityLabel="Thử lại"
-                accessibilityRole="button"
-                hitSlop={8}
-                onPress={status.onRetry}
-                style={({pressed}) => [styles.retry, pressed && styles.pressed]}
-                testID={testID ? `${testID}-retry` : undefined}
-              >
-                <MaterialIcon
-                  color={theme.colors.text.inverse}
-                  name="refresh"
-                  size={16}
-                />
-                <AppText style={styles.retryText}>Thử lại</AppText>
-              </Pressable>
-            ) : null}
-          </View>
-        ) : (
-          children
-        )}
         {onSeeAll && !status ? (
           <Pressable
             accessibilityHint={`Mở toàn bộ ${label}`}
             accessibilityLabel={seeAllLabel}
             accessibilityRole="button"
+            hitSlop={8}
             onPress={onSeeAll}
-            style={({pressed}) => [
-              styles.seeAll,
-              pressed && styles.pressedDown,
-            ]}
+            style={({pressed}) => [styles.seeAll, pressed && styles.pressed]}
             testID={testID ? `${testID}-all` : undefined}
           >
-            <AppText style={[styles.seeAllText, {color: colors.ink}]}>
-              {seeAllLabel}
-            </AppText>
-            <MaterialIcon color={colors.ink} name="chevron_right" size={18} />
+            <AppText style={styles.seeAllText}>Tất cả</AppText>
+            {count ? (
+              <AppText
+                style={styles.seeAllText}
+                testID={testID ? `${testID}-count` : undefined}
+              >
+                {count}
+              </AppText>
+            ) : null}
+            <MaterialIcon
+              color={theme.colors.primary}
+              name="chevron_right"
+              size={18}
+            />
           </Pressable>
         ) : null}
       </View>
+      {status?.kind === 'loading' ? (
+        <ActivityIndicator
+          color={colors.ink}
+          style={styles.loading}
+          testID={testID ? `${testID}-loading` : undefined}
+        />
+      ) : status?.kind === 'message' ? (
+        <View style={[styles.message, {borderColor: colors.strong}]}>
+          <AppText
+            style={styles.messageText}
+            testID={testID ? `${testID}-message` : undefined}
+          >
+            {status.text}
+          </AppText>
+          {status.onRetry ? (
+            <Pressable
+              accessibilityHint="Tải lại"
+              accessibilityLabel="Thử lại"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={status.onRetry}
+              style={({pressed}) => [styles.retry, pressed && styles.pressed]}
+              testID={testID ? `${testID}-retry` : undefined}
+            >
+              <MaterialIcon
+                color={theme.colors.text.inverse}
+                name="refresh"
+                size={16}
+              />
+              <AppText style={styles.retryText}>Thử lại</AppText>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : (
+        children
+      )}
     </View>
   );
 }
@@ -193,58 +181,40 @@ export function stickerCard(theme: AppTheme, offset = 3): ViewStyle {
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    tab: {
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      borderTopLeftRadius: 14,
-      borderTopRightRadius: 14,
-      flexDirection: 'row',
-      gap: 6,
-      height: 28,
-      paddingLeft: 12,
-      paddingRight: 16,
-    },
-    tabText: {
-      fontSize: 11,
-      fontWeight: '800',
-      letterSpacing: 1,
-    },
-    folder: {
-      borderBottomLeftRadius: 22,
-      borderBottomRightRadius: 22,
-      borderTopRightRadius: 22,
-      gap: theme.spacing.md,
-      padding: 14,
-      paddingTop: 18,
-      ...stickerCard(theme, 4),
+    shelf: {
+      gap: 14,
     },
     head: {
-      alignItems: 'flex-end',
+      alignItems: 'flex-start',
       flexDirection: 'row',
-      gap: theme.spacing.sm,
+      gap: theme.spacing.md,
     },
     headText: {
       flex: 1,
-      gap: 4,
+      gap: 2,
     },
     title: {
       color: theme.colors.text.primary,
-      fontSize: 26,
+      fontSize: 24,
       fontWeight: '800',
-      letterSpacing: -0.6,
+      letterSpacing: -0.3,
       lineHeight: 30,
     },
     subtitle: {
-      fontSize: 13,
+      fontSize: 14,
       fontWeight: '600',
     },
-    count: {
-      fontSize: 46,
-      fontVariant: ['tabular-nums'],
-      fontWeight: '800',
-      letterSpacing: -1.5,
-      lineHeight: 48,
-      opacity: 0.85,
+    seeAll: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 3,
+      minHeight: 44,
+      paddingLeft: theme.spacing.md,
+    },
+    seeAllText: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '700',
     },
     loading: {
       paddingVertical: theme.spacing.xl,
@@ -277,25 +247,8 @@ function makeStyles(theme: AppTheme) {
       fontSize: 13,
       fontWeight: '800',
     },
-    seeAll: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 14,
-      flexDirection: 'row',
-      gap: 4,
-      height: 46,
-      justifyContent: 'center',
-      ...stickerCard(theme),
-    },
-    seeAllText: {
-      fontSize: 14,
-      fontWeight: '800',
-    },
     pressed: {
       opacity: theme.states.pressedOpacity,
-    },
-    pressedDown: {
-      transform: [{translateY: 2}],
     },
   });
 }

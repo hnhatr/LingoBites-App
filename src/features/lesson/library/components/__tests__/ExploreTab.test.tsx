@@ -7,7 +7,12 @@ import {FeatureFlagProvider} from '@core/release';
 
 import {mockAppNavigation} from '@test/support';
 
-import {ExploreTab, groupByUnit, shelfPacks} from '../tabs/ExploreTab';
+import {
+  ExploreTab,
+  packAction,
+  shelfPacks,
+  unitLabel,
+} from '../tabs/ExploreTab';
 
 const mockReload = jest.fn();
 const mockRefresh = jest.fn();
@@ -175,23 +180,31 @@ describe('ExploreTab', () => {
     ).not.toHaveLength(0);
   });
 
-  it('draws pack tiles: the pack picture, else its icon, and level chips', () => {
+  it('draws pack cards: the pack picture, else the default cover', () => {
     const tree = render();
     const image = tree.root.findByProps({
-      testID: 'library-pack-going-image',
+      testID: 'library-pack-going-cover-image',
     });
     expect(image.props.source).toEqual({uri: 'https://cdn.example/going.png'});
     expect(
-      tree.root.findAllByProps({testID: 'library-pack-new-default'}),
+      tree.root.findAllByProps({testID: 'library-pack-new-cover-default'}),
     ).not.toHaveLength(0);
-    expect(
-      tree.root.findAllByProps({testID: 'library-pack-new-level'}),
-    ).not.toHaveLength(0);
-    expect(
-      tree.root.findAllByProps({
-        testID: 'library-pack-new-status-download',
-      }),
-    ).not.toHaveLength(0);
+    const card = tree.root
+      .findAllByProps({testID: 'library-pack-new'})
+      .find(node => node.props.accessibilityLabel);
+    expect(card?.props.accessibilityLabel).toContain('10 từ · A1');
+  });
+
+  it('labels each pack pill by its state', () => {
+    const row = pack('p', 'ready') as never as Parameters<typeof packAction>[0];
+    expect(packAction({...row, downloaded: false}).label).toBe('Tải về');
+    expect(packAction({...row, learned: 0}).label).toBe('Vào học');
+    expect(packAction({...row, learned: 4, status: 'learning'}).label).toBe(
+      'Học tiếp',
+    );
+    expect(packAction({...row, learned: 10, status: 'done'}).label).toBe(
+      'Ôn lại',
+    );
   });
 
   it('shows the YouTube thumbnail of a video without a cover', () => {
@@ -243,23 +256,19 @@ describe('ExploreTab', () => {
     ).toBe('2+');
   });
 
-  it('groups lessons under their unit, numbered by their place in it', () => {
-    const unit = (id: string, position: number) => ({
-      unit_id: id,
-      unit_title: `Unit ${id}`,
-      unit_position: 1,
-      lesson_position: position,
-    });
-    const groups = groupByUnit([
-      lesson('a', {unit: unit('u1', 1)}),
-      lesson('b', {unit: unit('u1', 2)}),
-      lesson('c', {unit: null}),
-      lesson('d', {unit: unit('u2', 3)}),
-    ] as never);
-    expect(groups.map(group => [group.title, group.items.length])).toEqual([
-      ['Unit u1', 2],
-      [null, 1],
-      ['Unit u2', 1],
-    ]);
+  it("names a lesson's unit and its place in it", () => {
+    expect(
+      unitLabel(
+        lesson('a', {
+          unit: {
+            unit_id: 'u1',
+            unit_title: 'Hỏi đường',
+            unit_position: 1,
+            lesson_position: 3,
+          },
+        }) as never,
+      ),
+    ).toBe('Hỏi đường · Bài 3');
+    expect(unitLabel(lesson('b') as never)).toBeNull();
   });
 });

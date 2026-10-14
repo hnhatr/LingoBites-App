@@ -25,13 +25,15 @@ export interface LibraryToneColors {
   ink: string;
 }
 
-/** Order the pack covers cycle through, so neighbours never match. */
-export const PACK_TONES: readonly LibraryTone[] = [
-  'teal',
-  'coral',
-  'yellow',
-  'violet',
-];
+/** Colours of the Explore cards, the same three as the Courses cards. */
+export type CardTone = 'accent' | 'tertiary' | 'secondary';
+
+const CARD_TONES: readonly CardTone[] = ['accent', 'tertiary', 'secondary'];
+
+/** Cycles card colours down a list so neighbours differ. */
+export function cardToneAt(index: number): CardTone {
+  return CARD_TONES[index % CARD_TONES.length];
+}
 
 export function libraryTone(
   theme: AppTheme,

@@ -1,160 +1,166 @@
 import React, {useMemo, useState} from 'react';
-import {Image, Pressable, StyleSheet, View} from 'react-native';
+import {Pressable, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {Defs, LinearGradient, Rect, Stop, Svg} from 'react-native-svg';
 
 import {AppText} from '@ui/components/AppText';
+import {withAlpha} from '@ui/components/layout';
 import {
   type CoverGlyph,
   Glyph,
   LibraryCover,
   type LibraryCoverProps,
 } from '@ui/components/LibraryCover';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {cefrLevelOf, levelTone} from '@ui/theme/levelColors';
+import {solidOver} from '@ui/theme/colorUtils';
 
-import type {LibraryTone} from '../logic/librarySections';
-import {stickerCard} from './LibraryShelf';
-import {libraryTone} from './libraryTones';
+import {shelfTone} from './LibraryShelf';
+import type {CardTone} from './libraryTones';
 
-/** Packs this size or smaller show one dot per word instead of a bar. */
-export const MAX_PACK_DOTS = 20;
+const CARD_HEIGHT = 168;
+/** Share of a card the picture takes, on the right. */
+const ART_SHARE = 0.5;
+const CARD_RADIUS = 26;
+const ROW_RADIUS = 22;
+const SHELF_HEIGHT = 5;
 
-export interface PackCardProps {
+/** The pill on a card, e.g. "Vào học" (solid) or "Tải về" (light). */
+export interface CardAction {
+  label: string;
+  glyph: 'play' | 'download' | 'check';
+  /** Ink pill with white text; false draws a white pill with ink text. */
+  solid: boolean;
+}
+
+/** Face, ink, blob and shelf colours of a card tone, as on the Courses tab. */
+export function cardColors(theme: AppTheme, tone: CardTone) {
+  const {face, ink} = shelfTone(theme, tone);
+  return {
+    face,
+    ink,
+    blob: solidOver(withAlpha(ink, 0.08), face),
+    shelf: solidOver(withAlpha(ink, 0.28), face),
+  };
+}
+
+export interface ToneCardProps {
   title: string;
-  /** Right of the level chip, e.g. "12 từ". */
-  sizeLabel: string;
-  level: string | null;
-  tone: LibraryTone;
-  glyph: CoverGlyph;
-  imageUrl: string | null;
-  downloaded: boolean;
-  learned: number;
-  total: number;
-  /** Line under the progress, e.g. "4/12 đã nhớ" or "Chưa tải". */
-  statusLabel: string;
-  onPress: () => void;
+  /** Small line above the title, e.g. "Hỏi đường · Bài 1". */
+  eyebrow?: string | null;
+  /** Line under the title, e.g. "12 từ · A1 · Chưa tải". */
+  description?: string | null;
+  cover: {imageUrl: string | null; glyph: CoverGlyph};
+  tone: CardTone;
+  action: CardAction;
   accessibilityHint: string;
+  onPress: () => void;
   testID: string;
+  /** Width of the list's side padding, to size the picture. */
+  gutter: number;
 }
 
 /**
- * A word pack drawn as a small stack of flashcards: the level, a tilted
- * topic tile (the pack's picture when it has one), the title, one dot per
- * word (filled once learned) and the download state.
+ * A pack or lesson drawn like a Courses card: title, a line and a pill on a
+ * tinted face, the picture (or the default cover) filling the right half
+ * and melting into the colour.
  */
-export function PackCard({
+export function ToneCard({
   title,
-  sizeLabel,
-  level,
+  eyebrow,
+  description,
+  cover,
   tone,
-  glyph,
-  imageUrl,
-  downloaded,
-  learned,
-  total,
-  statusLabel,
-  onPress,
+  action,
   accessibilityHint,
+  onPress,
   testID,
-}: PackCardProps) {
+  gutter,
+}: ToneCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const colors = libraryTone(theme, tone);
-  const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  const showImage = Boolean(imageUrl) && failedUrl !== imageUrl;
-  const chip = cefrLevelOf(level);
-  const done = downloaded ? Math.min(Math.max(learned, 0), total) : 0;
+  const {width} = useWindowDimensions();
+  const [pressed, setPressed] = useState(false);
+  const colors = cardColors(theme, tone);
+  const artWidth = Math.max(0, (width - gutter * 2) * ART_SHARE);
+  const gradientId = `cardFade-${testID}`;
 
   return (
     <Pressable
       accessibilityHint={accessibilityHint}
-      accessibilityLabel={[chip, title, sizeLabel, statusLabel]
+      accessibilityLabel={[eyebrow, title, description, action.label]
         .filter(Boolean)
         .join('. ')}
       accessibilityRole="button"
       onPress={onPress}
-      style={({pressed}) => [styles.pack, pressed && styles.pressedDown]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       testID={testID}
     >
-      <View style={[styles.layer, styles.layerBack]} />
-      <View style={[styles.layer, styles.layerMid]} />
-      <View style={styles.face}>
-        <View style={styles.packTop}>
-          {chip ? <LevelChip level={chip} testID={`${testID}-level`} /> : null}
-          <AppText color="muted" style={styles.packSize}>
-            {sizeLabel}
-          </AppText>
-        </View>
-        <View style={styles.tileWrap}>
-          <View style={[styles.tile, {backgroundColor: colors.strong}]}>
-            {showImage ? (
-              <Image
-                accessibilityIgnoresInvertColors
-                onError={() => setFailedUrl(imageUrl)}
-                resizeMode="cover"
-                source={{uri: imageUrl!}}
-                style={StyleSheet.absoluteFill}
-                testID={`${testID}-image`}
-              />
-            ) : (
-              <View testID={`${testID}-default`}>
-                <Glyph color={colors.onStrong} name={glyph} size={30} />
-              </View>
-            )}
-          </View>
-        </View>
-        <AppText numberOfLines={1} style={styles.packTitle}>
-          {title}
-        </AppText>
-        {total > 0 && total <= MAX_PACK_DOTS ? (
-          <View style={styles.dots}>
-            {Array.from({length: total}, (_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.dot,
-                  index < done && {backgroundColor: colors.strong},
-                ]}
-              />
-            ))}
-          </View>
-        ) : total > 0 ? (
-          <View style={styles.track}>
-            <View
-              style={[
-                styles.fill,
-                {
-                  backgroundColor: colors.strong,
-                  width: `${Math.round((done / total) * 100)}%`,
-                },
-              ]}
+      <ShelfSurface
+        borderRadius={CARD_RADIUS}
+        faceStyle={[styles.cardFace, {backgroundColor: colors.face}]}
+        isPressed={pressed}
+        shelfColor={colors.shelf}
+        shelfHeight={SHELF_HEIGHT}
+      >
+        <View style={[cardStyles.art, {width: artWidth}]}>
+          <View style={cardStyles.artFill}>
+            <LibraryCover
+              aspectRatio={artWidth > 0 ? artWidth / CARD_HEIGHT : undefined}
+              glyph={cover.glyph}
+              hideLevelChip
+              imageUrl={cover.imageUrl}
+              shape="lesson"
+              testID={`${testID}-cover`}
             />
           </View>
-        ) : null}
-        <View style={styles.packStatus}>
-          {downloaded && learned === 0 ? (
-            <Glyph color={theme.colors.primary} name="check" size={14} />
-          ) : !downloaded ? (
-            <View testID={`${testID}-status-download`}>
-              <Glyph
-                color={theme.colors.text.muted}
-                name="download"
-                size={14}
-              />
-            </View>
-          ) : null}
-          <AppText
-            numberOfLines={1}
-            style={[
-              styles.packStatusText,
-              {color: downloaded ? colors.ink : theme.colors.text.muted},
-            ]}
+          <Svg
+            height={CARD_HEIGHT}
+            pointerEvents="none"
+            style={StyleSheet.absoluteFill}
+            width={artWidth}
           >
-            {statusLabel}
-          </AppText>
+            <Defs>
+              <LinearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
+                <Stop offset="0" stopColor={colors.face} stopOpacity={1} />
+                <Stop offset="0.45" stopColor={colors.face} stopOpacity={0} />
+              </LinearGradient>
+            </Defs>
+            <Rect fill={`url(#${gradientId})`} height="100%" width="100%" />
+          </Svg>
         </View>
-      </View>
+        <View
+          pointerEvents="none"
+          style={[styles.blob, {backgroundColor: colors.blob}]}
+        />
+        <View style={cardStyles.copy}>
+          {eyebrow ? (
+            <AppText
+              numberOfLines={1}
+              style={[styles.eyebrow, {color: colors.ink}]}
+            >
+              {eyebrow.toUpperCase()}
+            </AppText>
+          ) : null}
+          <AppText numberOfLines={2} style={styles.cardTitle}>
+            {title}
+          </AppText>
+          {description ? (
+            <AppText
+              color="secondary"
+              numberOfLines={2}
+              style={styles.description}
+            >
+              {description}
+            </AppText>
+          ) : null}
+          <ActionPill
+            action={action}
+            ink={colors.ink}
+            testID={`${testID}-action`}
+          />
+        </View>
+      </ShelfSurface>
     </Pressable>
   );
 }
@@ -164,87 +170,24 @@ export interface VideoCardProps {
   /** Line under the title, e.g. "Video · 3 bài học". */
   meta: string;
   cover: Pick<LibraryCoverProps, 'imageUrl' | 'level' | 'duration'>;
+  tone: CardTone;
   onPress: () => void;
   testID: string;
 }
 
-/** The first video: a wide cover with its title written over the picture. */
+/** The first video: its whole thumbnail, then the title and a "Xem" pill. */
 export function VideoHeroCard({
   title,
   meta,
   cover,
+  tone,
   onPress,
   testID,
 }: VideoCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const yellow = libraryTone(theme, 'yellow');
-  const metaLine = [meta, cover.duration].filter(Boolean).join(' · ');
-
-  return (
-    <Pressable
-      accessibilityHint="Mở video"
-      accessibilityLabel={[title, metaLine].join('. ')}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({pressed}) => [styles.heroCard, pressed && styles.pressedDown]}
-      testID={testID}
-    >
-      <View style={styles.clip}>
-        <LibraryCover
-          glyph="subtitles"
-          imageUrl={cover.imageUrl}
-          level={cover.level}
-          shape="video"
-          testID={`${testID}-cover`}
-        />
-        <Svg
-          height="55%"
-          pointerEvents="none"
-          style={styles.shade}
-          width="100%"
-        >
-          <Defs>
-            <LinearGradient id="videoShade" x1="0" x2="0" y1="0" y2="1">
-              <Stop offset="0" stopColor="#000000" stopOpacity="0" />
-              <Stop offset="1" stopColor="#000000" stopOpacity="0.75" />
-            </LinearGradient>
-          </Defs>
-          <Rect fill="url(#videoShade)" height="100%" width="100%" />
-        </Svg>
-        <View style={[styles.playBubble, {backgroundColor: yellow.strong}]}>
-          <Glyph color={yellow.onStrong} name="play" size={24} />
-        </View>
-        <View style={styles.caption}>
-          <AppText numberOfLines={2} style={styles.captionTitle}>
-            {title}
-          </AppText>
-          <View style={styles.captionMeta}>
-            <MaterialIcon
-              color={theme.colors.onOverlay}
-              name="subtitles"
-              size={14}
-            />
-            <AppText numberOfLines={1} style={styles.captionMetaText}>
-              {metaLine}
-            </AppText>
-          </View>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
-/** A video under the first one: a small thumbnail beside its title. */
-export function VideoRowCard({
-  title,
-  meta,
-  cover,
-  onPress,
-  testID,
-}: VideoCardProps) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const [pressed, setPressed] = useState(false);
+  const colors = cardColors(theme, tone);
 
   return (
     <Pressable
@@ -254,299 +197,259 @@ export function VideoRowCard({
         .join('. ')}
       accessibilityRole="button"
       onPress={onPress}
-      style={({pressed}) => [styles.row, pressed && styles.pressedDown]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       testID={testID}
     >
-      <View style={styles.rowThumb}>
-        <LibraryCover
-          compact
-          glyph="subtitles"
-          imageUrl={cover.imageUrl}
-          level={cover.level}
-          shape="video"
-          testID={`${testID}-cover`}
+      <ShelfSurface
+        borderRadius={CARD_RADIUS}
+        faceStyle={[styles.heroFace, {backgroundColor: colors.face}]}
+        isPressed={pressed}
+        shelfColor={colors.shelf}
+        shelfHeight={SHELF_HEIGHT}
+      >
+        <View
+          pointerEvents="none"
+          style={[styles.heroBlob, {backgroundColor: colors.blob}]}
         />
-        {cover.duration ? (
-          <View style={styles.duration}>
-            <AppText style={styles.durationText}>{cover.duration}</AppText>
-          </View>
-        ) : null}
-      </View>
-      <View style={styles.rowText}>
-        <AppText numberOfLines={2} style={styles.rowTitle}>
-          {title}
-        </AppText>
-        <View style={styles.meta}>
-          <MaterialIcon
-            color={theme.colors.text.muted}
-            name="subtitles"
-            size={13}
+        <View style={styles.heroThumb}>
+          <LibraryCover
+            duration={cover.duration}
+            glyph="subtitles"
+            imageUrl={cover.imageUrl}
+            level={cover.level}
+            shape="video"
+            testID={`${testID}-cover`}
           />
-          <AppText color="muted" numberOfLines={1} style={styles.metaText}>
-            {meta}
-          </AppText>
         </View>
-      </View>
+        <View style={styles.heroFoot}>
+          <View style={styles.rowText}>
+            <AppText numberOfLines={2} style={styles.heroTitle}>
+              {title}
+            </AppText>
+            <AppText color="secondary" numberOfLines={1} style={styles.meta}>
+              {meta}
+            </AppText>
+          </View>
+          <ActionPill
+            action={{label: 'Xem', glyph: 'play', solid: true}}
+            ink={colors.ink}
+          />
+        </View>
+      </ShelfSurface>
     </Pressable>
   );
 }
 
-export interface LessonRowCardProps {
-  /** "01": the lesson's place in its unit. */
-  index: string;
-  title: string;
-  meta: string | null;
-  level: string | null;
-  onPress: () => void;
-  testID: string;
-}
-
-/** A lesson as a line of a contents page: its number, title and length. */
-export function LessonRowCard({
-  index,
+/** A video under the first one: its thumbnail beside the title. */
+export function VideoRowCard({
   title,
   meta,
-  level,
+  cover,
+  tone,
   onPress,
   testID,
-}: LessonRowCardProps) {
+}: VideoCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const yellow = libraryTone(theme, 'yellow');
-  const chip = cefrLevelOf(level);
-  const metaLine = [meta, chip].filter(Boolean).join(' · ');
+  const [pressed, setPressed] = useState(false);
+  const colors = cardColors(theme, tone);
 
   return (
     <Pressable
-      accessibilityHint="Mở bài học"
-      accessibilityLabel={[title, metaLine].filter(Boolean).join('. ')}
+      accessibilityHint="Mở video"
+      accessibilityLabel={[title, meta, cover.duration]
+        .filter(Boolean)
+        .join('. ')}
       accessibilityRole="button"
       onPress={onPress}
-      style={({pressed}) => [styles.row, pressed && styles.pressedDown]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       testID={testID}
     >
-      <View style={[styles.index, {backgroundColor: yellow.strong}]}>
-        <AppText style={[styles.indexText, {color: yellow.onStrong}]}>
-          {index}
-        </AppText>
-      </View>
-      <View style={styles.rowText}>
-        <AppText numberOfLines={1} style={styles.rowTitle}>
-          {title}
-        </AppText>
-        {metaLine ? (
-          <View style={styles.meta}>
-            <MaterialIcon
-              color={theme.colors.text.muted}
-              name="schedule"
-              size={13}
-            />
-            <AppText color="muted" numberOfLines={1} style={styles.metaText}>
-              {metaLine}
-            </AppText>
-          </View>
-        ) : null}
-      </View>
-      <View style={styles.go}>
-        <MaterialIcon
-          color={theme.colors.text.primary}
-          name="chevron_right"
-          size={18}
+      <ShelfSurface
+        borderRadius={ROW_RADIUS}
+        faceStyle={[styles.rowFace, {backgroundColor: colors.face}]}
+        isPressed={pressed}
+        shelfColor={colors.shelf}
+        shelfHeight={SHELF_HEIGHT}
+      >
+        <View
+          pointerEvents="none"
+          style={[styles.rowBlob, {backgroundColor: colors.blob}]}
         />
-      </View>
+        <View style={styles.rowThumb}>
+          <LibraryCover
+            compact
+            glyph="subtitles"
+            imageUrl={cover.imageUrl}
+            level={cover.level}
+            shape="video"
+            testID={`${testID}-cover`}
+          />
+          {cover.duration ? (
+            <View style={styles.duration}>
+              <AppText style={styles.durationText}>{cover.duration}</AppText>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.rowText}>
+          <AppText numberOfLines={2} style={styles.rowTitle}>
+            {title}
+          </AppText>
+          <AppText color="secondary" numberOfLines={1} style={styles.meta}>
+            {meta}
+          </AppText>
+        </View>
+        <View style={[styles.playDisc, {backgroundColor: colors.ink}]}>
+          <Glyph color={theme.colors.text.inverse} name="play" size={16} />
+        </View>
+      </ShelfSurface>
     </Pressable>
   );
 }
 
-/** "HỎI ĐƯỜNG - - - -": a unit's name above its lessons. */
-export function UnitHeading({title}: {title: string}) {
+function ActionPill({
+  action,
+  ink,
+  testID,
+}: {
+  action: CardAction;
+  ink: string;
+  testID?: string;
+}) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
+  const fill = action.solid ? ink : theme.colors.surface;
+  const text = action.solid ? theme.colors.text.inverse : ink;
   return (
-    <View style={styles.unit}>
-      <AppText color="secondary" style={styles.unitText}>
-        {title.toUpperCase()}
-      </AppText>
-      <View style={styles.unitRule} />
+    <View style={[styles.pill, {backgroundColor: fill}]} testID={testID}>
+      <Glyph color={text} name={action.glyph} size={15} />
+      <AppText style={[styles.pillText, {color: text}]}>{action.label}</AppText>
     </View>
   );
 }
 
-function LevelChip({level, testID}: {level: string; testID?: string}) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  const tone = levelTone(theme, level);
-  return (
-    <View style={[styles.chip, {backgroundColor: tone.strong}]} testID={testID}>
-      <AppText style={[styles.chipText, {color: tone.on}]}>{level}</AppText>
-    </View>
-  );
-}
+const cardStyles = StyleSheet.create({
+  art: {
+    bottom: 0,
+    overflow: 'hidden',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  artFill: {
+    height: CARD_HEIGHT,
+  },
+  copy: {
+    gap: 4,
+    justifyContent: 'center',
+    minHeight: CARD_HEIGHT,
+    paddingLeft: 18,
+    paddingRight: 8,
+    paddingVertical: 14,
+    width: '58%',
+  },
+});
 
 function makeStyles(theme: AppTheme) {
-  const card = stickerCard(theme);
   return StyleSheet.create({
-    pressedDown: {
-      transform: [{translateY: 2}],
-    },
-    // Pack
-    pack: {
-      flex: 1,
-    },
-    layer: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 16,
-      bottom: 0,
-      left: 0,
+    // A soft circle behind the title, as on the Courses cards.
+    blob: {
+      borderRadius: 70,
+      height: 140,
+      left: -40,
       position: 'absolute',
-      right: 0,
-      top: 0,
-      ...stickerCard(theme, 2),
+      top: -50,
+      width: 140,
     },
-    layerBack: {
-      transform: [{rotate: '6deg'}, {translateX: 5}, {translateY: 2}],
-    },
-    layerMid: {
-      transform: [{rotate: '-4deg'}, {translateX: -3}, {translateY: 1}],
-    },
-    face: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 16,
-      gap: 6,
-      padding: 10,
-      ...card,
-    },
-    packTop: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    packSize: {
-      fontSize: 11,
-      fontWeight: '800',
-    },
-    tileWrap: {
-      alignItems: 'center',
-      paddingVertical: theme.spacing.sm,
-    },
-    tile: {
-      alignItems: 'center',
-      borderRadius: 18,
-      height: 56,
-      justifyContent: 'center',
-      overflow: 'hidden',
-      transform: [{rotate: '-8deg'}],
-      width: 56,
-    },
-    packTitle: {
-      color: theme.colors.text.primary,
-      fontSize: 16,
-      fontWeight: '800',
-    },
-    dots: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 2.5,
-    },
-    dot: {
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: 4,
-      height: 8,
-      width: 8,
-    },
-    track: {
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: 4,
-      height: 7,
+    cardFace: {
+      height: CARD_HEIGHT,
       overflow: 'hidden',
     },
-    fill: {
-      height: '100%',
-    },
-    packStatus: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 3,
-    },
-    packStatusText: {
-      flexShrink: 1,
+    eyebrow: {
       fontSize: 11.5,
       fontWeight: '800',
+      letterSpacing: 0.6,
     },
-    chip: {
-      borderRadius: 6,
-      paddingHorizontal: 6,
-    },
-    chipText: {
-      fontSize: 10.5,
+    cardTitle: {
+      color: theme.colors.text.primary,
+      fontSize: 19,
       fontWeight: '800',
-      letterSpacing: 0.4,
-      lineHeight: 15,
+      lineHeight: 24,
+    },
+    description: {
+      fontSize: 12.5,
+      lineHeight: 17,
+    },
+    pill: {
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      borderRadius: theme.radius.pill,
+      flexDirection: 'row',
+      gap: 4,
+      marginTop: 6,
+      paddingLeft: 8,
+      paddingRight: 12,
+      paddingVertical: 5,
+    },
+    pillText: {
+      fontSize: 12.5,
+      fontWeight: '800',
+      lineHeight: 16,
     },
     // Video
-    heroCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 18,
-      ...card,
+    heroFace: {
+      overflow: 'hidden',
+      padding: 8,
     },
-    clip: {
-      borderRadius: 16,
+    heroBlob: {
+      borderRadius: 80,
+      bottom: -60,
+      height: 160,
+      position: 'absolute',
+      right: -50,
+      width: 160,
+    },
+    heroThumb: {
+      borderRadius: 19,
       overflow: 'hidden',
     },
-    shade: {
-      bottom: 0,
-      left: 0,
-      position: 'absolute',
-    },
-    playBubble: {
+    heroFoot: {
       alignItems: 'center',
-      borderRadius: 22,
-      height: 44,
-      justifyContent: 'center',
-      paddingLeft: 2,
-      position: 'absolute',
-      right: 12,
-      top: 12,
-      width: 44,
-      ...card,
-    },
-    caption: {
-      bottom: 10,
-      gap: 4,
-      left: 12,
-      position: 'absolute',
-      right: 12,
-    },
-    captionTitle: {
-      color: theme.colors.onOverlay,
-      fontSize: 17,
-      fontWeight: '800',
-      lineHeight: 21,
-    },
-    captionMeta: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 5,
-    },
-    captionMetaText: {
-      color: theme.colors.onOverlay,
-      fontSize: 12,
-      fontWeight: '700',
-    },
-    row: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 16,
       flexDirection: 'row',
       gap: theme.spacing.md,
-      padding: 8,
+      paddingBottom: 6,
+      paddingLeft: 10,
+      paddingRight: 6,
+      paddingTop: 12,
+    },
+    heroTitle: {
+      color: theme.colors.text.primary,
+      fontSize: 17,
+      fontWeight: '800',
+      lineHeight: 22,
+    },
+    rowFace: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.md,
+      overflow: 'hidden',
+      padding: 10,
       paddingRight: 12,
-      ...card,
+    },
+    rowBlob: {
+      borderRadius: 55,
+      height: 110,
+      position: 'absolute',
+      right: -30,
+      top: -40,
+      width: 110,
     },
     rowThumb: {
-      borderRadius: 11,
+      borderRadius: 14,
       overflow: 'hidden',
-      width: 116,
+      width: 128,
     },
     duration: {
       backgroundColor: theme.colors.overlay,
@@ -564,61 +467,26 @@ function makeStyles(theme: AppTheme) {
     },
     rowText: {
       flex: 1,
-      gap: 4,
+      gap: 2,
       minWidth: 0,
     },
     rowTitle: {
       color: theme.colors.text.primary,
-      fontSize: 14.5,
+      fontSize: 15,
       fontWeight: '800',
-      lineHeight: 19,
+      lineHeight: 20,
     },
     meta: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 4,
+      fontSize: 12.5,
+      fontWeight: '600',
     },
-    metaText: {
-      flexShrink: 1,
-      fontSize: 12,
-      fontWeight: '700',
-    },
-    // Lesson
-    index: {
+    playDisc: {
       alignItems: 'center',
-      borderRadius: 14,
-      height: 44,
+      borderRadius: 18,
+      height: 36,
       justifyContent: 'center',
-      width: 44,
-    },
-    indexText: {
-      fontSize: 18,
-      fontVariant: ['tabular-nums'],
-      fontWeight: '800',
-    },
-    go: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: 15,
-      height: 30,
-      justifyContent: 'center',
-      width: 30,
-    },
-    unit: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-    },
-    unitText: {
-      fontSize: 12,
-      fontWeight: '800',
-      letterSpacing: 0.8,
-    },
-    unitRule: {
-      borderColor: theme.colors.outlineVariant,
-      borderStyle: 'dashed',
-      borderTopWidth: 2,
-      flex: 1,
+      paddingLeft: 2,
+      width: 36,
     },
   });
 }

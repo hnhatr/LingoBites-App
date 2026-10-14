@@ -26,22 +26,21 @@ import {
 } from '../../logic/librarySections';
 import {useRefreshOnRefocus} from '../../logic/useLibrarySegments';
 import {
-  LessonRowCard,
-  PackCard,
-  UnitHeading,
+  type CardAction,
+  ToneCard,
   VideoHeroCard,
   VideoRowCard,
 } from '../ExploreCards';
 import {LibraryShelf, type ShelfStatus} from '../LibraryShelf';
-import {libraryTone, PACK_TONES} from '../libraryTones';
+import {cardToneAt, libraryTone} from '../libraryTones';
 import {videoContextLabel} from '../PublicLessonsList';
 
-/** How many packs the folder shows (two rows of two) before "Xem cả". */
-export const SHELF_LIMIT = 4;
+/** How many packs the section shows before "Tất cả". */
+export const SHELF_LIMIT = 3;
 /** How many videos: one large, then a short list. */
 export const VIDEO_LIMIT = 3;
-/** How many public lessons the contents list shows. */
-export const LESSON_LIMIT = 5;
+/** How many public lessons the section shows. */
+export const LESSON_LIMIT = 3;
 
 const PUBLIC_LESSONS = getLibrarySection('public');
 const PUBLIC_VIDEOS = getLibrarySection('publicVideo');
@@ -110,8 +109,7 @@ export function ExploreTab() {
       ) : null}
       <LibraryShelf
         count={packCount > 0 ? String(packCount) : null}
-        icon="style"
-        label="Gói học"
+        label="gói học"
         onSeeAll={() => appNavigation.openLibrarySection('wordPath')}
         seeAllLabel={`Xem cả ${packCount} gói`}
         status={packStatus}
@@ -120,34 +118,30 @@ export function ExploreTab() {
         title="Gói từ vựng"
         tone="teal"
       >
-        <TwoColumns>
-          {shelfPacks(packs.rows ?? []).map((row, index) => (
-            <PackCard
-              accessibilityHint={
-                row.downloaded
-                  ? t('wordPath.open_hint')
-                  : 'Mở danh sách gói để tải về'
-              }
-              downloaded={row.downloaded}
-              glyph={topicGlyph(row.topicCode)}
-              imageUrl={row.coverUrl}
-              key={row.packId}
-              learned={row.learned}
-              level={row.level}
-              onPress={() =>
-                row.downloaded
-                  ? appNavigation.openWordPack(row.packId)
-                  : appNavigation.openLibrarySection('wordPath')
-              }
-              sizeLabel={`${row.total} từ`}
-              statusLabel={packStatusLabel(t, row)}
-              testID={`library-pack-${row.packId}`}
-              title={packTitle(t, row)}
-              tone={PACK_TONES[index % PACK_TONES.length]}
-              total={row.total}
-            />
-          ))}
-        </TwoColumns>
+        {shelfPacks(packs.rows ?? []).map((row, index) => (
+          <ToneCard
+            accessibilityHint={
+              row.downloaded
+                ? t('wordPath.open_hint')
+                : 'Mở danh sách gói để tải về'
+            }
+            action={packAction(row)}
+            cover={{imageUrl: row.coverUrl, glyph: topicGlyph(row.topicCode)}}
+            description={[`${row.total} từ`, row.level, packStatusLabel(t, row)]
+              .filter(Boolean)
+              .join(' · ')}
+            gutter={theme.spacing.md}
+            key={row.packId}
+            onPress={() =>
+              row.downloaded
+                ? appNavigation.openWordPack(row.packId)
+                : appNavigation.openLibrarySection('wordPath')
+            }
+            testID={`library-pack-${row.packId}`}
+            title={packTitle(t, row)}
+            tone={cardToneAt(index)}
+          />
+        ))}
       </LibraryShelf>
       <VideoShelf />
       <LessonShelf />
@@ -165,25 +159,18 @@ function packStatusLabel(
   return t('wordPath.learned_of', {learned: row.learned, total: row.total});
 }
 
-/** Lays children out two to a row; an odd last one keeps its width. */
-function TwoColumns({children}: {children: React.ReactNode}) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  const items = React.Children.toArray(children);
-  const rows: React.ReactNode[][] = [];
-  for (let at = 0; at < items.length; at += 2) {
-    rows.push(items.slice(at, at + 2));
+/** The pack's pill: download it, start it, carry on or go over it again. */
+export function packAction(row: PackRow): CardAction {
+  if (!row.downloaded) {
+    return {label: 'Tải về', glyph: 'download', solid: false};
   }
-  return (
-    <View style={styles.grid}>
-      {rows.map((row, index) => (
-        <View key={index} style={styles.gridRow}>
-          {row}
-          {row.length === 1 ? <View style={styles.gridSpacer} /> : null}
-        </View>
-      ))}
-    </View>
-  );
+  if (row.status === 'done') {
+    return {label: 'Ôn lại', glyph: 'check', solid: true};
+  }
+  if (row.learned > 0) {
+    return {label: 'Học tiếp', glyph: 'play', solid: true};
+  }
+  return {label: 'Vào học', glyph: 'play', solid: true};
 }
 
 /** Folder state for a catalog query: spinner, error, empty or none. */
@@ -231,7 +218,7 @@ function VideoShelf() {
   const videos =
     state.status === 'ready' ? state.lessons.slice(0, VIDEO_LIMIT) : [];
 
-  const cardProps = (item: LessonCatalogItem) => ({
+  const cardProps = (item: LessonCatalogItem, index: number) => ({
     cover: {
       imageUrl: catalogCoverUrl(item),
       level: item.cefr_level,
@@ -243,13 +230,13 @@ function VideoShelf() {
     onPress: () => appNavigation.openLesson(item.id),
     testID: `${testID}-${item.id}`,
     title: splitLessonTitle(item.title).title,
+    tone: cardToneAt(index),
   });
 
   return (
     <LibraryShelf
       count={count}
-      icon="subtitles"
-      label="Video"
+      label="video"
       onSeeAll={() => appNavigation.openLibrarySection(PUBLIC_VIDEOS.id)}
       seeAllLabel={count ? `Xem cả ${count} video` : 'Xem tất cả video'}
       status={catalogStatus(state, refresh, PUBLIC_VIDEOS.emptyHint)}
@@ -260,9 +247,9 @@ function VideoShelf() {
     >
       {videos.map((item, index) =>
         index === 0 ? (
-          <VideoHeroCard key={item.id} {...cardProps(item)} />
+          <VideoHeroCard key={item.id} {...cardProps(item, index)} />
         ) : (
-          <VideoRowCard key={item.id} {...cardProps(item)} />
+          <VideoRowCard key={item.id} {...cardProps(item, index)} />
         ),
       )}
     </LibraryShelf>
@@ -272,18 +259,17 @@ function VideoShelf() {
 /** Public lessons as a contents page, grouped under their unit. */
 function LessonShelf() {
   const testID = 'library-shelf-lessons';
+  const {theme} = useAppTheme();
   const appNavigation = useAppNavigation();
   const {state, refresh} = useSectionCatalog(PUBLIC_LESSONS);
   const count = catalogCount(state);
-  const groups = groupByUnit(
-    state.status === 'ready' ? state.lessons.slice(0, LESSON_LIMIT) : [],
-  );
+  const lessons =
+    state.status === 'ready' ? state.lessons.slice(0, LESSON_LIMIT) : [];
 
   return (
     <LibraryShelf
       count={count}
-      icon="menu_book"
-      label="Bài học"
+      label="bài học"
       onSeeAll={() => appNavigation.openLibrarySection(PUBLIC_LESSONS.id)}
       seeAllLabel={count ? `Xem cả ${count} bài` : 'Xem tất cả bài học'}
       status={catalogStatus(state, refresh, PUBLIC_LESSONS.emptyHint)}
@@ -292,54 +278,31 @@ function LessonShelf() {
       title="Bài theo chủ đề"
       tone="yellow"
     >
-      {groups.map(group => (
-        <React.Fragment key={group.key}>
-          {group.title ? <UnitHeading title={group.title} /> : null}
-          {group.items.map((item, index) => (
-            <LessonRowCard
-              index={String(item.unit?.lesson_position ?? index + 1).padStart(
-                2,
-                '0',
-              )}
-              key={item.id}
-              level={item.cefr_level ?? null}
-              meta={lessonMeta(item)}
-              onPress={() => appNavigation.openLesson(item.id)}
-              testID={`${testID}-${item.id}`}
-              title={splitLessonTitle(item.title).title}
-            />
-          ))}
-        </React.Fragment>
+      {lessons.map((item, index) => (
+        <ToneCard
+          accessibilityHint="Mở bài học"
+          action={{label: 'Vào học', glyph: 'play', solid: true}}
+          cover={{imageUrl: catalogCoverUrl(item), glyph: 'book'}}
+          description={[lessonMeta(item), item.cefr_level]
+            .filter(Boolean)
+            .join(' · ')}
+          eyebrow={unitLabel(item)}
+          gutter={theme.spacing.md}
+          key={item.id}
+          onPress={() => appNavigation.openLesson(item.id)}
+          testID={`${testID}-${item.id}`}
+          title={splitLessonTitle(item.title).title}
+          tone={cardToneAt(index)}
+        />
       ))}
     </LibraryShelf>
   );
 }
 
-interface UnitGroup {
-  key: string;
-  unitId: string | null;
-  title: string | null;
-  items: LessonCatalogItem[];
-}
-
-/** Neighbouring lessons of the same unit, in catalog order. */
-export function groupByUnit(items: readonly LessonCatalogItem[]): UnitGroup[] {
-  const groups: UnitGroup[] = [];
-  items.forEach(item => {
-    const unitId = item.unit?.unit_id ?? null;
-    const last = groups[groups.length - 1];
-    if (last && last.unitId === unitId) {
-      last.items.push(item);
-      return;
-    }
-    groups.push({
-      key: unitId ?? `none-${groups.length}`,
-      unitId,
-      title: item.unit?.unit_title ?? null,
-      items: [item],
-    });
-  });
-  return groups;
+/** "Hỏi đường · Bài 1": the lesson's unit and its place in it. */
+export function unitLabel(item: LessonCatalogItem): string | null {
+  if (!item.unit) return null;
+  return `${item.unit.unit_title} · Bài ${item.unit.lesson_position}`;
 }
 
 /** "10 phút · 12 câu" on a lesson row. */
@@ -373,16 +336,6 @@ function makeStyles(theme: AppTheme) {
       flex: 1,
       fontSize: 13,
       fontWeight: '700',
-    },
-    grid: {
-      gap: theme.spacing.lg,
-    },
-    gridRow: {
-      flexDirection: 'row',
-      gap: theme.spacing.md,
-    },
-    gridSpacer: {
-      flex: 1,
     },
   });
 }
