@@ -7,7 +7,7 @@ const SUBSET_FONT = path.join(
 );
 const FULL_FONT = path.join(
   __dirname,
-  '../../../../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf',
+  '../../../../node_modules/@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf',
 );
 
 describe('MaterialIcons subset font', () => {

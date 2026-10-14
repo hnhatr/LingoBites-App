@@ -82,41 +82,5 @@ target 'LingoBites' do
         end
       end
     end
-
-    # App bundles a subset MaterialIcons.ttf via assets/fonts — skip pod font payloads.
-    installer.pods_project.targets.each do |target|
-      next unless target.name == 'RNVectorIcons'
-
-      target.resources_build_phase.files.to_a.each do |file|
-        path = file.file_ref&.path
-        next unless path&.end_with?('.ttf')
-
-        target.resources_build_phase.remove_file_reference(file.file_ref)
-      end
-    end
-  end
-
-  # Run after CocoaPods integrates the user project so resource scripts/file lists
-  # are final before we strip duplicate vector-icon fonts.
-  post_integrate do |installer|
-    support_files = File.join(installer.sandbox.root, 'Target Support Files/Pods-LingoBites')
-    resources_script = File.join(support_files, 'Pods-LingoBites-resources.sh')
-    vector_icons_font_pattern = %r{^\s*install_resource "\$\{PODS_ROOT\}/\.\./\.\./\.\./\.\./node_modules/react-native-vector-icons/Fonts/.*\.ttf"\n}
-
-    if File.exist?(resources_script)
-      contents = File.read(resources_script)
-      updated = contents.gsub(vector_icons_font_pattern, '')
-      File.write(resources_script, updated) if updated != contents
-    end
-
-    Dir.glob(File.join(support_files, 'Pods-LingoBites-resources-*-input-files.xcfilelist')).each do |file|
-      lines = File.readlines(file).reject { |line| line.include?('react-native-vector-icons/Fonts/') }
-      File.write(file, lines.join)
-    end
-
-    Dir.glob(File.join(support_files, 'Pods-LingoBites-resources-*-output-files.xcfilelist')).each do |file|
-      lines = File.readlines(file).reject { |line| line.end_with?(".ttf\n") }
-      File.write(file, lines.join)
-    end
   end
 end

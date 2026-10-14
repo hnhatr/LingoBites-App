@@ -1,4 +1,4 @@
-import glyphmap from 'react-native-vector-icons/glyphmaps/MaterialIcons.json';
+import glyphmap from '@react-native-vector-icons/material-icons/glyphmaps/MaterialIcons.json';
 
 /**
  * Handoff icon names used by MaterialIcon / IconButton.
