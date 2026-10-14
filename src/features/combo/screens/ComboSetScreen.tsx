@@ -199,8 +199,8 @@ export function ComboSetScreen({navigation, route}: Props) {
                       toneOf(token) === 'item'
                         ? 'primary'
                         : toneOf(token) === 'verb'
-                        ? 'secondary'
-                        : 'muted'
+                          ? 'secondary'
+                          : 'muted'
                     }
                     variant="h3"
                   >

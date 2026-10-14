@@ -93,7 +93,7 @@ function FlashcardFace({
     kind: card.kind,
   };
   const onSpeak = () => {
-    fireAndForget(speak(pattern ? card.example ?? word : card.word));
+    fireAndForget(speak(pattern ? (card.example ?? word) : card.word));
   };
   if (side === 'back') {
     return (
@@ -331,10 +331,10 @@ export function DailyReviewScreen({
       rated === 0
         ? t('review.summary_title')
         : percent >= 80
-        ? t('review.summary_great')
-        : percent >= 50
-        ? t('review.summary_good')
-        : t('review.summary_keep');
+          ? t('review.summary_great')
+          : percent >= 50
+            ? t('review.summary_good')
+            : t('review.summary_keep');
     return (
       <AppScreen>
         <ScrollView

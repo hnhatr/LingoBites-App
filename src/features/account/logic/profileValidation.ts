@@ -38,8 +38,7 @@ export function validateDisplayName(value: string): DisplayNameValidation {
 const E164_RE = /^\+[1-9]\d{6,14}$/;
 
 export type PhoneValidation =
-  | {ok: true; e164: string | null}
-  | {ok: false; errorCode: 'INVALID_PHONE'};
+  {ok: true; e164: string | null} | {ok: false; errorCode: 'INVALID_PHONE'};
 
 /** Validates optional phone input; blank input means "not set" (null). */
 export function validatePhone(value: string): PhoneValidation {

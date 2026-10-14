@@ -69,11 +69,11 @@ export function WordPackScreen({
   const learnTitle = done
     ? t('wordPack.review')
     : learnedTotal > 0
-    ? t('wordPack.continue', {count: left})
-    : t('wordPack.learn');
+      ? t('wordPack.continue', {count: left})
+      : t('wordPack.learn');
   const title = pack
-    ? topicLabelOf(pack.topicCode) ??
-      t('wordPath.pack_title', {position: pack.position})
+    ? (topicLabelOf(pack.topicCode) ??
+      t('wordPath.pack_title', {position: pack.position}))
     : t('wordPack.title');
 
   return (

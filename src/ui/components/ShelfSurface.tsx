@@ -69,8 +69,8 @@ export function ShelfSurface({
     isDisabled && !preserveShelfSpace
       ? theme.states.disabledOpacity
       : isPressed && reduceMotion
-      ? theme.states.pressedOpacity
-      : 1;
+        ? theme.states.pressedOpacity
+        : 1;
 
   return (
     <View

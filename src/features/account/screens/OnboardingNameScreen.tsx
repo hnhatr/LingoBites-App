@@ -34,10 +34,10 @@ export function OnboardingNameScreen() {
   const errorMessage = !showError
     ? undefined
     : validation.errorCode === 'TOO_LONG'
-    ? t('account.name_too_long')
-    : validation.errorCode === 'INVALID_CHARACTERS'
-    ? t('account.name_invalid_characters')
-    : t('account.name_required');
+      ? t('account.name_too_long')
+      : validation.errorCode === 'INVALID_CHARACTERS'
+        ? t('account.name_invalid_characters')
+        : t('account.name_required');
 
   async function handleContinue() {
     setTouched(true);

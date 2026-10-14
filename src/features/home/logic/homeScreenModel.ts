@@ -116,9 +116,7 @@ export type GreetingModel = {
     | 'home.greeting_night_prefix';
   /** Fallback greeting key for single-line greeting without name */
   greetingKey:
-    | 'home.greeting_morning'
-    | 'home.greeting_afternoon'
-    | 'home.greeting_night';
+    'home.greeting_morning' | 'home.greeting_afternoon' | 'home.greeting_night';
   /** True when displayName is non-null; HomeHeader renders two lines */
   hasName: boolean;
   /** The display name to render on the second accent line, or null */

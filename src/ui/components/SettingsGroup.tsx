@@ -45,7 +45,7 @@ export function SettingsGroup({title, testID, children}: Props) {
         <SettingsGroupContext.Provider value>
           {items.map((child, index) => (
             <View
-              key={React.isValidElement(child) ? child.key ?? index : index}
+              key={React.isValidElement(child) ? (child.key ?? index) : index}
               style={
                 index > 0
                   ? [

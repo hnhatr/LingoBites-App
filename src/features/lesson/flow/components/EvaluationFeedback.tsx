@@ -44,11 +44,11 @@ export function EvaluationFeedback({
   const issue = evaluation.primary_issue;
   const issueText =
     issue?.kind === 'error'
-      ? evaluation.errors.find(error => error.code === issue.code)
-          ?.feedback_vi ?? null
+      ? (evaluation.errors.find(error => error.code === issue.code)
+          ?.feedback_vi ?? null)
       : issue?.kind === 'criterion'
-      ? criterion(issue.criterion)
-      : null;
+        ? criterion(issue.criterion)
+        : null;
   const reminders = evaluation.errors.filter(
     error => error.severity === 'tolerated',
   );

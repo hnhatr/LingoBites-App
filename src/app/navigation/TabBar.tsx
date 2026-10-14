@@ -53,8 +53,7 @@ export function isTabBarHiddenForDescriptors(
     return false;
   }
   const style = descriptors[focusedKey]?.options?.tabBarStyle as
-    | {display?: unknown}
-    | undefined;
+    {display?: unknown} | undefined;
   return style?.display === 'none';
 }
 
@@ -283,8 +282,8 @@ export function TabBar({
             backgroundColor: theme.shelf
               ? theme.colors.primary
               : glassFallback
-              ? glass.fallback
-              : glass.tint,
+                ? glass.fallback
+                : glass.tint,
             borderWidth: theme.shelf ? 0 : 1, // Sticker Soft doesn't use border for the bar
             height: theme.shelf ? 66 : undefined,
           },
@@ -341,7 +340,7 @@ export function TabBar({
             };
             const label = item.labelKey
               ? t(item.labelKey)
-              : descriptors[route.key].options.title ?? route.name;
+              : (descriptors[route.key].options.title ?? route.name);
 
             return (
               <TabBarItem

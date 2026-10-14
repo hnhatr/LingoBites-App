@@ -1,10 +1,5 @@
 export type TextLengthBucket =
-  | '1-100'
-  | '101-500'
-  | '501-1000'
-  | '1001-2000'
-  | '2001-3000'
-  | '3000+';
+  '1-100' | '101-500' | '501-1000' | '1001-2000' | '2001-3000' | '3000+';
 
 export function getTextLengthBucket(length: number): TextLengthBucket {
   if (length <= 0) {

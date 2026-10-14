@@ -162,7 +162,7 @@ export function useComposePick(
 
   const entry: ComposeEntry | null = useComposeTracker(state =>
     requestId
-      ? state.entries.find(item => item.requestId === requestId) ?? null
+      ? (state.entries.find(item => item.requestId === requestId) ?? null)
       : null,
   );
 

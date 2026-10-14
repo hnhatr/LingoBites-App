@@ -36,8 +36,7 @@ export const COMPOSE_PICK_MIN = 1;
 export const COMPOSE_PICK_MAX = 8;
 
 export type ComposeSubmitValue =
-  | {kind: 'cached'; lessonId: string}
-  | {kind: 'queued'; requestId: string};
+  {kind: 'cached'; lessonId: string} | {kind: 'queued'; requestId: string};
 
 /**
  * A refusal the Server answered before any AI ran (never charged), with the

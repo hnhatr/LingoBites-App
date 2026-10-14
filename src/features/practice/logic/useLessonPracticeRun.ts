@@ -228,8 +228,8 @@ export function useLessonPracticeRun(
             report === undefined
               ? 'skipped'
               : report.result === 'first_try' && report.support === 'none'
-              ? 'correct'
-              : 'incorrect',
+                ? 'correct'
+                : 'incorrect',
           durationMs,
         });
       });

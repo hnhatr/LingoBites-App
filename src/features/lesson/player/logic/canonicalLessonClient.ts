@@ -67,8 +67,7 @@ export type CanonicalLessonError = {
 };
 
 export type CanonicalLessonResult<T> =
-  | {ok: true; value: T}
-  | CanonicalLessonError;
+  {ok: true; value: T} | CanonicalLessonError;
 
 export type CanonicalLessonClientOptions = {
   fetchImpl?: typeof fetch;

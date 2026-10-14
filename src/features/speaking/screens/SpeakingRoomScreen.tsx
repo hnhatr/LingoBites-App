@@ -141,8 +141,8 @@ export function SpeakingRoomScreen({navigation}: SpeakingRoomScreenProps) {
               opacity: !mode.available
                 ? 0.6
                 : pressed
-                ? theme.states.pressedOpacity
-                : 1,
+                  ? theme.states.pressedOpacity
+                  : 1,
             })}
           >
             <AppCard style={{gap: theme.spacing.xs}}>

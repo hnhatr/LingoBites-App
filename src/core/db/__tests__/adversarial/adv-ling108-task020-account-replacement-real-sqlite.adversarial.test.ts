@@ -42,8 +42,7 @@ function openFileDb(): RealSqliteConnection {
 
 function count(sql: string, params: unknown[] = []): number {
   const row = db.execute(sql, params as never[]).rows?.item(0) as
-    | {c: number}
-    | undefined;
+    {c: number} | undefined;
   return Number(row?.c ?? 0);
 }
 

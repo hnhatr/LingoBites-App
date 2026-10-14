@@ -79,13 +79,7 @@ export type IndependentTaskViewProps = {
 };
 
 type Phase =
-  | 'answer'
-  | 'consent'
-  | 'judge'
-  | 'done'
-  | 'grading'
-  | 'graded'
-  | 'not_graded';
+  'answer' | 'consent' | 'judge' | 'done' | 'grading' | 'graded' | 'not_graded';
 
 /** How this answer is judged (decisions H5, H6, H8). */
 type Grading = 'speech' | 'text' | 'self' | 'ask';
@@ -324,8 +318,8 @@ export function IndependentTaskView({
     grading === 'text' || task.response_mode === 'write'
       ? written.trim().length > 0
       : grading === 'speech'
-      ? recorder.state === 'recorded'
-      : true;
+        ? recorder.state === 'recorded'
+        : true;
 
   return (
     <AppCard testID={`lesson-flow-independent-${block.id}`}>

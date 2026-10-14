@@ -101,8 +101,8 @@ export function EntrySequence({
                   position < index || (position === index && reported)
                     ? themedStyles.dotDone
                     : position === index
-                    ? themedStyles.dotCurrent
-                    : null,
+                      ? themedStyles.dotCurrent
+                      : null,
                 ]}
               />
             ))}

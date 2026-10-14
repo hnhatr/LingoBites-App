@@ -41,10 +41,10 @@ export function PracticeSegmentList({
         const status = !segment.available
           ? t('practice.segment_thin')
           : segment.index === currentIndex
-          ? t('practice.segment_current')
-          : segment.practicedAt !== null
-          ? t('practice.segment_done')
-          : null;
+            ? t('practice.segment_current')
+            : segment.practicedAt !== null
+              ? t('practice.segment_done')
+              : null;
         return (
           <Pressable
             accessibilityHint={

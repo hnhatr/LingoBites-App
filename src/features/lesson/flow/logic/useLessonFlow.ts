@@ -97,8 +97,8 @@ export function useLessonFlow(
         assessedBy: graded
           ? 'service'
           : SELF_ASSESSED.has(activity.kind)
-          ? 'self'
-          : 'rule',
+            ? 'self'
+            : 'rule',
         durationMs,
         ...(graded
           ? {id: graded.attemptId, recordingClientId: graded.recordingClientId}

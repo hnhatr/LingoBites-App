@@ -93,8 +93,8 @@ export function StepResult({
     lessonOutcome.label === 'passed'
       ? 'lessonFlow.result_hero_passed'
       : practiceDone
-      ? 'lessonFlow.result_hero_practice_done'
-      : 'lessonFlow.result_hero_in_progress';
+        ? 'lessonFlow.result_hero_practice_done'
+        : 'lessonFlow.result_hero_in_progress';
 
   return (
     <View style={themedStyles.container} testID="lesson-flow-result">
@@ -202,8 +202,8 @@ export function StepResult({
                       isPass(outcome)
                         ? theme.colors.primary
                         : outcome === 'fail'
-                        ? theme.colors.secondary
-                        : theme.colors.text.muted
+                          ? theme.colors.secondary
+                          : theme.colors.text.muted
                     }
                     name={rowIcon(outcome)}
                     size={22}

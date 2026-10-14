@@ -43,8 +43,8 @@ export function RecorderControls({
   const title = recording
     ? t('lessonFlow.stop_recording')
     : recorded
-    ? t('lessonFlow.record_again')
-    : t('lessonFlow.record');
+      ? t('lessonFlow.record_again')
+      : t('lessonFlow.record');
   return (
     <View style={themedStyles.container}>
       <View style={themedStyles.row}>

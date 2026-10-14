@@ -402,7 +402,9 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
       logoutServerDone = false;
       const client = createAuthClient();
       const stored = await getActiveSession();
-      const accessToken = stored.ok ? stored.value?.access_token ?? null : null;
+      const accessToken = stored.ok
+        ? (stored.value?.access_token ?? null)
+        : null;
       try {
         await client.logout(accessToken);
       } catch {

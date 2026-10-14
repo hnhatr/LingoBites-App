@@ -26,6 +26,6 @@ export function useLaunchUpdate(): LaunchUpdateState {
     };
   }, []);
 
-  const progress = phase === 'reloading' ? 1 : downloadProgress ?? 0;
+  const progress = phase === 'reloading' ? 1 : (downloadProgress ?? 0);
   return {phase, progress};
 }

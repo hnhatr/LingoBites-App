@@ -106,8 +106,8 @@ export function ImageCaptureScreen({navigation, route}: Props) {
             {screenState.type === 'analyzing'
               ? t('ocr.scanning')
               : isGallery
-              ? t('ocr.opening_gallery')
-              : t('ocr.opening_camera')}
+                ? t('ocr.opening_gallery')
+                : t('ocr.opening_camera')}
           </AppText>
         </View>
       </AppScreen>

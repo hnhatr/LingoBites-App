@@ -16,11 +16,7 @@ import {lessonMediaUrls} from './mediaDownloadConsent';
  * `saved`: media stored for offline study.
  */
 export type LessonMediaStatus =
-  | 'none'
-  | 'missing'
-  | 'downloading'
-  | 'saved'
-  | 'failed';
+  'none' | 'missing' | 'downloading' | 'saved' | 'failed';
 
 function readStatus(snapshot: LessonSnapshot | null): LessonMediaStatus {
   if (!snapshot || lessonMediaUrls(snapshot).length === 0) return 'none';

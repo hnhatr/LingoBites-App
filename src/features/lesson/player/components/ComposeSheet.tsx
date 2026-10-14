@@ -255,20 +255,20 @@ function ComposeSheetBody({
     pick.picked.length === 0
       ? null
       : pick.issue === 'too_few'
-      ? 'compose.too_few'
-      : pick.issue === 'too_thin'
-      ? 'compose.too_thin'
-      : pick.issue === 'too_long'
-      ? 'compose.error_too_long'
-      : null;
+        ? 'compose.too_few'
+        : pick.issue === 'too_thin'
+          ? 'compose.too_thin'
+          : pick.issue === 'too_long'
+            ? 'compose.error_too_long'
+            : null;
   const refusal =
     phase.kind === 'refused'
       ? t(composeRefusalKey(phase.code), {
           limit: phase.details?.limit ?? pick.quota?.limit ?? 0,
         })
       : phase.kind === 'network'
-      ? t('compose.error_network')
-      : null;
+        ? t('compose.error_network')
+        : null;
 
   return (
     <View style={styles.body} testID="compose-pick">

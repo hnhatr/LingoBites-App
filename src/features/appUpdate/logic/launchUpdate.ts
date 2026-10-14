@@ -9,10 +9,7 @@ import {raceWithTimeout, TIMED_OUT} from '@core/api/timeout';
  * it. Any failure or timeout falls back to the bundle already running.
  */
 export type LaunchUpdatePhase =
-  | 'checking'
-  | 'downloading'
-  | 'reloading'
-  | 'done';
+  'checking' | 'downloading' | 'reloading' | 'done';
 
 /** Longest wait for the update server before the app carries on (ms). */
 export const LAUNCH_UPDATE_CHECK_TIMEOUT_MS = 5000;

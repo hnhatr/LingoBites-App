@@ -30,10 +30,7 @@ export const SHADOWING_MAX_RECORDING_MS = 30_000;
 export const SHADOWING_SLOW_TTS_RATE = 0.3;
 
 export type ShadowingSessionState =
-  | 'idle'
-  | 'recording'
-  | 'recorded'
-  | 'saving';
+  'idle' | 'recording' | 'recorded' | 'saving';
 
 export type ShadowingSelfCheck = {
   fullSentence: boolean;

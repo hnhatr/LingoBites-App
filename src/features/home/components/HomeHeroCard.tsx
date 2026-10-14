@@ -317,10 +317,10 @@ export function HomeHeroCard({
   const titleText = content.explicitTitle
     ? content.explicitTitle
     : content.titleKey
-    ? content.titleParams
-      ? t(content.titleKey, content.titleParams)
-      : t(content.titleKey)
-    : '';
+      ? content.titleParams
+        ? t(content.titleKey, content.titleParams)
+        : t(content.titleKey)
+      : '';
   const bodyText = content.bodyKey
     ? content.bodyParams
       ? t(content.bodyKey, content.bodyParams)
@@ -329,10 +329,10 @@ export function HomeHeroCard({
   const ctaText = content.explicitCta
     ? content.explicitCta
     : content.ctaKey
-    ? content.ctaParams
-      ? t(content.ctaKey, content.ctaParams)
-      : t(content.ctaKey)
-    : '';
+      ? content.ctaParams
+        ? t(content.ctaKey, content.ctaParams)
+        : t(content.ctaKey)
+      : '';
   const speechText = t(getMascotSpeech(heroState));
 
   return (
@@ -419,12 +419,12 @@ export function HomeHeroCard({
               heroState === 'in_progress'
                 ? 'home-continue-action'
                 : heroState === 'next_activity'
-                ? 'home-next-action'
-                : heroState === 'saved_only'
-                ? 'home-starter-pick'
-                : heroState === 'no_lessons'
-                ? 'home-starter-first'
-                : 'home-hero-cta'
+                  ? 'home-next-action'
+                  : heroState === 'saved_only'
+                    ? 'home-starter-pick'
+                    : heroState === 'no_lessons'
+                      ? 'home-starter-first'
+                      : 'home-hero-cta'
             }
             style={({pressed}) => [styles.cta, pressed && styles.ctaPressed]}
           >

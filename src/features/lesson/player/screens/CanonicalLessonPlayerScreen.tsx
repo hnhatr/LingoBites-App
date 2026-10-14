@@ -507,8 +507,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             {isLessonNotDownloaded(state)
               ? t('lessonPlayer.not_downloaded')
               : 'message' in state.error
-              ? state.error.message
-              : t('lessonPlayer.load_failed')}
+                ? state.error.message
+                : t('lessonPlayer.load_failed')}
           </AppText>
           <AppButton
             accessibilityHint={t('lessonPlayer.retry_load_hint')}
@@ -640,13 +640,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           total: practiceSegments.length,
         })
       : completionState === 'finished'
-      ? t('practice.start_again')
-      : t('practice.start')
+        ? t('practice.start_again')
+        : t('practice.start')
     : !flowEntry.available
-    ? t('lessonPlayer.start_learning')
-    : flowEntry.resumeAt !== null
-    ? t('lessonFlow.continue_at', {step: flowEntry.resumeAt})
-    : t('lessonFlow.start');
+      ? t('lessonPlayer.start_learning')
+      : flowEntry.resumeAt !== null
+        ? t('lessonFlow.continue_at', {step: flowEntry.resumeAt})
+        : t('lessonFlow.start');
 
   return (
     <AppScreen>
@@ -785,15 +785,15 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               flowEntry.available
                 ? appNavigation.openLessonFlow(lessonId)
                 : practiceRun
-                ? openPractice()
-                : openView('sentences')
+                  ? openPractice()
+                  : openView('sentences')
             }
             testID={
               flowEntry.available
                 ? 'canonical-hub-start-flow'
                 : practiceRun
-                ? 'canonical-hub-start-practice'
-                : 'canonical-hub-start'
+                  ? 'canonical-hub-start-practice'
+                  : 'canonical-hub-start'
             }
           />
         </BottomActionBar>

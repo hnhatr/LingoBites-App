@@ -139,7 +139,7 @@ describe('ShadowingSessionScreen', () => {
     const progress = root.findByProps({testID: 'shadowing-sentence-progress'})
       .props.children;
     const progressText =
-      typeof progress === 'string' ? progress : progress?.join?.('') ?? '';
+      typeof progress === 'string' ? progress : (progress?.join?.('') ?? '');
     expect(progressText).toContain('Câu 2/3');
     expect(root.findByProps({testID: 'shadowing-text-en'}).props.children).toBe(
       'Hello',

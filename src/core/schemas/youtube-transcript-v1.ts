@@ -140,8 +140,7 @@ export type GetYouTubeTranscriptResponse = z.infer<
 >;
 
 export type ValidationResult<T> =
-  | {valid: true; data: T}
-  | {valid: false; error: string};
+  {valid: true; data: T} | {valid: false; error: string};
 
 function formatValidationError(error: z.ZodError): string {
   const first = error.issues[0];

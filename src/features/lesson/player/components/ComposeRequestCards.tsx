@@ -75,16 +75,16 @@ export function ComposeRequestCards({testID = 'compose-cards'}) {
               entry.status === 'awaiting'
                 ? 'moment.card_awaiting'
                 : entry.status === 'succeeded'
-                ? 'moment.card_ready'
-                : entry.status === 'failed'
-                ? 'compose.card_failed'
-                : 'moment.card_running',
+                  ? 'moment.card_ready'
+                  : entry.status === 'failed'
+                    ? 'compose.card_failed'
+                    : 'moment.card_running',
             )
           : running
-          ? t('compose.card_running')
-          : t('compose.card_failed');
+            ? t('compose.card_running')
+            : t('compose.card_failed');
         const detail = isMoment
-          ? entry.sourceTitle ?? t('moment.card_default_title')
+          ? (entry.sourceTitle ?? t('moment.card_default_title'))
           : t('compose.card_detail', {
               title: entry.sourceTitle ?? '',
               count: entry.sentenceIds.length,

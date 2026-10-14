@@ -197,13 +197,11 @@ export function useLibrarySegments(
         );
         const sources = (
           lessonIds.length > 0 ? lessonIds : [card.lessonId]
-        ).map(
-          (lessonId): LibraryVocabularySource => ({
-            lessonId,
-            title: titleByLessonId.get(lessonId) ?? null,
-            sourceType: sourceByLessonId.get(lessonId),
-          }),
-        );
+        ).map((lessonId): LibraryVocabularySource => ({
+          lessonId,
+          title: titleByLessonId.get(lessonId) ?? null,
+          sourceType: sourceByLessonId.get(lessonId),
+        }));
         return {...card, sources};
       },
     );

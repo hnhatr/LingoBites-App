@@ -4,17 +4,10 @@
  */
 
 export type FeatureReleaseGroup =
-  | 'foundation'
-  | 'ui'
-  | 'practice'
-  | 'expansion';
+  'foundation' | 'ui' | 'practice' | 'expansion';
 
 export type FeatureStatus =
-  | 'ready'
-  | 'beta'
-  | 'incomplete'
-  | 'not_implemented'
-  | 'blocked';
+  'ready' | 'beta' | 'incomplete' | 'not_implemented' | 'blocked';
 
 export type FeatureRegistryEntry = {
   key: string;

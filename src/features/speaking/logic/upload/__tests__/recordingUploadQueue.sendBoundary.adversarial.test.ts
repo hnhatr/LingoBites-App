@@ -230,8 +230,7 @@ describe('recording upload send-boundary adversarial attacks', () => {
         [TAKE_ID],
       )
       .rows?.item(0) as
-      | {id: string; file_path: string; upload_state: string}
-      | undefined;
+      {id: string; file_path: string; upload_state: string} | undefined;
     expect(row).toEqual({
       id: TAKE_ID,
       file_path: FILE_PATH,

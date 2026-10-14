@@ -432,8 +432,8 @@ function loadExceptionManifest(manifestPath = defaultManifestPath) {
   const exceptions = Array.isArray(parsed)
     ? parsed
     : Array.isArray(parsed.exceptions)
-    ? parsed.exceptions
-    : [];
+      ? parsed.exceptions
+      : [];
 
   const byKey = new Map();
   const allowanceByKey = new Map();

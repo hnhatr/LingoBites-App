@@ -44,10 +44,10 @@ export function FlowProgressBar({
           value === step
             ? themedStyles.current
             : doneSteps.has(value)
-            ? themedStyles.done
-            : skipped
-            ? themedStyles.skipped
-            : themedStyles.upcoming;
+              ? themedStyles.done
+              : skipped
+                ? themedStyles.skipped
+                : themedStyles.upcoming;
         return (
           <Pressable
             accessibilityHint={t('lessonFlow.step_chip_hint')}

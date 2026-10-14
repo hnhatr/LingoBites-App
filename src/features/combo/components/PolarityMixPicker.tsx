@@ -70,8 +70,8 @@ export function PolarityMixPicker({
     total === 0
       ? t('combo.setup.mix_empty', {count: step})
       : total === max
-      ? t('combo.setup.mix_full', {count: max})
-      : t('combo.setup.mix_step', {count: step});
+        ? t('combo.setup.mix_full', {count: max})
+        : t('combo.setup.mix_step', {count: step});
 
   return (
     <View style={themedStyles.card} testID="combo-setup-mix">

@@ -110,8 +110,8 @@ export function SpeakingDrillActivity({
                         position === index
                           ? themedStyles.tokenCurrent
                           : position < index
-                          ? themedStyles.tokenDone
-                          : null,
+                            ? themedStyles.tokenDone
+                            : null,
                       ]}
                     >
                       <AppText

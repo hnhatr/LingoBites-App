@@ -179,8 +179,8 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             {state.status === 'contract-mismatch'
               ? t('lessonPlayer.update_app')
               : isLessonNotDownloaded(state)
-              ? t('lessonPlayer.not_downloaded')
-              : t('lessonFlow.unavailable')}
+                ? t('lessonPlayer.not_downloaded')
+                : t('lessonFlow.unavailable')}
           </AppText>
           {state.status === 'error' ? (
             <AppButton
@@ -314,20 +314,20 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
     shownStep === null
       ? null
       : showMap
-      ? {
-          title: t('lessonFlow.map_start'),
-          hint: t('lessonFlow.map_start_hint'),
-          testID: 'lesson-flow-map-start',
-          onPress: () => openStep(shownStep),
-        }
-      : shownStep < 6
-      ? {
-          title: t('lessonFlow.continue'),
-          hint: t('lessonFlow.next_step_hint'),
-          testID: 'lesson-flow-next',
-          onPress: () => openStep((shownStep + 1) as FlowStep),
-        }
-      : null;
+        ? {
+            title: t('lessonFlow.map_start'),
+            hint: t('lessonFlow.map_start_hint'),
+            testID: 'lesson-flow-map-start',
+            onPress: () => openStep(shownStep),
+          }
+        : shownStep < 6
+          ? {
+              title: t('lessonFlow.continue'),
+              hint: t('lessonFlow.next_step_hint'),
+              testID: 'lesson-flow-next',
+              onPress: () => openStep((shownStep + 1) as FlowStep),
+            }
+          : null;
   const footerAction = (!showMap && footer.action) || defaultAction;
 
   return (

@@ -64,12 +64,7 @@ export type AnalyzeTextRequestBody = {
 export type AnalysisJobStage = {
   name: string;
   status:
-    | 'pending'
-    | 'processing'
-    | 'retrying'
-    | 'completed'
-    | 'failed'
-    | 'skipped';
+    'pending' | 'processing' | 'retrying' | 'completed' | 'failed' | 'skipped';
   attempts: number;
 };
 

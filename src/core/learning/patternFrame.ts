@@ -8,8 +8,7 @@
  */
 
 export type FrameSegment =
-  | {type: 'text'; value: string}
-  | {type: 'slot'; name: string};
+  {type: 'text'; value: string} | {type: 'slot'; name: string};
 
 export type ParsedFrame =
   | {ok: true; segments: FrameSegment[]; slotNames: string[]}
@@ -125,7 +124,7 @@ export function renderFrameWithLabels(
   }
   return parsed.segments
     .map(segment =>
-      segment.type === 'text' ? segment.value : labels[segment.name] ?? '…',
+      segment.type === 'text' ? segment.value : (labels[segment.name] ?? '…'),
     )
     .join('');
 }
