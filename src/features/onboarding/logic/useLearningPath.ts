@@ -9,6 +9,8 @@ export type LearningPath = {
   levelCode: string;
   levelId: string;
   title: string;
+  /** The level's cover picture; null when the admin set none. */
+  coverUrl: string | null;
 };
 
 /**
@@ -33,7 +35,14 @@ export function useLearningPath(): LearningPath | null {
           ? result.value.find(entry => entry.code === levelCode)
           : undefined;
         setPath(
-          level ? {levelCode, levelId: level.id, title: level.title} : null,
+          level
+            ? {
+                levelCode,
+                levelId: level.id,
+                title: level.title,
+                coverUrl: level.coverUrl,
+              }
+            : null,
         );
       })
       .catch(() => {});

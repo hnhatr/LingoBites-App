@@ -1,27 +1,35 @@
 /**
- * HomeTodayCard — the one teal "Hôm nay" card at the top of Home.
+ * HomeTodayCard — the bright "Hôm nay" card at the top of Home.
  *
- * It replaces the old hero card and the "Hôm nay học gì?" plan card, which
- * both pointed at the same next step:
+ * A mint-to-sky gradient card with a picture fading in on the right:
  *   [Còn 2 việc · khoảng 18 phút ›            🎯 20 phút ▾]
- *   [cover] Bước 2/3 · ~8 phút                         (▶)
- *           Bài học mới: Chọn chỗ ngồi
- *           [A1 – Du lịch cơ bản ›]
- *   [✓ Ôn thẻ ┄┄ ② Bài mới ┄┄ ③ Luyện nói ┄┄ +1 🐾]
+ *   Bước 2/3 · ~8 phút                          [picture]
+ *   Bài học mới: Chọn chỗ ngồi
+ *   [A1 – Du lịch cơ bản ›]                           (▶)
+ *   [ ✓ Ôn thẻ ┄┄ ② Bài mới ┄┄ ③ Luyện nói ┄┄ +1 🐾 ]   white strip
  *
+ * The picture is the lesson's cover, else the level's cover, else the cat.
  * The main row follows the six hero states; the route shows today's plan
  * steps (each opens its activity) and the "+1 🐾" tag while the step
- * finishes a lesson that counts this week. The summary line opens the full
+ * finishes a lesson that counts this week. The summary chip opens the full
  * Today screen; the mode chip opens the 5/20/45-minute choices in place.
  */
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {Image, Pressable, StyleSheet, View} from 'react-native';
+import Svg, {
+  Defs,
+  G,
+  Image as SvgImage,
+  LinearGradient,
+  Mask,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 
 import type {StudyActivityItem, TodayMode} from '@features/today';
 
 import {AppText} from '@ui/components/AppText';
-import {type CoverGlyph, LibraryCover} from '@ui/components/LibraryCover';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -32,21 +40,26 @@ import {HomeIcon, type HomeSvgIconName} from './HomeSvgIcons';
 
 /** The card keeps its own colours in every theme, as the hero card did. */
 const PALETTE = {
-  face: '#006b5f',
-  shelf: '#004a41',
-  mint: '#2dd4bf',
-  mintShelf: '#17a595',
-  mintInk: '#00413a',
+  faceFrom: '#34dcc3',
+  faceTo: '#5fc8ff',
+  shelf: '#1fa597',
+  ink: '#1c1c10',
+  tealInk: '#00413a',
+  teal: '#006b5f',
   white: '#ffffff',
-  soft: '#cdeee8',
-  glass: 'rgba(255,255,255,0.16)',
-  glassBorder: 'rgba(255,255,255,0.28)',
-  dash: 'rgba(255,255,255,0.3)',
-  ring: 'rgba(45,212,191,0.45)',
+  chip: 'rgba(255,255,255,0.85)',
+  chipStrong: 'rgba(255,255,255,0.92)',
+  strip: 'rgba(255,255,255,0.85)',
+  dash: 'rgba(0,0,0,0.18)',
+  coral: '#fe7488',
+  coralShelf: '#e2506a',
+  coralRing: 'rgba(254,116,136,0.25)',
   sun: '#ffd166',
   sunShelf: '#e0a92e',
-  sunInk: '#1c1c10',
 };
+
+const CAT = require('@ui/assets/home-hero-cat.png');
+const ART_HEIGHT = 150;
 
 const MODE_OPTIONS: ReadonlyArray<{
   mode: TodayMode;
@@ -57,28 +70,6 @@ const MODE_OPTIONS: ReadonlyArray<{
   {mode: 'normal', labelKey: 'home.today_mode_20', minutes: 20},
   {mode: 'deep-practice', labelKey: 'home.today_mode_45', minutes: 45},
 ];
-
-const STEP_GLYPH: Record<StudyActivityItem['type'], CoverGlyph> = {
-  due_review: 'cards',
-  error_remediation: 'cards',
-  active_recall: 'cards',
-  listening_remediation: 'subtitles',
-  prerequisite_lesson: 'book',
-  next_lesson: 'book',
-  continue_lesson: 'book',
-  old_situation_practice: 'chat',
-  speaking_practice: 'chat',
-  interview_practice: 'work',
-};
-
-const STATE_GLYPH: Record<HeroState, CoverGlyph> = {
-  no_lessons: 'school',
-  saved_only: 'book',
-  in_progress: 'book',
-  next_activity: 'book',
-  goal_met: 'check',
-  youtube_disabled: 'book',
-};
 
 export type HomeTodayStep = {
   title: string;
@@ -173,11 +164,6 @@ export function HomeTodayCard({
         })
     : t('home.today_label');
 
-  const glyph =
-    heroState === 'next_activity' && nextStep
-      ? STEP_GLYPH[nextStep.type]
-      : STATE_GLYPH[heroState];
-  const celebrate = heroState === 'goal_met';
   const primaryTestID =
     heroState === 'in_progress'
       ? 'home-continue-action'
@@ -197,7 +183,7 @@ export function HomeTodayCard({
       shelfColor={PALETTE.shelf}
       shelfHeight={6}
     >
-      <View pointerEvents="none" style={styles.glow} />
+      <CardBackground coverUrl={coverUrl} styles={styles} />
       <View style={styles.inner} testID={`home-hero-${heroState}`}>
         {/* Summary (opens the Today screen) + mode chip */}
         <View style={styles.topRow}>
@@ -220,7 +206,11 @@ export function HomeTodayCard({
             >
               {summary}
             </AppText>
-            <MaterialIcon color={PALETTE.mint} name="chevron_right" size={16} />
+            <MaterialIcon
+              color={PALETTE.tealInk}
+              name="chevron_right"
+              size={16}
+            />
           </Pressable>
           <Pressable
             accessibilityHint={t('home.today_mode_toggle_hint')}
@@ -242,7 +232,7 @@ export function HomeTodayCard({
             </AppText>
             <View style={modesOpen ? styles.chevronUp : styles.chevronDown}>
               <MaterialIcon
-                color={PALETTE.white}
+                color={PALETTE.ink}
                 name="chevron_right"
                 size={14}
               />
@@ -293,22 +283,6 @@ export function HomeTodayCard({
           style={styles.mainRow}
           testID={primaryTestID}
         >
-          {celebrate ? (
-            <View style={styles.trophy}>
-              <HomeIcon name="emoji_events" size={30} color={PALETTE.sunInk} />
-            </View>
-          ) : (
-            <View style={styles.cover}>
-              <LibraryCover
-                compact
-                glyph={glyph}
-                hideLevelChip
-                imageUrl={coverUrl}
-                shape="pack"
-                testID="home-today-cover"
-              />
-            </View>
-          )}
           <View style={styles.copy} testID="home-hero-copy">
             <AppText
               numberOfLines={1}
@@ -326,12 +300,13 @@ export function HomeTodayCard({
               </AppText>
             ) : null}
           </View>
+          <View style={styles.spacer} />
           {main.play ? (
             <View style={[styles.play, pressed && styles.playPressed]}>
               <HomeIcon
                 name={main.ctaIcon}
                 size={24}
-                color={PALETTE.mintInk}
+                color={PALETTE.white}
                 testID="home-hero-cta-icon"
               />
             </View>
@@ -350,11 +325,7 @@ export function HomeTodayCard({
                   down && styles.pressed,
                 ]}
               >
-                <HomeIcon
-                  name={main.ctaIcon}
-                  size={16}
-                  color={PALETTE.mintInk}
-                />
+                <HomeIcon name={main.ctaIcon} size={16} color={PALETTE.white} />
                 <AppText numberOfLines={1} style={styles.ctaText}>
                   {main.cta}
                 </AppText>
@@ -374,15 +345,11 @@ export function HomeTodayCard({
                 ]}
                 testID="home-hero-path"
               >
-                <HomeIcon name="school" size={14} color={PALETTE.white} />
+                <HomeIcon name="school" size={14} color={PALETTE.ink} />
                 <AppText numberOfLines={1} style={styles.pathText}>
                   {pathTitle}
                 </AppText>
-                <HomeIcon
-                  name="chevron_right"
-                  size={14}
-                  color={PALETTE.white}
-                />
+                <HomeIcon name="chevron_right" size={14} color={PALETTE.ink} />
               </Pressable>
             ) : null}
           </View>
@@ -496,6 +463,71 @@ export function HomeTodayCard({
   );
 }
 
+/**
+ * The gradient face and, on its right, the picture fading into it: a cover
+ * photo is masked to fade left and down; without one the cat sits there.
+ */
+function CardBackground({
+  coverUrl,
+  styles,
+}: {
+  coverUrl?: string | null;
+  styles: ReturnType<typeof makeStyles>;
+}) {
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <Svg height="100%" style={StyleSheet.absoluteFill} width="100%">
+        <Defs>
+          <LinearGradient id="homeTodayFace" x1="0" x2="1" y1="0" y2="1">
+            <Stop offset="0" stopColor={PALETTE.faceFrom} />
+            <Stop offset="1" stopColor={PALETTE.faceTo} />
+          </LinearGradient>
+        </Defs>
+        <Rect fill="url(#homeTodayFace)" height="100%" width="100%" />
+      </Svg>
+      {coverUrl ? (
+        <Svg height={ART_HEIGHT} style={styles.art} width="100%">
+          <Defs>
+            <LinearGradient id="homeTodayFadeX" x1="0" x2="1" y1="0" y2="0">
+              <Stop offset="0" stopColor={PALETTE.white} stopOpacity={0} />
+              <Stop offset="0.45" stopColor={PALETTE.white} stopOpacity={1} />
+            </LinearGradient>
+            <LinearGradient id="homeTodayFadeY" x1="0" x2="0" y1="1" y2="0">
+              <Stop offset="0" stopColor={PALETTE.white} stopOpacity={0} />
+              <Stop offset="0.3" stopColor={PALETTE.white} stopOpacity={1} />
+            </LinearGradient>
+            <Mask id="homeTodayMaskX">
+              <Rect fill="url(#homeTodayFadeX)" height="100%" width="100%" />
+            </Mask>
+            <Mask id="homeTodayMaskY">
+              <Rect fill="url(#homeTodayFadeY)" height="100%" width="100%" />
+            </Mask>
+          </Defs>
+          <G mask="url(#homeTodayMaskX)">
+            <G mask="url(#homeTodayMaskY)">
+              <SvgImage
+                height="100%"
+                href={{uri: coverUrl}}
+                preserveAspectRatio="xMidYMid slice"
+                testID="home-today-cover"
+                width="100%"
+              />
+            </G>
+          </G>
+        </Svg>
+      ) : (
+        <Image
+          accessibilityIgnoresInvertColors
+          resizeMode="contain"
+          source={CAT}
+          style={styles.cat}
+          testID="home-today-cat"
+        />
+      )}
+    </View>
+  );
+}
+
 function mainContent(
   t: (key: string, params?: Record<string, string | number>) => string,
   heroState: HeroState,
@@ -592,22 +624,25 @@ function mainContent(
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     face: {
-      backgroundColor: PALETTE.face,
+      backgroundColor: PALETTE.faceFrom,
       overflow: 'hidden',
     },
-    // Soft mint light in the top-right corner.
-    glow: {
-      backgroundColor: PALETTE.mint,
-      borderRadius: 90,
-      height: 180,
-      opacity: 0.18,
+    // The picture covers the right 56% of the card's top.
+    art: {
       position: 'absolute',
-      right: -50,
-      top: -70,
-      width: 180,
+      right: 0,
+      top: 0,
+      width: '56%',
+    },
+    cat: {
+      height: 132,
+      position: 'absolute',
+      right: 4,
+      top: 14,
+      width: '40%',
     },
     inner: {
-      gap: 12,
+      gap: 10,
       padding: 14,
     },
     pressed: {
@@ -621,34 +656,35 @@ function makeStyles(theme: AppTheme) {
     },
     summaryLink: {
       alignItems: 'center',
+      backgroundColor: PALETTE.chip,
+      borderRadius: theme.radius.pill,
       flexDirection: 'row',
       flexShrink: 1,
       gap: 2,
       minHeight: 28,
+      paddingLeft: 10,
+      paddingRight: 6,
     },
     summary: {
-      color: PALETTE.mint,
+      color: PALETTE.tealInk,
       flexShrink: 1,
       fontSize: 12.5,
       fontWeight: '800',
-      letterSpacing: 0.3,
     },
     modeChip: {
       alignItems: 'center',
-      backgroundColor: PALETTE.glass,
-      borderColor: PALETTE.glassBorder,
+      backgroundColor: PALETTE.chipStrong,
       borderRadius: theme.radius.pill,
-      borderWidth: 1,
       flexDirection: 'row',
       gap: 2,
+      minHeight: 28,
       paddingLeft: 10,
       paddingRight: 6,
-      paddingVertical: 4,
     },
     modeText: {
-      color: PALETTE.white,
+      color: PALETTE.ink,
       fontSize: 12,
-      fontWeight: '700',
+      fontWeight: '800',
     },
     chevronDown: {
       transform: [{rotate: '90deg'}],
@@ -662,70 +698,58 @@ function makeStyles(theme: AppTheme) {
       gap: 8,
     },
     modeOption: {
-      backgroundColor: PALETTE.glass,
+      backgroundColor: PALETTE.chip,
       borderRadius: theme.radius.pill,
       minHeight: 36,
       justifyContent: 'center',
       paddingHorizontal: 12,
     },
     modeSelected: {
-      backgroundColor: PALETTE.white,
+      backgroundColor: PALETTE.teal,
     },
     modeOptionText: {
-      color: PALETTE.white,
+      color: PALETTE.ink,
       fontSize: 13,
       fontWeight: '700',
     },
     modeSelectedText: {
-      color: PALETTE.face,
+      color: PALETTE.white,
     },
+    // Copy on the left, the play button over the picture's lower corner.
     mainRow: {
-      alignItems: 'center',
+      alignItems: 'flex-end',
       flexDirection: 'row',
       gap: 12,
-    },
-    cover: {
-      borderColor: PALETTE.glassBorder,
-      borderRadius: 18,
-      borderWidth: 2,
-      height: 64,
-      overflow: 'hidden',
-      width: 64,
-    },
-    trophy: {
-      alignItems: 'center',
-      backgroundColor: PALETTE.sun,
-      borderRadius: 18,
-      height: 64,
-      justifyContent: 'center',
-      transform: [{rotate: '-4deg'}],
-      width: 64,
+      minHeight: 76,
     },
     copy: {
-      flex: 1,
       gap: 2,
       minWidth: 0,
+      width: '60%',
+    },
+    spacer: {
+      flex: 1,
     },
     eyebrow: {
-      color: PALETTE.soft,
+      color: PALETTE.tealInk,
       fontSize: 12.5,
       fontWeight: '700',
     },
     title: {
-      color: PALETTE.white,
-      fontSize: 18,
+      color: PALETTE.ink,
+      fontSize: 20,
       fontWeight: '800',
-      lineHeight: 23,
+      lineHeight: 25,
     },
     body: {
-      color: PALETTE.soft,
+      color: PALETTE.tealInk,
       fontSize: 13,
       lineHeight: 18,
     },
     play: {
       alignItems: 'center',
-      backgroundColor: PALETTE.mint,
-      borderBottomColor: PALETTE.mintShelf,
+      backgroundColor: PALETTE.coral,
+      borderBottomColor: PALETTE.coralShelf,
       borderBottomWidth: 4,
       borderRadius: 26,
       height: 52,
@@ -744,7 +768,9 @@ function makeStyles(theme: AppTheme) {
     },
     ctaPill: {
       alignItems: 'center',
-      backgroundColor: PALETTE.mint,
+      backgroundColor: PALETTE.coral,
+      borderBottomColor: PALETTE.coralShelf,
+      borderBottomWidth: 3,
       borderRadius: theme.radius.pill,
       flexDirection: 'row',
       gap: 6,
@@ -752,13 +778,13 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: 14,
     },
     ctaText: {
-      color: PALETTE.mintInk,
+      color: PALETTE.white,
       fontSize: 14,
       fontWeight: '800',
     },
     pathPill: {
       alignItems: 'center',
-      backgroundColor: PALETTE.glass,
+      backgroundColor: PALETTE.sun,
       borderRadius: theme.radius.pill,
       flexDirection: 'row',
       flexShrink: 1,
@@ -768,27 +794,28 @@ function makeStyles(theme: AppTheme) {
       paddingVertical: 4,
     },
     pathText: {
-      color: PALETTE.white,
+      color: PALETTE.ink,
       flexShrink: 1,
       fontSize: 12,
       fontWeight: '700',
     },
+    // White strip under the copy holding today's stops.
     route: {
-      borderTopColor: PALETTE.dash,
-      borderStyle: 'dashed',
-      borderTopWidth: 1.5,
+      backgroundColor: PALETTE.strip,
+      borderRadius: 16,
       flexDirection: 'row',
-      paddingTop: 12,
+      paddingHorizontal: 8,
+      paddingVertical: 9,
     },
     // Dashed thread behind the dots, from the first stop to the last.
     routeLine: {
       borderColor: PALETTE.dash,
       borderStyle: 'dashed',
       borderTopWidth: 2,
-      left: 36,
+      left: 40,
       position: 'absolute',
-      right: 36,
-      top: 26,
+      right: 40,
+      top: 22,
     },
     stop: {
       alignItems: 'center',
@@ -798,7 +825,7 @@ function makeStyles(theme: AppTheme) {
     },
     dot: {
       alignItems: 'center',
-      backgroundColor: PALETTE.face,
+      backgroundColor: PALETTE.white,
       borderColor: PALETTE.dash,
       borderRadius: 14,
       borderWidth: 2,
@@ -807,35 +834,36 @@ function makeStyles(theme: AppTheme) {
       width: 28,
     },
     dotDone: {
-      backgroundColor: PALETTE.mint,
-      borderColor: PALETTE.mint,
+      backgroundColor: PALETTE.teal,
+      borderColor: PALETTE.teal,
     },
     dotNext: {
-      backgroundColor: PALETTE.white,
-      borderColor: PALETTE.ring,
+      backgroundColor: PALETTE.coral,
+      borderColor: PALETTE.coralRing,
       borderWidth: 4,
     },
     dotText: {
-      color: PALETTE.soft,
+      color: PALETTE.tealInk,
       fontSize: 12,
       fontWeight: '800',
     },
     dotTextNext: {
-      color: PALETTE.face,
+      color: PALETTE.white,
     },
     dotTextDone: {
-      color: PALETTE.mintInk,
+      color: PALETTE.white,
     },
     stopLabel: {
-      color: PALETTE.soft,
+      color: PALETTE.ink,
       fontSize: 12,
       fontWeight: '700',
     },
     stopLabelNext: {
-      color: PALETTE.white,
+      color: PALETTE.ink,
+      fontWeight: '800',
     },
     stopMeta: {
-      color: PALETTE.soft,
+      color: PALETTE.tealInk,
       fontSize: 11,
       opacity: 0.85,
     },
@@ -856,16 +884,21 @@ function makeStyles(theme: AppTheme) {
       transform: [{rotate: '-5deg'}],
     },
     pawTagText: {
-      color: PALETTE.sunInk,
+      color: PALETTE.ink,
       fontSize: 12,
       fontWeight: '800',
     },
     empty: {
-      color: PALETTE.soft,
+      backgroundColor: PALETTE.strip,
+      borderRadius: 16,
+      color: PALETTE.tealInk,
       fontSize: 13,
+      overflow: 'hidden',
+      paddingHorizontal: 12,
+      paddingVertical: 9,
     },
     allDone: {
-      color: PALETTE.white,
+      color: PALETTE.tealInk,
       fontSize: 13,
       fontWeight: '700',
     },

@@ -1,7 +1,7 @@
 /**
  * HomeWeeklyGoal — one-line weekly goal strip (LING-256, LING-267, §VS-3).
  *
- * Layout (a thin strip under the "Hôm nay" card):
+ * Layout (a thin sunny strip at the top, above the "Hôm nay" card):
  *   [🏆 Tuần này  🐾🐾🐾🐾🐾🐾 ........ 2/6 · còn 4 bài]
  *
  * One paw per target lesson. The count line and the badge hint stay in the
@@ -13,6 +13,7 @@ import {StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {solidOver} from '@ui/theme/colorUtils';
 
 import type {PawGoalModel, WeeklyGoalCardModel} from '../logic/homeScreenModel';
 import {HOME_EMPTY_PAW, HOME_TROPHY} from '../logic/homeScreenModel';
@@ -103,13 +104,19 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     row: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface,
+      backgroundColor: solidOver(
+        theme.colors.tertiarySoft,
+        theme.colors.surface,
+      ),
       borderRadius: 18,
       flexDirection: 'row',
       gap: 8,
       paddingHorizontal: 12,
       paddingVertical: 10,
-      ...getStickerEdge(4, theme.colors.surfaceHigh),
+      ...getStickerEdge(
+        4,
+        solidOver(theme.colors.tertiaryBorder, theme.colors.surface),
+      ),
     },
     label: {
       color: theme.colors.text.primary,
@@ -126,7 +133,7 @@ function makeStyles(theme: AppTheme) {
       minWidth: 0,
     },
     count: {
-      color: theme.colors.text.secondary,
+      color: theme.colors.onTertiaryContainer,
       fontSize: 12,
       fontWeight: '700',
     },

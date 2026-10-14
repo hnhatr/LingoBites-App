@@ -193,7 +193,7 @@ describe('§VS-8 exact copy assertions', () => {
   it('shortcuts copy matches approved copy', () => {
     expect(
       resolveKey(vi as Record<string, unknown>, 'home.shortcut_video'),
-    ).toBe('Học qua video');
+    ).toBe('Video');
     expect(
       resolveKey(vi as Record<string, unknown>, 'home.shortcut_video_sub'),
     ).toBe('Xem tiếp, khám phá, tạo bài');
@@ -208,7 +208,7 @@ describe('§VS-8 exact copy assertions', () => {
     ).toBe('Phòng nói & shadowing');
     expect(
       resolveKey(vi as Record<string, unknown>, 'home.shortcut_create'),
-    ).toBe('Tạo bài học');
+    ).toBe('Tạo bài');
     expect(
       resolveKey(vi as Record<string, unknown>, 'home.shortcut_create_sub'),
     ).toBe('Từ văn bản, ảnh, video');

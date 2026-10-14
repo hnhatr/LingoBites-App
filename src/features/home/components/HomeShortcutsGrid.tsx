@@ -2,7 +2,8 @@
  * HomeShortcutsGrid — "Luyện thêm" section title + one row of 4 coloured tiles
  * (LING-256, LING-267, §VS-4).
  *
- * Each cell is a tinted tile: a white icon square with a short title under it. A shortcut
+ * Each cell is a tinted tile of one fixed height: a white icon square with a
+ * one-line title under it, so the four tiles never differ in size. A shortcut
  * with something waiting (due review cards) carries a count badge and a
  * status line; the full sub-line stays in the accessibility label.
  *
@@ -135,7 +136,7 @@ function ShortcutCell({
           <HomeIcon name={item.icon} size={22} color={ink} />
         </Animated.View>
 
-        <AppText style={styles.title} numberOfLines={2}>
+        <AppText style={styles.title} numberOfLines={1}>
           {titleText}
         </AppText>
 
@@ -220,7 +221,7 @@ function makeStyles(theme: AppTheme) {
       borderBottomWidth: 4,
       borderRadius: 20,
       gap: 6,
-      minHeight: 92,
+      height: 96,
       paddingBottom: 8,
       paddingHorizontal: 4,
       paddingTop: 10,
