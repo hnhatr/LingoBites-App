@@ -1468,7 +1468,16 @@
     "review": "Ôn lại gói này",
     "combo_hint": "Tạo bộ câu từ mục này.",
     "continue_one": "Học tiếp ({{count}} mục)",
-    "continue_other": "Học tiếp ({{count}} mục)"
+    "continue_other": "Học tiếp ({{count}} mục)",
+    "stat_learned_label": "Đã nhớ",
+    "learned_a11y": "Đã nhớ {{learned}} trên {{total}} mục",
+    "check_hint": "Bỏ qua từ đã biết",
+    "filter_all": "Tất cả",
+    "filter_new": "Chưa học",
+    "filter_learned": "Đã nhớ",
+    "filter_empty": "Không có mục nào ở đây.",
+    "speak": "Nghe {{text}}",
+    "learn_hint": "Mở các thẻ của gói này"
   },
   "quickCheck": {
     "title": "Kiểm tra nhanh",
@@ -1489,7 +1498,23 @@
     "finish": "Hoàn thành",
     "save_failed": "Chưa lưu được các từ. Hãy thử lại khi có mạng.",
     "done": "Đã thêm {{count}} từ vào lịch ôn",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "step_cards": "1 · Xem thẻ",
+    "step_quiz": "2 · Trả lời nhanh",
+    "meaning": "Nghĩa",
+    "example": "Ví dụ",
+    "prev": "Thẻ trước",
+    "prev_hint": "Xem lại thẻ trước"
+  },
+  "packQuiz": {
+    "close": "Thoát",
+    "ask": "Từ này nghĩa là gì?",
+    "speak": "Nghe phát âm",
+    "right": "Chính xác!",
+    "wrong": "Đáp án đúng: {{answer}}",
+    "close_hint": "Quay lại gói từ",
+    "speak_hint": "Phát âm từ này",
+    "option_hint": "Chọn đáp án này"
   },
   "combo": {
     "setup": {

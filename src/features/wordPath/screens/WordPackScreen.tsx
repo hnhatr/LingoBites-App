@@ -1,22 +1,29 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
+import {useSpeak} from '@features/audio';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {formatIpa} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
 import {useAppNavigation} from '@core/navigation';
 import type {CatalogItem} from '@core/schemas/lesson';
 
+import {PackHeroCard} from '../components/PackHeroCard';
 import {packKindOf, summaryOfItems, topicLabelOf} from '../logic/packRows';
 import {findDownloadedPack, learnedCodes} from '../logic/wordPackRepository';
 import type {WordPackRouteParams} from './navigationTypes';
 import {kindSummary} from './packText';
+
+const FILTERS = ['all', 'new', 'learned'] as const;
+type Filter = (typeof FILTERS)[number];
 
 type Props = {
   navigation?: {goBack?: () => void};
@@ -44,6 +51,8 @@ export function WordPackScreen({
   const {t} = useTranslation();
   const appNavigation = useAppNavigation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const {speak: say} = useSpeak();
+  const [filter, setFilter] = useState<Filter>('all');
   const packId = route?.params.packId ?? '';
   const pack = findDownloadedPack(packId);
   const items = useMemo(() => {
@@ -71,10 +80,20 @@ export function WordPackScreen({
     : learnedTotal > 0
       ? t('wordPack.continue', {count: left})
       : t('wordPack.learn');
-  const title = pack
-    ? (topicLabelOf(pack.topicCode) ??
-      t('wordPath.pack_title', {position: pack.position}))
-    : t('wordPack.title');
+  const title = capitalized(
+    pack
+      ? (topicLabelOf(pack.topicCode) ??
+          t('wordPath.pack_title', {position: pack.position}))
+      : t('wordPack.title'),
+  );
+
+  const shown = items.filter(item =>
+    filter === 'all'
+      ? true
+      : filter === 'learned'
+        ? learned.has(item.code)
+        : !learned.has(item.code),
+  );
 
   return (
     <AppScreen>
@@ -93,98 +112,71 @@ export function WordPackScreen({
           </AppCard>
         ) : null}
         {total > 0 ? (
-          <AppCard testID="word-pack-summary">
-            <View style={styles.stack}>
-              <View style={styles.tags}>
-                {pack ? (
-                  <View style={themedStyles.tag}>
-                    <AppText variant="caption">
-                      {`${pack.cefrLevel} · ${t(
-                        `wordPath.level_${pack.cefrLevel}`,
-                        {defaultValue: ''},
-                      )}`}
-                    </AppText>
-                  </View>
-                ) : null}
-                <View
-                  style={[
-                    themedStyles.tag,
-                    kind === 'sentence'
-                      ? themedStyles.tagSentence
-                      : themedStyles.tagWord,
-                  ]}
-                  testID="word-pack-kind"
-                >
-                  <AppText
-                    style={
-                      kind === 'sentence'
-                        ? themedStyles.tagSentenceText
-                        : themedStyles.tagWordText
-                    }
-                    variant="caption"
-                  >
-                    {kind === 'sentence'
-                      ? t('wordPack.kind_sentence')
-                      : t('wordPack.kind_word')}
-                  </AppText>
-                </View>
-              </View>
-              <AppText variant="h2">{title}</AppText>
-              <AppText color="secondary">
-                {t('wordPack.about', {parts: kindSummary(t, kindCounts)})}
-              </AppText>
-              <View style={styles.stats}>
-                <View style={themedStyles.stat}>
-                  <AppText variant="h3">{total}</AppText>
-                  <AppText color="secondary" variant="caption">
-                    {t('wordPack.stat_total')}
-                  </AppText>
-                </View>
-                <View style={themedStyles.stat}>
-                  <AppText testID="word-pack-learned-count" variant="h3">
-                    {learnedTotal}
-                  </AppText>
-                  <AppText color="secondary" variant="caption">
-                    {t('wordPack.stat_learned')}
-                  </AppText>
-                </View>
-                <View style={themedStyles.stat}>
-                  <AppText variant="h3">{left}</AppText>
-                  <AppText color="secondary" variant="caption">
-                    {t('wordPack.stat_left')}
-                  </AppText>
-                </View>
-              </View>
-              <AppButton
-                onPress={() => appNavigation.openPackLearn(packId)}
-                testID="word-pack-learn"
-                title={learnTitle}
-                variant="secondary"
-              />
-              {done ? null : (
-                <AppButton
-                  onPress={() => appNavigation.openQuickKnownCheck(packId)}
-                  testID="word-pack-check"
-                  title={t('wordPack.check')}
-                  variant="outline"
-                />
-              )}
-            </View>
-          </AppCard>
+          <PackHeroCard
+            kindLabel={
+              kind === 'sentence'
+                ? t('wordPack.kind_sentence')
+                : t('wordPack.kind_word')
+            }
+            learnTitle={learnTitle}
+            learned={learnedTotal}
+            levelLabel={
+              pack
+                ? [
+                    pack.cefrLevel,
+                    t(`wordPath.level_${pack.cefrLevel}`, {defaultValue: ''}),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')
+                : null
+            }
+            onCheck={
+              done ? undefined : () => appNavigation.openQuickKnownCheck(packId)
+            }
+            onLearn={() => appNavigation.openPackLearn(packId)}
+            subtitle={kindSummary(t, kindCounts)}
+            title={title}
+            total={total}
+          />
         ) : null}
         {total > 0 ? (
           <View style={styles.listHeader}>
-            <AppText color="secondary" variant="label">
-              {t('wordPack.in_pack')}
-            </AppText>
-            <AppText color="secondary" variant="label">
-              {`${learnedTotal}/${total}`}
-            </AppText>
+            <AppText variant="h3">{t('wordPack.in_pack')}</AppText>
+            <View accessibilityRole="tablist" style={themedStyles.filters}>
+              {FILTERS.map(option => {
+                const on = option === filter;
+                return (
+                  <Pressable
+                    key={option}
+                    accessibilityRole="tab"
+                    accessibilityState={{selected: on}}
+                    hitSlop={4}
+                    onPress={() => setFilter(option)}
+                    style={[themedStyles.filter, on && themedStyles.filterOn]}
+                    testID={`word-pack-filter-${option}`}
+                  >
+                    <AppText
+                      style={[
+                        themedStyles.filterText,
+                        on && themedStyles.filterTextOn,
+                      ]}
+                    >
+                      {t(`wordPack.filter_${option}`)}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
         ) : null}
         {total > 0 ? (
           <View style={themedStyles.list}>
-            {items.map((item, index) => {
+            {shown.length === 0 ? (
+              <AppText color="muted" style={styles.emptyFilter}>
+                {t('wordPack.filter_empty')}
+              </AppText>
+            ) : null}
+            {shown.map((item, index) => {
               const isLearned = learned.has(item.code);
               return (
                 <View
@@ -197,40 +189,52 @@ export function WordPackScreen({
                 >
                   <View
                     style={[
-                      themedStyles.dot,
-                      isLearned ? themedStyles.dotOn : null,
+                      themedStyles.status,
+                      isLearned ? themedStyles.statusOn : null,
                     ]}
                     testID={
                       isLearned
                         ? `word-pack-learned-${item.code}`
                         : `word-pack-new-${item.code}`
                     }
-                  />
+                  >
+                    {isLearned ? (
+                      <AppText style={themedStyles.statusMark}>✓</AppText>
+                    ) : null}
+                  </View>
                   <View style={styles.itemText}>
-                    <AppText variant="title">
-                      {item.text}
+                    <View style={styles.wordLine}>
+                      <AppText style={themedStyles.word}>{item.text}</AppText>
                       {item.ipa ? (
-                        <AppText color="secondary" variant="caption">
-                          {`  ${item.ipa}`}
+                        <AppText color="muted" variant="caption">
+                          {formatIpa(item.ipa)}
                         </AppText>
                       ) : null}
-                    </AppText>
+                    </View>
                     <AppText color="secondary" variant="caption">
                       {item.meaning_vi}
                     </AppText>
                   </View>
-                  <Pressable
+                  <IconButton
+                    accessibilityHint={t('packQuiz.speak_hint')}
+                    accessibilityLabel={t('wordPack.speak', {text: item.text})}
+                    icon="volume_up"
+                    iconSize={18}
+                    onPress={() => say(item.text)}
+                    size={36}
+                    style={themedStyles.speak}
+                    testID={`word-pack-speak-${item.code}`}
+                  />
+                  <IconButton
                     accessibilityHint={t('wordPack.combo_hint')}
                     accessibilityLabel={t('wordPack.combo')}
-                    accessibilityRole="button"
-                    hitSlop={8}
+                    icon="auto_awesome"
+                    iconSize={18}
                     onPress={() => appNavigation.openComboSetup(item.code)}
+                    size={36}
+                    style={themedStyles.combo}
                     testID={`word-pack-combo-${item.code}`}
-                  >
-                    <AppText style={themedStyles.link} variant="caption">
-                      {t('wordPack.combo')}
-                    </AppText>
-                  </Pressable>
+                  />
                 </View>
               );
             })}
@@ -241,71 +245,99 @@ export function WordPackScreen({
   );
 }
 
+/** "daily life" → "Daily life": topic labels come lower-case. */
+function capitalized(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
       gap: theme.spacing.md,
       padding: theme.spacing.md,
+      paddingBottom: theme.spacing.xxl,
     },
-    dot: {
-      borderColor: theme.colors.outlineVariant,
+    filters: {
+      backgroundColor: theme.colors.surface,
       borderRadius: theme.radius.pill,
-      borderWidth: 1.5,
-      height: 10,
-      width: 10,
+      flexDirection: 'row',
+      gap: 2,
+      padding: 3,
     },
-    dotOn: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
+    filter: {
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: 9,
+      paddingVertical: 4,
     },
-    itemDivider: {
-      borderTopColor: theme.colors.outlineVariant,
-      borderTopWidth: StyleSheet.hairlineWidth,
+    filterOn: {
+      backgroundColor: theme.colors.accentSoft,
     },
-    link: {
+    filterText: {
+      color: theme.colors.text.muted,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    filterTextOn: {
       color: theme.colors.primary,
     },
     list: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.lg,
-      borderWidth: 1,
-      paddingHorizontal: theme.spacing.md,
+      borderBottomColor: theme.shelf?.surface.color ?? theme.colors.border,
+      borderBottomWidth: 4,
+      borderRadius: 22,
+      overflow: 'hidden',
     },
-    stat: {
+    itemDivider: {
+      borderTopColor: theme.colors.surfaceMuted,
+      borderTopWidth: 1.5,
+    },
+    status: {
       alignItems: 'center',
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: 13,
+      borderWidth: 2,
+      height: 26,
+      justifyContent: 'center',
+      width: 26,
+    },
+    statusOn: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    statusMark: {
+      color: theme.colors.text.inverse,
+      fontSize: 13,
+      fontWeight: '800',
+      lineHeight: 16,
+    },
+    word: {
+      color: theme.colors.text.primary,
+      fontSize: 16.5,
+      fontWeight: '700',
+    },
+    speak: {
       backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: theme.radius.md,
-      flex: 1,
-      paddingVertical: theme.spacing.sm,
+      borderRadius: 12,
     },
-    tag: {
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: 2,
-    },
-    tagSentence: {
-      backgroundColor: theme.colors.secondarySoft,
-    },
-    tagSentenceText: {
-      color: theme.colors.secondary,
-    },
-    tagWord: {
+    combo: {
       backgroundColor: theme.colors.accentSoft,
-    },
-    tagWordText: {
-      color: theme.colors.primary,
+      borderRadius: 12,
     },
   });
 }
 
 const styles = StyleSheet.create({
+  emptyFilter: {
+    padding: 16,
+    textAlign: 'center',
+  },
   item: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 12,
-    paddingVertical: 10,
+    gap: 10,
+    paddingLeft: 14,
+    paddingRight: 12,
+    paddingVertical: 11,
   },
   itemText: {
     flex: 1,
@@ -313,19 +345,16 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   listHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  stack: {
-    gap: 12,
-  },
-  stats: {
+    alignItems: 'center',
     flexDirection: 'row',
     gap: 8,
+    justifyContent: 'space-between',
+    marginTop: 6,
   },
-  tags: {
+  wordLine: {
+    alignItems: 'baseline',
+    columnGap: 7,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
   },
 });

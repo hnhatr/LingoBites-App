@@ -1,0 +1,416 @@
+/**
+ * Shared pieces of the two pack sessions (learn a pack, quick check):
+ * a compact header with a progress bar, the question card, its answer
+ * options and the line saying whether the answer was right.
+ */
+import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Pressable, StyleSheet, View} from 'react-native';
+
+import {AppText} from '@ui/components/AppText';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
+import {IconButton} from '@ui/components/IconButton';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+
+type HeaderProps = {
+  current: number;
+  total: number;
+  /** Screen-reader text of the bar ("Thẻ 1/12"). */
+  progressLabel: string;
+  onClose: () => void;
+};
+
+/** [✕] [██████░░░░░░░░] 1/12 */
+export function PackSessionHeader({
+  current,
+  total,
+  progressLabel,
+  onClose,
+}: HeaderProps) {
+  const {t} = useTranslation();
+  const {theme} = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const share = total > 0 ? Math.min(1, current / total) : 0;
+  return (
+    <View style={styles.header} testID="screen-header">
+      <HeaderIconButton
+        accessibilityHint={t('packQuiz.close_hint')}
+        accessibilityLabel={t('packQuiz.close')}
+        icon="close"
+        onPress={onClose}
+        testID="screen-header-back"
+      />
+      <View
+        accessibilityRole="progressbar"
+        accessibilityValue={{
+          text: progressLabel,
+        }}
+        style={styles.track}
+        testID="pack-session-progress"
+      >
+        <View style={[styles.fill, {width: `${share * 100}%`}]} />
+      </View>
+      <AppText style={styles.count}>{`${current}/${total}`}</AppText>
+    </View>
+  );
+}
+
+type StepsProps = {labels: string[]; active: number};
+
+/** The steps of a session as pills, the current one filled. */
+export function PackSessionSteps({labels, active}: StepsProps) {
+  const {theme} = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  return (
+    <View style={styles.steps}>
+      {labels.map((label, index) => (
+        <View
+          key={label}
+          style={[styles.step, index === active && styles.stepOn]}
+        >
+          <AppText
+            style={[styles.stepText, index === active && styles.stepTextOn]}
+          >
+            {label}
+          </AppText>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+type QuestionProps = {
+  prompt: string;
+  options: string[];
+  answerIndex: number;
+  chosen: number | null;
+  onChoose: (option: number) => void;
+  onSpeak: () => void;
+  /** Prefix of the option testIDs: `${optionTestID}-${index}`. */
+  optionTestID: string;
+  /** Put on the card's own view, so tests read the prompt from it. */
+  containerTestID: string;
+};
+
+/** "Từ này nghĩa là gì?", the word, then options A, B, C and the verdict. */
+export function PackQuestion({
+  prompt,
+  options,
+  answerIndex,
+  chosen,
+  onChoose,
+  onSpeak,
+  optionTestID,
+  containerTestID,
+}: QuestionProps) {
+  const {t} = useTranslation();
+  const {theme} = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const answered = chosen !== null;
+  const right = chosen === answerIndex;
+  return (
+    <View style={styles.question} testID={containerTestID}>
+      <View style={styles.promptCard}>
+        <AppText style={styles.ask}>{t('packQuiz.ask')}</AppText>
+        <View style={styles.promptRow}>
+          <AppText adjustsFontSizeToFit numberOfLines={2} style={styles.prompt}>
+            {prompt}
+          </AppText>
+          <IconButton
+            accessibilityHint={t('packQuiz.speak_hint')}
+            accessibilityLabel={t('packQuiz.speak')}
+            icon="volume_up"
+            iconSize={20}
+            onPress={onSpeak}
+            size={40}
+          />
+        </View>
+      </View>
+      <View style={styles.options}>
+        {options.map((option, index) => (
+          <PackOption
+            key={`${index}-${option}`}
+            letter={String.fromCharCode(65 + index)}
+            onPress={() => onChoose(index)}
+            state={
+              !answered
+                ? 'idle'
+                : index === answerIndex
+                  ? 'right'
+                  : index === chosen
+                    ? 'wrong'
+                    : 'dim'
+            }
+            testID={`${optionTestID}-${index}`}
+            title={option}
+          />
+        ))}
+      </View>
+      {answered ? (
+        <View
+          accessibilityLiveRegion="polite"
+          style={[
+            styles.verdict,
+            right ? styles.verdictRight : styles.verdictWrong,
+          ]}
+        >
+          <AppText
+            style={[
+              styles.verdictText,
+              right ? styles.verdictTextRight : styles.verdictTextWrong,
+            ]}
+          >
+            {right
+              ? t('packQuiz.right')
+              : t('packQuiz.wrong', {answer: options[answerIndex] ?? ''})}
+          </AppText>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+type OptionState = 'idle' | 'right' | 'wrong' | 'dim';
+
+type OptionProps = {
+  title: string;
+  letter: string;
+  state: OptionState;
+  onPress: () => void;
+  testID: string;
+};
+
+function PackOption({title, letter, state, onPress, testID}: OptionProps) {
+  const {t} = useTranslation();
+  const {theme} = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const mark = state === 'right' ? '✓' : state === 'wrong' ? '✕' : null;
+  return (
+    <Pressable
+      accessibilityHint={t('packQuiz.option_hint')}
+      accessibilityLabel={title}
+      accessibilityRole="button"
+      accessibilityState={{
+        disabled: state !== 'idle',
+        selected: state === 'right' || state === 'wrong',
+      }}
+      onPress={onPress}
+      style={({pressed}) => [
+        styles.option,
+        state === 'right' && styles.optionRight,
+        state === 'wrong' && styles.optionWrong,
+        state === 'dim' && styles.optionDim,
+        pressed && state === 'idle' && styles.optionPressed,
+      ]}
+      testID={testID}
+    >
+      <View
+        style={[
+          styles.letter,
+          state === 'right' && styles.letterRight,
+          state === 'wrong' && styles.letterWrong,
+        ]}
+      >
+        <AppText
+          style={[
+            styles.letterText,
+            (state === 'right' || state === 'wrong') && styles.letterTextOn,
+          ]}
+        >
+          {letter}
+        </AppText>
+      </View>
+      <AppText style={styles.optionText}>{title}</AppText>
+      {mark ? (
+        <AppText
+          style={[
+            styles.mark,
+            state === 'right' ? styles.markRight : styles.markWrong,
+          ]}
+        >
+          {mark}
+        </AppText>
+      ) : null}
+    </Pressable>
+  );
+}
+
+function makeStyles(theme: AppTheme) {
+  const edge = theme.shelf?.surface.color ?? theme.colors.border;
+  return StyleSheet.create({
+    header: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 12,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+    },
+    track: {
+      backgroundColor: theme.colors.surfaceContainer,
+      borderRadius: 6,
+      flex: 1,
+      height: 12,
+      overflow: 'hidden',
+    },
+    fill: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: 6,
+      height: '100%',
+    },
+    count: {
+      color: theme.colors.text.secondary,
+      fontSize: 13,
+      fontVariant: ['tabular-nums'],
+      fontWeight: '700',
+      minWidth: 36,
+      textAlign: 'right',
+    },
+    steps: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    step: {
+      backgroundColor: theme.colors.surface,
+      borderBottomColor: edge,
+      borderBottomWidth: 2,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    stepOn: {
+      backgroundColor: theme.colors.primary,
+      borderBottomColor: theme.colors.primaryPressed,
+    },
+    stepText: {
+      color: theme.colors.text.muted,
+      fontSize: 11.5,
+      fontWeight: '700',
+    },
+    stepTextOn: {
+      color: theme.colors.text.inverse,
+    },
+    question: {
+      gap: 14,
+    },
+    promptCard: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderBottomColor: edge,
+      borderBottomWidth: 6,
+      borderRadius: 26,
+      gap: 6,
+      paddingHorizontal: 18,
+      paddingVertical: 18,
+    },
+    ask: {
+      color: theme.colors.text.muted,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    promptRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 10,
+      justifyContent: 'center',
+      maxWidth: '100%',
+    },
+    prompt: {
+      color: theme.colors.text.primary,
+      flexShrink: 1,
+      fontSize: 34,
+      fontWeight: '800',
+      lineHeight: 40,
+      textAlign: 'center',
+    },
+    options: {
+      gap: 10,
+    },
+    option: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderBottomColor: edge,
+      borderBottomWidth: 4,
+      borderColor: theme.colors.surface,
+      borderRadius: 18,
+      borderWidth: 2,
+      flexDirection: 'row',
+      gap: 12,
+      minHeight: 56,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    optionPressed: {
+      opacity: theme.states.pressedOpacity,
+    },
+    optionRight: {
+      backgroundColor: theme.colors.accentSoft,
+      borderColor: theme.colors.primary,
+    },
+    optionWrong: {
+      backgroundColor: theme.colors.secondarySoft,
+      borderColor: theme.colors.danger,
+    },
+    optionDim: {
+      opacity: 0.55,
+    },
+    letter: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 10,
+      height: 30,
+      justifyContent: 'center',
+      width: 30,
+    },
+    letterRight: {
+      backgroundColor: theme.colors.primary,
+    },
+    letterWrong: {
+      backgroundColor: theme.colors.danger,
+    },
+    letterText: {
+      color: theme.colors.text.muted,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    letterTextOn: {
+      color: theme.colors.text.inverse,
+    },
+    optionText: {
+      color: theme.colors.text.primary,
+      flex: 1,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    mark: {
+      fontSize: 16,
+      fontWeight: '800',
+    },
+    markRight: {
+      color: theme.colors.primary,
+    },
+    markWrong: {
+      color: theme.colors.danger,
+    },
+    verdict: {
+      borderRadius: 16,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    verdictRight: {
+      backgroundColor: theme.colors.accentSoft,
+    },
+    verdictWrong: {
+      backgroundColor: theme.colors.secondarySoft,
+    },
+    verdictText: {
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    verdictTextRight: {
+      color: theme.colors.primary,
+    },
+    verdictTextWrong: {
+      color: theme.colors.danger,
+    },
+  });
+}

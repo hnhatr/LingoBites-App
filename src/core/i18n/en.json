@@ -1468,7 +1468,16 @@
     "review": "Review this pack",
     "combo_hint": "Makes a combo set from this item.",
     "continue_one": "Continue ({{count}} item)",
-    "continue_other": "Continue ({{count}} items)"
+    "continue_other": "Continue ({{count}} items)",
+    "stat_learned_label": "Learned",
+    "learned_a11y": "Learned {{learned}} of {{total}} items",
+    "check_hint": "Skip words you know",
+    "filter_all": "All",
+    "filter_new": "To learn",
+    "filter_learned": "Learned",
+    "filter_empty": "Nothing here.",
+    "speak": "Listen to {{text}}",
+    "learn_hint": "Opens this pack's cards"
   },
   "quickCheck": {
     "title": "Quick check",
@@ -1489,7 +1498,23 @@
     "finish": "Finish",
     "save_failed": "The words could not be saved. Try again when you are online.",
     "done": "{{count}} words added to your review",
-    "back": "Back"
+    "back": "Back",
+    "step_cards": "1 · Cards",
+    "step_quiz": "2 · Quick answers",
+    "meaning": "Meaning",
+    "example": "Example",
+    "prev": "Previous card",
+    "prev_hint": "Shows the previous card"
+  },
+  "packQuiz": {
+    "close": "Close",
+    "ask": "What does this word mean?",
+    "speak": "Listen",
+    "right": "Correct!",
+    "wrong": "Right answer: {{answer}}",
+    "close_hint": "Goes back to the pack",
+    "speak_hint": "Plays this word",
+    "option_hint": "Picks this answer"
   },
   "combo": {
     "setup": {
