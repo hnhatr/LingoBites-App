@@ -235,7 +235,7 @@ function makeStyles(theme: AppTheme) {
       alignSelf: 'flex-start',
       borderRadius: 14,
       overflow: 'hidden',
-      width: 84,
+      width: 96,
     },
     empty: {
       alignItems: 'center',

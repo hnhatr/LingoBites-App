@@ -12,7 +12,7 @@ import {useCourses} from '../logic/useCurriculum';
 import {CurriculumList} from './CurriculumList';
 
 /**
- * Published courses, each under its cover (the admin's picture, else a
+ * Published courses, each a compact row beside its cover (the admin's picture, else a
  * default cover with a topic icon); a row opens the course's levels. Shared by the Library
  * "Khóa học" segment and the course list screen. Without published content
  * it shows the empty state.
@@ -35,12 +35,11 @@ export function CourseListContent() {
           title: course.title,
           description: course.description,
           locked: !course.unlocked,
-          cover: (
+          thumbnail: (
             <LibraryCover
-              aspectRatio={1.7}
               glyph={curriculumGlyph(course.title, course.description)}
               imageUrl={course.coverUrl}
-              shape="lesson"
+              shape="pack"
               testID={`course-cover-${course.id}`}
             />
           ),
