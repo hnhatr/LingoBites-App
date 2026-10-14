@@ -334,11 +334,19 @@ function AuthenticatedRootStack() {
         name="PlacementResult"
       />
       {/* Practice */}
-      <RootStack.Screen component={DailyReviewScreen} name="DailyReview" />
+      <RootStack.Screen
+        component={DailyReviewScreen}
+        name="DailyReview"
+        options={{gestureEnabled: false}}
+      />
       <RootStack.Screen component={ItemReviewScreen} name="ItemReview" />
       <RootStack.Screen component={WordPathScreen} name="WordPath" />
       <RootStack.Screen component={WordPackScreen} name="WordPack" />
-      <RootStack.Screen component={PackLearnScreen} name="PackLearn" />
+      <RootStack.Screen
+        component={PackLearnScreen}
+        name="PackLearn"
+        options={{gestureEnabled: false}}
+      />
       <RootStack.Screen
         component={QuickKnownCheckScreen}
         name="QuickKnownCheck"
