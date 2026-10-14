@@ -18,13 +18,16 @@ import {
   lessonCardKind,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
+import {LibraryCover} from '@ui/components/LibraryCover';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 
+import {CurriculumHeroCover} from '../components/CurriculumHeroCover';
 import {CurriculumList} from '../components/CurriculumList';
 import {UnitProgressBar} from '../components/UnitProgressBar';
+import {curriculumGlyph} from '../logic/curriculumCover';
 import {useCourseBreadcrumb} from '../logic/useCourseBreadcrumb';
 import {useUnitLessons} from '../logic/useCurriculum';
 import type {CourseFlowParamList} from './navigationTypes';
@@ -32,7 +35,8 @@ import type {CourseFlowParamList} from './navigationTypes';
 type Props = NativeStackScreenProps<CourseFlowParamList, 'UnitLessons'>;
 
 /**
- * Lessons of one unit in order (F14). A curriculum lesson id is the id the
+ * Lessons of one unit in order (F14), under the unit's cover; each lesson
+ * shows its own cover, else the unit's, else a default cover. A curriculum lesson id is the id the
  * regular player loads, so a row opens the same lesson player.
  */
 export function UnitLessonsScreen({navigation, route}: Props) {
@@ -40,7 +44,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const {unitId, title} = route.params;
+  const {unitId, title, coverUrl, levelCode} = route.params;
   const {state, refresh} = useUnitLessons(unitId);
   const {isBookmarked, toggleBookmark} = useLessonBookmarks();
   const breadcrumb = useCourseBreadcrumb(navigation, route.key);
@@ -94,6 +98,16 @@ export function UnitLessonsScreen({navigation, route}: Props) {
                 ) : undefined
               }
               kind={lessonCardKind(sourceType)}
+              thumbnail={
+                <LibraryCover
+                  glyph={curriculumGlyph(lesson.title, title)}
+                  hideLevelChip
+                  imageUrl={lesson.coverUrl ?? coverUrl}
+                  level={levelCode}
+                  shape="pack"
+                  testID={`unit-lessons-cover-${lesson.id}`}
+                />
+              }
               onPress={onPress}
               onToggleBookmark={() =>
                 toggleBookmark({
@@ -132,6 +146,12 @@ export function UnitLessonsScreen({navigation, route}: Props) {
         header={
           ready && ready.lessons.length > 0 ? (
             <View style={themedStyles.progress}>
+              <CurriculumHeroCover
+                glyph={curriculumGlyph(title)}
+                imageUrl={coverUrl}
+                level={levelCode}
+                testID="unit-lessons-cover"
+              />
               <UnitProgressBar
                 progress={ready.progress}
                 testID="unit-lessons-progress"

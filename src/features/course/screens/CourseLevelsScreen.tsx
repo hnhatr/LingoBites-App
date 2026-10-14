@@ -10,15 +10,18 @@ import {Chip} from '@ui/components/Chip';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
+import {CurriculumHeroCover} from '../components/CurriculumHeroCover';
 import {CurriculumList} from '../components/CurriculumList';
 import {LevelUnitList} from '../components/LevelUnitList';
+import {curriculumGlyph} from '../logic/curriculumCover';
 import {useCourseLevels} from '../logic/useCurriculum';
 import type {CourseFlowParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<CourseFlowParamList, 'CourseLevels'>;
 
 /**
- * One course (F14): its levels as a switcher, then the chosen level's units,
+ * One course (F14): its cover (the level's, else the course's), its levels as
+ * a switcher, then the chosen level's units,
  * so a unit is one tap from the course instead of a separate level screen.
  * The chosen level is kept in the route, so back from a unit keeps it.
  */
@@ -26,7 +29,7 @@ export function CourseLevelsScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const {courseSlug, title, levelId} = route.params;
+  const {courseSlug, title, levelId, coverUrl} = route.params;
   const {state, refresh} = useCourseLevels(courseSlug);
 
   useFocusEffect(
@@ -50,9 +53,16 @@ export function CourseLevelsScreen({navigation, route}: Props) {
     }
   }, [navigation, selected, levelId, route.params.levelCode]);
 
-  const header =
-    selected && levels.length > 1 ? (
-      <View style={themedStyles.levels}>
+  const heroUrl = selected?.coverUrl ?? coverUrl ?? null;
+  const header = selected ? (
+    <View style={themedStyles.levels}>
+      <CurriculumHeroCover
+        glyph={curriculumGlyph(title, selected.title, selected.description)}
+        imageUrl={heroUrl}
+        level={selected.code}
+        testID="course-levels-cover"
+      />
+      {levels.length > 1 ? (
         <View style={themedStyles.chips} testID="course-levels-switcher">
           {levels.map(level => (
             <Chip
@@ -70,17 +80,18 @@ export function CourseLevelsScreen({navigation, route}: Props) {
             />
           ))}
         </View>
-        {selected.description.trim().length > 0 ? (
-          <AppText
-            color="secondary"
-            testID="course-levels-description"
-            variant="label"
-          >
-            {selected.description}
-          </AppText>
-        ) : null}
-      </View>
-    ) : undefined;
+      ) : null}
+      {levels.length > 1 && selected.description.trim().length > 0 ? (
+        <AppText
+          color="secondary"
+          testID="course-levels-description"
+          variant="label"
+        >
+          {selected.description}
+        </AppText>
+      ) : null}
+    </View>
+  ) : undefined;
 
   return (
     <AppScreen>
@@ -94,11 +105,14 @@ export function CourseLevelsScreen({navigation, route}: Props) {
           // A new level starts from its own loading state, never the old list.
           key={selected.id}
           header={header}
+          levelCode={selected.code}
           levelId={selected.id}
           onOpenUnit={unit =>
             navigation.push('UnitLessons', {
               unitId: unit.id,
               title: unit.title,
+              coverUrl: unit.coverUrl ?? heroUrl,
+              levelCode: selected.code,
             })
           }
           testID="course-levels-units"
@@ -124,7 +138,7 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.sm,
     },
     levels: {
-      gap: theme.spacing.sm,
+      gap: theme.spacing.md,
       paddingBottom: theme.spacing.sm,
     },
   });

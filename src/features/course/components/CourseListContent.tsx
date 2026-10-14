@@ -2,15 +2,18 @@ import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
 
+import {LibraryCover} from '@ui/components/LibraryCover';
 import {showToast} from '@ui/components/toast';
 
 import {useAppNavigation} from '@core/navigation';
 
+import {curriculumGlyph} from '../logic/curriculumCover';
 import {useCourses} from '../logic/useCurriculum';
 import {CurriculumList} from './CurriculumList';
 
 /**
- * Published courses; a row opens the course's levels. Shared by the Library
+ * Published courses, each under its cover (the admin's picture, else a
+ * default cover with a topic icon); a row opens the course's levels. Shared by the Library
  * "Khóa học" segment and the course list screen. Without published content
  * it shows the empty state.
  */
@@ -32,6 +35,15 @@ export function CourseListContent() {
           title: course.title,
           description: course.description,
           locked: !course.unlocked,
+          cover: (
+            <LibraryCover
+              aspectRatio={2}
+              glyph={curriculumGlyph(course.title, course.description)}
+              imageUrl={course.coverUrl}
+              shape="lesson"
+              testID={`course-cover-${course.id}`}
+            />
+          ),
           accessibilityHint: course.unlocked
             ? t('course.course_row_hint')
             : t('course.course_locked_hint'),
@@ -44,6 +56,7 @@ export function CourseListContent() {
               kind: 'course',
               courseSlug: course.slug,
               title: course.title,
+              coverUrl: course.coverUrl,
             });
           },
         }))
@@ -53,7 +66,6 @@ export function CourseListContent() {
     <CurriculumList
       emptyMessage={t('course.courses_empty')}
       onRetry={refresh}
-      layout="grid"
       rows={rows}
       status={state.status}
       testID="course-list"

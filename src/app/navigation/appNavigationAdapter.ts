@@ -124,7 +124,11 @@ export function createAppNavigation(
           screen: 'Courses',
           params: {
             screen: 'CourseLevels',
-            params: {courseSlug: target.courseSlug, title: target.title},
+            params: {
+              courseSlug: target.courseSlug,
+              title: target.title,
+              coverUrl: target.coverUrl,
+            },
             initial: false,
           },
         });

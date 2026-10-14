@@ -40,6 +40,8 @@ const CourseSchema = z.object({
   productId: z.string().nullable().default(null),
   priceAmount: z.number().int().nullable().default(null),
   priceCurrency: z.string().nullable().default(null),
+  /** Cover picture set in the admin; null draws the default cover. */
+  coverUrl: z.string().nullable().default(null),
 });
 
 const LevelSchema = z.object({
@@ -49,6 +51,8 @@ const LevelSchema = z.object({
   title: z.string(),
   description: z.string(),
   position: z.number().int(),
+  /** Cover picture set in the admin; null draws the default cover. */
+  coverUrl: z.string().nullable().default(null),
 });
 
 const AudienceSchema = z.enum(['all', 'kids', 'adults']);
@@ -63,6 +67,8 @@ const UnitSchema = z.object({
   /** What the learner can do after the unit; absent on older servers. */
   canDo: z.array(z.string()).default([]),
   audience: AudienceSchema.default('all'),
+  /** Cover picture set in the admin; null draws the default cover. */
+  coverUrl: z.string().nullable().default(null),
 });
 
 const CurriculumLessonSchema = z.object({
@@ -76,6 +82,8 @@ const CurriculumLessonSchema = z.object({
   /** What the learner can do after the lesson; absent on older servers. */
   canDo: z.array(z.string()).default([]),
   audience: AudienceSchema.default('all'),
+  /** Cover picture set in the admin; null draws the default cover. */
+  coverUrl: z.string().nullable().default(null),
 });
 
 const EntitlementsResponseSchema = z.object({course_ids: z.array(z.string())});

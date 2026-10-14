@@ -664,6 +664,8 @@
     "explore_grammar_empty": "Analyze a sentence to see grammar",
     "explore_items_vocabulary_title": "Words & phrases",
     "explore_items_vocabulary_subtitle": "{{count}} words and phrases",
+    "item_rail_all": "All {{count}} ›",
+    "item_rail_all_hint": "Opens the lesson's words and phrases",
     "explore_patterns_title": "Sentence patterns",
     "explore_patterns_subtitle": "{{count}} patterns",
     "explore_pronunciation_title": "Pronunciation",

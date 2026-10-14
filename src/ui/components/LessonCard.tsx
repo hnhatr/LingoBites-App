@@ -22,7 +22,9 @@ import {ShelfSurface} from './ShelfSurface';
  *
  * `compact` is the 250pt-wide Home rail size; chips shrink to icons there.
  * With a `cover` (the Library's "Tất cả" lists), the picture sits above the
- * copy and replaces the type icon.
+ * copy and replaces the type icon; a `thumbnail` (course units) replaces it
+ * with a square picture beside the copy. Without status chips the chevron
+ * rides on the duration line, so the card has no empty row.
  */
 
 export type LessonCardKind = 'text' | 'video' | 'image';
@@ -57,6 +59,8 @@ export type LessonCardProps = {
   footer?: React.ReactNode;
   /** Picture above the copy, e.g. a `LibraryCover`; replaces the type icon. */
   cover?: React.ReactNode;
+  /** Square picture beside the copy, e.g. a `LibraryCover`; replaces the type icon. */
+  thumbnail?: React.ReactNode;
   accessibilityHint?: string;
   testID?: string;
 };
@@ -258,15 +262,17 @@ export function LessonCard(props: LessonCardProps) {
     variant = 'full',
     footer,
     cover,
+    thumbnail,
     accessibilityHint,
     testID,
   } = props;
   const {theme} = useAppTheme();
   const compact = variant === 'compact';
   const hasCover = Boolean(cover);
+  const hasThumbnail = !hasCover && Boolean(thumbnail);
   const styles = useMemo(
-    () => makeStyles(theme, compact, hasCover),
-    [theme, compact, hasCover],
+    () => makeStyles(theme, compact, hasCover, hasThumbnail),
+    [theme, compact, hasCover, hasThumbnail],
   );
   const [pressed, setPressed] = useState(false);
   const chips = buildStatusChips(props);
@@ -274,12 +280,32 @@ export function LessonCard(props: LessonCardProps) {
   const kindColors = kindTone(theme, kind);
   const shelf = theme.shelf?.surface;
   const hasContext = Boolean(contextLead || context);
+  const hasMeta = Boolean(durationLabel || sentenceCount != null);
+  const showChevron = Boolean(onPress) && !compact;
+  // No chips: the chevron ends the duration line instead of its own row.
+  const chevronInMeta = showChevron && chips.length === 0 && hasMeta;
+  const chevron = (
+    <View style={styles.chevron}>
+      <MaterialIcon
+        color={theme.colors.text.muted}
+        name="chevron_right"
+        size={20}
+      />
+    </View>
+  );
 
   const body = (
     <>
       {cover ? <View style={styles.cover}>{cover}</View> : null}
       <View style={styles.head}>
-        {cover ? null : (
+        {cover ? null : hasThumbnail ? (
+          <View
+            style={styles.picture}
+            testID={testID ? `${testID}-thumbnail` : undefined}
+          >
+            {thumbnail}
+          </View>
+        ) : (
           <View style={[styles.thumb, {backgroundColor: kindColors.bg}]}>
             <MaterialIcon
               color={kindColors.fg}
@@ -313,7 +339,7 @@ export function LessonCard(props: LessonCardProps) {
           {subtitle}
         </AppText>
       ) : null}
-      {durationLabel || sentenceCount != null ? (
+      {hasMeta ? (
         <View style={styles.meta}>
           {durationLabel ? (
             <View style={styles.metaItem}>
@@ -335,9 +361,10 @@ export function LessonCard(props: LessonCardProps) {
               <AppText style={styles.metaText}>{sentenceCount} câu</AppText>
             </View>
           ) : null}
+          {chevronInMeta ? chevron : null}
         </View>
       ) : null}
-      {chips.length > 0 || (onPress && !compact) ? (
+      {chips.length > 0 || (showChevron && !chevronInMeta) ? (
         <View style={styles.status}>
           {chips.map(chip => {
             const tone = chipTone(theme, chip.tone);
@@ -360,15 +387,7 @@ export function LessonCard(props: LessonCardProps) {
               </View>
             );
           })}
-          {onPress && !compact ? (
-            <View style={styles.chevron}>
-              <MaterialIcon
-                color={theme.colors.text.muted}
-                name="chevron_right"
-                size={20}
-              />
-            </View>
-          ) : null}
+          {showChevron && !chevronInMeta ? chevron : null}
         </View>
       ) : null}
       {ratio != null ? (
@@ -474,8 +493,13 @@ function chipTone(theme: AppTheme, tone: Tone) {
   }
 }
 
-function makeStyles(theme: AppTheme, compact: boolean, hasCover: boolean) {
-  const thumbSize = compact ? 44 : 48;
+function makeStyles(
+  theme: AppTheme,
+  compact: boolean,
+  hasCover: boolean,
+  hasThumbnail: boolean,
+) {
+  const thumbSize = hasThumbnail ? (compact ? 56 : 72) : compact ? 44 : 48;
   // Full cards indent the rows under the copy column; compact ones and cards
   // with a cover (no type icon) do not.
   const indent = compact || hasCover ? 0 : thumbSize + 12;
@@ -501,6 +525,13 @@ function makeStyles(theme: AppTheme, compact: boolean, hasCover: boolean) {
       borderRadius: 14,
       borderWidth: 2,
       overflow: 'hidden',
+    },
+    picture: {
+      borderColor: theme.colors.ink,
+      borderRadius: 14,
+      borderWidth: 2,
+      overflow: 'hidden',
+      width: thumbSize,
     },
     thumb: {
       alignItems: 'center',
@@ -537,6 +568,7 @@ function makeStyles(theme: AppTheme, compact: boolean, hasCover: boolean) {
       lineHeight: 19,
     },
     meta: {
+      alignItems: 'center',
       columnGap: 12,
       flexDirection: 'row',
       flexWrap: 'wrap',

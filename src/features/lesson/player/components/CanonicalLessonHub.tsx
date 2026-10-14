@@ -8,6 +8,7 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {LessonExploreRow} from '@ui/components/LessonExploreRow';
+import {LibraryCover} from '@ui/components/LibraryCover';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {SvgIcon} from '@ui/components/SvgIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
@@ -24,7 +25,9 @@ import {
   lessonHubSections,
   sortedSentences,
 } from '../logic/lessonHubContent';
+import {useLessonPictures} from '../logic/lessonPictures';
 import {replayDayKey, replayLine} from '../logic/situationReplay';
+import {LessonItemPictureRail} from './LessonItemPictureRail';
 import {LessonOutcomeCard} from './LessonOutcomeCard';
 import {LessonStatusBanners} from './LessonStatusBanners';
 import {SourcePhotoCard} from './SourcePhotoCard';
@@ -131,10 +134,11 @@ export type CanonicalLessonHubProps = {
 };
 
 /**
- * Lesson overview: title header, one expandable original/translation card,
- * and "Khám phá bài học" rows into the study sections.
- * Everything shown is derived from the canonical snapshot; no lesson data is
- * fetched or stored here.
+ * Lesson overview: the cover (catalog lessons), title header, the words and
+ * phrases as picture cards, one expandable original/translation card, and
+ * "Khám phá bài học" rows into the study sections.
+ * Everything shown is derived from the canonical snapshot; only the
+ * pictures are asked for beside it, and the defaults stand in without them.
  */
 export function CanonicalLessonHub({
   snapshot,
@@ -167,6 +171,12 @@ export function CanonicalLessonHub({
     [snapshot, analyses],
   );
   const catalogLesson = (snapshot.lesson_items ?? []).length > 0;
+  const curriculumLesson = snapshot.unit != null;
+  const pictures = useLessonPictures(
+    snapshot.id,
+    catalogLesson || curriculumLesson,
+    offline ?? false,
+  );
   const canPractice = useMemo(
     () =>
       onOpenPractice !== undefined &&
@@ -186,6 +196,26 @@ export function CanonicalLessonHub({
         lessonId={snapshot.id}
         offline={offline ?? false}
       />
+
+      {curriculumLesson ? (
+        <View
+          // Decoration: the title below says what the lesson is.
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={themedStyles.cover}
+        >
+          <LibraryCover
+            aspectRatio={2.2}
+            glyph="book"
+            hideLevelChip
+            imageUrl={pictures.coverUrl}
+            // Level titles lead with their code ("A1 – …"); else a neutral cover.
+            level={snapshot.unit?.level_title.slice(0, 2)}
+            shape="lesson"
+            testID="canonical-hub-cover"
+          />
+        </View>
+      ) : null}
 
       <View style={styles.header}>
         <AppText testID="canonical-hub-title" variant="h2" numberOfLines={3}>
@@ -249,6 +279,14 @@ export function CanonicalLessonHub({
 
       {outcome ? (
         <LessonOutcomeCard onOpenLesson={onOpenLesson} outcome={outcome} />
+      ) : null}
+
+      {catalogLesson ? (
+        <LessonItemPictureRail
+          itemImages={pictures.itemImages}
+          onOpen={() => onOpenSection('vocabulary')}
+          snapshot={snapshot}
+        />
       ) : null}
 
       <AppCard style={themedStyles.contentCard}>
@@ -431,6 +469,12 @@ function ExploreRow({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    cover: {
+      borderColor: theme.colors.ink,
+      borderRadius: 18,
+      borderWidth: 2,
+      overflow: 'hidden',
+    },
     listen: {alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center'},
     contentCard: {
       borderBottomColor: theme.colors.accentSoft,

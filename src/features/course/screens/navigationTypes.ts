@@ -8,6 +8,8 @@ export type CourseLevelsRouteParams = {
   levelId?: string;
   /** The shown level's code (e.g. A1), for the breadcrumb of deeper screens. */
   levelCode?: string;
+  /** The course cover, shown until a level has its own. */
+  coverUrl?: string | null;
 };
 
 export type LevelUnitsRouteParams = {
@@ -18,6 +20,10 @@ export type LevelUnitsRouteParams = {
 export type UnitLessonsRouteParams = {
   unitId: string;
   title?: string;
+  /** The unit cover, else its level's; lessons without one show it too. */
+  coverUrl?: string | null;
+  /** The level code (e.g. A1): colours the default covers. */
+  levelCode?: string;
 };
 
 /** PR 16: a unit's summative task. */
