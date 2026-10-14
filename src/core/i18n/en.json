@@ -1504,7 +1504,8 @@
     "meaning": "Meaning",
     "example": "Example",
     "prev": "Previous card",
-    "prev_hint": "Shows the previous card"
+    "prev_hint": "Shows the previous card",
+    "swipe_hint": "Swipe left for the next card, right to go back"
   },
   "packQuiz": {
     "close": "Close",

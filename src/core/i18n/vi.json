@@ -1504,7 +1504,8 @@
     "meaning": "Nghĩa",
     "example": "Ví dụ",
     "prev": "Thẻ trước",
-    "prev_hint": "Xem lại thẻ trước"
+    "prev_hint": "Xem lại thẻ trước",
+    "swipe_hint": "Vuốt sang trái để xem thẻ tiếp, sang phải để quay lại"
   },
   "packQuiz": {
     "close": "Thoát",
