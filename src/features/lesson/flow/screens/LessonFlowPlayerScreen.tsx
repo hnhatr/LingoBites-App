@@ -1,9 +1,10 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
 
 import {speak} from '@features/audio';
+import {getGamificationSnapshot} from '@features/engagement';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -24,6 +25,7 @@ import {isLessonNotDownloaded} from '../../player/logic/lessonNotDownloaded';
 import {useCanonicalLesson} from '../../player/logic/useCanonicalLesson';
 import type {LessonFlowParamList} from '../../player/screens/navigationTypes';
 import {FlowProgressBar} from '../components/FlowProgressBar';
+import {LessonMap} from '../components/LessonMap';
 import {StepResult} from '../components/StepResult';
 import {hasRelatedReview, StepReview} from '../components/StepReview';
 import {StepView} from '../components/StepView';
@@ -92,21 +94,26 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
   );
 
   const goTo = flow.goTo;
+  /** Redesign: the lesson map, shown once before anything was done. */
+  const [showMap, setShowMap] = useState(false);
+  const [streakDays] = useState(readStreakDays);
   const openStep = useCallback(
     (step: FlowStep) => {
+      setShowMap(false);
       goTo(step);
       scrollRef.current?.scrollTo({y: 0, animated: false});
     },
     [goTo],
   );
 
-  // A new lesson opens on step 1; when it has nothing to review, go on to 2.
+  // A new lesson opens on its map; step 1 with nothing to review is skipped.
   const firstStepChecked = useRef(false);
   useEffect(() => {
     if (firstStepChecked.current || flow.step === null) return;
     firstStepChecked.current = true;
+    if (flow.attempts.length === 0) setShowMap(true);
     if (flow.step === 1 && reviewSkipped) goTo(2);
-  }, [flow.step, reviewSkipped, goTo]);
+  }, [flow.step, flow.attempts.length, reviewSkipped, goTo]);
 
   const handleSpeak = useCallback((text: string) => {
     speak(text).catch(() => undefined);
@@ -186,6 +193,17 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
     }
     const step = flow.step;
     if (step === null) return null;
+    if (showMap) {
+      return (
+        <LessonMap
+          nextStep={step}
+          onOpenStep={openStep}
+          skippedSteps={skippedSteps}
+          snapshot={snapshot}
+          streakDays={streakDays}
+        />
+      );
+    }
     return (
       <>
         <View style={themedStyles.titles}>
@@ -314,7 +332,17 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
       >
         {renderBody()}
       </ScrollView>
-      {shownStep !== null && shownStep < 6 ? (
+      {shownStep !== null && showMap ? (
+        <BottomActionBar>
+          <AppButton
+            accessibilityHint={t('lessonFlow.map_start_hint')}
+            iconRight="chevron_right"
+            onPress={() => openStep(shownStep)}
+            testID="lesson-flow-map-start"
+            title={t('lessonFlow.map_start')}
+          />
+        </BottomActionBar>
+      ) : shownStep !== null && shownStep < 6 ? (
         <BottomActionBar>
           <AppButton
             accessibilityHint={t('lessonFlow.next_step_hint')}
@@ -327,6 +355,14 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
       ) : null}
     </AppScreen>
   );
+}
+
+function readStreakDays(): number | null {
+  try {
+    return getGamificationSnapshot().currentStreak;
+  } catch {
+    return null;
+  }
 }
 
 function makeStyles(theme: AppTheme) {

@@ -61,8 +61,13 @@ afterEach(() => {
 });
 
 describe('LessonFlowPlayerScreen (shell)', () => {
-  it('opens a new lesson past an empty step 1 and walks the steps', () => {
+  it('opens a new lesson on its map, past an empty step 1, and walks the steps', () => {
     const {tree} = renderScreen();
+    expect(has(tree, 'lesson-flow-map')).toBe(true);
+    expect(has(tree, 'lesson-flow-step-title')).toBe(false);
+
+    press(tree, 'lesson-flow-map-start');
+    expect(has(tree, 'lesson-flow-map')).toBe(false);
     expect(textOf(tree, 'lesson-flow-step-title')).toBe('Bước 2: Nghe hiểu');
 
     press(tree, 'lesson-flow-next');
@@ -81,6 +86,13 @@ describe('LessonFlowPlayerScreen (shell)', () => {
       'Còn 2 hoạt động luyện',
     );
     expect(has(tree, 'lesson-flow-next')).toBe(false);
+  });
+
+  it('opens a step straight from a stop on the map', () => {
+    const {tree} = renderScreen();
+    press(tree, 'lesson-flow-map-step-4');
+    expect(has(tree, 'lesson-flow-map')).toBe(false);
+    expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 4');
   });
 
   it('closes from the result step', () => {
