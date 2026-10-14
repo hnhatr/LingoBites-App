@@ -9,8 +9,8 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
-import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {SessionHeader} from '@ui/components/StudySession';
 import {useAppTheme} from '@ui/theme';
 
 import type {UseLessonPracticeRunResult} from '../logic/useLessonPracticeRun';
@@ -208,7 +208,18 @@ export function LessonPracticeRunView({
 
   return (
     <AppScreen testID="practice-screen">
-      <ScreenHeader rightAction={closeButton} title={t('practice.run_title')} />
+      <SessionHeader
+        closeHint={t('practice.close_hint')}
+        closeLabel={t('practice.close_a11y')}
+        closeTestID="practice-close"
+        current={sectionIndex}
+        onClose={onClose}
+        progressLabel={t('practice.run_progress', {
+          current: sectionIndex + 1,
+          total: sectionCount,
+        })}
+        total={sectionCount}
+      />
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
@@ -216,10 +227,6 @@ export function LessonPracticeRunView({
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        <HandoffProgressTrack
-          label={t('practice.progress_a11y')}
-          progress={sectionIndex / sectionCount}
-        />
         <AppText color="secondary" testID="practice-run-progress">
           {t('practice.run_progress', {
             current: sectionIndex + 1,

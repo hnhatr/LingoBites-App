@@ -6,10 +6,10 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {HandoffProgressTrack} from '@ui/components/HandoffProgressTrack';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {QuizOption, type QuizOptionState} from '@ui/components/QuizOption';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {SessionHeader} from '@ui/components/StudySession';
 import {useAppTheme} from '@ui/theme';
 
 import {useFeatureEnabled} from '@core/release';
@@ -192,17 +192,21 @@ export function PracticeScreen({navigation, route}: PracticeScreenProps) {
 
   return (
     <AppScreen testID="practice-screen">
-      <ScreenHeader rightAction={closeButton} title={t('practice.title')} />
+      <SessionHeader
+        closeHint={t('practice.close_hint')}
+        closeLabel={t('practice.close_a11y')}
+        closeTestID="practice-close"
+        current={index + (answered ? 1 : 0)}
+        onClose={close}
+        progressLabel={t('practice.progress', {current: index + 1, total})}
+        total={total}
+      />
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
           {gap: theme.spacing.md, padding: theme.gutter},
         ]}
       >
-        <HandoffProgressTrack
-          label={t('practice.progress_a11y')}
-          progress={(index + (answered ? 1 : 0)) / total}
-        />
         <AppText color="secondary" testID="practice-progress">
           {t('practice.progress', {current: index + 1, total})}
         </AppText>
