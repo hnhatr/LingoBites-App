@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -14,11 +14,12 @@ type Props = {
   testID?: string;
 };
 
-const NOTCH = 9;
+const NOTCH = 6;
 
 /**
- * A course's levels as boarding passes, side by side: the level code large,
- * its name under it, the chosen one filled. Each opens that level's units.
+ * A course's levels as small ticket stubs in one row that scrolls sideways,
+ * so B1, B2… fit: the level code, then its name, the chosen one filled.
+ * Each opens that level's units.
  */
 export function LevelPassSwitcher({
   levels,
@@ -31,7 +32,13 @@ export function LevelPassSwitcher({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
 
   return (
-    <View style={styles.row} testID={testID}>
+    <ScrollView
+      contentContainerStyle={themedStyles.row}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={themedStyles.scroller}
+      testID={testID}
+    >
       {levels.map(level => {
         const selected = level.id === selectedId;
         return (
@@ -70,7 +77,7 @@ export function LevelPassSwitcher({
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -93,28 +100,26 @@ const styles = StyleSheet.create({
   notchRight: {
     right: -NOTCH,
   },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-  },
 });
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     code: {
       color: theme.colors.text.primary,
-      fontSize: 24,
+      fontSize: 16,
       fontWeight: '800',
-      lineHeight: 30,
+      lineHeight: 20,
     },
     codeOn: {
       color: theme.colors.accent,
     },
     name: {
       color: theme.colors.text.secondary,
+      flexShrink: 1,
       fontSize: 13,
       fontWeight: '700',
       lineHeight: 18,
+      maxWidth: 160,
     },
     nameOn: {
       color: theme.colors.text.inverse,
@@ -130,20 +135,31 @@ function makeStyles(theme: AppTheme) {
       width: NOTCH * 2,
     },
     pass: {
-      borderRadius: 20,
-      flex: 1,
-      minWidth: 0,
+      alignItems: 'center',
+      borderRadius: 14,
+      flexDirection: 'row',
+      gap: 8,
+      minHeight: 44,
       overflow: 'hidden',
-      paddingHorizontal: 18,
-      paddingVertical: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
     },
     passOff: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.surfaceHigh,
-      borderWidth: 2,
+      borderWidth: 1.5,
     },
     passOn: {
       backgroundColor: theme.colors.primary,
+    },
+    row: {
+      gap: 8,
+      paddingHorizontal: theme.gutter,
+    },
+    // Runs to the screen edges so a long row scrolls past the sheet padding.
+    scroller: {
+      flexGrow: 0,
+      marginHorizontal: -theme.gutter,
     },
   });
 }

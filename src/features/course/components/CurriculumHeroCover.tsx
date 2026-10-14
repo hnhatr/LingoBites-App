@@ -7,7 +7,7 @@ import {type CoverGlyph, LibraryCover} from '@ui/components/LibraryCover';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 /** Height of the picture below the status bar. */
-export const HERO_HEIGHT = 290;
+export const HERO_HEIGHT = 180;
 /** How far the content sheet slides up over the picture. */
 const SHEET_OVERLAP = 32;
 /** Fade under the status bar so its text stays readable on any picture. */
