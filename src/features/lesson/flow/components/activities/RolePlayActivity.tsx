@@ -2,10 +2,7 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
-
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {RolePlayContent} from '@core/schemas/activityContent';
@@ -14,6 +11,7 @@ import type {LessonTask} from '@core/schemas/lesson';
 import type {EntryReport} from '../../logic/activityOutcome';
 import type {FlowItems} from '../../logic/flowContent';
 import {hintLadder} from '../../logic/hints';
+import {PartnerBubble, TurnBubble} from '../ChatBubble';
 import {EntrySequence} from '../EntrySequence';
 import {SpeakSelfCheck} from '../SpeakSelfCheck';
 
@@ -59,35 +57,24 @@ export function RolePlayActivity({
           position,
         );
         return (
-          <>
+          <View style={themedStyles.chat}>
             {before.map(line => (
-              <View
+              <PartnerBubble
                 key={line.id}
-                style={themedStyles.line}
+                speaker={line.speaker}
                 testID="lesson-flow-partner-line"
-              >
-                <View style={themedStyles.flex}>
-                  <AppText variant="label">
-                    {line.speaker}: {line.textEn}
-                  </AppText>
-                  <AppText color="secondary">{line.textVi}</AppText>
-                </View>
-                <IconButton
-                  accessibilityHint={t('lessonFlow.listen_line_hint')}
-                  accessibilityLabel={t('lessonFlow.listen_line')}
-                  icon="volume_up"
-                  onPress={() => {
-                    speak(line.textEn).catch(() => undefined);
-                  }}
-                />
-              </View>
+                textEn={line.textEn}
+                textVi={line.textVi}
+              />
             ))}
-            <AppText testID="lesson-flow-prompt" variant="h3">
-              {t('lessonFlow.your_turn', {
-                speaker: turn.speaker,
-                text: turn.textVi,
-              })}
-            </AppText>
+            <TurnBubble>
+              <AppText testID="lesson-flow-prompt" variant="title">
+                {t('lessonFlow.your_turn', {
+                  speaker: turn.speaker,
+                  text: turn.textVi,
+                })}
+              </AppText>
+            </TurnBubble>
             <SpeakSelfCheck
               hints={hintLadder({
                 task,
@@ -99,7 +86,7 @@ export function RolePlayActivity({
               model={turn.textEn}
               onReport={report}
             />
-          </>
+          </View>
         );
       }}
     />
@@ -108,13 +95,8 @@ export function RolePlayActivity({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    flex: {
-      flex: 1,
-    },
-    line: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
+    chat: {
+      gap: theme.spacing.md,
     },
   });
 }

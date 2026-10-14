@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
 import {
   setEvaluationConsent,
   shouldAskEvaluationConsent,
@@ -12,7 +11,6 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
-import {IconButton} from '@ui/components/IconButton';
 import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -50,6 +48,7 @@ import {
   submitWrittenAnswer,
 } from '../logic/taskEvaluation';
 import {useSelfCheckRecorder} from '../logic/useSelfCheckRecorder';
+import {PartnerBubble, TurnBubble} from './ChatBubble';
 import {CriteriaChecklist} from './CriteriaChecklist';
 import {EvaluationConsentPrompt} from './EvaluationConsentPrompt';
 import {EvaluationFeedback} from './EvaluationFeedback';
@@ -331,22 +330,26 @@ export function IndependentTaskView({
   return (
     <AppCard testID={`lesson-flow-independent-${block.id}`}>
       <View style={themedStyles.body}>
-        <Chip label={t('lessonFlow.independent_label')} tone="coralSoft" />
-        <AppText variant="h3">{task.title_vi || activity.titleVi}</AppText>
-        {situation ? (
-          <View style={themedStyles.situation} testID="lesson-flow-situation">
-            <AppText>
-              {t('lessonFlow.situation_line', {
-                speaker: situation.speaker,
-                listener: situation.listener,
-                place: situation.place,
-              })}
-            </AppText>
-            <AppText variant="label">
-              {t('lessonFlow.situation_purpose', {purpose: situation.purpose})}
-            </AppText>
-          </View>
-        ) : null}
+        <View style={themedStyles.scenario}>
+          <Chip label={t('lessonFlow.independent_label')} tone="coralSoft" />
+          <AppText variant="h3">{task.title_vi || activity.titleVi}</AppText>
+          {situation ? (
+            <View style={themedStyles.body} testID="lesson-flow-situation">
+              <AppText>
+                {t('lessonFlow.situation_line', {
+                  speaker: situation.speaker,
+                  listener: situation.listener,
+                  place: situation.place,
+                })}
+              </AppText>
+              <AppText variant="label">
+                {t('lessonFlow.situation_purpose', {
+                  purpose: situation.purpose,
+                })}
+              </AppText>
+            </View>
+          ) : null}
+        </View>
         <AppText testID="lesson-flow-task-prompt">{task.prompt_vi}</AppText>
 
         {phase === 'answer' && grading === 'ask' ? (
@@ -358,34 +361,23 @@ export function IndependentTaskView({
             {dialogue
               ? dialogue.turns.map(turn =>
                   turn.speaker === dialogue.learnerSpeaker ? (
-                    <AppText
-                      color="secondary"
+                    <TurnBubble
                       key={turn.id}
                       testID="lesson-flow-independent-your-turn"
-                      variant="label"
                     >
-                      {t('lessonFlow.independent_your_turn', {
-                        speaker: turn.speaker,
-                      })}
-                    </AppText>
-                  ) : (
-                    <View
-                      key={turn.id}
-                      style={themedStyles.line}
-                      testID="lesson-flow-partner-line"
-                    >
-                      <AppText style={themedStyles.flex} variant="label">
-                        {turn.speaker}: {turn.textEn}
+                      <AppText variant="label">
+                        {t('lessonFlow.independent_your_turn', {
+                          speaker: turn.speaker,
+                        })}
                       </AppText>
-                      <IconButton
-                        accessibilityHint={t('lessonFlow.listen_line_hint')}
-                        accessibilityLabel={t('lessonFlow.listen_line')}
-                        icon="volume_up"
-                        onPress={() => {
-                          speak(turn.textEn).catch(() => undefined);
-                        }}
-                      />
-                    </View>
+                    </TurnBubble>
+                  ) : (
+                    <PartnerBubble
+                      key={turn.id}
+                      speaker={turn.speaker}
+                      testID="lesson-flow-partner-line"
+                      textEn={turn.textEn}
+                    />
                   ),
                 )
               : null}
@@ -526,17 +518,10 @@ function makeStyles(theme: AppTheme) {
     body: {
       gap: theme.spacing.sm,
     },
-    flex: {
-      flex: 1,
-    },
-    line: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
-    },
-    situation: {
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: theme.radius.md,
+    scenario: {
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.secondarySoft,
+      borderRadius: theme.radius.lg,
       gap: theme.spacing.xs,
       padding: theme.spacing.md,
     },
