@@ -8,6 +8,7 @@ import {AppText} from '@ui/components/AppText';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {SessionHeader} from '@ui/components/StudySession';
 import {useAppTheme} from '@ui/theme';
 
 import {ConsentSheet} from '../components/shadowing/ConsentSheet';
@@ -150,7 +151,15 @@ export function ShadowingSessionScreen({
 
   return (
     <AppScreen>
-      <ScreenHeader rightAction={closeAction} title="Lặp lại theo mẫu" />
+      <SessionHeader
+        closeHint="Thoát buổi luyện nói"
+        closeLabel="Đóng buổi luyện nói"
+        closeTestID="shadowing-close"
+        current={session.sentenceIndex + 1}
+        onClose={handleClose}
+        progressLabel={`Câu ${session.sentenceIndex + 1}/${session.sentenceCount}`}
+        total={session.sentenceCount}
+      />
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,

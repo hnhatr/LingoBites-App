@@ -262,7 +262,7 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
     );
   });
 
-  it('renders saved lessons as lesson cards, capped at three', async () => {
+  it('renders saved lessons as tone cards, capped at three', async () => {
     mockSavedLessons.mockReturnValue([31, 32, 33, 34].map(savedLesson));
     const {tree} = await renderHome();
     expect(railPressables(tree)).toHaveLength(3);
@@ -322,11 +322,12 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
       {...savedLesson(1), lessonId: SEEDED_LESSON_ID},
     ]);
     const {tree} = await renderHome();
-    expect(
-      tree.root.findAllByProps({
-        testID: `home-recent-item-${SEEDED_LESSON_ID}-chip-downloaded`,
-      }).length,
-    ).toBeGreaterThan(0);
+    const description = tree.root.findAll(
+      node =>
+        node.props.testID ===
+        `home-recent-item-${SEEDED_LESSON_ID}-description`,
+    );
+    expect(JSON.stringify(description[0]?.props.children)).toContain('Đã tải');
   });
 
   it('opens the downloaded lesson from the Continue action', async () => {

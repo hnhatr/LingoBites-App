@@ -127,7 +127,7 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
 
     // Verify progress shows "1 / 1"
     const progress = reviewTree.root.findByProps({testID: 'review-progress'});
-    expect(progress.findAllByProps({children: '1 / 1'}).length).toBeGreaterThan(
+    expect(progress.findAllByProps({children: '1/1'}).length).toBeGreaterThan(
       0,
     );
 
@@ -212,7 +212,7 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
 
     // Verify progress shows "1 / 3"
     let progress = tree.root.findByProps({testID: 'review-progress'});
-    expect(progress.findAllByProps({children: '1 / 3'}).length).toBeGreaterThan(
+    expect(progress.findAllByProps({children: '1/3'}).length).toBeGreaterThan(
       0,
     );
 
@@ -224,7 +224,7 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
 
     // Verify progress shows "2 / 3"
     progress = tree.root.findByProps({testID: 'review-progress'});
-    expect(progress.findAllByProps({children: '2 / 3'}).length).toBeGreaterThan(
+    expect(progress.findAllByProps({children: '2/3'}).length).toBeGreaterThan(
       0,
     );
 
@@ -236,7 +236,7 @@ describe('E2E: Flashcard Feature - Complete Flow', () => {
 
     // Verify progress shows "3 / 3"
     progress = tree.root.findByProps({testID: 'review-progress'});
-    expect(progress.findAllByProps({children: '3 / 3'}).length).toBeGreaterThan(
+    expect(progress.findAllByProps({children: '3/3'}).length).toBeGreaterThan(
       0,
     );
 

@@ -92,7 +92,7 @@ describe('SpeakingRoomScreen shadowing entry', () => {
     expect(
       tree.root.findByProps({testID: 'shadowing-continue-detail'}).props
         .children,
-    ).toEqual(expect.arrayContaining([5, 12]));
+    ).toBe('Đang dở · câu 5/12');
     press(tree, 'shadowing-continue-row');
     expect(mockNavigate).toHaveBeenCalledWith('ShadowingSession', {
       lessonId: LESSON_B,

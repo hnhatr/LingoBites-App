@@ -100,7 +100,7 @@ describe('DailyReviewScreen', () => {
     );
 
     const progress = tree.root.findByProps({testID: 'review-progress'});
-    expect(progress.findAllByProps({children: '1 / 5'}).length).toBeGreaterThan(
+    expect(progress.findAllByProps({children: '1/5'}).length).toBeGreaterThan(
       0,
     );
     expect(
@@ -292,7 +292,7 @@ describe('DailyReviewScreen', () => {
     expect(
       tree.root
         .findByProps({testID: 'review-progress'})
-        .findAllByProps({children: '2 / 2'}).length,
+        .findAllByProps({children: '2/2'}).length,
     ).toBeGreaterThan(0);
   });
 
@@ -373,7 +373,7 @@ describe('DailyReviewScreen', () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     const progress = tree.root.findByProps({testID: 'review-progress'});
-    expect(progress.findAllByProps({children: '1 / 1'}).length).toBeGreaterThan(
+    expect(progress.findAllByProps({children: '1/1'}).length).toBeGreaterThan(
       0,
     );
     expect(tree.root.findAllByProps({testID: 'review-summary'})).toHaveLength(

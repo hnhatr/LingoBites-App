@@ -8,13 +8,10 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {
-  formatVideoDuration,
-  LessonCard,
   lessonCardDurationLabel,
-  lessonCardKind,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
-import {LibraryCover} from '@ui/components/LibraryCover';
+import {cardToneAt, ToneCard} from '@ui/components/ToneCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
@@ -33,9 +30,7 @@ import {
   useLessonBookmarks,
 } from '../logic/lessonCardData';
 import {LibraryEmptyState} from './LibraryEmptyState';
-
-/** Lesson covers in the full list: a wide banner, like video covers. */
-const LIST_COVER_ASPECT = 16 / 9;
+import {createdAction, createdProgressLabel} from './tabs/CreatedTab';
 
 export interface PublicLessonsListProps {
   origin: LessonOrigin;
@@ -158,8 +153,7 @@ export function PublicLessonsList({
           />
         ) : null
       }
-      renderItem={({item}) => {
-        const {title, subtitle} = splitLessonTitle(item.title);
+      renderItem={({item, index}) => {
         const contextLabel =
           kind === 'video'
             ? videoContextLabel(item)
@@ -169,60 +163,45 @@ export function PublicLessonsList({
           youtubeDurationMs: item.youtube_duration_ms,
           sentenceCount: item.sentence_count,
         });
+        const progress = localState.progress.get(item.id);
         return (
-          <LessonCard
+          <ToneCard
             accessibilityHint={kind === 'video' ? 'Mở video' : 'Mở bài học'}
-            bookmarked={isBookmarked(item.id)}
-            context={contextLabel}
-            cover={
-              kind === 'video' ? (
-                <LibraryCover
-                  duration={
-                    item.youtube_duration_ms
-                      ? formatVideoDuration(item.youtube_duration_ms)
-                      : null
-                  }
-                  glyph="subtitles"
-                  imageUrl={catalogCoverUrl(item)}
-                  level={item.cefr_level}
-                  play
-                  shape="video"
-                  testID={`public-lesson-${item.id}-cover`}
-                />
-              ) : (
-                <LibraryCover
-                  aspectRatio={LIST_COVER_ASPECT}
-                  glyph="book"
-                  imageUrl={catalogCoverUrl(item)}
-                  level={item.cefr_level}
-                  shape="lesson"
-                  tag={item.unit?.unit_title ?? null}
-                  testID={`public-lesson-${item.id}-cover`}
-                />
-              )
+            action={
+              kind === 'video' && !progress
+                ? {label: 'Xem', glyph: 'play', solid: true}
+                : createdAction(progress)
             }
-            downloaded={localState.downloadedIds.has(item.id)}
-            durationLabel={durationLabel}
-            exerciseCount={
-              item.activity_count ?? localState.activityCounts.get(item.id)
-            }
-            kind={lessonCardKind(item.source_type)}
+            bookmark={{
+              saved: isBookmarked(item.id),
+              onToggle: () =>
+                toggleBookmark({
+                  lessonId: item.id,
+                  title: item.title,
+                  sourceType: item.source_type,
+                  sentenceCount: item.sentence_count,
+                  estimatedMinutes: item.estimated_minutes ?? null,
+                  contextLabel,
+                }),
+            }}
+            cover={{
+              imageUrl: catalogCoverUrl(item),
+              glyph: kind === 'video' ? 'subtitles' : 'book',
+            }}
+            description={[
+              durationLabel,
+              item.cefr_level,
+              localState.downloadedIds.has(item.id) ? 'Đã tải' : null,
+              createdProgressLabel(progress),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+            eyebrow={contextLabel}
+            gutter={theme.gutter}
             onPress={() => navigation.openLesson(item.id)}
-            onToggleBookmark={() =>
-              toggleBookmark({
-                lessonId: item.id,
-                title: item.title,
-                sourceType: item.source_type,
-                sentenceCount: item.sentence_count,
-                estimatedMinutes: item.estimated_minutes ?? null,
-                contextLabel,
-              })
-            }
-            progress={localState.progress.get(item.id)}
-            sentenceCount={item.sentence_count}
-            subtitle={subtitle}
             testID={`public-lesson-${item.id}`}
-            title={title}
+            title={splitLessonTitle(item.title).title}
+            tone={cardToneAt(index)}
           />
         );
       }}

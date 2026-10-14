@@ -9,6 +9,12 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
+import {StudyFlashCard} from '@ui/components/StudyFlashCard';
+import {
+  SessionHeader,
+  SessionSteps,
+  StudyQuestion,
+} from '@ui/components/StudySession';
 import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -20,12 +26,6 @@ import {
 import {useAppNavigation} from '@core/navigation';
 import type {CatalogItem} from '@core/schemas/lesson';
 
-import {PackFlashCard} from '../components/PackFlashCard';
-import {
-  PackQuestion,
-  PackSessionHeader,
-  PackSessionSteps,
-} from '../components/PackSessionParts';
 import {topicLabelOf} from '../logic/packRows';
 import {findDownloadedPack} from '../logic/wordPackRepository';
 import {learnWordPack} from '../logic/wordPathClient';
@@ -152,7 +152,7 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
 
   return (
     <AppScreen>
-      <PackSessionHeader
+      <SessionHeader
         current={header.current}
         onClose={close}
         progressLabel={header.label}
@@ -166,7 +166,7 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
         ) : null}
 
         {items.length > 0 && stage !== 'done' ? (
-          <PackSessionSteps
+          <SessionSteps
             active={stage === 'cards' ? 0 : 1}
             labels={[t('packLearn.step_cards'), t('packLearn.step_quiz')]}
           />
@@ -182,7 +182,7 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
             rightLabel=""
             testID="pack-learn-swipe"
           >
-            <PackFlashCard
+            <StudyFlashCard
               example={card.examples[0]?.text_en ?? null}
               ipa={card.ipa}
               meaning={card.meaning_vi}
@@ -204,7 +204,7 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
         ) : null}
 
         {stage !== 'cards' && stage !== 'done' && question ? (
-          <PackQuestion
+          <StudyQuestion
             answerIndex={question.answerIndex}
             chosen={chosen}
             onChoose={answer}

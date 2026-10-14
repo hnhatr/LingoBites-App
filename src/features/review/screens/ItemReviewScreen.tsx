@@ -10,7 +10,7 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
-import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {SessionHeader, StudyQuestion} from '@ui/components/StudySession';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {createRequestId} from '@core/api/requestId';
@@ -131,11 +131,24 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
     requestSync();
   };
 
+  const total = queue.items.length;
+  const say = (text: string) => {
+    speak(text).catch(() => undefined);
+  };
+
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={() => navigation?.goBack?.()}
-        title={t('itemReview.title')}
+      <SessionHeader
+        closeHint={t('itemReview.back_hint')}
+        closeLabel={t('itemReview.back')}
+        current={current ? index + 1 : total}
+        onClose={() => navigation?.goBack?.()}
+        progressLabel={
+          current
+            ? t('itemReview.progress', {current: index + 1, total})
+            : t('itemReview.title')
+        }
+        total={total}
       />
       <ScrollView contentContainerStyle={themedStyles.container}>
         {queue.missing > 0 ? (
@@ -163,49 +176,22 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
           </AppCard>
         ) : null}
         {current && !showCompare && recognition && question ? (
-          <AppCard testID={`item-review-question-${current.item.code}`}>
-            <AppText color="secondary" variant="label">
-              {t('itemReview.progress', {
-                current: index + 1,
-                total: queue.items.length,
-              })}
-            </AppText>
-            <AppText variant="h2">{question.prompt}</AppText>
-            {question.options.map((option, optionIndex) => (
-              <AppButton
-                key={`${current.item.code}-${optionIndex}`}
-                onPress={() => pickOption(optionIndex)}
-                testID={`item-review-option-${optionIndex}`}
-                title={option}
-                variant={
-                  chosen === null
-                    ? 'outline'
-                    : optionIndex === question.answerIndex
-                      ? 'secondary'
-                      : 'outline'
-                }
-              />
-            ))}
-            {chosen !== null ? (
-              <AppButton
-                onPress={advance}
-                testID="item-review-next"
-                title={t('itemReview.next')}
-              />
-            ) : null}
-            {failed ? (
-              <AppText color="danger">{t('itemReview.save_failed')}</AppText>
-            ) : null}
-          </AppCard>
+          <StudyQuestion
+            answerIndex={question.answerIndex}
+            chosen={chosen}
+            containerTestID={`item-review-question-${current.item.code}`}
+            onChoose={pickOption}
+            onSpeak={() => say(current.item.text)}
+            optionTestID="item-review-option"
+            options={question.options}
+            prompt={question.prompt}
+          />
+        ) : null}
+        {current && !showCompare && recognition && failed ? (
+          <AppText color="danger">{t('itemReview.save_failed')}</AppText>
         ) : null}
         {current && !showCompare && !recognition ? (
           <AppCard testID={`item-review-card-${current.item.code}`}>
-            <AppText color="secondary" variant="label">
-              {t('itemReview.progress', {
-                current: index + 1,
-                total: queue.items.length,
-              })}
-            </AppText>
             <View style={themedStyles.row}>
               <Pressable
                 accessibilityHint={t('itemReview.reveal_hint')}
@@ -223,9 +209,7 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
                 accessibilityHint={t('itemReview.listen_hint')}
                 accessibilityLabel={t('itemReview.listen')}
                 icon="volume_up"
-                onPress={() => {
-                  speak(current.item.text).catch(() => undefined);
-                }}
+                onPress={() => say(current.item.text)}
               />
             </View>
             <View style={themedStyles.row}>
@@ -273,6 +257,17 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
           </AppCard>
         ) : null}
       </ScrollView>
+      {current && !showCompare && recognition && chosen !== null ? (
+        <View style={themedStyles.footer}>
+          <AppButton
+            iconRight="chevron_right"
+            onPress={advance}
+            testID="item-review-next"
+            title={t('itemReview.next')}
+            variant="primary"
+          />
+        </View>
+      ) : null}
     </AppScreen>
   );
 }
@@ -285,6 +280,11 @@ function makeStyles(theme: AppTheme) {
     },
     flex: {
       flex: 1,
+    },
+    footer: {
+      paddingBottom: theme.spacing.md,
+      paddingHorizontal: theme.spacing.md,
+      paddingTop: theme.spacing.sm,
     },
     row: {
       alignItems: 'center',

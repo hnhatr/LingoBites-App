@@ -5,12 +5,13 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {HeroFill} from '@ui/components/HeroFill';
 import {LockedFeature} from '@ui/components/LockedFeature';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
-import {getHardShadow} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {useIsOffline} from '@core/api/connectivity';
 import {useAppNavigation} from '@core/navigation';
@@ -142,9 +143,10 @@ export function CreateScreen(_props: Props) {
                 ]}
                 testID="create-hero-camera"
               >
+                <HeroFill id="createHeroCameraFace" />
                 <View style={styles.heroCameraIcon}>
                   <MaterialIcon
-                    color={theme.colors.onPrimaryContainer}
+                    color={HERO_PALETTE.teal}
                     name="photo_camera"
                     size={28}
                   />
@@ -265,15 +267,18 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.md,
     },
+    // Home's "Hôm nay" face with its shelf, not a black shadow.
     heroCamera: {
       alignItems: 'center',
-      backgroundColor: theme.colors.primaryContainer,
-      borderRadius: 24,
+      backgroundColor: HERO_PALETTE.faceFrom,
+      borderBottomColor: HERO_PALETTE.shelf,
+      borderBottomWidth: 6,
+      borderRadius: 26,
       gap: theme.spacing.sm,
       justifyContent: 'center',
       minHeight: 190,
+      overflow: 'hidden',
       padding: theme.spacing.lg,
-      ...getHardShadow(6, theme.colors.ink),
     },
     heroCameraIcon: {
       alignItems: 'center',
@@ -284,11 +289,11 @@ function makeStyles(theme: AppTheme) {
       width: 64,
     },
     heroCameraTitle: {
-      color: theme.colors.onPrimaryContainer,
+      color: HERO_PALETTE.tealInk,
       textAlign: 'center',
     },
     heroCameraHint: {
-      color: theme.colors.onPrimaryContainer,
+      color: HERO_PALETTE.tealInk,
       textAlign: 'center',
     },
     sourceList: {gap: theme.spacing.sm},
@@ -305,7 +310,9 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.md,
       minHeight: 72,
       padding: theme.spacing.md,
-      ...getHardShadow(4, theme.colors.ink),
+      // A light shelf in the card's own tone, as under the flash cards.
+      borderBottomColor: theme.shelf?.surface.color ?? theme.colors.border,
+      borderBottomWidth: 4,
     },
     sourceIcon: {
       alignItems: 'center',
@@ -359,8 +366,8 @@ function makeStyles(theme: AppTheme) {
     centerText: {textAlign: 'center'},
     linkPressed: {opacity: theme.states.pressedOpacity},
     pressed: {
-      transform: [{translateY: 3}],
-      ...getHardShadow(1, theme.colors.ink),
+      opacity: theme.states.pressedOpacity,
+      transform: [{translateY: 2}],
     },
     locked: {
       opacity: 0.5,

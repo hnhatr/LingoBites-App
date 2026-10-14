@@ -1,12 +1,14 @@
 import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
+import {HeroFill} from '@ui/components/HeroFill';
 import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {formatIpa} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {HERO_PALETTE as PALETTE} from '@ui/theme/heroPalette';
 
 export type ReviewCardContent = {
   word: string;
@@ -37,8 +39,9 @@ type FaceProps = {
 };
 
 /**
- * Front: the recall cue only — chips, the word with its IPA directly under it
- * (one centered column), and a big speak button. Fills the whole card.
+ * Front: the recall cue only, on the pack card's mint-to-sky face — chips,
+ * the word with its IPA in a pill under it, and a big speak button. Fills
+ * the whole card.
  */
 export function ReviewCardFront({
   card,
@@ -55,12 +58,15 @@ export function ReviewCardFront({
   if (card.kind === 'pattern') {
     // No speak button: hearing the sentence would give the answer away.
     return (
-      <View style={themedStyles.shelfFront}>
+      <View style={themedStyles.shelf}>
         <View style={[themedStyles.face, themedStyles.front]} testID={testID}>
-          <View pointerEvents="none" style={themedStyles.blobTop} />
-          <View pointerEvents="none" style={themedStyles.blobBottom} />
+          <HeroFill id={`${testID}-fill`} />
           <View style={styles.chips}>
-            {patternLabel ? <Chip label={patternLabel} tone="gold" /> : null}
+            {patternLabel ? (
+              <View style={themedStyles.chip}>
+                <AppText style={styles.chipText}>{patternLabel}</AppText>
+              </View>
+            ) : null}
           </View>
           <View style={styles.center}>
             <AppText
@@ -72,18 +78,14 @@ export function ReviewCardFront({
               {card.meaning}
             </AppText>
             {patternPrompt ? (
-              <AppText color="muted" style={styles.ipa} variant="bodyLg">
+              <AppText style={styles.prompt} variant="bodyLg">
                 {patternPrompt}
               </AppText>
             ) : null}
           </View>
           <View style={styles.hintRow}>
-            <MaterialIcon
-              color={theme.colors.text.muted}
-              name="refresh"
-              size={16}
-            />
-            <AppText color="muted" variant="label">
+            <MaterialIcon color={PALETTE.tealInk} name="refresh" size={16} />
+            <AppText style={styles.hintOnHero} variant="label">
               {hint}
             </AppText>
           </View>
@@ -92,13 +94,22 @@ export function ReviewCardFront({
     );
   }
   return (
-    <View style={themedStyles.shelfFront}>
+    <View style={themedStyles.shelf}>
       <View style={[themedStyles.face, themedStyles.front]} testID={testID}>
-        <View pointerEvents="none" style={themedStyles.blobTop} />
-        <View pointerEvents="none" style={themedStyles.blobBottom} />
+        <HeroFill id={`${testID}-fill`} />
         <View style={styles.chips}>
-          {card.pos ? <Chip label={card.pos} tone="accentSoft" /> : <View />}
-          {card.cefr ? <Chip label={card.cefr} tone="gold" /> : null}
+          {card.pos ? (
+            <View style={themedStyles.chip}>
+              <AppText style={styles.chipText}>{card.pos}</AppText>
+            </View>
+          ) : (
+            <View />
+          )}
+          {card.cefr ? (
+            <View style={themedStyles.chip}>
+              <AppText style={styles.chipText}>{card.cefr}</AppText>
+            </View>
+          ) : null}
         </View>
         <View style={styles.center}>
           <AppText
@@ -110,9 +121,11 @@ export function ReviewCardFront({
             {card.word}
           </AppText>
           {card.ipa ? (
-            <AppText color="muted" style={styles.ipa} variant="bodyLg">
-              {formatIpa(card.ipa)}
-            </AppText>
+            <View style={themedStyles.ipaPill}>
+              <AppText style={styles.ipa} variant="bodyLg">
+                {formatIpa(card.ipa)}
+              </AppText>
+            </View>
           ) : null}
           <IconButton
             accessibilityLabel={speakAccessibilityLabel}
@@ -126,12 +139,8 @@ export function ReviewCardFront({
           />
         </View>
         <View style={styles.hintRow}>
-          <MaterialIcon
-            color={theme.colors.text.muted}
-            name="refresh"
-            size={16}
-          />
-          <AppText color="muted" variant="label">
+          <MaterialIcon color={PALETTE.tealInk} name="refresh" size={16} />
+          <AppText style={styles.hintOnHero} variant="label">
             {hint}
           </AppText>
         </View>
@@ -141,9 +150,9 @@ export function ReviewCardFront({
 }
 
 /**
- * Back: same card size, inverted colors so the answer reads as a new side.
- * The word stays small at the top; the meaning is the hero; the example sits
- * in a light panel at the bottom.
+ * Back: laid out like the pack flash card. The word stays on a short
+ * mint-to-sky band at the top; the meaning is the hero on white; the
+ * example sits in a yellow panel under it.
  */
 export function ReviewCardBack({
   card,
@@ -153,9 +162,9 @@ export function ReviewCardBack({
   speakTestID,
   testID,
 }: FaceProps) {
+  const {t} = useTranslation();
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const inverse = {color: theme.colors.text.inverse};
   const pattern = card.kind === 'pattern';
   const meta = [card.ipa ? formatIpa(card.ipa) : null, card.pos]
     .filter(Boolean)
@@ -164,16 +173,16 @@ export function ReviewCardBack({
   const top = pattern ? card.meaning : card.word;
   const hero = pattern ? card.word : card.meaning;
   return (
-    <View style={themedStyles.shelfBack}>
+    <View style={themedStyles.shelf}>
       <View style={[themedStyles.face, themedStyles.back]} testID={testID}>
-        <View pointerEvents="none" style={themedStyles.blobBack} />
-        <View style={styles.backTop}>
+        <View style={themedStyles.band}>
+          <HeroFill id={`${testID}-fill`} />
           <View style={styles.flex1}>
-            <AppText numberOfLines={2} style={inverse} variant="h2">
+            <AppText numberOfLines={2} style={styles.bandTitle} variant="h2">
               {top}
             </AppText>
             {meta ? (
-              <AppText style={[inverse, styles.soft]} variant="label">
+              <AppText style={styles.bandMeta} variant="label">
                 {meta}
               </AppText>
             ) : null}
@@ -187,43 +196,47 @@ export function ReviewCardBack({
             tone="accent"
           />
         </View>
-        <View style={styles.center}>
-          <AppText
-            adjustsFontSizeToFit
-            numberOfLines={4}
-            style={[inverse, styles.meaning]}
-            testID={`${testID}-hero`}
-            variant="display"
-          >
-            {hero}
-          </AppText>
-        </View>
-        {card.example ? (
-          <View style={themedStyles.examplePanel} testID="review-card-example">
-            <AppText color="secondary" style={styles.exampleText}>
-              {card.example}
+        <View style={themedStyles.backBody}>
+          <AppText style={themedStyles.label}>{t('packLearn.meaning')}</AppText>
+          <View style={styles.center}>
+            <AppText
+              adjustsFontSizeToFit
+              numberOfLines={4}
+              style={themedStyles.meaning}
+              testID={`${testID}-hero`}
+              variant="display"
+            >
+              {hero}
             </AppText>
-            {card.exampleTranslation ? (
-              <AppText color="muted" variant="caption">
-                {card.exampleTranslation}
-              </AppText>
-            ) : null}
           </View>
-        ) : null}
-        <View style={styles.hintRow}>
-          <MaterialIcon
-            color={theme.colors.text.inverse}
-            name="chevron_left"
-            size={18}
-          />
-          <AppText style={[inverse, styles.soft]} variant="label">
-            {hint}
-          </AppText>
-          <MaterialIcon
-            color={theme.colors.text.inverse}
-            name="chevron_right"
-            size={18}
-          />
+          {card.example ? (
+            <View
+              style={themedStyles.examplePanel}
+              testID="review-card-example"
+            >
+              <AppText style={styles.exampleText}>{card.example}</AppText>
+              {card.exampleTranslation ? (
+                <AppText color="secondary" variant="caption">
+                  {card.exampleTranslation}
+                </AppText>
+              ) : null}
+            </View>
+          ) : null}
+          <View style={styles.hintRow}>
+            <MaterialIcon
+              color={theme.colors.text.muted}
+              name="chevron_left"
+              size={18}
+            />
+            <AppText color="muted" variant="label">
+              {hint}
+            </AppText>
+            <MaterialIcon
+              color={theme.colors.text.muted}
+              name="chevron_right"
+              size={18}
+            />
+          </View>
         </View>
       </View>
     </View>
@@ -231,97 +244,107 @@ export function ReviewCardBack({
 }
 
 function makeStyles(theme: AppTheme) {
-  const blob = {
-    borderRadius: 999,
-    position: 'absolute' as const,
-  };
-  // Solid "shelf" under the card, like the app's other raised surfaces.
-  const shelf = {
-    alignSelf: 'stretch' as const,
-    borderRadius: theme.radius.xl,
-    flex: 1,
-    paddingBottom: 6,
-  };
   return StyleSheet.create({
-    back: {
-      backgroundColor: theme.colors.primary,
-    },
-    blobBack: {
-      ...blob,
-      backgroundColor: theme.colors.text.inverse,
-      height: 260,
-      opacity: 0.08,
-      right: -90,
-      top: -90,
-      width: 260,
-    },
-    blobBottom: {
-      ...blob,
-      backgroundColor: theme.colors.tertiaryFixed,
-      bottom: -50,
-      height: 160,
-      left: -60,
-      opacity: 0.25,
-      width: 160,
-    },
-    blobTop: {
-      ...blob,
-      backgroundColor: theme.colors.accentSoft,
-      height: 260,
-      right: -90,
-      top: -90,
-      width: 260,
-    },
-    examplePanel: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.md,
-      gap: 4,
-      marginBottom: theme.spacing.md,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm + 2,
+    // Solid shelf under the card, as under the pack flash card.
+    shelf: {
+      alignSelf: 'stretch',
+      backgroundColor: theme.shelf?.surface.color ?? theme.colors.border,
+      borderRadius: 28,
+      flex: 1,
+      paddingBottom: 6,
     },
     face: {
-      borderRadius: theme.radius.xl,
+      borderRadius: 28,
       flex: 1,
       overflow: 'hidden',
-      padding: theme.spacing.lg - 4,
     },
     front: {
+      backgroundColor: PALETTE.faceFrom,
+      padding: theme.spacing.lg - 4,
+    },
+    back: {
       backgroundColor: theme.colors.surface,
     },
-    shelfBack: {
-      ...shelf,
-      backgroundColor:
-        theme.shelf?.primary.color ?? theme.colors.primaryPressed,
+    chip: {
+      backgroundColor: PALETTE.chip,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
     },
-    shelfFront: {
-      ...shelf,
-      backgroundColor: theme.shelf?.surface.color ?? theme.colors.surfaceHigh,
+    ipaPill: {
+      backgroundColor: PALETTE.chip,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+    },
+    band: {
+      alignItems: 'center',
+      backgroundColor: PALETTE.faceFrom,
+      flexDirection: 'row',
+      gap: 12,
+      paddingHorizontal: theme.spacing.lg - 4,
+      paddingVertical: theme.spacing.md,
+    },
+    backBody: {
+      flex: 1,
+      gap: theme.spacing.sm,
+      padding: theme.spacing.lg - 4,
+    },
+    label: {
+      color: theme.colors.text.muted,
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+    },
+    meaning: {
+      color: theme.colors.primary,
+      fontSize: 34,
+      lineHeight: 40,
+      textAlign: 'center',
+    },
+    examplePanel: {
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 16,
+      gap: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
     },
   });
 }
 
 const styles = StyleSheet.create({
-  backTop: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
+  bandMeta: {
+    color: PALETTE.tealInk,
+    opacity: 0.85,
+  },
+  bandTitle: {
+    color: PALETTE.ink,
   },
   center: {
     alignItems: 'center',
     flex: 1,
-    gap: 8,
+    gap: 10,
     justifyContent: 'center',
+  },
+  chipText: {
+    color: PALETTE.tealInk,
+    fontSize: 12,
+    fontWeight: '700',
   },
   chips: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   exampleText: {
+    color: PALETTE.ink,
     fontStyle: 'italic',
   },
   flex1: {
     flex: 1,
+  },
+  hintOnHero: {
+    color: PALETTE.tealInk,
   },
   hintRow: {
     alignItems: 'center',
@@ -330,25 +353,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   ipa: {
-    textAlign: 'center',
-  },
-  meaning: {
-    fontSize: 34,
-    lineHeight: 40,
+    color: PALETTE.tealInk,
     textAlign: 'center',
   },
   meaningFront: {
+    color: PALETTE.ink,
     fontSize: 30,
     lineHeight: 38,
     textAlign: 'center',
   },
-  soft: {
-    opacity: 0.85,
+  prompt: {
+    color: PALETTE.tealInk,
+    textAlign: 'center',
   },
   speak: {
     marginTop: 12,
   },
   word: {
+    color: PALETTE.ink,
     fontSize: 38,
     lineHeight: 46,
     textAlign: 'center',

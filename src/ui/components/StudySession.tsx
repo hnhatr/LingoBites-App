@@ -1,5 +1,5 @@
 /**
- * Shared pieces of the two pack sessions (learn a pack, quick check):
+ * Shared pieces of the study sessions (learn a pack, quick check, reviews):
  * a compact header with a progress bar, the question card, its answer
  * options and the line saying whether the answer was right.
  */
@@ -7,10 +7,10 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
-import {AppText} from '@ui/components/AppText';
-import {HeaderIconButton} from '@ui/components/HeaderIconButton';
-import {IconButton} from '@ui/components/IconButton';
-import {type AppTheme, useAppTheme} from '@ui/theme';
+import {type AppTheme, useAppTheme} from '../theme';
+import {AppText} from './AppText';
+import {HeaderIconButton} from './HeaderIconButton';
+import {IconButton} from './IconButton';
 
 type HeaderProps = {
   current: number;
@@ -18,27 +18,36 @@ type HeaderProps = {
   /** Screen-reader text of the bar ("Thẻ 1/12"). */
   progressLabel: string;
   onClose: () => void;
+  /** Screen-reader name and hint of the close button; the pack's by default. */
+  closeLabel?: string;
+  closeHint?: string;
+  closeTestID?: string;
+  testID?: string;
 };
 
 /** [✕] [██████░░░░░░░░] 1/12 */
-export function PackSessionHeader({
+export function SessionHeader({
   current,
   total,
   progressLabel,
   onClose,
+  closeLabel,
+  closeHint,
+  closeTestID = 'screen-header-back',
+  testID = 'screen-header',
 }: HeaderProps) {
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const share = total > 0 ? Math.min(1, current / total) : 0;
   return (
-    <View style={styles.header} testID="screen-header">
+    <View style={styles.header} testID={testID}>
       <HeaderIconButton
-        accessibilityHint={t('packQuiz.close_hint')}
-        accessibilityLabel={t('packQuiz.close')}
+        accessibilityHint={closeHint ?? t('packQuiz.close_hint')}
+        accessibilityLabel={closeLabel ?? t('packQuiz.close')}
         icon="close"
         onPress={onClose}
-        testID="screen-header-back"
+        testID={closeTestID}
       />
       <View
         accessibilityRole="progressbar"
@@ -58,7 +67,7 @@ export function PackSessionHeader({
 type StepsProps = {labels: string[]; active: number};
 
 /** The steps of a session as pills, the current one filled. */
-export function PackSessionSteps({labels, active}: StepsProps) {
+export function SessionSteps({labels, active}: StepsProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
@@ -93,7 +102,7 @@ type QuestionProps = {
 };
 
 /** "Từ này nghĩa là gì?", the word, then options A, B, C and the verdict. */
-export function PackQuestion({
+export function StudyQuestion({
   prompt,
   options,
   answerIndex,

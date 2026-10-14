@@ -15,8 +15,8 @@ import {
   GridTile,
   useGridTileWidth,
 } from '@ui/components/GridTile';
+import {HeroResumeCard} from '@ui/components/HeroResumeCard';
 import {
-  LessonCard,
   lessonCardDurationLabel,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
@@ -77,6 +77,12 @@ export function VideoHubScreen(_props: Props) {
     ? OFFLINE_CREATE_NOTE
     : CREATE_NOTE[youtubeCreation.status];
   const continueTitle = inProgress ? splitLessonTitle(inProgress.title) : null;
+  const continueDuration = inProgress
+    ? lessonCardDurationLabel({
+        youtubeDurationMs: inProgress.youtubeDurationMs,
+        sentenceCount: inProgress.sentenceCount,
+      })
+    : null;
 
   return (
     <AppScreen>
@@ -88,19 +94,13 @@ export function VideoHubScreen(_props: Props) {
       >
         {inProgress && continueTitle ? (
           <View style={styles.section} testID="video-hub-continue">
-            <AppText variant="h3" style={styles.sectionTitle}>
-              Đang học dở
-            </AppText>
-            <LessonCard
+            <HeroResumeCard
               accessibilityHint="Mở lại video đang học dở"
-              durationLabel={lessonCardDurationLabel({
-                youtubeDurationMs: inProgress.youtubeDurationMs,
-                sentenceCount: inProgress.sentenceCount,
-              })}
-              kind="video"
+              chip={['Đang học dở', continueDuration]
+                .filter(Boolean)
+                .join(' · ')}
+              cta="Xem tiếp"
               onPress={() => navigation.openLesson(inProgress.lessonId)}
-              progress={{state: 'in_progress'}}
-              sentenceCount={inProgress.sentenceCount}
               subtitle={continueTitle.subtitle}
               testID="video-hub-continue-card"
               title={continueTitle.title}

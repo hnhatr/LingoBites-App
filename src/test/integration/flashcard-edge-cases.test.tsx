@@ -163,9 +163,9 @@ describe('E2E Edge Cases: Flashcard Feature', () => {
 
       // Verify session only shows 5 cards
       const progress = tree.root.findByProps({testID: 'review-progress'});
-      expect(
-        progress.findAllByProps({children: '1 / 5'}).length,
-      ).toBeGreaterThan(0);
+      expect(progress.findAllByProps({children: '1/5'}).length).toBeGreaterThan(
+        0,
+      );
     });
 
     it('does not display banner when all due cards fit in soft cap', async () => {

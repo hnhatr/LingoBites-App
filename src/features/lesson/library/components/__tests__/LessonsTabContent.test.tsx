@@ -103,7 +103,7 @@ describe('LessonsTabContent', () => {
     expect(emptyState).toBeDefined();
   });
 
-  it('displays packaged lesson cards', () => {
+  it('displays packaged lessons as tone cards', () => {
     const tree = render(
       <LessonsTabContent
         packagedLessons={[
@@ -119,18 +119,9 @@ describe('LessonsTabContent', () => {
 
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('Seeing an Old Friend Again');
-    expect(text).toContain('Gặp lại người bạn cũ');
     expect(text).toContain('Getting Started');
     expect(text).toContain('6 phút');
     expect(text).toContain('12 câu');
-    for (const chip of ['downloaded', 'exercises']) {
-      expect(
-        tree.root.findAllByProps({
-          testID: `lesson-item-packaged-1-chip-${chip}`,
-        }).length,
-      ).toBeGreaterThan(0);
-    }
-    expect(text).toContain('2 bài tập');
     // A bookmark toggle sits on every card.
     expect(
       tree.root.findAllByProps({testID: 'lesson-item-packaged-1-bookmark'})
@@ -218,11 +209,7 @@ describe('LessonsTabContent', () => {
     ).toThrow();
     const text = JSON.stringify(tree.toJSON());
     expect(text).toContain('4 câu');
-    expect(
-      tree.root.findAllByProps({
-        testID: 'lesson-item-catalog-4-chip-downloaded',
-      }),
-    ).toHaveLength(0);
+    expect(text).not.toContain('Đã tải');
   });
 
   it('renders "Xem tất cả" only on the catalog section header', () => {

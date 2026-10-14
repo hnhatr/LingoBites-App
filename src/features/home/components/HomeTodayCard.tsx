@@ -35,30 +35,13 @@ import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import type {HeroState} from '../logic/homeScreenModel';
 import type {TodayProgressModel} from '../logic/todayProgress';
 import {HomeIcon, type HomeSvgIconName} from './HomeSvgIcons';
 
-/** The card keeps its own colours in every theme, as the hero card did. */
-const PALETTE = {
-  faceFrom: '#34dcc3',
-  faceTo: '#5fc8ff',
-  shelf: '#1fa597',
-  ink: '#1c1c10',
-  tealInk: '#00413a',
-  teal: '#006b5f',
-  white: '#ffffff',
-  chip: 'rgba(255,255,255,0.85)',
-  chipStrong: 'rgba(255,255,255,0.92)',
-  strip: 'rgba(255,255,255,0.85)',
-  dash: 'rgba(0,0,0,0.18)',
-  coral: '#fe7488',
-  coralShelf: '#e2506a',
-  coralRing: 'rgba(254,116,136,0.25)',
-  sun: '#ffd166',
-  sunShelf: '#e0a92e',
-};
+const PALETTE = HERO_PALETTE;
 
 const ART_HEIGHT = 150;
 

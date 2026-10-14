@@ -339,7 +339,11 @@ function AuthenticatedRootStack() {
         name="DailyReview"
         options={{gestureEnabled: false}}
       />
-      <RootStack.Screen component={ItemReviewScreen} name="ItemReview" />
+      <RootStack.Screen
+        component={ItemReviewScreen}
+        name="ItemReview"
+        options={{gestureEnabled: false}}
+      />
       <RootStack.Screen component={WordPathScreen} name="WordPath" />
       <RootStack.Screen component={WordPackScreen} name="WordPack" />
       <RootStack.Screen
@@ -350,11 +354,16 @@ function AuthenticatedRootStack() {
       <RootStack.Screen
         component={QuickKnownCheckScreen}
         name="QuickKnownCheck"
+        options={{gestureEnabled: false}}
       />
       <RootStack.Screen component={ComboSetupScreen} name="ComboSetup" />
       <RootStack.Screen component={ComboSetScreen} name="ComboSet" />
       <RootStack.Screen component={ComboHistoryScreen} name="ComboHistory" />
-      <RootStack.Screen component={PracticeScreen} name="Practice" />
+      <RootStack.Screen
+        component={PracticeScreen}
+        name="Practice"
+        options={{gestureEnabled: false}}
+      />
       <RootStack.Screen component={TodayScreen} name="Today" />
       <RootStack.Screen component={SpeakingRoomScreen} name="SpeakingRoom" />
       <RootStack.Screen
@@ -364,6 +373,7 @@ function AuthenticatedRootStack() {
       <RootStack.Screen
         component={ShadowingSessionScreen}
         name="ShadowingSession"
+        options={{gestureEnabled: false}}
       />
       <RootStack.Screen
         component={ShadowingSummaryScreen}

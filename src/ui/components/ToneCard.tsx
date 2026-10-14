@@ -65,7 +65,8 @@ export function shelfTone(theme: AppTheme, tone: GridTileTone) {
 /** The pill on a card, e.g. "Vào học" (solid) or "Tải về" (light). */
 export interface CardAction {
   label: string;
-  glyph: 'play' | 'download' | 'check' | 'add';
+  /** Left out for a pill with words only, e.g. "Sắp có". */
+  glyph?: 'play' | 'download' | 'check' | 'add';
   /** Ink pill with white text; false draws a white pill with ink text. */
   solid: boolean;
 }
@@ -97,6 +98,8 @@ export interface ToneCardProps {
   testID: string;
   /** Width of the list's side padding, to size the picture. */
   gutter: number;
+  /** Fixed card width, e.g. in a horizontal rail; else the screen's. */
+  width?: number;
   /** Save toggle in the top right corner, its own button. */
   bookmark?: {saved: boolean; onToggle: () => void};
   /** Under the card, outside its button, e.g. a practice link. */
@@ -122,13 +125,15 @@ export function ToneCard({
   gutter,
   bookmark,
   footer,
+  width: fixedWidth,
 }: ToneCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const {width} = useWindowDimensions();
   const [pressed, setPressed] = useState(false);
   const colors = cardColors(theme, tone);
-  const artWidth = Math.max(0, (width - gutter * 2) * ART_SHARE);
+  const cardWidth = fixedWidth ?? width - gutter * 2;
+  const artWidth = Math.max(0, cardWidth * ART_SHARE);
   const gradientId = `cardFade-${testID}`;
 
   const card = (
@@ -143,6 +148,7 @@ export function ToneCard({
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
+      style={fixedWidth !== undefined ? {width: fixedWidth} : undefined}
       testID={testID}
     >
       <ShelfSurface
@@ -215,7 +221,12 @@ export function ToneCard({
   );
   if (!bookmark && !footer) return card;
   return (
-    <View style={styles.cardWrap}>
+    <View
+      style={[
+        styles.cardWrap,
+        fixedWidth !== undefined ? {width: fixedWidth} : null,
+      ]}
+    >
       {card}
       {bookmark ? (
         <Pressable
@@ -261,9 +272,9 @@ export function ActionPill({
     <View style={[styles.pill, {backgroundColor: fill}]} testID={testID}>
       {action.glyph === 'add' ? (
         <MaterialIcon color={text} name="add" size={16} />
-      ) : (
+      ) : action.glyph ? (
         <Glyph color={text} name={action.glyph} size={15} />
-      )}
+      ) : null}
       <AppText style={[styles.pillText, {color: text}]}>{action.label}</AppText>
     </View>
   );
