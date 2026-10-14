@@ -24,7 +24,7 @@ export const ImageAnalysisSchema = z
   .object({
     request_id: z.string(),
     status: z.literal('success'),
-    image_id: z.string().uuid().nullable(),
+    image_id: z.string().guid().nullable(),
     kind: z.enum(['text', 'mixed', 'scene']),
     text: z.string(),
     warnings: z.array(z.string()),
@@ -40,7 +40,7 @@ export const ImageAnalysisSchema = z
 export type ImageAnalysis = z.infer<typeof ImageAnalysisSchema>;
 
 export const SituationSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   code: z.string(),
   title_vi: z.string(),
   title_en: z.string(),
@@ -57,11 +57,11 @@ const SituationsResponseSchema = z.object({
 export const ActiveMomentsSchema = z.object({
   requests: z.array(
     z.object({
-      id: z.string().uuid(),
+      id: z.string().guid(),
       status: z.string(),
       situation_vi: z.string().nullable(),
       confirm_expires_at: z.string().nullable(),
-      lesson_id: z.string().uuid().nullable(),
+      lesson_id: z.string().guid().nullable(),
     }),
   ),
 });
@@ -231,7 +231,7 @@ export async function submitMoment(
   const checked = bodyOf(answered, 'SITUATION_NOT_FOUND');
   if (!checked.ok) return checked;
   const parsed = z
-    .object({moment_request_id: z.string().uuid()})
+    .object({moment_request_id: z.string().guid()})
     .safeParse(checked.value);
   return parsed.success
     ? {ok: true, value: parsed.data}

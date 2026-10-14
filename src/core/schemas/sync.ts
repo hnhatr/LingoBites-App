@@ -84,7 +84,7 @@ export const SyncOccurredAtSchema = z
 
 export const SyncPushMutationSchema = z.object({
   /** Client-generated idempotency key, unique per user. */
-  mutation_id: z.string().uuid(),
+  mutation_id: z.string().guid(),
   collection: SyncCollectionSchema,
   entity_id: SyncEntityIdSchema,
   /** Arbitrary JSON object; tombstones conventionally send `{}`. */
@@ -112,7 +112,7 @@ export const SyncPushItemStatusSchema = z.enum([
 export type SyncPushItemStatus = z.infer<typeof SyncPushItemStatusSchema>;
 
 export const SyncPushItemResultSchema = z.object({
-  mutation_id: z.string().uuid(),
+  mutation_id: z.string().guid(),
   collection: SyncCollectionSchema,
   entity_id: SyncEntityIdSchema,
   status: SyncPushItemStatusSchema,
@@ -123,7 +123,7 @@ export const SyncPushItemResultSchema = z.object({
 export type SyncPushItemResult = z.infer<typeof SyncPushItemResultSchema>;
 
 export const SyncPushSuccessResponseSchema = z.object({
-  request_id: z.string().uuid(),
+  request_id: z.string().guid(),
   status: z.literal('success'),
   contract_version: z.literal(SYNC_CONTRACT_VERSION),
   results: z.array(SyncPushItemResultSchema),
@@ -159,7 +159,7 @@ export const SyncPullRecordSchema = SyncRecordSchema.extend({
 export type SyncPullRecord = z.infer<typeof SyncPullRecordSchema>;
 
 export const SyncPullSuccessResponseSchema = z.object({
-  request_id: z.string().uuid(),
+  request_id: z.string().guid(),
   status: z.literal('success'),
   contract_version: z.literal(SYNC_CONTRACT_VERSION),
   records: z.array(SyncPullRecordSchema),
@@ -228,14 +228,14 @@ export type SpeakingModeSync = z.infer<typeof SpeakingModeSyncSchema>;
  */
 export const SpeakingAttemptPayloadSchema = z
   .object({
-    lesson_id: z.string().uuid(),
-    sentence_id: z.string().uuid(),
+    lesson_id: z.string().guid(),
+    sentence_id: z.string().guid(),
     mode: SpeakingModeSyncSchema,
     check_full_sentence: z.boolean(),
     check_key_words: z.boolean(),
     check_rhythm: z.boolean(),
     duration_ms: z.number().int().min(1).max(35000),
-    recording_id: z.string().uuid().nullable(),
+    recording_id: z.string().guid().nullable(),
   })
   .strict();
 
@@ -268,9 +268,9 @@ export const ActivityAttemptPayloadSchema = z
       .min(1)
       .max(64)
       .regex(/^[a-z0-9_]+$/),
-    lesson_id: z.string().uuid().nullable(),
+    lesson_id: z.string().guid().nullable(),
     item_key: z.string().trim().min(1).max(255).nullable(),
-    session_id: z.string().uuid().nullable(),
+    session_id: z.string().guid().nullable(),
     result: z.enum(ActivityAttemptResultValues),
     score: z.number().min(0).max(1).nullable(),
     duration_ms: z.number().int().min(0).max(3_600_000),
@@ -317,11 +317,11 @@ export const LessonActivityAttemptPayloadSchema = z
   .object({
     kind: z.literal('lesson'),
     activity: z.enum(ActivityKindValues),
-    lesson_id: z.string().uuid(),
-    block_id: z.string().uuid(),
+    lesson_id: z.string().guid(),
+    block_id: z.string().guid(),
     content_revision: z.number().int().min(1),
     step: z.number().int().min(1).max(6),
-    task_id: z.string().uuid().nullable(),
+    task_id: z.string().guid().nullable(),
     item_keys: z
       .array(
         z
@@ -329,12 +329,12 @@ export const LessonActivityAttemptPayloadSchema = z
           .refine(code => parseItemCode(code) !== null, 'not an item code'),
       )
       .max(LESSON_ATTEMPT_ITEM_KEYS_MAX),
-    session_id: z.string().uuid().nullable(),
+    session_id: z.string().guid().nullable(),
     support_level: z.enum(LessonSupportLevelValues),
     outcome: z.enum(LessonAttemptOutcomeValues),
     assessed_by: z.enum(LessonAttemptAssessorValues),
     duration_ms: z.number().int().min(0).max(3_600_000),
-    recording_client_id: z.string().uuid().optional(),
+    recording_client_id: z.string().guid().optional(),
   })
   .strict()
   .refine(

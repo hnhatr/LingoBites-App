@@ -86,7 +86,7 @@ export const ListeningPayloadSchema = z
   .object({
     question_en: shortText,
     question_vi: shortText.optional(),
-    audio_media_id: z.string().uuid().optional(),
+    audio_media_id: z.string().guid().optional(),
     answer_text: shortText.optional(),
     answer_item_refs: ItemRefListSchema.optional(),
   })

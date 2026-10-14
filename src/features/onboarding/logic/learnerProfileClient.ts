@@ -78,7 +78,7 @@ export type ProfileClientOptions = {fetchImpl?: typeof fetch};
 async function request<T>(
   method: 'GET' | 'PUT' | 'POST',
   path: string,
-  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  schema: z.ZodType<T, unknown>,
   body: unknown,
   options: ProfileClientOptions,
 ): Promise<ProfileResult<T>> {

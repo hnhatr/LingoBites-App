@@ -17,7 +17,7 @@ const timestamp = z.string().datetime();
 
 /** `lesson_outcomes`: entity id is the lesson id. */
 export const LessonOutcomePayloadSchema = z.object({
-  lesson_id: z.string().uuid(),
+  lesson_id: z.string().guid(),
   practice_completed_at: timestamp.nullable(),
   passed_at: timestamp.nullable(),
   passed_by: z.enum(['service', 'self', 'rule']).nullable(),
@@ -25,7 +25,7 @@ export const LessonOutcomePayloadSchema = z.object({
 
 /** `unit_outcomes`: entity id is the unit id. */
 export const UnitOutcomePayloadSchema = z.object({
-  unit_id: z.string().uuid(),
+  unit_id: z.string().guid(),
   summative_unlocked_at: timestamp.nullable(),
   passed_at: timestamp.nullable(),
 });

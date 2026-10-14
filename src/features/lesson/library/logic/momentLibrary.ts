@@ -13,7 +13,7 @@ import {getAppConfig} from '@core/api/appConfig';
 
 /** E5 (S1, S2): one card of the "Khoảnh khắc" list. */
 const MomentLibraryItemSchema = z.object({
-  lesson_id: z.string().uuid(),
+  lesson_id: z.string().guid(),
   title: z.string(),
   moment_intent: z.enum(['understand', 'use', 'describe']).nullable(),
   situation_title_vi: z.string().nullable(),

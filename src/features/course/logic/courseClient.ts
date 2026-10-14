@@ -143,10 +143,7 @@ function cacheKey(path: string): string | null {
   }
 }
 
-function readCached<T>(
-  path: string,
-  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
-): T | null {
+function readCached<T>(path: string, schema: z.ZodType<T, unknown>): T | null {
   const key = cacheKey(path);
   if (!key) return null;
   try {
@@ -176,7 +173,7 @@ function writeCached(path: string, body: unknown): void {
 
 async function getList<T>(
   path: string,
-  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  schema: z.ZodType<T, unknown>,
   options: CourseClientOptions,
 ): Promise<CourseResult<T>> {
   const cancelled: CourseClientError = {

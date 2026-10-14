@@ -145,7 +145,7 @@ export async function fetchActiveComposes(
 const ActiveMomentResponseSchema = z.object({
   requests: z.array(
     z.object({
-      id: z.string().uuid(),
+      id: z.string().guid(),
       status: z.string(),
       situation_vi: z.string().nullable(),
     }),
