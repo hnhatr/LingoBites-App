@@ -1,5 +1,6 @@
 import {getAppConfig} from '@core/api/appConfig';
 import {authenticatedFetch} from '@core/api/authenticatedFetch';
+import {createTimeoutSignal} from '@core/api/timeout';
 import type {
   SyncPullSuccessResponse,
   SyncPushRequest,
@@ -14,27 +15,6 @@ import {
   SYNC_OWNERSHIP_CHANGED,
   SyncOwnershipChangedError,
 } from '@core/sync/syncDrainOwnership';
-
-function withTimeout(timeoutMs: number, externalSignal?: AbortSignal) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  const cleanup = () => clearTimeout(timeoutId);
-
-  if (externalSignal) {
-    if (externalSignal.aborted) {
-      controller.abort();
-      cleanup();
-    } else {
-      externalSignal.addEventListener('abort', () => {
-        cleanup();
-        controller.abort();
-      });
-    }
-  }
-
-  return {signal: controller.signal, cleanup};
-}
 
 export type SyncPushClientResult =
   | {ok: true; data: SyncPushSuccessResponse}
@@ -54,7 +34,7 @@ export async function syncPush(
   options: SyncClientOptions = {},
 ): Promise<SyncPushClientResult> {
   const {apiBaseUrl} = getAppConfig();
-  const timeout = withTimeout(15000, options.signal);
+  const timeout = createTimeoutSignal(15000, options.signal);
   try {
     const response = await authenticatedFetch(
       `${apiBaseUrl}/v1/sync/push`,
@@ -123,7 +103,7 @@ export async function syncPull(
   options: SyncClientOptions = {},
 ): Promise<SyncPullClientResult> {
   const {apiBaseUrl} = getAppConfig();
-  const timeout = withTimeout(15000, options.signal);
+  const timeout = createTimeoutSignal(15000, options.signal);
   try {
     const query = new URLSearchParams({
       cursor,

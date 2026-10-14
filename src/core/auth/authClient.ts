@@ -1,6 +1,7 @@
 import {getAppConfig} from '../api/appConfig';
 import {trackReachability} from '../api/connectivity';
 import {createRequestId} from '../api/requestId';
+import {createTimeoutSignal} from '../api/timeout';
 import type {
   ApiErrorBody,
   AuthSession,
@@ -81,14 +82,13 @@ export const AUTH_REQUEST_TIMEOUT_MS = 12_000;
 
 function withTimeout(fetchImpl: typeof fetch, timeoutMs: number): typeof fetch {
   return async (input: RequestInfo | URL, init?: RequestInit) => {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const timeout = createTimeoutSignal(timeoutMs, init?.signal);
     try {
       return await trackReachability(
-        fetchImpl(input, {...init, signal: controller.signal}),
+        fetchImpl(input, {...init, signal: timeout.signal}),
       );
     } finally {
-      clearTimeout(timer);
+      timeout.cleanup();
     }
   };
 }

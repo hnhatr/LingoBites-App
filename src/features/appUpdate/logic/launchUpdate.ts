@@ -1,5 +1,7 @@
 import * as Updates from 'expo-updates';
 
+import {raceWithTimeout, TIMED_OUT} from '@core/api/timeout';
+
 /**
  * Launch-time OTA update (EAS Update). Native CHECK_ON_LAUNCH is NEVER, so
  * this is the only place a release build looks for an update: check once on
@@ -29,19 +31,6 @@ type LaunchUpdateOptions = {
   downloadTimeoutMs?: number;
 };
 
-const TIMED_OUT = Symbol('timed-out');
-
-function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-): Promise<T | typeof TIMED_OUT> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<typeof TIMED_OUT>(resolve => {
-    timer = setTimeout(() => resolve(TIMED_OUT), timeoutMs);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-}
-
 export async function runLaunchUpdate(
   onPhase: (phase: LaunchUpdatePhase) => void,
   {
@@ -58,13 +47,16 @@ export async function runLaunchUpdate(
   }
   try {
     onPhase('checking');
-    const check = await withTimeout(api.checkForUpdateAsync(), checkTimeoutMs);
+    const check = await raceWithTimeout(
+      api.checkForUpdateAsync(),
+      checkTimeoutMs,
+    );
     if (check === TIMED_OUT || !check.isAvailable) {
       onPhase('done');
       return;
     }
     onPhase('downloading');
-    const fetched = await withTimeout(
+    const fetched = await raceWithTimeout(
       api.fetchUpdateAsync(),
       downloadTimeoutMs,
     );

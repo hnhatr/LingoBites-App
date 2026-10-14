@@ -16,6 +16,7 @@ import {
 } from '@features/lesson/player';
 
 import {createRequestId} from '@core/api/requestId';
+import {createTimeoutSignal} from '@core/api/timeout';
 
 import type {PickedImage} from './imagePicker';
 
@@ -173,15 +174,7 @@ export async function analyzeImage(
     };
   }
 
-  const controller = new AbortController();
-  let timedOut = false;
-  const timer = setTimeout(() => {
-    timedOut = true;
-    controller.abort();
-  }, timeoutMs);
-  const onCallerAbort = () => controller.abort();
-  options.signal?.addEventListener('abort', onCallerAbort, {once: true});
-  if (options.signal?.aborted) controller.abort();
+  const timeout = createTimeoutSignal(timeoutMs, options.signal);
 
   let answered: Awaited<ReturnType<typeof send>>;
   try {
@@ -189,15 +182,14 @@ export async function analyzeImage(
       '/api/v1/images/analyze',
       {method: 'POST', body: imageAnalysisForm(image, sourceType, bytes)},
       'IMAGE_NOT_FOUND',
-      {...clientOptions, signal: controller.signal},
+      {...clientOptions, signal: timeout.signal},
     );
   } finally {
-    clearTimeout(timer);
-    options.signal?.removeEventListener('abort', onCallerAbort);
+    timeout.cleanup();
   }
 
   if (!('body' in answered)) {
-    if (answered.cancelled && timedOut) {
+    if (answered.cancelled && timeout.timedOut()) {
       return {
         ok: false,
         kind: 'network-error',
