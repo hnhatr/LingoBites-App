@@ -147,9 +147,7 @@ function makeStyles(theme: AppTheme) {
     },
     action: {
       alignItems: 'center',
-      borderColor: theme.colors.ink,
       borderRadius: 16,
-      borderWidth: 2,
       flex: 1,
       flexDirection: 'row',
       gap: theme.spacing.sm,

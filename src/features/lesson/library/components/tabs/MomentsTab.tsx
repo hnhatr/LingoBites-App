@@ -226,11 +226,8 @@ function makeStyles(theme: AppTheme) {
     },
     card: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
     },
     photo: {
-      borderBottomColor: theme.colors.ink,
-      borderBottomWidth: 2,
       height: 96,
       width: '100%',
     },

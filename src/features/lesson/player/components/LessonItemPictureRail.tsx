@@ -118,8 +118,6 @@ function makeStyles(theme: AppTheme) {
       ...getStickerFace(theme, 3),
     },
     picture: {
-      borderBottomColor: theme.colors.ink,
-      borderBottomWidth: 2,
       // Round the top here, not on the card, so its hard shadow survives.
       borderTopLeftRadius: 14,
       borderTopRightRadius: 14,

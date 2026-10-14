@@ -139,9 +139,7 @@ function resolveTone(theme: AppTheme, tone: GridTileTone) {
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     tile: {
-      borderColor: theme.colors.ink,
       borderRadius: 20,
-      borderWidth: 2,
       gap: 6,
       minHeight: 150,
       padding: 14,
@@ -159,9 +157,7 @@ function makeStyles(theme: AppTheme) {
     iconBox: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
       borderRadius: 14,
-      borderWidth: 2,
       height: 44,
       justifyContent: 'center',
       width: 44,

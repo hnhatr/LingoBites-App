@@ -234,9 +234,7 @@ function makeStyles(theme: AppTheme) {
     },
     review: {
       alignItems: 'center',
-      borderColor: theme.colors.ink,
       borderRadius: 22,
-      borderWidth: 2,
       flexDirection: 'row',
       gap: theme.spacing.md,
       paddingHorizontal: theme.spacing.lg,
@@ -273,9 +271,7 @@ function makeStyles(theme: AppTheme) {
     },
     kind: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
       borderRadius: 18,
-      borderWidth: 2,
       gap: theme.spacing.sm,
       paddingHorizontal: theme.spacing.md + 2,
       paddingVertical: theme.spacing.md,
@@ -287,9 +283,7 @@ function makeStyles(theme: AppTheme) {
     },
     kindIcon: {
       alignItems: 'center',
-      borderColor: theme.colors.ink,
       borderRadius: 10,
-      borderWidth: 1.5,
       height: 32,
       justifyContent: 'center',
       width: 32,

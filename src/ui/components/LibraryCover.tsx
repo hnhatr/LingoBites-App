@@ -270,8 +270,6 @@ function DefaultCover({
               coverStyles.disc,
               {
                 backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.ink,
-                shadowColor: theme.colors.ink,
               },
               shape === 'lesson' ? coverStyles.discLesson : null,
             ]}
@@ -298,12 +296,7 @@ const coverStyles = StyleSheet.create({
     alignItems: 'center',
     aspectRatio: 1,
     borderRadius: 999,
-    borderWidth: 2,
-    elevation: 2,
     justifyContent: 'center',
-    shadowOffset: {width: 2, height: 2},
-    shadowOpacity: 1,
-    shadowRadius: 0,
     width: '52%',
     // Wide banners (course and unit headers) keep the disc a badge, not a wall.
     maxWidth: 96,
@@ -322,9 +315,7 @@ function makeStyles(theme: AppTheme, compact: boolean) {
       width: '100%',
     },
     chip: {
-      borderColor: theme.colors.ink,
       borderRadius: compact ? 5 : 8,
-      borderWidth: compact ? 1.5 : 2,
       left: inset,
       paddingHorizontal: compact ? 4 : 7,
       paddingVertical: compact ? 0 : 1,
@@ -340,9 +331,7 @@ function makeStyles(theme: AppTheme, compact: boolean) {
     badge: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
       borderRadius: 999,
-      borderWidth: 1.5,
       height: compact ? 18 : 24,
       justifyContent: 'center',
       position: 'absolute',
@@ -353,9 +342,7 @@ function makeStyles(theme: AppTheme, compact: boolean) {
     play: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
       borderRadius: 999,
-      borderWidth: 2,
       height: 38,
       justifyContent: 'center',
       left: '50%',
@@ -383,9 +370,7 @@ function makeStyles(theme: AppTheme, compact: boolean) {
     },
     tag: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
       borderRadius: 8,
-      borderWidth: 1.5,
       bottom: inset,
       left: inset,
       maxWidth: '80%',

@@ -95,9 +95,6 @@ export function ProfileSettingsRow({
             ? solidOver(medallion.bg, theme.colors.surface)
             : medallion.bg,
           borderRadius: stickerFace ? 14 : 999,
-          ...(stickerFace
-            ? {borderColor: theme.colors.ink, borderWidth: 2}
-            : null),
           height: 42,
           justifyContent: 'center',
           width: 42,

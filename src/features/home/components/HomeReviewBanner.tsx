@@ -50,9 +50,7 @@ function makeStyles(theme: AppTheme) {
     banner: {
       alignItems: 'center',
       backgroundColor: solidOver(theme.colors.accentSoft, theme.colors.surface),
-      borderColor: theme.colors.ink,
       borderRadius: 20,
-      borderWidth: 2,
       flexDirection: 'row',
       gap: theme.spacing.sm,
       minHeight: 48,

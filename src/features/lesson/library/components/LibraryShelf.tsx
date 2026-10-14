@@ -17,7 +17,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
-import {getStickerFace, isStickerTheme} from '@ui/theme/hardShadow';
+import {getStickerFace} from '@ui/theme/hardShadow';
 import {levelTone} from '@ui/theme/levelColors';
 
 const CARD_RADIUS = 18;
@@ -305,7 +305,7 @@ function makeStyles(theme: AppTheme) {
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: CARD_RADIUS,
-      ...(getStickerFace(theme, 3, 2) ?? {
+      ...(getStickerFace(theme, 3) ?? {
         borderColor: theme.colors.outlineVariant,
         borderWidth: 1,
       }),
@@ -315,8 +315,6 @@ function makeStyles(theme: AppTheme) {
       overflow: 'hidden',
     },
     body: {
-      borderColor: theme.colors.ink,
-      borderTopWidth: isStickerTheme(theme) ? 2 : 0,
       gap: theme.spacing.xs,
       paddingBottom: theme.spacing.md,
       paddingHorizontal: theme.spacing.sm + 2,

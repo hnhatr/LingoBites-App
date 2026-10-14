@@ -286,9 +286,7 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     card: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
       borderRadius: 20,
-      borderWidth: 2,
       gap: 10,
       paddingHorizontal: 14,
       paddingVertical: 12,
@@ -377,7 +375,7 @@ function makeStyles(theme: AppTheme) {
     },
     stepRowNext: {
       backgroundColor: theme.colors.accentSoft,
-      borderColor: theme.colors.ink,
+      borderColor: theme.colors.primary,
     },
     stepMark: {
       alignItems: 'center',
@@ -391,10 +389,10 @@ function makeStyles(theme: AppTheme) {
     },
     stepMarkDone: {
       backgroundColor: theme.colors.accent,
-      borderColor: theme.colors.ink,
+      borderColor: theme.colors.accent,
     },
     stepMarkNext: {
-      borderColor: theme.colors.ink,
+      borderColor: theme.colors.primary,
     },
     stepMarkText: {
       color: theme.colors.text.secondary,

@@ -459,9 +459,7 @@ function makeStyles(theme: AppTheme) {
       color: theme.colors.primary,
     },
     thumb: {
-      borderColor: theme.colors.ink,
       borderRadius: theme.radius.md,
-      borderWidth: 1.5,
       overflow: 'hidden',
       width: 56,
     },
@@ -491,9 +489,7 @@ function makeStyles(theme: AppTheme) {
     },
     hero: {
       backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.ink,
       borderRadius: theme.radius.lg,
-      borderWidth: 2,
       gap: theme.spacing.sm,
       padding: theme.spacing.md,
     },
@@ -556,8 +552,6 @@ function makeStyles(theme: AppTheme) {
     },
     tabOn: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
-      borderWidth: 1.5,
     },
     tabs: {
       backgroundColor: theme.colors.surfaceContainer,

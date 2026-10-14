@@ -221,7 +221,7 @@ function makeStyles(theme: AppTheme) {
       borderColor: theme.colors.outlineVariant,
       borderRadius: theme.radius.lg,
       borderWidth: 1,
-      ...getStickerFace(theme, 3, 1.5),
+      ...getStickerFace(theme, 3),
       flexDirection: 'row',
       gap: theme.spacing.md,
       padding: theme.spacing.md,

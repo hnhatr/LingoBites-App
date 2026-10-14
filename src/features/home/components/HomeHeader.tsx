@@ -266,9 +266,7 @@ function makeStyles(theme: AppTheme) {
     streakPill: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.ink,
       borderRadius: 999,
-      borderWidth: 2,
       flexDirection: 'row',
       gap: 4,
       height: 42,
