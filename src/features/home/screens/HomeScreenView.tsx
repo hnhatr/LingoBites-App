@@ -3,13 +3,12 @@
  *
  * Order, top to bottom, all compact so "Luyện thêm" shows on open:
  * 1. HomeHeader — the cat, time-of-day greeting and streak flame
- * 2. HomeTodayCard — one teal card: the next thing to do (six hero states)
- *    and today's plan as a route of stops, with the "+1 🐾" tag
- * 3. HomeWeeklyGoal — one paw per target lesson, a thin strip
- * 4. HomeCoursesRail — "Khóa học của bạn", short coloured course cards
- * 5. HomeShortcutsGrid — "Luyện thêm", 4 tinted tiles; due cards show as
- *    the review tile's badge
- * 6. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
+ * 2. HomeWeeklyGoal — one paw per target lesson, a thin strip
+ * 3. HomeTodayCard — one bright card: the next thing to do (six hero
+ *    states) and today's plan as a route of stops, with the "+1 🐾" tag
+ * 4. HomeShortcutsGrid — "Luyện thêm", 4 same-size tinted tiles; due cards
+ *    show as the review tile's badge
+ * 5. HomeSavedRail — "Bài đã lưu" rail (DQ-006)
  *
  * Header is inside the ScrollView and scrolls with the content.
  * Confetti (I7) is rendered once as a full-screen overlay when goal_met.
@@ -22,7 +21,6 @@ import {AppScreen} from '@ui/components/AppScreen';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-import {HomeCoursesRail} from '../components/HomeCoursesRail';
 import {ConfettiOverlay} from '../components/HomeDecorations';
 import {HomeHeader} from '../components/HomeHeader';
 import {HomeSavedRail} from '../components/HomeSavedRail';
@@ -119,6 +117,11 @@ export function HomeScreenView(props: HomeScreenViewModel) {
           mascotLabel={t(MASCOT_SPEECH[heroState])}
         />
 
+        {/* Weekly goal (§VS-3): a thin strip above the card */}
+        <View style={styles.weekSection}>
+          <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
+        </View>
+
         {/* "Hôm nay": the next step and today's route in one card */}
         <View style={styles.todaySection}>
           <HomeTodayCard
@@ -146,16 +149,6 @@ export function HomeScreenView(props: HomeScreenViewModel) {
             onViewDetails={onViewTodayDetails}
             onStartActivity={onStartTodayActivity}
           />
-        </View>
-
-        {/* Weekly goal (§VS-3): a thin strip under the card */}
-        <View style={styles.weekSection}>
-          <HomeWeeklyGoal pawGoal={pawGoalModel} card={weeklyGoalCard} />
-        </View>
-
-        {/* "Khóa học của bạn": hidden until courses load */}
-        <View style={styles.coursesSection}>
-          <HomeCoursesRail />
         </View>
 
         {/* Shortcuts grid (§VS-4) */}
@@ -186,14 +179,11 @@ function makeStyles(_theme: AppTheme) {
       flexGrow: 1,
       paddingHorizontal: 16,
     },
-    todaySection: {
-      marginBottom: 14,
-    },
     weekSection: {
-      marginBottom: 18,
-    },
-    coursesSection: {
       marginBottom: 14,
+    },
+    todaySection: {
+      marginBottom: 18,
     },
     shortcutsSection: {
       marginBottom: 18,

@@ -317,10 +317,15 @@ export function useHomeScreenController() {
     coverLessonId != null,
     false,
   );
-  const todayCoverUrl = coverLessonId ? coverPictures.coverUrl : null;
 
   // Level chosen at onboarding; the hero pill opens its units
   const learningPath = useLearningPath();
+  // The card's picture: the lesson's own cover, else the level's cover;
+  // null draws the cat.
+  const todayCoverUrl =
+    (coverLessonId ? coverPictures.coverUrl : null) ??
+    learningPath?.coverUrl ??
+    null;
   const onOpenLearningPath = useCallback(() => {
     if (!learningPath) return;
     navigation.openCourse({

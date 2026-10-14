@@ -467,7 +467,7 @@ describe('Home today suggestion card (F12)', () => {
     }));
   });
 
-  it('renders one "Hôm nay" card holding the hero, with the weekly goal strip under it', async () => {
+  it('renders one "Hôm nay" card holding the hero, with the weekly goal strip above it', async () => {
     seedCanonicalLessonDownload();
     const tree = await renderHome();
     const text = JSON.stringify(tree.toJSON());
@@ -481,9 +481,9 @@ describe('Home today suggestion card (F12)', () => {
       /home-hero-(no_lessons|saved_only|in_progress|next_activity|goal_met|youtube_disabled)/,
     );
     const goalAt = text.indexOf('home-weekly-goal-card');
-    expect(suggestionAt).toBeGreaterThan(-1);
+    expect(goalAt).toBeGreaterThan(-1);
+    expect(suggestionAt).toBeGreaterThan(goalAt);
     expect(heroAt).toBeGreaterThan(suggestionAt);
-    expect(goalAt).toBeGreaterThan(heroAt);
     expect(text).toContain('home-weekly-goal-count');
     // Due cards no longer get their own banner above the card
     expect(text).not.toContain('home-review-banner');
