@@ -1028,6 +1028,9 @@
   "course": {
     "courses_title": "Courses",
     "courses_empty": "No courses yet",
+    "courses_subtitle": "Pick a journey to start",
+    "course_start": "Start",
+    "course_locked_action": "Unlock needed",
     "course_locked_hint": "Paid course, not unlocked yet",
     "course_locked_message": "Unlock this course to start learning",
     "course_row_hint": "Open the course levels",
