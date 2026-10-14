@@ -121,7 +121,7 @@ export function ExploreTab() {
         tone="teal"
       >
         <TwoColumns>
-          {shelfPacks(packs.rows ?? []).map(row => (
+          {shelfPacks(packs.rows ?? []).map((row, index) => (
             <PackCard
               accessibilityHint={
                 row.downloaded
@@ -143,11 +143,7 @@ export function ExploreTab() {
               statusLabel={packStatusLabel(t, row)}
               testID={`library-pack-${row.packId}`}
               title={packTitle(t, row)}
-              tone={
-                PACK_TONES[
-                  (row.position - 1 + PACK_TONES.length) % PACK_TONES.length
-                ]
-              }
+              tone={PACK_TONES[index % PACK_TONES.length]}
               total={row.total}
             />
           ))}

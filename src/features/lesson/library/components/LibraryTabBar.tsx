@@ -4,9 +4,9 @@ import {Pressable, StyleSheet, View} from 'react-native';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {getStickerFace} from '@ui/theme/hardShadow';
 
 import type {LibraryTab, LibraryTabConfig} from '../logic/librarySections';
+import {stickerCard} from './LibraryShelf';
 import {libraryTone} from './libraryTones';
 
 export interface LibraryTabBarProps {
@@ -95,10 +95,7 @@ function makeStyles(theme: AppTheme) {
     },
     bubbleOn: {
       transform: [{translateY: -3}, {rotate: '-6deg'}],
-      ...(getStickerFace(theme, 3) ?? {
-        borderColor: theme.colors.outlineVariant,
-        borderWidth: 1,
-      }),
+      ...stickerCard(theme),
     },
     label: {
       color: theme.colors.text.muted,

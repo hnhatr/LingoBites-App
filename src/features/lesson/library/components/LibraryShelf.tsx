@@ -7,7 +7,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
-import {getStickerFace} from '@ui/theme/hardShadow';
+import {getHardShadow} from '@ui/theme/hardShadow';
 
 import type {LibraryTone} from '../logic/librarySections';
 import {libraryTone} from './libraryTones';
@@ -175,14 +175,12 @@ export function shelfTone(theme: AppTheme, tone: GridTileTone) {
   }
 }
 
-/** The sticker face of Library cards: a hard ink shadow, else a hairline. */
+/**
+ * The sticker face of Library cards: a hard ink shadow and no outline, in
+ * every theme, so the folders and cards keep the Library's paper look.
+ */
 export function stickerCard(theme: AppTheme, offset = 3) {
-  return (
-    getStickerFace(theme, offset) ?? {
-      borderColor: theme.colors.outlineVariant,
-      borderWidth: 1,
-    }
-  );
+  return getHardShadow(offset, theme.colors.ink);
 }
 
 function makeStyles(theme: AppTheme) {
