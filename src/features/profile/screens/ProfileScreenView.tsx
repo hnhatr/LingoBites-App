@@ -4,6 +4,7 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {HeroFill} from '@ui/components/HeroFill';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
@@ -13,6 +14,7 @@ import {SettingsGroup} from '@ui/components/SettingsGroup';
 import {StatTile} from '@ui/components/StatTile';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {SettingsOptionSheet} from '../components/SettingsOptionSheet';
 import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
@@ -99,19 +101,25 @@ export function ProfileScreenView({
 
         <View>
           <SectionHeader title="Tiến trình" />
-          <AppCard>
+          <View
+            style={themedStyles.progressCard}
+            testID="profile-progress-card"
+          >
+            <HeroFill id="profileProgressFace" />
             <View style={styles.cardStack}>
               <View style={styles.streakRow}>
                 <View style={themedStyles.streakBadge}>
                   <MaterialIcon
-                    color={theme.colors.accentInk}
+                    color={HERO_PALETTE.coral}
                     name="local_fire_department"
                     size={28}
                   />
                 </View>
                 <View style={styles.streakCopy}>
-                  <AppText variant="h3">{streakTitle}</AppText>
-                  <AppText color="secondary" variant="caption">
+                  <AppText style={styles.onHero} variant="h3">
+                    {streakTitle}
+                  </AppText>
+                  <AppText style={styles.onHeroSoft} variant="caption">
                     {streakSubtitle}
                   </AppText>
                 </View>
@@ -145,7 +153,7 @@ export function ProfileScreenView({
                 />
               </View>
             </View>
-          </AppCard>
+          </View>
         </View>
 
         <SettingsGroup title="Học tập">
@@ -263,6 +271,12 @@ const styles = StyleSheet.create({
   cardStack: {
     gap: 12,
   },
+  onHero: {
+    color: HERO_PALETTE.ink,
+  },
+  onHeroSoft: {
+    color: HERO_PALETTE.tealInk,
+  },
   profileCopy: {
     flex: 1,
     gap: 4,
@@ -304,9 +318,16 @@ function makeStyles(theme: AppTheme) {
       fontSize: theme.typography.size.xl,
       fontWeight: '700',
     },
+    progressCard: {
+      borderBottomColor: HERO_PALETTE.shelf,
+      borderBottomWidth: 6,
+      borderRadius: theme.radius.xl,
+      overflow: 'hidden',
+      padding: theme.spacing.md,
+    },
     streakBadge: {
       alignItems: 'center',
-      backgroundColor: theme.colors.accent,
+      backgroundColor: HERO_PALETTE.white,
       borderRadius: theme.radius.pill,
       height: 48,
       justifyContent: 'center',

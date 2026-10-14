@@ -96,7 +96,7 @@ describe('F9: due-card count parity between Home and Daily Review', () => {
 
     const rendered = await renderReview();
     const text = textOf(rendered);
-    expect(text).toContain(`1 / ${SOFT_CAP}`);
+    expect(text).toContain(`1/${SOFT_CAP}`);
     expect(text).toContain(`còn ${13 - SOFT_CAP} thẻ để dành lần ôn sau`);
   });
 
