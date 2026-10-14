@@ -55,6 +55,13 @@ function isPolarity(value: string): value is ComboPolarity {
   return POLARITIES.includes(value);
 }
 
+/** Why the Server opened no sentences, as a message key. */
+function emptySetMessage(reason: string | null | undefined): string {
+  if (reason === 'AI_DAILY_LIMIT') return 'combo.setup.empty_ai_limit';
+  if (reason === 'MINOR_POOL_ONLY') return 'combo.setup.empty_pool_only';
+  return 'combo.setup.empty_failed';
+}
+
 /**
  * Vocab path P5: set up a combo set for one word. The learner picks the
  * situation, the tense (not for a locked pattern), the subject groups, the
@@ -78,7 +85,8 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const [groups, setGroups] = useState<string[]>([]);
   const [mix, setMix] = useState<PolarityMix>({});
   const [busy, setBusy] = useState(false);
-  const [startFailed, setStartFailed] = useState(false);
+  /** The message shown under the summary when a set could not be opened. */
+  const [startError, setStartError] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [recent, setRecent] = useState<string[]>([]);
@@ -193,7 +201,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const start = async () => {
     if (!options || !ready || situation === null) return;
     setBusy(true);
-    setStartFailed(false);
+    setStartError(null);
     const grammarCode = locked ? undefined : (tense ?? undefined);
     const result = await openComboSet({
       itemCode,
@@ -204,7 +212,12 @@ export function ComboSetupScreen({navigation, route}: Props) {
     });
     setBusy(false);
     if (!result.ok) {
-      setStartFailed(true);
+      setStartError('combo.setup.start_failed');
+      return;
+    }
+    // The Server deletes a set it could not fill and refunds it; nothing to open.
+    if (result.value.sentences.length === 0) {
+      setStartError(emptySetMessage(result.value.reason));
       return;
     }
     saveComboSet(
@@ -362,9 +375,14 @@ export function ComboSetupScreen({navigation, route}: Props) {
           >
             {summary}
           </AppText>
-          {startFailed ? (
-            <AppText color="danger" style={styles.summary} variant="label">
-              {t('combo.setup.start_failed')}
+          {startError ? (
+            <AppText
+              color="danger"
+              style={styles.summary}
+              testID="combo-setup-start-error"
+              variant="label"
+            >
+              {t(startError)}
             </AppText>
           ) : null}
           <AppButton

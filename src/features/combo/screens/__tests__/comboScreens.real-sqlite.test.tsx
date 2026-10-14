@@ -228,6 +228,68 @@ describe('ComboSetupScreen', () => {
     expect(mocked.openComboSet.mock.calls[0]![0].grammarCode).toBeUndefined();
   });
 
+  it('stays on setup and says why when the Server opens no sentences', async () => {
+    mocked.fetchComboOptions.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        tense_mode: 'locked',
+        tenses: [],
+        subject_groups: ['i'],
+        polarities: ['affirmative'],
+        batch_sizes: [3],
+        max_per_set: 27,
+        ai_left_today: 0,
+        sets_left_today: 2,
+      },
+    });
+    mocked.fetchComboSituations.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        situations: [
+          {
+            code: 'cafe',
+            title_en: 'Cafe',
+            title_vi: 'Quán cà phê',
+            register: 'casual',
+            level_code: 'A1',
+          },
+        ],
+      },
+    });
+    mocked.openComboSet.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        set_id: SET_ID,
+        sentences: [],
+        missing: 3,
+        reason: 'AI_DAILY_LIMIT',
+      },
+    });
+    const tree = renderWithTheme(
+      <ComboSetupScreen route={{params: {itemCode: 'pattern:can-i-have'}}} />,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    press(tree, 'combo-setup-situation-field');
+    press(tree, 'combo-setup-situation-cafe');
+    press(tree, 'combo-setup-count-3');
+    await act(async () => {
+      press(tree, 'combo-setup-start');
+    });
+    expect(textOf(tree, 'combo-setup-start-error')).toContain(
+      'Hôm nay đã hết lượt tạo câu mới',
+    );
+    expect(mockAppNavigation.openComboSet).not.toHaveBeenCalled();
+    expect(listLocalComboSets()).toHaveLength(0);
+  });
+
   it('lists bookmarked and recent situations first, searches without marks, and sends the polarity mix', async () => {
     await AsyncStorage.setItem(
       SITUATION_BOOKMARKS_KEY,
