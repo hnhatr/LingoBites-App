@@ -9,6 +9,8 @@ import {createContext, useContext} from 'react';
  * which is the single place that knows the navigator layout:
  *
  * - Tabs hold only their hub screen (Home, Courses, Lessons, Profile).
+ * - The Courses tab also holds the curriculum screens (course, level, unit),
+ *   so the tab bar stays while the learner browses.
  * - Task flows (create a lesson, lesson player, review, speaking, today,
  *   catalog) are registered once on the root stack, above the tab bar, so
  *   back always returns to the tab that opened them.
@@ -56,11 +58,34 @@ export type CourseTarget =
   /** The lessons of one unit; a lesson opens with `openLesson`. */
   | {kind: 'unit'; unitId: string; title?: string};
 
+/** The unit a curriculum lesson belongs to (`snapshot.unit`). */
+export type LessonUnitTarget = {
+  unitId: string;
+  /** Unit title, shown in the header while the unit loads. */
+  title?: string;
+  /** The lesson being left; the next lesson follows it in the unit. */
+  lessonId: string;
+};
+
 export interface AppNavigation {
   /** Open one lesson in the lesson player. */
   openLesson(lessonId: string): void;
   /** Open a curriculum lesson's six-step player (PR 10). */
   openLessonFlow(lessonId: string): void;
+  /**
+   * Close the lesson: remove the lesson player and its six-step player in
+   * one go and return to the screen that opened the lesson.
+   */
+  closeLesson(): void;
+  /**
+   * Close the lesson and show its unit's lesson list in the Courses tab.
+   */
+  closeLessonToUnit(target: LessonUnitTarget): void;
+  /**
+   * Replace the lesson with the next lesson of its unit; on the unit's last
+   * lesson (or when the unit cannot load) show the unit instead.
+   */
+  openNextUnitLesson(target: LessonUnitTarget): void;
   /** Open the lesson catalog. */
   openCatalog(): void;
   /** Open one Library section's list (own lessons, words, or public). */
@@ -71,8 +96,8 @@ export interface AppNavigation {
    */
   openVideoHub(): void;
   /**
-   * Open the structured curriculum: the course list without a target,
-   * otherwise one course, level or unit.
+   * Open the structured curriculum in the Courses tab: the course list
+   * without a target, otherwise one course, level or unit.
    */
   openCourse(target?: CourseTarget): void;
   /** Open the create-lesson hub (camera, gallery, paste, YouTube). */

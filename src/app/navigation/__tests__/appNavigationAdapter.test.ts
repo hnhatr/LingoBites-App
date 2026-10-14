@@ -73,11 +73,16 @@ describe('createAppNavigation (root-stack adapter)', () => {
     nav.openCourse({kind: 'level', levelId: 'level-1'});
     nav.openCourse({kind: 'unit', unitId: 'unit-1', title: 'Greetings'});
 
+    // Curriculum screens live in the Courses tab, above its course list.
+    const inCourses = (screen: string, params: object) => [
+      'Tabs',
+      {screen: 'Courses', params: {screen, params, initial: false}},
+    ];
     expect(ref.navigate.mock.calls).toEqual([
-      ['Tabs', {screen: 'Courses'}],
-      ['CourseLevels', {courseSlug: 'english-a1', title: 'A1'}],
-      ['LevelUnits', {levelId: 'level-1', title: undefined}],
-      ['UnitLessons', {unitId: 'unit-1', title: 'Greetings'}],
+      ['Tabs', {screen: 'Courses', params: {screen: 'CourseList'}}],
+      inCourses('CourseLevels', {courseSlug: 'english-a1', title: 'A1'}),
+      inCourses('LevelUnits', {levelId: 'level-1', title: undefined}),
+      inCourses('UnitLessons', {unitId: 'unit-1', title: 'Greetings'}),
     ]);
   });
 
@@ -154,6 +159,94 @@ describe('createAppNavigation (root-stack adapter)', () => {
       'Today',
       'CanonicalLessonPlayer',
     ]);
+  });
+
+  it('closeLesson removes the lesson and its six-step player at once', () => {
+    const ref = fakeRef([
+      {key: 'tabs', name: 'Tabs'},
+      {key: 'today', name: 'Today'},
+      {key: 'lesson', name: 'CanonicalLessonPlayer'},
+      {key: 'flow', name: 'LessonFlowPlayer'},
+    ]);
+    createAppNavigation(ref).closeLesson();
+    const {payload} = ref.dispatch.mock.calls[0][0];
+    expect(payload.index).toBe(1);
+    expect(payload.routes.map((r: Route) => r.name)).toEqual(['Tabs', 'Today']);
+  });
+
+  it('closeLesson does nothing outside a lesson', () => {
+    const ref = fakeRef([
+      {key: 'tabs', name: 'Tabs'},
+      {key: 'today', name: 'Today'},
+    ]);
+    createAppNavigation(ref).closeLesson();
+    expect(ref.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('closeLessonToUnit closes the lesson and shows its unit', () => {
+    const ref = fakeRef([
+      {key: 'tabs', name: 'Tabs'},
+      {key: 'flow', name: 'LessonFlowPlayer'},
+    ]);
+    createAppNavigation(ref).closeLessonToUnit({
+      unitId: 'unit-1',
+      title: 'Greetings',
+      lessonId: 'lesson-1',
+    });
+    expect(ref.dispatch.mock.calls[0][0].payload.routes).toEqual([
+      {key: 'tabs', name: 'Tabs'},
+    ]);
+    expect(ref.navigate).toHaveBeenCalledWith('Tabs', {
+      screen: 'Courses',
+      params: {
+        screen: 'UnitLessons',
+        params: {unitId: 'unit-1', title: 'Greetings'},
+        initial: false,
+      },
+    });
+  });
+
+  it('openNextUnitLesson replaces the lesson with the next one', async () => {
+    const ref = fakeRef([
+      {key: 'tabs', name: 'Tabs'},
+      {key: 'lesson', name: 'CanonicalLessonPlayer'},
+      {key: 'flow', name: 'LessonFlowPlayer'},
+    ]);
+    const findNextUnitLesson = jest.fn(async () => 'lesson-2');
+    createAppNavigation(ref, {findNextUnitLesson}).openNextUnitLesson({
+      unitId: 'unit-1',
+      lessonId: 'lesson-1',
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(findNextUnitLesson).toHaveBeenCalledWith('unit-1', 'lesson-1');
+    expect(ref.dispatch.mock.calls[0][0].payload).toMatchObject({
+      index: 1,
+      routes: [
+        {key: 'tabs', name: 'Tabs'},
+        {name: 'CanonicalLessonPlayer', params: {lessonId: 'lesson-2'}},
+      ],
+    });
+  });
+
+  it('openNextUnitLesson shows the unit after its last lesson', async () => {
+    const ref = fakeRef([
+      {key: 'tabs', name: 'Tabs'},
+      {key: 'flow', name: 'LessonFlowPlayer'},
+    ]);
+    const findNextUnitLesson = jest.fn(async () => null);
+    createAppNavigation(ref, {findNextUnitLesson}).openNextUnitLesson({
+      unitId: 'unit-1',
+      lessonId: 'lesson-3',
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(ref.navigate).toHaveBeenCalledWith(
+      'Tabs',
+      expect.objectContaining({screen: 'Courses'}),
+    );
   });
 
   it('is a no-op before the container is ready', () => {

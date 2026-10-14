@@ -5,6 +5,7 @@ import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
 import {LessonActivityAttemptPayloadSchema} from '@core/schemas/sync';
 
+import {mockAppNavigation} from '@test/support';
 import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 import {
   has,
@@ -86,6 +87,41 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     press(tree, 'lesson-flow-step-6');
     press(tree, 'lesson-flow-back-to-lesson');
     expect(navigation.goBack).toHaveBeenCalled();
+  });
+
+  it('closes the whole lesson from the header in one tap', () => {
+    const {tree, navigation} = renderScreen();
+    press(tree, 'lesson-flow-close');
+    expect(mockAppNavigation.closeLesson).toHaveBeenCalled();
+    expect(navigation.goBack).not.toHaveBeenCalled();
+  });
+
+  it('offers the next lesson and the unit after a unit lesson', () => {
+    const {tree} = renderScreen();
+    press(tree, 'lesson-flow-step-6');
+    const target = {
+      unitId: snapshot.unit!.unit_id,
+      title: snapshot.unit!.unit_title,
+      lessonId: snapshot.id,
+    };
+    press(tree, 'lesson-flow-next-lesson');
+    expect(mockAppNavigation.openNextUnitLesson).toHaveBeenCalledWith(target);
+    press(tree, 'lesson-flow-back-to-unit');
+    expect(mockAppNavigation.closeLessonToUnit).toHaveBeenCalledWith(target);
+  });
+
+  it('shows no unit buttons for a lesson outside any unit', () => {
+    mockState = {
+      status: 'ready',
+      snapshot: {...snapshot, unit: null},
+      offline: false,
+      hasUpdate: false,
+    };
+    const {tree} = renderScreen();
+    press(tree, 'lesson-flow-step-6');
+    expect(has(tree, 'lesson-flow-next-lesson')).toBe(false);
+    expect(has(tree, 'lesson-flow-back-to-unit')).toBe(false);
+    expect(has(tree, 'lesson-flow-back-to-lesson')).toBe(true);
   });
 
   it('step 1 says when there is nothing to review', () => {

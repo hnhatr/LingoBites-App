@@ -8,6 +8,7 @@ import {speak} from '@features/audio';
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -72,6 +73,14 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
   useEffect(() => {
     open();
   }, [open]);
+
+  // A curriculum lesson knows its unit: step 6 offers the next lesson.
+  const unit = snapshot?.unit ?? null;
+  const unitTarget = useMemo(
+    () =>
+      unit ? {unitId: unit.unit_id, title: unit.unit_title, lessonId} : null,
+    [unit, lessonId],
+  );
 
   const goTo = flow.goTo;
   const openStep = useCallback(
@@ -213,7 +222,17 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
         {step === 6 ? (
           <StepResult
             attempts={flow.attempts}
+            onBackToUnit={
+              unitTarget
+                ? () => appNavigation.closeLessonToUnit(unitTarget)
+                : undefined
+            }
             onClose={navigation.goBack}
+            onNextLesson={
+              unitTarget
+                ? () => appNavigation.openNextUnitLesson(unitTarget)
+                : undefined
+            }
             onOpenStep={openStep}
             practiceDone={flow.practiceDone}
             practiceRemaining={flow.practiceRemaining}
@@ -257,7 +276,20 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
 
   return (
     <AppScreen>
-      <ScreenHeader onBack={navigation.goBack} title={t('lessonFlow.title')} />
+      <ScreenHeader
+        onBack={navigation.goBack}
+        rightAction={
+          <HeaderIconButton
+            accessibilityHint={t('lessonFlow.close_lesson_hint')}
+            accessibilityLabel={t('lessonFlow.close_lesson')}
+            icon="close"
+            onPress={appNavigation.closeLesson}
+            testID="lesson-flow-close"
+          />
+        }
+        subtitle={unit?.unit_title}
+        title={t('lessonFlow.title')}
+      />
       <ScrollView
         contentContainerStyle={[
           themedStyles.content,

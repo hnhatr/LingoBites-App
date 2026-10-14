@@ -287,9 +287,11 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   }, []);
 
   // Hardware back / swipe from a section returns to the overview first.
+  // Closing the whole lesson (a reset from the close button) still leaves.
   useEffect(() => {
     if (!inSection) return undefined;
     return navigation.addListener?.('beforeRemove', event => {
+      if (event.data.action.type === 'RESET') return;
       event.preventDefault();
       openView('hub');
     });
@@ -692,6 +694,15 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                 showTranslation={showTranslation}
               />
             </>
+          ) : inSection ? (
+            // Back returns to the hub; close leaves the lesson in one tap.
+            <HeaderIconButton
+              accessibilityHint={t('lessonFlow.close_lesson_hint')}
+              accessibilityLabel={t('lessonFlow.close_lesson')}
+              icon="close"
+              onPress={appNavigation.closeLesson}
+              testID="canonical-close-lesson"
+            />
           ) : showHub &&
             completionState !== 'finished' &&
             !flowEntry.available &&

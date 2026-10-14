@@ -10,16 +10,16 @@ Mỗi màn chỉ được đăng ký **một lần**.
 
 ```text
 RootStack
-├─ Tabs                    mỗi tab chỉ giữ màn "sảnh" của nó
+├─ Tabs                    mỗi tab giữ màn "sảnh" của nó
 │  ├─ Home     HomeMain
-│  ├─ Create   CreateMain
+│  ├─ Courses  CourseList, CourseLevels (level switcher + chương),
+│  │           LevelUnits, UnitLessons, UnitSummativeTask
 │  ├─ Lessons  LessonsList
 │  └─ Profile  ProfileMain (hub), AccountSettings, DataSettings, AppSettings,
 │              SupportAbout, PrivacyNote, ProgressReport (+ màn dev)
 └─ Luồng công việc         phủ lên tab bar; Back quay về tab đã mở luồng
    ├─ Tạo bài  PasteText, ImageCapture, OCRReview, LessonCreation
-   ├─ Bài học  CanonicalCatalog, CanonicalLessonPlayer
-   ├─ Giáo trình  CourseList, CourseLevels, LevelUnits, UnitLessons
+   ├─ Bài học  CanonicalCatalog, CanonicalLessonPlayer, LessonFlowPlayer
    └─ Luyện    DailyReview, Today, SpeakingRoom,
                ShadowingLessonPicker, ShadowingSession, ShadowingSummary
 ```
@@ -28,6 +28,15 @@ RootStack
   `src/app/navigation/types.ts`, danh sách route ở `rootStackRoutes.ts`.
 - Màn trên root stack tự che tab bar, nên không cần danh sách "immersive"
   gõ tay. Tab bar chỉ gọi `navigate(tab)`, không có logic reset riêng.
+- Giáo trình nằm **trong tab Courses** (không phủ tab bar): duyệt khoá → chương
+  → bài vẫn thấy tab bar; bấm lại tab Courses đang chọn thì native-stack tự
+  `popToTop` về danh sách khoá học. Chỉ màn học (bài, 6 bước) mới phủ tab bar.
+- Màn khoá học (`CourseLevels`) hiện luôn các chương của level đang chọn, đổi
+  level bằng `Chip`; level đang chọn giữ trong params (`levelId`, `levelCode`).
+  `LevelUnits` vẫn còn cho lối vào thẳng một level (thẻ lộ trình ở Home).
+- Header các màn giáo trình có breadcrumb (`ScreenHeader.breadcrumb`, dựng
+  bởi `useCourseBreadcrumb`) từ các màn bên dưới trong stack; bấm một mục là
+  `pop` thẳng về màn đó.
 
 ## 2. Feature điều hướng bằng intent: `useAppNavigation()`
 
@@ -46,8 +55,11 @@ features/*             const nav = useAppNavigation(); nav.openLesson(id)
 |---|---|
 | `openLesson(id)` | `CanonicalLessonPlayer` |
 | `openCatalog()` | `CanonicalCatalog` |
-| `openCourse()` | `CourseList` |
-| `openCourse({kind: 'course' \| 'level' \| 'unit', ...})` | `CourseLevels` / `LevelUnits` / `UnitLessons` (bài trong Unit mở bằng `openLesson`) |
+| `openCourse()` | tab Courses, về `CourseList` |
+| `openCourse({kind: 'course' \| 'level' \| 'unit', ...})` | tab Courses → `CourseLevels` / `LevelUnits` / `UnitLessons` (bài trong Unit mở bằng `openLesson`) |
+| `closeLesson()` | Bỏ cả màn bài + màn 6 bước (nút ✕), về màn đã mở bài |
+| `closeLessonToUnit(unit)` | Đóng bài rồi mở danh sách bài của chương (tab Courses) |
+| `openNextUnitLesson(unit)` | Thay bài đang học bằng bài kế trong chương; hết chương thì về chương |
 | `startCreate({kind: 'paste' \| 'camera' \| 'gallery' \| 'youtube'})` | `PasteText` / `ImageCapture` / `LessonCreation` |
 | `startCreate({kind: 'text' \| 'ocr', text})` | `LessonCreation` (gửi luôn text đã xác nhận) |
 | `finishCreate(lessonId)` | Xoá các màn tạo bài khỏi lịch sử rồi mở bài |
@@ -70,7 +82,10 @@ màn trong luồng nằm cùng root stack.
 | Đang tạo bài | Tab bar bị che; muốn rời thì Back |
 | Tạo xong → mở bài → Back | Về tab đã bắt đầu tạo (không về màn "đã tạo xong") |
 | Mở bài từ Home hay từ Thư viện | Cùng một màn; Back về đúng tab |
-| Bấm sang tab khác rồi quay lại | Tab luôn ở màn sảnh |
+| Bấm sang tab khác rồi quay lại | Tab giữ nguyên màn đang xem (Courses giữ chỗ đang duyệt) |
+| Bấm lại tab đang chọn | Về màn sảnh của tab |
+| Đang ở bước 6 → ✕ | Về màn đã mở bài (vd. danh sách bài của chương) trong 1 chạm |
+| Bước 6 → "Bài tiếp theo" | Mở bài kế của chương, Back không quay lại bài cũ |
 
 ## 4. Luật tự động
 

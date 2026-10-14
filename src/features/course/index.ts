@@ -14,4 +14,5 @@ export {UnitLessonsScreen} from './screens/UnitLessonsScreen';
 export {UnitSummativeTaskScreen} from './screens/UnitSummativeTaskScreen';
 export {CourseListContent} from './components/CourseListContent';
 export {fetchCourseLevels} from './logic/courseClient';
+export {findNextUnitLesson} from './logic/nextUnitLesson';
 export type {CourseLevel} from './logic/courseClient';
