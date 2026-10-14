@@ -7,8 +7,6 @@ jest.mock('@features/speaking/logic/upload/recordingUploadQueue', () => ({
   requestRecordingUploadDrain: jest.fn(),
 }));
 
-import {open} from 'react-native-quick-sqlite';
-
 import {listReadyAudioAssets} from '@features/audio/logic/data/AudioAssetRepository';
 import {
   insertSpeakingRecording,
@@ -20,6 +18,7 @@ import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import * as LocalDataWipe from '@core/db/localDataWipe';
 import {runMigrations} from '@core/db/migrations';
+import {openDatabase as open} from '@core/db/sqlite';
 import {SPEAKING_ATTEMPTS_EVENT_TYPE} from '@core/sync/speakingAttempts';
 
 import {openRealSqlite} from '@test/support/adversarial/realSqlite';

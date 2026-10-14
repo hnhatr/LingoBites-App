@@ -1,9 +1,8 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {confirmAccountSwitch} from '@features/account/logic/accountBootstrap';
 import {resetBootStateForTests} from '@features/account/logic/accountBootstrap';
 
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {installKeychainVault} from '@test/support/keychainVault';
 

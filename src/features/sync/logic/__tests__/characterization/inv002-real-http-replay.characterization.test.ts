@@ -1,9 +1,8 @@
 import http from 'node:http';
 
-import {open} from 'react-native-quick-sqlite';
-
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import {enqueueSyncOutboxEvent} from '@core/db/syncOutboxCore';
 import type {ReviewEventPayload} from '@core/db/types';
 

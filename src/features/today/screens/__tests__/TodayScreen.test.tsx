@@ -1,6 +1,7 @@
 import React from 'react';
-import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
+
+import {openDatabase as open} from '@core/db/sqlite';
 
 const mockGetDueFlashcards = jest.fn<
   import('@core/db/types').FlashcardRecord[],

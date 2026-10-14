@@ -1,5 +1,3 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {
   confirmAccountSwitchAttempt,
   resetAccountSwitchCoordinatorForTests,
@@ -11,6 +9,7 @@ import type {AuthSession, AuthUser} from '@core/auth/authTypes';
 import {saveSession, setActiveSessionId} from '@core/auth/sessionStore';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 
 import {installKeychainVault} from '@test/support/keychainVault';

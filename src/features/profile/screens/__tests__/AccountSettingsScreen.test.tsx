@@ -1,7 +1,6 @@
 import React from 'react';
 import {Alert, Text} from 'react-native';
 import * as Keychain from 'react-native-keychain';
-import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
@@ -14,6 +13,7 @@ import {resetRefreshStateForTests} from '@core/auth/authSession';
 import {getActiveSession} from '@core/auth/sessionStore';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 import {FeatureFlagProvider} from '@core/release';
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import {open} from 'react-native-quick-sqlite';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
@@ -7,6 +6,7 @@ import {AppThemeProvider} from '@ui/theme';
 import * as AuthSession from '@core/auth/authSession';
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import {FeatureFlagProvider} from '@core/release';
 
 import {CORE_WITH_REVIEW, makeTestReleaseConfig} from '@test/support';

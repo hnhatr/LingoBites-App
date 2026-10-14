@@ -1,8 +1,7 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {
   CHARACTERIZATION_INVARIANTS,

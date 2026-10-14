@@ -1,10 +1,10 @@
 import {readFileSync} from 'fs';
 import {join} from 'path';
-import {open} from 'react-native-quick-sqlite';
 
 import {getAppConfig} from '@core/api/appConfig';
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';
 import {

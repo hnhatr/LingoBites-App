@@ -1,4 +1,6 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
+
+import {getDatabase} from '@core/db/database';
 /**
  * Canonical lesson download repository (LING-149 TASK-007, AD-005/AD-007).
  *
@@ -19,9 +21,7 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
  * pass through `fetchLessonRevisions` success values; this module never
  * deletes on a transport failure.
  */
-import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
-
-import {getDatabase} from '@core/db/database';
+import type {DatabaseConnection} from '@core/db/sqlite';
 import {
   type LessonSnapshot,
   LessonSnapshotResponseSchema,
@@ -88,7 +88,7 @@ function mapRow(row: LessonDownloadRow): LessonDownloadRecord | null {
 /** Read exactly one stored row; `null` when absent or unparseable. */
 export function getLessonDownload(
   lessonId: string,
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): LessonDownloadRecord | null {
   const row = firstRow<LessonDownloadRow>(
     db.execute('SELECT * FROM lesson_downloads WHERE lesson_id = ? LIMIT 1;', [
@@ -126,7 +126,7 @@ type LessonDownloadStampRow = {
 };
 
 function listLessonDownloadStampRows(
-  db: QuickSQLiteConnection,
+  db: DatabaseConnection,
 ): LessonDownloadStampRow[] {
   const result = db.execute(
     `SELECT lesson_id, content_revision, server_revision, media_dir,
@@ -147,7 +147,7 @@ function stampOf(row: LessonDownloadStampRow): string {
 
 /** Every stored download, newest first. Unparseable rows are skipped. */
 export function listLessonDownloads(
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): LessonDownloadRecord[] {
   const records: LessonDownloadRecord[] = [];
   const seen = new Set<string>();
@@ -185,7 +185,7 @@ export function listLessonDownloads(
  * removed, without reading any snapshot body.
  */
 export function getLessonDownloadsSignature(
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): string {
   return listLessonDownloadStampRows(db)
     .map(row => `${row.lesson_id}:${stampOf(row)}`)
@@ -204,7 +204,7 @@ export type LessonDownloadKind = {
  * lessons per Library section never loads the snapshot bodies.
  */
 export function listLessonDownloadKinds(
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): LessonDownloadKind[] {
   const result = db.execute(
     `SELECT lesson_id,
@@ -242,7 +242,7 @@ export type SaveLessonSnapshotInput = {
  */
 export function saveLessonSnapshotBody(
   input: SaveLessonSnapshotInput,
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): LessonDownloadRecord {
   const parsed = parseLessonSnapshotResponse(input.body);
   if (!parsed.ok) {
@@ -289,7 +289,7 @@ export type RevisionApplication = {
  */
 export function applyLessonRevisionStates(
   states: LessonDownloadStatus[],
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): RevisionApplication {
   const removed: string[] = [];
   const markedUpdate: string[] = [];
@@ -331,7 +331,7 @@ export function applyLessonRevisionStates(
 /** Remove one download row. Media sweeping stays with `sweepLessonMedia`. */
 export function removeLessonDownload(
   lessonId: string,
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): void {
   db.execute('DELETE FROM lesson_downloads WHERE lesson_id = ?;', [lessonId]);
 }
@@ -346,7 +346,7 @@ export function setLessonMediaDir(
   lessonId: string,
   revision: number,
   mediaDir: string | null,
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): boolean {
   const result = db.execute(
     'UPDATE lesson_downloads SET media_dir = ? WHERE lesson_id = ? AND content_revision = ?;',
@@ -358,7 +358,7 @@ export function setLessonMediaDir(
 /** The stored row's media dir, without parsing the snapshot. */
 export function getLessonMediaDir(
   lessonId: string,
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): string | null {
   const row = firstRow<{media_dir: string | null}>(
     db.execute(
@@ -375,7 +375,7 @@ export function getLessonMediaDir(
  */
 export function removeLessonMedia(
   lessonId: string,
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): void {
   db.execute(
     'UPDATE lesson_downloads SET media_dir = NULL WHERE lesson_id = ?;',
@@ -385,7 +385,7 @@ export function removeLessonMedia(
 
 /** Forget every lesson's media; the lesson texts stay. */
 export function removeAllLessonMedia(
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): void {
   db.execute(
     'UPDATE lesson_downloads SET media_dir = NULL WHERE media_dir IS NOT NULL;',
@@ -400,7 +400,7 @@ export type LessonMediaDownload = {
 
 /** Lessons whose media is on the device, newest first. */
 export function listLessonMediaDownloads(
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
 ): LessonMediaDownload[] {
   const result = db.execute(
     `SELECT lesson_id, media_dir,
@@ -544,7 +544,7 @@ export async function stageLessonMedia(
  * startup. Never touches the directory of the currently stored revision.
  */
 export async function sweepLessonMedia(
-  db: QuickSQLiteConnection = getDatabase(),
+  db: DatabaseConnection = getDatabase(),
   fs: LessonMediaFileSystem = defaultLessonMediaFileSystem,
 ): Promise<{removed: string[]}> {
   const base = fs.documentDir();

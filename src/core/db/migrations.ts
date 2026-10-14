@@ -1,4 +1,4 @@
-import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
+import type {DatabaseConnection} from './sqlite';
 
 /**
  * Local SQLite schema: one baseline (backward-design curriculum, PR 5).
@@ -435,7 +435,7 @@ export const BASELINE_STATEMENTS: string[] = [
   'ALTER TABLE item_memory ADD COLUMN lapses INTEGER NOT NULL DEFAULT 0;',
 ];
 
-export function readAppSchemaVersion(db: QuickSQLiteConnection): number {
+export function readAppSchemaVersion(db: DatabaseConnection): number {
   try {
     const rows = db.execute('PRAGMA user_version;').rows;
     const value = (rows?.item(0) as {user_version?: unknown} | undefined)
@@ -449,7 +449,7 @@ export function readAppSchemaVersion(db: QuickSQLiteConnection): number {
   }
 }
 
-function appTableNames(db: QuickSQLiteConnection): string[] {
+function appTableNames(db: DatabaseConnection): string[] {
   const rows = db.execute(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';",
   ).rows;
@@ -467,7 +467,7 @@ function appTableNames(db: QuickSQLiteConnection): string[] {
  * step by step, and leaves a current one untouched. A database newer than
  * this build is left alone as well.
  */
-export function runMigrations(db: QuickSQLiteConnection): void {
+export function runMigrations(db: DatabaseConnection): void {
   const version = readAppSchemaVersion(db);
   if (version >= APP_SCHEMA_VERSION) {
     return;
@@ -494,7 +494,7 @@ export function runMigrations(db: QuickSQLiteConnection): void {
   }
 }
 
-function upgrade(db: QuickSQLiteConnection, from: number): void {
+function upgrade(db: DatabaseConnection, from: number): void {
   db.execute('BEGIN;');
   try {
     for (let version = from; version < APP_SCHEMA_VERSION; version += 1) {

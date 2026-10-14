@@ -1,6 +1,5 @@
-import type {QuickSQLiteConnection} from 'react-native-quick-sqlite';
-
 import {getDatabase} from '@core/db/database';
+import type {DatabaseConnection} from '@core/db/sqlite';
 import type {SpeakingMode} from '@core/db/types';
 import {
   type SpeakingAttemptPayload,
@@ -75,7 +74,7 @@ export function parseSpeakingAttemptEntityId(entityId: string): {
 }
 
 function readLocalPracticedAt(
-  db: QuickSQLiteConnection,
+  db: DatabaseConnection,
   mode: SpeakingMode,
   sentenceId: string,
 ): string | null {
@@ -90,7 +89,7 @@ function readLocalPracticedAt(
 }
 
 function readPendingOutboxOccurredAt(
-  db: QuickSQLiteConnection,
+  db: DatabaseConnection,
   entityId: string,
 ): string | null {
   const row = db
@@ -106,7 +105,7 @@ function readPendingOutboxOccurredAt(
 
 /** Newest delete tombstone for the entity, including after sync (INV-004 / AC-3). */
 function readLatestTombstoneOccurredAt(
-  db: QuickSQLiteConnection,
+  db: DatabaseConnection,
   entityId: string,
 ): string | null {
   const row = db
@@ -153,7 +152,7 @@ export function shouldApplyRemoteSpeakingAttempt(
 }
 
 function deleteSpeakingRowsForSentence(
-  db: QuickSQLiteConnection,
+  db: DatabaseConnection,
   mode: SpeakingMode,
   sentenceId: string,
 ): string[] {
@@ -180,7 +179,7 @@ function deleteSpeakingRowsForSentence(
 }
 
 function upsertSpeakingAttemptFromPull(
-  db: QuickSQLiteConnection,
+  db: DatabaseConnection,
   entityId: string,
   payload: SpeakingAttemptPayload,
   revision: number,

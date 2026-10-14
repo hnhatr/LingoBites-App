@@ -1,12 +1,12 @@
 import type {NotificationSettings} from '@notifee/react-native';
 import {AuthorizationStatus, TriggerType} from '@notifee/react-native';
 import {Platform} from 'react-native';
-import {open} from 'react-native-quick-sqlite';
 
 import {recordFlashcardRating, saveFlashcard} from '@features/review';
 
 import {DB_NAME} from '@core/db/constants';
 import {resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import {validFullOutput} from '@core/fixtures';
 
 import {__resetMockDatabases} from '../../../../../test-utils/sqliteMock';

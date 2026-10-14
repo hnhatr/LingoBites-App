@@ -1,5 +1,3 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {
   recordFlashcardRating,
   saveFlashcard,
@@ -7,6 +5,7 @@ import {
 
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import {validFullOutput} from '@core/fixtures';
 
 import {CHARACTERIZATION_INVARIANTS} from '@test/support/characterization';

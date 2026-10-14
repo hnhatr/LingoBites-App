@@ -1,5 +1,3 @@
-import {open} from 'react-native-quick-sqlite';
-
 import {
   bootAccount,
   confirmAccountSwitch,
@@ -10,6 +8,7 @@ import {
 
 import {DB_NAME} from '@core/db/constants';
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
+import {openDatabase as open} from '@core/db/sqlite';
 import * as DeviceIdentityNative from '@core/identity/deviceIdentityNative';
 
 import {
