@@ -14,6 +14,7 @@ let mockVocabulary: Array<{word: string}> = [];
 let mockGrammar: Array<{title?: string; grammarId: string}> = [];
 let mockDue: unknown[] = [];
 let mockCombos: Array<{itemCode: string}> = [];
+let mockSentences: Array<{textEn: string}> = [];
 
 jest.mock('@react-navigation/native', () => {
   const ReactModule = require('react');
@@ -38,6 +39,7 @@ jest.mock('@features/review', () => ({
 
 jest.mock('@features/combo', () => ({
   listLocalComboSets: () => mockCombos,
+  loadSavedComboSentences: () => Promise.resolve(mockSentences),
 }));
 
 function render() {
@@ -58,6 +60,13 @@ const textOf = (tree: ReactTestRenderer.ReactTestRenderer, id: string) =>
   tree.root.findByProps({testID: id}).props.children;
 
 describe('SavedTab', () => {
+  // The saved sentences load from device storage after the first draw.
+  afterEach(async () => {
+    await act(async () => {
+      await Promise.resolve();
+    });
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest
@@ -76,6 +85,7 @@ describe('SavedTab', () => {
     mockGrammar = [{title: 'used to + V', grammarId: 'g1'}];
     mockDue = [{}, {}, {}];
     mockCombos = [{itemCode: 'word:coffee'}];
+    mockSentences = [];
   });
 
   it('reads the label out of an item code', () => {
@@ -117,6 +127,23 @@ describe('SavedTab', () => {
     expect(
       combos.findAll(node => node.props.children === 'coffee').length,
     ).toBeGreaterThan(0);
+  });
+
+  it('counts the saved combo sentences and opens their list', async () => {
+    mockSentences = [{textEn: 'I drink coffee every morning.'}];
+    const tree = render();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(textOf(tree, 'library-saved-comboSentences-count')).toBe(1);
+    act(() => {
+      tree.root
+        .findByProps({testID: 'library-saved-comboSentences'})
+        .props.onPress();
+    });
+    expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith(
+      'comboSentences',
+    );
   });
 
   it('opens the list of a kind', () => {

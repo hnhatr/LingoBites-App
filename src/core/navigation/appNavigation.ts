@@ -32,6 +32,7 @@ export type LibrarySectionKey =
   | 'public'
   | 'publicVideo'
   | 'combos'
+  | 'comboSentences'
   | 'wordPath';
 
 export type CreateEntry =

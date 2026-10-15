@@ -1643,14 +1643,14 @@
       "request_id": "Mã yêu cầu: {{id}}"
     },
     "setup": {
-      "title": "Bộ câu tổ hợp",
+      "title": "Tạo bộ câu",
       "load_failed": "Chưa tải được các lựa chọn. Hãy thử lại khi có mạng.",
       "locked": "Mẫu cố định: không có thì để chọn.",
       "situation": "Tình huống",
       "tense": "Thì",
       "groups": "Chủ ngữ",
       "count": "Số câu",
-      "start": "Bắt đầu",
+      "start": "Tạo bộ câu",
       "start_failed": "Chưa mở được bộ câu. Hãy kiểm tra hạn mức hoặc thử lại.",
       "empty_ai_limit": "Hôm nay đã hết lượt tạo câu mới. Hãy chọn tình huống hoặc thì khác, hoặc thử lại vào ngày mai.",
       "empty_pool_only": "Chưa có câu sẵn cho lựa chọn này. Hãy chọn tình huống hoặc thì khác.",
@@ -1675,7 +1675,7 @@
       "close": "Đóng",
       "close_hint": "Đóng danh sách tình huống",
       "tense_hint": "Chọn thì này",
-      "tense_picked": "Đã chọn:",
+      "tense_picked": "Đã chọn",
       "time": {
         "past": "Quá khứ",
         "present": "Hiện tại",
@@ -1727,7 +1727,19 @@
       "mix_more": "Thêm câu {{name}}",
       "mix_less_hint": "Bớt {{count}} câu",
       "mix_more_hint": "Thêm {{count}} câu",
-      "mix_preset_hint": "Dùng cách chia này"
+      "mix_preset_hint": "Dùng cách chia này",
+      "word_hint": "Tạo câu với từ này theo tình huống và thì bạn chọn",
+      "tenses_open": "{{count}}/12 thì mở",
+      "count_max": "tối đa {{count}}",
+      "tense_locked": "{{name}}: chưa mở",
+      "mix_total": "{{count}}/{{max}} câu",
+      "aspect_full": {
+        "simple": "đơn",
+        "continuous": "tiếp diễn",
+        "perfect": "hoàn thành",
+        "perfect_continuous": "hoàn thành tiếp diễn"
+      },
+      "tense_locked_hint": "Thì này chưa mở cho từ này"
     },
     "set": {
       "title": "Bộ câu",
@@ -1736,18 +1748,31 @@
       "hide_vi": "Ẩn tiếng Việt",
       "show_vi": "Hiện tiếng Việt",
       "no_ipa": "Từ này chưa có phiên âm",
-      "report": "Báo sai câu này",
+      "report": "Báo sai",
       "already_reported": "Đã báo",
-      "more": "Tải thêm",
+      "more": "Thêm {{count}} câu",
       "add_failed": "Chưa thêm được đợt câu. Hãy thử lại khi có mạng.",
       "short_batch": "Số câu có sẵn ít hơn số đã hỏi.",
       "reported": "Cảm ơn bạn. Câu đã được báo.",
       "report_failed": "Chưa gửi được báo cáo. Hãy thử lại khi có mạng.",
       "empty": "Bộ câu này chưa có câu nào.",
-      "back": "Quay lại"
+      "count": "{{count}} câu",
+      "tip": "Chạm vào một từ để xem phiên âm",
+      "token_hint": "Xem phiên âm của từ này",
+      "say_word": "Đọc từ {{word}}",
+      "grammar": "Phân tích ngữ pháp",
+      "listen": "Nghe",
+      "listening": "Đang đọc",
+      "listen_hint": "Đọc to câu này",
+      "save": "Lưu",
+      "saved": "Đã lưu",
+      "save_hint": "Lưu câu vào mục Câu đã lưu trong Thư viện",
+      "report_hint": "Chọn lý do câu này sai",
+      "report_question": "Câu này sai ở đâu?",
+      "say_word_hint": "Đọc to từ này"
     },
     "report": {
-      "wrong_meaning": "Nghĩa sai",
+      "wrong_meaning": "Sai nghĩa",
       "unnatural": "Nghe không tự nhiên",
       "wrong_tense": "Sai thì",
       "wrong_subject": "Sai chủ ngữ",
@@ -1768,6 +1793,14 @@
       "empty_cta": "Mở gói từ",
       "no_match_title": "Không có bộ câu nào khớp “{{query}}”",
       "no_match_body": "Thử tìm từ khác, hoặc tạo bộ câu mới từ gói từ."
+    },
+    "saved": {
+      "empty_title": "Chưa có câu nào",
+      "empty_body": "Bấm Lưu dưới một câu trong bộ câu để giữ nó ở đây.",
+      "no_match": "Không có câu nào khớp “{{query}}”.",
+      "open_hint": "Mở bộ câu có câu này",
+      "unsave": "Bỏ lưu câu này",
+      "unsave_hint": "Xóa câu khỏi Câu đã lưu"
     }
   }
 }

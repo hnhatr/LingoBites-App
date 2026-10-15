@@ -18,6 +18,24 @@ export const ComboTokenSchema = z.object({
   role: z.enum(['subject', 'aux', 'verb', 'item', 'other']),
 });
 
+/** "Phân tích ngữ pháp": the Server works it out from the sentence; older sets have none. */
+export const ComboAnalysisSchema = z.object({
+  tense: z
+    .object({
+      code: z.string().nullable(),
+      time: z.string(),
+      aspect: z.string(),
+      name_vi: z.string(),
+      polarity_vi: z.string(),
+      formula: z.string(),
+    })
+    .nullable(),
+  parts: z.array(
+    z.object({text: z.string(), role: z.string(), label_vi: z.string()}),
+  ),
+  notes: z.array(z.string()),
+});
+
 export const ComboSentenceSchema = z.object({
   id: z.string(),
   position: z.number().int(),
@@ -28,6 +46,7 @@ export const ComboSentenceSchema = z.object({
   text_en: z.string(),
   text_vi: z.string(),
   tokens: z.array(ComboTokenSchema),
+  analysis: ComboAnalysisSchema.optional(),
 });
 
 export const ComboSetSchema = z.object({
@@ -96,6 +115,7 @@ export const ComboReportSchema = z.object({
 
 export type ComboToken = z.infer<typeof ComboTokenSchema>;
 export type ComboSentence = z.infer<typeof ComboSentenceSchema>;
+export type ComboAnalysis = z.infer<typeof ComboAnalysisSchema>;
 export type ComboSet = z.infer<typeof ComboSetSchema>;
 export type ComboOptions = z.infer<typeof ComboOptionsSchema>;
 export type ComboSetSummary = z.infer<typeof ComboSetsSchema>['sets'][number];

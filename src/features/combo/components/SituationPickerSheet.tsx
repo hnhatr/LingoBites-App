@@ -7,7 +7,7 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
-export type Situation = {code: string; title_vi: string};
+export type Situation = {code: string; title_vi: string; title_en?: string};
 
 type Props = {
   situations: Situation[];

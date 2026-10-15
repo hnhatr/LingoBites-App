@@ -76,6 +76,8 @@ describe('useLibraryCounts (real SQLite)', () => {
 
     // The downloaded admin lesson is public, not "mine".
     expect(latest.counts).toEqual({
+      // Saved sentences live in device storage, not counted here.
+      comboSentences: 0,
       mine: 2,
       // Moments are read from the server list, not counted on the device.
       moments: 0,
