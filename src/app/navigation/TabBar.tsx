@@ -17,10 +17,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg';
 
 import {
   FLOATING_TAB_BAR_BOTTOM_GAP,
   FLOATING_TAB_BAR_HORIZONTAL_MARGIN,
+  STICKER_TAB_BAR_FACE_HEIGHT,
   withAlpha,
 } from '@ui/components/layout';
 import {AnimatedMaterialIcon} from '@ui/components/MaterialIcon';
@@ -33,6 +35,17 @@ const TAB_ITEMS: Record<string, {labelKey: string; icon: HandoffIconName}> = {
   Courses: {labelKey: 'nav.tab.courses', icon: 'menu_book'},
   Lessons: {labelKey: 'nav.tab.library', icon: 'school'},
   Profile: {labelKey: 'nav.tab.profile', icon: 'person'},
+};
+
+/**
+ * Sticker bar colours: the mint-to-sky gradient of the Home "Hôm nay" card,
+ * dark teal labels, and a flat white capsule for the selected tab.
+ */
+const STICKER_TAB = {
+  faceFrom: '#34dcc3',
+  faceTo: '#5fc8ff',
+  label: 'rgba(0,65,58,0.78)',
+  indicator: '#ffffff',
 };
 
 const TAB_ITEM_HIT_SLOP = {top: 8, bottom: 8, left: 8, right: 8};
@@ -65,6 +78,11 @@ const INDICATOR_DURATION_MS = 200;
  * ended outside the tab row and the Sticker pill looked broken.
  */
 const INDICATOR_INSET = 6;
+/**
+ * Sticker: 4pt here plus the 4pt pill padding puts the capsule 8pt from
+ * the bar's edge, the same as its 8pt top and bottom inset.
+ */
+const STICKER_INDICATOR_INSET = 4;
 /**
  * Horizontal padding of the pill face where the tab row starts. The
  * indicator's base offset must match it or every tab misaligns by the
@@ -123,14 +141,16 @@ function TabBarItem({
   onLayout,
 }: TabBarItemProps) {
   const isSticker = !!theme.shelf;
-  const unselectedColor = isSticker ? '#c8ece7' : theme.colors.text.secondary;
-  // SETE-311 Task B: the selected label uses accentInk like the icon in
-  // every theme. The Sticker special-case (#ffffff on the accent pill) was
-  // 1.86:1 — the selected tab was the least readable text in the bar.
-  const selectedTextColor = theme.colors.accentInk;
-  const selectedIconColor = isSticker
-    ? theme.colors.accentInk
+  const unselectedColor = isSticker
+    ? STICKER_TAB.label
+    : theme.colors.text.secondary;
+  // SETE-311 Task B: the selected label matches the icon. Sticker draws a
+  // white capsule, so both use the primary teal there; other themes use
+  // accentInk on the accent capsule.
+  const selectedTextColor = isSticker
+    ? theme.colors.primary
     : theme.colors.accentInk;
+  const selectedIconColor = selectedTextColor;
 
   const captionPreset = theme.typography.presets.caption;
 
@@ -237,11 +257,12 @@ export function TabBar({
     });
   }, [progress, reducedMotion, state.index]);
 
+  const indicatorInset = theme.shelf
+    ? STICKER_INDICATOR_INSET
+    : INDICATOR_INSET;
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
-    width: Math.max(tabWidth.value - INDICATOR_INSET * 2, 0),
-    transform: [
-      {translateX: progress.value * tabWidth.value + INDICATOR_INSET},
-    ],
+    width: Math.max(tabWidth.value - indicatorInset * 2, 0),
+    transform: [{translateX: progress.value * tabWidth.value + indicatorInset}],
   }));
 
   const handleTabLayout = (event: LayoutChangeEvent) => {
@@ -280,12 +301,12 @@ export function TabBar({
           {
             borderColor: glass.border,
             backgroundColor: theme.shelf
-              ? theme.colors.primary
+              ? STICKER_TAB.faceFrom
               : glassFallback
                 ? glass.fallback
                 : glass.tint,
             borderWidth: theme.shelf ? 0 : 1, // Sticker Soft doesn't use border for the bar
-            height: theme.shelf ? 66 : undefined,
+            height: theme.shelf ? STICKER_TAB_BAR_FACE_HEIGHT : undefined,
           },
         ]}
       >
@@ -294,6 +315,22 @@ export function TabBar({
           pointerEvents="none"
           testID={glassFallback ? 'tab-bar-fallback' : 'tab-bar-glass'}
         >
+          {theme.shelf ? (
+            <Svg height="100%" width="100%">
+              <Defs>
+                <LinearGradient id="tabBarFace" x1="0" x2="1" y1="0" y2="1">
+                  <Stop offset="0" stopColor={STICKER_TAB.faceFrom} />
+                  <Stop offset="1" stopColor={STICKER_TAB.faceTo} />
+                </LinearGradient>
+              </Defs>
+              <Rect
+                fill="url(#tabBarFace)"
+                height="100%"
+                rx={STICKER_TAB_BAR_FACE_HEIGHT / 2}
+                width="100%"
+              />
+            </Svg>
+          ) : null}
           {!glassFallback && !theme.shelf ? (
             <>
               {/* Top gloss: white 12% fading down (gradient stand-in;
@@ -324,7 +361,7 @@ export function TabBar({
               indicatorAnimatedStyle,
               {
                 backgroundColor: theme.shelf
-                  ? theme.colors.accent
+                  ? STICKER_TAB.indicator
                   : theme.colors.accent,
               },
             ]}
@@ -394,14 +431,14 @@ function makeStyles(theme: AppTheme) {
     },
     shelfContainer: {
       // The bar width lives on this container (direct child of the
-      // centered wrap) so the 92% resolves against the screen width.
-      // The face below fills it at 100% so the shelf hugs the face and
-      // peeks only downward per the Sticker spec — a stretched container
-      // with a 92% face would leave 15pt shelf "ears" on each side.
-      // 4 tabs → ~340pt on iPhone 17 Pro (SETE-247).
+      // centered wrap). It spans the wrap's 16pt side margins, so the bar
+      // lines up with the screens' 16pt content gutter; it used to be 92%
+      // of that, which left ~31pt each side. The face below fills it at
+      // 100% so the shelf hugs the face and peeks only downward.
+      // 4 tabs → 370pt on iPhone 17 Pro.
       maxWidth: 380,
       minWidth: 240,
-      width: '92%',
+      width: '100%',
     },
     pill: {
       alignItems: 'center',

@@ -103,14 +103,14 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     expect(wrap.alignItems).toBe('center');
   });
 
-  it('sizes the bar at ~92% width (near full width for 4 tabs)', () => {
+  it('spans the 16pt side margins, in line with the content gutter', () => {
     const {tree} = renderBar(defaultTheme);
     // The width lives on the shelf container (direct child of the
-    // centered wrap) so the percentage resolves against the screen.
+    // centered wrap); the wrap's 16pt padding sets the side margins.
     const container = StyleSheet.flatten(
       tree.root.findByProps({testID: 'tab-bar-container'}).props.style,
     );
-    expect(container.width).toBe('92%');
+    expect(container.width).toBe('100%');
     expect(container.minWidth).toBe(240);
     expect(container.maxWidth).toBe(380);
     // The face fills the container so the shelf hugs it and peeks only
@@ -122,9 +122,9 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
   });
 
   it('gives each tab room on iPhone 17 Pro (402pt)', () => {
-    // (402 − 2×16 margin) × 92% ≈ 340pt face, ≈ 83pt per tab —
+    // 402 − 2×16 margin = 370pt face, ≈ 90pt per tab —
     // comfortably above the 64pt tab minimum, so "Hồ sơ" stays inside.
-    const faceWidth = (402 - 2 * 16) * 0.92;
+    const faceWidth = 402 - 2 * 16;
     expect((faceWidth - 2 * 4) / 4).toBeGreaterThan(64);
   });
 
@@ -136,8 +136,8 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     const itemStyle = StyleSheet.flatten(
       tree.root.findByProps({testID: 'tab-bar-item-Home'}).props.style,
     );
-    // 320pt screen: (320 − 2×16 margin) × 92% − 2×4 padding = ~257pt inner.
-    const pillWidth = (320 - 2 * 16) * 0.92;
+    // 320pt screen: 320 − 2×16 margin − 2×4 padding = 280pt inner.
+    const pillWidth = 320 - 2 * 16;
     const innerWidth = pillWidth - 2 * (pill.paddingHorizontal as number);
     expect(4 * (itemStyle.minWidth as number)).toBeLessThanOrEqual(innerWidth);
   });
@@ -397,17 +397,17 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
       (indicatorStyle.left as number) +
       (indicatorStyle.transform as [{translateX: number}])[0].translateX;
     const indicatorEnd = indicatorStart + (indicatorStyle.width as number);
-    // Symmetric 6pt inset: starts inside the first slot ...
+    // Symmetric 4pt inset (8pt from the bar edge with the pill padding,
+    // matching the 8pt top and bottom): starts inside the slot ...
     expect(indicatorStart).toBeGreaterThanOrEqual(rowStart);
-    expect(indicatorStart).toBe(rowStart + 3 * tabWidth + 6);
+    expect(indicatorStart).toBe(rowStart + 3 * tabWidth + 4);
     // ... and the last indicator ends inside the tab row, not past it.
     expect(indicatorEnd).toBeLessThanOrEqual(rowStart + tabCount * tabWidth);
   });
 
-  it('uses accentInk for the selected tab label in the Sticker theme (SETE-311 Task B)', () => {
-    // The old Sticker special-case (#ffffff on the accent pill) was 1.86:1 —
-    // the selected tab was the least readable text in the bar. The label now
-    // matches the icon color (accentInk, 6.21:1 on the accent pill).
+  it('uses the primary teal for the selected tab label in the Sticker theme', () => {
+    // Sticker draws a white capsule on the mint-to-sky bar: the selected
+    // label matches the icon in primary teal; the others are dark teal.
     const {tree} = renderBar(stickerSoftTheme, makeProps(0));
     // Animated.Text matches twice (composite + host) — host nodes only,
     // still in tab order.
@@ -421,8 +421,12 @@ describe('TabBar floating liquid-glass (SETE-214)', () => {
     const colors = labels.map(
       node => StyleSheet.flatten(node.props.style)?.color,
     );
-    expect(colors[0]).toBe(stickerSoftTheme.colors.accentInk);
-    expect(colors.slice(1)).toEqual(['#c8ece7', '#c8ece7', '#c8ece7']);
+    expect(colors[0]).toBe(stickerSoftTheme.colors.primary);
+    expect(colors.slice(1)).toEqual([
+      'rgba(0,65,58,0.78)',
+      'rgba(0,65,58,0.78)',
+      'rgba(0,65,58,0.78)',
+    ]);
   });
 
   it('keeps the selected capsule the same height across themes (SETE-269 follow-up)', () => {

@@ -78,7 +78,7 @@ export const stickerSoftTheme: AppTheme = {
     chipYellow: {height: 5, color: '#ecd989'},
     chipPink: {height: 5, color: '#f4c1ca'},
     iconButton: {height: 4, color: '#e0dcc4'},
-    tabBar: {height: 7, color: '#004a41'},
+    tabBar: {height: 7, color: '#1fa597'},
   },
   components: {
     button: {
