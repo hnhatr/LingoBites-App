@@ -1,4 +1,5 @@
-import React, {useEffect, useMemo} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
@@ -68,6 +69,11 @@ export function ExploreTab() {
 
   useRefreshOnRefocus(packs.reload);
 
+  // Leaving the tab (e.g. for the pack list) starts the stack over, so it
+  // is back on the first pack with all three piled up on return.
+  const [stackKey, setStackKey] = useState(0);
+  useFocusEffect(useCallback(() => () => setStackKey(key => key + 1), []));
+
   const packStatus: ShelfStatus | null =
     packs.rows === null
       ? {kind: 'loading'}
@@ -114,6 +120,7 @@ export function ExploreTab() {
       >
         <PackStack
           items={shelfPacks(packs.rows ?? [])}
+          key={stackKey}
           keyOf={row => row.packId}
           moreCount={Math.max(packCount - SHELF_LIMIT, 0)}
           onPastEnd={() => appNavigation.openLibrarySection('wordPath')}

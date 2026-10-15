@@ -120,7 +120,7 @@ describe('PackStack', () => {
     expect(topCard(tree)).toBe('stack-card-2');
     act11y(tree, 'next');
     expect(onPastEnd).toHaveBeenCalledTimes(1);
-    // Still on the last card when the user comes back.
+    // The stack itself stays put; the screen decides when to start over.
     expect(topCard(tree)).toBe('stack-card-2');
   });
 
