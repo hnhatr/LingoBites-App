@@ -126,7 +126,7 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
       const tree = renderScreen('youtube', navigation);
       const submit = tree.root.findByProps({testID: 'lesson-creation-submit'});
       expect(submit.props.disabled).toBe(true);
-      setUrlInput(tree.root, 'https://youtu.be/x');
+      setUrlInput(tree.root, 'https://youtu.be/dQw4w9WgXcQ');
       expect(
         tree.root.findByProps({testID: 'lesson-creation-submit'}).props
           .disabled,
@@ -155,10 +155,26 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
       expect(notice).toBe(true);
     });
 
+    it('S3b keeps submit disabled for a link that is not YouTube', () => {
+      const navigation = {navigate: jest.fn(), goBack: jest.fn()};
+      const tree = renderScreen('youtube', navigation);
+      for (const link of ['https://vimeo.com/123', 'https://youtu.be/x']) {
+        setUrlInput(tree.root, link);
+        const submit = tree.root.findByProps({
+          testID: 'lesson-creation-submit',
+        });
+        expect(submit.props.disabled).toBe(true);
+        act(() => {
+          submit.props.onPress();
+        });
+      }
+      expect(mockSubmit).not.toHaveBeenCalled();
+    });
+
     it('S5 clears the field and disables submit', () => {
       const navigation = {navigate: jest.fn(), goBack: jest.fn()};
       const tree = renderScreen('youtube', navigation);
-      setUrlInput(tree.root, 'https://youtu.be/x');
+      setUrlInput(tree.root, 'https://youtu.be/dQw4w9WgXcQ');
       pressByTestId(tree.root, 'lesson-creation-clear');
       const input = tree.root.findByProps({
         testID: 'lesson-creation-url-input',
@@ -209,7 +225,7 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
       );
     });
 
-    it('S3 opens the lesson only when the learner taps open', () => {
+    it('S3 opens the lesson by itself once it is made (FR-02)', () => {
       mockState = {
         status: 'succeeded',
         requestId: 'r1',
@@ -218,12 +234,14 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
       mockAppNavigation.finishCreate.mockClear();
       const navigation = {navigate: jest.fn(), goBack: jest.fn()};
       const tree = renderScreen('youtube', navigation);
-      expect(mockAppNavigation.finishCreate).not.toHaveBeenCalled();
-      pressByTestId(tree.root, 'lesson-creation-open');
       // Replaces the creation flow with the lesson (no push on top of it).
+      expect(mockAppNavigation.finishCreate).toHaveBeenCalledTimes(1);
       expect(mockAppNavigation.finishCreate).toHaveBeenCalledWith(
         CREATED_LESSON_ID,
       );
+      // "Mở bài" stays as a fallback.
+      pressByTestId(tree.root, 'lesson-creation-open');
+      expect(mockAppNavigation.finishCreate).toHaveBeenCalledTimes(2);
       expect(navigation.navigate).not.toHaveBeenCalled();
     });
 
@@ -368,11 +386,11 @@ describe('LessonCreation YouTube path (LING-190 TASK-001)', () => {
         navigate: jest.fn(),
         goBack: jest.fn(),
       });
-      setUrlInput(tree.root, '  https://youtu.be/new  ');
+      setUrlInput(tree.root, '  https://youtu.be/dQw4w9WgXcQ  ');
       pressByTestId(tree.root, 'lesson-creation-submit');
       expect(mockSubmit).toHaveBeenCalledWith({
         source: 'youtube',
-        url: 'https://youtu.be/new',
+        url: 'https://youtu.be/dQw4w9WgXcQ',
       });
     });
   });
