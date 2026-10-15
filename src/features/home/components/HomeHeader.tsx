@@ -2,8 +2,10 @@
  * HomeHeader — greeting with the cat and the streak flame (LING-256, §VS-1).
  *
  * Layout: [cat 52] gap 12 [text column, minWidth 0] ... [streak pill]
- * The cat says the state's line to screen readers; a tap makes it wiggle
- * and pop hearts (off under Reduced motion).
+ * The cat sits whole in a round sun tile and says the state's line to
+ * screen readers; a tap makes it wiggle and pop hearts. About once a
+ * minute it sinks out of the circle and peeks back up (both off under
+ * Reduced motion).
  *
  * Motion (§VS-7):
  *   - I4 (flame flicker loop): duration (2.2 - 0.18*lv)s, rotate ±(1.6*lv)°, scale (1 ± 0.02*lv); off under RM
@@ -17,6 +19,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
   withRepeat,
   withSequence,
   withTiming,
@@ -35,6 +38,32 @@ const PALETTE = {
   ember2: '#ff6a1a',
   flameGlow: 'rgba(255,110,0,0.75)',
 };
+
+/** The cat stays still this long between two peeks. */
+const CAT_PEEK_EVERY_MS = 60_000;
+/**
+ * One peek, ~1.8s: dip, sink out of the circle and fade, wait, pop back
+ * up with a small bounce. Each row: [duration ms, y pt, tilt deg, opacity].
+ */
+const CAT_PEEK_STEPS: ReadonlyArray<readonly [number, number, number, number]> =
+  [
+    [270, 4, -3, 1],
+    [360, 52, 0, 0],
+    [270, 52, 0, 0],
+    [400, -3.5, 4, 1],
+    [250, 1, -2, 1],
+    [250, 0, 0, 1],
+  ];
+
+/** The peek as a repeating animation of one column of CAT_PEEK_STEPS. */
+function catPeekLoop(column: 1 | 2 | 3) {
+  const easing = Easing.inOut(Easing.quad);
+  const steps = CAT_PEEK_STEPS.map(([duration, ...values], index) => {
+    const step = withTiming(values[column - 1], {duration, easing});
+    return index === 0 ? withDelay(CAT_PEEK_EVERY_MS, step) : step;
+  });
+  return withRepeat(withSequence(...steps), -1, false);
+}
 
 type Props = {
   greeting: GreetingModel;
@@ -112,6 +141,26 @@ export function HomeHeader({greeting, streak, flame, mascotLabel}: Props) {
     transform: [{rotate: `${flameRotate.value}deg`}, {scale: flameScale.value}],
   }));
 
+  // Cat peek: about once a minute the cat sinks out and peeks back up
+  const peekY = useSharedValue(0);
+  const peekTilt = useSharedValue(0);
+  const peekOpacity = useSharedValue(1);
+  useEffect(() => {
+    if (reducedMotion) {
+      peekY.value = 0;
+      peekTilt.value = 0;
+      peekOpacity.value = 1;
+      return;
+    }
+    peekY.value = catPeekLoop(1);
+    peekTilt.value = catPeekLoop(2);
+    peekOpacity.value = catPeekLoop(3);
+  }, [peekOpacity, peekTilt, peekY, reducedMotion]);
+  const catPeekStyle = useAnimatedStyle(() => ({
+    opacity: peekOpacity.value,
+    transform: [{translateY: peekY.value}, {rotate: `${peekTilt.value}deg`}],
+  }));
+
   // Cat tap: a quick wiggle and a burst of hearts
   const catRotate = useSharedValue(0);
   const [showHearts, setShowHearts] = useState(false);
@@ -155,7 +204,7 @@ export function HomeHeader({greeting, streak, flame, mascotLabel}: Props) {
 
   return (
     <View style={styles.header} testID="home-header">
-      {/* Left: the cat, in a soft sun tile */}
+      {/* Left: the cat, whole in a round sun tile */}
       <View style={styles.catWrap}>
         <Pressable
           accessibilityLabel={mascotLabel}
@@ -165,12 +214,14 @@ export function HomeHeader({greeting, streak, flame, mascotLabel}: Props) {
           testID="home-hero-mascot-btn"
         >
           <Animated.View style={[styles.catTile, catAnimStyle]}>
-            <Image
-              accessibilityIgnoresInvertColors
-              resizeMode="contain"
-              source={require('@ui/assets/home-hero-cat.png')}
-              style={styles.catImage}
-            />
+            <Animated.View style={[styles.catImage, catPeekStyle]}>
+              <Image
+                accessibilityIgnoresInvertColors
+                resizeMode="contain"
+                source={require('@ui/assets/home-hero-cat.png')}
+                style={styles.catImageFill}
+              />
+            </Animated.View>
           </Animated.View>
         </Pressable>
         <View pointerEvents="none" style={styles.hearts}>
@@ -269,18 +320,24 @@ function makeStyles(theme: AppTheme) {
     },
     catTile: {
       backgroundColor: PALETTE.catBg,
-      borderRadius: 18,
+      borderRadius: 26,
       height: 52,
       overflow: 'hidden',
       width: 52,
       ...getStickerEdge(3, theme.colors.surfaceHigh),
     },
+    // The whole cat (480×608 art) inside the 52pt circle.
     catImage: {
-      height: 72,
-      left: -4,
+      height: 49,
+      left: 6.5,
       position: 'absolute',
-      top: 2,
-      width: 60,
+      top: 3,
+      width: 39,
+    },
+    // The bundled image would otherwise take its pixel size.
+    catImageFill: {
+      height: '100%',
+      width: '100%',
     },
     hearts: {
       height: 52,
