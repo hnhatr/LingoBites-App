@@ -64,7 +64,7 @@ const imageOf = (tree: ReactTestRenderer.ReactTestRenderer, id: string) =>
   byTestId(tree, `${id}-image`)[0]?.props.source?.uri;
 
 describe('CanonicalLessonHub pictures', () => {
-  it('shows the lesson cover and the words and phrases with their pictures', () => {
+  it('shows the lesson cover on the hero and the words and phrases with their pictures', () => {
     useLessonPictures.mockReturnValue({
       coverUrl: 'https://cdn.test/lesson.png',
       itemImages: new Map([[COFFEE, 'https://cdn.test/coffee.png']]),
@@ -72,19 +72,19 @@ describe('CanonicalLessonHub pictures', () => {
     const onOpenSection = jest.fn();
     const tree = render(catalogSnapshot(), onOpenSection);
 
-    expect(imageOf(tree, 'canonical-hub-cover')).toBe(
+    expect(imageOf(tree, 'lesson-hero-cover')).toBe(
       'https://cdn.test/lesson.png',
     );
-    expect(imageOf(tree, `canonical-hub-item-${COFFEE}-cover`)).toBe(
+    expect(imageOf(tree, `lesson-content-thumb-${COFFEE}`)).toBe(
       'https://cdn.test/coffee.png',
     );
-    // No picture: the default cover; patterns stay off the rail.
+    // No picture: the default cover; patterns stay off the word list.
     expect(
-      byTestId(tree, `canonical-hub-item-${TEA}-cover-default`).length,
+      byTestId(tree, `lesson-content-thumb-${TEA}-default`).length,
     ).toBeGreaterThan(0);
-    expect(byTestId(tree, `canonical-hub-item-${PATTERN}`)).toHaveLength(0);
+    expect(byTestId(tree, `lesson-content-thumb-${PATTERN}`)).toHaveLength(0);
 
-    const all = byTestId(tree, 'canonical-hub-item-rail-all').find(
+    const all = byTestId(tree, 'lesson-content-words-all').find(
       node => typeof node.props.onPress === 'function',
     );
     act(() => all!.props.onPress());
@@ -94,9 +94,11 @@ describe('CanonicalLessonHub pictures', () => {
   it('draws default covers until the pictures load', () => {
     useLessonPictures.mockReturnValue({coverUrl: null, itemImages: new Map()});
     const tree = render(catalogSnapshot());
-    expect(
-      byTestId(tree, 'canonical-hub-cover-default').length,
-    ).toBeGreaterThan(0);
-    expect(byTestId(tree, 'canonical-hub-item-rail').length).toBeGreaterThan(0);
+    expect(byTestId(tree, 'lesson-hero-cover-default').length).toBeGreaterThan(
+      0,
+    );
+    expect(byTestId(tree, 'lesson-content-tab-words').length).toBeGreaterThan(
+      0,
+    );
   });
 });

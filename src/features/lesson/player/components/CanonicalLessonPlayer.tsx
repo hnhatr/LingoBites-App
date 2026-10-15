@@ -1,11 +1,8 @@
-import React, {useMemo, useState} from 'react';
+import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {
   LessonAnalysis,
@@ -13,15 +10,15 @@ import type {
   LessonSnapshot,
 } from '@core/schemas/lesson';
 
-import {sortedBlocks, sortedSentences} from '../logic/lessonHubContent';
-import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
-import {CanonicalBlockView} from './CanonicalBlockView';
-import {LessonStatusBanners} from './LessonStatusBanners';
-import {
-  SentenceAnalysisPanel,
-  type SentenceAnalysisPanelError,
-  type SentenceAnalysisPanelState,
+import type {
+  GrammarSaveControl,
+  VocabularySaveControl,
+} from '../logic/useLessonSavedItems';
+import type {
+  SentenceAnalysisPanelError,
+  SentenceAnalysisPanelState,
 } from './SentenceAnalysisPanel';
+import {SentenceStudy} from './SentenceStudy';
 import {
   type CurrentSentenceInfo,
   YouTubeLessonStudy,
@@ -63,6 +60,10 @@ export type CanonicalLessonPlayerProps = {
   onSpeakText?: (text: string) => void;
   /** "Lưu thẻ" on analysed words; omitted = no save buttons. */
   vocabularySave?: VocabularySaveControl;
+  /** "Đánh dấu" on analysed grammar (text lessons); omitted = none. */
+  grammarSave?: GrammarSaveControl;
+  /** "Xong" after the last sentence (text lessons). */
+  onFinish?: () => void;
   /** Public video (YouTube study only): its six-step lessons. */
   videoLessons?: readonly LessonCatalogItem[];
   onOpenVideoLesson?: (lessonId: string) => void;
@@ -77,10 +78,9 @@ export type CanonicalLessonPlayerProps = {
 /**
  * One App player for every canonical source (TASK-007 outcome): learner
  * text/OCR/YouTube and admin-created lessons all render from the same
- * snapshot body. Sentences show EN/VI/IPA; YouTube lessons add the cue
- * timeline; blocks render the 7 kept types; per-sentence analysis shows the
- * stored analysis or the async panel states. Styled with the Lesson Hub
- * design tokens (study cards, medallion icons, primary accents).
+ * snapshot body. YouTube lessons study along the video; every other source
+ * goes one sentence at a time (`SentenceStudy`) with its analysis and the
+ * lesson's blocks.
  */
 export function CanonicalLessonPlayer({
   snapshot,
@@ -104,6 +104,8 @@ export function CanonicalLessonPlayer({
   analysisStates,
   onSpeakText,
   vocabularySave,
+  grammarSave,
+  onFinish,
   videoLessons,
   onOpenVideoLesson,
   onPlayVideo,
@@ -112,21 +114,7 @@ export function CanonicalLessonPlayer({
   onCyclePlaybackRate,
   onCurrentSentenceChange,
 }: CanonicalLessonPlayerProps) {
-  const {theme} = useAppTheme();
   const {t} = useTranslation();
-  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const [selectedSentenceId, setSelectedSentenceId] = useState<string | null>(
-    snapshot.sentences[0]?.id ?? null,
-  );
-  const orderedSentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
-  const orderedBlocks = useMemo(() => sortedBlocks(snapshot), [snapshot]);
-  const blockItems = useMemo(
-    () =>
-      new Map(
-        (snapshot.lesson_items ?? []).map(entry => [entry.item.id, entry.item]),
-      ),
-    [snapshot],
-  );
   if (archived) {
     return (
       <View testID="canonical-player-archived" style={styles.container}>
@@ -170,173 +158,25 @@ export function CanonicalLessonPlayer({
     );
   }
   return (
-    <View testID="canonical-player" style={styles.container}>
-      <AppText testID="canonical-player-title" variant="h2">
-        {snapshot.title}
-      </AppText>
-      <LessonStatusBanners offline={offline} hasUpdate={hasUpdate} />
-      {orderedSentences.map((sentence, index) => {
-        const selected = selectedSentenceId === sentence.id;
-        const stored = analyses[sentence.id] ?? lateAnalyses?.[sentence.id];
-        const asyncState = analysisStates?.[sentence.id];
-        const counter = t('lessonPlayer.sentence_counter', {
-          index: index + 1,
-          total: orderedSentences.length,
-        });
-        return (
-          <View key={sentence.id} style={styles.sentenceGroup}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`${counter}. ${sentence.text_en}`}
-              accessibilityHint={t('lessonPlayer.sentence_hint')}
-              accessibilityState={{selected}}
-              testID={`canonical-sentence-${sentence.id}`}
-              onPress={() => {
-                setSelectedSentenceId(sentence.id);
-              }}
-            >
-              <View
-                style={[
-                  themedStyles.sentenceCard,
-                  selected ? themedStyles.sentenceCardSelected : null,
-                ]}
-              >
-                <View style={styles.sentenceHeader}>
-                  <AppText style={themedStyles.counter} variant="label">
-                    {counter}
-                  </AppText>
-                  {onSpeakText ? (
-                    <IconButton
-                      accessibilityLabel={t('lessonPlayer.speak_sentence', {
-                        index: index + 1,
-                      })}
-                      accessibilityHint={t('lessonPlayer.speak_sentence_hint')}
-                      icon="volume_up"
-                      onPress={() => onSpeakText(sentence.text_en)}
-                      testID={`canonical-speak-${sentence.id}`}
-                      tone="ghost"
-                    />
-                  ) : null}
-                </View>
-                <AppText variant="h3">{sentence.text_en}</AppText>
-                <AppText color="secondary" variant="bodyLg">
-                  {sentence.text_vi}
-                </AppText>
-                <AppText color="muted" variant="body">
-                  {sentence.ipa}
-                </AppText>
-              </View>
-            </Pressable>
-            {selected ? (
-              stored ? (
-                <SentenceAnalysisPanel
-                  sentenceId={sentence.id}
-                  state={{status: 'ready', analysis: stored}}
-                  onSpeakText={onSpeakText}
-                  vocabularySave={vocabularySave}
-                />
-              ) : asyncState ? (
-                <SentenceAnalysisPanel
-                  sentenceId={sentence.id}
-                  state={asyncState}
-                  onRetry={
-                    onRetryAnalysis
-                      ? () => onRetryAnalysis(sentence.id)
-                      : undefined
-                  }
-                  onSpeakText={onSpeakText}
-                />
-              ) : offline ? (
-                <SentenceAnalysisPanel
-                  sentenceId={sentence.id}
-                  state={{status: 'offline-missing'}}
-                />
-              ) : (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('lessonPlayer.analyze')}
-                  accessibilityHint={t('lessonPlayer.analyze_hint')}
-                  testID={`canonical-analyze-${sentence.id}`}
-                  onPress={() => onRequestAnalysis?.(sentence.id)}
-                  style={({pressed}) => [
-                    themedStyles.analyzeButton,
-                    pressed ? themedStyles.pressed : null,
-                  ]}
-                >
-                  <MaterialIcon
-                    color={theme.colors.primary}
-                    name="auto_awesome"
-                    size={18}
-                  />
-                  <AppText style={themedStyles.analyzeText} variant="label">
-                    {t('lessonPlayer.analyze')}
-                  </AppText>
-                </Pressable>
-              )
-            ) : null}
-          </View>
-        );
-      })}
-      {orderedBlocks.map(block => (
-        <CanonicalBlockView
-          key={block.id}
-          block={block}
-          items={blockItems}
-          onSpeakText={onSpeakText}
-        />
-      ))}
-    </View>
+    <SentenceStudy
+      analyses={analyses}
+      analysisStates={analysisStates}
+      grammarSave={grammarSave}
+      hasUpdate={hasUpdate}
+      lateAnalyses={lateAnalyses}
+      offline={offline}
+      onFinish={onFinish}
+      onRequestAnalysis={onRequestAnalysis}
+      onRetryAnalysis={onRetryAnalysis}
+      onSpeakText={onSpeakText}
+      snapshot={snapshot}
+      vocabularySave={vocabularySave}
+    />
   );
-}
-
-function makeStyles(theme: AppTheme) {
-  return StyleSheet.create({
-    analyzeButton: {
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      gap: theme.spacing.xs,
-      minHeight: 44,
-      paddingHorizontal: theme.spacing.lg,
-    },
-    analyzeText: {
-      color: theme.colors.primary,
-    },
-    counter: {
-      color: theme.colors.primary,
-    },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
-    },
-    sentenceCard: {
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.xl,
-      borderWidth: 1,
-      gap: theme.spacing.xs,
-      padding: theme.spacing.lg,
-    },
-    sentenceCardSelected: {
-      borderBottomWidth: 4,
-      borderColor: theme.colors.primary,
-      borderWidth: 2,
-    },
-  });
 }
 
 const styles = StyleSheet.create({
   container: {
     gap: 16,
-  },
-  sentenceGroup: {
-    gap: 8,
-  },
-  sentenceHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 24,
   },
 });
