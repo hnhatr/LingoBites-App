@@ -438,7 +438,7 @@ export function SituationInputScreen({navigation, route}: Props) {
         ) : null}
       </ScrollView>
       {showInput ? (
-        <StickerFooter bottomInset={floatingClearance}>
+        <StickerFooter>
           <StickerButton
             accessibilityHint={t('moment.send_hint')}
             disabled={!canSend}

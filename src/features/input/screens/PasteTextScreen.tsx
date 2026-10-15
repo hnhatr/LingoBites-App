@@ -12,7 +12,6 @@ import {
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {ErrorCard} from '@ui/components/ErrorCard';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SoftActionButton} from '@ui/components/SoftActionButton';
@@ -38,6 +37,7 @@ export type PasteTextScreenProps = Props;
 
 type ScreenState = {type: 'input'} | {type: 'error'; message: string};
 
+/** IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar. */
 export function PasteTextScreen({navigation, route}: Props) {
   const appNavigation = useAppNavigation();
   const {theme} = useAppTheme();
@@ -47,7 +47,6 @@ export function PasteTextScreen({navigation, route}: Props) {
   const [creating, setCreating] = useState(false);
   const draft = useMemo(() => getDraftTextState(text), [text]);
   const hasText = text.trim().length > 0;
-  const floatingClearance = useFloatingTabBarClearance();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [focused, setFocused] = useState(false);
   const [pasteNotice, setPasteNotice] = useState(false);
@@ -254,10 +253,7 @@ export function PasteTextScreen({navigation, route}: Props) {
         ) : null}
       </ScrollView>
 
-      <StickerFooter
-        bottomInset={floatingClearance}
-        note={!hasText ? t('paste.need_word') : null}
-      >
+      <StickerFooter note={!hasText ? t('paste.need_word') : null}>
         <StickerButton
           accessibilityHint={t('paste.submit_hint')}
           accessibilityLabel={t('paste.submit_a11y')}

@@ -13,11 +13,10 @@ import {
 } from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {ErrorCard} from '@ui/components/ErrorCard';
+import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {StickerButton} from '@ui/components/StickerButton';
@@ -32,36 +31,37 @@ type Props = NativeStackScreenProps<CreateFlowParamList, 'ImageCapture'>;
 
 export type ImageCaptureScreenProps = Props;
 
-function ExtractButton({onPress}: {onPress: () => void}) {
+/** What makes a photo easy to read, shown before and when picking. */
+function PhotoTips() {
   const {theme} = useAppTheme();
+  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {t} = useTranslation();
   return (
-    <Pressable
-      accessibilityLabel={t('ocr.extract_a11y')}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({pressed}) => [
-        {
-          alignItems: 'center',
-          backgroundColor: theme.colors.primary,
-          borderRadius: theme.radius.lg,
-          flexDirection: 'row',
-          gap: 8,
-          justifyContent: 'center',
-          minHeight: 52,
-          opacity: pressed ? theme.states.pressedOpacity : 1,
-        },
-      ]}
-    >
-      <MaterialIcon
-        color={theme.colors.text.inverse}
-        name="document_scanner"
-        size={22}
-      />
-      <AppText style={[styles.actionText, {color: theme.colors.text.inverse}]}>
-        {t('ocr.extract')}
+    <View style={themedStyles.tips}>
+      <AppText style={themedStyles.tipsTitle} variant="caption">
+        {t('ocr.tips_title')}
       </AppText>
-    </Pressable>
+      <View style={styles.tipRow}>
+        <MaterialIcon
+          color={theme.colors.onTertiaryContainer}
+          name="lightbulb"
+          size={16}
+        />
+        <AppText style={styles.tipText} variant="label">
+          {t('ocr.tip_light')}
+        </AppText>
+      </View>
+      <View style={styles.tipRow}>
+        <MaterialIcon
+          color={theme.colors.onTertiaryContainer}
+          name="document_scanner"
+          size={16}
+        />
+        <AppText style={styles.tipText} variant="label">
+          {t('ocr.tip_frame')}
+        </AppText>
+      </View>
+    </View>
   );
 }
 
@@ -186,31 +186,7 @@ export function ImageCaptureScreen({navigation, route}: Props) {
               {t('ocr.camera_unavailable_body')}
             </AppText>
           </View>
-          <View style={themedStyles.tips}>
-            <AppText style={themedStyles.tipsTitle} variant="caption">
-              {t('ocr.tips_title')}
-            </AppText>
-            <View style={styles.tipRow}>
-              <MaterialIcon
-                color={theme.colors.onTertiaryContainer}
-                name="lightbulb"
-                size={16}
-              />
-              <AppText style={styles.tipText} variant="label">
-                {t('ocr.tip_light')}
-              </AppText>
-            </View>
-            <View style={styles.tipRow}>
-              <MaterialIcon
-                color={theme.colors.onTertiaryContainer}
-                name="document_scanner"
-                size={16}
-              />
-              <AppText style={styles.tipText} variant="label">
-                {t('ocr.tip_frame')}
-              </AppText>
-            </View>
-          </View>
+          <PhotoTips />
         </ScrollView>
         <StickerFooter>
           <StickerButton
@@ -370,40 +346,38 @@ export function ImageCaptureScreen({navigation, route}: Props) {
       <AppScreen>
         <ScreenHeader onBack={handleBack} title={headerTitle} />
         <ScrollView
-          contentContainerStyle={{
-            gap: theme.spacing.lg,
-            paddingHorizontal: theme.gutter,
-            paddingTop: theme.spacing.sm,
-          }}
+          contentContainerStyle={themedStyles.content}
+          showsVerticalScrollIndicator={false}
         >
-          <Image
-            accessibilityIgnoresInvertColors
-            resizeMode="contain"
-            source={{uri: screenState.image.uri}}
-            style={{
-              backgroundColor: theme.colors.surfaceMuted,
-              borderRadius: theme.radius.lg,
-              height: 280,
-              width: '100%',
-            }}
+          <View style={themedStyles.photoFrame}>
+            <Image
+              accessibilityIgnoresInvertColors
+              resizeMode="contain"
+              source={{uri: screenState.image.uri}}
+              style={styles.photo}
+            />
+          </View>
+          <AppText color="secondary" variant="body">
+            {t('ocr.preview_hint')}
+          </AppText>
+        </ScrollView>
+        <StickerFooter>
+          <StickerButton
+            icon="document_scanner"
+            label={t('ocr.extract')}
+            onPress={() => analyze(screenState.image)}
+            testID="ocr-extract"
           />
-          <AppButton
-            title={t('ocr.pick_again')}
-            variant="secondary"
+          <StickerButton
+            icon="add_photo_alternate"
+            label={t('ocr.pick_again')}
             onPress={() => {
               pick();
             }}
+            testID="ocr-pick-again"
+            tone="ghost"
           />
-        </ScrollView>
-        <BottomActionBar
-          style={{
-            backgroundColor: theme.colors.background,
-            borderTopColor: theme.colors.outlineVariant,
-            paddingBottom: theme.spacing.lg,
-          }}
-        >
-          <ExtractButton onPress={() => analyze(screenState.image)} />
-        </BottomActionBar>
+        </StickerFooter>
       </AppScreen>
     );
   }
@@ -412,59 +386,37 @@ export function ImageCaptureScreen({navigation, route}: Props) {
     <AppScreen>
       <ScreenHeader onBack={() => navigation.goBack()} title={headerTitle} />
       <ScrollView
-        contentContainerStyle={{
-          gap: theme.spacing.lg,
-          paddingBottom: theme.spacing.lg,
-          paddingHorizontal: theme.gutter,
-          paddingTop: theme.spacing.sm,
-        }}
+        contentContainerStyle={themedStyles.content}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.intro}>
+          <AppText variant="h1">{t('ocr.headline')}</AppText>
+          <AppText color="secondary" variant="body">
+            {t('ocr.intro')}
+          </AppText>
+        </View>
+
         <Pressable
+          accessibilityHint={t('ocr.pick_hint')}
           accessibilityLabel={t('ocr.pick_from_gallery_a11y')}
           accessibilityRole="button"
           onPress={() => {
             pick();
           }}
           style={({pressed}) => [
-            {
-              alignItems: 'center',
-              backgroundColor: theme.colors.surfaceLow,
-              borderColor: theme.colors.accentSoft,
-              borderRadius: theme.radius.lg,
-              borderStyle: 'dashed',
-              borderWidth: 2,
-              gap: 10,
-              opacity: pressed ? theme.states.pressedOpacity : 1,
-              paddingHorizontal: 24,
-              paddingVertical: 32,
-            },
+            themedStyles.pickCard,
+            pressed ? themedStyles.pickCardPressed : null,
           ]}
+          testID="ocr-pick"
         >
-          <View
-            style={{
-              alignItems: 'center',
-              backgroundColor: theme.colors.surface,
-              borderRadius: theme.radius.pill,
-              height: 72,
-              justifyContent: 'center',
-              shadowColor: theme.colors.primary,
-              shadowOffset: {width: 0, height: 8},
-              shadowOpacity: 0.1,
-              shadowRadius: 20,
-              width: 72,
-            }}
-          >
+          <View style={themedStyles.pickIcon}>
             <MaterialIcon
               color={theme.colors.primary}
               name="add_photo_alternate"
-              size={34}
+              size={36}
             />
           </View>
-          <AppText
-            style={[styles.pickText, {color: theme.colors.primary}]}
-            variant="h3"
-          >
+          <AppText style={styles.centerText} variant="h3">
             {t('ocr.tap_to_pick')}
           </AppText>
           <AppText color="muted" variant="caption">
@@ -472,30 +424,19 @@ export function ImageCaptureScreen({navigation, route}: Props) {
           </AppText>
         </Pressable>
 
-        <AppCard style={styles.ocrCard}>
-          <MaterialIcon
-            color={theme.colors.primary}
-            name="auto_awesome"
-            size={22}
-          />
-          <View style={styles.ocrTextContainer}>
-            <AppText variant="label">{t('ocr.ocr_card_title')}</AppText>
-            <AppText color="muted" variant="caption">
-              {t('ocr.ocr_card_body')}
-            </AppText>
-          </View>
-        </AppCard>
+        <PhotoTips />
       </ScrollView>
 
-      <BottomActionBar
-        style={{
-          backgroundColor: theme.colors.background,
-          borderTopColor: theme.colors.outlineVariant,
-          paddingBottom: theme.spacing.lg,
-        }}
-      >
-        <ExtractButton onPress={() => pick()} />
-      </BottomActionBar>
+      <StickerFooter>
+        <StickerButton
+          icon={isGallery ? 'add_photo_alternate' : 'photo_camera'}
+          label={isGallery ? t('ocr.pick_from_gallery') : t('ocr.take_photo')}
+          onPress={() => {
+            pick();
+          }}
+          testID="ocr-pick-cta"
+        />
+      </StickerFooter>
     </AppScreen>
   );
 }
@@ -533,6 +474,29 @@ function makeStyles(theme: AppTheme) {
       marginBottom: 4,
       width: 76,
       ...getStickerEdge(4, HERO_PALETTE.coralRing),
+    },
+    pickCard: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.xl,
+      gap: 8,
+      paddingHorizontal: 20,
+      paddingVertical: 28,
+      ...getStickerEdge(5, theme.colors.surfaceHigh),
+    },
+    pickCardPressed: {
+      transform: [{translateY: 3}],
+      ...getStickerEdge(2, theme.colors.surfaceHigh),
+    },
+    pickIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 26,
+      height: 76,
+      justifyContent: 'center',
+      marginBottom: 4,
+      width: 76,
+      ...getStickerEdge(4, withAlpha(theme.colors.primary, 0.22)),
     },
     tips: {
       backgroundColor: theme.colors.tertiarySoft,
@@ -616,20 +580,7 @@ const styles = StyleSheet.create({
   tipText: {
     flex: 1,
   },
-  pickText: {
-    fontWeight: '600',
-  },
-  ocrCard: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  ocrTextContainer: {
-    flex: 1,
-    gap: 2,
-  },
-  actionText: {
-    fontSize: 18,
-    fontWeight: '600',
+  intro: {
+    gap: 8,
   },
 });

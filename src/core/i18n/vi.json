@@ -1422,7 +1422,12 @@
     "step_reading": "Đọc chữ trong ảnh",
     "step_reading_now": "Đang đọc…",
     "step_review": "Bạn kiểm tra lại đoạn chữ",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "headline": "Biến ảnh có chữ thành bài học",
+    "intro": "Thực đơn, biển báo, trang sách... Chọn ảnh có chữ tiếng Anh, app sẽ đọc chữ để bạn tạo bài.",
+    "take_photo": "Chụp ảnh",
+    "preview_hint": "Ảnh sẽ được gửi lên máy chủ để đọc chữ. Bạn kiểm tra lại đoạn chữ trước khi tạo bài.",
+    "pick_hint": "Mở thư viện ảnh để chọn một ảnh có chữ"
   },
   "moment": {
     "title": "Học từ tình huống",

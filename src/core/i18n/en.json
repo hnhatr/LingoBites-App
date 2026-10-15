@@ -1422,7 +1422,12 @@
     "step_reading": "Reading the text in the photo",
     "step_reading_now": "Reading…",
     "step_review": "You check the text",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "headline": "Turn a photo with text into a lesson",
+    "intro": "Menus, signs, book pages... Pick a photo with English text and the app reads it so you can make a lesson.",
+    "take_photo": "Take a photo",
+    "preview_hint": "The photo is sent to our server to read the text. You review the text before making a lesson.",
+    "pick_hint": "Opens your photo library to pick a photo with text"
   },
   "moment": {
     "title": "Learn from a situation",
