@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1, S2, S3 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1, S2, S3, S4 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -82,8 +82,8 @@ Tra lúc đọc (không lưu vào bản phân tích), nên dùng được cho c�
 ### 3.5 F7: danh sách bắt buộc của nhiệm vụ cuối unit
 | Method | Path | Trả về |
 |---|---|---|
-| GET | `/v1/units/:unitId/summative-task/checklist` | Mỗi item trong `item_codes`: `{code, kind, text, meaning_vi, match}`. `match` là `{forms[]}` cho từ / cụm từ (dạng biến đổi tính sẵn bằng `inflect`), `{fixed_parts[]}` cho mẫu câu (các phần cố định của khung, từ `patternFrame`), `{server_only: true}` cho thì |
-| POST | `/v1/units/:unitId/summative-task/coverage` `{text}` | Kiểm lại toàn bộ bằng cùng luật, thêm thì bằng `detectTense` (bỏ qua kết quả có `confidence` thấp). Trả `{items: [{code, used}]}`. Không gọi AI |
+| GET | `/v1/units/:unitId/summative-task/checklist` | Cần đăng nhập; chỉ unit đã publish (cả cấp và khoá), không thì `404 UNIT_NOT_FOUND`. Trả `{task_id \| null, items}`, mỗi item trong nhiệm vụ cuối unit (theo thứ tự): `{code, kind, text, meaning_vi, match}`. `match` là `{type: 'forms', forms[]}` cho từ / cụm từ (dạng biến đổi của từ đầu: động từ, số nhiều), `{type: 'fixed_parts', parts[]}` cho mẫu câu (các phần cố định của khung, đúng thứ tự), `{type: 'tense'}` cho thì. Item phát âm / nghe bị bỏ qua. So khớp trên máy: so theo nguyên từ (tách theo dấu câu, giữ `'`) |
+| POST | `/v1/units/:unitId/summative-task/coverage` `{text ≤ 5000}` | Cần đăng nhập. Kiểm lại toàn bộ bằng cùng luật, thêm thì: `detectTense` cho từng câu (tách theo `. ! ? ;` và xuống dòng), chỉ nhận kết quả `confidence ≥ 0.9`. Trả `{task_id, items: [{code, used}]}`. Không lưu, không gọi AI. Giới hạn: mỗi câu chỉ đọc **một** động từ chính, và câu đảo ngữ (`Not only did we see…`) có thể đọc sai thì |
 
 ### File Server (dự kiến)
 | File | Việc |
@@ -92,7 +92,7 @@ Tra lúc đọc (không lưu vào bản phân tích), nên dùng được cho c�
 | `src/modules/items/service/itemLookup.ts` 🆕, `controller/itemLookupRoutes.ts` 🆕 ✅ S2 | 3.3 |
 | `src/modules/grammar/inflect.ts` 🔧 ✅ S2 | Thêm `pluralOf` (số nhiều của danh từ, kèm bảng bất quy tắc); việc đoán dạng gốc nằm trong `itemLookup.ts` |
 | `src/modules/curriculum/outcomes/service/vocabProgress.ts` 🆕, `outcomes/controller/vocabProgressRoutes.ts` 🆕 ✅ S3 | 3.4 |
-| `src/modules/curriculum/tasks/service/summativeChecklist.ts` 🆕 + route trong `tasks/controller` | 3.5 |
+| `src/modules/curriculum/tasks/model/summativeChecklist.ts` 🆕 (luật thuần), `tasks/service/summativeChecklist.ts` 🆕, `tasks/controller/summativeChecklistRoutes.ts` 🆕 ✅ S4 | 3.5 |
 | `src/app/server.ts` 🔧 | Đăng ký route |
 
 ## 4. Server + admin-web: khoá học và "Tạo unit từ chủ đề"
@@ -204,7 +204,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S1 ✅ | Server | `feat(library): pattern and tense lists, learn single items` (3.1, 3.2) | Không |
 | S2 ✅ | Server | `feat(items): look up lesson words in the word list` (3.3) | Không |
 | S3 ✅ | Server | `feat(outcomes): vocab progress for the learner` (3.4) | Không |
-| S4 | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
+| S4 ✅ | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
 | S5 | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
 | S6 | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
 | S7 | admin-web | `feat(admin): unit builder page` | Không |
