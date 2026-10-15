@@ -65,16 +65,26 @@ const flush = () =>
     await Promise.resolve();
   });
 
+/** The judging question comes once there is a take. */
+async function recordTake(tree: ReturnType<typeof run>['tree']) {
+  press(tree, 'lesson-flow-record');
+  await flush();
+  press(tree, 'lesson-flow-stop-recording');
+  await flush();
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockRecorderAvailable = true;
 });
 
 describe('speaking activities (self-check)', () => {
-  it('listen and repeat: all "Đạt" passes independently, one "Chưa đạt" fails', () => {
+  it('listen and repeat: all "Đạt" passes independently, one "Chưa đạt" fails', async () => {
     const block = blockOn(3);
     const first = run(block);
+    expect(has(first.tree, 'lesson-flow-self-pass')).toBe(false);
     for (let i = 0; i < 3; i += 1) {
+      await recordTake(first.tree);
       press(first.tree, 'lesson-flow-self-pass');
       press(first.tree, 'lesson-flow-entry-next');
     }
@@ -85,10 +95,13 @@ describe('speaking activities (self-check)', () => {
     );
 
     const second = run(block);
+    await recordTake(second.tree);
     press(second.tree, 'lesson-flow-self-pass');
     press(second.tree, 'lesson-flow-entry-next');
+    await recordTake(second.tree);
     press(second.tree, 'lesson-flow-self-fail');
     press(second.tree, 'lesson-flow-entry-next');
+    await recordTake(second.tree);
     press(second.tree, 'lesson-flow-self-pass');
     press(second.tree, 'lesson-flow-entry-next');
     expect(second.onFinished).toHaveBeenCalledWith(
@@ -122,7 +135,7 @@ describe('speaking activities (self-check)', () => {
     );
   });
 
-  it('plays the model slowly and shows feedback once judged', () => {
+  it('plays the model slowly and shows feedback once judged', async () => {
     const {tree} = run(blockOn(3));
     press(tree, 'lesson-flow-listen-model-slow');
     expect(mockSpeak).toHaveBeenCalledWith(
@@ -131,12 +144,14 @@ describe('speaking activities (self-check)', () => {
       0.3,
     );
     expect(has(tree, 'lesson-flow-entry-feedback')).toBe(false);
+    await recordTake(tree);
     press(tree, 'lesson-flow-self-fail');
     expect(textOf(tree, 'lesson-flow-entry-feedback')).toContain(
       'Không sao, luyện thêm chút nữa',
     );
     expect(has(tree, 'lesson-flow-self-pass')).toBe(false);
     press(tree, 'lesson-flow-entry-next');
+    await recordTake(tree);
     press(tree, 'lesson-flow-self-pass');
     expect(textOf(tree, 'lesson-flow-entry-feedback')).toContain('Tốt lắm!');
   });
@@ -150,7 +165,7 @@ describe('speaking activities (self-check)', () => {
     expect(has(tree, 'lesson-flow-entry-next')).toBe(true);
   });
 
-  it("speaking drill: the guided task's hints open one by one and count as support", () => {
+  it("speaking drill: the guided task's hints open one by one and count as support", async () => {
     const {tree, onFinished} = run(blockOn(4));
     expect(has(tree, 'lesson-flow-model-sentence')).toBe(false);
     expect(has(tree, 'lesson-flow-listen-model')).toBe(false);
@@ -165,9 +180,11 @@ describe('speaking activities (self-check)', () => {
       'Can I have a small coffee, please?',
     );
     expect(has(tree, 'lesson-flow-hint')).toBe(false);
+    await recordTake(tree);
     press(tree, 'lesson-flow-self-pass');
     press(tree, 'lesson-flow-entry-next');
     for (let i = 0; i < 3; i += 1) {
+      await recordTake(tree);
       press(tree, 'lesson-flow-self-pass');
       press(tree, 'lesson-flow-entry-next');
     }
@@ -178,12 +195,13 @@ describe('speaking activities (self-check)', () => {
     );
   });
 
-  it('role play: shows the other speaker, then the learner turn', () => {
+  it('role play: shows the other speaker, then the learner turn', async () => {
     const {tree, onFinished} = run(blockOn(5));
     expect(has(tree, 'lesson-flow-partner-line')).toBe(true);
     expect(textOf(tree, 'lesson-flow-prompt')).toBe(
       'Lượt của bạn (A): Cho tôi một nước cam cỡ lớn được không?',
     );
+    await recordTake(tree);
     press(tree, 'lesson-flow-self-pass');
     press(tree, 'lesson-flow-entry-next');
     expect(onFinished).toHaveBeenCalledWith(

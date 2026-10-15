@@ -8,6 +8,7 @@ import {LessonActivityAttemptPayloadSchema} from '@core/schemas/sync';
 import {mockAppNavigation} from '@test/support';
 import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 import {
+  byTestId,
   has,
   press,
   renderWithTheme,
@@ -68,19 +69,19 @@ describe('LessonFlowPlayerScreen (shell)', () => {
 
     press(tree, 'lesson-flow-map-start');
     expect(has(tree, 'lesson-flow-map')).toBe(false);
-    expect(textOf(tree, 'lesson-flow-step-title')).toBe('Bước 2: Nghe hiểu');
+    expect(textOf(tree, 'lesson-flow-step-title')).toBe('Nghe hiểu');
 
-    // Step 2: the bottom button walks the card deck before leaving the step.
+    // Step 2: the bottom button walks the card deck, then opens step 3.
     expect(has(tree, 'lesson-flow-next')).toBe(false);
-    while (has(tree, 'lesson-flow-card-understood')) {
-      press(tree, 'lesson-flow-card-understood');
+    while (has(tree, 'lesson-flow-card-next')) {
+      press(tree, 'lesson-flow-card-next');
     }
-    press(tree, 'lesson-flow-next');
-    expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 3');
+    press(tree, 'lesson-flow-card-done');
+    expect(textOf(tree, 'lesson-flow-step-title')).toBe('Luyện có hướng dẫn');
 
     press(tree, 'lesson-flow-step-4');
     press(tree, 'lesson-flow-step-3');
-    expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 3');
+    expect(textOf(tree, 'lesson-flow-step-title')).toBe('Luyện có hướng dẫn');
     const activity = snapshot.blocks.find(
       block => block.type === 'activity' && block.step === 3,
     )!;
@@ -100,7 +101,7 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     const {tree} = renderScreen();
     press(tree, 'lesson-flow-step-4');
     expect(has(tree, 'lesson-flow-map')).toBe(false);
-    expect(textOf(tree, 'lesson-flow-step-title')).toContain('Bước 4');
+    expect(textOf(tree, 'lesson-flow-step-title')).toBe('Luyện biến đổi');
   });
 
   it('closes from the result step', () => {
@@ -199,7 +200,7 @@ describe('LessonFlowPlayerScreen (shell)', () => {
     expect(mockRequestSync).toHaveBeenCalledTimes(2);
     // PR 16: practice done, step 5 not yet passed.
     expect(textOf(tree, 'lesson-flow-lesson-outcome')).toBe(
-      'Chưa đạt bài: làm đạt bước 5 để đạt bài',
+      'Chưa đạt bài: làm đạt phần Vận dụng để đạt bài',
     );
     expect(has(tree, 'lesson-flow-redo-independent')).toBe(true);
 
@@ -244,7 +245,7 @@ describe('LessonFlowPlayerScreen (shell)', () => {
       tree.unmount();
     });
     const again = renderScreen();
-    expect(textOf(again.tree, 'lesson-flow-step-title')).toContain('Bước 5');
+    expect(textOf(again.tree, 'lesson-flow-step-title')).toBe('Vận dụng');
 
     // Step 5: independent use, judged against the task's criteria (PR 11).
     expect(has(again.tree, 'lesson-flow-situation')).toBe(true);
@@ -290,7 +291,11 @@ describe('LessonFlowPlayerScreen (shell)', () => {
       'Bạn đã hoàn thành bài!',
     );
     // Step 4 was judged "Chưa đạt": 2 of 3 passed, one to review.
-    const stats = textOf(again.tree, 'lesson-flow-result-stats');
+    // The tiles take their text as props, so read the rendered text.
+    const stats = byTestId(again.tree, 'lesson-flow-result-stats')[0]!
+      .findAll(node => typeof node.type === 'string')
+      .flatMap(node => node.children.filter(c => typeof c === 'string'))
+      .join(' ');
     expect(stats).toContain('2/3');
     expect(stats).toContain('Hoạt động đạt');
     expect(stats).toContain('Cần ôn lại');

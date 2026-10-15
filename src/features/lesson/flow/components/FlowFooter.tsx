@@ -9,12 +9,13 @@ import React, {
 } from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
+
+import {StudyNavButton} from '../../player/components/StudyControls';
 
 export type FlowFooterFeedback = {
   tone: 'pass' | 'retry';
@@ -31,6 +32,17 @@ export type FlowFooterAction = {
   icon?: HandoffIconName;
   /** Redesign: a result shown above the button, as a bottom sheet. */
   feedback?: FlowFooterFeedback;
+  /** Greyed out until the entry is done; `note` says what is missing. */
+  disabled?: boolean;
+  note?: string;
+  /** A second, lighter button on the left (e.g. "Thẻ trước"). */
+  secondary?: {
+    title: string;
+    hint: string;
+    testID: string;
+    onPress: () => void;
+    disabled?: boolean;
+  };
 };
 
 type Registration = {
@@ -76,6 +88,15 @@ export function useFlowFooter(
         action.testID,
         action.icon,
         action.feedback,
+        action.disabled,
+        action.note,
+        action.secondary
+          ? [
+              action.secondary.title,
+              action.secondary.testID,
+              action.secondary.disabled,
+            ]
+          : null,
       ])
     : null;
 
@@ -87,7 +108,16 @@ export function useFlowFooter(
       id,
       priority,
       shown && current
-        ? {...current, onPress: () => latest.current?.onPress()}
+        ? {
+            ...current,
+            onPress: () => latest.current?.onPress(),
+            secondary: current.secondary
+              ? {
+                  ...current.secondary,
+                  onPress: () => latest.current?.secondary?.onPress(),
+                }
+              : undefined,
+          }
         : null,
     );
     return () => register(id, priority, null);
@@ -189,14 +219,34 @@ export function FlowFooterBar({action}: {action: FlowFooterAction}) {
           </View>
         </View>
       ) : null}
-      <AppButton
-        accessibilityHint={action.hint}
-        iconRight={action.icon ?? 'chevron_right'}
-        onPress={action.onPress}
-        testID={action.testID}
-        title={action.title}
-        variant={feedback ? 'deep' : 'primary-accent'}
-      />
+      {action.note && !feedback ? (
+        <AppText color="muted" style={themedStyles.note} variant="caption">
+          {action.note}
+        </AppText>
+      ) : null}
+      <View style={themedStyles.buttons}>
+        {action.secondary ? (
+          <StudyNavButton
+            accessibilityHint={action.secondary.hint}
+            disabled={action.secondary.disabled}
+            icon="chevron_left"
+            label={action.secondary.title}
+            onPress={action.secondary.onPress}
+            testID={action.secondary.testID}
+            tone="ghost"
+          />
+        ) : null}
+        <StudyNavButton
+          accessibilityHint={action.hint}
+          disabled={action.disabled}
+          icon={action.icon ?? 'chevron_right'}
+          iconSide="right"
+          label={action.title}
+          onPress={action.onPress}
+          testID={action.testID}
+          tone="coral"
+        />
+      </View>
     </View>
   );
 }
@@ -206,12 +256,19 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     bar: {
       backgroundColor: colors.background,
-      borderTopColor: colors.surfaceHigh,
-      borderTopWidth: 2,
-      gap: theme.spacing.md,
+      borderTopColor: colors.outlineVariant,
+      borderTopWidth: 1,
+      gap: theme.spacing.sm,
       paddingBottom: theme.spacing.md,
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.md,
+    },
+    buttons: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    note: {
+      textAlign: 'center',
     },
     feedback: {
       alignItems: 'center',

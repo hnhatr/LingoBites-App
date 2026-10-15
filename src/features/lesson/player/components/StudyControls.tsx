@@ -280,6 +280,8 @@ export function BookmarkToggle({
 
 type SpeakSquareProps = {
   onPress: () => void;
+  /** `timer` for "Nghe chậm". */
+  icon?: HandoffIconName;
   accessibilityLabel: string;
   accessibilityHint?: string;
   onTint?: boolean;
@@ -289,6 +291,7 @@ type SpeakSquareProps = {
 /** Square "listen" button matching the bookmark toggle. */
 export function SpeakSquare({
   onPress,
+  icon = 'volume_up',
   accessibilityLabel,
   accessibilityHint,
   onTint = false,
@@ -311,7 +314,7 @@ export function SpeakSquare({
       ]}
       testID={testID}
     >
-      <MaterialIcon color={theme.colors.primary} name="volume_up" size={19} />
+      <MaterialIcon color={theme.colors.primary} name={icon} size={19} />
     </Pressable>
   );
 }
@@ -320,14 +323,17 @@ export function SpeakSquare({
 export function StudyLabel({
   children,
   color,
+  testID,
 }: {
   children: string;
   color?: string;
+  testID?: string;
 }) {
   const {theme} = useAppTheme();
   return (
     <AppText
       style={[rowStyles.label, {color: color ?? theme.colors.text.muted}]}
+      testID={testID}
     >
       {children.toUpperCase()}
     </AppText>

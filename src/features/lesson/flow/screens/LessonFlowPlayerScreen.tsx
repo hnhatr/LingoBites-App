@@ -1,7 +1,13 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {speak} from '@features/audio';
 import {getGamificationSnapshot} from '@features/engagement';
@@ -9,11 +15,12 @@ import {getGamificationSnapshot} from '@features/engagement';
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
 import {IconButton} from '@ui/components/IconButton';
+import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {useAppNavigation} from '@core/navigation';
 import type {LessonBlock} from '@core/schemas/lesson';
@@ -22,10 +29,10 @@ import type {
   LessonSupportLevel,
 } from '@core/schemas/sync';
 
+import {StudyLabel} from '../../player/components/StudyControls';
 import {isLessonNotDownloaded} from '../../player/logic/lessonNotDownloaded';
 import {useCanonicalLesson} from '../../player/logic/useCanonicalLesson';
 import type {LessonFlowParamList} from '../../player/screens/navigationTypes';
-import {CoachBubble} from '../components/CoachBubble';
 import {
   FlowFooterBar,
   FlowFooterProvider,
@@ -215,54 +222,48 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
     }
     return (
       <>
-        <View style={themedStyles.titleRow}>
-          <AppText
-            numberOfLines={2}
-            style={themedStyles.flex}
-            testID="lesson-flow-step-title"
-            variant="h3"
-          >
-            {t('lessonFlow.step_heading', {
-              step,
-              label: t(STEP_LABEL_KEYS[step]),
-            })}
-          </AppText>
-          {step >= 3 && step <= 5 && !noSpeaking.active ? (
-            <Chip
-              accessibilityHint={t('lessonFlow.no_speaking_hint')}
-              label={t('lessonFlow.no_speaking_short')}
-              onPress={noSpeaking.start}
-              testID="lesson-flow-cannot-speak"
-              tone="neutral"
-            />
-          ) : null}
-        </View>
+        {step <= 5 ? (
+          <View style={themedStyles.title}>
+            <StudyLabel
+              color={HERO_PALETTE.coralShelf}
+              testID="lesson-flow-step-title"
+            >
+              {t(STEP_LABEL_KEYS[step])}
+            </StudyLabel>
+            {!(step === 1 && reviewSkipped) ? (
+              <AppText
+                color="secondary"
+                testID="lesson-flow-coach"
+                variant="body"
+              >
+                {t(`lessonFlow.coach_step_${step}`)}
+              </AppText>
+            ) : null}
+          </View>
+        ) : null}
         {step >= 3 && step <= 5 && noSpeaking.active ? (
           <View
             style={themedStyles.noSpeaking}
             testID="lesson-flow-no-speaking"
           >
-            <AppText
-              color="secondary"
-              style={themedStyles.flex}
-              variant="label"
-            >
+            <AppText style={themedStyles.noSpeakingText} variant="label">
               {t('lessonFlow.no_speaking_active')}
             </AppText>
-            <Chip
-              accessibilityHint={t('lessonFlow.can_speak_again')}
-              label={t('lessonFlow.can_speak_again')}
+            <Pressable
+              accessibilityHint={t('lessonFlow.can_speak_again_hint')}
+              accessibilityRole="button"
               onPress={noSpeaking.stop}
+              style={({pressed}) => [
+                themedStyles.noSpeakingButton,
+                pressed ? themedStyles.pressed : null,
+              ]}
               testID="lesson-flow-can-speak"
-              tone="accentSoft"
-            />
+            >
+              <AppText style={themedStyles.noSpeakingText} variant="label">
+                {t('lessonFlow.can_speak_again')}
+              </AppText>
+            </Pressable>
           </View>
-        ) : null}
-        {step <= 5 && !(step === 1 && reviewSkipped) ? (
-          <CoachBubble
-            testID="lesson-flow-coach"
-            text={t(`lessonFlow.coach_step_${step}`)}
-          />
         ) : null}
         {step === 1 ? (
           <StepReview
@@ -372,16 +373,53 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
               accessibilityLabel={t('lessonFlow.close_lesson')}
               icon="close"
               onPress={appNavigation.closeLesson}
+              style={themedStyles.mapClose}
               testID="lesson-flow-close"
-              tone="bare"
+              tone="surface"
             />
             {shownStep !== null ? (
-              <FlowProgressBar
-                doneSteps={doneSteps}
-                onSelect={openStep}
-                skippedSteps={skippedSteps}
-                step={shownStep}
-              />
+              <>
+                <FlowProgressBar
+                  doneSteps={doneSteps}
+                  onSelect={openStep}
+                  skippedSteps={skippedSteps}
+                  step={shownStep}
+                />
+                {shownStep >= 3 && shownStep <= 5 ? (
+                  <Pressable
+                    accessibilityHint={
+                      noSpeaking.active
+                        ? t('lessonFlow.can_speak_again_hint')
+                        : t('lessonFlow.no_speaking_hint')
+                    }
+                    accessibilityLabel={t('lessonFlow.no_speaking')}
+                    accessibilityRole="switch"
+                    accessibilityState={{checked: noSpeaking.active}}
+                    onPress={
+                      noSpeaking.active ? noSpeaking.stop : noSpeaking.start
+                    }
+                    style={({pressed}) => [
+                      themedStyles.speakToggle,
+                      noSpeaking.active ? themedStyles.speakToggleOn : null,
+                      pressed ? themedStyles.pressed : null,
+                    ]}
+                    testID="lesson-flow-cannot-speak"
+                  >
+                    <MaterialIcon
+                      color={
+                        noSpeaking.active
+                          ? HERO_PALETTE.coralShelf
+                          : theme.colors.primary
+                      }
+                      name="mic"
+                      size={20}
+                    />
+                    {noSpeaking.active ? (
+                      <View style={themedStyles.speakSlash} />
+                    ) : null}
+                  </Pressable>
+                ) : null}
+              </>
             ) : (
               <AppText numberOfLines={1} style={themedStyles.flex} variant="h3">
                 {t('lessonFlow.title')}
@@ -438,8 +476,48 @@ function makeStyles(theme: AppTheme) {
     },
     noSpeaking: {
       alignItems: 'center',
+      backgroundColor: withAlpha(HERO_PALETTE.coral, 0.16),
+      borderRadius: 16,
       flexDirection: 'row',
       gap: theme.spacing.sm,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    noSpeakingText: {
+      color: theme.colors.text.primary,
+      flexShrink: 1,
+    },
+    noSpeakingButton: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.pill,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    pressed: {
+      opacity: theme.states.pressedOpacity,
+    },
+    speakToggle: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 14,
+      height: 40,
+      justifyContent: 'center',
+      width: 40,
+      ...getStickerFace(theme, 3),
+    },
+    speakToggleOn: {
+      backgroundColor: withAlpha(HERO_PALETTE.coral, 0.18),
+    },
+    speakSlash: {
+      backgroundColor: HERO_PALETTE.coralShelf,
+      borderRadius: 1,
+      height: 2.5,
+      position: 'absolute',
+      transform: [{rotate: '45deg'}],
+      width: 24,
+    },
+    title: {
+      gap: 2,
     },
     mapClose: {
       ...getStickerFace(theme, 3),
@@ -457,11 +535,6 @@ function makeStyles(theme: AppTheme) {
     streakText: {
       color: theme.colors.onTertiaryContainer,
       fontWeight: theme.typography.weight.bold,
-    },
-    titleRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.sm,
     },
     scroll: {
       flex: 1,
