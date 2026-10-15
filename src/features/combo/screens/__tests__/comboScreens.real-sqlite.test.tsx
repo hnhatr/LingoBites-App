@@ -290,6 +290,64 @@ describe('ComboSetupScreen', () => {
     expect(listLocalComboSets()).toHaveLength(0);
   });
 
+  it("names the Server's error and shows its request id when a set is refused", async () => {
+    mocked.fetchComboOptions.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        tense_mode: 'locked',
+        tenses: [],
+        subject_groups: ['i'],
+        polarities: ['affirmative'],
+        batch_sizes: [3],
+        max_per_set: 27,
+        ai_left_today: 5,
+        sets_left_today: 2,
+      },
+    });
+    mocked.fetchComboSituations.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        situations: [
+          {
+            code: 'cafe',
+            title_en: 'Cafe',
+            title_vi: 'Quán cà phê',
+            register: 'casual',
+            level_code: 'A1',
+          },
+        ],
+      },
+    });
+    mocked.openComboSet.mockResolvedValue({
+      ok: false,
+      kind: 'client-error',
+      message: 'The request failed (409).',
+      code: 'SITUATION_NOT_ENABLED',
+      requestId: 'req-409',
+    });
+    const tree = renderWithTheme(
+      <ComboSetupScreen route={{params: {itemCode: 'pattern:can-i-have'}}} />,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    press(tree, 'combo-setup-situation-field');
+    press(tree, 'combo-setup-situation-cafe');
+    press(tree, 'combo-setup-count-3');
+    await act(async () => {
+      press(tree, 'combo-setup-start');
+    });
+    expect(textOf(tree, 'combo-setup-start-error')).toContain(
+      'Tình huống này chưa được bật cho bộ câu',
+    );
+    expect(textOf(tree, 'combo-setup-start-error-id')).toContain('req-409');
+    expect(mockAppNavigation.openComboSet).not.toHaveBeenCalled();
+  });
+
   it('lists bookmarked and recent situations first, searches without marks, and sends the polarity mix', async () => {
     await AsyncStorage.setItem(
       SITUATION_BOOKMARKS_KEY,

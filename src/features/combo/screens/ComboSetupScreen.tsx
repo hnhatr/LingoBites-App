@@ -33,6 +33,11 @@ import {
   openComboSet,
 } from '../logic/comboClient';
 import {
+  comboEmptyNotice,
+  type ComboErrorNotice,
+  comboFailureNotice,
+} from '../logic/comboErrors';
+import {
   listRecentSituationCodes,
   saveComboSet,
 } from '../logic/comboSetRepository';
@@ -53,13 +58,6 @@ const POLARITIES: readonly string[] = ['affirmative', 'negative', 'question'];
 
 function isPolarity(value: string): value is ComboPolarity {
   return POLARITIES.includes(value);
-}
-
-/** Why the Server opened no sentences, as a message key. */
-function emptySetMessage(reason: string | null | undefined): string {
-  if (reason === 'AI_DAILY_LIMIT') return 'combo.setup.empty_ai_limit';
-  if (reason === 'MINOR_POOL_ONLY') return 'combo.setup.empty_pool_only';
-  return 'combo.setup.empty_failed';
 }
 
 /**
@@ -86,7 +84,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const [mix, setMix] = useState<PolarityMix>({});
   const [busy, setBusy] = useState(false);
   /** The message shown under the summary when a set could not be opened. */
-  const [startError, setStartError] = useState<string | null>(null);
+  const [startError, setStartError] = useState<ComboErrorNotice | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [recent, setRecent] = useState<string[]>([]);
@@ -212,12 +210,14 @@ export function ComboSetupScreen({navigation, route}: Props) {
     });
     setBusy(false);
     if (!result.ok) {
-      setStartError('combo.setup.start_failed');
+      setStartError(comboFailureNotice(result, 'open'));
       return;
     }
     // The Server deletes a set it could not fill and refunds it; nothing to open.
     if (result.value.sentences.length === 0) {
-      setStartError(emptySetMessage(result.value.reason));
+      setStartError(
+        comboEmptyNotice(result.value.reason, result.value.request_id),
+      );
       return;
     }
     saveComboSet(
@@ -382,7 +382,18 @@ export function ComboSetupScreen({navigation, route}: Props) {
               testID="combo-setup-start-error"
               variant="label"
             >
-              {t(startError)}
+              {t(startError.key)}
+            </AppText>
+          ) : null}
+          {startError?.requestId ? (
+            <AppText
+              color="muted"
+              selectable
+              style={styles.summary}
+              testID="combo-setup-start-error-id"
+              variant="caption"
+            >
+              {t('combo.errors.request_id', {id: startError.requestId})}
             </AppText>
           ) : null}
           <AppButton
