@@ -18,6 +18,8 @@ export type ImageAnalysisFlowState =
   | {type: 'preview'; image: PickedImage}
   | {type: 'analyzing'; image: PickedImage}
   | {type: 'permission_denied'}
+  /** The device has no camera (e.g. a simulator): offer the library instead. */
+  | {type: 'camera_unavailable'}
   | {type: 'error'; message: string; image?: PickedImage};
 
 type Options = {
@@ -60,6 +62,8 @@ export function useImageAnalysisFlow({
     if (!result.ok) {
       if (result.reason === 'permission_denied') {
         setState({type: 'permission_denied'});
+      } else if (result.reason === 'camera_unavailable') {
+        setState({type: 'camera_unavailable'});
       } else if (result.reason === 'cancelled') {
         if (isGallery) {
           setState({type: 'upload_idle'});
