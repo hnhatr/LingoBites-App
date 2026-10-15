@@ -9,13 +9,11 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {MultipleChoiceContent} from '@core/schemas/activityContent';
 
-import {
-  SpeakSquare,
-  studyCardStyle,
-} from '../../../player/components/StudyControls';
+import {studyCardStyle} from '../../../player/components/StudyControls';
 import type {EntryReport} from '../../logic/activityOutcome';
 import {ChoiceEntry} from '../ChoiceEntry';
 import {EntrySequence} from '../EntrySequence';
+import {SoftButton} from '../SoftButton';
 
 export type MultipleChoiceActivityProps = {
   content: MultipleChoiceContent;
@@ -71,9 +69,11 @@ function QuestionCard({
         {promptEn ? <AppText color="secondary">{promptEn}</AppText> : null}
       </View>
       {promptEn ? (
-        <SpeakSquare
+        <SoftButton
           accessibilityHint={t('lessonFlow.listen_model_hint')}
-          accessibilityLabel={t('lessonFlow.listen_line')}
+          icon="volume_up"
+          iconOnly
+          label={t('lessonFlow.listen_line')}
           onPress={() => {
             speak(promptEn).catch(() => undefined);
           }}

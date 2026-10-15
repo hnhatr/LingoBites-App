@@ -127,7 +127,9 @@ export function EntrySequence({
           ))}
         </View>
       ) : null}
-      <View key={index}>{renderEntry(index, report)}</View>
+      <View key={index} style={themedStyles.entry}>
+        {renderEntry(index, report)}
+      </View>
       {next && !hosted ? <FlowFooterBar action={next} /> : null}
     </View>
   );
@@ -136,6 +138,9 @@ export function EntrySequence({
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
+      gap: theme.spacing.md,
+    },
+    entry: {
       gap: theme.spacing.md,
     },
     header: {
