@@ -166,3 +166,15 @@ it("takes the Server's pass, even without local attempts", () => {
     confirmed: true,
   });
 });
+
+it('passes a lesson without step 5 (pronunciation) once practice is done', () => {
+  const pronunciation = {
+    ...snapshot,
+    blocks: snapshot.blocks.filter(block => block.step !== 5),
+  };
+  expect(lessonOutcomeView(pronunciation, [], NOW).label).toBe('in_progress');
+  expect(lessonOutcomeView(pronunciation, practice, NOW)).toEqual({
+    label: 'passed',
+    confirmed: false,
+  });
+});
