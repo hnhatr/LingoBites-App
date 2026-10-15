@@ -36,10 +36,72 @@ function getNativeTts(): TtsModule | null {
   return nativeTts;
 }
 
-function hasEnglishUsVoice(voices: Voice[]): boolean {
-  return voices.some(
-    voice => voice.language.toLowerCase() === TTS_LOCALE.toLowerCase(),
+function isEnUsVoice(voice: Voice): boolean {
+  return voice.language.toLowerCase() === TTS_LOCALE.toLowerCase();
+}
+
+/**
+ * iOS ships novelty voices (Eloquence, "Bad News", "Bubbles", ...) under
+ * en-US. They are never a sensible pronunciation model for a learner.
+ */
+function isNoveltyVoice(voice: Voice): boolean {
+  const id = voice.id.toLowerCase();
+  return id.includes('eloquence') || id.includes('speech.synthesis.voice');
+}
+
+/**
+ * Android reports 100-500. The iOS bridge reports 500 for enhanced voices and
+ * 300 for everything else, so premium voices are recognized by identifier.
+ */
+function voiceQualityScore(voice: Voice): number {
+  const premium = voice.id.toLowerCase().includes('.premium.') ? 1000 : 0;
+  return premium + (voice.quality ?? 0);
+}
+
+/**
+ * Picks the most natural installed en-US voice instead of leaving the choice
+ * to the device default, which is often a low-quality "compact" voice.
+ * Prefers offline voices so playback keeps working without a network, then
+ * the highest quality. Ties keep the device's own ordering.
+ */
+export function pickBestEnUsVoice(voices: Voice[]): Voice | null {
+  const candidates = voices.filter(
+    voice =>
+      isEnUsVoice(voice) && !voice.notInstalled && !isNoveltyVoice(voice),
   );
+  let best: Voice | null = null;
+  for (const voice of candidates) {
+    if (!best) {
+      best = voice;
+      continue;
+    }
+    const offline = !voice.networkConnectionRequired;
+    const bestOffline = !best.networkConnectionRequired;
+    if (offline !== bestOffline) {
+      if (offline) {
+        best = voice;
+      }
+      continue;
+    }
+    if (voiceQualityScore(voice) > voiceQualityScore(best)) {
+      best = voice;
+    }
+  }
+  return best;
+}
+
+async function loadEnUsVoices(
+  tts: TtsModule,
+): Promise<
+  {ok: true; voices: Voice[]} | {ok: false; errorCode: 'UNAVAILABLE'}
+> {
+  try {
+    await tts.getInitStatus();
+    const voices = await tts.voices();
+    return {ok: true, voices: voices.filter(isEnUsVoice)};
+  } catch {
+    return {ok: false, errorCode: 'UNAVAILABLE'};
+  }
 }
 
 /** Checks whether the device exposes an installed en-US voice. */
@@ -49,13 +111,11 @@ export async function isEnUsVoiceAvailable(): Promise<TtsVoiceAvailabilityResult
     return {ok: false, errorCode: 'UNAVAILABLE'};
   }
 
-  try {
-    await tts.getInitStatus();
-    const voices = await tts.voices();
-    return {ok: true, available: hasEnglishUsVoice(voices)};
-  } catch {
-    return {ok: false, errorCode: 'UNAVAILABLE'};
+  const loaded = await loadEnUsVoices(tts);
+  if (!loaded.ok) {
+    return loaded;
   }
+  return {ok: true, available: loaded.voices.length > 0};
 }
 
 function normalizeRate(rate: number): number {
@@ -66,7 +126,7 @@ function normalizeRate(rate: number): number {
 }
 
 /**
- * Speaks confirmed English text using the device's en-US TTS voice. Any
+ * Speaks confirmed English text using the best installed en-US TTS voice. Any
  * speech already playing is stopped first, so rapid taps never overlap.
  */
 export async function speak(
@@ -78,17 +138,17 @@ export async function speak(
     return {ok: false, errorCode: 'VOICE_UNAVAILABLE'};
   }
 
-  const availability = await isEnUsVoiceAvailable();
-  if (!availability.ok) {
-    return availability;
-  }
-  if (!availability.available) {
-    return {ok: false, errorCode: 'VOICE_UNAVAILABLE'};
-  }
-
   const tts = getNativeTts();
   if (!tts) {
     return {ok: false, errorCode: 'UNAVAILABLE'};
+  }
+
+  const loaded = await loadEnUsVoices(tts);
+  if (!loaded.ok) {
+    return loaded;
+  }
+  if (loaded.voices.length === 0) {
+    return {ok: false, errorCode: 'VOICE_UNAVAILABLE'};
   }
 
   try {
@@ -103,6 +163,15 @@ export async function speak(
       }
     }
     await tts.setDefaultLanguage(TTS_LOCALE);
+    // Set after the language: setDefaultLanguage resets the native voice.
+    const voice = pickBestEnUsVoice(loaded.voices);
+    if (voice) {
+      try {
+        await tts.setDefaultVoice(voice.id);
+      } catch {
+        // Keep the language default voice if this one cannot be selected.
+      }
+    }
     try {
       await tts.setDefaultRate(normalizeRate(rate));
     } catch {
