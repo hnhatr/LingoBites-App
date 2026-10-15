@@ -294,6 +294,10 @@ flowchart LR
   N3 --> N4["Stage 9 · Nghe"]:::next
   D4 --> N5["UI bài YouTube<br/>phần còn thiếu"]:::next
   D4 --> N6["Test máy thật:<br/>chấm nói, ghi âm"]:::next
+  D4 --> V1["Lộ trình Từ · Mẫu · Thì<br/>P0–P5: gói từ, câu tổ hợp"]:::done
+  V1 --> V2["P6 · kho mẫu, bản đồ thì,<br/>ôn bậc 3, tiến độ"]:::next
+  V2 --> V3["P7 · audio, đọc theo,<br/>chấm phát âm"]:::idea
+  D4 --> N7["Chấm phát âm<br/>(Azure)"]:::next
   N4 --> I1["Báo cáo tuần,<br/>câu mô tả năng lực"]:::idea
   I1 --> I2["Phụ huynh / giáo viên"]:::idea
   I1 --> I3["Thưởng, nhiệm vụ,<br/>mở khoá, câu chuyện"]:::idea
@@ -325,7 +329,19 @@ Chưa thấy trong code: lặp A–B, màn "Học xong bài" riêng cho video. C
 - Chấm bước 5 (ghi âm, upload, STT) và tự đánh giá nói: chưa test trên máy thật.
 - Gỡ EXIF / GPS của ảnh: cần kiểm trên máy thật xem `react-native-image-picker` đã bỏ chưa.
 
-### 8.4 Ý tưởng chưa có thiết kế 💭 (lộ trình 8 bước, Bước 7–8)
+### 8.4 Lộ trình Từ · Mẫu câu · Thì 🟡 (P0–P5 ✅, P6 ⏳, P7 💭)
+
+Thiết kế: [`design/vocab-pattern-tense-path.md`](../design/vocab-pattern-tense-path.md). Plan và bảng trạng thái: [`design/vocab-pattern-tense-p2-p7-plan.md`](../design/vocab-pattern-tense-p2-p7-plan.md) §0.
+Đã có: import CSV và làm giàu từ vựng trên admin, bộ nhận thì, gói và giới hạn theo người dùng, kho câu tổ hợp, gói từ tải về máy (`WordPathScreen`, `WordPackScreen`, kiểm tra nhanh, học gói), bộ câu tổ hợp (`ComboSetupScreen`, `ComboSetScreen`), hàng ôn trộn 60 / 25 / 15.
+Còn lại (P6): `PatternLibraryScreen`, `TenseMapScreen`, ôn bậc 3 dạng viết, nhãn cấp + "Thêm vào lộ trình" trong bài tự tạo (F8), tiến độ theo số từ đã nhớ (F9), viết đoạn cuối tuần (F7), khoá học "Oxford 3000 + IELTS" và công cụ "Tạo unit từ chủ đề". P7 (audio, đọc theo, chấm phát âm) chưa thiết kế.
+
+### 8.5 Chấm phát âm ⏳
+
+Thiết kế: [`superpowers/plans/2026-10-12-pronunciation-architecture.md`](../superpowers/plans/2026-10-12-pronunciation-architecture.md) (so sánh hướng: [`2026-10-11-speech-pronunciation-feedback-options.md`](../superpowers/plans/2026-10-11-speech-pronunciation-feedback-options.md)).
+Đã có: nghe mẫu qua `useSpeak`, bài "Nghe và chọn" (`minimalPairQuiz.ts`).
+Chưa có: thử Azure trên clip thật (bước 0), server chấm (assessor, transcode, worker, API), màn luyện phát âm trên App. Cần trả lời 5 câu ở §11 của file thiết kế trước. Việc nhỏ còn nợ: cache kiểm tra giọng en-US; các lời gọi `speak` ở ôn tập, gợi ý, bài tập nói chưa dùng `useSpeak`.
+
+### 8.6 Ý tưởng chưa có thiết kế 💭 (lộ trình 8 bước, Bước 7–8)
 
 | Nhóm | Nội dung | Ghi chú |
 |---|---|---|

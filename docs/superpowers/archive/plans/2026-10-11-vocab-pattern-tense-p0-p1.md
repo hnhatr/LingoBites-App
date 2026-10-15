@@ -1,7 +1,7 @@
 # Kế hoạch P0 + P1: migration và import CSV trên admin
 
-> Trạng thái: **chờ duyệt**. Chưa có code.
-> Thiết kế gốc: [`vocab-pattern-tense-path.md`](./vocab-pattern-tense-path.md) (mục 8.7, 9, 10). Các giai đoạn sau: [`vocab-pattern-tense-p2-p7-plan.md`](./vocab-pattern-tense-p2-p7-plan.md).
+> Trạng thái: **ĐÃ CODE** (LingoBites-Server: migration `019_vocab_import.sql`, module `src/modules/imports/`, trang Import trên admin-web). Rà lại ngày 2026-10-15.
+> Thiết kế gốc: [`vocab-pattern-tense-path.md`](../../../design/vocab-pattern-tense-path.md) (mục 8.7, 9, 10). Các giai đoạn sau: [`vocab-pattern-tense-p2-p7-plan.md`](../../../design/vocab-pattern-tense-p2-p7-plan.md).
 > Repo làm việc: **LingoBites-Server** (server + `admin-web`). App **không đổi** ở P0 + P1.
 
 ## 0. Quyết định đã chốt (2026-10-11)
@@ -226,3 +226,8 @@ Mỗi commit tự chạy được và qua test. Tất cả nằm trên nhánh `c
 - Kho câu tổ hợp (P4).
 - Mọi thay đổi trong App (P5+).
 - Upload CSV câu tổ hợp (loại thứ 5, làm cùng P4).
+
+## Kết quả / điểm lệch so với plan
+
+- Migration giữ đúng số `019_vocab_import.sql` (+ `.down.sql`).
+- Thêm sau plan: chế độ **ghi đè** khi import (`025_import_overwrite.sql`), bộ lọc item / tình huống trên trang Import.

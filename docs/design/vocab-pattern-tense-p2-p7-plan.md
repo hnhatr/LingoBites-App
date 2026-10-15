@@ -1,7 +1,7 @@
 # Kế hoạch P2 → P7: Lộ trình Từ · Mẫu câu · Thì
 
-> Trạng thái: **chờ duyệt**. Chưa có code.
-> Thiết kế: [`vocab-pattern-tense-path.md`](./vocab-pattern-tense-path.md) · Kế hoạch trước: [`vocab-pattern-tense-p0-p1-plan.md`](./vocab-pattern-tense-p0-p1-plan.md).
+> Trạng thái: **P2–P5 ĐÃ CODE. P6 chưa code. P7 chưa thiết kế.** Rà lại ngày 2026-10-15, bảng trạng thái ở §0. Phần mô tả từng giai đoạn bên dưới giữ nguyên như lúc lập plan.
+> Thiết kế: [`vocab-pattern-tense-path.md`](./vocab-pattern-tense-path.md) · Kế hoạch trước: [`2026-10-11-vocab-pattern-tense-p0-p1.md`](../superpowers/archive/plans/2026-10-11-vocab-pattern-tense-p0-p1.md).
 > Mỗi giai đoạn sẽ được lập kế hoạch chi tiết lại (danh sách file cuối cùng) ngay trước khi bắt đầu code, dựa trên code thật lúc đó.
 
 ## 0. Tổng quan
@@ -29,6 +29,23 @@ flowchart LR
 | P7 | Chưa xác định | Chưa xác định | Chưa xác định | ✅ |
 
 P3 không phụ thuộc P2 nên có thể làm song song.
+
+### Trạng thái (rà lại 2026-10-15)
+
+| GĐ | Trạng thái | Code chính |
+|---|---|---|
+| P0, P1 | ✅ Đã code | Server: `019_vocab_import.sql`, `src/modules/imports/`; admin-web: trang Import. Plan đã lưu trữ: [`2026-10-11-vocab-pattern-tense-p0-p1.md`](../superpowers/archive/plans/2026-10-11-vocab-pattern-tense-p0-p1.md) |
+| P2 | ✅ Đã code | `020_enrichment_jobs.sql`, `src/modules/wordlist/` (prompt `wordlist.enrich`, `enrichmentWorker`, `validateEnrichment`, `wordFamily`), `src/modules/grammar/detectTense.ts`; admin-web: `EnrichmentPanel`, `GrammarPage` |
+| P3 | ✅ Đã code | `021_plans.sql`, `src/modules/plans/` (`resolveLimits`, `usageCounter` / `consumeDaily`, `GET /v1/me/limits`); admin-web: `PlansPage` |
+| P4 | ✅ Đã code | `022_combo.sql`, `024_locked_combo_grammar.sql`, `026_combo_polarity_mix.sql`, `src/modules/combo/`; admin-web: các trang Combo (câu, độ phủ, bị báo sai, cài đặt) |
+| P5 | ✅ Đã code | Server: `023_word_packs.sql`, `src/modules/wordPacks/` (`/v1/word-path`, `/v1/word-packs/:id`, chặn `grammar` theo phiên bản App). App: `features/wordPath/` (`WordPathScreen`, `WordPackScreen`, `QuickKnownCheckScreen`, `PackLearnScreen`), `features/combo/` (`ComboSetupScreen`, `ComboSetScreen`, `ComboHistoryScreen`), `core/db/catalogItems.ts`, `features/review/logic/itemReviewMix.ts` (60 / 25 / 15, tối đa 2 thẻ cùng loại liền nhau), thẻ so sánh khi sai ≥ 4 lần, thẻ "Gói từ tiếp theo" ở Today, mục "Bộ câu đã học" ở Thư viện |
+| P6 | ❌ Chưa code | Chưa có `PatternLibraryScreen`, `TenseMapScreen`, ôn bậc 3 dạng viết, F7, F8, F9, công cụ admin "Tạo unit từ chủ đề" |
+| P7 | 💭 Chưa thiết kế | Xem thêm [`superpowers/plans/2026-10-12-pronunciation-architecture.md`](../superpowers/plans/2026-10-12-pronunciation-architecture.md) |
+
+**Điểm lệch so với plan:**
+- Số migration khác plan: plan ghi `020_plans` / `021_combo` / `022_word_packs`; code là `020_enrichment_jobs`, `021_plans`, `022_combo`, `023_word_packs`.
+- Thêm sau plan: khoá mẫu câu mở bộ câu không cần thì (`024_locked_combo_grammar`), số câu theo khẳng định / phủ định (`026_combo_polarity_mix`), người học chọn nhóm chủ ngữ, nút xoá và dựng lại toàn bộ gói từ trên admin, tên gói và chủ đề tiếng Việt (`029_word_pack_titles_vi`), phân tích ngữ pháp cho câu tổ hợp, lưu câu tổ hợp trên App.
+- Mục "Cần chốt" ở cuối file chưa ghi lại quyết định cuối cùng. Câu 3 (khoá học riêng hay gộp) vẫn cần chốt trước P6.
 
 ---
 
