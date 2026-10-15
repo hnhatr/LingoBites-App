@@ -9,7 +9,9 @@ import {
 } from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
+import {withAlpha} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {LessonSentence} from '@core/schemas/lesson';
 
@@ -68,6 +70,7 @@ export function YouTubeTranscriptSheet({
   const renderItem = useCallback(
     ({item, index}: ListRenderItemInfo<LessonSentence>) => {
       const selected = highlightIndex === index;
+      const past = highlightIndex !== null && index < highlightIndex;
       return (
         <Pressable
           accessibilityRole="button"
@@ -76,15 +79,21 @@ export function YouTubeTranscriptSheet({
           style={({pressed}) => [
             styles.row,
             selected ? styles.rowActive : null,
+            past ? styles.rowPast : null,
             pressed ? styles.pressed : null,
           ]}
           testID={`youtube-transcript-row-${item.id}`}
         >
-          <AppText style={styles.timestamp} variant="label">
+          <AppText
+            style={[styles.timestamp, selected ? styles.timestampActive : null]}
+            variant="label"
+          >
             {formatCueLabel(item.start_ms)}
           </AppText>
           <View style={styles.rowText}>
-            <AppText variant="bodyLg">{item.text_en}</AppText>
+            <AppText style={styles.en} variant="bodyLg">
+              {item.text_en}
+            </AppText>
             {showTranslation ? (
               <AppText color="secondary" variant="body">
                 {item.text_vi}
@@ -134,7 +143,11 @@ export function YouTubeTranscriptSheet({
 }
 
 function makeStyles(theme: AppTheme) {
+  const mintEdge = withAlpha(theme.colors.primaryContainer, 0.45);
   return StyleSheet.create({
+    en: {
+      fontWeight: '700',
+    },
     meta: {
       marginBottom: theme.spacing.sm,
     },
@@ -142,22 +155,33 @@ function makeStyles(theme: AppTheme) {
       opacity: theme.states.pressedOpacity,
     },
     row: {
-      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 18,
       flexDirection: 'row',
       gap: theme.spacing.md,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.md,
+      marginBottom: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
     },
     rowActive: {
       backgroundColor: theme.colors.accentSoft,
+      ...getStickerEdge(3, mintEdge),
+    },
+    rowPast: {
+      opacity: 0.7,
     },
     rowText: {
       flex: 1,
-      gap: theme.spacing.xs,
+      gap: 3,
     },
     timestamp: {
+      color: theme.colors.text.muted,
+      fontVariant: ['tabular-nums'],
+      minWidth: 40,
+    },
+    timestampActive: {
       color: theme.colors.primary,
-      minWidth: 48,
     },
   });
 }

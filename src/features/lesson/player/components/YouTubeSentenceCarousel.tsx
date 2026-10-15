@@ -12,9 +12,10 @@ import {
 import {useReducedMotion} from 'react-native-reanimated';
 
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {LessonAnalysis, LessonSentence} from '@core/schemas/lesson';
 
@@ -24,6 +25,11 @@ import {
   pairWordsWithIpa,
   splitSentenceWords,
 } from '../logic/sentenceIpa';
+
+/** How much of the next card shows at the right edge. */
+const CARD_PEEK = 18;
+/** Space between two cards (inside each card's slot). */
+const CARD_GAP = 10;
 
 /** A word the learner tapped in a sentence card. */
 export type SentenceWordSelection = {
@@ -51,6 +57,10 @@ export type YouTubeSentenceCarouselProps = {
   selectedWord?: Pick<SentenceWordSelection, 'sentenceId' | 'wordIndex'> | null;
   /** Called when a card is tapped, so the screen can pause the video. */
   onPauseVideo?: () => void;
+  /** Meaning of the tapped word, shown inside its card under the sentence. */
+  wordDetail?: React.ReactNode;
+  /** Sentence loop is on: the current card shows a "Lặp" chip. */
+  loopSentence?: boolean;
   /** When true, the next currentIndex sync scrolls with animation (prev/next). */
   scrollAnimated?: boolean;
   onScrollAnimationConsumed?: () => void;
@@ -60,13 +70,14 @@ type CardProps = {
   sentence: LessonSentence;
   index: number;
   cardWidth: number;
-  selected: boolean;
   cueActive: boolean;
   showTranslation: boolean;
   showIpa: boolean;
   analysis: LessonAnalysis | undefined;
   /** Index of the highlighted (tapped) word in this card, or null. */
   selectedWordIndex: number | null;
+  wordDetail: React.ReactNode;
+  looping: boolean;
   onPressCard: (index: number, sentence: LessonSentence) => void;
   onPressWord?: (selection: SentenceWordSelection) => void;
   onSpeakText?: (text: string) => void;
@@ -79,12 +90,13 @@ function SentenceCarouselCardBody({
   sentence,
   index,
   cardWidth,
-  selected,
   cueActive,
   showTranslation,
   showIpa,
   analysis,
   selectedWordIndex,
+  wordDetail,
+  looping,
   onPressCard,
   onPressWord,
   onSpeakText,
@@ -117,65 +129,100 @@ function SentenceCarouselCardBody({
         testID={`youtube-cue-${sentence.id}${cueTestSuffix}`}
         onPress={() => onPressCard(index, sentence)}
       >
-        <View
-          style={[
-            styles.card,
-            selected || cueActive ? styles.cardSelected : null,
-          ]}
-        >
+        <View style={[styles.card, cueActive ? styles.cardLive : null]}>
           <View style={styles.cardHeader}>
-            <AppText
-              testID={`youtube-cue-time-${sentence.id}`}
-              style={styles.timestamp}
-              variant="label"
+            <View
+              style={[styles.timeChip, cueActive ? styles.timeChipLive : null]}
             >
-              {formatCueLabel(sentence.start_ms)}
-            </AppText>
-            <View style={styles.headerActions}>
-              {onOpenAnalysis ? (
-                <Pressable
-                  accessibilityHint={
-                    analysis
-                      ? t('youtube.study.view_analysis_hint')
-                      : t('lessonPlayer.analyze_hint')
-                  }
-                  accessibilityLabel={
-                    analysis
-                      ? t('youtube.study.view_analysis')
-                      : t('lessonPlayer.analyze')
-                  }
-                  accessibilityRole="button"
-                  onPress={() => onOpenAnalysis(sentence.id)}
-                  style={({pressed}) => [
-                    styles.analyzePill,
-                    analysis ? styles.analyzePillDone : null,
-                    pressed ? styles.pressed : null,
-                  ]}
-                  testID={`youtube-open-analysis-${sentence.id}`}
-                >
-                  <MaterialIcon
-                    color={theme.colors.primary}
-                    name="auto_awesome"
-                    size={16}
-                  />
-                  <AppText style={styles.analyzeText} variant="label">
-                    {t('youtube.study.analyze_short')}
-                  </AppText>
-                </Pressable>
-              ) : null}
-              {onSpeakText ? (
-                <IconButton
-                  accessibilityLabel={t('lessonPlayer.speak_sentence', {
-                    index: index + 1,
-                  })}
-                  accessibilityHint={t('lessonPlayer.speak_sentence_hint')}
-                  icon="volume_up"
-                  onPress={() => onSpeakText(sentence.text_en)}
-                  testID={`canonical-speak-${sentence.id}`}
-                  tone="ghost"
-                />
-              ) : null}
+              {cueActive ? <View style={styles.liveDot} /> : null}
+              <AppText
+                testID={`youtube-cue-time-${sentence.id}`}
+                style={[
+                  styles.timestamp,
+                  cueActive ? styles.timestampLive : null,
+                ]}
+                variant="label"
+              >
+                {formatCueLabel(sentence.start_ms)}
+              </AppText>
             </View>
+            {looping ? (
+              <View style={styles.loopChip} testID="youtube-card-loop-chip">
+                <MaterialIcon
+                  color={theme.colors.onTertiaryContainer}
+                  name="repeat"
+                  size={14}
+                />
+                <AppText style={styles.loopText} variant="caption">
+                  {t('youtube.study.loop_chip')}
+                </AppText>
+              </View>
+            ) : null}
+            <View style={styles.headerSpacer} />
+            {onOpenAnalysis ? (
+              <Pressable
+                accessibilityHint={
+                  analysis
+                    ? t('youtube.study.view_analysis_hint')
+                    : t('lessonPlayer.analyze_hint')
+                }
+                accessibilityLabel={
+                  analysis
+                    ? t('youtube.study.view_analysis')
+                    : t('lessonPlayer.analyze')
+                }
+                accessibilityRole="button"
+                onPress={() => onOpenAnalysis(sentence.id)}
+                style={({pressed}) => [
+                  styles.analyzePill,
+                  analysis ? styles.analyzePillDone : null,
+                  pressed ? styles.pressed : null,
+                ]}
+                testID={`youtube-open-analysis-${sentence.id}`}
+              >
+                <MaterialIcon
+                  color={
+                    analysis
+                      ? theme.colors.primary
+                      : theme.colors.onTertiaryContainer
+                  }
+                  name="auto_awesome"
+                  size={16}
+                />
+                <AppText
+                  style={[
+                    styles.analyzeText,
+                    analysis ? styles.analyzeTextDone : null,
+                  ]}
+                  variant="label"
+                >
+                  {analysis
+                    ? t('youtube.study.view_analysis_short')
+                    : t('youtube.study.analyze_short')}
+                </AppText>
+              </Pressable>
+            ) : null}
+            {onSpeakText ? (
+              <Pressable
+                accessibilityLabel={t('lessonPlayer.speak_sentence', {
+                  index: index + 1,
+                })}
+                accessibilityHint={t('lessonPlayer.speak_sentence_hint')}
+                accessibilityRole="button"
+                onPress={() => onSpeakText(sentence.text_en)}
+                style={({pressed}) => [
+                  styles.speak,
+                  pressed ? styles.pressed : null,
+                ]}
+                testID={`canonical-speak-${sentence.id}`}
+              >
+                <MaterialIcon
+                  color={theme.colors.primary}
+                  name="volume_up"
+                  size={18}
+                />
+              </Pressable>
+            ) : null}
           </View>
           <View
             accessibilityLabel={sentence.text_en}
@@ -203,7 +250,17 @@ function SentenceCarouselCardBody({
                 ]}
                 testID={`youtube-word-${sentence.id}-${wordIndex}`}
               >
-                <AppText variant="h3">{entry.word}</AppText>
+                <AppText
+                  style={[
+                    styles.wordText,
+                    selectedWordIndex === wordIndex
+                      ? styles.wordTextSelected
+                      : null,
+                  ]}
+                  variant="h3"
+                >
+                  {entry.word}
+                </AppText>
                 {interlinear && entry.ipa ? (
                   <AppText style={styles.wordIpa} variant="caption">
                     {entry.ipa}
@@ -212,10 +269,13 @@ function SentenceCarouselCardBody({
               </Pressable>
             ))}
           </View>
+          {selectedWordIndex !== null ? wordDetail : null}
           {showIpa && !interlinear && sentence.ipa ? (
-            <AppText color="muted" variant="body">
-              {normalizeIpa(sentence.ipa)}
-            </AppText>
+            <View style={styles.ipaChip}>
+              <AppText style={styles.ipaText} variant="body">
+                {normalizeIpa(sentence.ipa)}
+              </AppText>
+            </View>
           ) : null}
           {showTranslation ? (
             <View style={styles.translation}>
@@ -246,6 +306,8 @@ export function YouTubeSentenceCarousel({
   onPressWord,
   selectedWord = null,
   onPauseVideo,
+  wordDetail,
+  loopSentence = false,
   scrollAnimated = false,
   onScrollAnimationConsumed,
 }: YouTubeSentenceCarouselProps) {
@@ -254,8 +316,8 @@ export function YouTubeSentenceCarousel({
   const reducedMotion = useReducedMotion();
   const listStyles = useMemo(() => listStyleSheet(theme), [theme]);
   const [listWidth, setListWidth] = useState(0);
-  // One full-width card per page: no edge of the next card peeks in.
-  const cardWidth = Math.max(listWidth, 280);
+  // The next card peeks in at the right edge so the row reads as swipeable.
+  const cardWidth = Math.max(listWidth - CARD_PEEK, 280);
 
   const listRef = React.useRef<FlatList<LessonSentence>>(null);
   const pendingAnimatedScrollRef = React.useRef(false);
@@ -316,8 +378,11 @@ export function YouTubeSentenceCarousel({
         selectedWordIndex={
           selectedWord?.sentenceId === item.id ? selectedWord.wordIndex : null
         }
+        wordDetail={
+          selectedWord?.sentenceId === item.id ? wordDetail : undefined
+        }
+        looping={loopSentence && currentIndex === index}
         onSpeakText={onSpeakText}
-        selected={currentIndex === index}
         sentence={item}
         showIpa={showIpa}
         showTranslation={showTranslation}
@@ -334,11 +399,13 @@ export function YouTubeSentenceCarousel({
       onOpenAnalysis,
       onPressWord,
       onSpeakText,
+      loopSentence,
       selectedWord,
       showIpa,
       showTranslation,
       t,
       theme,
+      wordDetail,
     ],
   );
 
@@ -355,8 +422,24 @@ export function YouTubeSentenceCarousel({
   );
 
   const extraData = useMemo(
-    () => ({activeIndex, showTranslation, showIpa, currentIndex, selectedWord}),
-    [activeIndex, currentIndex, selectedWord, showIpa, showTranslation],
+    () => ({
+      activeIndex,
+      showTranslation,
+      showIpa,
+      currentIndex,
+      selectedWord,
+      wordDetail,
+      loopSentence,
+    }),
+    [
+      activeIndex,
+      currentIndex,
+      loopSentence,
+      selectedWord,
+      showIpa,
+      showTranslation,
+      wordDetail,
+    ],
   );
 
   if (sentences.length === 0) {
@@ -383,10 +466,13 @@ export function YouTubeSentenceCarousel({
           length: cardWidth,
           offset: cardWidth * index,
         })}
+        contentContainerStyle={{
+          paddingRight: Math.max(listWidth - cardWidth, 0),
+        }}
         keyExtractor={item => item.id}
-        pagingEnabled
         renderItem={renderItem}
         showsHorizontalScrollIndicator={false}
+        snapToAlignment="start"
         snapToInterval={cardWidth}
         decelerationRate="fast"
         onMomentumScrollEnd={onMomentumScrollEnd}
@@ -399,79 +485,153 @@ export function YouTubeSentenceCarousel({
 }
 
 function cardStyles(theme: AppTheme) {
+  const mintEdge = withAlpha(theme.colors.primaryContainer, 0.45);
   return StyleSheet.create({
     analyzePill: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: theme.radius.pill,
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 14,
       flexDirection: 'row',
       gap: theme.spacing.xs,
-      minHeight: 44,
-      paddingHorizontal: theme.spacing.md,
+      minHeight: 40,
+      paddingHorizontal: 12,
+      ...getStickerEdge(3, theme.colors.tertiaryBorder),
     },
     analyzePillDone: {
       backgroundColor: theme.colors.accentSoft,
+      ...getStickerEdge(3, mintEdge),
     },
     analyzeText: {
+      color: theme.colors.onTertiaryContainer,
+      fontWeight: '800',
+    },
+    analyzeTextDone: {
       color: theme.colors.primary,
     },
     card: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.xl,
-      borderWidth: 1,
-      gap: theme.spacing.sm,
-      padding: theme.spacing.lg,
+      borderRadius: 24,
+      gap: theme.spacing.md,
+      paddingBottom: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.md,
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
     },
     cardHeader: {
       alignItems: 'center',
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      minHeight: 24,
+      gap: theme.spacing.sm,
+      minHeight: 40,
+    },
+    // Only the mint shelf marks the line the video is reading.
+    cardLive: {
+      ...getStickerEdge(4, theme.colors.accent),
     },
     cardOuter: {
-      paddingHorizontal: 2,
+      paddingBottom: 6,
+      paddingLeft: 2,
+      paddingRight: CARD_GAP,
     },
-    cardSelected: {
-      borderColor: theme.colors.primary,
-      borderWidth: 1.5,
+    headerSpacer: {
+      flex: 1,
     },
-    headerActions: {
+    ipaChip: {
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    ipaText: {
+      color: theme.colors.primary,
+    },
+    liveDot: {
+      backgroundColor: theme.colors.accent,
+      borderRadius: 4,
+      height: 7,
+      width: 7,
+    },
+    loopChip: {
       alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 10,
       flexDirection: 'row',
-      gap: theme.spacing.xs,
+      gap: 4,
+      minHeight: 28,
+      paddingHorizontal: 8,
+    },
+    loopText: {
+      color: theme.colors.onTertiaryContainer,
     },
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
+    speak: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 14,
+      height: 40,
+      justifyContent: 'center',
+      width: 40,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
+    },
+    timeChip: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 10,
+      flexDirection: 'row',
+      gap: 6,
+      minHeight: 28,
+      paddingHorizontal: 10,
+    },
+    timeChipLive: {
+      backgroundColor: theme.colors.accentSoft,
+    },
     timestamp: {
-      color: theme.colors.primary,
+      color: theme.colors.text.secondary,
       fontVariant: ['tabular-nums'],
     },
+    timestampLive: {
+      color: theme.colors.primary,
+    },
     translation: {
-      borderTopColor: theme.colors.outlineVariant,
-      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.colors.surfaceHigh,
+      borderTopWidth: StyleSheet.hairlineWidth * 2,
       paddingTop: theme.spacing.sm,
     },
     word: {
-      borderRadius: theme.radius.sm,
+      alignItems: 'center',
+      borderBottomColor: theme.colors.surface,
+      borderBottomWidth: 3,
+      borderRadius: 8,
+      marginHorizontal: -3,
+      paddingHorizontal: 3,
     },
     wordIpa: {
       color: theme.colors.primary,
-      opacity: 0.8,
+      opacity: 0.85,
     },
     wordSelected: {
       backgroundColor: theme.colors.accentSoft,
+      borderBottomColor: theme.colors.accent,
+    },
+    wordText: {
+      fontSize: 21,
+      fontWeight: '800',
+      lineHeight: 28,
+    },
+    wordTextSelected: {
+      color: theme.colors.primary,
     },
     words: {
-      columnGap: 5,
+      columnGap: 6,
       flexDirection: 'row',
       flexWrap: 'wrap',
       rowGap: 2,
     },
     wordsInterlinear: {
       columnGap: theme.spacing.sm,
-      rowGap: theme.spacing.xs,
+      rowGap: theme.spacing.sm,
     },
   });
 }

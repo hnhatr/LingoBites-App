@@ -5,7 +5,10 @@ import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 
 import {AppText} from '@ui/components/AppText';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 export type LessonDisplayTogglesProps = {
   showTranslation: boolean;
@@ -21,6 +24,7 @@ export type LessonDisplayTogglesProps = {
 const MENU_OFFSET_TOP = 56;
 
 type ToggleRowProps = {
+  icon: HandoffIconName;
   label: string;
   value: boolean;
   onToggle: () => void;
@@ -28,9 +32,20 @@ type ToggleRowProps = {
   styles: ReturnType<typeof makeStyles>;
 };
 
-function ToggleRow({label, value, onToggle, testID, styles}: ToggleRowProps) {
+function ToggleRow({
+  icon,
+  label,
+  value,
+  onToggle,
+  testID,
+  styles,
+}: ToggleRowProps) {
+  const {theme} = useAppTheme();
   return (
     <View style={styles.row}>
+      <View style={[styles.rowIcon, value ? styles.rowIconOn : null]}>
+        <MaterialIcon color={theme.colors.primary} name={icon} size={20} />
+      </View>
       <AppText style={styles.rowLabel} variant="body">
         {label}
       </AppText>
@@ -92,6 +107,7 @@ export function LessonDisplayToggles({
           testID="youtube-display-menu-panel"
         >
           <ToggleRow
+            icon="translate"
             label={t('youtube.study.display_translation')}
             onToggle={onToggleTranslation}
             styles={styles}
@@ -99,6 +115,7 @@ export function LessonDisplayToggles({
             value={showTranslation}
           />
           <ToggleRow
+            icon="record_voice_over"
             label={t('youtube.study.display_ipa')}
             onToggle={onToggleIpa}
             styles={styles}
@@ -107,6 +124,7 @@ export function LessonDisplayToggles({
           />
           {onToggleLoop ? (
             <ToggleRow
+              icon="repeat"
               label={t('youtube.study.display_loop')}
               onToggle={onToggleLoop}
               styles={styles}
@@ -127,21 +145,35 @@ function makeStyles(theme: AppTheme) {
     },
     menu: {
       ...theme.shadow.medium,
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.lg,
-      borderWidth: StyleSheet.hairlineWidth,
-      minWidth: 240,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.xs,
+      backgroundColor: theme.colors.background,
+      borderRadius: 22,
+      gap: theme.spacing.sm,
+      minWidth: 260,
+      padding: theme.spacing.sm,
       position: 'absolute',
       right: theme.gutter,
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
     },
     row: {
       alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
       flexDirection: 'row',
       gap: theme.spacing.md,
-      minHeight: 48,
+      minHeight: 56,
+      paddingHorizontal: theme.spacing.md,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
+    },
+    rowIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 12,
+      height: 36,
+      justifyContent: 'center',
+      width: 36,
+    },
+    rowIconOn: {
+      backgroundColor: theme.colors.accentSoft,
     },
     rowLabel: {
       flex: 1,

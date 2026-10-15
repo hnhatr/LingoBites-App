@@ -554,6 +554,8 @@
       "video_lessons_title": "Bài học từ video này",
       "video_lessons_hint": "Mở bài học theo lộ trình",
       "analyze_short": "Phân tích",
+      "view_analysis_short": "Xem phân tích",
+      "loop_chip": "Lặp",
       "display_menu_a11y": "Tùy chọn hiển thị",
       "display_menu_hint": "Bật hoặc tắt nghĩa tiếng Việt, IPA và lặp câu",
       "display_translation": "Nghĩa tiếng Việt",
@@ -568,6 +570,7 @@
       "header_subtitle": "Câu {{index}}/{{total}} · {{time}}",
       "progress_a11y": "Tiến độ câu, chạm để nhảy đến câu",
       "word_hint": "Xem phiên âm và nghĩa của từ",
+      "word_no_meaning": "Câu này chưa được phân tích nên chưa có nghĩa.",
       "word_bubble_close": "Đóng"
     }
   },
