@@ -34,6 +34,8 @@ PODS:
     - Yoga
   - ExpoAsset (57.0.19):
     - ExpoModulesCore
+  - ExpoBlur (57.0.3):
+    - ExpoModulesCore
   - ExpoDomWebView (57.0.1):
     - ExpoModulesCore
   - ExpoFileSystem (57.0.7):
@@ -2619,6 +2621,7 @@ DEPENDENCIES:
   - EXManifests (from `../node_modules/expo-manifests/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
+  - ExpoBlur (from `../node_modules/expo-blur/ios`)
   - "ExpoDomWebView (from `../node_modules/@expo/dom-webview/ios`)"
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
@@ -2746,6 +2749,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo"
   ExpoAsset:
     :path: "../node_modules/expo-asset/ios"
+  ExpoBlur:
+    :path: "../node_modules/expo-blur/ios"
   ExpoDomWebView:
     :path: "../node_modules/@expo/dom-webview/ios"
   ExpoFileSystem:
@@ -2971,6 +2976,7 @@ SPEC CHECKSUMS:
   EXManifests: caa1868b88ae9877a4ab1c8c9b4732b7af342715
   Expo: e569ec1007b6b974d29ed168aeaf6c3a4e0f5a46
   ExpoAsset: dde4ad9096a841b00e4e284c98fd70ed9fb6b4dc
+  ExpoBlur: dbe1508ab11794f127c215b5796115753b1c04e0
   ExpoDomWebView: fa9c72fe29dd4649197a7ecb07ddd870d55c4eda
   ExpoFileSystem: 980be7ecc921f6ba73cdf986ff66e1ecd57b8ef7
   ExpoFont: baf9e5d472c5dd59ca6b3221677f726499452a0e
