@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
@@ -164,6 +164,18 @@ export function YouTubeCreationView({
       }
     }
   }, [state.status, url]);
+
+  // FR-02: a lesson made from the link opens by itself, once. "Mở bài"
+  // stays as a fallback. Leaving the screen first unmounts this view, so
+  // the learner is never pulled back into the lesson.
+  const openedLessonId = useRef<string | null>(null);
+  const createdLessonId = succeeded ? state.lessonId : null;
+  useEffect(() => {
+    if (createdLessonId && openedLessonId.current !== createdLessonId) {
+      openedLessonId.current = createdLessonId;
+      onOpenLesson(createdLessonId);
+    }
+  }, [createdLessonId, onOpenLesson]);
 
   const displayUrl = submittedUrl || url.trim();
   const showIdleInput = !processing && !succeeded && !timedOut && !waiting;
@@ -559,7 +571,7 @@ export function YouTubeCreationView({
         ) : (
           <StickerButton
             accessibilityLabel={t('lessonPlayer.create_submit')}
-            disabled={!body || processing || timedOut || waiting}
+            disabled={!body || !videoId || processing || timedOut || waiting}
             icon="auto_stories"
             label={
               processing
@@ -567,7 +579,7 @@ export function YouTubeCreationView({
                 : t('lessonPlayer.create_submit')
             }
             onPress={() => {
-              if (body) submit(body);
+              if (body && videoId) submit(body);
             }}
             testID="lesson-creation-submit"
           />

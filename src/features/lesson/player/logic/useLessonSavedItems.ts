@@ -46,6 +46,8 @@ export type GrammarSaveControl = {
 };
 
 export type LessonSavedItems = {
+  /** Flashcards (words, phrases, patterns) saved from this lesson. */
+  savedCardCount: number;
   vocabulary: VocabularySaveControl;
   patterns: PatternSaveControl;
   grammar: GrammarSaveControl;
@@ -222,6 +224,7 @@ export function useLessonSavedItems(lessonId: string): LessonSavedItems {
   );
 
   return {
+    savedCardCount: Object.keys(savedCards).length,
     vocabulary: {isSaved: isCardSaved, onToggle: toggleWord},
     patterns: {isSaved: isCardSaved, onToggle: togglePattern},
     grammar: {isSaved: isGrammarSaved, onToggle: toggleGrammar},

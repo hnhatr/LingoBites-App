@@ -24,7 +24,12 @@ import {
   findVocabularyForWord,
   stripIpaDelimiters,
 } from '../logic/sentenceIpa';
+import {
+  type SentenceRepeat,
+  shouldRepeatSentence,
+} from '../logic/sentenceRepeat';
 import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
+import type {SentenceSaveControl} from '../logic/useSavedVideoSentences';
 import {CanonicalBlockView} from './CanonicalBlockView';
 import {LessonStatusBanners} from './LessonStatusBanners';
 import {LessonStudyToolbar} from './LessonStudyToolbar';
@@ -66,13 +71,17 @@ export type YouTubeLessonStudyProps = {
   >;
   onSpeakText?: (text: string) => void;
   vocabularySave?: VocabularySaveControl;
+  /** ♥ on the sentence cards and transcript rows. */
+  sentenceSave?: SentenceSaveControl;
   /** Public video: the six-step lessons made from it, listed under it. */
   videoLessons?: readonly LessonCatalogItem[];
   onOpenVideoLesson?: (lessonId: string) => void;
   /** Resumes the video (replay sentence). */
   onPlayVideo?: () => void;
-  /** Jump back to the sentence start whenever playback reaches its end. */
-  loopSentence?: boolean;
+  /** Past the last sentence: the lesson is finished (FR-09). */
+  onFinish?: () => void;
+  /** How many times the sentence plays again before the video moves on. */
+  sentenceRepeat?: SentenceRepeat;
   /** Current video speed, shown on the toolbar. */
   playbackRate?: number;
   onCyclePlaybackRate?: () => void;
@@ -115,10 +124,12 @@ export function YouTubeLessonStudy({
   analysisStates,
   onSpeakText,
   vocabularySave,
+  sentenceSave,
   videoLessons,
   onOpenVideoLesson,
   onPlayVideo,
-  loopSentence = false,
+  onFinish,
+  sentenceRepeat = 0,
   playbackRate = 1,
   onCyclePlaybackRate,
   onCurrentSentenceChange,
@@ -141,6 +152,12 @@ export function YouTubeLessonStudy({
   // Set once a loop seek is sent; cleared when playback is back inside the
   // sentence, so late position polls cannot send the seek twice.
   const loopSeekSentRef = useRef(false);
+  // Jumps back made on the current card; the card it gave up repeating on.
+  const repeatsDoneRef = useRef(0);
+  const [repeatDoneIndex, setRepeatDoneIndex] = useState<number | null>(null);
+  const loopSentence = sentenceRepeat !== 0;
+  // While the card still repeats, the card does not follow the video.
+  const holdingSentence = loopSentence && repeatDoneIndex !== currentIndex;
 
   const orderedSentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const orderedBlocks = useMemo(() => sortedBlocks(snapshot), [snapshot]);
@@ -167,14 +184,14 @@ export function YouTubeLessonStudy({
     if (
       videoPlaying &&
       followVideo &&
-      !loopSentence &&
+      !holdingSentence &&
       followIndex !== null &&
       followIndex !== currentIndexRef.current
     ) {
       setCarouselScrollAnimated(true);
       setCurrentIndex(followIndex);
     }
-  }, [followIndex, followVideo, loopSentence, videoPlaying]);
+  }, [followIndex, followVideo, holdingSentence, videoPlaying]);
 
   const handleOpenAnalysis = useCallback(
     (sentenceId: string) => {
@@ -223,9 +240,15 @@ export function YouTubeLessonStudy({
     setSelectedWord(null);
   }, [currentIndex]);
 
+  // A new card, or a new repeat choice, starts the count again.
+  useEffect(() => {
+    repeatsDoneRef.current = 0;
+    setRepeatDoneIndex(null);
+  }, [currentIndex, sentenceRepeat]);
+
   useEffect(() => {
     if (
-      !loopSentence ||
+      !holdingSentence ||
       !videoPlaying ||
       currentStartMs === null ||
       loopEndMs === null
@@ -236,17 +259,25 @@ export function YouTubeLessonStudy({
     if (playbackPositionMs >= loopEndMs - LOOP_END_SLACK_MS) {
       if (!loopSeekSentRef.current) {
         loopSeekSentRef.current = true;
-        onSeek?.(currentStartMs);
+        if (shouldRepeatSentence(sentenceRepeat, repeatsDoneRef.current)) {
+          repeatsDoneRef.current += 1;
+          onSeek?.(currentStartMs);
+        } else {
+          // Done repeating: the video plays on and the card follows it.
+          setRepeatDoneIndex(currentIndex);
+        }
       }
     } else {
       loopSeekSentRef.current = false;
     }
   }, [
+    currentIndex,
     currentStartMs,
+    holdingSentence,
     loopEndMs,
-    loopSentence,
     onSeek,
     playbackPositionMs,
+    sentenceRepeat,
     videoPlaying,
   ]);
 
@@ -493,6 +524,7 @@ export function YouTubeLessonStudy({
           }
           onSeek={onSeek}
           onSpeakText={onSpeakText}
+          sentenceSave={sentenceSave}
           sentences={orderedSentences}
           showIpa={showIpa}
           showTranslation={showTranslation}
@@ -514,6 +546,7 @@ export function YouTubeLessonStudy({
         atFirst={atFirst}
         atLast={atLast}
         onCyclePlaybackRate={onCyclePlaybackRate}
+        onFinish={onFinish}
         onNext={goNext}
         onOpenTranscript={handleOpenTranscript}
         onPrev={goPrev}
@@ -545,7 +578,9 @@ export function YouTubeLessonStudy({
         currentIndex={currentIndex}
         onClose={handleCloseSheet}
         onSelectSentence={handleTranscriptSelect}
+        sentenceSave={sentenceSave}
         sentences={orderedSentences}
+        showIpa={showIpa}
         showTranslation={showTranslation}
         videoPlaying={videoPlaying}
         visible={openSheet === 'transcript'}

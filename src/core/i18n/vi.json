@@ -561,6 +561,8 @@
       "display_translation": "Nghĩa tiếng Việt",
       "display_ipa": "Phiên âm IPA",
       "display_loop": "Lặp câu hiện tại",
+      "display_loop_off": "Tắt",
+      "display_loop_hint": "Đổi số lần lặp câu: Tắt, 1, 3, 5 lần hay lặp mãi",
       "play_a11y": "Phát video",
       "pause_a11y": "Tạm dừng video",
       "replay_sentence_a11y": "Phát lại câu này",
@@ -571,7 +573,24 @@
       "progress_a11y": "Tiến độ câu, chạm để nhảy đến câu",
       "word_hint": "Xem phiên âm và nghĩa của từ",
       "word_no_meaning": "Câu này chưa được phân tích nên chưa có nghĩa.",
-      "word_bubble_close": "Đóng"
+      "word_bubble_close": "Đóng",
+      "save_sentence_a11y": "Lưu câu này",
+      "unsave_sentence_a11y": "Bỏ lưu câu này",
+      "save_sentence_hint": "Giữ câu trong Câu đã lưu ở Thư viện"
+    },
+    "finished": {
+      "body_one": "Bạn đã nghe hết {{count}} câu của video này.",
+      "body_other": "Bạn đã nghe hết {{count}} câu của video này.",
+      "stat_sentences": "Câu trong bài",
+      "stat_words": "Từ đã lưu",
+      "stat_saved_sentences": "Câu đã lưu",
+      "review": "Ôn từ đã lưu",
+      "review_hint": "Mở ôn tập hằng ngày với các từ đã lưu",
+      "other_video": "Học video khác",
+      "other_video_hint": "Tạo bài mới từ một link YouTube khác",
+      "save_failed": "Chưa ghi được tiến độ trên máy. Bạn vẫn xem lại được bài.",
+      "finish_a11y": "Học xong bài",
+      "finish_hint": "Kết thúc bài và xem kết quả"
     }
   },
   "gamification": {
@@ -1824,9 +1843,10 @@
     },
     "saved": {
       "empty_title": "Chưa có câu nào",
-      "empty_body": "Bấm Lưu dưới một câu trong bộ câu để giữ nó ở đây.",
+      "empty_body": "Bấm Lưu dưới một câu trong bộ câu, hoặc ♥ ở một câu trong bài video, để giữ nó ở đây.",
       "no_match": "Không có câu nào khớp “{{query}}”.",
       "open_hint": "Mở bộ câu có câu này",
+      "open_lesson_hint": "Mở lại bài video có câu này",
       "unsave": "Bỏ lưu câu này",
       "unsave_hint": "Xóa câu khỏi Câu đã lưu"
     },
@@ -1837,5 +1857,9 @@
       "step_check": "Kiểm tra thì và chủ ngữ",
       "wait": "Thường mất vài giây. Bạn cứ ở màn này, bộ câu sẽ tự mở khi xong."
     }
+  },
+  "speech": {
+    "voice_missing": "Máy chưa có giọng tiếng Anh (Mỹ) nên chưa đọc được. Hãy cài thêm giọng trong cài đặt hệ thống.",
+    "unavailable": "Máy này chưa phát được âm thanh."
   }
 }

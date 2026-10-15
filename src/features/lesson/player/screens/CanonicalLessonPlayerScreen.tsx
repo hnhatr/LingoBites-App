@@ -56,6 +56,7 @@ import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from '../components/SentenceAnalysisPanel';
+import {YouTubeFinishedView} from '../components/YouTubeFinishedView';
 import type {CurrentSentenceInfo} from '../components/YouTubeLessonStudy';
 // Imported statically: a dynamic import() loads a split bundle in dev, which
 // throws when the dev client has not set up HMR. Jest mocks the iframe module
@@ -89,11 +90,13 @@ import {
   setMediaDownloadConsent,
   shouldAskMediaDownloadConsent,
 } from '../logic/mediaDownloadConsent';
+import {nextSentenceRepeat, type SentenceRepeat} from '../logic/sentenceRepeat';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
 import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
 import {useLessonMediaDownload} from '../logic/useLessonMediaDownload';
 import {useLessonSavedItems} from '../logic/useLessonSavedItems';
+import {useSavedVideoSentences} from '../logic/useSavedVideoSentences';
 import {useVideoLessons} from '../logic/useVideoLessons';
 import type {LessonFlowParamList} from './navigationTypes';
 
@@ -127,6 +130,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     markStarted,
   } = useLessonCompletion(lessonId);
   const savedItems = useLessonSavedItems(lessonId);
+  const savedSentences = useSavedVideoSentences(lessonId);
   const appNavigation = useAppNavigation();
   const practiceEnabled = useFeatureEnabled('shortPractice');
   const reloadSavedItems = savedItems.reload;
@@ -138,7 +142,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const [showTranslation, setShowTranslation] = useState(true);
   // IPA starts hidden to keep the card short; the display menu turns it on.
   const [showIpa, setShowIpa] = useState(false);
-  const [loopSentence, setLoopSentence] = useState(false);
+  const [sentenceRepeat, setSentenceRepeat] = useState<SentenceRepeat>(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [currentSentence, setCurrentSentence] =
     useState<CurrentSentenceInfo | null>(null);
@@ -420,6 +424,24 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     setVideoPlaying(false);
   }, []);
 
+  // FR-09: the video ended, or the learner moved past the last sentence.
+  const [videoFinished, setVideoFinished] = useState(false);
+  const [studyKey, setStudyKey] = useState(0);
+  const handleFinishVideo = useCallback(() => {
+    youtubePlayerRef.current?.pause();
+    setVideoPlaying(false);
+    setVideoFinished(true);
+    completeLesson();
+  }, [completeLesson]);
+
+  /** "Xem lại": the video and the cards start again from sentence 1. */
+  const handleReplayLesson = useCallback(() => {
+    setVideoFinished(false);
+    setPositionMs(0);
+    setVideoMountKey(key => key + 1);
+    setStudyKey(key => key + 1);
+  }, []);
+
   const handleRetryVideo = useCallback(() => {
     setVideoAvailable(true);
     setVideoPlaying(false);
@@ -432,6 +454,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   }) =>
     snapshot ? (
       <CanonicalLessonPlayer
+        key={studyKey}
         snapshot={snapshot}
         analyses={snapshot.analyses}
         lateAnalyses={lateAnalyses}
@@ -457,11 +480,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         onSpeakText={handleSpeak}
         vocabularySave={savedItems.vocabulary}
         grammarSave={savedItems.grammar}
-        onFinish={() => openView('hub')}
+        sentenceSave={isYouTubeStudy ? savedSentences : undefined}
+        onFinish={isYouTubeStudy ? handleFinishVideo : () => openView('hub')}
         videoLessons={videoLessons}
         onOpenVideoLesson={appNavigation.openLesson}
         onPlayVideo={handlePlayVideo}
-        loopSentence={loopSentence}
+        sentenceRepeat={sentenceRepeat}
         playbackRate={playbackRate}
         onCyclePlaybackRate={handleCyclePlaybackRate}
         onCurrentSentenceChange={setCurrentSentence}
@@ -531,6 +555,19 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       );
     }
     if (!snapshot) return null;
+    if (isYouTubeStudy && videoFinished) {
+      return (
+        <YouTubeFinishedView
+          onOtherVideo={() => appNavigation.startCreate({kind: 'youtube'})}
+          onReplay={handleReplayLesson}
+          onReviewSaved={appNavigation.openReview}
+          saveFailed={completionState === 'error'}
+          savedSentenceCount={savedSentences.savedCount}
+          savedWordCount={savedItems.savedCardCount}
+          sentenceCount={snapshot.sentences.length}
+        />
+      );
+    }
     if (isYouTubeStudy) {
       return renderPlayer({
         onRetryVideo: handleRetryVideo,
@@ -542,6 +579,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             playbackRate={playbackRate}
             onPlayingChange={setVideoPlaying}
             onTimeUpdate={handleTimeUpdate}
+            onEnded={handleFinishVideo}
             onError={() => {
               setVideoAvailable(false);
               setVideoPlaying(false);
@@ -710,9 +748,9 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                 />
               ) : null}
               <LessonDisplayToggles
-                loopSentence={loopSentence}
+                onCycleRepeat={() => setSentenceRepeat(nextSentenceRepeat)}
                 onToggleIpa={() => setShowIpa(value => !value)}
-                onToggleLoop={() => setLoopSentence(value => !value)}
+                sentenceRepeat={sentenceRepeat}
                 onToggleTranslation={() => setShowTranslation(value => !value)}
                 showIpa={showIpa}
                 showTranslation={showTranslation}

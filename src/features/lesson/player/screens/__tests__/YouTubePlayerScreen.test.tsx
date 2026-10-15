@@ -10,12 +10,30 @@ import {makeTestReleaseConfig, THEME_UI_FLAGS} from '@test/support';
 
 let playerMountCount = 0;
 let lastPlayerOnError: ((code: string) => void) | undefined;
+let lastPlayerOnEnded: (() => void) | undefined;
+
+const mockRecordLessonEvent = jest.fn((_input: unknown) => ({
+  ok: true,
+  advanced: true,
+}));
+jest.mock('@core/sync/lessonProgress', () => ({
+  ...jest.requireActual('@core/sync/lessonProgress'),
+  getLessonProgress: () => null,
+  recordLessonEvent: (input: unknown) => mockRecordLessonEvent(input),
+}));
 
 jest.mock('../../components/YouTubePlayer', () => {
   const {View} = require('react-native');
-  const MockPlayer = ({onError}: {onError?: (code: string) => void}) => {
+  const MockPlayer = ({
+    onError,
+    onEnded,
+  }: {
+    onError?: (code: string) => void;
+    onEnded?: () => void;
+  }) => {
     playerMountCount += 1;
     lastPlayerOnError = onError;
+    lastPlayerOnEnded = onEnded;
     return <View testID="mock-youtube-player" />;
   };
   return {
@@ -181,6 +199,54 @@ describe('CanonicalLessonPlayerScreen YouTube study', () => {
     expect(
       tree.root.findByProps({testID: 'screen-header-subtitle'}).props.children,
     ).toMatch(/^Câu 1\/\d+ · \d+:\d{2}$/);
+  });
+
+  it('shows the finished screen and records completion when the video ends (FR-09)', async () => {
+    const {mockAppNavigation} = require('@test/support');
+    mockRecordLessonEvent.mockClear();
+    const tree = await renderScreen();
+    await act(async () => {
+      lastPlayerOnEnded?.();
+    });
+    expect(tree.root.findByProps({testID: 'youtube-finished'})).toBeDefined();
+    expect(mockRecordLessonEvent).toHaveBeenCalledWith({
+      lessonId: LESSON_ID,
+      event: 'complete',
+    });
+    const stat = tree.root.findByProps({
+      testID: 'youtube-finished-stat-sentences',
+    });
+    expect(
+      stat.findAll(node => node.props.children === '1').length,
+    ).toBeGreaterThan(0);
+
+    const press = (testID: string) =>
+      tree.root
+        .findAll(node => node.props.testID === testID)
+        .find(node => typeof node.props.onPress === 'function')!
+        .props.onPress();
+    await act(async () => press('youtube-finished-review'));
+    expect(mockAppNavigation.openReview).toHaveBeenCalled();
+    await act(async () => press('youtube-finished-other'));
+    expect(mockAppNavigation.startCreate).toHaveBeenCalledWith({
+      kind: 'youtube',
+    });
+
+    const mountsBefore = playerMountCount;
+    await act(async () => press('youtube-finished-replay'));
+    expect(tree.root.findAllByProps({testID: 'youtube-finished'})).toHaveLength(
+      0,
+    );
+    expect(playerMountCount).toBeGreaterThan(mountsBefore);
+  });
+
+  it('finishes from the last sentence with the toolbar button (FR-09)', async () => {
+    const tree = await renderScreen();
+    const finish = tree.root
+      .findAll(node => node.props.testID === 'youtube-cards-finish')
+      .find(node => typeof node.props.onPress === 'function');
+    await act(async () => finish?.props.onPress());
+    expect(tree.root.findByProps({testID: 'youtube-finished'})).toBeDefined();
   });
 
   it('remounts the player when retry is pressed after unavailable (AC-011 S2)', async () => {

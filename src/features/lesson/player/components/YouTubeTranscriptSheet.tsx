@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
+import {IconButton} from '@ui/components/IconButton';
 import {withAlpha} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
@@ -16,6 +17,8 @@ import {getStickerEdge} from '@ui/theme/hardShadow';
 import type {LessonSentence} from '@core/schemas/lesson';
 
 import {formatCueLabel} from '../logic/canonicalYouTubeCues';
+import {normalizeIpa} from '../logic/sentenceIpa';
+import type {SentenceSaveControl} from '../logic/useSavedVideoSentences';
 import {YouTubeSheet} from './YouTubeSheet';
 
 export type YouTubeTranscriptSheetProps = {
@@ -26,6 +29,10 @@ export type YouTubeTranscriptSheetProps = {
   /** When false, highlight follows the study card (AC-002 S2). */
   videoPlaying: boolean;
   showTranslation: boolean;
+  /** The study screen's IPA toggle also shows IPA under each line. */
+  showIpa?: boolean;
+  /** ♥ on each row: keeps the sentence in "Câu đã lưu". */
+  sentenceSave?: SentenceSaveControl;
   onClose: () => void;
   onSelectSentence: (index: number, startMs: number | null) => void;
 };
@@ -37,6 +44,8 @@ export function YouTubeTranscriptSheet({
   currentIndex,
   videoPlaying,
   showTranslation,
+  showIpa = false,
+  sentenceSave,
   onClose,
   onSelectSentence,
 }: YouTubeTranscriptSheetProps) {
@@ -94,16 +103,48 @@ export function YouTubeTranscriptSheet({
             <AppText style={styles.en} variant="bodyLg">
               {item.text_en}
             </AppText>
+            {showIpa && item.ipa ? (
+              <AppText
+                color="muted"
+                testID={`youtube-transcript-ipa-${item.id}`}
+                variant="body"
+              >
+                {normalizeIpa(item.ipa)}
+              </AppText>
+            ) : null}
             {showTranslation ? (
               <AppText color="secondary" variant="body">
                 {item.text_vi}
               </AppText>
             ) : null}
           </View>
+          {sentenceSave ? (
+            <IconButton
+              accessibilityHint={t('youtube.study.save_sentence_hint')}
+              accessibilityLabel={
+                sentenceSave.isSaved(item.id)
+                  ? t('youtube.study.unsave_sentence_a11y')
+                  : t('youtube.study.save_sentence_a11y')
+              }
+              icon={sentenceSave.isSaved(item.id) ? 'heart' : 'heart_outline'}
+              onPress={() => sentenceSave.toggle(item)}
+              size={40}
+              testID={`youtube-transcript-save-${item.id}`}
+              tone={sentenceSave.isSaved(item.id) ? 'danger' : 'bare'}
+            />
+          ) : null}
         </Pressable>
       );
     },
-    [highlightIndex, onSelectSentence, showTranslation, styles],
+    [
+      highlightIndex,
+      onSelectSentence,
+      sentenceSave,
+      showIpa,
+      showTranslation,
+      styles,
+      t,
+    ],
   );
 
   const listHeader =

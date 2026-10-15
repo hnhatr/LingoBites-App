@@ -166,6 +166,29 @@ describe('useShadowingSession', () => {
     expect(slowRate).toBeLessThan(normalRate ?? 0.5);
   });
 
+  it('keeps why the model did not play and clears it once it plays', async () => {
+    const {Driver, latest} = makeSessionDriver();
+    await act(async () => {
+      ReactTestRenderer.create(React.createElement(Driver));
+    });
+    mockSpeak.mockResolvedValueOnce({
+      ok: false,
+      errorCode: 'VOICE_UNAVAILABLE',
+    });
+    let played: boolean | undefined;
+    await act(async () => {
+      played = await latest.current?.playNormalSample();
+    });
+    expect(played).toBe(false);
+    expect(latest.current?.speechNotice).toBe('VOICE_UNAVAILABLE');
+
+    await act(async () => {
+      played = await latest.current?.playSlowSample();
+    });
+    expect(played).toBe(true);
+    expect(latest.current?.speechNotice).toBeNull();
+  });
+
   it('AC-007 S1: auto-stops once at 30s and keeps the take in recorded state', async () => {
     const {Driver, latest} = makeSessionDriver({
       generateTakeId: () => 'take-1',

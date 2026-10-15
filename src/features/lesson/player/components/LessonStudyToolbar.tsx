@@ -14,6 +14,8 @@ export type LessonStudyToolbarProps = {
   atLast: boolean;
   onPrev: () => void;
   onNext: () => void;
+  /** On the last sentence, "next" finishes the lesson (FR-09). */
+  onFinish?: () => void;
   onOpenTranscript: () => void;
   /** Replays the current sentence from its start; omitted = disabled. */
   onReplay?: () => void;
@@ -38,6 +40,7 @@ export function LessonStudyToolbar({
   atLast,
   onPrev,
   onNext,
+  onFinish,
   onOpenTranscript,
   onReplay,
   videoPlaying = false,
@@ -100,15 +103,27 @@ export function LessonStudyToolbar({
         testID="youtube-replay-sentence"
         theme={theme}
       />
-      <ToolbarButton
-        accessibilityLabel={t('youtube.study.cards_next_a11y')}
-        disabled={atLast}
-        icon="chevron_right"
-        onPress={onNext}
-        styles={styles}
-        testID="youtube-cards-next"
-        theme={theme}
-      />
+      {atLast && onFinish ? (
+        <ToolbarButton
+          accessibilityHint={t('youtube.finished.finish_hint')}
+          accessibilityLabel={t('youtube.finished.finish_a11y')}
+          icon="check_circle"
+          onPress={onFinish}
+          styles={styles}
+          testID="youtube-cards-finish"
+          theme={theme}
+        />
+      ) : (
+        <ToolbarButton
+          accessibilityLabel={t('youtube.study.cards_next_a11y')}
+          disabled={atLast}
+          icon="chevron_right"
+          onPress={onNext}
+          styles={styles}
+          testID="youtube-cards-next"
+          theme={theme}
+        />
+      )}
       {onCyclePlaybackRate ? (
         <Pressable
           accessibilityHint={t('youtube.study.playback_rate_hint')}

@@ -20,7 +20,8 @@ import {
 
 /**
  * Library "Câu đã lưu": the combo sentences the learner saved with "Lưu",
- * newest first. A card reads the sentence aloud, opens its set, or is unsaved.
+ * newest first. A card reads the sentence aloud, opens its set (or the video
+ * lesson it was saved from), or is unsaved.
  *
  * IGNORE_TAB_BAR_CLEARANCE: shown in the Library list, a root-stack screen.
  */
@@ -84,9 +85,17 @@ export function SavedComboSentencesList({query = ''}: {query?: string}) {
             testID={`saved-sentence-${entry.id}`}
           >
             <Pressable
-              accessibilityHint={t('combo.saved.open_hint')}
+              accessibilityHint={
+                entry.lessonId
+                  ? t('combo.saved.open_lesson_hint')
+                  : t('combo.saved.open_hint')
+              }
               accessibilityRole="button"
-              onPress={() => appNavigation.openComboSet(entry.setId)}
+              onPress={() =>
+                entry.lessonId
+                  ? appNavigation.openLesson(entry.lessonId)
+                  : appNavigation.openComboSet(entry.setId)
+              }
               style={styles.text}
             >
               <AppText variant="body">

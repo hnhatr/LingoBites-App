@@ -561,6 +561,8 @@
       "display_translation": "Vietnamese translation",
       "display_ipa": "IPA transcription",
       "display_loop": "Loop current sentence",
+      "display_loop_off": "Off",
+      "display_loop_hint": "Change how often the sentence repeats: off, 1, 3, 5 times or forever",
       "play_a11y": "Play video",
       "pause_a11y": "Pause video",
       "replay_sentence_a11y": "Replay this sentence",
@@ -571,7 +573,24 @@
       "progress_a11y": "Sentence progress, tap to jump to a sentence",
       "word_hint": "Show the word's IPA and meaning",
       "word_no_meaning": "This sentence isn't analyzed yet, so there's no meaning.",
-      "word_bubble_close": "Close"
+      "word_bubble_close": "Close",
+      "save_sentence_a11y": "Save this sentence",
+      "unsave_sentence_a11y": "Remove this saved sentence",
+      "save_sentence_hint": "Keeps the sentence in Saved sentences in the Library"
+    },
+    "finished": {
+      "body_one": "You listened to all {{count}} sentence of this video.",
+      "body_other": "You listened to all {{count}} sentences of this video.",
+      "stat_sentences": "Sentences",
+      "stat_words": "Words saved",
+      "stat_saved_sentences": "Sentences saved",
+      "review": "Review saved words",
+      "review_hint": "Opens today's review with the saved words",
+      "other_video": "Learn another video",
+      "other_video_hint": "Makes a new lesson from another YouTube link",
+      "save_failed": "Progress could not be saved on this device. You can still replay the lesson.",
+      "finish_a11y": "Finish the lesson",
+      "finish_hint": "Ends the lesson and shows the result"
     }
   },
   "gamification": {
@@ -1824,9 +1843,10 @@
     },
     "saved": {
       "empty_title": "No sentences yet",
-      "empty_body": "Tap Save under a sentence in a combo set to keep it here.",
+      "empty_body": "Tap Save under a sentence in a combo set, or ♥ on a sentence in a video lesson, to keep it here.",
       "no_match": "No sentence matches “{{query}}”.",
       "open_hint": "Opens the set this sentence is in",
+      "open_lesson_hint": "Opens the video lesson this sentence is from",
       "unsave": "Remove this sentence",
       "unsave_hint": "Removes it from Saved sentences"
     },
@@ -1837,5 +1857,9 @@
       "step_check": "Checking tense and subjects",
       "wait": "This usually takes a few seconds. Stay here; the set opens by itself when it is ready."
     }
+  },
+  "speech": {
+    "voice_missing": "This device has no English (US) voice, so it cannot read aloud. Install one in system settings.",
+    "unavailable": "Audio playback is not available on this device."
   }
 }

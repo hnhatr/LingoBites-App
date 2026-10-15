@@ -436,7 +436,11 @@ describe('YouTubeLessonStudy', () => {
 
     it('seeks back to the sentence start once its end is reached while looping', async () => {
       const onSeek = jest.fn();
-      const base = {onSeek, loopSentence: true, videoPlaying: true};
+      const base = {
+        onSeek,
+        sentenceRepeat: 'infinite' as const,
+        videoPlaying: true,
+      };
       const tree = await renderStudy({...base, playbackPositionMs: 500});
       expect(onSeek).not.toHaveBeenCalled();
       await rerenderStudy(tree, {...base, playbackPositionMs: 1900});
@@ -450,6 +454,25 @@ describe('YouTubeLessonStudy', () => {
       await rerenderStudy(tree, {...base, playbackPositionMs: 300});
       await rerenderStudy(tree, {...base, playbackPositionMs: 1950});
       expect(onSeek).toHaveBeenCalledTimes(2);
+    });
+
+    it('repeats the chosen number of times, then follows the video on', async () => {
+      const onSeek = jest.fn();
+      const base = {onSeek, sentenceRepeat: 1 as const, videoPlaying: true};
+      const tree = await renderStudy({...base, playbackPositionMs: 500});
+      await rerenderStudy(tree, {...base, playbackPositionMs: 1900});
+      expect(onSeek).toHaveBeenCalledTimes(1);
+      expect(onSeek).toHaveBeenLastCalledWith(0);
+      // The second pass is the last one: no seek, and the card moves on.
+      await rerenderStudy(tree, {...base, playbackPositionMs: 300});
+      await rerenderStudy(tree, {...base, playbackPositionMs: 1950});
+      expect(onSeek).toHaveBeenCalledTimes(1);
+      await rerenderStudy(tree, {...base, playbackPositionMs: 2500});
+      expect(sentenceIndicator(tree.root)).toContain('2/3');
+      // The next sentence repeats once too.
+      await rerenderStudy(tree, {...base, playbackPositionMs: 3950});
+      expect(onSeek).toHaveBeenCalledTimes(2);
+      expect(onSeek).toHaveBeenLastCalledWith(2000);
     });
 
     it('does not loop when the loop option is off', async () => {

@@ -10,10 +10,12 @@ import type {
   LessonSnapshot,
 } from '@core/schemas/lesson';
 
+import type {SentenceRepeat} from '../logic/sentenceRepeat';
 import type {
   GrammarSaveControl,
   VocabularySaveControl,
 } from '../logic/useLessonSavedItems';
+import type {SentenceSaveControl} from '../logic/useSavedVideoSentences';
 import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
@@ -60,6 +62,8 @@ export type CanonicalLessonPlayerProps = {
   onSpeakText?: (text: string) => void;
   /** "Lưu thẻ" on analysed words; omitted = no save buttons. */
   vocabularySave?: VocabularySaveControl;
+  /** YouTube study: ♥ on sentences. */
+  sentenceSave?: SentenceSaveControl;
   /** "Đánh dấu" on analysed grammar (text lessons); omitted = none. */
   grammarSave?: GrammarSaveControl;
   /** "Xong" after the last sentence (text lessons). */
@@ -69,7 +73,7 @@ export type CanonicalLessonPlayerProps = {
   onOpenVideoLesson?: (lessonId: string) => void;
   /** YouTube study listening controls (screen-owned). */
   onPlayVideo?: () => void;
-  loopSentence?: boolean;
+  sentenceRepeat?: SentenceRepeat;
   playbackRate?: number;
   onCyclePlaybackRate?: () => void;
   onCurrentSentenceChange?: (current: CurrentSentenceInfo) => void;
@@ -104,12 +108,13 @@ export function CanonicalLessonPlayer({
   analysisStates,
   onSpeakText,
   vocabularySave,
+  sentenceSave,
   grammarSave,
   onFinish,
   videoLessons,
   onOpenVideoLesson,
   onPlayVideo,
-  loopSentence,
+  sentenceRepeat,
   playbackRate,
   onCyclePlaybackRate,
   onCurrentSentenceChange,
@@ -147,10 +152,12 @@ export function CanonicalLessonPlayer({
         analysisStates={analysisStates}
         onSpeakText={onSpeakText}
         vocabularySave={vocabularySave}
+        sentenceSave={sentenceSave}
         videoLessons={videoLessons}
         onOpenVideoLesson={onOpenVideoLesson}
         onPlayVideo={onPlayVideo}
-        loopSentence={loopSentence}
+        onFinish={onFinish}
+        sentenceRepeat={sentenceRepeat}
         playbackRate={playbackRate}
         onCyclePlaybackRate={onCyclePlaybackRate}
         onCurrentSentenceChange={onCurrentSentenceChange}
