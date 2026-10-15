@@ -8,7 +8,7 @@ import {
 } from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 
-import {speak} from '@features/audio';
+import {speak, type TtsErrorCode} from '@features/audio';
 
 import {getDatabase} from '@core/db/database';
 
@@ -78,8 +78,11 @@ export type UseShadowingSessionResult = {
   take: ShadowingTake | null;
   selfCheck: ShadowingSelfCheck;
   hasUnsavedProgress: boolean;
-  playNormalSample: () => Promise<void>;
-  playSlowSample: () => Promise<void>;
+  /** Why the last model did not play (no en-US voice, no audio), or null. */
+  speechNotice: TtsErrorCode | null;
+  /** Resolve to false when the model could not play; see `speechNotice`. */
+  playNormalSample: () => Promise<boolean>;
+  playSlowSample: () => Promise<boolean>;
   startRecordingTake: () => Promise<void>;
   stopRecordingTake: () => Promise<void>;
   reRecord: () => Promise<void>;
@@ -527,19 +530,29 @@ export function useShadowingSession(
     };
   }, [clearTimers]);
 
-  const playNormalSample = useCallback(async () => {
-    if (!sentence?.textEn) {
-      return;
-    }
-    await speak(sentence.textEn);
-  }, [sentence]);
+  const [speechNotice, setSpeechNotice] = useState<TtsErrorCode | null>(null);
 
-  const playSlowSample = useCallback(async () => {
-    if (!sentence?.textEn) {
-      return;
-    }
-    await speak(sentence.textEn, undefined, SHADOWING_SLOW_TTS_RATE);
-  }, [sentence]);
+  const playSample = useCallback(
+    async (rate?: number) => {
+      if (!sentence?.textEn) {
+        return false;
+      }
+      const result =
+        rate === undefined
+          ? await speak(sentence.textEn)
+          : await speak(sentence.textEn, undefined, rate);
+      setSpeechNotice(result?.ok === false ? result.errorCode : null);
+      return result?.ok !== false;
+    },
+    [sentence],
+  );
+
+  const playNormalSample = useCallback(() => playSample(), [playSample]);
+
+  const playSlowSample = useCallback(
+    () => playSample(SHADOWING_SLOW_TTS_RATE),
+    [playSample],
+  );
 
   const reRecord = useCallback(async () => {
     if (sessionState !== 'recorded' || !take) {
@@ -683,6 +696,7 @@ export function useShadowingSession(
     take,
     selfCheck,
     hasUnsavedProgress,
+    speechNotice,
     playNormalSample,
     playSlowSample,
     startRecordingTake,

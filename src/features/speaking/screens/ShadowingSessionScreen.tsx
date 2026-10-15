@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, ScrollView, StyleSheet, View} from 'react-native';
 
+import {SpeechNotice} from '@features/audio';
 import {recordShadowingSessionActivity} from '@features/engagement';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -164,6 +165,10 @@ export function ShadowingSessionScreen({
     : '0:00';
   const step = showReview ? 2 : session.sessionState === 'recording' ? 1 : 0;
 
+  const stopUnlessPlayed = (played: boolean) => {
+    if (!played) playback.stop();
+  };
+
   return (
     <AppScreen>
       <SessionHeader
@@ -186,6 +191,10 @@ export function ShadowingSessionScreen({
         style={styles.flex1}
       >
         <SessionSteps active={step} labels={SHADOWING_STEPS} />
+        <SpeechNotice
+          notice={session.speechNotice}
+          testID="shadowing-speech-notice"
+        />
         <SentenceCard
           compact={showReview}
           highlightedWords={
@@ -195,7 +204,7 @@ export function ShadowingSessionScreen({
           }
           onPlayNormal={() => {
             playback.start('normal', estimateSampleMs(sentence, 1));
-            session.playNormalSample().catch(() => {
+            session.playNormalSample().then(stopUnlessPlayed, () => {
               playback.stop();
               Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
             });
@@ -205,7 +214,7 @@ export function ShadowingSessionScreen({
               'slow',
               estimateSampleMs(sentence, SLOW_SAMPLE_STRETCH),
             );
-            session.playSlowSample().catch(() => {
+            session.playSlowSample().then(stopUnlessPlayed, () => {
               playback.stop();
               Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
             });
@@ -230,7 +239,9 @@ export function ShadowingSessionScreen({
             }}
             onPlaySample={() => {
               playback.start('sample', estimateSampleMs(sentence, 1));
-              session.playNormalSample().catch(() => playback.stop());
+              session
+                .playNormalSample()
+                .then(stopUnlessPlayed, () => playback.stop());
             }}
             onReRecord={() => {
               playback.stop();

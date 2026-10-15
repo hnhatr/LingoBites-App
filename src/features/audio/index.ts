@@ -1,6 +1,7 @@
 export {formatCacheBytes} from './logic/audioCachePolicy';
 export {playReadyChapterAudio} from './logic/deviceChapterAudio';
 export {isEnUsVoiceAvailable, speak, stop} from './logic/ttsService';
+export type {TtsErrorCode} from './logic/ttsService';
 export {useSpeak} from './logic/useSpeak';
 export {SpeakContext, useScreenSpeak} from './logic/speakContext';
 export type {SpeakText} from './logic/speakContext';
