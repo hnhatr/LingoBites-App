@@ -174,23 +174,19 @@ export function VideoRowCard({
 }
 
 const PLAY_BUTTON_SIZES = {
-  large: {width: 72, height: 50, radius: 10, shelf: 5, glyph: 34},
-  small: {width: 44, height: 30, radius: 7, shelf: 3, glyph: 22},
+  large: {width: 72, height: 50, radius: 10, glyph: 34},
+  small: {width: 44, height: 30, radius: 7, glyph: 22},
 } as const;
 
-const PLAY_BLUR_INTENSITY = 20;
+const PLAY_BLUR_INTENSITY = 10;
 
-/** Light glass for the YouTube-like play button over a thumbnail. */
-const PLAY_GLASS = {
-  face: 'rgba(255,255,255,0.3)',
-  shelf: 'rgba(255,255,255,0.55)',
-};
+/** Bright green, slightly see-through, for the play button over a thumbnail. */
+const PLAY_FACE = 'rgba(34,197,94,0.85)';
 
 /**
- * The see-through play button centred over a video thumbnail, with a shelf
- * under it like the cards. The face blurs the thumbnail behind it (Android
- * needs the thumbnail wrapped in a `BlurTargetView`). The face and the shelf
- * don't overlap, so the translucent colours don't stack.
+ * The YouTube-like play button centred over a video thumbnail. It blurs the
+ * thumbnail behind it (Android needs the thumbnail wrapped in a
+ * `BlurTargetView`).
  */
 function PlayButton({
   blurTarget,
@@ -201,7 +197,7 @@ function PlayButton({
 }) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const {width, height, radius, shelf, glyph} = PLAY_BUTTON_SIZES[size];
+  const {width, height, radius, glyph} = PLAY_BUTTON_SIZES[size];
 
   return (
     <View pointerEvents="none" style={styles.playLayer}>
@@ -209,32 +205,12 @@ function PlayButton({
         blurMethod="dimezisBlurViewSdk31Plus"
         blurTarget={blurTarget}
         intensity={PLAY_BLUR_INTENSITY}
-        style={[
-          styles.playFace,
-          {
-            borderTopLeftRadius: radius,
-            borderTopRightRadius: radius,
-            height,
-            width,
-          },
-        ]}
-        tint="light"
+        style={[styles.playFace, {borderRadius: radius, height, width}]}
       >
         <View style={styles.playGlyph}>
           <Glyph color={theme.colors.text.inverse} name="play" size={glyph} />
         </View>
       </BlurView>
-      <View
-        style={[
-          styles.playShelf,
-          {
-            borderBottomLeftRadius: radius,
-            borderBottomRightRadius: radius,
-            height: shelf,
-            width,
-          },
-        ]}
-      />
     </View>
   );
 }
@@ -327,20 +303,17 @@ function makeStyles(theme: AppTheme) {
     },
     playFace: {
       alignItems: 'center',
-      backgroundColor: PLAY_GLASS.face,
+      backgroundColor: PLAY_FACE,
       justifyContent: 'center',
       overflow: 'hidden',
       paddingLeft: 2,
     },
-    // Keeps the white triangle readable on bright thumbnails (iOS only).
+    // A soft shadow lifts the white triangle off the green (iOS only).
     playGlyph: {
       shadowColor: theme.colors.overlay,
       shadowOffset: {width: 0, height: 1},
-      shadowOpacity: 1,
-      shadowRadius: 2,
-    },
-    playShelf: {
-      backgroundColor: PLAY_GLASS.shelf,
+      shadowOpacity: 0.6,
+      shadowRadius: 1.5,
     },
   });
 }
