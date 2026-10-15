@@ -3,7 +3,7 @@ import {StyleSheet, Text} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
-import {themeIds, themes} from '@ui/theme/themeRegistry';
+import {SYSTEM_THEME_LABEL, themeIds, themes} from '@ui/theme/themeRegistry';
 import {defaultTheme} from '@ui/theme/themes/default';
 import {stickerSoftTheme} from '@ui/theme/themes/stickerSoft';
 import type {AppTheme} from '@ui/theme/types';
@@ -13,7 +13,6 @@ import {FeatureFlagProvider} from '@core/release';
 import type {ReleaseConfig} from '@core/release/types';
 
 import {
-  CORE_BETA_WITHOUT_REVIEW,
   FULL_FEATURE_SHOWCASE_FLAGS,
   makeTestReleaseConfig,
   OFFLINE_REVIEW_MVP,
@@ -59,21 +58,21 @@ describe('ThemePicker', () => {
     expect(labelsOf(tree)).toEqual([]);
   });
 
-  it('offers only Sáng / Tối / Sticker / Theo hệ thống in dev builds', async () => {
+  it('offers only Sticker in dev builds', async () => {
     const labels = labelsOf(
       await render(makeTestReleaseConfig(FULL_FEATURE_SHOWCASE_FLAGS)),
     );
-    expect(labels).toEqual(['Sáng', 'Tối', 'Sticker', 'Theo hệ thống']);
+    expect(labels).toEqual(['Sticker']);
   });
 
-  it('offers exactly Sáng / Tối / Sticker / Theo hệ thống on production builds', async () => {
+  it('offers only Sticker on production builds', async () => {
     const originalDev = (globalThis as {__DEV__?: boolean}).__DEV__;
     (globalThis as {__DEV__?: boolean}).__DEV__ = false;
     try {
       const labels = labelsOf(
         await render(makeTestReleaseConfig(FULL_FEATURE_SHOWCASE_FLAGS)),
       );
-      expect(labels).toEqual(['Sáng', 'Tối', 'Sticker', 'Theo hệ thống']);
+      expect(labels).toEqual(['Sticker']);
     } finally {
       (globalThis as {__DEV__?: boolean}).__DEV__ = originalDev;
     }
@@ -83,53 +82,36 @@ describe('ThemePicker', () => {
     const labels = labelsOf(
       await render(makeTestReleaseConfig(FULL_FEATURE_SHOWCASE_FLAGS)),
     );
-    expect(themeIds).toEqual(
-      expect.arrayContaining([
-        'pastel-kids',
-        'core',
-        'neo',
-        'comic',
-        'cartoon',
-      ]),
-    );
-    for (const id of [
+    const hidden = [
+      'default',
+      'dark',
       'pastel-kids',
       'core',
       'neo',
       'comic',
       'cartoon',
-    ] as const) {
+    ] as const;
+    expect(themeIds).toEqual(expect.arrayContaining([...hidden]));
+    for (const id of hidden) {
       expect(labels).not.toContain(themes[id].name);
     }
+    expect(labels).not.toContain(SYSTEM_THEME_LABEL);
   });
 
-  it('hides dark when its flag is off', async () => {
-    const labels = labelsOf(
-      await render(makeTestReleaseConfig(CORE_BETA_WITHOUT_REVIEW)),
-    );
-    expect(labels).toContain(themes.default.name);
-    expect(labels).not.toContain(themes.dark.name);
-  });
-
-  it('applies a theme on tap', async () => {
+  it('marks Sticker as selected', async () => {
     const tree = await render(makeTestReleaseConfig(THEME_UI_FLAGS));
-    const darkOption = tree.root
-      .findAll(node =>
-        String(node.props.testID ?? '').startsWith('theme-option-'),
-      )
-      .find(n => n.props.accessibilityLabel === themes.dark.name)!;
-    await act(async () => {
-      darkOption.props.onPress();
+    const stickerOption = tree.root.findByProps({
+      testID: 'theme-option-sticker-soft',
     });
-    expect(darkOption.props.accessibilityState.selected).toBe(true);
+    expect(stickerOption.props.accessibilityState.selected).toBe(true);
   });
 
   it('uses stable per-theme test ids and a 44px minimum target', async () => {
     const tree = await render(makeTestReleaseConfig(THEME_UI_FLAGS));
-    const darkOption = tree.root.findByProps({testID: 'theme-option-dark'});
-    const flattened = StyleSheet.flatten(darkOption.props.style);
+    const option = tree.root.findByProps({testID: 'theme-option-sticker-soft'});
+    const flattened = StyleSheet.flatten(option.props.style);
 
-    expect(darkOption.props.accessibilityLabel).toBe(themes.dark.name);
+    expect(option.props.accessibilityLabel).toBe(themes['sticker-soft'].name);
     expect(flattened.minHeight).toBe(44);
   });
 
@@ -157,12 +139,14 @@ describe('ThemePicker', () => {
         await Promise.resolve();
       });
       const chip = StyleSheet.flatten(
-        tree.root.findByProps({testID: 'theme-option-dark'}).props.style,
+        tree.root.findByProps({testID: 'theme-option-sticker-soft'}).props
+          .style,
       );
       const label = StyleSheet.flatten(
         tree.root
           .findAllByType(Text)
-          .find(node => node.props.children === themes.dark.name)!.props.style,
+          .find(node => node.props.children === themes['sticker-soft'].name)!
+          .props.style,
       );
       return {
         borderRadius: chip.borderRadius,

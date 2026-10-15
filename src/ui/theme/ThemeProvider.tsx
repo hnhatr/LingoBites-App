@@ -12,8 +12,6 @@ import {
   themeReleaseFlag,
   themes,
 } from './themeRegistry';
-
-const disabledPersistedThemeFallbackId: ThemePreference = 'default';
 import {getSavedThemeId, saveThemeId} from './themeStorage';
 import {ThemeContext} from './useAppTheme';
 
@@ -27,17 +25,14 @@ export function AppThemeProvider({children}: Props) {
 
   const isThemeAllowed = useCallback(
     (id: ThemePreference) => {
+      // Every build offers exactly the picker options (only Sticker).
+      // productionThemeOptions is the single source of truth so the gate
+      // cannot drift from the picker (SETE-280).
+      if (!productionThemeOptions.includes(id)) {
+        return false;
+      }
       if (id === SYSTEM_THEME_ID) {
         return true;
-      }
-      if (!__DEV__) {
-        // Production builds offer exactly the picker options —
-        // experimental themes (pastel-kids, core, neo, comic, cartoon)
-        // are dev-only. productionThemeOptions is the single source of
-        // truth so the gate cannot drift from the picker (SETE-280).
-        if (!productionThemeOptions.includes(id)) {
-          return false;
-        }
       }
       const flag = themeReleaseFlag[id];
       return flag === undefined || isFeatureEnabled(flag);
@@ -56,8 +51,8 @@ export function AppThemeProvider({children}: Props) {
         if (isThemeAllowed(saved)) {
           setPreferenceState(saved);
         } else {
-          setPreferenceState(disabledPersistedThemeFallbackId);
-          saveThemeId(disabledPersistedThemeFallbackId).catch(() => {});
+          setPreferenceState(defaultThemeId);
+          saveThemeId(defaultThemeId).catch(() => {});
         }
       } else {
         setPreferenceState(defaultThemeId);

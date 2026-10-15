@@ -1,10 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
-import {AppThemeProvider} from '@ui/theme';
 import {themeList, themes} from '@ui/theme/themeRegistry';
-import {THEME_STORAGE_KEY} from '@ui/theme/themeStorage';
+import {ThemeContext} from '@ui/theme/useAppTheme';
 
 import {FeatureFlagProvider} from '@core/release';
 
@@ -17,13 +15,16 @@ const theme = themes['pastel-kids'];
 
 async function render(ui: React.ReactElement) {
   // Token assertions above target pastel-kids; render under the same theme
-  // instead of depending on the app default (Sáng).
-  await AsyncStorage.setItem(THEME_STORAGE_KEY, 'pastel-kids');
+  // directly — pastel-kids is no longer selectable via AppThemeProvider.
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
     tree = ReactTestRenderer.create(
       <FeatureFlagProvider>
-        <AppThemeProvider>{ui}</AppThemeProvider>
+        <ThemeContext.Provider
+          value={{theme, themeId: 'pastel-kids', setThemeId: () => {}}}
+        >
+          {ui}
+        </ThemeContext.Provider>
       </FeatureFlagProvider>,
     );
   });
