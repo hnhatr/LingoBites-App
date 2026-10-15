@@ -29,9 +29,10 @@ import {
 } from '../ExploreCards';
 import {LibraryShelf, type ShelfStatus} from '../LibraryShelf';
 import {cardToneAt, libraryTone} from '../libraryTones';
+import {PackStack} from '../PackStack';
 import {videoContextLabel} from '../PublicLessonsList';
 
-/** How many packs the section shows before "Tất cả". */
+/** How many packs the stack holds before "Tất cả". */
 export const SHELF_LIMIT = 3;
 /** How many videos: one large, then a short list. */
 export const VIDEO_LIMIT = 3;
@@ -112,30 +113,41 @@ export function ExploreTab() {
         title="Gói từ vựng"
         tone="teal"
       >
-        {shelfPacks(packs.rows ?? []).map((row, index) => (
-          <ToneCard
-            accessibilityHint={
-              row.downloaded
-                ? t('wordPath.open_hint')
-                : 'Mở danh sách gói để tải về'
-            }
-            action={packAction(row)}
-            cover={{imageUrl: row.coverUrl, glyph: topicGlyph(row.topicCode)}}
-            description={[`${row.total} từ`, row.level, packStatusLabel(t, row)]
-              .filter(Boolean)
-              .join(' · ')}
-            gutter={theme.spacing.md}
-            key={row.packId}
-            onPress={() =>
-              row.downloaded
-                ? appNavigation.openWordPack(row.packId)
-                : appNavigation.openLibrarySection('wordPath')
-            }
-            testID={`library-pack-${row.packId}`}
-            title={packTitle(t, row)}
-            tone={cardToneAt(index)}
-          />
-        ))}
+        <PackStack
+          items={shelfPacks(packs.rows ?? [])}
+          keyOf={row => row.packId}
+          moreCount={Math.max(packCount - SHELF_LIMIT, 0)}
+          onPastEnd={() => appNavigation.openLibrarySection('wordPath')}
+          renderCard={(row, index, a11y) => (
+            <ToneCard
+              {...a11y}
+              accessibilityHint={
+                row.downloaded
+                  ? t('wordPath.open_hint')
+                  : 'Mở danh sách gói để tải về'
+              }
+              action={packAction(row)}
+              cover={{imageUrl: row.coverUrl, glyph: topicGlyph(row.topicCode)}}
+              description={[
+                `${row.total} từ`,
+                row.level,
+                packStatusLabel(t, row),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              gutter={theme.spacing.md}
+              onPress={() =>
+                row.downloaded
+                  ? appNavigation.openWordPack(row.packId)
+                  : appNavigation.openLibrarySection('wordPath')
+              }
+              testID={`library-pack-${row.packId}`}
+              title={packTitle(t, row)}
+              tone={cardToneAt(index)}
+            />
+          )}
+          testID="library-pack-stack"
+        />
       </LibraryShelf>
       <VideoShelf />
     </ScrollView>
