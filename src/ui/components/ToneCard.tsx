@@ -3,7 +3,14 @@
  * Library and the word path list.
  */
 import React, {useMemo, useState} from 'react';
-import {Pressable, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {
+  type AccessibilityActionEvent,
+  type AccessibilityActionInfo,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import {Defs, LinearGradient, Rect, Stop, Svg} from 'react-native-svg';
 
 import {AppText} from '@ui/components/AppText';
@@ -19,7 +26,7 @@ import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 
-const CARD_HEIGHT = 168;
+export const CARD_HEIGHT = 168;
 /** Share of a card the picture takes, on the right. */
 const ART_SHARE = 0.5;
 export const CARD_RADIUS = 26;
@@ -104,6 +111,9 @@ export interface ToneCardProps {
   bookmark?: {saved: boolean; onToggle: () => void};
   /** Under the card, outside its button, e.g. a practice link. */
   footer?: React.ReactNode;
+  /** Screen reader actions on the card, e.g. "Gói sau" in a stack. */
+  accessibilityActions?: AccessibilityActionInfo[];
+  onAccessibilityAction?: (event: AccessibilityActionEvent) => void;
 }
 
 /**
@@ -126,6 +136,8 @@ export function ToneCard({
   bookmark,
   footer,
   width: fixedWidth,
+  accessibilityActions,
+  onAccessibilityAction,
 }: ToneCardProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -138,6 +150,7 @@ export function ToneCard({
 
   const card = (
     <Pressable
+      accessibilityActions={accessibilityActions}
       accessibilityHint={accessibilityHint}
       accessibilityLabel={[eyebrow, title, description, action.label]
         .filter(Boolean)
@@ -145,6 +158,7 @@ export function ToneCard({
       accessibilityRole="button"
       accessibilityState={{disabled}}
       disabled={disabled}
+      onAccessibilityAction={onAccessibilityAction}
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
