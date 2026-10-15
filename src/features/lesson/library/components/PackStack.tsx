@@ -110,8 +110,7 @@ export function PackStack<T>({
     };
     const pastEnd = () => {
       const last = latest.current.count - 1;
-      // The top card flies off, then comes back under the pushed screen so
-      // the stack is still on it when the user comes back.
+      // The top card flies off, then comes back under the pushed screen.
       animateTo(latest.current.count, () => {
         latest.current.onPastEnd();
         position.setValue(last);
