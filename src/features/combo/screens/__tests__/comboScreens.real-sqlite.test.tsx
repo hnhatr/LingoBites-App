@@ -122,17 +122,12 @@ describe('ComboSetupScreen', () => {
         ],
       },
     });
-    mocked.openComboSet.mockResolvedValue({
-      ok: true,
-      value: {
-        request_id: 'r',
-        status: 'success',
-        set_id: SET_ID,
-        sentences: [sentence('s1', 'I play here.')],
-        missing: 0,
-        reason: null,
-      },
-    });
+    let finish: (value: unknown) => void = () => undefined;
+    mocked.openComboSet.mockReturnValue(
+      new Promise(resolve => {
+        finish = resolve;
+      }),
+    );
 
     const tree = renderWithTheme(
       <ComboSetupScreen route={{params: {itemCode: 'word:play'}}} />,
@@ -165,9 +160,48 @@ describe('ComboSetupScreen', () => {
     expect(textOf(tree, 'combo-setup-summary')).toBe(
       'Câu lạc bộ · Hiện tại đơn · 3 câu',
     );
+    // All six subjects show; the four the plan does not open carry a lock.
+    for (const group of ['you', 'we', 'they', 'noun_phrase']) {
+      expect(has(tree, `combo-setup-group-locked-${group}`)).toBe(true);
+    }
+    expect(has(tree, 'combo-setup-group-locked-i')).toBe(false);
+    expect(textOf(tree, 'combo-setup-groups-locked')).toBe(
+      '4 chủ ngữ có ổ khóa chưa mở trong gói của bạn',
+    );
+    expect(JSON.stringify(tree.toJSON())).toContain('đã chọn 2/2');
+    press(tree, 'combo-setup-groups-all');
+    expect(textOf(tree, 'combo-setup-groups-note')).toBe(
+      'Chọn ít nhất một chủ ngữ',
+    );
+    expect(textOf(tree, 'combo-setup-summary')).toBe(
+      'Chọn ít nhất một chủ ngữ',
+    );
+    press(tree, 'combo-setup-groups-all');
+    expect(textOf(tree, 'combo-setup-groups-note')).toBe(
+      'Chạm để chọn hoặc bỏ chọn',
+    );
     await act(async () => {
       press(tree, 'combo-setup-start');
     });
+    // While the set is made the waiting screen covers the setup.
+    expect(textOf(tree, 'combo-generating-title')).toBe(
+      'Đang tạo bộ câu với play',
+    );
+    await act(async () => {
+      finish({
+        ok: true,
+        value: {
+          request_id: 'r',
+          status: 'success',
+          set_id: SET_ID,
+          sentences: [sentence('s1', 'I play here.')],
+          missing: 0,
+          reason: null,
+        },
+      });
+      await Promise.resolve();
+    });
+    expect(has(tree, 'combo-generating')).toBe(false);
 
     expect(mocked.openComboSet).toHaveBeenCalledWith({
       itemCode: 'word:play',
@@ -179,7 +213,7 @@ describe('ComboSetupScreen', () => {
     expect(listLocalComboSets()).toEqual([
       expect.objectContaining({id: SET_ID, sentenceCount: 1}),
     ]);
-    expect(mockAppNavigation.openComboSet).toHaveBeenCalledWith(SET_ID);
+    expect(mockAppNavigation.openComboSet).toHaveBeenCalledWith(SET_ID, 1);
   });
 
   it('starts a locked pattern without a tense', async () => {
@@ -308,6 +342,7 @@ describe('ComboSetupScreen', () => {
       'Hôm nay đã hết lượt tạo câu mới',
     );
     expect(mockAppNavigation.openComboSet).not.toHaveBeenCalled();
+    expect(has(tree, 'combo-generating')).toBe(false);
     expect(listLocalComboSets()).toHaveLength(0);
   });
 
@@ -510,6 +545,56 @@ describe('ComboSetupScreen', () => {
 });
 
 describe('ComboSetScreen', () => {
+  it('greets a set that was just made with a toast that goes away', async () => {
+    jest.useFakeTimers();
+    try {
+      saveComboSet(
+        {
+          id: SET_ID,
+          itemCode: 'word:play',
+          grammarCode: 'grammar:present-simple',
+          situationCode: 'club',
+          sentences: [
+            sentence('s1', 'I play here.'),
+            sentence('s2', 'I play today.'),
+          ],
+        },
+        new Date('2026-10-12T08:00:00.000Z'),
+      );
+      const tree = renderWithTheme(
+        <ComboSetScreen route={{params: {setId: SET_ID, created: 2}}} />,
+      );
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(JSON.stringify(tree.toJSON())).toContain('Đã tạo 2 câu mới');
+      expect(has(tree, 'combo-sentence-s2')).toBe(true);
+      await act(async () => {
+        jest.advanceTimersByTime(3000);
+      });
+      expect(has(tree, 'combo-set-created')).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('shows no toast when an older set is opened', () => {
+    saveComboSet(
+      {
+        id: SET_ID,
+        itemCode: 'word:play',
+        grammarCode: 'grammar:present-simple',
+        situationCode: 'club',
+        sentences: [sentence('s1', 'I play here.')],
+      },
+      new Date('2026-10-12T08:00:00.000Z'),
+    );
+    const tree = renderWithTheme(
+      <ComboSetScreen route={{params: {setId: SET_ID}}} />,
+    );
+    expect(has(tree, 'combo-set-created')).toBe(false);
+  });
+
   it('shows the sentence from the device, plays a word IPA on tap, and adds a batch of the same size', async () => {
     saveComboSet(
       {

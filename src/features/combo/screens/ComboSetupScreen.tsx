@@ -16,6 +16,7 @@ import {getStickerEdge} from '@ui/theme/hardShadow';
 import {useAppNavigation} from '@core/navigation';
 
 import {comboEdges} from '../components/comboEdges';
+import {ComboGenerating} from '../components/ComboGenerating';
 import {
   mixTotal,
   type PolarityMix,
@@ -56,6 +57,16 @@ type Props = {
 };
 
 const RECENT_SITUATIONS = 3;
+
+/** Every subject group, in the order they show; the plan opens some of them. */
+const SUBJECT_GROUPS: readonly string[] = [
+  'i',
+  'you',
+  'he_she',
+  'we',
+  'they',
+  'noun_phrase',
+];
 
 const POLARITIES: readonly string[] = ['affirmative', 'negative', 'question'];
 
@@ -151,6 +162,14 @@ export function ComboSetupScreen({navigation, route}: Props) {
         : [...current, group],
     );
 
+  const openGroups = options?.subject_groups ?? [];
+  const allPicked = groups.length === openGroups.length;
+  const lockedGroups = SUBJECT_GROUPS.filter(
+    group => !openGroups.includes(group),
+  ).length;
+
+  const toggleAllGroups = () => setGroups(allPicked ? [] : openGroups);
+
   const toggleBookmark = (code: string) => {
     const next = bookmarks.includes(code)
       ? bookmarks.filter(value => value !== code)
@@ -213,13 +232,14 @@ export function ComboSetupScreen({navigation, route}: Props) {
       polarityCounts: mix,
       subjectGroups: groups,
     });
-    setBusy(false);
     if (!result.ok) {
+      setBusy(false);
       setStartError(comboFailureNotice(result, 'open'));
       return;
     }
     // The Server deletes a set it could not fill and refunds it; nothing to open.
     if (result.value.sentences.length === 0) {
+      setBusy(false);
       setStartError(
         comboEmptyNotice(result.value.reason, result.value.request_id),
       );
@@ -235,7 +255,11 @@ export function ComboSetupScreen({navigation, route}: Props) {
       },
       new Date(),
     );
-    appNavigation.openComboSet(result.value.set_id);
+    appNavigation.openComboSet(
+      result.value.set_id,
+      result.value.sentences.length,
+    );
+    setBusy(false);
   };
 
   const step = (
@@ -393,40 +417,117 @@ export function ComboSetupScreen({navigation, route}: Props) {
           ? step(
               3,
               t('combo.setup.groups'),
-              t('combo.setup.groups_many'),
-              <View style={styles.chips}>
-                {options.subject_groups.map(group => {
-                  const on = groups.includes(group);
-                  return (
-                    <Pressable
-                      accessibilityRole="checkbox"
-                      accessibilityState={{checked: on}}
-                      key={group}
-                      onPress={() => toggleGroup(group)}
-                      style={[
-                        themedStyles.subject,
-                        on ? themedStyles.subjectOn : null,
-                      ]}
-                      testID={`combo-setup-group-${group}`}
-                    >
-                      {on ? (
-                        <MaterialIcon
-                          color={theme.colors.primary}
-                          name="check_circle"
-                          size={15}
-                        />
-                      ) : null}
-                      <AppText
-                        style={on ? themedStyles.teal : themedStyles.plain}
-                        variant="label"
+              t('combo.setup.groups_picked', {
+                count: groups.length,
+                open: openGroups.length,
+              }),
+              <View style={styles.groups}>
+                <View style={styles.chips}>
+                  {SUBJECT_GROUPS.map(group => {
+                    const name = t(`combo.setup.group.${group}`, {
+                      defaultValue: group,
+                    });
+                    if (!openGroups.includes(group)) {
+                      return (
+                        <View
+                          accessibilityHint={t('combo.setup.group_locked_hint')}
+                          accessibilityLabel={t('combo.setup.group_locked', {
+                            name,
+                          })}
+                          accessibilityState={{disabled: true}}
+                          accessible
+                          key={group}
+                          style={themedStyles.subjectLocked}
+                          testID={`combo-setup-group-locked-${group}`}
+                        >
+                          <MaterialIcon
+                            color={theme.colors.text.muted}
+                            name="lock"
+                            size={14}
+                          />
+                          <AppText color="muted" variant="label">
+                            {name}
+                          </AppText>
+                        </View>
+                      );
+                    }
+                    const on = groups.includes(group);
+                    return (
+                      <Pressable
+                        accessibilityHint={t('combo.setup.group_hint')}
+                        accessibilityLabel={name}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{checked: on}}
+                        key={group}
+                        onPress={() => toggleGroup(group)}
+                        style={[
+                          themedStyles.subject,
+                          on ? themedStyles.subjectOn : null,
+                        ]}
+                        testID={`combo-setup-group-${group}`}
                       >
-                        {t(`combo.setup.group.${group}`, {
-                          defaultValue: group,
-                        })}
+                        {on ? (
+                          <MaterialIcon
+                            color={theme.colors.primary}
+                            name="check_circle"
+                            size={15}
+                          />
+                        ) : (
+                          <View style={themedStyles.ring} />
+                        )}
+                        <AppText
+                          style={on ? themedStyles.teal : themedStyles.plain}
+                          variant="label"
+                        >
+                          {name}
+                        </AppText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <View style={styles.subtools}>
+                  <AppText
+                    color={groups.length === 0 ? 'danger' : 'muted'}
+                    testID="combo-setup-groups-note"
+                    variant="caption"
+                  >
+                    {groups.length === 0
+                      ? t('combo.setup.need_group')
+                      : t('combo.setup.groups_tap')}
+                  </AppText>
+                  {openGroups.length > 1 ? (
+                    <Pressable
+                      accessibilityHint={t('combo.setup.groups_all_hint')}
+                      accessibilityRole="button"
+                      hitSlop={8}
+                      onPress={toggleAllGroups}
+                      testID="combo-setup-groups-all"
+                    >
+                      <AppText style={themedStyles.teal} variant="label">
+                        {allPicked
+                          ? t('combo.setup.groups_none')
+                          : t('combo.setup.groups_all')}
                       </AppText>
                     </Pressable>
-                  );
-                })}
+                  ) : null}
+                </View>
+                {lockedGroups > 0 ? (
+                  <View style={styles.lockHint}>
+                    <MaterialIcon
+                      color={theme.colors.text.muted}
+                      name="lock"
+                      size={14}
+                    />
+                    <AppText
+                      color="muted"
+                      style={styles.grow}
+                      testID="combo-setup-groups-locked"
+                      variant="caption"
+                    >
+                      {t('combo.setup.groups_locked', {count: lockedGroups})}
+                    </AppText>
+                  </View>
+                ) : null}
               </View>,
             )
           : null}
@@ -505,6 +606,13 @@ export function ComboSetupScreen({navigation, route}: Props) {
           />
         </StickerFooter>
       ) : null}
+      {busy && options ? (
+        <ComboGenerating
+          count={total}
+          subline={summary}
+          word={comboWordLabel(itemCode)}
+        />
+      ) : null}
       {pickerOpen ? (
         <SituationPickerSheet
           bookmarks={bookmarks}
@@ -533,6 +641,15 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  groups: {
+    gap: 8,
+  },
+  lockHint: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 4,
+  },
   step: {
     gap: 8,
   },
@@ -540,6 +657,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 8,
+    paddingHorizontal: 4,
+  },
+  subtools: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'space-between',
     paddingHorizontal: 4,
   },
   summary: {
@@ -631,6 +755,24 @@ function makeStyles(theme: AppTheme) {
     subjectOn: {
       backgroundColor: theme.colors.accentSoft,
       ...getStickerEdge(3, comboEdges(theme).mint),
+    },
+    subjectLocked: {
+      alignItems: 'center',
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: 14,
+      borderStyle: 'dashed',
+      borderWidth: 1.5,
+      flexDirection: 'row',
+      gap: 6,
+      paddingHorizontal: 13,
+      paddingVertical: 8,
+    },
+    ring: {
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: 8,
+      borderWidth: 2,
+      height: 15,
+      width: 15,
     },
     teal: {
       color: theme.colors.primary,
