@@ -35,8 +35,8 @@ export function ThemePicker() {
     return null;
   }
 
-  // Settings offers only Sáng / Tối / Sticker / Theo hệ thống in every
-  // build. The other themes (pastel-kids, core, neo, comic, cartoon) stay
+  // Settings offers only Sticker in every build. The other themes (Sáng,
+  // Tối, Theo hệ thống, pastel-kids, core, neo, comic, cartoon) stay
   // registered in themeRegistry but are hidden from the picker.
   const options: PickerOption[] = productionThemeOptions
     .filter(id => {

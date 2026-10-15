@@ -280,6 +280,14 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   }, [composeSheetShown, sheetRequested]);
   const isYouTube = isYouTubeStudy || isYouTubeLegacy;
   const inSection = snapshot !== null && !isYouTube && view !== 'hub';
+  // These sections page through their cards and keep their own scroll area
+  // above the previous / next buttons.
+  const pagedSection =
+    inSection &&
+    (view === 'sentences' ||
+      view === 'vocabulary' ||
+      view === 'patterns' ||
+      view === 'listening');
 
   const openView = useCallback((next: PlayerView) => {
     setView(next);
@@ -448,6 +456,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         analysisStates={analysisStates}
         onSpeakText={handleSpeak}
         vocabularySave={savedItems.vocabulary}
+        grammarSave={savedItems.grammar}
+        onFinish={() => openView('hub')}
         videoLessons={videoLessons}
         onOpenVideoLesson={appNavigation.openLesson}
         onPlayVideo={handlePlayVideo}
@@ -583,6 +593,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               }
               onOpenCompose={openCompose}
               onSpeakText={handleSpeak}
+              flowEntry={flowEntry}
+              onOpenFlow={
+                flowEntry.available
+                  ? () => appNavigation.openLessonFlow(lessonId)
+                  : undefined
+              }
               onDeleteLesson={
                 snapshot.origin === 'learner' ? confirmDelete : undefined
               }
@@ -595,8 +611,10 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         return (
           <LessonVocabularySection
             entries={vocabulary}
+            onFinish={() => openView('hub')}
             onSpeakText={handleSpeak}
             saveControl={savedItems.vocabulary}
+            sentences={snapshot.sentences}
           />
         );
       case 'grammar':
@@ -610,6 +628,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         return (
           <LessonPatternSection
             entries={patterns}
+            onFinish={() => openView('hub')}
             onSpeakText={handleSpeak}
             saveControl={savedItems.patterns}
           />
@@ -625,6 +644,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         return (
           <LessonListeningSection
             entries={listening}
+            onFinish={() => openView('hub')}
             onSpeakText={handleSpeak}
           />
         );
@@ -644,9 +664,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         : t('practice.start')
     : !flowEntry.available
       ? t('lessonPlayer.start_learning')
-      : flowEntry.resumeAt !== null
-        ? t('lessonFlow.continue_at', {step: flowEntry.resumeAt})
-        : t('lessonFlow.start');
+      : flowEntry.resumeAt === null
+        ? t('lessonFlow.start_at', {label: t('lessonFlow.step_1')})
+        : flowEntry.resumeAt === 6
+          ? t('lessonFlow.review')
+          : t('lessonFlow.continue_at', {
+              label: t(`lessonFlow.step_${flowEntry.resumeAt}`),
+            });
 
   return (
     <AppScreen>
@@ -726,7 +750,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           </AppText>
         </View>
       ) : null}
-      {studyReady ? (
+      {studyReady || pagedSection ? (
         <View style={themedStyles.study} testID="canonical-player-screen">
           {renderBody()}
         </View>
@@ -777,6 +801,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           ) : null}
           <PrimaryActionButton
             accessibilityLabel={startLabel}
+            tone="coral"
             label={startLabel}
             accessibilityHint={
               practiceRun ? t('practice.start_hint') : undefined

@@ -27,7 +27,7 @@ export const themeIds = Object.keys(themes) as ThemeId[];
 
 export const themeList: AppTheme[] = themeIds.map(id => themes[id]);
 
-export const defaultThemeId: ThemeId = 'default';
+export const defaultThemeId: ThemeId = 'sticker-soft';
 
 export const isThemeId = (value: unknown): value is ThemeId =>
   typeof value === 'string' && value in themes;
@@ -55,15 +55,12 @@ export type ThemePreference = ThemeId | SystemThemeId;
 export const SYSTEM_THEME_LABEL = 'Theo hệ thống';
 
 /**
- * The theme picker offers exactly these four options in every build.
- * Experimental themes (pastel-kids, core, neo, comic, cartoon) stay in
- * `themes` but are hidden from settings.
+ * The theme picker offers only Sticker in every build (dev and production).
+ * Sáng / Tối / Theo hệ thống and the experimental themes (pastel-kids,
+ * core, neo, comic, cartoon) stay in `themes` but are hidden from settings.
  */
 export const productionThemeOptions: readonly ThemePreference[] = [
-  'default',
-  'dark',
   'sticker-soft',
-  SYSTEM_THEME_ID,
 ];
 
 export const isThemePreference = (value: unknown): value is ThemePreference =>

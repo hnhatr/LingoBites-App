@@ -8,18 +8,19 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {LessonExploreRow} from '@ui/components/LessonExploreRow';
-import {LibraryCover} from '@ui/components/LibraryCover';
 import {SectionHeader} from '@ui/components/SectionHeader';
-import {SvgIcon} from '@ui/components/SvgIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {buildPracticeSource, getPracticeEligibility} from '@core/learning';
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
+import {blocksOfStep, FLOW_STEPS} from '../../flow/logic/practiceCompletion';
+import type {FlowEntry} from '../../flow/logic/useFlowEntry';
 import {
   collectLessonOutcome,
   collectLessonPatterns,
+  collectLessonVocabulary,
   type LessonHubSection,
   type LessonHubSectionRow,
   lessonHubSections,
@@ -27,8 +28,10 @@ import {
 } from '../logic/lessonHubContent';
 import {useLessonPictures} from '../logic/lessonPictures';
 import {replayDayKey, replayLine} from '../logic/situationReplay';
-import {LessonItemPictureRail} from './LessonItemPictureRail';
+import {LessonContentTabs} from './LessonContentTabs';
+import {LessonHeroCard, type LessonHeroMeta} from './LessonHeroCard';
 import {LessonOutcomeCard} from './LessonOutcomeCard';
+import {LessonPathCard} from './LessonPathCard';
 import {LessonStatusBanners} from './LessonStatusBanners';
 import {SourcePhotoCard} from './SourcePhotoCard';
 
@@ -101,16 +104,6 @@ export function lessonSectionTitleKey(
     : EXPLORE_ROWS[section].titleKey;
 }
 
-const PREVIEW_COUNT = 2;
-
-type ContentMode = 'original' | 'translation' | 'both';
-
-const CONTENT_MODES: {mode: ContentMode; labelKey: string}[] = [
-  {mode: 'original', labelKey: 'lessonPlayer.original_title'},
-  {mode: 'translation', labelKey: 'lessonPlayer.translation_title'},
-  {mode: 'both', labelKey: 'lessonPlayer.bilingual_title'},
-];
-
 export type CanonicalLessonHubProps = {
   snapshot: LessonSnapshot;
   /** Stored plus late analyses (display-only merge). */
@@ -129,14 +122,18 @@ export type CanonicalLessonHubProps = {
   onOpenCompose?: () => void;
   /** E5: the learner's own lesson can be deleted (server and this device). */
   onDeleteLesson?: () => void;
-  /** Speaks the replayed sentence (TTS); omitted = no play button. */
+  /** Speaks words and sentences (TTS); omitted = no listen buttons. */
   onSpeakText?: (text: string) => void;
+  /** The lesson flow (curriculum and composed lessons) for "Lộ trình". */
+  flowEntry?: FlowEntry;
+  /** Opens the lesson flow; omitted hides "Lộ trình". */
+  onOpenFlow?: () => void;
 };
 
 /**
- * Lesson overview: the cover (catalog lessons), title header, the words and
- * phrases as picture cards, one expandable original/translation card, and
- * "Khám phá bài học" rows into the study sections.
+ * Lesson overview: the hero card (cover as its background), the goal, the
+ * lesson path ("Lộ trình") for flow lessons, the words and sentences under
+ * one tab bar, and "Khám phá" rows into the study sections.
  * Everything shown is derived from the canonical snapshot; only the
  * pictures are asked for beside it, and the defaults stand in without them.
  */
@@ -151,6 +148,8 @@ export function CanonicalLessonHub({
   onOpenCompose,
   onDeleteLesson,
   onSpeakText,
+  flowEntry,
+  onOpenFlow,
 }: CanonicalLessonHubProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -183,10 +182,75 @@ export function CanonicalLessonHub({
       getPracticeEligibility(buildPracticeSource(snapshot, analyses)).eligible,
     [onOpenPractice, snapshot, analyses],
   );
-  const [contentMode, setContentMode] = useState<ContentMode>('original');
-  const [expanded, setExpanded] = useState(false);
-  const hasMore = sentences.length > PREVIEW_COUNT;
-  const visible = expanded ? sentences : sentences.slice(0, PREVIEW_COUNT);
+  const vocabulary = useMemo(
+    () => collectLessonVocabulary(snapshot, analyses),
+    [snapshot, analyses],
+  );
+  const path = useMemo(() => {
+    if (!flowEntry?.available || !onOpenFlow) return null;
+    const current = flowEntry.resumeAt ?? 1;
+    return {
+      steps: FLOW_STEPS.map(step => ({
+        step,
+        label: t(`lessonFlow.step_${step}`),
+      })),
+      current,
+      finished: current === 6,
+      nextActivities: blocksOfStep(snapshot, current).filter(
+        block => block.type === 'activity',
+      ).length,
+    };
+  }, [flowEntry, onOpenFlow, snapshot, t]);
+  const meta: LessonHeroMeta[] = [
+    ...(outcome?.estimatedMinutes
+      ? [
+          {
+            icon: 'schedule' as const,
+            label: t('lessonPlayer.hub_minutes', {
+              count: outcome.estimatedMinutes,
+            }),
+          },
+        ]
+      : []),
+    {
+      icon: 'description',
+      label: t('lessonPlayer.hero_sentences', {count: sentences.length}),
+    },
+    ...(vocabulary.length > 0
+      ? [
+          {
+            icon: 'style' as const,
+            label: t('lessonPlayer.hub_items', {count: vocabulary.length}),
+          },
+        ]
+      : []),
+  ];
+  const chips = [
+    snapshot.generated
+      ? {
+          key: 'generated',
+          label: t('compose.chip_generated'),
+          testID: 'canonical-hub-generated',
+          tone: 'gold' as const,
+        }
+      : null,
+    snapshot.situation_source === 'inferred'
+      ? {
+          key: 'inferred',
+          label: t('compose.chip_inferred'),
+          testID: 'canonical-hub-inferred',
+          tone: 'coralSoft' as const,
+        }
+      : null,
+    outcome && outcome.audience !== 'all'
+      ? {
+          key: 'audience',
+          label: t(`lessonPlayer.audience_${outcome.audience}`),
+          testID: 'canonical-hub-audience',
+          tone: 'coralSoft' as const,
+        }
+      : null,
+  ].filter(chip => chip !== null);
 
   return (
     <View testID="canonical-lesson-hub" style={styles.container}>
@@ -197,65 +261,32 @@ export function CanonicalLessonHub({
         offline={offline ?? false}
       />
 
-      {curriculumLesson ? (
-        <View
-          // Decoration: the title below says what the lesson is.
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          style={themedStyles.cover}
-        >
-          <LibraryCover
-            aspectRatio={2.2}
-            glyph="book"
-            hideLevelChip
-            imageUrl={pictures.coverUrl}
-            // Level titles lead with their code ("A1 – …"); else a neutral cover.
-            level={snapshot.unit?.level_title.slice(0, 2)}
-            shape="lesson"
-            testID="canonical-hub-cover"
-          />
-        </View>
-      ) : null}
-
       <View style={styles.header}>
-        <AppText testID="canonical-hub-title" variant="h2" numberOfLines={3}>
-          {snapshot.title}
-        </AppText>
-        <View style={styles.chips}>
-          {snapshot.unit ? (
-            <Chip label={snapshot.unit.level_title} tone="gold" />
-          ) : null}
-          <Chip
-            label={t('lessonPlayer.hero_sentences', {
-              count: sentences.length,
-            })}
-            tone="accent"
-          />
-          {snapshot.origin === 'learner' ? (
-            <Chip label={t('lessonPlayer.hero_mine')} tone="accentSoft" />
-          ) : null}
-          {snapshot.generated ? (
-            <Chip
-              label={t('compose.chip_generated')}
-              testID="canonical-hub-generated"
-              tone="gold"
-            />
-          ) : null}
-          {snapshot.situation_source === 'inferred' ? (
-            <Chip
-              label={t('compose.chip_inferred')}
-              testID="canonical-hub-inferred"
-              tone="coralSoft"
-            />
-          ) : null}
-          {outcome && outcome.audience !== 'all' ? (
-            <Chip
-              label={t(`lessonPlayer.audience_${outcome.audience}`)}
-              testID="canonical-hub-audience"
-              tone="coralSoft"
-            />
-          ) : null}
-        </View>
+        <LessonHeroCard
+          description={
+            snapshot.description.trim().length > 0 ? snapshot.description : null
+          }
+          eyebrow={
+            snapshot.unit?.level_title ??
+            (snapshot.origin === 'learner' ? t('lessonPlayer.hero_mine') : null)
+          }
+          glyph="book"
+          imageUrl={curriculumLesson ? pictures.coverUrl : null}
+          meta={meta}
+          title={snapshot.title}
+        />
+        {chips.length > 0 ? (
+          <View style={styles.chips}>
+            {chips.map(chip => (
+              <Chip
+                key={chip.key}
+                label={chip.label}
+                testID={chip.testID}
+                tone={chip.tone}
+              />
+            ))}
+          </View>
+        ) : null}
         {snapshot.generated &&
         snapshot.derived_from_lesson_id &&
         onOpenLesson ? (
@@ -270,91 +301,46 @@ export function CanonicalLessonHub({
             </AppText>
           </Pressable>
         ) : null}
-        {snapshot.description.trim().length > 0 ? (
-          <AppText color="secondary" variant="body">
-            {snapshot.description}
-          </AppText>
-        ) : null}
       </View>
 
       {outcome ? (
-        <LessonOutcomeCard onOpenLesson={onOpenLesson} outcome={outcome} />
+        <View>
+          <SectionHeader title={t('lessonPlayer.goal_section')} />
+          <LessonOutcomeCard onOpenLesson={onOpenLesson} outcome={outcome} />
+        </View>
       ) : null}
 
-      {catalogLesson ? (
-        <LessonItemPictureRail
-          itemImages={pictures.itemImages}
-          onOpen={() => onOpenSection('vocabulary')}
-          snapshot={snapshot}
+      {path ? (
+        <LessonPathCard
+          current={path.current}
+          finished={path.finished}
+          nextActivities={path.nextActivities}
+          onOpen={onOpenFlow!}
+          steps={path.steps}
         />
       ) : null}
 
-      <AppCard style={themedStyles.contentCard}>
-        <View style={styles.cardBody}>
-          <View style={styles.sectionTitleRow}>
-            <SvgIcon
-              color={theme.colors.primary}
-              name="description"
-              size={22}
-            />
-            <View style={styles.modes}>
-              {CONTENT_MODES.map(({mode, labelKey}) => (
-                <Chip
-                  key={mode}
-                  accessibilityHint={t('lessonPlayer.content_toggle_hint')}
-                  label={t(labelKey)}
-                  onPress={() => setContentMode(mode)}
-                  selected={contentMode === mode}
-                  testID={`canonical-hub-mode-${mode}`}
-                />
-              ))}
-            </View>
-          </View>
-          {visible.map(sentence => (
-            <View key={sentence.id} style={styles.sentence}>
-              {contentMode !== 'translation' ? (
-                <AppText color="secondary" variant="bodyLg">
-                  {sentence.text_en}
-                </AppText>
-              ) : null}
-              {contentMode !== 'original' ? (
-                <AppText
-                  color={contentMode === 'both' ? 'muted' : 'secondary'}
-                  variant={contentMode === 'both' ? 'body' : 'bodyLg'}
-                >
-                  {sentence.text_vi}
-                </AppText>
-              ) : null}
-            </View>
-          ))}
-          {hasMore ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityHint={t('lessonPlayer.content_toggle_hint')}
-              testID="canonical-hub-expand"
-              onPress={() => setExpanded(value => !value)}
-              style={styles.expand}
-            >
-              <AppText style={themedStyles.expandLabel} variant="label">
-                {expanded
-                  ? `${t('lessonPlayer.content_show_less')} ↑`
-                  : `${t('lessonPlayer.content_show_more')} ↓`}
-              </AppText>
-            </Pressable>
-          ) : null}
-        </View>
-      </AppCard>
+      <LessonContentTabs
+        itemImages={pictures.itemImages}
+        onOpenWords={() => onOpenSection('vocabulary')}
+        onSpeakText={onSpeakText}
+        sentences={sentences}
+        showPictures={catalogLesson}
+        words={vocabulary}
+      />
 
       <View style={styles.exploreSection}>
         <SectionHeader title={t('lessonPlayer.explore_title')} />
-        {sectionRows.map(row => (
-          <ExploreRow
-            key={row.section}
-            catalogLesson={catalogLesson}
-            onOpenSection={onOpenSection}
-            row={row}
-          />
-        ))}
+        {sectionRows
+          .filter(row => !(row.section === 'vocabulary' && row.count > 0))
+          .map(row => (
+            <ExploreRow
+              key={row.section}
+              catalogLesson={catalogLesson}
+              onOpenSection={onOpenSection}
+              row={row}
+            />
+          ))}
         {canPractice ? (
           <LessonExploreRow
             icon="bolt"
@@ -469,10 +455,6 @@ function ExploreRow({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    cover: {
-      borderRadius: 18,
-      overflow: 'hidden',
-    },
     listen: {alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center'},
     contentCard: {
       borderBottomColor: theme.colors.accentSoft,
@@ -485,9 +467,6 @@ function makeStyles(theme: AppTheme) {
 }
 
 const styles = StyleSheet.create({
-  cardBody: {
-    gap: 8,
-  },
   container: {
     gap: 16,
   },
@@ -499,26 +478,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  expand: {
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-    minHeight: 44,
-  },
   header: {
     gap: 8,
-  },
-  modes: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-  },
-  sectionTitleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  sentence: {
-    gap: 2,
   },
 });

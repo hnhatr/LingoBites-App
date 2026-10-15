@@ -31,7 +31,7 @@ describe('themeRegistry', () => {
 
   it('defaultThemeId points to an existing theme', () => {
     expect(themes[defaultThemeId]).toBeDefined();
-    expect(defaultThemeId).toBe('default');
+    expect(defaultThemeId).toBe('sticker-soft');
   });
 
   it('isThemeId accepts known ids and rejects everything else', () => {
@@ -53,13 +53,9 @@ describe('themeRegistry', () => {
     expect(themeReleaseFlag.default).toBeUndefined();
   });
 
-  it('exposes the production picker options plus the system preference', () => {
-    expect(productionThemeOptions).toEqual([
-      'default',
-      'dark',
-      'sticker-soft',
-      SYSTEM_THEME_ID,
-    ]);
+  it('exposes only Sticker as a picker option', () => {
+    expect(productionThemeOptions).toEqual(['sticker-soft']);
+    expect(productionThemeOptions).not.toContain(SYSTEM_THEME_ID);
     expect(isThemePreference('system')).toBe(true);
     expect(isThemePreference('dark')).toBe(true);
     expect(isThemePreference('nope')).toBe(false);

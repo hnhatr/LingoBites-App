@@ -251,31 +251,30 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
   it('opens a text lesson on the hub without the retry action', () => {
     const {tree} = renderScreen();
     expect(has(tree, 'canonical-lesson-hub')).toBe(true);
-    expect(has(tree, 'canonical-hub-expand')).toBe(true);
+    expect(has(tree, 'lesson-content')).toBe(true);
     expect(has(tree, 'canonical-player')).toBe(false);
     expect(has(tree, 'canonical-player-retry')).toBe(false);
     // F5: opening a ready lesson records its start for Home "Học tiếp".
     expect(mockMarkStarted).toHaveBeenCalled();
   });
 
-  it('merges original and translation in one card with expand and mode toggle', () => {
+  it('lists the sentences under their tab with a Vietnamese switch', () => {
     const {tree} = renderScreen();
     const text = () => JSON.stringify(tree.toJSON());
-    expect(text()).toContain('Sentence 1 en.');
-    expect(text()).not.toContain('Sentence 2 en.');
+    expect(text()).not.toContain('Sentence 0 en.');
     act(() => {
-      pressable(tree, 'canonical-hub-expand').props.onPress();
+      pressable(tree, 'lesson-content-tab-sentences').props.onPress();
     });
+    expect(text()).toContain('Sentence 0 en.');
     expect(text()).toContain('Sentence 3 en.');
+    expect(text()).not.toContain('Câu 3 vi.');
     act(() => {
-      pressable(tree, 'canonical-hub-mode-both').props.onPress();
+      tree.root
+        .findByProps({testID: 'lesson-content-vi-toggle'})
+        .props.onValueChange(true);
     });
     expect(text()).toContain('Câu 3 vi.');
     expect(text()).toContain('Sentence 3 en.');
-    act(() => {
-      pressable(tree, 'canonical-hub-mode-translation').props.onPress();
-    });
-    expect(text()).not.toContain('Sentence 3 en.');
   });
 
   it('"Bắt đầu học" shows the sentence study and back returns to the hub', () => {
@@ -349,11 +348,10 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
 
   it('lists stored analysis words in the vocabulary section', () => {
     const {tree} = renderScreen();
-    const vocabularyRow = tree.root
-      .findAll(node => typeof node.props.onPress === 'function')
-      .find(node => node.props.title === 'Từ vựng chính');
+    // The hub's word tab lists them too and opens the full section.
+    expect(has(tree, 'lesson-content-word-phrase:wake up')).toBe(true);
     act(() => {
-      vocabularyRow!.props.onPress();
+      pressable(tree, 'lesson-content-words-all').props.onPress();
     });
     expect(
       // The list keys a word by its item code (PR 5).
@@ -521,9 +519,18 @@ describe('CanonicalLessonPlayerScreen lesson hub', () => {
     expect(has(tree, 'canonical-hub-start')).toBe(false);
     // G6: no manual "complete" for a curriculum lesson.
     expect(has(tree, 'canonical-hub-complete')).toBe(false);
+    // The button names the part to start, not a step number.
+    expect(pressable(tree, 'canonical-hub-start-flow').props.label).toBe(
+      'Bắt đầu · Ôn liên quan',
+    );
+    expect(has(tree, 'lesson-path-step-1-current')).toBe(true);
     act(() => {
       pressable(tree, 'canonical-hub-start-flow').props.onPress();
     });
     expect(mockAppNavigation.openLessonFlow).toHaveBeenCalledWith(LESSON_ID);
+    act(() => {
+      pressable(tree, 'lesson-path-details').props.onPress();
+    });
+    expect(mockAppNavigation.openLessonFlow).toHaveBeenCalledTimes(2);
   });
 });

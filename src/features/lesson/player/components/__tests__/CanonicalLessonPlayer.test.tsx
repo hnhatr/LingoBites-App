@@ -122,10 +122,12 @@ describe('CanonicalLessonPlayer', () => {
           ),
         ).toHaveLength(0);
       } else {
+        // Text lessons go one sentence at a time.
         expect(
-          tree.root.findByProps({testID: 'canonical-player-title'}).props
-            .children,
-        ).toBe('Test lesson');
+          tree.root.findAll(
+            node => node.props.testID === 'sentence-study-progress-label',
+          )[0]?.props.children,
+        ).toBe('1/2');
       }
     },
   );
@@ -251,5 +253,56 @@ describe('CanonicalLessonPlayer', () => {
     expect(
       archived.root.findByProps({testID: 'canonical-player-archived'}),
     ).toBeDefined();
+  });
+
+  it('goes one sentence at a time with the analysis under it', async () => {
+    const S1 = '11111111-1111-4111-8111-111111111101';
+    const S2 = '11111111-1111-4111-8111-111111111102';
+    const onRequestAnalysis = jest.fn();
+    const onFinish = jest.fn();
+    const grammar = {isSaved: jest.fn(() => false), onToggle: jest.fn()};
+    const snapshot = snapshotOf('learner_text');
+    const tree = await renderWithTheme(
+      <CanonicalLessonPlayer
+        analyses={snapshot.analyses}
+        grammarSave={grammar}
+        onFinish={onFinish}
+        onRequestAnalysis={onRequestAnalysis}
+        snapshot={snapshot}
+      />,
+    );
+    const find = (id: string) =>
+      tree.root.findAll(node => node.props.testID === id);
+    const press = async (id: string) => {
+      const node = find(id).find(
+        candidate => typeof candidate.props.onPress === 'function',
+      )!;
+      await act(async () => {
+        node.props.onPress();
+      });
+    };
+
+    // Sentence 1 shows its stored analysis; Vietnamese is hidden at first.
+    expect(find(`canonical-sentence-${S1}`).length).toBeGreaterThan(0);
+    expect(find(`sentence-study-vi-${S1}`)).toHaveLength(0);
+    await act(async () => {
+      find('sentence-study-vi-toggle')[0]!.props.onValueChange(true);
+    });
+    expect(find(`sentence-study-vi-${S1}`).length).toBeGreaterThan(0);
+    await press(`analysis-tabs-${S1}-grammar`);
+    await press('analysis-grammar-save-66666666-6666-4666-8666-666666666601');
+    expect(grammar.onToggle).toHaveBeenCalledWith(
+      '66666666-6666-4666-8666-666666666601',
+    );
+
+    // Sentence 2 has no analysis yet: one clear button asks for it.
+    await press('sentence-study-next');
+    expect(find(`canonical-sentence-${S1}`)).toHaveLength(0);
+    await press(`canonical-analyze-${S2}`);
+    expect(onRequestAnalysis).toHaveBeenCalledWith(S2);
+
+    // The last sentence ends the section.
+    await press('sentence-study-done');
+    expect(onFinish).toHaveBeenCalledTimes(1);
   });
 });

@@ -17,7 +17,15 @@ export type ApiFailureKind =
   | 'server-error'
   | 'contract-mismatch';
 
-export type ApiFailure = {ok: false; kind: ApiFailureKind; message: string};
+export type ApiFailure = {
+  ok: false;
+  kind: ApiFailureKind;
+  message: string;
+  /** The Server's error code (`error.code`), when its body has one. */
+  code?: string;
+  /** The Server's request id, to find the call in its logs. */
+  requestId?: string;
+};
 
 export type ApiResult<T> = {ok: true; value: T} | ApiFailure;
 
@@ -55,26 +63,75 @@ export async function requestJson<T>(
     };
   }
   if (response.status === 404) {
-    return {ok: false, kind: 'not-found', message: 'Not found.'};
+    return {
+      ok: false,
+      kind: 'not-found',
+      message: 'Not found.',
+      ...(await errorDetails(response)),
+    };
   }
   if (!response.ok) {
     return {
       ok: false,
       kind: response.status >= 500 ? 'server-error' : 'client-error',
       message: `The request failed (${response.status}).`,
+      ...(await errorDetails(response)),
     };
   }
   let body: unknown;
   try {
     body = await response.json();
   } catch {
-    return {ok: false, kind: 'contract-mismatch', message: 'Unreadable body.'};
+    return {
+      ok: false,
+      kind: 'contract-mismatch',
+      message: 'Unreadable body.',
+      ...headerRequestId(response),
+    };
   }
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return {ok: false, kind: 'contract-mismatch', message: 'Unexpected body.'};
+    return {
+      ok: false,
+      kind: 'contract-mismatch',
+      message: 'Unexpected body.',
+      ...headerRequestId(response),
+    };
   }
   return {ok: true, value: parsed.data};
+}
+
+function headerRequestId(response: Response): Pick<ApiFailure, 'requestId'> {
+  const requestId = response.headers?.get?.('X-Request-Id');
+  return requestId ? {requestId} : {};
+}
+
+/**
+ * The error code and request id of a failed call, from the Server's error body
+ * (`{request_id, error: {code}}`), else the `X-Request-Id` header. Never throws.
+ */
+async function errorDetails(
+  response: Response,
+): Promise<Pick<ApiFailure, 'code' | 'requestId'>> {
+  let body: unknown = null;
+  try {
+    body = await response.json();
+  } catch {
+    // Not JSON: only the header is left.
+  }
+  const record =
+    body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+  const error =
+    record.error && typeof record.error === 'object'
+      ? (record.error as Record<string, unknown>)
+      : {};
+  const code = typeof error.code === 'string' ? error.code : undefined;
+  return {
+    ...(code ? {code} : {}),
+    ...(typeof record.request_id === 'string'
+      ? {requestId: record.request_id}
+      : headerRequestId(response)),
+  };
 }
 
 /** A JSON body for a POST or PUT. */
