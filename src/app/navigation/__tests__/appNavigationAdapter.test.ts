@@ -40,7 +40,6 @@ describe('createAppNavigation (root-stack adapter)', () => {
     const nav = createAppNavigation(ref);
 
     nav.openLesson('lesson-1');
-    nav.openCatalog();
     nav.openLibrarySection('publicVideo');
     nav.openVideoHub();
     nav.openReview();
@@ -52,7 +51,6 @@ describe('createAppNavigation (root-stack adapter)', () => {
 
     expect(ref.navigate.mock.calls).toEqual([
       ['CanonicalLessonPlayer', {lessonId: 'lesson-1'}],
-      ['CanonicalCatalog', undefined],
       ['LibraryList', {section: 'publicVideo'}],
       ['VideoHub', undefined],
       ['DailyReview', undefined],

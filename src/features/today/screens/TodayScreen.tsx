@@ -169,7 +169,7 @@ export function TodayScreen({route}: Props = {}) {
 
   function handleAddLesson(kind: AddLessonKind) {
     if (kind === 'create') navigation.openCreate();
-    else if (kind === 'library') navigation.openCatalog();
+    else if (kind === 'library') navigation.goToTab('Lessons');
     else navigation.openCourse();
   }
 

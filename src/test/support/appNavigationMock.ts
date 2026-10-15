@@ -17,7 +17,6 @@ export const mockAppNavigation: jest.Mocked<AppNavigation> = {
   closeLesson: jest.fn(),
   closeLessonToUnit: jest.fn(),
   openNextUnitLesson: jest.fn(),
-  openCatalog: jest.fn(),
   openLibrarySection: jest.fn(),
   openVideoHub: jest.fn(),
   openCourse: jest.fn(),

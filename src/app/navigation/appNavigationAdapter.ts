@@ -248,7 +248,6 @@ export function createAppNavigation(
     closeLesson: () => replaceLessonRoutes([]),
     closeLessonToUnit,
     openNextUnitLesson,
-    openCatalog: () => navigate('CanonicalCatalog', undefined),
     openLibrarySection: section => navigate('LibraryList', {section}),
     openVideoHub: () => navigate('VideoHub', undefined),
     openCourse,

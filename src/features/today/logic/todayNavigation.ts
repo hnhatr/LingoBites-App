@@ -8,7 +8,7 @@ export type TodayNavigationRequest =
   | {screen: 'DailyReview'}
   | {screen: 'ItemReview'}
   | {screen: 'CanonicalLessonPlayer'; lessonId: string}
-  | {screen: 'CanonicalCatalog'}
+  | {screen: 'LessonsTab'}
   | {screen: 'SpeakingRoom'}
   | {screen: 'ShadowingLessonPicker'}
   | {screen: 'ShadowingSession'; lessonId: string; sentenceIndex: number};
@@ -26,7 +26,7 @@ export function resolveTodayNavigation(
     if (typeof lessonId === 'string' && lessonId.length > 0) {
       return {screen: 'CanonicalLessonPlayer', lessonId};
     }
-    return {screen: 'CanonicalCatalog'};
+    return {screen: 'LessonsTab'};
   }
   if (target.screen === 'ItemReview') {
     return {screen: 'ItemReview'};
@@ -48,8 +48,10 @@ export function resolveTodayNavigation(
     }
     return {screen: 'ShadowingLessonPicker'};
   }
+  // The plan's "pick a lesson" target opens the Lessons tab (the old flat
+  // catalog screen is gone).
   if (target.screen === 'CanonicalCatalog') {
-    return {screen: 'CanonicalCatalog'};
+    return {screen: 'LessonsTab'};
   }
   return {screen: 'DailyReview'};
 }
@@ -69,8 +71,8 @@ export function openStudyActivity(
   const resolved = resolveTodayNavigation(activity.navigationTarget);
   if (resolved.screen === 'CanonicalLessonPlayer') {
     navigation.openLesson(resolved.lessonId);
-  } else if (resolved.screen === 'CanonicalCatalog') {
-    navigation.openCatalog();
+  } else if (resolved.screen === 'LessonsTab') {
+    navigation.goToTab('Lessons');
   } else if (resolved.screen === 'SpeakingRoom') {
     navigation.openSpeakingRoom();
   } else if (resolved.screen === 'ShadowingLessonPicker') {

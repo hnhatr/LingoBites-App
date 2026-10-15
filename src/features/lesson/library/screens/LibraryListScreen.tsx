@@ -99,12 +99,17 @@ export function LibraryListScreen({navigation, route}: Props) {
       <SearchAndFilterBar
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
+        placeholder={section.combos ? 'Tìm theo từ…' : undefined}
       />
       <View style={styles.content} testID={`library-list-${section.id}`}>
         {section.moments ? (
           <MomentLibraryList emptyHint={section.emptyHint} />
         ) : section.combos ? (
-          <ComboHistoryList query={searchQuery} sets={listLocalComboSets()} />
+          <ComboHistoryList
+            query={searchQuery}
+            sets={listLocalComboSets()}
+            showPackLink
+          />
         ) : section.wordPath ? (
           <WordPathList query={searchQuery} />
         ) : section.catalog ? (

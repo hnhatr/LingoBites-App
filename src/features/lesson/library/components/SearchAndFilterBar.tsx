@@ -1,10 +1,10 @@
 import React, {useMemo, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, TextInput, View} from 'react-native';
 
 import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {TextField} from '@ui/components/TextField';
 import {useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 import type {AppTheme} from '@ui/theme/types';
 
 import {
@@ -18,6 +18,8 @@ export interface SearchAndFilterBarProps {
   sourceFilter?: LibrarySourceFilter;
   onSearchChange: (query: string) => void;
   onFilterChange?: (filter: LibrarySourceFilter) => void;
+  /** What the field searches, e.g. "Tìm theo từ…". */
+  placeholder?: string;
 }
 
 function createStyles(theme: AppTheme) {
@@ -27,21 +29,29 @@ function createStyles(theme: AppTheme) {
       paddingVertical: theme.spacing.sm,
       gap: theme.spacing.sm,
     },
-    searchContainer: {
-      position: 'relative',
-      justifyContent: 'center',
-    },
-    searchIcon: {
-      position: 'absolute',
-      left: theme.spacing.md,
-      // Vertically centered over the 48pt-min-height input; the 24pt glyph
-      // is pulled up by half its height so it stays centered.
-      top: '50%',
-      marginTop: -12,
-      zIndex: 1,
+    searchField: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 18,
+      flexDirection: 'row',
+      gap: 10,
+      minHeight: 48,
+      paddingHorizontal: 14,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
     },
     searchInput: {
-      paddingLeft: theme.spacing.xl + theme.spacing.lg,
+      color: theme.colors.text.primary,
+      flex: 1,
+      fontSize: 15,
+      paddingVertical: 10,
+    },
+    clear: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 9,
+      height: 26,
+      justifyContent: 'center',
+      width: 26,
     },
     toggleRow: {
       alignItems: 'flex-start',
@@ -59,6 +69,7 @@ export function SearchAndFilterBar({
   sourceFilter = 'all',
   onSearchChange,
   onFilterChange,
+  placeholder = 'Tìm kiếm...',
 }: SearchAndFilterBarProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -70,21 +81,39 @@ export function SearchAndFilterBar({
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <View pointerEvents="none" style={styles.searchIcon}>
-          <MaterialIcon
-            name="search"
-            size={24}
-            color={theme.colors.text.secondary}
-          />
-        </View>
-        <TextField
+      <View style={styles.searchField}>
+        <MaterialIcon
+          name="search"
+          size={22}
+          color={theme.colors.text.secondary}
+        />
+        <TextInput
           value={searchQuery}
           onChangeText={onSearchChange}
-          placeholder="Tìm kiếm..."
+          placeholder={placeholder}
+          placeholderTextColor={theme.colors.text.muted}
           accessibilityLabel="Tìm kiếm trong Thư viện"
+          returnKeyType="search"
           style={styles.searchInput}
+          testID="library-search-input"
         />
+        {searchQuery ? (
+          <Pressable
+            accessibilityHint="Xóa nội dung tìm kiếm"
+            accessibilityLabel="Xóa tìm kiếm"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => onSearchChange('')}
+            style={styles.clear}
+            testID="library-search-clear"
+          >
+            <MaterialIcon
+              name="close"
+              size={15}
+              color={theme.colors.text.secondary}
+            />
+          </Pressable>
+        ) : null}
       </View>
 
       {onFilterChange ? (

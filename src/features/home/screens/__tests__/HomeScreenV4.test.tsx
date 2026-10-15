@@ -272,7 +272,7 @@ describe('Home hero states (AC-002, §VS-2.4)', () => {
     await act(async () => cta.props.onPress());
     const calls = [
       mockAppNavigation.openLesson,
-      mockAppNavigation.openCatalog,
+      mockAppNavigation.goToTab,
       mockAppNavigation.openReview,
       mockAppNavigation.openSpeakingRoom,
       mockAppNavigation.openShadowing,

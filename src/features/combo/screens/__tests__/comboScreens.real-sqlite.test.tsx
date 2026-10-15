@@ -575,7 +575,12 @@ describe('ComboHistoryScreen', () => {
     );
     const tree = renderWithTheme(<ComboHistoryScreen />);
     expect(has(tree, `combo-history-${SET_ID}`)).toBe(true);
-    press(tree, `combo-history-open-${SET_ID}`);
+    // The card names the word, not its catalog code, and shows a sentence.
+    const text = JSON.stringify(tree.toJSON());
+    expect(text).toContain('"play"');
+    expect(text).not.toContain('word:play');
+    expect(text).toContain('I ');
+    press(tree, `combo-history-${SET_ID}`);
     expect(mockAppNavigation.openComboSet).toHaveBeenCalledWith(SET_ID);
   });
 });
@@ -603,5 +608,28 @@ describe('ComboHistoryList search', () => {
     const tree = renderWithTheme(<ComboHistoryList sets={sets} query="PLA" />);
     expect(has(tree, 'combo-history-a1')).toBe(true);
     expect(has(tree, 'combo-history-a2')).toBe(false);
+  });
+
+  it('does not match every set on the "word:" prefix', () => {
+    const sets = [
+      {
+        id: 'a1',
+        itemCode: 'word:play',
+        grammarCode: 'g',
+        situationCode: 'c',
+        sentenceCount: 2,
+        createdAt: 'x',
+      },
+    ];
+    const tree = renderWithTheme(<ComboHistoryList sets={sets} query="word" />);
+    expect(has(tree, 'combo-history-a1')).toBe(false);
+    expect(has(tree, 'combo-history-no-match')).toBe(true);
+  });
+
+  it('offers the word packs when there is no set', () => {
+    const tree = renderWithTheme(<ComboHistoryList sets={[]} showPackLink />);
+    expect(has(tree, 'combo-history-empty')).toBe(true);
+    press(tree, 'combo-history-open-packs');
+    expect(mockAppNavigation.openWordPath).toHaveBeenCalled();
   });
 });

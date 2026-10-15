@@ -38,7 +38,6 @@ import {
   VideoHubScreen,
 } from '@features/lesson/library';
 import {
-  CanonicalLessonCatalogScreen,
   CanonicalLessonPlayerScreen,
   ComposeTrackerHost,
   LessonCreationScreen,
@@ -123,7 +122,7 @@ const HIDDEN_HEADER = {headerShown: false} as const;
  *   │  └─ Profile      ProfileMain + settings pages
  *   └─ task flows      cover the tab bar; back returns to the opening tab
  *      CreateHub, PasteText, ImageCapture, LessonCreation,
- *      CanonicalCatalog, CanonicalLessonPlayer, LibraryList, VideoHub,
+ *      CanonicalLessonPlayer, LibraryList, VideoHub,
  *      LessonFlowPlayer, DailyReview, Practice, Today,
  *      SpeakingRoom, ShadowingLessonPicker, ShadowingSession,
  *      ShadowingSummary
@@ -307,10 +306,6 @@ function AuthenticatedRootStack() {
         options={{gestureEnabled: false}}
       />
       {/* Lessons */}
-      <RootStack.Screen
-        component={CanonicalLessonCatalogScreen}
-        name="CanonicalCatalog"
-      />
       <RootStack.Screen
         component={CanonicalLessonPlayerScreen}
         name="CanonicalLessonPlayer"

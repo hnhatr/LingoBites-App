@@ -5,7 +5,7 @@ type Nav = {
 };
 
 describe('Home stack navigation types', () => {
-  it('accepts canonical player and catalog routes', () => {
+  it('accepts the canonical player and task routes', () => {
     const nav = {navigate: jest.fn()} as Nav & {
       navigate: <T extends keyof HomeStackParamList>(
         screen: T,
@@ -13,7 +13,6 @@ describe('Home stack navigation types', () => {
       ) => void;
     };
     nav.navigate('CanonicalLessonPlayer', {lessonId: 'lesson-1'});
-    nav.navigate('CanonicalCatalog');
     nav.navigate('DailyReview');
     nav.navigate('Today');
     nav.navigate('SpeakingRoom');

@@ -12,6 +12,8 @@ const RETIRED_ROUTE_TOKENS = [
   'YouTubeInput',
   'YouTubeProcessing',
   'YouTubeLesson',
+  // The flat "Tất cả bài học" list; the Lessons tab replaced it.
+  'CanonicalCatalog',
 ];
 
 describe('TASK-008 retired App routes', () => {
@@ -24,7 +26,6 @@ describe('TASK-008 retired App routes', () => {
       expect(source).not.toContain(token);
     }
     expect(source).toContain('CanonicalLessonPlayer');
-    expect(source).toContain('CanonicalCatalog');
   });
 
   it('registers Today, SpeakingRoom and the lesson screens on the root stack', () => {
@@ -39,7 +40,6 @@ describe('TASK-008 retired App routes', () => {
     expect(rootStack).toContain('name="Today"');
     expect(rootStack).toContain('name="SpeakingRoom"');
     expect(rootStack).toContain('name="CanonicalLessonPlayer"');
-    expect(rootStack).toContain('name="CanonicalCatalog"');
   });
 
   it('registers the revived Practice route only from the on-device feature', () => {
