@@ -19,6 +19,7 @@ import {
   fetchComboSet,
   reportComboSentence,
 } from '../logic/comboClient';
+import {comboFailureNotice} from '../logic/comboErrors';
 import {
   type LocalComboSet,
   readLocalComboSet,
@@ -120,7 +121,17 @@ export function ComboSetScreen({navigation, route}: Props) {
     const result = await addToComboSet(setId);
     setBusy(false);
     if (!result.ok) {
-      setNotice(t('combo.set.add_failed'));
+      const failure = comboFailureNotice(result, 'more');
+      const message = t(
+        failure.key === 'combo.errors.unknown'
+          ? 'combo.set.add_failed'
+          : failure.key,
+      );
+      setNotice(
+        failure.requestId
+          ? `${message}\n${t('combo.errors.request_id', {id: failure.requestId})}`
+          : message,
+      );
       return;
     }
     const merged = {

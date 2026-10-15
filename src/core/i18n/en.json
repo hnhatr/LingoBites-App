@@ -1522,6 +1522,17 @@
     "option_hint": "Picks this answer"
   },
   "combo": {
+    "errors": {
+      "situation_not_enabled": "This situation is not enabled for sentence sets. Pick another one.",
+      "not_found": "This word, tense or situation was not found on the server.",
+      "invalid_choice": "This choice is outside your plan. Change the sentence types or the count.",
+      "no_subject_groups": "No subject fits this choice. Pick more subjects.",
+      "daily_sets_used": "You have used all of today's sentence sets. Come back tomorrow.",
+      "set_full": "This set already has its maximum number of sentences.",
+      "network": "The server could not be reached. Check your connection and try again.",
+      "unknown": "The set could not be opened. Try again in a few minutes.",
+      "request_id": "Request ID: {{id}}"
+    },
     "setup": {
       "title": "Combo sentences",
       "load_failed": "The sentences could not be loaded. Try again when you are online.",

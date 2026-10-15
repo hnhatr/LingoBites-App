@@ -1522,6 +1522,17 @@
     "option_hint": "Chọn đáp án này"
   },
   "combo": {
+    "errors": {
+      "situation_not_enabled": "Tình huống này chưa được bật cho bộ câu. Hãy chọn tình huống khác.",
+      "not_found": "Không tìm thấy từ, thì hoặc tình huống này trên máy chủ.",
+      "invalid_choice": "Lựa chọn này nằm ngoài gói của bạn. Hãy đổi loại câu hoặc số câu.",
+      "no_subject_groups": "Không còn chủ ngữ nào phù hợp với lựa chọn này. Hãy chọn thêm chủ ngữ.",
+      "daily_sets_used": "Hôm nay bạn đã dùng hết số bộ câu. Hãy quay lại vào ngày mai.",
+      "set_full": "Bộ câu này đã đủ số câu tối đa.",
+      "network": "Chưa kết nối được máy chủ. Hãy kiểm tra mạng và thử lại.",
+      "unknown": "Chưa mở được bộ câu. Hãy thử lại sau ít phút.",
+      "request_id": "Mã yêu cầu: {{id}}"
+    },
     "setup": {
       "title": "Bộ câu tổ hợp",
       "load_failed": "Chưa tải được các lựa chọn. Hãy thử lại khi có mạng.",
