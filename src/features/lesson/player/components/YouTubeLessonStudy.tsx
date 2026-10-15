@@ -429,19 +429,17 @@ export function YouTubeLessonStudy({
               style={[styles.progressDone, {width: `${progressRatio * 100}%`}]}
             />
             {orderedSentences.length <= MAX_PROGRESS_TICKS
-              ? orderedSentences
-                  .slice(1)
-                  .map((sentence, index) => (
-                    <View
-                      key={sentence.id}
-                      style={[
-                        styles.progressTick,
-                        {
-                          left: `${((index + 1) / orderedSentences.length) * 100}%`,
-                        },
-                      ]}
-                    />
-                  ))
+              ? orderedSentences.slice(1).map((sentence, index) => (
+                  <View
+                    key={sentence.id}
+                    style={[
+                      styles.progressTick,
+                      {
+                        left: `${((index + 1) / orderedSentences.length) * 100}%`,
+                      },
+                    ]}
+                  />
+                ))
               : null}
           </View>
           {orderedSentences.length > 0 ? (
