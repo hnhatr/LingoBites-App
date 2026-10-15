@@ -29,3 +29,8 @@ eslint, tsc, jest `src/features/lesson/library` (24 suites, 205 tests) pass. Not
 - `PlayButton` face is now a `BlurView` (intensity 20, light tint). Android blurs only with a `BlurTargetView` around the thumbnail and `blurMethod="dimezisBlurViewSdk31Plus"` (Android 12+; older Android falls back to the plain translucent face).
 - `jest.setup.js`: mock `expo-blur` (both views render as plain `View`).
 - Review: native module, so it needs `pod install` and a new native build (iOS + Android); an OTA update via expo-updates won't carry it. Check blur on a real device, and scroll performance on Android.
+
+## Follow-up: green play button (G2)
+- The light-glass button with a white shelf looked like a rendering glitch on real thumbnails (shelf vanished on bright images, heavy light-tint blur smeared the face).
+- `PlayButton` now: no shelf, all four corners rounded, bright green face `rgba(34,197,94,0.85)`, white triangle with a soft iOS shadow, blur intensity 10 with the default tint (the light tint washed the green out).
+- Review: colour is a literal (`PLAY_FACE`), not a theme token; check on device.
