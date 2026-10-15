@@ -262,6 +262,11 @@ jest.mock('react-native-svg', () => {
 
 // expo-updates is native-only; disabled by default so the launch update is a
 // no-op in tests. Tests that exercise it override these per case.
+jest.mock('expo-blur', () => {
+  const {View} = require('react-native');
+  return {BlurTargetView: View, BlurView: View};
+});
+
 jest.mock('expo-updates', () => ({
   isEnabled: false,
   checkForUpdateAsync: jest.fn(),
