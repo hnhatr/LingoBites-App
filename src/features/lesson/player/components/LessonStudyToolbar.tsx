@@ -3,8 +3,11 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 export type LessonStudyToolbarProps = {
   atFirst: boolean;
@@ -49,49 +52,62 @@ export function LessonStudyToolbar({
 
   return (
     <View style={styles.bar} testID="youtube-study-toolbar">
-      <IconButton
+      <ToolbarButton
         accessibilityLabel={t('youtube.study.open_transcript_a11y')}
         icon="subtitles"
         onPress={onOpenTranscript}
+        styles={styles}
         testID="youtube-open-transcript"
-        tone="bare"
+        theme={theme}
       />
-      <IconButton
+      <ToolbarButton
         accessibilityLabel={t('youtube.study.cards_prev_a11y')}
         disabled={atFirst}
         icon="chevron_left"
         onPress={onPrev}
+        styles={styles}
         testID="youtube-cards-prev"
-        tone="surface"
+        theme={theme}
       />
-      <IconButton
+      <Pressable
         accessibilityLabel={t(
           videoPlaying ? 'youtube.study.pause_a11y' : 'youtube.study.play_a11y',
         )}
+        accessibilityRole="button"
+        accessibilityState={{disabled: !onTogglePlay}}
         disabled={!onTogglePlay}
-        icon={videoPlaying ? 'pause' : 'play_arrow'}
-        iconSize={32}
         onPress={onTogglePlay}
-        size={56}
+        style={({pressed}) => [
+          styles.play,
+          pressed ? styles.playPressed : null,
+          !onTogglePlay ? styles.disabled : null,
+        ]}
         testID="youtube-toggle-play"
-        tone="accent"
-      />
-      <IconButton
+      >
+        <MaterialIcon
+          color={HERO_PALETTE.tealInk}
+          name={videoPlaying ? 'pause' : 'play_arrow'}
+          size={34}
+        />
+      </Pressable>
+      <ToolbarButton
         accessibilityHint={t('youtube.study.replay_sentence_hint')}
         accessibilityLabel={t('youtube.study.replay_sentence_a11y')}
         disabled={!onReplay}
         icon="replay"
         onPress={onReplay}
+        styles={styles}
         testID="youtube-replay-sentence"
-        tone="surface"
+        theme={theme}
       />
-      <IconButton
+      <ToolbarButton
         accessibilityLabel={t('youtube.study.cards_next_a11y')}
         disabled={atLast}
         icon="chevron_right"
         onPress={onNext}
+        styles={styles}
         testID="youtube-cards-next"
-        tone="surface"
+        theme={theme}
       />
       {onCyclePlaybackRate ? (
         <Pressable
@@ -102,13 +118,20 @@ export function LessonStudyToolbar({
           accessibilityRole="button"
           onPress={onCyclePlaybackRate}
           style={({pressed}) => [
+            styles.button,
             styles.ratePill,
             playbackRate !== 1 ? styles.ratePillActive : null,
-            pressed ? styles.pressed : null,
+            pressed ? styles.buttonPressed : null,
           ]}
           testID="youtube-playback-rate"
         >
-          <AppText style={styles.rateText} variant="label">
+          <AppText
+            style={[
+              styles.rateText,
+              playbackRate !== 1 ? styles.rateTextActive : null,
+            ]}
+            variant="label"
+          >
             {rateLabel}
           </AppText>
         </Pressable>
@@ -119,39 +142,108 @@ export function LessonStudyToolbar({
   );
 }
 
+type ToolbarButtonProps = {
+  icon: HandoffIconName;
+  accessibilityLabel: string;
+  accessibilityHint?: string;
+  disabled?: boolean;
+  onPress?: () => void;
+  testID: string;
+  styles: ReturnType<typeof makeStyles>;
+  theme: AppTheme;
+};
+
+/** White sticker square used for every secondary toolbar control. */
+function ToolbarButton({
+  icon,
+  accessibilityLabel,
+  accessibilityHint,
+  disabled = false,
+  onPress,
+  testID,
+  styles,
+  theme,
+}: ToolbarButtonProps) {
+  return (
+    <Pressable
+      accessibilityHint={accessibilityHint}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      accessibilityState={{disabled}}
+      disabled={disabled}
+      onPress={onPress}
+      style={({pressed}) => [
+        styles.button,
+        pressed ? styles.buttonPressed : null,
+        disabled ? styles.disabled : null,
+      ]}
+      testID={testID}
+    >
+      <MaterialIcon color={theme.colors.primary} name={icon} size={22} />
+    </Pressable>
+  );
+}
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     bar: {
       alignItems: 'center',
       backgroundColor: theme.colors.background,
-      borderTopColor: theme.colors.outlineVariant,
-      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.colors.surfaceHigh,
+      borderTopWidth: StyleSheet.hairlineWidth * 2,
       flexDirection: 'row',
+      gap: 6,
       justifyContent: 'space-between',
+      paddingBottom: theme.spacing.md,
       paddingHorizontal: theme.gutter,
-      paddingVertical: theme.spacing.sm,
+      paddingTop: theme.spacing.md,
     },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
+    button: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      height: 46,
+      justifyContent: 'center',
+      width: 46,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
+    },
+    buttonPressed: {
+      transform: [{translateY: 2}],
+    },
+    disabled: {
+      opacity: theme.states.disabledOpacity,
+    },
+    play: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accent,
+      borderRadius: 33,
+      height: 66,
+      justifyContent: 'center',
+      width: 66,
+      ...getStickerEdge(5, HERO_PALETTE.shelf),
+    },
+    playPressed: {
+      transform: [{translateY: 3}],
     },
     ratePill: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: theme.radius.pill,
-      justifyContent: 'center',
-      minHeight: 44,
-      minWidth: 56,
+      minWidth: 52,
       paddingHorizontal: theme.spacing.sm,
+      width: undefined,
     },
     ratePillActive: {
-      backgroundColor: theme.colors.accentSoft,
+      backgroundColor: theme.colors.tertiarySoft,
+      ...getStickerEdge(3, theme.colors.tertiaryBorder),
     },
     rateSpacer: {
-      width: 56,
+      width: 52,
     },
     rateText: {
       color: theme.colors.primary,
       fontVariant: ['tabular-nums'],
+      fontWeight: '800',
+    },
+    rateTextActive: {
+      color: theme.colors.onTertiaryContainer,
     },
   });
 }

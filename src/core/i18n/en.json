@@ -554,6 +554,8 @@
       "video_lessons_title": "Lessons from this video",
       "video_lessons_hint": "Open the learning-path lesson",
       "analyze_short": "Analyze",
+      "view_analysis_short": "View analysis",
+      "loop_chip": "Loop",
       "display_menu_a11y": "Display options",
       "display_menu_hint": "Turn the Vietnamese translation, IPA and sentence loop on or off",
       "display_translation": "Vietnamese translation",
@@ -568,6 +570,7 @@
       "header_subtitle": "Sentence {{index}}/{{total}} · {{time}}",
       "progress_a11y": "Sentence progress, tap to jump to a sentence",
       "word_hint": "Show the word's IPA and meaning",
+      "word_no_meaning": "This sentence isn't analyzed yet, so there's no meaning.",
       "word_bubble_close": "Close"
     }
   },

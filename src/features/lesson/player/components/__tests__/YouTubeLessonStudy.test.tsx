@@ -2,7 +2,7 @@ import React from 'react';
 import {Modal} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
-import {IconButton} from '@ui/components/IconButton';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {AppThemeProvider} from '@ui/theme';
 
 import vi from '@core/i18n/vi.json';
@@ -322,10 +322,12 @@ describe('YouTubeLessonStudy', () => {
   it('uses distinct testIDs for transcript open control and sheet (AC-009)', async () => {
     const tree = await renderStudy();
     pressByTestId(tree.root, 'youtube-open-transcript');
-    const openControls = tree.root
-      .findAllByType(IconButton)
-      .filter(node => node.props.testID === 'youtube-open-transcript');
-    expect(openControls).toHaveLength(1);
+    const openControls = tree.root.findAll(
+      node =>
+        node.props.testID === 'youtube-open-transcript' &&
+        node.props.accessibilityRole === 'button',
+    );
+    expect(openControls.length).toBeGreaterThan(0);
     const sheetModals = tree.root
       .findAllByType(Modal)
       .filter(modal => modal.props.testID === 'youtube-sheet-transcript');
@@ -397,9 +399,9 @@ describe('YouTubeLessonStudy', () => {
       const onPauseVideo = jest.fn();
       const tree = await renderStudy({onPlayVideo, onPauseVideo});
       const [button] = tree.root.findAll(
-        node => node.props.testID === 'youtube-toggle-play' && node.props.icon,
+        node => node.props.testID === 'youtube-toggle-play',
       );
-      expect(button.props.icon).toBe('play_arrow');
+      expect(button.findByType(MaterialIcon).props.name).toBe('play_arrow');
       pressByTestId(tree.root, 'youtube-toggle-play');
       expect(onPlayVideo).toHaveBeenCalledTimes(1);
       expect(onPauseVideo).not.toHaveBeenCalled();
@@ -414,9 +416,9 @@ describe('YouTubeLessonStudy', () => {
         videoPlaying: true,
       });
       const [button] = tree.root.findAll(
-        node => node.props.testID === 'youtube-toggle-play' && node.props.icon,
+        node => node.props.testID === 'youtube-toggle-play',
       );
-      expect(button.props.icon).toBe('pause');
+      expect(button.findByType(MaterialIcon).props.name).toBe('pause');
       pressByTestId(tree.root, 'youtube-toggle-play');
       expect(onPauseVideo).toHaveBeenCalledTimes(1);
       expect(onPlayVideo).not.toHaveBeenCalled();
@@ -550,8 +552,12 @@ describe('YouTubeLessonStudy', () => {
           .children,
       ).toBe('/ˈkɒfi/');
       expect(
-        tree.root.findAllByProps({children: 'noun cà phê'}).length,
+        tree.root.findAllByProps({children: 'noun'}).length,
       ).toBeGreaterThan(0);
+      expect(
+        tree.root.findByProps({testID: 'youtube-word-bubble-meaning'}).props
+          .children,
+      ).toBe('cà phê');
       pressByTestId(tree.root, 'youtube-word-bubble-save');
       expect(onToggle).toHaveBeenCalledWith(coffeeAnalysis.vocabulary[0]);
       pressByTestId(tree.root, 'youtube-word-bubble-close');

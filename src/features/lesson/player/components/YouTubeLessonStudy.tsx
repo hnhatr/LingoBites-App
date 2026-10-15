@@ -5,6 +5,7 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {
   LessonAnalysis,
@@ -86,8 +87,8 @@ export type CurrentSentenceInfo = {
   startMs: number | null;
 };
 
-/** Above this many sentences the progress strip is one continuous bar. */
-const MAX_PROGRESS_SEGMENTS = 80;
+/** Above this many sentences the strip drops its per-sentence ticks. */
+const MAX_PROGRESS_TICKS = 60;
 /** Poll slack: loop a little before the cue end so the next line never shows. */
 const LOOP_END_SLACK_MS = 150;
 
@@ -301,6 +302,11 @@ export function YouTubeLessonStudy({
     setSelectedWord(null);
   }, []);
 
+  const selectedSentenceId = selectedWord?.sentenceId ?? null;
+  const handleAnalyzeWord = useCallback(() => {
+    if (selectedSentenceId) handleOpenAnalysis(selectedSentenceId);
+  }, [handleOpenAnalysis, selectedSentenceId]);
+
   const bubbleVocabulary = useMemo(() => {
     if (!selectedWord) return null;
     const vocabulary = mergedAnalyses[selectedWord.sentenceId]?.vocabulary;
@@ -356,6 +362,12 @@ export function YouTubeLessonStudy({
   }, []);
 
   const position = orderedSentences.length === 0 ? 0 : currentIndex + 1;
+  const progressRatio =
+    orderedSentences.length === 0 ? 0 : position / orderedSentences.length;
+  const knobRatio =
+    orderedSentences.length === 0
+      ? 0
+      : (currentIndex + 0.5) / orderedSentences.length;
   const atFirst = currentIndex <= 0 || orderedSentences.length === 0;
   const atLast =
     orderedSentences.length === 0 ||
@@ -363,75 +375,84 @@ export function YouTubeLessonStudy({
 
   return (
     <View testID="canonical-player" style={styles.root}>
-      <View style={styles.videoFrame}>
-        {videoAvailable ? (
-          videoSlot
-        ) : (
-          <View
-            style={styles.unavailableBox}
-            testID="youtube-timeline-unavailable"
-          >
-            <AppText
-              color="secondary"
-              testID="youtube-timeline-unavailable-text"
-              variant="body"
+      <View style={styles.videoShelf}>
+        <View style={styles.videoFrame}>
+          {videoAvailable ? (
+            videoSlot
+          ) : (
+            <View
+              style={styles.unavailableBox}
+              testID="youtube-timeline-unavailable"
             >
-              {unavailableReason ?? t('lessonPlayer.video_unavailable')}
-            </AppText>
-            {onRetryVideo ? (
-              <AppButton
-                accessibilityHint={t('youtube.study.video_retry_hint')}
-                onPress={onRetryVideo}
-                testID="youtube-video-retry"
-                title={t('youtube.study.video_retry')}
-                variant="secondary"
-              />
-            ) : null}
-          </View>
-        )}
+              <AppText
+                color="secondary"
+                testID="youtube-timeline-unavailable-text"
+                variant="body"
+              >
+                {unavailableReason ?? t('lessonPlayer.video_unavailable')}
+              </AppText>
+              {onRetryVideo ? (
+                <AppButton
+                  accessibilityHint={t('youtube.study.video_retry_hint')}
+                  onPress={onRetryVideo}
+                  testID="youtube-video-retry"
+                  title={t('youtube.study.video_retry')}
+                  variant="secondary"
+                />
+              ) : null}
+            </View>
+          )}
+        </View>
       </View>
 
-      <Pressable
-        accessibilityHint={t('youtube.study.progress_a11y')}
-        accessibilityLabel={t('lessonPlayer.sentence_counter', {
-          index: position,
-          total: orderedSentences.length,
-        })}
-        accessibilityRole="progressbar"
-        accessibilityValue={{
-          min: 0,
-          max: orderedSentences.length,
-          now: position,
-        }}
-        hitSlop={{top: 8, bottom: 8}}
-        onLayout={event => setProgressWidth(event.nativeEvent.layout.width)}
-        onPress={event => handleProgressPress(event.nativeEvent.locationX)}
-        style={styles.progress}
-        testID="youtube-study-progress"
-      >
-        {orderedSentences.length > MAX_PROGRESS_SEGMENTS ? (
-          <View style={styles.progressTrack}>
+      <View style={styles.progressRow}>
+        <Pressable
+          accessibilityHint={t('youtube.study.progress_a11y')}
+          accessibilityLabel={t('lessonPlayer.sentence_counter', {
+            index: position,
+            total: orderedSentences.length,
+          })}
+          accessibilityRole="progressbar"
+          accessibilityValue={{
+            min: 0,
+            max: orderedSentences.length,
+            now: position,
+          }}
+          hitSlop={{top: 8, bottom: 8}}
+          onLayout={event => setProgressWidth(event.nativeEvent.layout.width)}
+          onPress={event => handleProgressPress(event.nativeEvent.locationX)}
+          style={styles.progress}
+          testID="youtube-study-progress"
+        >
+          <View pointerEvents="none" style={styles.progressTrack}>
             <View
-              style={[
-                styles.progressDone,
-                {flex: position / orderedSentences.length},
-              ]}
+              style={[styles.progressDone, {width: `${progressRatio * 100}%`}]}
             />
-            <View style={{flex: 1 - position / orderedSentences.length}} />
+            {orderedSentences.length <= MAX_PROGRESS_TICKS
+              ? orderedSentences.slice(1).map((sentence, index) => (
+                  <View
+                    key={sentence.id}
+                    style={[
+                      styles.progressTick,
+                      {
+                        left: `${((index + 1) / orderedSentences.length) * 100}%`,
+                      },
+                    ]}
+                  />
+                ))
+              : null}
           </View>
-        ) : (
-          orderedSentences.map((sentence, index) => (
+          {orderedSentences.length > 0 ? (
             <View
-              key={sentence.id}
-              style={[
-                styles.segment,
-                index < currentIndex ? styles.segmentDone : null,
-                index === currentIndex ? styles.segmentCurrent : null,
-              ]}
+              pointerEvents="none"
+              style={[styles.progressKnob, {left: `${knobRatio * 100}%`}]}
             />
-          ))
-        )}
-      </Pressable>
+          ) : null}
+        </Pressable>
+        <AppText style={styles.progressCount} variant="label">
+          {`${position}/${orderedSentences.length}`}
+        </AppText>
+      </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -452,6 +473,24 @@ export function YouTubeLessonStudy({
           onOpenAnalysis={handleOpenAnalysis}
           onPressWord={handlePressWord}
           selectedWord={selectedWord}
+          loopSentence={loopSentence}
+          wordDetail={
+            selectedWord ? (
+              <WordBubble
+                ipa={
+                  bubbleVocabulary
+                    ? stripIpaDelimiters(bubbleVocabulary.ipa)
+                    : selectedWord.ipa
+                }
+                onAnalyze={onRequestAnalysis ? handleAnalyzeWord : undefined}
+                onClose={handleCloseWord}
+                onSpeakText={onSpeakText}
+                vocabulary={bubbleVocabulary}
+                vocabularySave={vocabularySave}
+                word={bareWord(selectedWord.word)}
+              />
+            ) : null
+          }
           onSeek={onSeek}
           onSpeakText={onSpeakText}
           sentences={orderedSentences}
@@ -470,23 +509,6 @@ export function YouTubeLessonStudy({
           />
         ) : null}
       </ScrollView>
-
-      {selectedWord ? (
-        <View style={styles.bubbleWrap} pointerEvents="box-none">
-          <WordBubble
-            ipa={
-              bubbleVocabulary
-                ? stripIpaDelimiters(bubbleVocabulary.ipa)
-                : selectedWord.ipa
-            }
-            onClose={handleCloseWord}
-            onSpeakText={onSpeakText}
-            vocabulary={bubbleVocabulary}
-            vocabularySave={vocabularySave}
-            word={bareWord(selectedWord.word)}
-          />
-        </View>
-      ) : null}
 
       <LessonStudyToolbar
         atFirst={atFirst}
@@ -534,47 +556,54 @@ export function YouTubeLessonStudy({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    bubbleWrap: {
-      bottom: 88,
-      left: theme.gutter,
-      position: 'absolute',
-      right: theme.gutter,
-    },
     progress: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 2,
-      height: 14,
-      marginHorizontal: theme.gutter,
-      marginTop: theme.spacing.xs,
+      flex: 1,
+      height: 22,
+      justifyContent: 'center',
+    },
+    progressCount: {
+      color: theme.colors.text.secondary,
+      fontVariant: ['tabular-nums'],
+      minWidth: 40,
+      textAlign: 'right',
     },
     progressDone: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.colors.accent,
       borderRadius: theme.radius.pill,
+      height: '100%',
+    },
+    progressKnob: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.surface,
+      borderRadius: 8,
+      borderWidth: 3,
+      height: 16,
+      marginLeft: -8,
+      position: 'absolute',
+      width: 16,
+    },
+    progressRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      marginHorizontal: theme.gutter,
+      marginTop: theme.spacing.sm,
+    },
+    progressTick: {
+      backgroundColor: theme.colors.background,
+      bottom: 0,
+      position: 'absolute',
+      top: 0,
+      width: 2,
     },
     progressTrack: {
       backgroundColor: theme.colors.surfaceHigh,
       borderRadius: theme.radius.pill,
-      flex: 1,
-      flexDirection: 'row',
-      height: 4,
+      height: 8,
       overflow: 'hidden',
     },
     root: {
       flex: 1,
-    },
-    segment: {
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: theme.radius.pill,
-      flex: 1,
-      height: 4,
-    },
-    segmentCurrent: {
-      backgroundColor: theme.colors.primary,
-      height: 6,
-    },
-    segmentDone: {
-      backgroundColor: theme.colors.accent,
     },
     scroll: {
       flex: 1,
@@ -596,11 +625,16 @@ function makeStyles(theme: AppTheme) {
     },
     videoFrame: {
       backgroundColor: theme.colors.surfaceLow,
-      borderRadius: theme.radius.lg,
-      marginHorizontal: theme.gutter,
+      borderRadius: 22,
       minHeight: 200,
       overflow: 'hidden',
       position: 'relative',
+    },
+    videoShelf: {
+      backgroundColor: theme.colors.surfaceLow,
+      borderRadius: 22,
+      marginHorizontal: theme.gutter,
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
     },
   });
 }
