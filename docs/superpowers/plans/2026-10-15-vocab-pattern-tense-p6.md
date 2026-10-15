@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1, S2 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1, S2, S3 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -75,7 +75,7 @@ Tra lúc đọc (không lưu vào bản phân tích), nên dùng được cho c�
 ### 3.4 F9: tiến độ
 | Method | Path | Trả về |
 |---|---|---|
-| GET | `/v1/me/vocab-progress` | `words: [{cefr, total, learning, stable}]` (A1 → C1, `total` = số item `word / phrase` đã publish của cấp), `patterns: [{function, label_vi, total, stable}]`, `tenses: [{code, stage, stable}]` (theo chặn phiên bản như 3.1) |
+| GET | `/v1/me/vocab-progress` | `words: [{cefr_level, total, learning, stable}]` (A1 → C1, chỉ cấp có từ; `total` = số item `word / phrase` đã publish của cấp), `patterns: [{function, label_vi, total, learning, stable}]` (một mẫu có nhiều chức năng được đếm ở mỗi chức năng), `pattern_summary: {total, learning, stable}` (mỗi mẫu đếm một lần), `tenses: [{code, text, time, aspect, stage \| null, stable}]` (App cũ nhận rỗng, như 3.1) |
 
 "Đã nhớ" = `item_memory.stable_at IS NOT NULL`; "đang học" = có `item_memory` nhưng chưa ổn định.
 
@@ -91,7 +91,7 @@ Tra lúc đọc (không lưu vào bản phân tích), nên dùng được cho c�
 | `src/modules/library/` 🆕 (`controller/libraryRoutes.ts`, `service/libraryService.ts`) ✅ S1 | 3.1, 3.2. Dùng lại `WordPackItemSchema` (export từ `wordPackRoutes.ts`) |
 | `src/modules/items/service/itemLookup.ts` 🆕, `controller/itemLookupRoutes.ts` 🆕 ✅ S2 | 3.3 |
 | `src/modules/grammar/inflect.ts` 🔧 ✅ S2 | Thêm `pluralOf` (số nhiều của danh từ, kèm bảng bất quy tắc); việc đoán dạng gốc nằm trong `itemLookup.ts` |
-| `src/modules/curriculum/outcomes/service/vocabProgress.ts` 🆕 + route trong `outcomes/controller` | 3.4 |
+| `src/modules/curriculum/outcomes/service/vocabProgress.ts` 🆕, `outcomes/controller/vocabProgressRoutes.ts` 🆕 ✅ S3 | 3.4 |
 | `src/modules/curriculum/tasks/service/summativeChecklist.ts` 🆕 + route trong `tasks/controller` | 3.5 |
 | `src/app/server.ts` 🔧 | Đăng ký route |
 
@@ -203,7 +203,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 |---|---|---|---|
 | S1 ✅ | Server | `feat(library): pattern and tense lists, learn single items` (3.1, 3.2) | Không |
 | S2 ✅ | Server | `feat(items): look up lesson words in the word list` (3.3) | Không |
-| S3 | Server | `feat(outcomes): vocab progress for the learner` (3.4) | Không |
+| S3 ✅ | Server | `feat(outcomes): vocab progress for the learner` (3.4) | Không |
 | S4 | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
 | S5 | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
 | S6 | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
