@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Alert, ScrollView, StyleSheet, View} from 'react-native';
 
 import {recordShadowingSessionActivity} from '@features/engagement';
 
@@ -8,7 +8,9 @@ import {AppText} from '@ui/components/AppText';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {SessionHeader} from '@ui/components/StudySession';
+import {StickerButton} from '@ui/components/StickerButton';
+import {StickerFooter} from '@ui/components/StickerFooter';
+import {SessionHeader, SessionSteps} from '@ui/components/StudySession';
 import {useAppTheme} from '@ui/theme';
 
 import {ConsentSheet} from '../components/shadowing/ConsentSheet';
@@ -17,6 +19,7 @@ import {SelfCheckList} from '../components/shadowing/SelfCheckList';
 import {SentenceCard} from '../components/shadowing/SentenceCard';
 import {applyRecordingUploadConsent} from '../components/SpeakingRecordingsSettingsRow';
 import {requestMicrophonePermission} from '../logic/recordingService';
+import type {ShadowingSentence} from '../logic/shadowing/shadowingLessons';
 import {
   formatShadowingElapsed,
   useShadowingSession,
@@ -53,6 +56,8 @@ export function ShadowingSessionScreen({
   const initialSentenceIndex = route.params.sentenceIndex ?? 0;
 
   const [consentVisible, setConsentVisible] = useState(false);
+  const [showVietnamese, setShowVietnamese] = useState(true);
+  const playback = useEstimatedPlayback();
 
   const session = useShadowingSession({
     lessonId,
@@ -90,6 +95,12 @@ export function ShadowingSessionScreen({
   useEffect(() => {
     requestMicrophonePermission();
   }, []);
+
+  const stopPlayback = playback.stop;
+  const sentenceId = session.sentence?.id;
+  useEffect(() => {
+    stopPlayback();
+  }, [sentenceId, stopPlayback]);
 
   const exitWithoutConfirm = useCallback(() => {
     navigation.goBack();
@@ -141,13 +152,17 @@ export function ShadowingSessionScreen({
     );
   }
 
+  const sentence = session.sentence;
   const showRecorder =
     session.sessionState === 'idle' || session.sessionState === 'recording';
   const showReview =
     session.sessionState === 'recorded' || session.sessionState === 'saving';
+  const saving = session.sessionState === 'saving';
+  const isLastSentence = session.sentenceIndex >= session.sentenceCount - 1;
   const myTakeLabel = session.take
     ? formatShadowingElapsed(session.take.durationMs)
     : '0:00';
+  const step = showReview ? 2 : session.sessionState === 'recording' ? 1 : 0;
 
   return (
     <AppScreen>
@@ -162,89 +177,124 @@ export function ShadowingSessionScreen({
       />
       <ScrollView
         contentContainerStyle={{
-          flexGrow: 1,
-          gap: theme.spacing.lg,
-          paddingBottom: floatingClearance,
+          gap: theme.spacing.md,
+          paddingBottom: theme.spacing.lg,
           paddingHorizontal: theme.gutter,
           paddingTop: theme.spacing.sm,
         }}
         showsVerticalScrollIndicator={false}
         style={styles.flex1}
       >
+        <SessionSteps active={step} labels={SHADOWING_STEPS} />
         <SentenceCard
           compact={showReview}
+          highlightedWords={
+            playback.kind === 'normal' || playback.kind === 'slow'
+              ? Math.floor(playback.progress * sentenceWordCount(sentence))
+              : -1
+          }
           onPlayNormal={() => {
+            playback.start('normal', estimateSampleMs(sentence, 1));
             session.playNormalSample().catch(() => {
+              playback.stop();
               Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
             });
           }}
           onPlaySlow={() => {
+            playback.start(
+              'slow',
+              estimateSampleMs(sentence, SLOW_SAMPLE_STRETCH),
+            );
             session.playSlowSample().catch(() => {
+              playback.stop();
               Alert.alert('Âm thanh mẫu', 'Không thể phát âm thanh mẫu.');
             });
           }}
-          sentence={session.sentence}
-          sentenceCount={session.sentenceCount}
-          sentenceIndex={session.sentenceIndex}
-          showSampleButtons={session.sessionState !== 'recording'}
+          onToggleVietnamese={() => setShowVietnamese(value => !value)}
+          playing={
+            playback.kind === 'normal' || playback.kind === 'slow'
+              ? playback.kind
+              : null
+          }
+          samplesDisabled={session.sessionState === 'recording'}
+          sentence={sentence}
+          showVietnamese={showVietnamese}
         />
-
-        {showRecorder ? (
-          <>
-            <View style={{flex: 1, minHeight: theme.spacing.xxl}} />
-            <RecorderPanel
-              elapsedMs={session.elapsedMs}
-              onStart={() => {
-                session.startRecordingTake().catch(() => undefined);
-              }}
-              onStop={() => {
-                session.stopRecordingTake().catch(() => undefined);
-              }}
-              sessionState={session.sessionState}
-            />
-            {session.sessionState === 'idle' ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={session.skipSentence}
-                testID="shadowing-skip-sentence"
-              >
-                <AppText
-                  style={{
-                    color: theme.colors.accent,
-                    textAlign: 'center',
-                    textDecorationLine: 'underline',
-                  }}
-                >
-                  Bỏ qua câu này
-                </AppText>
-              </Pressable>
-            ) : null}
-          </>
-        ) : null}
 
         {showReview ? (
           <SelfCheckList
-            isLastSentence={session.sentenceIndex >= session.sentenceCount - 1}
             myTakeLabel={myTakeLabel}
             onPlayMyTake={() => {
-              session.playMyTake().catch(() => undefined);
+              playback.start('mine', session.take?.durationMs ?? 0);
+              session.playMyTake().catch(() => playback.stop());
             }}
             onPlaySample={() => {
-              session.playNormalSample().catch(() => undefined);
+              playback.start('sample', estimateSampleMs(sentence, 1));
+              session.playNormalSample().catch(() => playback.stop());
             }}
             onReRecord={() => {
+              playback.stop();
               session.reRecord().catch(() => undefined);
             }}
-            onSave={handleSavePress}
             onToggle={key => {
               session.setSelfCheckItem(key, !session.selfCheck[key]);
             }}
-            saving={session.sessionState === 'saving'}
-            showUploadHint={isRecordingUploadConsentOn()}
+            playProgress={playback.progress}
+            playing={
+              playback.kind === 'sample' || playback.kind === 'mine'
+                ? playback.kind
+                : null
+            }
             values={session.selfCheck}
           />
         ) : null}
       </ScrollView>
+
+      {showRecorder ? (
+        <View style={{paddingBottom: floatingClearance}}>
+          <RecorderPanel
+            elapsedMs={session.elapsedMs}
+            onSkip={
+              session.sessionState === 'idle' ? session.skipSentence : undefined
+            }
+            onStart={() => {
+              playback.stop();
+              session.startRecordingTake().catch(() => undefined);
+            }}
+            onStop={() => {
+              session.stopRecordingTake().catch(() => undefined);
+            }}
+            sessionState={session.sessionState}
+          />
+        </View>
+      ) : null}
+
+      {showReview ? (
+        <StickerFooter
+          bottomInset={Math.max(floatingClearance, theme.spacing.lg)}
+          note={
+            isRecordingUploadConsentOn()
+              ? 'Bản ghi sẽ được lưu lên tài khoản khi có mạng'
+              : 'Không bắt buộc tick. Bản ghi được lưu trên máy.'
+          }
+        >
+          <StickerButton
+            disabled={saving}
+            label={
+              saving
+                ? 'Đang lưu…'
+                : isLastSentence
+                  ? 'Lưu & xem tóm tắt'
+                  : 'Lưu & câu tiếp'
+            }
+            onPress={() => {
+              playback.stop();
+              handleSavePress();
+            }}
+            testID="shadowing-save-continue"
+          />
+        </StickerFooter>
+      ) : null}
       <ConsentSheet
         onChooseLocalOnly={handleConsentLocalOnly}
         onChooseUploadOn={handleConsentUploadOn}
@@ -253,6 +303,72 @@ export function ShadowingSessionScreen({
       />
     </AppScreen>
   );
+}
+
+const SHADOWING_STEPS = ['Nghe', 'Nói', 'Tự chấm'];
+
+/** Rough TTS pace; the TTS module reports no end of speech. */
+const SAMPLE_MS_PER_WORD = 330;
+const SAMPLE_MS_LEAD = 400;
+/** "Nghe chậm" speaks at 0.3 against the default 0.5. */
+const SLOW_SAMPLE_STRETCH = 1.8;
+const PLAYBACK_TICK_MS = 100;
+
+type PlaybackKind = 'normal' | 'slow' | 'sample' | 'mine';
+
+function sentenceWordCount(sentence: ShadowingSentence): number {
+  return sentence.textEn.split(' ').length;
+}
+
+function estimateSampleMs(sentence: ShadowingSentence, stretch: number) {
+  return (
+    (SAMPLE_MS_LEAD + sentenceWordCount(sentence) * SAMPLE_MS_PER_WORD) *
+    stretch
+  );
+}
+
+/**
+ * Which sample or take is playing and how far along (0..1). Neither TTS nor
+ * the recorder player reports progress, so this runs on the expected length
+ * and only drives the lit words and wave fill.
+ */
+function useEstimatedPlayback() {
+  const [kind, setKind] = useState<PlaybackKind | null>(null);
+  const [progress, setProgress] = useState(0);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stop = useCallback(() => {
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+    }
+    setKind(null);
+    setProgress(0);
+  }, []);
+
+  const start = useCallback(
+    (next: PlaybackKind, durationMs: number) => {
+      stop();
+      if (durationMs <= 0) {
+        return;
+      }
+      const startedAt = Date.now();
+      setKind(next);
+      timer.current = setInterval(() => {
+        const share = (Date.now() - startedAt) / durationMs;
+        if (share >= 1) {
+          stop();
+          return;
+        }
+        setProgress(share);
+      }, PLAYBACK_TICK_MS);
+    },
+    [stop],
+  );
+
+  useEffect(() => stop, [stop]);
+
+  return {kind, progress, start, stop};
 }
 
 const styles = StyleSheet.create({
