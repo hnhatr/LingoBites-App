@@ -10,6 +10,7 @@ import type {
   LessonSnapshot,
 } from '@core/schemas/lesson';
 
+import type {SentenceRepeat} from '../logic/sentenceRepeat';
 import type {
   GrammarSaveControl,
   VocabularySaveControl,
@@ -69,7 +70,7 @@ export type CanonicalLessonPlayerProps = {
   onOpenVideoLesson?: (lessonId: string) => void;
   /** YouTube study listening controls (screen-owned). */
   onPlayVideo?: () => void;
-  loopSentence?: boolean;
+  sentenceRepeat?: SentenceRepeat;
   playbackRate?: number;
   onCyclePlaybackRate?: () => void;
   onCurrentSentenceChange?: (current: CurrentSentenceInfo) => void;
@@ -109,7 +110,7 @@ export function CanonicalLessonPlayer({
   videoLessons,
   onOpenVideoLesson,
   onPlayVideo,
-  loopSentence,
+  sentenceRepeat,
   playbackRate,
   onCyclePlaybackRate,
   onCurrentSentenceChange,
@@ -150,7 +151,7 @@ export function CanonicalLessonPlayer({
         videoLessons={videoLessons}
         onOpenVideoLesson={onOpenVideoLesson}
         onPlayVideo={onPlayVideo}
-        loopSentence={loopSentence}
+        sentenceRepeat={sentenceRepeat}
         playbackRate={playbackRate}
         onCyclePlaybackRate={onCyclePlaybackRate}
         onCurrentSentenceChange={onCurrentSentenceChange}

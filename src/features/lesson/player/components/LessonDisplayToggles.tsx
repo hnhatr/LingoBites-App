@@ -10,14 +10,19 @@ import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
 
+import {
+  formatSentenceRepeat,
+  type SentenceRepeat,
+} from '../logic/sentenceRepeat';
+
 export type LessonDisplayTogglesProps = {
   showTranslation: boolean;
   showIpa: boolean;
   onToggleTranslation: () => void;
   onToggleIpa: () => void;
-  /** "Loop current sentence"; omitted = no loop row. */
-  loopSentence?: boolean;
-  onToggleLoop?: () => void;
+  /** "Loop current sentence" (Tắt, 1×, 3×, 5×, ∞); omitted = no loop row. */
+  sentenceRepeat?: SentenceRepeat;
+  onCycleRepeat?: () => void;
 };
 
 /** Header height: the menu opens just under the header buttons. */
@@ -69,8 +74,8 @@ export function LessonDisplayToggles({
   showIpa,
   onToggleTranslation,
   onToggleIpa,
-  loopSentence,
-  onToggleLoop,
+  sentenceRepeat = 0,
+  onCycleRepeat,
 }: LessonDisplayTogglesProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -78,6 +83,8 @@ export function LessonDisplayToggles({
   const insets = useContext(SafeAreaInsetsContext);
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [open, setOpen] = useState(false);
+  const repeatLabel =
+    formatSentenceRepeat(sentenceRepeat) ?? t('youtube.study.display_loop_off');
 
   return (
     <>
@@ -122,15 +129,45 @@ export function LessonDisplayToggles({
             testID="youtube-toggle-ipa"
             value={showIpa}
           />
-          {onToggleLoop ? (
-            <ToggleRow
-              icon="repeat"
-              label={t('youtube.study.display_loop')}
-              onToggle={onToggleLoop}
-              styles={styles}
-              testID="youtube-toggle-loop"
-              value={loopSentence === true}
-            />
+          {onCycleRepeat ? (
+            <View style={styles.row}>
+              <View
+                style={[
+                  styles.rowIcon,
+                  sentenceRepeat !== 0 ? styles.rowIconOn : null,
+                ]}
+              >
+                <MaterialIcon
+                  color={theme.colors.primary}
+                  name="repeat"
+                  size={20}
+                />
+              </View>
+              <AppText style={styles.rowLabel} variant="body">
+                {t('youtube.study.display_loop')}
+              </AppText>
+              <Pressable
+                accessibilityHint={t('youtube.study.display_loop_hint')}
+                accessibilityLabel={t('youtube.study.display_loop')}
+                accessibilityRole="button"
+                accessibilityValue={{text: repeatLabel}}
+                hitSlop={8}
+                onPress={onCycleRepeat}
+                style={({pressed}) => [
+                  styles.repeatChip,
+                  sentenceRepeat !== 0 ? styles.repeatChipOn : null,
+                  pressed ? styles.pressed : null,
+                ]}
+                testID="youtube-toggle-loop"
+              >
+                <AppText
+                  style={sentenceRepeat !== 0 ? styles.repeatTextOn : null}
+                  variant="label"
+                >
+                  {repeatLabel}
+                </AppText>
+              </Pressable>
+            </View>
           ) : null}
         </View>
       </Modal>
@@ -177,6 +214,26 @@ function makeStyles(theme: AppTheme) {
     },
     rowLabel: {
       flex: 1,
+    },
+    pressed: {
+      opacity: theme.states.pressedOpacity,
+    },
+    repeatChip: {
+      alignItems: 'center',
+      borderColor: theme.colors.outlineVariant,
+      borderRadius: theme.radius.pill,
+      borderWidth: 1,
+      minHeight: 32,
+      minWidth: 56,
+      justifyContent: 'center',
+      paddingHorizontal: theme.spacing.md,
+    },
+    repeatChipOn: {
+      backgroundColor: theme.colors.accentSoft,
+      borderColor: theme.colors.primary,
+    },
+    repeatTextOn: {
+      color: theme.colors.primary,
     },
   });
 }

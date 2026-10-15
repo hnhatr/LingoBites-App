@@ -561,6 +561,8 @@
       "display_translation": "Vietnamese translation",
       "display_ipa": "IPA transcription",
       "display_loop": "Loop current sentence",
+      "display_loop_off": "Off",
+      "display_loop_hint": "Change how often the sentence repeats: off, 1, 3, 5 times or forever",
       "play_a11y": "Play video",
       "pause_a11y": "Pause video",
       "replay_sentence_a11y": "Replay this sentence",

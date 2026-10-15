@@ -87,17 +87,35 @@ describe('LessonDisplayToggles', () => {
     expect(onToggleIpa).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the loop switch only when a loop handler is given', async () => {
+  it('shows the repeat button only when a repeat handler is given', async () => {
     const withoutLoop = await renderToggles();
     openMenu(withoutLoop);
-    expect(findSwitch(withoutLoop, 'youtube-toggle-loop')).toBeUndefined();
+    expect(
+      withoutLoop.root.findAll(
+        node => node.props.testID === 'youtube-toggle-loop',
+      ),
+    ).toHaveLength(0);
 
-    const onToggleLoop = jest.fn();
-    const tree = await renderToggles({loopSentence: true, onToggleLoop});
+    const onCycleRepeat = jest.fn();
+    const tree = await renderToggles({sentenceRepeat: 3, onCycleRepeat});
     openMenu(tree);
-    const toggle = findSwitch(tree, 'youtube-toggle-loop');
-    expect(toggle.props.value).toBe(true);
-    act(() => toggle.props.onValueChange(false));
-    expect(onToggleLoop).toHaveBeenCalledTimes(1);
+    const button = tree.root
+      .findAll(node => node.props.testID === 'youtube-toggle-loop')
+      .find(node => typeof node.props.onPress === 'function');
+    expect(button?.props.accessibilityValue).toEqual({text: '3×'});
+    act(() => button?.props.onPress());
+    expect(onCycleRepeat).toHaveBeenCalledTimes(1);
+  });
+
+  it('labels the repeat button "Tắt" when repeating is off', async () => {
+    const tree = await renderToggles({
+      sentenceRepeat: 0,
+      onCycleRepeat: jest.fn(),
+    });
+    openMenu(tree);
+    const button = tree.root
+      .findAll(node => node.props.testID === 'youtube-toggle-loop')
+      .find(node => typeof node.props.onPress === 'function');
+    expect(button?.props.accessibilityValue).toEqual({text: 'Tắt'});
   });
 });

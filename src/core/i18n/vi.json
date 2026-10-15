@@ -561,6 +561,8 @@
       "display_translation": "Nghĩa tiếng Việt",
       "display_ipa": "Phiên âm IPA",
       "display_loop": "Lặp câu hiện tại",
+      "display_loop_off": "Tắt",
+      "display_loop_hint": "Đổi số lần lặp câu: Tắt, 1, 3, 5 lần hay lặp mãi",
       "play_a11y": "Phát video",
       "pause_a11y": "Tạm dừng video",
       "replay_sentence_a11y": "Phát lại câu này",

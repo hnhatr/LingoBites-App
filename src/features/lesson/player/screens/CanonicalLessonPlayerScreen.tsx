@@ -89,6 +89,7 @@ import {
   setMediaDownloadConsent,
   shouldAskMediaDownloadConsent,
 } from '../logic/mediaDownloadConsent';
+import {nextSentenceRepeat, type SentenceRepeat} from '../logic/sentenceRepeat';
 import {useCanonicalLesson} from '../logic/useCanonicalLesson';
 import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
@@ -138,7 +139,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   const [showTranslation, setShowTranslation] = useState(true);
   // IPA starts hidden to keep the card short; the display menu turns it on.
   const [showIpa, setShowIpa] = useState(false);
-  const [loopSentence, setLoopSentence] = useState(false);
+  const [sentenceRepeat, setSentenceRepeat] = useState<SentenceRepeat>(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [currentSentence, setCurrentSentence] =
     useState<CurrentSentenceInfo | null>(null);
@@ -461,7 +462,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         videoLessons={videoLessons}
         onOpenVideoLesson={appNavigation.openLesson}
         onPlayVideo={handlePlayVideo}
-        loopSentence={loopSentence}
+        sentenceRepeat={sentenceRepeat}
         playbackRate={playbackRate}
         onCyclePlaybackRate={handleCyclePlaybackRate}
         onCurrentSentenceChange={setCurrentSentence}
@@ -710,9 +711,9 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
                 />
               ) : null}
               <LessonDisplayToggles
-                loopSentence={loopSentence}
+                onCycleRepeat={() => setSentenceRepeat(nextSentenceRepeat)}
                 onToggleIpa={() => setShowIpa(value => !value)}
-                onToggleLoop={() => setLoopSentence(value => !value)}
+                sentenceRepeat={sentenceRepeat}
                 onToggleTranslation={() => setShowTranslation(value => !value)}
                 showIpa={showIpa}
                 showTranslation={showTranslation}
