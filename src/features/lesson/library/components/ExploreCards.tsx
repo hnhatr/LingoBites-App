@@ -9,7 +9,6 @@ import {
 } from '@ui/components/LibraryCover';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {
-  ActionPill,
   CARD_RADIUS,
   CARD_SHELF_HEIGHT,
   cardColors,
@@ -28,15 +27,15 @@ const ROW_RADIUS = 22;
 
 export interface VideoCardProps {
   title: string;
-  /** Line under the title, e.g. "Video · 3 bài học". */
-  meta: string;
+  /** Line under the title, e.g. "3 bài học"; hidden when empty. */
+  meta?: string | null;
   cover: Pick<LibraryCoverProps, 'imageUrl' | 'level' | 'duration'>;
   tone: CardTone;
   onPress: () => void;
   testID: string;
 }
 
-/** The first video: its whole thumbnail, then the title and a "Xem" pill. */
+/** The first video: its whole thumbnail with a play disc, then the title. */
 export function VideoHeroCard({
   title,
   meta,
@@ -82,27 +81,24 @@ export function VideoHeroCard({
             shape="video"
             testID={`${testID}-cover`}
           />
+          <PlayDisc ink={colors.ink} size="large" />
         </View>
         <View style={styles.heroFoot}>
-          <View style={styles.rowText}>
-            <AppText numberOfLines={2} style={styles.heroTitle}>
-              {title}
-            </AppText>
+          <AppText numberOfLines={2} style={styles.heroTitle}>
+            {title}
+          </AppText>
+          {meta ? (
             <AppText color="secondary" numberOfLines={1} style={styles.meta}>
               {meta}
             </AppText>
-          </View>
-          <ActionPill
-            action={{label: 'Xem', glyph: 'play', solid: true}}
-            ink={colors.ink}
-          />
+          ) : null}
         </View>
       </ShelfSurface>
     </Pressable>
   );
 }
 
-/** A video under the first one: its thumbnail beside the title. */
+/** A video under the first one: its thumbnail (with a play disc) beside the title. */
 export function VideoRowCard({
   title,
   meta,
@@ -153,20 +149,58 @@ export function VideoRowCard({
               <AppText style={styles.durationText}>{cover.duration}</AppText>
             </View>
           ) : null}
+          <PlayDisc ink={colors.ink} size="small" />
         </View>
         <View style={styles.rowText}>
           <AppText numberOfLines={2} style={styles.rowTitle}>
             {title}
           </AppText>
-          <AppText color="secondary" numberOfLines={1} style={styles.meta}>
-            {meta}
-          </AppText>
-        </View>
-        <View style={[styles.playDisc, {backgroundColor: colors.ink}]}>
-          <Glyph color={theme.colors.text.inverse} name="play" size={16} />
+          {meta ? (
+            <AppText color="secondary" numberOfLines={1} style={styles.meta}>
+              {meta}
+            </AppText>
+          ) : null}
         </View>
       </ShelfSurface>
     </Pressable>
+  );
+}
+
+const PLAY_DISC_SIZES = {
+  large: {disc: 60, glyph: 24, ring: 3},
+  small: {disc: 36, glyph: 14, ring: 2},
+} as const;
+
+/** The round play button centred over a video thumbnail. */
+function PlayDisc({
+  ink,
+  size,
+}: {
+  ink: string;
+  size: keyof typeof PLAY_DISC_SIZES;
+}) {
+  const {theme} = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const {disc, glyph, ring} = PLAY_DISC_SIZES[size];
+
+  return (
+    <View pointerEvents="none" style={styles.playLayer}>
+      <View
+        style={[
+          styles.playDisc,
+          {
+            backgroundColor: ink,
+            borderRadius: disc / 2,
+            borderWidth: ring,
+            height: disc,
+            paddingLeft: ring,
+            width: disc,
+          },
+        ]}
+      >
+        <Glyph color={theme.colors.text.inverse} name="play" size={glyph} />
+      </View>
+    </View>
   );
 }
 
@@ -189,9 +223,7 @@ function makeStyles(theme: AppTheme) {
       overflow: 'hidden',
     },
     heroFoot: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.md,
+      gap: 2,
       paddingBottom: 6,
       paddingLeft: 10,
       paddingRight: 6,
@@ -253,13 +285,16 @@ function makeStyles(theme: AppTheme) {
       fontSize: 12.5,
       fontWeight: '600',
     },
+    playLayer: {
+      ...StyleSheet.absoluteFill,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     playDisc: {
       alignItems: 'center',
-      borderRadius: 18,
-      height: 36,
+      borderColor: theme.colors.onOverlay,
       justifyContent: 'center',
-      paddingLeft: 2,
-      width: 36,
+      ...theme.shadow.medium,
     },
   });
 }

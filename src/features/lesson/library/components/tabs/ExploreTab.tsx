@@ -30,7 +30,6 @@ import {
 import {LibraryShelf, type ShelfStatus} from '../LibraryShelf';
 import {cardToneAt, libraryTone} from '../libraryTones';
 import {PackStack} from '../PackStack';
-import {videoContextLabel} from '../PublicLessonsList';
 
 /** How many packs the stack holds before "Tất cả". */
 export const SHELF_LIMIT = 3;
@@ -231,7 +230,8 @@ function VideoShelf() {
         ? formatVideoDuration(item.youtube_duration_ms)
         : null,
     },
-    meta: videoContextLabel(item),
+    // The play disc already says "video"; only the lesson count is left.
+    meta: item.video_lesson_count ? `${item.video_lesson_count} bài học` : null,
     onPress: () => appNavigation.openLesson(item.id),
     testID: `${testID}-${item.id}`,
     title: splitLessonTitle(item.title).title,
