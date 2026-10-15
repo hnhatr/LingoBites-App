@@ -583,6 +583,12 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
               }
               onOpenCompose={openCompose}
               onSpeakText={handleSpeak}
+              flowEntry={flowEntry}
+              onOpenFlow={
+                flowEntry.available
+                  ? () => appNavigation.openLessonFlow(lessonId)
+                  : undefined
+              }
               onDeleteLesson={
                 snapshot.origin === 'learner' ? confirmDelete : undefined
               }
@@ -644,9 +650,13 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         : t('practice.start')
     : !flowEntry.available
       ? t('lessonPlayer.start_learning')
-      : flowEntry.resumeAt !== null
-        ? t('lessonFlow.continue_at', {step: flowEntry.resumeAt})
-        : t('lessonFlow.start');
+      : flowEntry.resumeAt === null
+        ? t('lessonFlow.start_at', {label: t('lessonFlow.step_1')})
+        : flowEntry.resumeAt === 6
+          ? t('lessonFlow.review')
+          : t('lessonFlow.continue_at', {
+              label: t(`lessonFlow.step_${flowEntry.resumeAt}`),
+            });
 
   return (
     <AppScreen>
@@ -777,6 +787,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           ) : null}
           <PrimaryActionButton
             accessibilityLabel={startLabel}
+            tone="coral"
             label={startLabel}
             accessibilityHint={
               practiceRun ? t('practice.start_hint') : undefined

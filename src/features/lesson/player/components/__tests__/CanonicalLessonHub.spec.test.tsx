@@ -83,7 +83,8 @@ describe('CanonicalLessonHub with a lesson specification', () => {
     expect(textOf(tree, 'lesson-outcome-situation')).toBe(
       'khách nói với người bán ở quán cà phê để gọi đồ uống',
     );
-    expect(textOf(tree, 'lesson-outcome-minutes')).toBe('Khoảng 10 phút');
+    // The length sits on the hero card.
+    expect(textOf(tree, 'lesson-hero-meta-schedule')).toBe('10 phút');
   });
 
   it('opens a prerequisite lesson from the outcome card', () => {
@@ -118,9 +119,9 @@ describe('CanonicalLessonHub with a lesson specification', () => {
     const onOpenSection = jest.fn();
     const tree = render(specSnapshot(), {onOpenSection});
     expect(byTestId(tree, 'canonical-hub-explore-grammar')).toHaveLength(0);
-    expect(textOf(tree, 'canonical-hub-explore-vocabulary')).toContain(
-      'Từ & cụm',
-    );
+    // Words & phrases have their own tab, not an explore row.
+    expect(byTestId(tree, 'canonical-hub-explore-vocabulary')).toHaveLength(0);
+    expect(textOf(tree, 'lesson-content-tab-words')).toContain('Từ & cụm');
     expect(textOf(tree, 'canonical-hub-explore-patterns')).toContain(
       '1 mẫu câu',
     );

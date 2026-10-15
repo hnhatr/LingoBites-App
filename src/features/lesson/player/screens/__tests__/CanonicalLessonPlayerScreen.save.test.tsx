@@ -151,10 +151,17 @@ function renderScreen() {
   return tree;
 }
 
+/** Words open from the hub's word tab; the other sections from their row. */
+const WORD_SECTIONS = ['Từ vựng chính', 'Từ & cụm'];
+
 function openSection(tree: ReactTestRenderer.ReactTestRenderer, title: string) {
   const row = tree.root
     .findAll(node => typeof node.props.onPress === 'function')
-    .find(node => node.props.title === title);
+    .find(node =>
+      WORD_SECTIONS.includes(title)
+        ? node.props.testID === 'lesson-content-words-all'
+        : node.props.title === title,
+    );
   act(() => {
     row!.props.onPress();
   });

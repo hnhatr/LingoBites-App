@@ -2,13 +2,17 @@ import React from 'react';
 import {Pressable, type PressableProps} from 'react-native';
 
 import {useAppTheme} from '../theme';
+import {HERO_PALETTE} from '../theme/heroPalette';
 import {AppText} from './AppText';
+import {MaterialIcon} from './MaterialIcon';
 import {SvgIcon} from './SvgIcon';
 
 type Props = Pick<PressableProps, 'disabled' | 'onPress' | 'testID'> & {
   accessibilityHint?: string;
   accessibilityLabel: string;
   label: string;
+  /** `coral`: the bright "learn" button of the hero cards, with a play icon. */
+  tone?: 'primary' | 'coral';
 };
 
 export function PrimaryActionButton({
@@ -18,8 +22,10 @@ export function PrimaryActionButton({
   label,
   onPress,
   testID,
+  tone = 'primary',
 }: Props) {
   const {theme} = useAppTheme();
+  const coral = tone === 'coral';
 
   return (
     <Pressable
@@ -33,30 +39,42 @@ export function PrimaryActionButton({
       style={({pressed}) => [
         {
           alignItems: 'center',
-          backgroundColor: theme.colors.primary,
+          backgroundColor: coral ? HERO_PALETTE.coral : theme.colors.primary,
           borderRadius: theme.radius.lg,
+          ...(coral
+            ? {
+                borderBottomColor: HERO_PALETTE.coralShelf,
+                borderBottomWidth: pressed ? 1 : 4,
+              }
+            : null),
           flexDirection: 'row',
           gap: 8,
           justifyContent: 'center',
           minHeight: 52,
           opacity: disabled
             ? theme.states.disabledOpacity
-            : pressed
+            : pressed && !coral
               ? theme.states.pressedOpacity
               : 1,
         },
       ]}
     >
-      <SvgIcon
-        color={theme.colors.text.inverse}
-        name="auto_stories"
-        size={22}
-      />
+      {coral ? (
+        <MaterialIcon color={HERO_PALETTE.white} name="play_arrow" size={22} />
+      ) : (
+        <SvgIcon
+          color={theme.colors.text.inverse}
+          name="auto_stories"
+          size={22}
+        />
+      )}
       <AppText
+        numberOfLines={1}
         style={{
-          color: theme.colors.text.inverse,
+          color: coral ? HERO_PALETTE.white : theme.colors.text.inverse,
+          flexShrink: 1,
           fontSize: 18,
-          fontWeight: '600',
+          fontWeight: coral ? '800' : '600',
         }}
       >
         {label}
