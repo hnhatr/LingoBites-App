@@ -1326,13 +1326,28 @@
     "choose_level": "Chọn {{level}}",
     "profile_title": "Hồ sơ học tập",
     "level_title": "Trình độ",
+    "level_name": {
+      "A1": "Sơ cấp 1",
+      "A2": "Sơ cấp 2"
+    },
+    "level_hint": {
+      "A1": "Giới thiệu bản thân, gọi món, hỏi đường",
+      "A2": "Kể chuyện, hẹn gặp, đi khám, mua sắm"
+    },
+    "level_section_hint": "Bài học và Lộ trình theo trình độ này",
     "level": {
       "A1": "A1 – Sơ cấp 1",
       "A2": "A2 – Sơ cấp 2"
     },
     "retake_test": "Làm lại bài kiểm tra",
+    "retake_test_hint": "App gợi ý lại trình độ hợp với bạn",
     "pending_sync": "Chưa đồng bộ, sẽ lưu lên máy chủ khi có mạng.",
     "save": "Lưu",
+    "save_changes": "Lưu thay đổi",
+    "saved": "Đã lưu",
+    "interests_short_hint": "Chọn tối đa {{max}}, hoặc bỏ trống",
+    "interests_full": "Đã đủ {{max}} sở thích. Bỏ chọn một mục để đổi.",
+    "minutes_unit": "phút",
     "path_label": "Lộ trình của bạn",
     "path_open": "Vào học"
   },

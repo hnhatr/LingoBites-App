@@ -1,16 +1,20 @@
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useState} from 'react';
-import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+import React, {useCallback, useMemo, useState} from 'react';
+import {Alert, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import Svg, {Circle} from 'react-native-svg';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {useFloatingTabBarClearance, withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {SectionHeader} from '@ui/components/SectionHeader';
-import {useAppTheme} from '@ui/theme';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+
+import {useOptionalAppNavigation} from '@core/navigation';
 
 import {
   type CapabilityProgressReport,
@@ -22,8 +26,34 @@ type Props = NativeStackScreenProps<ProfileStackParamList, 'ProgressReport'>;
 
 export type ProgressReportScreenProps = Props;
 
+type Tone = 'teal' | 'gold' | 'coral';
+
+const NOT_ENOUGH_DATA = 'Chưa đủ dữ liệu';
+
+function hasAnyMetric(report: CapabilityProgressReport): boolean {
+  return (
+    report.sentencesSpokenWithoutLookingCount > 0 ||
+    report.averageStartToAnswerMs !== null ||
+    report.firstListenComprehensionRate !== null ||
+    report.retention7DayRate !== null ||
+    report.retention30DayRate !== null ||
+    report.passedSituationsCount > 0 ||
+    report.beforeAfterRecordings.earliest !== null
+  );
+}
+
+function formatRecordingDate(iso: string): string {
+  const date = new Date(iso);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}`;
+}
+
 export function ProgressReportScreen({navigation}: Props) {
   const {theme} = useAppTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const feedClearance = useFloatingTabBarClearance();
+  const appNavigation = useOptionalAppNavigation();
   const {
     getCapabilityProgressReport,
     exportPrivacySafeMetrics,
@@ -50,6 +80,14 @@ export function ProgressReportScreen({navigation}: Props) {
     );
   }
 
+  const {earliest, latest} = report.beforeAfterRecordings;
+  const recordingCount =
+    earliest && latest && earliest.id !== latest.id ? 2 : 1;
+  const startSeconds =
+    report.averageStartToAnswerMs === null
+      ? null
+      : (report.averageStartToAnswerMs / 1000).toFixed(1).replace('.', ',');
+
   return (
     <AppScreen>
       <ScreenHeader
@@ -58,210 +96,197 @@ export function ProgressReportScreen({navigation}: Props) {
       />
 
       <ScrollView
-        contentContainerStyle={[
-          styles.contentContainer,
-          {
-            gap: theme.spacing.md,
-            paddingBottom: 32,
-            paddingHorizontal: theme.gutter,
-          },
-        ]}
+        contentContainerStyle={[styles.content, {paddingBottom: feedClearance}]}
         showsVerticalScrollIndicator={false}
       >
-        <SectionHeader title="Chỉ số năng lực học tập" />
-
-        {/* 1. Spoken without looking */}
-        <AppCard style={styles.metricCard}>
-          <View style={styles.metricHeader}>
-            <MaterialIcon
-              color={theme.colors.primary}
-              name="record_voice_over"
-              size={24}
-            />
-            <AppText variant="h3">Nói không cần nhìn prompt</AppText>
-          </View>
-          <AppText style={[styles.metricValue, {color: theme.colors.primary}]}>
-            {report.sentencesSpokenWithoutLookingCount > 0
-              ? `${report.sentencesSpokenWithoutLookingCount} câu`
-              : 'Chưa đủ dữ liệu'}
-          </AppText>
-          <AppText color="secondary" variant="caption">
-            Số lượng câu/mẫu câu học viên thực hành phản xạ không cần nhìn văn
-            bản.
-          </AppText>
-        </AppCard>
-
-        {/* 2. Start-to-answer time */}
-        <AppCard style={styles.metricCard}>
-          <View style={styles.metricHeader}>
-            <MaterialIcon
-              color={theme.colors.tertiary}
-              name="timer"
-              size={24}
-            />
-            <AppText variant="h3">Thời gian bắt đầu phản xạ</AppText>
-          </View>
-          <AppText style={[styles.metricValue, {color: theme.colors.tertiary}]}>
-            {report.startToAnswerTimeFormatted}
-          </AppText>
-          <AppText color="secondary" variant="caption">
-            Thời gian trung bình từ khi nhận tín hiệu đến khi đưa ra câu trả
-            lời.
-          </AppText>
-        </AppCard>
-
-        {/* 3. First-listen comprehension */}
-        <AppCard style={styles.metricCard}>
-          <View style={styles.metricHeader}>
-            <MaterialIcon
-              color={theme.colors.secondary}
-              name="hearing"
-              size={24}
-            />
-            <AppText variant="h3">Hiểu ngay lần nghe đầu tiên</AppText>
-          </View>
-          <AppText
-            style={[styles.metricValue, {color: theme.colors.secondary}]}
-          >
-            {formatPercentage(report.firstListenComprehensionRate)}
-          </AppText>
-          <AppText color="secondary" variant="caption">
-            Tỷ lệ trả lời chính xác ngay trong lần nghe đầu tiên không cần nghe
-            lại.
-          </AppText>
-        </AppCard>
-
-        {/* 4. 7-day & 30-day Retention */}
-        <AppCard style={styles.metricCard}>
-          <View style={styles.metricHeader}>
-            <MaterialIcon
-              color={theme.colors.accentInk}
-              name="psychology"
-              size={24}
-            />
-            <AppText variant="h3">Tỷ lệ ghi nhớ SRS (7d / 30d)</AppText>
-          </View>
-          <View style={styles.retentionRow}>
-            <View style={styles.retentionBox}>
-              <AppText color="secondary" variant="caption">
-                7 ngày qua
-              </AppText>
-              <AppText
-                style={[styles.metricValueSmall, {color: theme.colors.primary}]}
-              >
-                {formatPercentage(report.retention7DayRate)}
-              </AppText>
+        {!hasAnyMetric(report) ? (
+          <View style={styles.empty} testID="progress-report-empty">
+            <View style={styles.emptyIcon}>
+              <MaterialIcon
+                color={theme.colors.onTertiaryContainer}
+                name="auto_awesome"
+                size={22}
+              />
             </View>
-            <View style={styles.retentionBox}>
-              <AppText color="secondary" variant="caption">
-                30 ngày qua
+            <View style={styles.flexCopy}>
+              <AppText style={styles.emptyTitle}>
+                Chỉ số sẽ hiện dần khi bạn học
               </AppText>
-              <AppText
-                style={[styles.metricValueSmall, {color: theme.colors.primary}]}
-              >
-                {formatPercentage(report.retention30DayRate)}
+              <AppText color="secondary" style={styles.emptyBody}>
+                Luyện nói, nghe và ôn thẻ vài ngày để mở khóa từng chỉ số bên
+                dưới.
               </AppText>
+              {appNavigation ? (
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={() => appNavigation.openToday()}
+                  testID="progress-report-study"
+                >
+                  <AppText style={styles.emptyLink}>Học hôm nay</AppText>
+                </Pressable>
+              ) : null}
             </View>
           </View>
-          <AppText color="secondary" variant="caption">
-            Tỷ lệ ôn tập thành công trên cửa sổ 7 ngày và 30 ngày.
-          </AppText>
-        </AppCard>
+        ) : null}
 
-        {/* 5. Passed situations */}
-        <AppCard style={styles.metricCard}>
-          <View style={styles.metricHeader}>
-            <MaterialIcon
-              color={theme.colors.primary}
-              name="check_circle"
-              size={24}
-            />
-            <AppText variant="h3">Tình huống đã đạt</AppText>
-          </View>
-          <AppText style={[styles.metricValue, {color: theme.colors.primary}]}>
-            {report.passedSituationsCount > 0
-              ? `${report.passedSituationsCount} tình huống`
-              : 'Chưa đủ dữ liệu'}
-          </AppText>
-          <AppText color="secondary" variant="caption">
-            Số lượng bài kiểm tra tình huống (tuần và theo giai đoạn) đã đạt yêu
-            cầu.
-          </AppText>
-        </AppCard>
-
-        {/* 6. Before / After Recordings */}
-        <AppCard style={styles.metricCard}>
-          <View style={styles.metricHeader}>
-            <MaterialIcon
-              color={theme.colors.tertiary}
-              name="compare"
-              size={24}
-            />
-            <AppText variant="h3">So sánh ghi âm trước & sau</AppText>
-          </View>
-          {report.beforeAfterRecordings.earliest &&
-          report.beforeAfterRecordings.latest ? (
-            <View style={styles.recordingsRow}>
-              <AppText variant="body">
-                • Bản ghi đầu:{' '}
-                {new Date(
-                  report.beforeAfterRecordings.earliest.createdAt,
-                ).toLocaleDateString()}{' '}
-                (
-                {Math.round(
-                  report.beforeAfterRecordings.earliest.durationMs / 1000,
-                )}
-                s)
-              </AppText>
-              <AppText variant="body">
-                • Bản ghi mới nhất:{' '}
-                {new Date(
-                  report.beforeAfterRecordings.latest.createdAt,
-                ).toLocaleDateString()}{' '}
-                (
-                {Math.round(
-                  report.beforeAfterRecordings.latest.durationMs / 1000,
-                )}
-                s)
-              </AppText>
-            </View>
-          ) : (
-            <AppText
-              style={[styles.metricValue, {color: theme.colors.text.secondary}]}
-            >
-              Chưa đủ dữ liệu ghi âm
-            </AppText>
-          )}
-          <AppText color="secondary" variant="caption">
-            So sánh chất lượng phản xạ và phát âm qua thời gian.
-          </AppText>
-        </AppCard>
-
-        {/* Export anonymized learning metrics */}
-        <View style={{marginTop: theme.spacing.md}}>
-          <AppButton
-            accessibilityLabel="Xuất dữ liệu chỉ số học tập"
-            title="Xuất chỉ số học tập (JSON)"
-            onPress={handleExportMetrics}
-            variant="primary"
+        <SectionLabel styles={styles} title="Nói & phản xạ" />
+        <View style={styles.grid}>
+          <MetricTile
+            description="Câu bạn nói được mà không cần nhìn văn bản."
+            icon="record_voice_over"
+            styles={styles}
+            title="Nói không nhìn chữ"
+            tone="teal"
+            unit="câu"
+            value={
+              report.sentencesSpokenWithoutLookingCount > 0
+                ? String(report.sentencesSpokenWithoutLookingCount)
+                : null
+            }
+          />
+          <MetricTile
+            description="Trung bình từ lúc nghe câu hỏi tới lúc bắt đầu trả lời."
+            icon="timer"
+            styles={styles}
+            title="Thời gian bắt đầu nói"
+            tone="gold"
+            unit="giây"
+            value={startSeconds}
           />
         </View>
 
-        {exportJson ? (
-          <AppCard
-            style={{marginTop: 12, backgroundColor: theme.colors.surface}}
-          >
-            <AppText variant="h3">Chỉ số đã xuất (JSON ẩn danh):</AppText>
-            <AppText
-              style={{
-                fontFamily: 'Courier',
-                fontSize: 11,
-                marginTop: 8,
-                color: theme.colors.text.secondary,
-              }}
-            >
-              {exportJson}
+        <SectionLabel styles={styles} title="Nghe & ghi nhớ" />
+        <AppCard>
+          <View style={styles.metric}>
+            <MetricHead
+              icon="hearing"
+              styles={styles}
+              title="Hiểu ngay lần nghe đầu"
+              tone="coral"
+            />
+            {report.firstListenComprehensionRate === null ? (
+              <>
+                <NotEnoughData styles={styles} />
+                <AppText color="muted" style={styles.description}>
+                  Tỷ lệ trả lời đúng mà không cần nghe lại.
+                </AppText>
+              </>
+            ) : (
+              <View style={styles.ringRow}>
+                <Ring
+                  color={theme.colors.secondaryContainer}
+                  rate={report.firstListenComprehensionRate}
+                  track={theme.colors.surfaceHigh}
+                />
+                <View style={styles.flexCopy}>
+                  <MetricValue
+                    styles={styles}
+                    tone="coral"
+                    unit="%"
+                    value={String(
+                      Math.round(report.firstListenComprehensionRate),
+                    )}
+                  />
+                  <AppText color="muted" style={styles.description}>
+                    Câu trả lời đúng mà không cần nghe lại.
+                  </AppText>
+                </View>
+              </View>
+            )}
+          </View>
+        </AppCard>
+        <AppCard>
+          <View style={styles.metric}>
+            <MetricHead
+              icon="psychology"
+              styles={styles}
+              title="Ghi nhớ thẻ ôn"
+              tone="teal"
+            />
+            <RetentionBar
+              label="7 ngày"
+              rate={report.retention7DayRate}
+              styles={styles}
+              text={formatPercentage(report.retention7DayRate)}
+            />
+            <RetentionBar
+              label="30 ngày"
+              rate={report.retention30DayRate}
+              styles={styles}
+              text={formatPercentage(report.retention30DayRate)}
+            />
+            <AppText color="muted" style={styles.description}>
+              Tỷ lệ thẻ bạn nhớ đúng khi đến lịch ôn.
             </AppText>
+          </View>
+        </AppCard>
+
+        <SectionLabel styles={styles} title="Tình huống & ghi âm" />
+        <View style={styles.grid}>
+          <MetricTile
+            description="Bài kiểm tra tình huống theo tuần và giai đoạn đã đạt."
+            icon="emoji_events"
+            styles={styles}
+            title="Tình huống đã đạt"
+            tone="gold"
+            unit="tình huống"
+            value={
+              report.passedSituationsCount > 0
+                ? String(report.passedSituationsCount)
+                : null
+            }
+          />
+          <MetricTile
+            description="So phát âm và phản xạ qua thời gian."
+            icon="compare"
+            styles={styles}
+            title="Ghi âm trước & sau"
+            tone="coral"
+            unit="bản"
+            value={earliest && latest ? String(recordingCount) : null}
+          />
+        </View>
+        {earliest && latest ? (
+          <View style={styles.grid}>
+            <RecordingChip
+              label="Bản đầu"
+              meta={`${formatRecordingDate(earliest.createdAt)} · ${Math.round(
+                earliest.durationMs / 1000,
+              )} giây`}
+              styles={styles}
+            />
+            <RecordingChip
+              label="Mới nhất"
+              meta={`${formatRecordingDate(latest.createdAt)} · ${Math.round(
+                latest.durationMs / 1000,
+              )} giây`}
+              styles={styles}
+            />
+          </View>
+        ) : null}
+
+        <Pressable
+          accessibilityHint="Tạo bản JSON ẩn danh của các chỉ số"
+          accessibilityLabel="Xuất dữ liệu chỉ số học tập"
+          accessibilityRole="button"
+          onPress={handleExportMetrics}
+          style={({pressed}) => [styles.export, pressed && styles.pressed]}
+          testID="progress-report-export"
+        >
+          <MaterialIcon color={theme.colors.primary} name="share" size={18} />
+          <AppText style={styles.exportLabel}>
+            Xuất chỉ số (JSON ẩn danh)
+          </AppText>
+        </Pressable>
+
+        {exportJson ? (
+          <AppCard>
+            <View style={styles.metric}>
+              <AppText style={styles.metricTitle}>Chỉ số đã xuất</AppText>
+              <View style={styles.code}>
+                <AppText style={styles.codeText}>{exportJson}</AppText>
+              </View>
+            </View>
           </AppCard>
         ) : null}
       </ScrollView>
@@ -269,38 +294,416 @@ export function ProgressReportScreen({navigation}: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  contentContainer: {
-    paddingTop: 8,
-  },
-  metricCard: {
-    gap: 8,
-  },
-  metricHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  metricValue: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  metricValueSmall: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  retentionBox: {
-    alignItems: 'center',
-    flex: 1,
-    gap: 2,
-  },
-  retentionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  recordingsRow: {
-    gap: 8,
-    marginTop: 4,
-  },
-});
+type Styles = ReturnType<typeof makeStyles>;
+
+function toneColors(theme: AppTheme, tone: Tone) {
+  switch (tone) {
+    case 'gold':
+      return {bg: theme.colors.tertiarySoft, fg: theme.colors.tertiary};
+    case 'coral':
+      return {bg: theme.colors.secondarySoft, fg: theme.colors.secondary};
+    default:
+      return {bg: theme.colors.accentSoft, fg: theme.colors.primary};
+  }
+}
+
+function SectionLabel({title, styles}: {title: string; styles: Styles}) {
+  return <AppText style={styles.sectionLabel}>{title}</AppText>;
+}
+
+function MetricHead({
+  icon,
+  title,
+  tone,
+  styles,
+}: {
+  icon: HandoffIconName;
+  title: string;
+  tone: Tone;
+  styles: Styles;
+}) {
+  const {theme} = useAppTheme();
+  const colors = toneColors(theme, tone);
+  return (
+    <View style={styles.metricHead}>
+      <View style={[styles.metricIcon, {backgroundColor: colors.bg}]}>
+        <MaterialIcon color={colors.fg} name={icon} size={17} />
+      </View>
+      <AppText style={styles.metricTitle}>{title}</AppText>
+    </View>
+  );
+}
+
+function MetricValue({
+  value,
+  unit,
+  tone,
+  styles,
+}: {
+  value: string;
+  unit: string;
+  tone: Tone;
+  styles: Styles;
+}) {
+  const {theme} = useAppTheme();
+  const color =
+    tone === 'gold'
+      ? theme.colors.onTertiaryContainer
+      : toneColors(theme, tone).fg;
+  return (
+    <AppText style={[styles.value, {color}]}>
+      {value}
+      <AppText style={styles.valueUnit}>{` ${unit}`}</AppText>
+    </AppText>
+  );
+}
+
+function NotEnoughData({styles}: {styles: Styles}) {
+  const {theme} = useAppTheme();
+  return (
+    <View style={styles.notEnough}>
+      <MaterialIcon color={theme.colors.text.muted} name="lock" size={13} />
+      <AppText style={styles.notEnoughLabel}>{NOT_ENOUGH_DATA}</AppText>
+    </View>
+  );
+}
+
+function MetricTile({
+  icon,
+  title,
+  tone,
+  value,
+  unit,
+  description,
+  styles,
+}: {
+  icon: HandoffIconName;
+  title: string;
+  tone: Tone;
+  value: string | null;
+  unit: string;
+  description: string;
+  styles: Styles;
+}) {
+  return (
+    <AppCard style={styles.tile}>
+      <View style={styles.metric}>
+        <MetricHead icon={icon} styles={styles} title={title} tone={tone} />
+        {value === null ? (
+          <NotEnoughData styles={styles} />
+        ) : (
+          <MetricValue styles={styles} tone={tone} unit={unit} value={value} />
+        )}
+        <AppText color="muted" style={styles.description}>
+          {description}
+        </AppText>
+      </View>
+    </AppCard>
+  );
+}
+
+function RetentionBar({
+  label,
+  rate,
+  text,
+  styles,
+}: {
+  label: string;
+  rate: number | null;
+  text: string;
+  styles: Styles;
+}) {
+  return (
+    <View style={styles.barRow}>
+      <AppText style={styles.barLabel}>{label}</AppText>
+      <View style={styles.barTrack}>
+        <View
+          style={[
+            styles.barFill,
+            {width: `${Math.max(0, Math.min(100, rate ?? 0))}%`},
+          ]}
+        />
+      </View>
+      <AppText style={rate === null ? styles.barEmpty : styles.barValue}>
+        {rate === null ? '—' : text}
+      </AppText>
+    </View>
+  );
+}
+
+function Ring({
+  rate,
+  color,
+  track,
+}: {
+  rate: number;
+  color: string;
+  track: string;
+}) {
+  const radius = 26;
+  const circumference = 2 * Math.PI * radius;
+  const filled = (Math.max(0, Math.min(100, rate)) / 100) * circumference;
+  return (
+    <Svg height={64} viewBox="0 0 64 64" width={64}>
+      <Circle
+        cx={32}
+        cy={32}
+        fill="none"
+        r={radius}
+        stroke={track}
+        strokeWidth={8}
+      />
+      <Circle
+        cx={32}
+        cy={32}
+        fill="none"
+        r={radius}
+        stroke={color}
+        strokeDasharray={`${filled} ${circumference}`}
+        strokeLinecap="round"
+        strokeWidth={8}
+        transform="rotate(-90 32 32)"
+      />
+    </Svg>
+  );
+}
+
+function RecordingChip({
+  label,
+  meta,
+  styles,
+}: {
+  label: string;
+  meta: string;
+  styles: Styles;
+}) {
+  const {theme} = useAppTheme();
+  return (
+    <View style={styles.recording}>
+      <View style={styles.recordingIcon}>
+        <MaterialIcon color={theme.colors.primary} name="mic" size={16} />
+      </View>
+      <View style={styles.flexCopy}>
+        <AppText style={styles.recordingLabel}>{label}</AppText>
+        <AppText color="muted" style={styles.recordingMeta}>
+          {meta}
+        </AppText>
+      </View>
+    </View>
+  );
+}
+
+function makeStyles(theme: AppTheme) {
+  const mintEdge = withAlpha(theme.colors.primaryContainer, 0.45);
+  const sunEdge = withAlpha(theme.colors.tertiaryContainer, 0.45);
+  return StyleSheet.create({
+    content: {
+      gap: theme.spacing.md,
+      paddingHorizontal: theme.gutter,
+      paddingTop: 8,
+    },
+    flexCopy: {
+      flex: 1,
+      gap: 3,
+      minWidth: 0,
+    },
+    empty: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 22,
+      flexDirection: 'row',
+      gap: 12,
+      padding: 14,
+      ...getStickerEdge(4, sunEdge),
+    },
+    emptyIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 15,
+      height: 44,
+      justifyContent: 'center',
+      width: 44,
+    },
+    emptyTitle: {
+      fontSize: 15.5,
+      fontWeight: '800',
+    },
+    emptyBody: {
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    emptyLink: {
+      color: theme.colors.primary,
+      fontSize: 13,
+      fontWeight: '800',
+      marginTop: 4,
+      textDecorationLine: 'underline',
+    },
+    sectionLabel: {
+      color: theme.colors.primary,
+      fontSize: 12.5,
+      fontWeight: '800',
+      letterSpacing: 1,
+      paddingHorizontal: 2,
+      paddingTop: 4,
+      textTransform: 'uppercase',
+    },
+    grid: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    tile: {
+      flex: 1,
+      minWidth: 0,
+    },
+    metric: {
+      gap: 8,
+    },
+    metricHead: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+    },
+    metricIcon: {
+      alignItems: 'center',
+      borderRadius: 11,
+      height: 32,
+      justifyContent: 'center',
+      width: 32,
+    },
+    metricTitle: {
+      flex: 1,
+      fontSize: 13.5,
+      fontWeight: '800',
+      lineHeight: 17,
+    },
+    value: {
+      fontSize: 28,
+      fontVariant: ['tabular-nums'],
+      fontWeight: '800',
+    },
+    valueUnit: {
+      color: theme.colors.text.muted,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    notEnough: {
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 9,
+      flexDirection: 'row',
+      gap: 5,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    notEnoughLabel: {
+      color: theme.colors.text.muted,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    description: {
+      fontSize: 12.5,
+      lineHeight: 17,
+    },
+    ringRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 12,
+    },
+    barRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 10,
+    },
+    barLabel: {
+      color: theme.colors.text.secondary,
+      fontSize: 12.5,
+      fontWeight: '700',
+      width: 58,
+    },
+    barTrack: {
+      backgroundColor: theme.colors.surfaceHigh,
+      borderRadius: 6,
+      flex: 1,
+      height: 12,
+      overflow: 'hidden',
+    },
+    barFill: {
+      backgroundColor: theme.colors.primaryContainer,
+      borderRadius: 6,
+      height: '100%',
+    },
+    barValue: {
+      color: theme.colors.primary,
+      fontSize: 15,
+      fontVariant: ['tabular-nums'],
+      fontWeight: '800',
+      textAlign: 'right',
+      width: 46,
+    },
+    barEmpty: {
+      color: theme.colors.text.muted,
+      fontSize: 13,
+      fontWeight: '700',
+      textAlign: 'right',
+      width: 46,
+    },
+    recording: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      flex: 1,
+      flexDirection: 'row',
+      gap: 8,
+      minWidth: 0,
+      padding: 10,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
+    },
+    recordingIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 17,
+      height: 34,
+      justifyContent: 'center',
+      width: 34,
+    },
+    recordingLabel: {
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    recordingMeta: {
+      fontSize: 11.5,
+      fontVariant: ['tabular-nums'],
+    },
+    export: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.pill,
+      flexDirection: 'row',
+      gap: 8,
+      justifyContent: 'center',
+      marginTop: theme.spacing.sm,
+      minHeight: 46,
+      ...getStickerEdge(3, mintEdge),
+    },
+    exportLabel: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '800',
+    },
+    pressed: {
+      transform: [{translateY: 2}],
+    },
+    code: {
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 12,
+      padding: 10,
+    },
+    codeText: {
+      color: theme.colors.text.secondary,
+      fontFamily: 'Courier',
+      fontSize: 11,
+    },
+  });
+}

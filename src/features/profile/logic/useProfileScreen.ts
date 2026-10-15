@@ -40,43 +40,25 @@ const PROFILE_PLACEHOLDER = {
 /** Which Cài đặt picker sheet is open, if any (F6). */
 export type ProfileSettingsSheet = 'weeklyGoal' | 'reminder' | null;
 
-const REMINDER_OFF_KEY = 'off';
-const REMINDER_GOLDEN_HOUR_KEY = 'golden-hour';
+/** Captions of the weekly goal choices, by lessons per week. */
+const WEEKLY_GOAL_CAPTIONS: Record<number, string> = {
+  3: 'Nhẹ nhàng · khoảng 2 ngày một bài',
+  5: 'Đều đặn · học các ngày trong tuần',
+  7: 'Mỗi ngày · giữ chuỗi cả tuần',
+};
 
 const WEEKLY_GOAL_SHEET_OPTIONS = WEEKLY_GOAL_OPTIONS.map(target => ({
   key: String(target),
   label: `${target} bài/tuần`,
+  caption: WEEKLY_GOAL_CAPTIONS[target],
+  badge: String(target),
+  meter: {filled: target, total: 7},
 }));
 
-const REMINDER_SHEET_OPTIONS = [
-  {key: REMINDER_OFF_KEY, label: 'Tắt nhắc nhở'},
-  {
-    key: REMINDER_GOLDEN_HOUR_KEY,
-    label: 'Chỉ nhắc giờ vàng',
-    caption: 'Nhắc khi có thẻ đến lịch ôn.',
-  },
-  ...DAILY_REMINDER_TIME_OPTIONS.map(time => ({
-    key: time,
-    label: `Mỗi ngày lúc ${time}`,
-    caption: 'Kèm nhắc giờ vàng khi có thẻ đến lịch ôn.',
-  })),
-];
-
-function reminderKey(settings: ReminderSettings): string {
-  if (!settings.enabled) {
-    return REMINDER_OFF_KEY;
-  }
-  return settings.dailyTime ?? REMINDER_GOLDEN_HOUR_KEY;
-}
-
-function reminderSettingsForKey(key: string): ReminderSettings {
-  if (key === REMINDER_OFF_KEY) {
-    return {enabled: false, dailyTime: null};
-  }
-  if (key === REMINDER_GOLDEN_HOUR_KEY) {
-    return {enabled: true, dailyTime: null};
-  }
-  return {enabled: true, dailyTime: key};
+function weeklyGoalSheetSubtitle(target: number): string {
+  return (WEEKLY_GOAL_OPTIONS as readonly number[]).includes(target)
+    ? 'Tuần mới bắt đầu từ thứ Hai.'
+    : `Đang để mặc định ${target} bài/tuần. Chọn mức hợp với bạn.`;
 }
 
 function reminderTrailingLabel(settings: ReminderSettings): string {
@@ -209,34 +191,38 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     setGamification(getGamificationSnapshot());
   }, []);
 
-  const selectReminder = useCallback((key: string) => {
-    setOpenSettingsSheet(null);
-    const next = reminderSettingsForKey(key);
-    if (!saveReminderSettings(next)) {
-      setStatusMessage('Chưa lưu được cài đặt nhắc nhở. Vui lòng thử lại.');
-      return;
-    }
-    setReminderSettings(next);
-    applyReminderSettings({prompt: next.enabled})
-      .then(result => {
-        if (result === 'denied') {
-          Alert.alert(
-            'Thông báo đang bị tắt',
-            'Hãy cho phép LingoBites gửi thông báo trong Cài đặt của máy để nhận nhắc nhở.',
-            [
-              {text: 'Để sau', style: 'cancel'},
-              {
-                text: 'Mở Cài đặt',
-                onPress: () => {
-                  Linking.openSettings().catch(() => {});
+  const selectReminder = useCallback(
+    (next: ReminderSettings, options?: {keepOpen?: boolean}) => {
+      if (!options?.keepOpen) {
+        setOpenSettingsSheet(null);
+      }
+      if (!saveReminderSettings(next)) {
+        setStatusMessage('Chưa lưu được cài đặt nhắc nhở. Vui lòng thử lại.');
+        return;
+      }
+      setReminderSettings(next);
+      applyReminderSettings({prompt: next.enabled})
+        .then(result => {
+          if (result === 'denied') {
+            Alert.alert(
+              'Thông báo đang bị tắt',
+              'Hãy cho phép LingoBites gửi thông báo trong Cài đặt của máy để nhận nhắc nhở.',
+              [
+                {text: 'Để sau', style: 'cancel'},
+                {
+                  text: 'Mở Cài đặt',
+                  onPress: () => {
+                    Linking.openSettings().catch(() => {});
+                  },
                 },
-              },
-            ],
-          );
-        }
-      })
-      .catch(() => {});
-  }, []);
+              ],
+            );
+          }
+        })
+        .catch(() => {});
+    },
+    [],
+  );
 
   return {
     accountPhase,
@@ -258,8 +244,8 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     openSupportAbout,
     openWeeklyGoalSheet,
     profileSubtitle,
-    reminderSelectedKey: reminderKey(reminderSettings),
-    reminderSheetOptions: REMINDER_SHEET_OPTIONS,
+    reminderSettings,
+    reminderTimeOptions: DAILY_REMINDER_TIME_OPTIONS,
     reminderTrailingLabel: reminderTrailingLabel(reminderSettings),
     selectReminder,
     selectWeeklyGoal,
@@ -269,6 +255,7 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     streakTitle,
     weeklyGoalSelectedKey: String(weeklyGoalTarget),
     weeklyGoalSheetOptions: WEEKLY_GOAL_SHEET_OPTIONS,
+    weeklyGoalSheetSubtitle: weeklyGoalSheetSubtitle(weeklyGoalTarget),
     weeklyGoalTrailingLabel: `${weeklyGoalTarget} bài/tuần`,
   };
 }

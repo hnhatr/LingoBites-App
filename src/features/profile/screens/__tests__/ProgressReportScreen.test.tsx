@@ -72,14 +72,16 @@ describe('ProgressReportScreen (REQ-39)', () => {
 
     const text = JSON.stringify(tree!.toJSON());
     expect(text).toContain('Báo cáo tiến độ & Năng lực');
-    expect(text).toContain('Nói không cần nhìn prompt');
-    expect(text).toContain('Thời gian bắt đầu phản xạ');
-    expect(text).toContain('Hiểu ngay lần nghe đầu tiên');
-    expect(text).toContain('Tỷ lệ ghi nhớ SRS (7d / 30d)');
+    expect(text).toContain('Nói không nhìn chữ');
+    expect(text).toContain('Thời gian bắt đầu nói');
+    expect(text).toContain('Hiểu ngay lần nghe đầu');
+    expect(text).toContain('Ghi nhớ thẻ ôn');
     expect(text).toContain('Tình huống đã đạt');
+    expect(text).toContain('Chỉ số sẽ hiện dần khi bạn học');
+    expect(text).toContain('Chưa đủ dữ liệu');
     expect(text).not.toContain('(Situations)');
     expect(text).not.toContain('REQ-39');
-    expect(text).toContain('So sánh ghi âm trước & sau');
+    expect(text).toContain('Ghi âm trước & sau');
   });
 
   test('clicking export metrics button generates JSON output', async () => {
@@ -91,7 +93,7 @@ describe('ProgressReportScreen (REQ-39)', () => {
 
     const exportBtn = findPressableByText(
       tree!.root,
-      'Xuất chỉ số học tập (JSON)',
+      'Xuất chỉ số (JSON ẩn danh)',
     );
     expect(exportBtn).toBeTruthy();
 

@@ -17,6 +17,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
 import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
+import {ReminderSheet} from '../components/ReminderSheet';
 import {SettingsOptionSheet} from '../components/SettingsOptionSheet';
 import type {ProfileScreenViewModel} from '../logic/useProfileScreen';
 
@@ -42,8 +43,8 @@ export function ProfileScreenView({
   openSupportAbout,
   openWeeklyGoalSheet,
   profileSubtitle,
-  reminderSelectedKey,
-  reminderSheetOptions,
+  reminderSettings,
+  reminderTimeOptions,
   reminderTrailingLabel,
   selectReminder,
   selectWeeklyGoal,
@@ -53,6 +54,7 @@ export function ProfileScreenView({
   streakTitle,
   weeklyGoalSelectedKey,
   weeklyGoalSheetOptions,
+  weeklyGoalSheetSubtitle,
   weeklyGoalTrailingLabel,
 }: ProfileScreenViewProps) {
   const {theme} = useAppTheme();
@@ -253,18 +255,17 @@ export function ProfileScreenView({
           onSelect={selectWeeklyGoal}
           options={weeklyGoalSheetOptions}
           selectedKey={weeklyGoalSelectedKey}
+          subtitle={weeklyGoalSheetSubtitle}
           testID="profile-weekly-goal-sheet"
           title="Mục tiêu tuần"
         />
       ) : null}
       {openSettingsSheet === 'reminder' ? (
-        <SettingsOptionSheet
+        <ReminderSheet
           onDismiss={closeSettingsSheet}
           onSelect={selectReminder}
-          options={reminderSheetOptions}
-          selectedKey={reminderSelectedKey}
-          testID="profile-reminder-sheet"
-          title="Nhắc nhở"
+          settings={reminderSettings}
+          timeOptions={reminderTimeOptions}
         />
       ) : null}
     </AppScreen>

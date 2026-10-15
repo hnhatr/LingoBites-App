@@ -1326,13 +1326,28 @@
     "choose_level": "Choose {{level}}",
     "profile_title": "Learning profile",
     "level_title": "Level",
+    "level_name": {
+      "A1": "Elementary 1",
+      "A2": "Elementary 2"
+    },
+    "level_hint": {
+      "A1": "Introduce yourself, order food, ask the way",
+      "A2": "Tell stories, make plans, see a doctor, shop"
+    },
+    "level_section_hint": "Lessons and your path follow this level",
     "level": {
       "A1": "A1 – Elementary 1",
       "A2": "A2 – Elementary 2"
     },
     "retake_test": "Retake the placement test",
+    "retake_test_hint": "Let the app suggest a level for you again",
     "pending_sync": "Not synced yet; it will be saved when you are online.",
     "save": "Save",
+    "save_changes": "Save changes",
+    "saved": "Saved",
+    "interests_short_hint": "Pick up to {{max}}, or skip",
+    "interests_full": "You already picked {{max}}. Unselect one to change.",
+    "minutes_unit": "min",
     "path_label": "Your learning path",
     "path_open": "Start learning"
   },
