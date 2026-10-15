@@ -136,14 +136,11 @@ describe('ShadowingSessionScreen', () => {
   it('AC-005 S1: shows sentence texts and Câu x/n', () => {
     const {tree} = renderScreen();
     const root = tree.root;
-    const progress = root.findByProps({testID: 'shadowing-sentence-progress'})
-      .props.children;
-    const progressText =
-      typeof progress === 'string' ? progress : (progress?.join?.('') ?? '');
-    expect(progressText).toContain('Câu 2/3');
-    expect(root.findByProps({testID: 'shadowing-text-en'}).props.children).toBe(
-      'Hello',
-    );
+    const progress = root.findByProps({testID: 'pack-session-progress'});
+    expect(progress.props.accessibilityValue.text).toBe('Câu 2/3');
+    expect(
+      root.findByProps({testID: 'shadowing-text-en'}).props.accessibilityLabel,
+    ).toBe('Hello');
     expect(
       root.findByProps({testID: 'shadowing-text-ipa'}).props.children,
     ).toBe('/həˈloʊ/');
