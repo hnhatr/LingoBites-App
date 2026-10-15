@@ -26,8 +26,8 @@ export function SpeechNotice({notice, testID = 'speech-notice'}: Props) {
     >
       <AppText color="danger">
         {notice === 'VOICE_UNAVAILABLE'
-          ? t('lessonPlayer.speech_voice_missing')
-          : t('lessonPlayer.speech_unavailable')}
+          ? t('speech.voice_missing')
+          : t('speech.unavailable')}
       </AppText>
     </View>
   );

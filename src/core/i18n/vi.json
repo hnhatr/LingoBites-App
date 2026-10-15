@@ -1837,5 +1837,9 @@
       "step_check": "Kiểm tra thì và chủ ngữ",
       "wait": "Thường mất vài giây. Bạn cứ ở màn này, bộ câu sẽ tự mở khi xong."
     }
+  },
+  "speech": {
+    "voice_missing": "Máy chưa có giọng tiếng Anh (Mỹ) nên chưa đọc được. Hãy cài thêm giọng trong cài đặt hệ thống.",
+    "unavailable": "Máy này chưa phát được âm thanh."
   }
 }

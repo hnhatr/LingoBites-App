@@ -1837,5 +1837,9 @@
       "step_check": "Checking tense and subjects",
       "wait": "This usually takes a few seconds. Stay here; the set opens by itself when it is ready."
     }
+  },
+  "speech": {
+    "voice_missing": "This device has no English (US) voice, so it cannot read aloud. Install one in system settings.",
+    "unavailable": "Audio playback is not available on this device."
   }
 }

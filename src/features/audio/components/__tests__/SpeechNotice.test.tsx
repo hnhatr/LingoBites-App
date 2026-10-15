@@ -41,7 +41,7 @@ describe('SpeechNotice', () => {
     expect(
       tree.root.findAllByProps({testID: 'speech-notice'}).length,
     ).toBeGreaterThan(0);
-    expect(textOf(tree)).toContain('tiếng Anh (Mỹ)');
+    expect(textOf(tree)).toContain('tiếng Anh (Mỹ) nên chưa đọc được');
 
     await act(async () => {
       tree.update(themed(<SpeechNotice notice="UNAVAILABLE" />));
