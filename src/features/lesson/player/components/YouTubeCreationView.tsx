@@ -13,7 +13,6 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
-import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SoftActionButton} from '@ui/components/SoftActionButton';
@@ -144,7 +143,6 @@ export function YouTubeCreationView({
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const floatingClearance = useFloatingTabBarClearance();
   const [pasteNotice, setPasteNotice] = useState(false);
   const [urlFocused, setUrlFocused] = useState(false);
   const [submittedUrl, setSubmittedUrl] = useState('');
@@ -549,7 +547,7 @@ export function YouTubeCreationView({
         ) : null}
       </ScrollView>
 
-      <StickerFooter bottomInset={floatingClearance}>
+      <StickerFooter>
         {succeeded ? (
           <StickerButton
             accessibilityLabel={t('lessonPlayer.create_open')}
