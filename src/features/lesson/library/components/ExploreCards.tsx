@@ -1,4 +1,5 @@
-import React, {useMemo, useState} from 'react';
+import {BlurTargetView, BlurView} from 'expo-blur';
+import React, {type RefObject, useMemo, useRef, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
@@ -48,6 +49,7 @@ export function VideoHeroCard({
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [pressed, setPressed] = useState(false);
   const colors = cardColors(theme, tone);
+  const thumbRef = useRef<View>(null);
 
   return (
     <Pressable
@@ -73,15 +75,17 @@ export function VideoHeroCard({
           style={[styles.heroBlob, {backgroundColor: colors.blob}]}
         />
         <View style={styles.heroThumb}>
-          <LibraryCover
-            duration={cover.duration}
-            glyph="subtitles"
-            imageUrl={cover.imageUrl}
-            level={cover.level}
-            shape="video"
-            testID={`${testID}-cover`}
-          />
-          <PlayDisc ink={colors.ink} size="large" />
+          <BlurTargetView ref={thumbRef}>
+            <LibraryCover
+              duration={cover.duration}
+              glyph="subtitles"
+              imageUrl={cover.imageUrl}
+              level={cover.level}
+              shape="video"
+              testID={`${testID}-cover`}
+            />
+          </BlurTargetView>
+          <PlayButton blurTarget={thumbRef} size="large" />
         </View>
         <View style={styles.heroFoot}>
           <AppText numberOfLines={2} style={styles.heroTitle}>
@@ -111,6 +115,7 @@ export function VideoRowCard({
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const [pressed, setPressed] = useState(false);
   const colors = cardColors(theme, tone);
+  const thumbRef = useRef<View>(null);
 
   return (
     <Pressable
@@ -136,20 +141,22 @@ export function VideoRowCard({
           style={[styles.rowBlob, {backgroundColor: colors.blob}]}
         />
         <View style={styles.rowThumb}>
-          <LibraryCover
-            compact
-            glyph="subtitles"
-            imageUrl={cover.imageUrl}
-            level={cover.level}
-            shape="video"
-            testID={`${testID}-cover`}
-          />
+          <BlurTargetView ref={thumbRef}>
+            <LibraryCover
+              compact
+              glyph="subtitles"
+              imageUrl={cover.imageUrl}
+              level={cover.level}
+              shape="video"
+              testID={`${testID}-cover`}
+            />
+          </BlurTargetView>
           {cover.duration ? (
             <View style={styles.duration}>
               <AppText style={styles.durationText}>{cover.duration}</AppText>
             </View>
           ) : null}
-          <PlayDisc ink={colors.ink} size="small" />
+          <PlayButton blurTarget={thumbRef} size="small" />
         </View>
         <View style={styles.rowText}>
           <AppText numberOfLines={2} style={styles.rowTitle}>
@@ -166,40 +173,68 @@ export function VideoRowCard({
   );
 }
 
-const PLAY_DISC_SIZES = {
-  large: {disc: 60, glyph: 24, ring: 3},
-  small: {disc: 36, glyph: 14, ring: 2},
+const PLAY_BUTTON_SIZES = {
+  large: {width: 72, height: 50, radius: 10, shelf: 5, glyph: 34},
+  small: {width: 44, height: 30, radius: 7, shelf: 3, glyph: 22},
 } as const;
 
-/** The round play button centred over a video thumbnail. */
-function PlayDisc({
-  ink,
+const PLAY_BLUR_INTENSITY = 20;
+
+/** Light glass for the YouTube-like play button over a thumbnail. */
+const PLAY_GLASS = {
+  face: 'rgba(255,255,255,0.3)',
+  shelf: 'rgba(255,255,255,0.55)',
+};
+
+/**
+ * The see-through play button centred over a video thumbnail, with a shelf
+ * under it like the cards. The face blurs the thumbnail behind it (Android
+ * needs the thumbnail wrapped in a `BlurTargetView`). The face and the shelf
+ * don't overlap, so the translucent colours don't stack.
+ */
+function PlayButton({
+  blurTarget,
   size,
 }: {
-  ink: string;
-  size: keyof typeof PLAY_DISC_SIZES;
+  blurTarget: RefObject<View | null>;
+  size: keyof typeof PLAY_BUTTON_SIZES;
 }) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const {disc, glyph, ring} = PLAY_DISC_SIZES[size];
+  const {width, height, radius, shelf, glyph} = PLAY_BUTTON_SIZES[size];
 
   return (
     <View pointerEvents="none" style={styles.playLayer}>
-      <View
+      <BlurView
+        blurMethod="dimezisBlurViewSdk31Plus"
+        blurTarget={blurTarget}
+        intensity={PLAY_BLUR_INTENSITY}
         style={[
-          styles.playDisc,
+          styles.playFace,
           {
-            backgroundColor: ink,
-            borderRadius: disc / 2,
-            borderWidth: ring,
-            height: disc,
-            paddingLeft: ring,
-            width: disc,
+            borderTopLeftRadius: radius,
+            borderTopRightRadius: radius,
+            height,
+            width,
           },
         ]}
+        tint="light"
       >
-        <Glyph color={theme.colors.text.inverse} name="play" size={glyph} />
-      </View>
+        <View style={styles.playGlyph}>
+          <Glyph color={theme.colors.text.inverse} name="play" size={glyph} />
+        </View>
+      </BlurView>
+      <View
+        style={[
+          styles.playShelf,
+          {
+            borderBottomLeftRadius: radius,
+            borderBottomRightRadius: radius,
+            height: shelf,
+            width,
+          },
+        ]}
+      />
     </View>
   );
 }
@@ -290,11 +325,22 @@ function makeStyles(theme: AppTheme) {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    playDisc: {
+    playFace: {
       alignItems: 'center',
-      borderColor: theme.colors.onOverlay,
+      backgroundColor: PLAY_GLASS.face,
       justifyContent: 'center',
-      ...theme.shadow.medium,
+      overflow: 'hidden',
+      paddingLeft: 2,
+    },
+    // Keeps the white triangle readable on bright thumbnails (iOS only).
+    playGlyph: {
+      shadowColor: theme.colors.overlay,
+      shadowOffset: {width: 0, height: 1},
+      shadowOpacity: 1,
+      shadowRadius: 2,
+    },
+    playShelf: {
+      backgroundColor: PLAY_GLASS.shelf,
     },
   });
 }
