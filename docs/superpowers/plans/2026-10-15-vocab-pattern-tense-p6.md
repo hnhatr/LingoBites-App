@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1, S2, S3, S4 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S5 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -103,7 +103,12 @@ Admin tạo khoá **"Oxford 3000 + IELTS"** và 4 cấp A1 · A2 · B1 · B2 b�
 ### 4.2 Migration nhỏ ⚠️
 `033_unit_topic_tag.sql` (+ `.down.sql`), cập nhật `prisma/schema.prisma`:
 ```sql
-ALTER TABLE units ADD COLUMN topic_tag varchar(64) REFERENCES tags(code) ON DELETE SET NULL;  -- null được
+ALTER TABLE units
+    ADD COLUMN topic_tag varchar(64),                                   -- null được
+    ADD CONSTRAINT units_topic_tag_fkey
+        FOREIGN KEY (topic_tag) REFERENCES tags(code) ON DELETE SET NULL,
+    ADD CONSTRAINT units_topic_tag_check
+        CHECK (topic_tag IS NULL OR topic_tag LIKE 'topic:%');          -- chỉ tag chủ đề
 CREATE INDEX units_topic_tag_idx ON units (topic_tag) WHERE topic_tag IS NOT NULL;
 ```
 Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để biết unit thuộc chủ đề nào, để không đề xuất trùng chủ đề và để đếm độ phủ.
@@ -130,7 +135,7 @@ Admin xem và sửa từng bài bằng các trang có sẵn, rồi publish như 
 ### File Server + admin-web (dự kiến)
 | File | Việc |
 |---|---|
-| `src/common/database/migrations/033_unit_topic_tag.sql` 🆕, `.down.sql` 🆕, `prisma/schema.prisma` 🔧 | 4.2 |
+| `src/common/database/migrations/033_unit_topic_tag.sql` 🆕, `.down.sql` 🆕, `prisma/schema.prisma` 🔧 ✅ S5 | 4.2. Test down của 002 và 019 gỡ 033 trước (033 tham chiếu `tags`) |
 | `src/modules/curriculum/unitBuilder/` 🆕 (`model/tenseOrder.ts`, `service/proposeUnit.ts`, `service/createUnitFromProposal.ts`, `service/courseCoverage.ts`, `controller/unitBuilderRoutes.ts`) | 4.3 – 4.5 |
 | `src/modules/combo/service/comboPrewarm.ts` 🔧 | Nhận danh sách tổ hợp cụ thể (không chỉ "mọi tổ hợp của item") |
 | `admin-web/src/routes/UnitBuilderPage.tsx` 🆕 | Chọn chủ đề → xem đề xuất → sửa (đổi từ, mẫu, thì, tình huống) → tạo. Hiện ước tính số lần gọi AI (4 lần dựng bài + số bộ câu sinh trước) |
@@ -205,7 +210,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S2 ✅ | Server | `feat(items): look up lesson words in the word list` (3.3) | Không |
 | S3 ✅ | Server | `feat(outcomes): vocab progress for the learner` (3.4) | Không |
 | S4 ✅ | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
-| S5 | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
+| S5 ✅ | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
 | S6 | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
 | S7 | admin-web | `feat(admin): unit builder page` | Không |
 | A1 | App | `feat(library): pattern library and tense map` (5.1) | |
