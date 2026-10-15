@@ -95,6 +95,7 @@ import {useComposeAvailable} from '../logic/useComposePick';
 import {useLessonCompletion} from '../logic/useLessonCompletion';
 import {useLessonMediaDownload} from '../logic/useLessonMediaDownload';
 import {useLessonSavedItems} from '../logic/useLessonSavedItems';
+import {useSavedVideoSentences} from '../logic/useSavedVideoSentences';
 import {useVideoLessons} from '../logic/useVideoLessons';
 import type {LessonFlowParamList} from './navigationTypes';
 
@@ -128,6 +129,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     markStarted,
   } = useLessonCompletion(lessonId);
   const savedItems = useLessonSavedItems(lessonId);
+  const savedSentences = useSavedVideoSentences(lessonId);
   const appNavigation = useAppNavigation();
   const practiceEnabled = useFeatureEnabled('shortPractice');
   const reloadSavedItems = savedItems.reload;
@@ -458,6 +460,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         onSpeakText={handleSpeak}
         vocabularySave={savedItems.vocabulary}
         grammarSave={savedItems.grammar}
+        sentenceSave={isYouTubeStudy ? savedSentences : undefined}
         onFinish={() => openView('hub')}
         videoLessons={videoLessons}
         onOpenVideoLesson={appNavigation.openLesson}

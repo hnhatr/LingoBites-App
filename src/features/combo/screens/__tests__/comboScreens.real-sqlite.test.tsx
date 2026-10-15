@@ -874,4 +874,36 @@ describe('SavedComboSentencesList', () => {
     });
     expect(has(tree, 'saved-sentences-empty')).toBe(true);
   });
+
+  it('opens the video lesson of a sentence saved with ♥', async () => {
+    await AsyncStorage.setItem(
+      'combo_saved_sentences_v1',
+      JSON.stringify([
+        {
+          id: 'video:lesson-9:s1',
+          setId: '',
+          itemCode: '',
+          textEn: 'Nice to meet you.',
+          textVi: 'Rất vui được gặp bạn.',
+          savedAt: '2026-10-15T08:00:00.000Z',
+          lessonId: 'lesson-9',
+        },
+      ]),
+    );
+    const tree = renderWithTheme(<SavedComboSentencesList />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(textOf(tree, 'saved-sentence-video:lesson-9:s1')).toContain(
+      'Nice to meet you.',
+    );
+    const open = tree.root.findAll(
+      node =>
+        node.props.accessibilityHint === 'Mở lại bài video có câu này' &&
+        typeof node.props.onPress === 'function',
+    )[0]!;
+    act(() => open.props.onPress());
+    expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('lesson-9');
+    expect(mockAppNavigation.openComboSet).not.toHaveBeenCalledWith('');
+  });
 });

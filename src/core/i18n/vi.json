@@ -573,7 +573,10 @@
       "progress_a11y": "Tiến độ câu, chạm để nhảy đến câu",
       "word_hint": "Xem phiên âm và nghĩa của từ",
       "word_no_meaning": "Câu này chưa được phân tích nên chưa có nghĩa.",
-      "word_bubble_close": "Đóng"
+      "word_bubble_close": "Đóng",
+      "save_sentence_a11y": "Lưu câu này",
+      "unsave_sentence_a11y": "Bỏ lưu câu này",
+      "save_sentence_hint": "Giữ câu trong Câu đã lưu ở Thư viện"
     }
   },
   "gamification": {
@@ -1826,9 +1829,10 @@
     },
     "saved": {
       "empty_title": "Chưa có câu nào",
-      "empty_body": "Bấm Lưu dưới một câu trong bộ câu để giữ nó ở đây.",
+      "empty_body": "Bấm Lưu dưới một câu trong bộ câu, hoặc ♥ ở một câu trong bài video, để giữ nó ở đây.",
       "no_match": "Không có câu nào khớp “{{query}}”.",
       "open_hint": "Mở bộ câu có câu này",
+      "open_lesson_hint": "Mở lại bài video có câu này",
       "unsave": "Bỏ lưu câu này",
       "unsave_hint": "Xóa câu khỏi Câu đã lưu"
     },

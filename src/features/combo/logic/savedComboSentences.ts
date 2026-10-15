@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 /**
  * Vocab path P5: the combo sentences the learner saved with "Lưu", listed in
  * the Library under "Câu đã lưu". Kept on this device only, newest first.
+ * Sentences saved with ♥ in a YouTube lesson share the list; they carry the
+ * lesson they came from instead of a combo set.
  */
 export const SAVED_COMBO_SENTENCES_KEY = 'combo_saved_sentences_v1';
 
@@ -13,6 +15,8 @@ export type SavedComboSentence = {
   textEn: string;
   textVi: string;
   savedAt: string;
+  /** Set for a sentence saved from a lesson (`setId` is then empty). */
+  lessonId?: string;
 };
 
 function isSaved(value: unknown): value is SavedComboSentence {

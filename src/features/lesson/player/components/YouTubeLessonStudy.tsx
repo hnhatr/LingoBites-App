@@ -29,6 +29,7 @@ import {
   shouldRepeatSentence,
 } from '../logic/sentenceRepeat';
 import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
+import type {SentenceSaveControl} from '../logic/useSavedVideoSentences';
 import {CanonicalBlockView} from './CanonicalBlockView';
 import {LessonStatusBanners} from './LessonStatusBanners';
 import {LessonStudyToolbar} from './LessonStudyToolbar';
@@ -70,6 +71,8 @@ export type YouTubeLessonStudyProps = {
   >;
   onSpeakText?: (text: string) => void;
   vocabularySave?: VocabularySaveControl;
+  /** ♥ on the sentence cards and transcript rows. */
+  sentenceSave?: SentenceSaveControl;
   /** Public video: the six-step lessons made from it, listed under it. */
   videoLessons?: readonly LessonCatalogItem[];
   onOpenVideoLesson?: (lessonId: string) => void;
@@ -119,6 +122,7 @@ export function YouTubeLessonStudy({
   analysisStates,
   onSpeakText,
   vocabularySave,
+  sentenceSave,
   videoLessons,
   onOpenVideoLesson,
   onPlayVideo,
@@ -517,6 +521,7 @@ export function YouTubeLessonStudy({
           }
           onSeek={onSeek}
           onSpeakText={onSpeakText}
+          sentenceSave={sentenceSave}
           sentences={orderedSentences}
           showIpa={showIpa}
           showTranslation={showTranslation}
@@ -569,6 +574,7 @@ export function YouTubeLessonStudy({
         currentIndex={currentIndex}
         onClose={handleCloseSheet}
         onSelectSentence={handleTranscriptSelect}
+        sentenceSave={sentenceSave}
         sentences={orderedSentences}
         showIpa={showIpa}
         showTranslation={showTranslation}

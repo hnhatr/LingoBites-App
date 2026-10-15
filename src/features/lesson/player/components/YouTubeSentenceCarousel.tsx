@@ -25,6 +25,7 @@ import {
   pairWordsWithIpa,
   splitSentenceWords,
 } from '../logic/sentenceIpa';
+import type {SentenceSaveControl} from '../logic/useSavedVideoSentences';
 
 /** How much of the next card shows at the right edge. */
 const CARD_PEEK = 18;
@@ -51,6 +52,8 @@ export type YouTubeSentenceCarouselProps = {
   onSeek?: (positionMs: number) => void;
   onSpeakText?: (text: string) => void;
   onOpenAnalysis?: (sentenceId: string) => void;
+  /** ♥ on each card: keeps the sentence in "Câu đã lưu". */
+  sentenceSave?: SentenceSaveControl;
   /** Tapping a word in a card (opens the word bubble). */
   onPressWord?: (selection: SentenceWordSelection) => void;
   /** The highlighted word, if any. */
@@ -82,6 +85,8 @@ type CardProps = {
   onPressWord?: (selection: SentenceWordSelection) => void;
   onSpeakText?: (text: string) => void;
   onOpenAnalysis?: (sentenceId: string) => void;
+  saved: boolean;
+  onToggleSave?: (sentence: LessonSentence) => void;
   theme: AppTheme;
   t: (key: string, options?: Record<string, unknown>) => string;
 };
@@ -101,6 +106,8 @@ function SentenceCarouselCardBody({
   onPressWord,
   onSpeakText,
   onOpenAnalysis,
+  saved,
+  onToggleSave,
   theme,
   t,
 }: CardProps) {
@@ -223,6 +230,30 @@ function SentenceCarouselCardBody({
                 />
               </Pressable>
             ) : null}
+            {onToggleSave ? (
+              <Pressable
+                accessibilityHint={t('youtube.study.save_sentence_hint')}
+                accessibilityLabel={
+                  saved
+                    ? t('youtube.study.unsave_sentence_a11y')
+                    : t('youtube.study.save_sentence_a11y')
+                }
+                accessibilityRole="button"
+                accessibilityState={{selected: saved}}
+                onPress={() => onToggleSave(sentence)}
+                style={({pressed}) => [
+                  styles.speak,
+                  pressed ? styles.pressed : null,
+                ]}
+                testID={`youtube-save-sentence-${sentence.id}`}
+              >
+                <MaterialIcon
+                  color={saved ? theme.colors.danger : theme.colors.primary}
+                  name={saved ? 'heart' : 'heart_outline'}
+                  size={18}
+                />
+              </Pressable>
+            ) : null}
           </View>
           <View
             accessibilityLabel={sentence.text_en}
@@ -303,6 +334,7 @@ export function YouTubeSentenceCarousel({
   onSeek,
   onSpeakText,
   onOpenAnalysis,
+  sentenceSave,
   onPressWord,
   selectedWord = null,
   onPauseVideo,
@@ -383,6 +415,8 @@ export function YouTubeSentenceCarousel({
         }
         looping={loopSentence && currentIndex === index}
         onSpeakText={onSpeakText}
+        onToggleSave={sentenceSave?.toggle}
+        saved={sentenceSave?.isSaved(item.id) ?? false}
         sentence={item}
         showIpa={showIpa}
         showTranslation={showTranslation}
@@ -401,6 +435,7 @@ export function YouTubeSentenceCarousel({
       onSpeakText,
       loopSentence,
       selectedWord,
+      sentenceSave,
       showIpa,
       showTranslation,
       t,
@@ -430,12 +465,14 @@ export function YouTubeSentenceCarousel({
       selectedWord,
       wordDetail,
       loopSentence,
+      sentenceSave,
     }),
     [
       activeIndex,
       currentIndex,
       loopSentence,
       selectedWord,
+      sentenceSave,
       showIpa,
       showTranslation,
       wordDetail,

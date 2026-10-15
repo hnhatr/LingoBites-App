@@ -4,6 +4,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
 
+import vi from '@core/i18n/vi.json';
 import {FeatureFlagProvider} from '@core/release';
 import type {LessonAnalysis, LessonSnapshot} from '@core/schemas/lesson';
 
@@ -299,6 +300,51 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
       .findAll(node => node.props.testID === `youtube-transcript-ipa-${S1}`)
       .find(node => typeof node.props.children === 'string');
     expect(ipa?.props.children).toBe(sentences[0].ipa);
+  });
+
+  it('saves a transcript line with ♥ without seeking to it', async () => {
+    const sentences = snapshotWithThreeSentences().sentences;
+    const toggle = jest.fn();
+    const onSelectSentence = jest.fn();
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await act(async () => {
+      tree = ReactTestRenderer.create(
+        <FeatureFlagProvider
+          releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+        >
+          <AppThemeProvider>
+            <YouTubeTranscriptSheet
+              activeIndex={0}
+              currentIndex={0}
+              onClose={jest.fn()}
+              onSelectSentence={onSelectSentence}
+              sentenceSave={{
+                isSaved: id => id === S2,
+                toggle,
+                savedCount: 1,
+              }}
+              sentences={sentences}
+              showTranslation
+              videoPlaying
+              visible
+            />
+          </AppThemeProvider>
+        </FeatureFlagProvider>,
+      );
+    });
+    const heart = (id: string) =>
+      tree.root
+        .findAll(node => node.props.testID === `youtube-transcript-save-${id}`)
+        .find(node => typeof node.props.onPress === 'function');
+    expect(heart(S1)?.props.accessibilityLabel).toBe(
+      vi.youtube.study.save_sentence_a11y,
+    );
+    expect(heart(S2)?.props.accessibilityLabel).toBe(
+      vi.youtube.study.unsave_sentence_a11y,
+    );
+    act(() => heart(S1)?.props.onPress());
+    expect(toggle).toHaveBeenCalledWith(sentences[0]);
+    expect(onSelectSentence).not.toHaveBeenCalled();
   });
 
   it('highlights the study card row when video is paused (AC-002 S2)', async () => {

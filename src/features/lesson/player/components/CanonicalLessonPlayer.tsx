@@ -15,6 +15,7 @@ import type {
   GrammarSaveControl,
   VocabularySaveControl,
 } from '../logic/useLessonSavedItems';
+import type {SentenceSaveControl} from '../logic/useSavedVideoSentences';
 import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
@@ -61,6 +62,8 @@ export type CanonicalLessonPlayerProps = {
   onSpeakText?: (text: string) => void;
   /** "Lưu thẻ" on analysed words; omitted = no save buttons. */
   vocabularySave?: VocabularySaveControl;
+  /** YouTube study: ♥ on sentences. */
+  sentenceSave?: SentenceSaveControl;
   /** "Đánh dấu" on analysed grammar (text lessons); omitted = none. */
   grammarSave?: GrammarSaveControl;
   /** "Xong" after the last sentence (text lessons). */
@@ -105,6 +108,7 @@ export function CanonicalLessonPlayer({
   analysisStates,
   onSpeakText,
   vocabularySave,
+  sentenceSave,
   grammarSave,
   onFinish,
   videoLessons,
@@ -148,6 +152,7 @@ export function CanonicalLessonPlayer({
         analysisStates={analysisStates}
         onSpeakText={onSpeakText}
         vocabularySave={vocabularySave}
+        sentenceSave={sentenceSave}
         videoLessons={videoLessons}
         onOpenVideoLesson={onOpenVideoLesson}
         onPlayVideo={onPlayVideo}

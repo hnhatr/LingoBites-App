@@ -573,7 +573,10 @@
       "progress_a11y": "Sentence progress, tap to jump to a sentence",
       "word_hint": "Show the word's IPA and meaning",
       "word_no_meaning": "This sentence isn't analyzed yet, so there's no meaning.",
-      "word_bubble_close": "Close"
+      "word_bubble_close": "Close",
+      "save_sentence_a11y": "Save this sentence",
+      "unsave_sentence_a11y": "Remove this saved sentence",
+      "save_sentence_hint": "Keeps the sentence in Saved sentences in the Library"
     }
   },
   "gamification": {
@@ -1826,9 +1829,10 @@
     },
     "saved": {
       "empty_title": "No sentences yet",
-      "empty_body": "Tap Save under a sentence in a combo set to keep it here.",
+      "empty_body": "Tap Save under a sentence in a combo set, or ♥ on a sentence in a video lesson, to keep it here.",
       "no_match": "No sentence matches “{{query}}”.",
       "open_hint": "Opens the set this sentence is in",
+      "open_lesson_hint": "Opens the video lesson this sentence is from",
       "unsave": "Remove this sentence",
       "unsave_hint": "Removes it from Saved sentences"
     },
