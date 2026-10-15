@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **CHỜ DUYỆT, chưa code.** Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -10,10 +10,13 @@
 |---|---|---|
 | Khoá "Oxford 3000 + IELTS" | **Khoá riêng**, không gộp vào "Tiếng Anh giao tiếp" | Đã chốt 2026-10-15 |
 | Mốc bậc 3 | **stage ≥ 4** (sau lần chờ 14 ngày; từ đó 30 ngày hỏi một lần). Sai thì xuống stage 3, quay về bậc 2 | Đã chốt 2026-10-15 |
-| Số hiệu F | Dùng cách đánh số trong plan P6: **F7** viết đoạn cuối tuần, **F8** bắt từ trong bài tự tạo, **F9** tiến độ. Sửa bảng §6 của thiết kế cho khớp | Đề xuất, cần xác nhận |
-| "x / 3.000" hay "x / 5.000" | Không ghi cứng. Server trả **tổng số từ đã publish theo từng cấp**; App hiện "x / tổng" theo cấp và tổng chung | Đề xuất, cần xác nhận |
+| Số hiệu F | Dùng cách đánh số trong plan P6: **F7** viết đoạn cuối tuần, **F8** bắt từ trong bài tự tạo, **F9** tiến độ. Sửa bảng §6 của thiết kế cho khớp | Đã chốt 2026-10-15 |
+| "x / 3.000" hay "x / 5.000" | Không ghi cứng. Server trả **tổng số từ đã publish theo từng cấp**; App hiện "x / tổng" theo cấp và tổng chung | Đã chốt 2026-10-15 |
+| Khoá mới | **Miễn phí** (không bật `isLocked`) | Đã chốt 2026-10-15 |
+| Sinh trước câu tổ hợp cho bài | Phạm vi: **mẫu câu × thì × tình huống** của bài. Dữ liệu staging chỉ để test, nên lúc đầu chỉ sinh **1–2 bộ** để kiểm luồng | Đã chốt 2026-10-15 |
+| Thứ tự thì theo cấp | Theo đề xuất ở §9 câu 4 | Đã chốt 2026-10-15 |
 
-Câu còn cần bạn chốt nằm ở §9.
+Các câu ở §9 đã chốt (xem bảng trên).
 
 ## 1. Kết quả sau P6
 
@@ -54,13 +57,13 @@ Tất cả là API **mới**, chỉ thêm, không đổi API cũ. App cũ không
 ### 3.1 Kho mẫu câu và thì
 | Method | Path | Trả về |
 |---|---|---|
-| GET | `/v1/library/patterns?function=&cefr=&exam=` | Danh sách `{item: CatalogItem, cefr_level, tags[]}` của mẫu câu `published`, kèm danh sách tag `function` / `exam` để App dựng bộ lọc |
-| GET | `/v1/library/tenses` | 13 item `grammar` `published` dạng `CatalogItem`, kèm `time`, `aspect` để xếp lưới. Chỉ trả khi `X-App-Version ≥ GRAMMAR_MIN_APP_VERSION` |
+| GET | `/v1/library/patterns` | Danh sách `{item: CatalogItem, cefr_level, tags[]}` của **mọi** mẫu câu `published`, kèm `functions[]` / `exams[]` (tag có dùng, kèm `label_vi`) để App dựng bộ lọc. App lọc trên máy (số mẫu ít, cần xem offline), nên không có tham số lọc |
+| GET | `/v1/library/tenses` | Các item `grammar` `published` dạng `CatalogItem`, kèm `time`, `aspect` (từ payload) để xếp lưới. App dưới `GRAMMAR_MIN_APP_VERSION` nhận danh sách rỗng |
 
 ### 3.2 Thêm item lẻ vào lộ trình (dùng chung cho "Thêm vào ôn" và F8)
 | Method | Path | Ghi chú |
 |---|---|---|
-| POST | `/v1/items/learn` `{item_codes[≤20], source: 'library' \| 'lesson'}` | Item phải `published` và đúng loại App được nhận. Gọi lại `enrolPackItems` (stage 0; item đã có lịch thì giữ nguyên). Trả `{enrolled, already_scheduled, items: CatalogItem[]}` để App lưu vào `catalog_items` |
+| POST | `/v1/items/learn` `{item_codes[1–20]}` | Item phải `published`, loại `word / phrase / pattern` (`grammar` chỉ với App đủ mới). Có mã không dùng được thì `422 ITEMS_NOT_AVAILABLE` kèm `details.codes`, không ghi gì. Gọi lại `enrolPackItems` (stage 0; item đã có lịch thì giữ nguyên). Trả `{enrolled, already_scheduled, items: CatalogItem[]}` để App lưu vào `catalog_items` |
 
 ### 3.3 F8: tra từ trong bài tự tạo
 | Method | Path | Ghi chú |
@@ -85,7 +88,7 @@ Tra lúc đọc (không lưu vào bản phân tích), nên dùng được cho c�
 ### File Server (dự kiến)
 | File | Việc |
 |---|---|
-| `src/modules/library/` 🆕 (`controller/libraryRoutes.ts`, `service/libraryService.ts`) | 3.1, 3.2 |
+| `src/modules/library/` 🆕 (`controller/libraryRoutes.ts`, `service/libraryService.ts`) ✅ S1 | 3.1, 3.2. Dùng lại `WordPackItemSchema` (export từ `wordPackRoutes.ts`) |
 | `src/modules/items/service/itemLookup.ts` 🆕, `controller/itemLookupRoutes.ts` 🆕 | 3.3 |
 | `src/modules/grammar/inflect.ts` 🔧 | Thêm hàm đưa danh từ số nhiều về số ít (`singularOf`) |
 | `src/modules/curriculum/outcomes/service/vocabProgress.ts` 🆕 + route trong `outcomes/controller` | 3.4 |
@@ -160,7 +163,7 @@ Admin xem và sửa từng bài bằng các trang có sẵn, rồi publish như 
 |---|---|
 | `features/lesson/player/logic/itemLookupClient.ts` 🆕 | Gọi `/v1/items/lookup` khi mở phần phân tích của một câu (có mạng); cache theo câu trong phiên |
 | `features/lesson/player/components/SentenceAnalysisPanel.tsx` 🔧 | Từ khớp được: nhãn cấp (A1…C1) + nút "Thêm vào lộ trình" (hoặc "Đã trong lộ trình" nếu đã có `item_memory`). Nhiều nghĩa → sheet chọn nghĩa. Offline: không hiện nút |
-| Dùng lại `libraryClient` (5.1) | Gọi `/v1/items/learn` với `source = 'lesson'`, lưu item vào `catalog_items` |
+| Dùng lại `libraryClient` (5.1) | Gọi `/v1/items/learn`, lưu item vào `catalog_items` với `source = 'lesson'` |
 
 Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá học).
 
@@ -198,7 +201,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 
 | # | Repo | Nội dung | Phát hành App? |
 |---|---|---|---|
-| S1 | Server | `feat(library): pattern and tense lists, learn single items` (3.1, 3.2) | Không |
+| S1 ✅ | Server | `feat(library): pattern and tense lists, learn single items` (3.1, 3.2) | Không |
 | S2 | Server | `feat(items): look up lesson words in the word list` (3.3) | Không |
 | S3 | Server | `feat(outcomes): vocab progress for the learner` (3.4) | Không |
 | S4 | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
