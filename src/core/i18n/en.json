@@ -1739,7 +1739,16 @@
         "perfect": "perfect",
         "perfect_continuous": "perfect continuous"
       },
-      "tense_locked_hint": "This tense is not open for this word"
+      "tense_locked_hint": "This tense is not open for this word",
+      "groups_picked": "{{count}}/{{open}} picked",
+      "groups_tap": "Tap to pick or unpick",
+      "groups_all": "Pick all",
+      "groups_none": "Unpick all",
+      "groups_all_hint": "Pick or unpick every open subject",
+      "group_hint": "Tap to pick or unpick this subject",
+      "group_locked": "{{name}}: not open in your plan",
+      "groups_locked": "{{count}} subjects with a lock are not open in your plan",
+      "group_locked_hint": "Cannot be picked until your plan opens this subject"
     },
     "set": {
       "title": "Combo set",
@@ -1769,7 +1778,8 @@
       "save_hint": "Saves the sentence to Saved sentences in the Library",
       "report_hint": "Pick why this sentence is wrong",
       "report_question": "What is wrong with it?",
-      "say_word_hint": "Reads this word aloud"
+      "say_word_hint": "Reads this word aloud",
+      "created": "Made {{count}} new sentences"
     },
     "report": {
       "wrong_meaning": "The meaning is wrong",
@@ -1801,6 +1811,13 @@
       "open_hint": "Opens the set this sentence is in",
       "unsave": "Remove this sentence",
       "unsave_hint": "Removes it from Saved sentences"
+    },
+    "generating": {
+      "title": "Making a set with {{word}}",
+      "step_pool": "Finding ready sentences for these choices",
+      "step_write": "Writing new sentences with {{word}}",
+      "step_check": "Checking tense and subjects",
+      "wait": "This usually takes a few seconds. Stay here; the set opens by itself when it is ready."
     }
   }
 }

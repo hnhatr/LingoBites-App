@@ -261,7 +261,8 @@ export function createAppNavigation(
     openPackLearn: packId => navigate('PackLearn', {packId}),
     openQuickKnownCheck: packId => navigate('QuickKnownCheck', {packId}),
     openComboSetup: itemCode => navigate('ComboSetup', {itemCode}),
-    openComboSet: setId => navigate('ComboSet', {setId}),
+    openComboSet: (setId, created) =>
+      navigate('ComboSet', created ? {setId, created} : {setId}),
     openComboHistory: () => navigate('ComboHistory', undefined),
     openPractice: lessonId => navigate('Practice', {lessonId}),
     openToday: target => navigate('Today', target),

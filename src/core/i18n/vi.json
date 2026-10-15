@@ -1739,7 +1739,16 @@
         "perfect": "hoàn thành",
         "perfect_continuous": "hoàn thành tiếp diễn"
       },
-      "tense_locked_hint": "Thì này chưa mở cho từ này"
+      "tense_locked_hint": "Thì này chưa mở cho từ này",
+      "groups_picked": "đã chọn {{count}}/{{open}}",
+      "groups_tap": "Chạm để chọn hoặc bỏ chọn",
+      "groups_all": "Chọn tất cả",
+      "groups_none": "Bỏ chọn hết",
+      "groups_all_hint": "Chọn hoặc bỏ chọn mọi chủ ngữ đang mở",
+      "group_hint": "Chạm để chọn hoặc bỏ chọn chủ ngữ này",
+      "group_locked": "{{name}}: chưa mở trong gói của bạn",
+      "groups_locked": "{{count}} chủ ngữ có ổ khóa chưa mở trong gói của bạn",
+      "group_locked_hint": "Không chọn được cho tới khi gói mở chủ ngữ này"
     },
     "set": {
       "title": "Bộ câu",
@@ -1769,7 +1778,8 @@
       "save_hint": "Lưu câu vào mục Câu đã lưu trong Thư viện",
       "report_hint": "Chọn lý do câu này sai",
       "report_question": "Câu này sai ở đâu?",
-      "say_word_hint": "Đọc to từ này"
+      "say_word_hint": "Đọc to từ này",
+      "created": "Đã tạo {{count}} câu mới"
     },
     "report": {
       "wrong_meaning": "Sai nghĩa",
@@ -1801,6 +1811,13 @@
       "open_hint": "Mở bộ câu có câu này",
       "unsave": "Bỏ lưu câu này",
       "unsave_hint": "Xóa câu khỏi Câu đã lưu"
+    },
+    "generating": {
+      "title": "Đang tạo bộ câu với {{word}}",
+      "step_pool": "Tìm câu có sẵn cho lựa chọn này",
+      "step_write": "Viết câu mới với {{word}}",
+      "step_check": "Kiểm tra thì và chủ ngữ",
+      "wait": "Thường mất vài giây. Bạn cứ ở màn này, bộ câu sẽ tự mở khi xong."
     }
   }
 }

@@ -127,8 +127,11 @@ export interface AppNavigation {
   openQuickKnownCheck(packId: string): void;
   /** Vocab path P5: set up a combo set for one word. */
   openComboSetup(itemCode: string): void;
-  /** Vocab path P5: one combo set (sentences, IPA, batches, reports). */
-  openComboSet(setId: string): void;
+  /**
+   * Vocab path P5: one combo set (sentences, IPA, batches, reports). `created`
+   * is how many sentences were just made, so the set greets them.
+   */
+  openComboSet(setId: string, created?: number): void;
   /** Vocab path P5: the combo sets kept on this device. */
   openComboHistory(): void;
   /** Open a quick-practice quiz generated from one downloaded lesson. */

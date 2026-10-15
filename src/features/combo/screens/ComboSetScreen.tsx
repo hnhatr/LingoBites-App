@@ -1,6 +1,14 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {
+  AccessibilityInfo,
+  Animated,
+  Easing,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import {useSpeak} from '@features/audio';
 
@@ -49,11 +57,67 @@ function readingMs(text: string): number {
   return Math.max(1500, text.split(/\s+/).length * 450);
 }
 
+/** How long the "Đã tạo N câu mới" toast stays, in ms. */
+const TOAST_MS = 2600;
+
+/** Cards after this many rise together, so a long set does not keep moving. */
+const RISE_STAGGER_LIMIT = 4;
+
+/**
+ * Fades and lifts its children into place after `delay` ms, for a set that
+ * was just made. Still when `active` is false.
+ */
+function Rise({
+  active,
+  delay,
+  children,
+}: {
+  active: boolean;
+  delay: number;
+  children: React.ReactNode;
+}) {
+  const value = useRef(new Animated.Value(active ? 0 : 1)).current;
+  useEffect(() => {
+    if (!active) {
+      value.setValue(1);
+      return;
+    }
+    const rise = Animated.timing(value, {
+      delay,
+      duration: 450,
+      easing: Easing.out(Easing.cubic),
+      toValue: 1,
+      useNativeDriver: true,
+    });
+    rise.start();
+    return () => rise.stop();
+  }, [active, delay, value]);
+  if (!active) return <>{children}</>;
+  return (
+    <Animated.View
+      style={{
+        opacity: value,
+        transform: [
+          {
+            translateY: value.interpolate({
+              inputRange: [0, 1],
+              outputRange: [14, 0],
+            }),
+          },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
 /**
  * Vocab path P5: a combo set. Each sentence card shows its words (tap one for
  * its IPA and to hear it), the Vietnamese, the grammar breakdown, and a bar to
  * read it aloud, save it ("Câu đã lưu" in the Library) or report it. The set is
- * read from the device when it is there, so it works offline.
+ * read from the device when it is there, so it works offline. Opened right
+ * after it was made, the cards rise in turn under a "Đã tạo N câu mới" toast.
  *
  * IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar.
  */
@@ -63,6 +127,7 @@ export function ComboSetScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {speak} = useSpeak();
   const setId = route?.params.setId ?? '';
+  const created = route?.params.created ?? 0;
   const [set, setSet] = useState<LocalComboSet | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [showVi, setShowVi] = useState(true);
@@ -78,6 +143,41 @@ export function ComboSetScreen({navigation, route}: Props) {
   const [reported, setReported] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [toast, setToast] = useState(created > 0);
+  /** Whether the cards rise in; decided once, before the first set renders. */
+  const [reveal, setReveal] = useState(created > 0);
+  const toastValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (created <= 0) return;
+    let active = true;
+    AccessibilityInfo.isReduceMotionEnabled().then(reduce => {
+      if (active && reduce) setReveal(false);
+    });
+    AccessibilityInfo.announceForAccessibility(
+      t('combo.set.created', {count: created}),
+    );
+    const show = Animated.sequence([
+      Animated.timing(toastValue, {
+        duration: 220,
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+      Animated.delay(TOAST_MS - 440),
+      Animated.timing(toastValue, {
+        duration: 220,
+        toValue: 0,
+        useNativeDriver: true,
+      }),
+    ]);
+    show.start();
+    const timer = setTimeout(() => setToast(false), TOAST_MS);
+    return () => {
+      active = false;
+      show.stop();
+      clearTimeout(timer);
+    };
+  }, [created, t, toastValue]);
 
   useEffect(() => {
     let active = true;
@@ -268,67 +368,78 @@ export function ComboSetScreen({navigation, route}: Props) {
           <AppText color="secondary">{t('combo.set.loading')}</AppText>
         ) : (
           <>
-            <View style={styles.hero}>
-              <View style={themedStyles.tile}>
-                <MaterialIcon
-                  color={theme.colors.onTertiaryContainer}
-                  name="style"
-                  size={24}
-                />
+            <Rise active={reveal} delay={0}>
+              <View style={styles.hero}>
+                <View style={themedStyles.tile}>
+                  <MaterialIcon
+                    color={theme.colors.onTertiaryContainer}
+                    name="style"
+                    size={24}
+                  />
+                </View>
+                <View style={styles.heroText}>
+                  <AppText numberOfLines={1} variant="h1">
+                    {word || t('combo.set.title')}
+                  </AppText>
+                  <AppText color="muted" variant="caption">
+                    {subline}
+                  </AppText>
+                </View>
               </View>
-              <View style={styles.heroText}>
-                <AppText numberOfLines={1} variant="h1">
-                  {word || t('combo.set.title')}
-                </AppText>
-                <AppText color="muted" variant="caption">
-                  {subline}
-                </AppText>
-              </View>
-            </View>
+            </Rise>
             {set.sentences.length > 0 ? (
-              <View style={themedStyles.tip}>
-                <MaterialIcon
-                  color={theme.colors.onTertiaryContainer}
-                  name="lightbulb"
-                  size={16}
-                />
-                <AppText style={themedStyles.sunInk} variant="caption">
-                  {t('combo.set.tip')}
-                </AppText>
-              </View>
+              <Rise active={reveal} delay={60}>
+                <View style={themedStyles.tip}>
+                  <MaterialIcon
+                    color={theme.colors.onTertiaryContainer}
+                    name="lightbulb"
+                    size={16}
+                  />
+                  <AppText style={themedStyles.sunInk} variant="caption">
+                    {t('combo.set.tip')}
+                  </AppText>
+                </View>
+              </Rise>
             ) : null}
           </>
         )}
         {set?.sentences.map((sentence, number) => (
-          <ComboSentenceCard
-            busy={busy}
-            grammarOpen={grammarOpen.has(sentence.id)}
+          <Rise
+            active={reveal}
+            delay={120 + Math.min(number, RISE_STAGGER_LIMIT) * 100}
             key={sentence.id}
-            number={number + 1}
-            onOpenReport={() =>
-              setReporting(current =>
-                current === sentence.id ? null : sentence.id,
-              )
-            }
-            onPlay={() => play(sentence)}
-            onReport={reason => report(sentence, reason)}
-            onSayWord={speak}
-            onTapToken={index =>
-              setTapped(current =>
-                current?.sentence === sentence.id && current.index === index
-                  ? null
-                  : {sentence: sentence.id, index},
-              )
-            }
-            onToggleGrammar={() => toggleIn(setGrammarOpen, sentence.id)}
-            onToggleSave={() => toggleSave(sentence)}
-            playing={playing === sentence.id}
-            report={reportState(sentence.id)}
-            saved={saved.has(sentence.id)}
-            sentence={sentence}
-            showVi={showVi}
-            tappedIndex={tapped?.sentence === sentence.id ? tapped.index : null}
-          />
+          >
+            <ComboSentenceCard
+              busy={busy}
+              grammarOpen={grammarOpen.has(sentence.id)}
+              number={number + 1}
+              onOpenReport={() =>
+                setReporting(current =>
+                  current === sentence.id ? null : sentence.id,
+                )
+              }
+              onPlay={() => play(sentence)}
+              onReport={reason => report(sentence, reason)}
+              onSayWord={speak}
+              onTapToken={index =>
+                setTapped(current =>
+                  current?.sentence === sentence.id && current.index === index
+                    ? null
+                    : {sentence: sentence.id, index},
+                )
+              }
+              onToggleGrammar={() => toggleIn(setGrammarOpen, sentence.id)}
+              onToggleSave={() => toggleSave(sentence)}
+              playing={playing === sentence.id}
+              report={reportState(sentence.id)}
+              saved={saved.has(sentence.id)}
+              sentence={sentence}
+              showVi={showVi}
+              tappedIndex={
+                tapped?.sentence === sentence.id ? tapped.index : null
+              }
+            />
+          </Rise>
         ))}
         {set && set.sentences.length === 0 ? (
           <AppCard testID="combo-set-empty">
@@ -351,6 +462,37 @@ export function ComboSetScreen({navigation, route}: Props) {
             testID="combo-set-more"
           />
         </StickerFooter>
+      ) : null}
+      {toast ? (
+        <Animated.View
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          pointerEvents="none"
+          style={[
+            themedStyles.toast,
+            {
+              opacity: toastValue,
+              transform: [
+                {
+                  translateY: toastValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-10, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+          testID="combo-set-created"
+        >
+          <MaterialIcon
+            color={theme.colors.text.inverse}
+            name="check_circle"
+            size={16}
+          />
+          <AppText style={themedStyles.onTeal} variant="label">
+            {t('combo.set.created', {count: created})}
+          </AppText>
+        </Animated.View>
       ) : null}
     </AppScreen>
   );
@@ -411,6 +553,24 @@ function makeStyles(theme: AppTheme) {
     },
     sunInk: {
       color: theme.colors.onTertiaryContainer,
+      flex: 1,
+    },
+    toast: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 16,
+      flexDirection: 'row',
+      gap: 8,
+      left: theme.gutter,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      position: 'absolute',
+      right: theme.gutter,
+      top: 58,
+      ...getStickerEdge(4, comboEdges(theme).teal),
+    },
+    onTeal: {
+      color: theme.colors.text.inverse,
       flex: 1,
     },
   });
