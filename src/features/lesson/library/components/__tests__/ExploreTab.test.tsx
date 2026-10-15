@@ -7,12 +7,7 @@ import {FeatureFlagProvider} from '@core/release';
 
 import {mockAppNavigation} from '@test/support';
 
-import {
-  ExploreTab,
-  packAction,
-  shelfPacks,
-  unitLabel,
-} from '../tabs/ExploreTab';
+import {ExploreTab, packAction, shelfPacks} from '../tabs/ExploreTab';
 
 const mockReload = jest.fn();
 const mockRefresh = jest.fn();
@@ -116,7 +111,7 @@ describe('ExploreTab', () => {
     ]);
   });
 
-  it('shows the packs, video and lesson shelves', () => {
+  it('shows the packs and video shelves, not the course lessons', () => {
     const tree = render();
     expect(
       tree.root.findAllByProps({testID: 'library-pack-going'}),
@@ -125,8 +120,8 @@ describe('ExploreTab', () => {
       tree.root.findAllByProps({testID: 'library-shelf-videos-one'}),
     ).not.toHaveLength(0);
     expect(
-      tree.root.findAllByProps({testID: 'library-shelf-lessons-two'}),
-    ).not.toHaveLength(0);
+      tree.root.findAllByProps({testID: 'library-shelf-lessons'}),
+    ).toHaveLength(0);
     expect(mockRefresh).toHaveBeenCalled();
   });
 
@@ -140,9 +135,9 @@ describe('ExploreTab', () => {
     );
   });
 
-  it('opens a public lesson and the full lists', () => {
+  it('opens a public video and the full list', () => {
     const tree = render();
-    press(tree, 'library-shelf-lessons-one');
+    press(tree, 'library-shelf-videos-one');
     expect(mockAppNavigation.openLesson).toHaveBeenCalledWith('one');
     press(tree, 'library-shelf-videos-all');
     expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith(
@@ -154,10 +149,10 @@ describe('ExploreTab', () => {
     mockCatalog = {status: 'error', error: {kind: 'network-error'}};
     const tree = render();
     expect(
-      tree.root.findByProps({testID: 'library-shelf-lessons-message'}).props
+      tree.root.findByProps({testID: 'library-shelf-videos-message'}).props
         .children,
     ).toBe('Cần mạng để xem');
-    press(tree, 'library-shelf-lessons-retry');
+    press(tree, 'library-shelf-videos-retry');
     expect(mockRefresh).toHaveBeenCalled();
   });
 
@@ -251,24 +246,8 @@ describe('ExploreTab', () => {
         .children,
     ).toBe('2');
     expect(
-      tree.root.findByProps({testID: 'library-shelf-lessons-count'}).props
+      tree.root.findByProps({testID: 'library-shelf-videos-count'}).props
         .children,
     ).toBe('2+');
-  });
-
-  it("names a lesson's unit and its place in it", () => {
-    expect(
-      unitLabel(
-        lesson('a', {
-          unit: {
-            unit_id: 'u1',
-            unit_title: 'Hỏi đường',
-            unit_position: 1,
-            lesson_position: 3,
-          },
-        }) as never,
-      ),
-    ).toBe('Hỏi đường · Bài 3');
-    expect(unitLabel(lesson('b') as never)).toBeNull();
   });
 });

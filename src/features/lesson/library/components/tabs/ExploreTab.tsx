@@ -7,11 +7,7 @@ import {type PackRow, packTitle, useWordPathRows} from '@features/wordPath';
 
 import {AppText} from '@ui/components/AppText';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
-import {
-  formatVideoDuration,
-  lessonCardDurationLabel,
-  splitLessonTitle,
-} from '@ui/components/LessonCard';
+import {formatVideoDuration, splitLessonTitle} from '@ui/components/LessonCard';
 import {topicGlyph} from '@ui/components/LibraryCover';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -39,10 +35,7 @@ import {videoContextLabel} from '../PublicLessonsList';
 export const SHELF_LIMIT = 3;
 /** How many videos: one large, then a short list. */
 export const VIDEO_LIMIT = 3;
-/** How many public lessons the section shows. */
-export const LESSON_LIMIT = 3;
 
-const PUBLIC_LESSONS = getLibrarySection('public');
 const PUBLIC_VIDEOS = getLibrarySection('publicVideo');
 
 const PACK_ORDER: Record<PackRow['status'], number> = {
@@ -60,8 +53,9 @@ export function shelfPacks(rows: readonly PackRow[]): PackRow[] {
 }
 
 /**
- * "Khám phá": what LingoBites provides, as shelves of word packs, public
- * videos and public lessons. Packs on the phone still show offline.
+ * "Khám phá": what LingoBites provides, as shelves of word packs and public
+ * videos. Public lessons all sit in a course unit, so they live under "Khóa
+ * học" rather than here. Packs on the phone still show offline.
  */
 export function ExploreTab() {
   const {theme} = useAppTheme();
@@ -144,7 +138,6 @@ export function ExploreTab() {
         ))}
       </LibraryShelf>
       <VideoShelf />
-      <LessonShelf />
     </ScrollView>
   );
 }
@@ -254,67 +247,6 @@ function VideoShelf() {
       )}
     </LibraryShelf>
   );
-}
-
-/** Public lessons as a contents page, grouped under their unit. */
-function LessonShelf() {
-  const testID = 'library-shelf-lessons';
-  const {theme} = useAppTheme();
-  const appNavigation = useAppNavigation();
-  const {state, refresh} = useSectionCatalog(PUBLIC_LESSONS);
-  const count = catalogCount(state);
-  const lessons =
-    state.status === 'ready' ? state.lessons.slice(0, LESSON_LIMIT) : [];
-
-  return (
-    <LibraryShelf
-      count={count}
-      label="bài học"
-      onSeeAll={() => appNavigation.openLibrarySection(PUBLIC_LESSONS.id)}
-      seeAllLabel={count ? `Xem cả ${count} bài` : 'Xem tất cả bài học'}
-      status={catalogStatus(state, refresh, PUBLIC_LESSONS.emptyHint)}
-      subtitle={PUBLIC_LESSONS.description}
-      testID={testID}
-      title="Bài theo chủ đề"
-      tone="yellow"
-    >
-      {lessons.map((item, index) => (
-        <ToneCard
-          accessibilityHint="Mở bài học"
-          action={{label: 'Vào học', glyph: 'play', solid: true}}
-          cover={{imageUrl: catalogCoverUrl(item), glyph: 'book'}}
-          description={[lessonMeta(item), item.cefr_level]
-            .filter(Boolean)
-            .join(' · ')}
-          eyebrow={unitLabel(item)}
-          gutter={theme.spacing.md}
-          key={item.id}
-          onPress={() => appNavigation.openLesson(item.id)}
-          testID={`${testID}-${item.id}`}
-          title={splitLessonTitle(item.title).title}
-          tone={cardToneAt(index)}
-        />
-      ))}
-    </LibraryShelf>
-  );
-}
-
-/** "Hỏi đường · Bài 1": the lesson's unit and its place in it. */
-export function unitLabel(item: LessonCatalogItem): string | null {
-  if (!item.unit) return null;
-  return `${item.unit.unit_title} · Bài ${item.unit.lesson_position}`;
-}
-
-/** "10 phút · 12 câu" on a lesson row. */
-function lessonMeta(item: LessonCatalogItem): string | null {
-  const duration = lessonCardDurationLabel({
-    estimatedMinutes: item.estimated_minutes,
-    youtubeDurationMs: item.youtube_duration_ms,
-    sentenceCount: item.sentence_count,
-  });
-  const sentences =
-    item.sentence_count > 0 ? `${item.sentence_count} câu` : null;
-  return [duration, sentences].filter(Boolean).join(' · ') || null;
 }
 
 function makeStyles(theme: AppTheme) {
