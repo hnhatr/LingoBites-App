@@ -18,3 +18,8 @@ eslint, tsc, jest `src/features/lesson/library` (24 suites, 205 tests) pass. Not
 ## Review
 - Visual check on iOS/Android (ring colour uses `theme.colors.onOverlay`, shadow `theme.shadow.medium`).
 - `videoContextLabel` in the full video list (PublicLessonsList) still shows "Video"; unchanged.
+
+## Follow-up: YouTube-style glass play button
+- Replaced the round, card-coloured play disc with `PlayButton`: a see-through white rectangle (72×50 hero / 44×30 row, no border, bigger triangle) with a translucent shelf under it like the cards.
+- No blur behind the button (would need a new dependency, e.g. `@react-native-community/blur`); the preview showed a blur.
+- Review: the glass colours are literals in `PLAY_GLASS` (no theme token for the shelf alpha); the triangle's shadow is iOS-only.
