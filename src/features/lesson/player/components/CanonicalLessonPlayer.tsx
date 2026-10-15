@@ -156,6 +156,7 @@ export function CanonicalLessonPlayer({
         videoLessons={videoLessons}
         onOpenVideoLesson={onOpenVideoLesson}
         onPlayVideo={onPlayVideo}
+        onFinish={onFinish}
         sentenceRepeat={sentenceRepeat}
         playbackRate={playbackRate}
         onCyclePlaybackRate={onCyclePlaybackRate}

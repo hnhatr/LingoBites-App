@@ -577,6 +577,20 @@
       "save_sentence_a11y": "Lưu câu này",
       "unsave_sentence_a11y": "Bỏ lưu câu này",
       "save_sentence_hint": "Giữ câu trong Câu đã lưu ở Thư viện"
+    },
+    "finished": {
+      "body_one": "Bạn đã nghe hết {{count}} câu của video này.",
+      "body_other": "Bạn đã nghe hết {{count}} câu của video này.",
+      "stat_sentences": "Câu trong bài",
+      "stat_words": "Từ đã lưu",
+      "stat_saved_sentences": "Câu đã lưu",
+      "review": "Ôn từ đã lưu",
+      "review_hint": "Mở ôn tập hằng ngày với các từ đã lưu",
+      "other_video": "Học video khác",
+      "other_video_hint": "Tạo bài mới từ một link YouTube khác",
+      "save_failed": "Chưa ghi được tiến độ trên máy. Bạn vẫn xem lại được bài.",
+      "finish_a11y": "Học xong bài",
+      "finish_hint": "Kết thúc bài và xem kết quả"
     }
   },
   "gamification": {

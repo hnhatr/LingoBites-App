@@ -56,6 +56,7 @@ import type {
   SentenceAnalysisPanelError,
   SentenceAnalysisPanelState,
 } from '../components/SentenceAnalysisPanel';
+import {YouTubeFinishedView} from '../components/YouTubeFinishedView';
 import type {CurrentSentenceInfo} from '../components/YouTubeLessonStudy';
 // Imported statically: a dynamic import() loads a split bundle in dev, which
 // throws when the dev client has not set up HMR. Jest mocks the iframe module
@@ -423,6 +424,24 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
     setVideoPlaying(false);
   }, []);
 
+  // FR-09: the video ended, or the learner moved past the last sentence.
+  const [videoFinished, setVideoFinished] = useState(false);
+  const [studyKey, setStudyKey] = useState(0);
+  const handleFinishVideo = useCallback(() => {
+    youtubePlayerRef.current?.pause();
+    setVideoPlaying(false);
+    setVideoFinished(true);
+    completeLesson();
+  }, [completeLesson]);
+
+  /** "Xem lại": the video and the cards start again from sentence 1. */
+  const handleReplayLesson = useCallback(() => {
+    setVideoFinished(false);
+    setPositionMs(0);
+    setVideoMountKey(key => key + 1);
+    setStudyKey(key => key + 1);
+  }, []);
+
   const handleRetryVideo = useCallback(() => {
     setVideoAvailable(true);
     setVideoPlaying(false);
@@ -435,6 +454,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   }) =>
     snapshot ? (
       <CanonicalLessonPlayer
+        key={studyKey}
         snapshot={snapshot}
         analyses={snapshot.analyses}
         lateAnalyses={lateAnalyses}
@@ -461,7 +481,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         vocabularySave={savedItems.vocabulary}
         grammarSave={savedItems.grammar}
         sentenceSave={isYouTubeStudy ? savedSentences : undefined}
-        onFinish={() => openView('hub')}
+        onFinish={isYouTubeStudy ? handleFinishVideo : () => openView('hub')}
         videoLessons={videoLessons}
         onOpenVideoLesson={appNavigation.openLesson}
         onPlayVideo={handlePlayVideo}
@@ -535,6 +555,19 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
       );
     }
     if (!snapshot) return null;
+    if (isYouTubeStudy && videoFinished) {
+      return (
+        <YouTubeFinishedView
+          onOtherVideo={() => appNavigation.startCreate({kind: 'youtube'})}
+          onReplay={handleReplayLesson}
+          onReviewSaved={appNavigation.openReview}
+          saveFailed={completionState === 'error'}
+          savedSentenceCount={savedSentences.savedCount}
+          savedWordCount={savedItems.savedCardCount}
+          sentenceCount={snapshot.sentences.length}
+        />
+      );
+    }
     if (isYouTubeStudy) {
       return renderPlayer({
         onRetryVideo: handleRetryVideo,
@@ -546,6 +579,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             playbackRate={playbackRate}
             onPlayingChange={setVideoPlaying}
             onTimeUpdate={handleTimeUpdate}
+            onEnded={handleFinishVideo}
             onError={() => {
               setVideoAvailable(false);
               setVideoPlaying(false);

@@ -78,6 +78,8 @@ export type YouTubeLessonStudyProps = {
   onOpenVideoLesson?: (lessonId: string) => void;
   /** Resumes the video (replay sentence). */
   onPlayVideo?: () => void;
+  /** Past the last sentence: the lesson is finished (FR-09). */
+  onFinish?: () => void;
   /** How many times the sentence plays again before the video moves on. */
   sentenceRepeat?: SentenceRepeat;
   /** Current video speed, shown on the toolbar. */
@@ -126,6 +128,7 @@ export function YouTubeLessonStudy({
   videoLessons,
   onOpenVideoLesson,
   onPlayVideo,
+  onFinish,
   sentenceRepeat = 0,
   playbackRate = 1,
   onCyclePlaybackRate,
@@ -543,6 +546,7 @@ export function YouTubeLessonStudy({
         atFirst={atFirst}
         atLast={atLast}
         onCyclePlaybackRate={onCyclePlaybackRate}
+        onFinish={onFinish}
         onNext={goNext}
         onOpenTranscript={handleOpenTranscript}
         onPrev={goPrev}

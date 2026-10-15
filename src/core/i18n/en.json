@@ -577,6 +577,20 @@
       "save_sentence_a11y": "Save this sentence",
       "unsave_sentence_a11y": "Remove this saved sentence",
       "save_sentence_hint": "Keeps the sentence in Saved sentences in the Library"
+    },
+    "finished": {
+      "body_one": "You listened to all {{count}} sentence of this video.",
+      "body_other": "You listened to all {{count}} sentences of this video.",
+      "stat_sentences": "Sentences",
+      "stat_words": "Words saved",
+      "stat_saved_sentences": "Sentences saved",
+      "review": "Review saved words",
+      "review_hint": "Opens today's review with the saved words",
+      "other_video": "Learn another video",
+      "other_video_hint": "Makes a new lesson from another YouTube link",
+      "save_failed": "Progress could not be saved on this device. You can still replay the lesson.",
+      "finish_a11y": "Finish the lesson",
+      "finish_hint": "Ends the lesson and shows the result"
     }
   },
   "gamification": {
