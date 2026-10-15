@@ -31,6 +31,7 @@ import {AppText} from '@ui/components/AppText';
 import {withAlpha} from '@ui/components/layout';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {ShortcutItem, ShortcutKey} from '../logic/homeScreenModel';
 import {HomeIcon} from './HomeSvgIcons';
@@ -105,7 +106,9 @@ function ShortcutCell({
       ? theme.colors.text.primary
       : theme.colors[inkKey];
 
-  const shelfColor = solidOver(withAlpha(ink, 0.22), backgroundColor);
+  // A solid shelf under the face that follows its radius, not a bottom
+  // border (which thins into a crescent at the rounded corners).
+  const shelfColor = solidOver(withAlpha(ink, 0.3), backgroundColor);
 
   const titleText = t(item.titleKey);
   const subText = item.subKey ? t(item.subKey, item.metaParams) : '';
@@ -126,7 +129,8 @@ function ShortcutCell({
         testID={item.testID}
         style={({pressed}) => [
           styles.tile,
-          {backgroundColor, borderBottomColor: shelfColor},
+          {backgroundColor},
+          getStickerEdge(pressed && !isDisabled ? 1 : 4, shelfColor),
           isDisabled && styles.disabledTile,
           pressed && !isDisabled && styles.pressedTile,
         ]}
@@ -218,7 +222,6 @@ function makeStyles(theme: AppTheme) {
     },
     tile: {
       alignItems: 'center',
-      borderBottomWidth: 4,
       borderRadius: 20,
       gap: 6,
       height: 96,
@@ -231,7 +234,6 @@ function makeStyles(theme: AppTheme) {
       opacity: 0.45,
     },
     pressedTile: {
-      borderBottomWidth: 1,
       transform: [{translateY: 3}],
     },
     iconBox: {
