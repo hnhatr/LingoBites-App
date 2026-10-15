@@ -17,11 +17,22 @@ let mockPacks: {rows: unknown[] | null; offline: boolean} = {
 };
 let mockCatalog: Record<string, unknown> = {status: 'idle'};
 
+/** Blur cleanups of the mounted focus effects, to leave the tab. */
+const mockBlurs = new Set<() => void>();
+
 jest.mock('@react-navigation/native', () => {
   const ReactModule = require('react');
   return {
-    useFocusEffect: (callback: () => void) =>
-      ReactModule.useEffect(callback, [callback]),
+    useFocusEffect: (callback: () => void | (() => void)) =>
+      ReactModule.useEffect(() => {
+        const cleanup = callback();
+        if (!cleanup) return undefined;
+        mockBlurs.add(cleanup);
+        return () => {
+          mockBlurs.delete(cleanup);
+          cleanup();
+        };
+      }, [callback]),
   };
 });
 
@@ -188,6 +199,41 @@ describe('ExploreTab', () => {
       .findAllByProps({testID: 'library-pack-new'})
       .find(node => node.props.accessibilityLabel);
     expect(card?.props.accessibilityLabel).toContain('10 từ · A1');
+  });
+
+  it('starts the pack stack over after leaving the tab', () => {
+    mockPacks = {
+      rows: [
+        pack('one', 'learning'),
+        pack('two', 'ready'),
+        pack('three', 'ready'),
+      ],
+      offline: false,
+    };
+    const tree = render();
+    const top = () =>
+      tree.root.findAll(
+        node =>
+          typeof node.props.testID === 'string' &&
+          node.props.testID.startsWith('library-pack-stack-card-') &&
+          node.props.pointerEvents === 'auto',
+      )[0]?.props.testID;
+    const next = () =>
+      act(() => {
+        tree.root
+          .findAll(
+            node =>
+              node.props.testID === 'library-pack-one' &&
+              typeof node.props.onAccessibilityAction === 'function',
+          )[0]
+          .props.onAccessibilityAction({nativeEvent: {actionName: 'next'}});
+      });
+    next();
+    expect(top()).toBe('library-pack-stack-card-1');
+    act(() => {
+      [...mockBlurs].forEach(blur => blur());
+    });
+    expect(top()).toBe('library-pack-stack-card-0');
   });
 
   it('labels each pack pill by its state', () => {
