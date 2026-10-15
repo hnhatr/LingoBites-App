@@ -1,7 +1,7 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, TextInput, View} from 'react-native';
 
 import {trackEvent} from '@features/analytics';
 import {
@@ -19,8 +19,11 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {TextField} from '@ui/components/TextField';
-import {useAppTheme} from '@ui/theme';
+import {StickerButton} from '@ui/components/StickerButton';
+import {StickerFooter} from '@ui/components/StickerFooter';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {useIsOffline} from '@core/api/connectivity';
 import {createRequestId} from '@core/api/requestId';
@@ -34,6 +37,7 @@ import {
   submitMoment,
 } from '../logic/momentClient';
 import {momentFailureMessage} from '../logic/momentMessages';
+import {situationIcon} from '../logic/situationIcon';
 import {useMomentProgress} from '../logic/useMomentProgress';
 import type {CreateFlowParamList} from './navigationTypes';
 
@@ -57,6 +61,11 @@ export function SituationInputScreen({navigation, route}: Props) {
 
   const [situations, setSituations] = useState<Situation[]>([]);
   const [typed, setTyped] = useState('');
+  const [picked, setPicked] = useState<Situation | null>(null);
+  const [focused, setFocused] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const inputRef = useRef<TextInput>(null);
+  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [quota, setQuota] = useState<{limit: number; remaining: number} | null>(
@@ -100,6 +109,27 @@ export function SituationInputScreen({navigation, route}: Props) {
   }, [kids, finished, refreshQuota]);
 
   const outOfQuota = quota !== null && quota.remaining === 0;
+  const showInput = !kids && !status?.status && !requestId;
+  // A tapped suggestion fills the box; it is sent as that situation only
+  // while the text is still exactly its title, otherwise as typed text.
+  const pickedNow = picked !== null && typed.trim() === picked.title_vi;
+  const canSend =
+    !offline && !outOfQuota && (pickedNow || typed.trim().length >= 3);
+
+  function pick(situation: Situation) {
+    setPicked(situation);
+    setTyped(situation.title_vi);
+    scrollRef.current?.scrollTo({y: 0, animated: true});
+  }
+
+  function send() {
+    if (!canSend) return;
+    if (pickedNow && picked) {
+      start({situation_id: picked.id});
+      return;
+    }
+    start({situation_note: typed.trim()});
+  }
 
   async function start(body: {situation_id?: string; situation_note?: string}) {
     if (offline) return;
@@ -148,13 +178,47 @@ export function SituationInputScreen({navigation, route}: Props) {
   const titleKey = 'moment.title';
   return (
     <AppScreen>
-      <ScreenHeader onBack={() => navigation.goBack()} title={t(titleKey)} />
+      <ScreenHeader
+        onBack={() => navigation.goBack()}
+        rightAction={
+          showInput && quota !== null ? (
+            <View
+              style={[
+                themedStyles.quota,
+                outOfQuota ? themedStyles.quotaOut : null,
+              ]}
+              testID="moment-quota"
+            >
+              <MaterialIcon
+                color={outOfQuota ? HERO_PALETTE.coralShelf : theme.colors.ink}
+                name="bolt"
+                size={15}
+              />
+              <AppText
+                style={[
+                  themedStyles.quotaText,
+                  outOfQuota ? themedStyles.quotaTextOut : null,
+                ]}
+              >
+                {outOfQuota
+                  ? t('moment.quota_chip_none')
+                  : t('moment.quota_chip', {
+                      count: quota.remaining,
+                      limit: quota.limit,
+                    })}
+              </AppText>
+            </View>
+          ) : undefined
+        }
+        title={t(titleKey)}
+      />
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          {paddingBottom: floatingClearance},
+          {paddingBottom: showInput ? theme.spacing.lg : floatingClearance},
         ]}
         keyboardShouldPersistTaps="handled"
+        ref={scrollRef}
       >
         {kids ? (
           <AppText color="secondary">{t('moment.kids_blocked')}</AppText>
@@ -212,78 +276,159 @@ export function SituationInputScreen({navigation, route}: Props) {
           />
         ) : null}
 
-        {!kids && !status?.status && !requestId ? (
+        {showInput ? (
           <>
-            {quota !== null ? (
-              <View
-                style={[
-                  styles.quota,
-                  {
-                    backgroundColor: outOfQuota
-                      ? theme.colors.surfaceMuted
-                      : theme.colors.primaryContainer,
-                  },
-                ]}
-                testID="moment-quota"
-              >
+            {outOfQuota ? (
+              <View style={themedStyles.limit} testID="moment-limit">
                 <MaterialIcon
-                  color={
-                    outOfQuota ? theme.colors.danger : theme.colors.primary
-                  }
-                  name="bolt"
-                  size={20}
+                  color={HERO_PALETTE.coralShelf}
+                  name="schedule"
+                  size={19}
                 />
-                <AppText style={styles.grow} variant="label">
-                  {outOfQuota
-                    ? t('moment.limit_reached', {limit: quota.limit})
-                    : t('moment.quota_of', {
-                        count: quota.remaining,
-                        limit: quota.limit,
-                      })}
+                <AppText style={themedStyles.limitText} variant="label">
+                  {t('moment.limit_reached', {limit: quota.limit})}
                 </AppText>
               </View>
             ) : null}
-            <AppText variant="h3">{t('moment.choose_situation')}</AppText>
+
+            <View
+              style={[themedStyles.own, outOfQuota ? styles.dimmed : null]}
+              testID="moment-own"
+            >
+              <View style={styles.ownTop}>
+                <View style={themedStyles.ownIcon}>
+                  <MaterialIcon
+                    color={theme.colors.ink}
+                    name="edit"
+                    size={19}
+                  />
+                </View>
+                <View style={styles.grow}>
+                  <AppText variant="h3">{t('moment.own_title')}</AppText>
+                  <AppText style={themedStyles.ownSub} variant="caption">
+                    {t('moment.own_subtitle')}
+                  </AppText>
+                </View>
+              </View>
+              <View
+                style={[
+                  themedStyles.field,
+                  focused ? themedStyles.fieldFocused : null,
+                ]}
+              >
+                <TextInput
+                  accessibilityHint={t('moment.send_hint')}
+                  accessibilityLabel={t('moment.own_title')}
+                  editable={!outOfQuota}
+                  multiline
+                  onBlur={() => setFocused(false)}
+                  onChangeText={setTyped}
+                  onFocus={() => setFocused(true)}
+                  placeholder={t('moment.typed_placeholder')}
+                  placeholderTextColor={theme.colors.text.muted}
+                  ref={inputRef}
+                  style={themedStyles.input}
+                  testID="moment-typed"
+                  value={typed}
+                />
+                <View style={styles.fieldBar}>
+                  <AppText color="muted" style={styles.grow} variant="caption">
+                    {pickedNow ? t('moment.own_picked') : t('moment.own_hint')}
+                  </AppText>
+                  {typed.length > 0 ? (
+                    <Pressable
+                      accessibilityHint={t('moment.own_clear_a11y')}
+                      accessibilityLabel={t('moment.own_clear')}
+                      accessibilityRole="button"
+                      hitSlop={CLEAR_HIT_SLOP}
+                      onPress={() => {
+                        setTyped('');
+                        inputRef.current?.focus();
+                      }}
+                      style={styles.clear}
+                      testID="moment-typed-clear"
+                    >
+                      <MaterialIcon
+                        color={theme.colors.text.muted}
+                        name="close"
+                        size={15}
+                      />
+                      <AppText color="muted" variant="caption">
+                        {t('moment.own_clear')}
+                      </AppText>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            </View>
+
+            <AppText style={styles.sectionTitle} variant="h3">
+              {t('moment.suggestions_title')}
+            </AppText>
             {situations.length === 0 ? (
               <AppText color="secondary">
                 {t('moment.situations_empty')}
               </AppText>
-            ) : null}
-            {situations.map(situation => (
-              <Pressable
-                key={situation.id}
-                accessibilityHint={t('moment.situation_pick_hint')}
-                accessibilityLabel={situation.title_vi}
-                accessibilityRole="button"
-                disabled={offline || outOfQuota}
-                onPress={() => start({situation_id: situation.id})}
-                style={styles.situation}
-                testID={`situation-${situation.code}`}
+            ) : (
+              <View
+                style={[themedStyles.list, outOfQuota ? styles.dimmed : null]}
               >
-                <MaterialIcon
-                  color={theme.colors.primary}
-                  name="record_voice_over"
-                  size={22}
-                />
-                <AppText style={styles.grow}>{situation.title_vi}</AppText>
-              </Pressable>
-            ))}
-
-            <AppText variant="label">{t('moment.typed_label')}</AppText>
-            <TextField
-              multiline
-              onChangeText={setTyped}
-              placeholder={t('moment.typed_placeholder')}
-              style={styles.input}
-              value={typed}
-            />
-            <PrimaryActionButton
-              accessibilityHint={t('moment.send_hint')}
-              accessibilityLabel={t('moment.send')}
-              disabled={offline || outOfQuota || typed.trim().length < 3}
-              label={t('moment.send')}
-              onPress={() => start({situation_note: typed.trim()})}
-            />
+                {situations.map((situation, index) => {
+                  const selected = pickedNow && picked?.id === situation.id;
+                  return (
+                    <Pressable
+                      key={situation.id}
+                      accessibilityHint={t('moment.situation_pick_hint')}
+                      accessibilityLabel={situation.title_vi}
+                      accessibilityRole="button"
+                      accessibilityState={{
+                        disabled: outOfQuota,
+                        selected,
+                      }}
+                      disabled={outOfQuota}
+                      onPress={() => pick(situation)}
+                      style={({pressed}) => [
+                        styles.row,
+                        index > 0 ? themedStyles.rowDivider : null,
+                        selected ? themedStyles.rowSelected : null,
+                        pressed && !selected ? themedStyles.rowPressed : null,
+                      ]}
+                      testID={`situation-${situation.code}`}
+                    >
+                      <View
+                        style={[
+                          themedStyles.rowIcon,
+                          selected ? themedStyles.rowIconSelected : null,
+                        ]}
+                      >
+                        <MaterialIcon
+                          color={theme.colors.primary}
+                          name={situationIcon(situation)}
+                          size={17}
+                        />
+                      </View>
+                      <AppText
+                        style={[
+                          themedStyles.rowText,
+                          selected ? themedStyles.rowTextSelected : null,
+                        ]}
+                      >
+                        {situation.title_vi}
+                      </AppText>
+                      <MaterialIcon
+                        color={
+                          selected
+                            ? theme.colors.primary
+                            : theme.colors.outlineVariant
+                        }
+                        name={selected ? 'check_circle' : 'chevron_right'}
+                        size={selected ? 20 : 18}
+                      />
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
           </>
         ) : null}
 
@@ -292,30 +437,162 @@ export function SituationInputScreen({navigation, route}: Props) {
           <AppText color="secondary">{t('moment.offline')}</AppText>
         ) : null}
       </ScrollView>
+      {showInput ? (
+        <StickerFooter bottomInset={floatingClearance}>
+          <StickerButton
+            accessibilityHint={t('moment.send_hint')}
+            disabled={!canSend}
+            icon="auto_stories"
+            label={t('moment.send')}
+            onPress={send}
+            testID="moment-send"
+          />
+        </StickerFooter>
+      ) : null}
     </AppScreen>
   );
 }
+
+/** Lifts the small "Xóa" link to the 44px minimum touch target. */
+const CLEAR_HIT_SLOP = {top: 10, bottom: 10, left: 8, right: 8};
 
 const styles = StyleSheet.create({
   content: {gap: 14, padding: 16},
   card: {gap: 12, padding: 16, borderRadius: 18, borderWidth: 2},
   linkRow: {alignItems: 'center', minHeight: 44, justifyContent: 'center'},
-  situation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 2,
-  },
   grow: {flex: 1},
-  quota: {
-    flexDirection: 'row',
+  dimmed: {opacity: 0.5},
+  ownTop: {alignItems: 'center', flexDirection: 'row', gap: 10},
+  fieldBar: {
     alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
+    flexDirection: 'row',
+    gap: 8,
+    minHeight: 30,
   },
-  input: {minHeight: 110, textAlignVertical: 'top'},
+  clear: {alignItems: 'center', flexDirection: 'row', gap: 4},
+  sectionTitle: {marginTop: 6, paddingHorizontal: 4},
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 58,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
 });
+
+function makeStyles(theme: AppTheme) {
+  return StyleSheet.create({
+    quota: {
+      alignItems: 'center',
+      backgroundColor: HERO_PALETTE.sun,
+      borderRadius: theme.radius.pill,
+      flexDirection: 'row',
+      gap: 5,
+      paddingHorizontal: 11,
+      paddingVertical: 7,
+      ...getStickerEdge(2, HERO_PALETTE.sunShelf),
+    },
+    quotaOut: {
+      backgroundColor: theme.colors.secondarySoft,
+      ...getStickerEdge(2, HERO_PALETTE.coralRing),
+    },
+    quotaText: {
+      color: theme.colors.ink,
+      fontSize: 12.5,
+      fontWeight: '800',
+    },
+    quotaTextOut: {
+      color: theme.colors.onSecondaryContainer,
+    },
+    limit: {
+      alignItems: 'flex-start',
+      backgroundColor: theme.colors.secondarySoft,
+      borderRadius: 18,
+      flexDirection: 'row',
+      gap: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    limitText: {
+      color: theme.colors.onSecondaryContainer,
+      flex: 1,
+    },
+    own: {
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: theme.radius.lg,
+      gap: 12,
+      padding: 14,
+      ...getStickerEdge(5, theme.colors.tertiaryBorder),
+    },
+    ownIcon: {
+      alignItems: 'center',
+      backgroundColor: HERO_PALETTE.sun,
+      borderRadius: 13,
+      height: 38,
+      justifyContent: 'center',
+      width: 38,
+      ...getStickerEdge(3, HERO_PALETTE.sunShelf),
+    },
+    ownSub: {
+      color: theme.colors.onTertiaryContainer,
+    },
+    field: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.surface,
+      borderRadius: 18,
+      borderWidth: 2,
+      paddingBottom: 4,
+      paddingHorizontal: 12,
+      paddingTop: 10,
+    },
+    fieldFocused: {
+      borderColor: HERO_PALETTE.sunShelf,
+    },
+    input: {
+      color: theme.colors.text.primary,
+      fontFamily: theme.typography.fontFamily.primary,
+      fontSize: 16,
+      fontWeight: '600',
+      lineHeight: 23,
+      minHeight: 112,
+      padding: 0,
+      textAlignVertical: 'top',
+    },
+    list: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      overflow: 'hidden',
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
+    },
+    rowDivider: {
+      borderTopColor: theme.colors.surfaceMuted,
+      borderTopWidth: 1.5,
+    },
+    rowPressed: {
+      backgroundColor: theme.colors.surfaceMuted,
+    },
+    rowSelected: {
+      backgroundColor: theme.colors.accentSoft,
+    },
+    rowIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 11,
+      height: 34,
+      justifyContent: 'center',
+      width: 34,
+    },
+    rowIconSelected: {
+      backgroundColor: theme.colors.surface,
+    },
+    rowText: {
+      flex: 1,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    rowTextSelected: {
+      color: theme.colors.accentInk,
+    },
+  });
+}

@@ -18,7 +18,8 @@ export type ImagePickResult =
   | {ok: true; image: PickedImage}
   | {
       ok: false;
-      reason: 'cancelled' | 'permission_denied' | 'error';
+      reason:
+        'cancelled' | 'permission_denied' | 'camera_unavailable' | 'error';
       message?: string;
     };
 
@@ -51,11 +52,7 @@ function mapErrorCode(errorCode?: string): ImagePickResult {
   }
 
   if (errorCode === 'camera_unavailable') {
-    return {
-      ok: false,
-      reason: 'error',
-      message: 'Camera is not available on this device.',
-    };
+    return {ok: false, reason: 'camera_unavailable'};
   }
 
   return {ok: false, reason: 'error'};

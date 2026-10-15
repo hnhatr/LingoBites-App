@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, TextInput} from 'react-native';
+import {StyleSheet, Text, TextInput} from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 
 import {AppThemeProvider} from '@ui/theme';
@@ -143,18 +143,25 @@ describe('PasteTextScreen', () => {
             node.props.children === 'Cần ít nhất 1 từ để trích xuất từ vựng.',
         );
     const cta = () => findPressableByLabel(tree!.root, 'Trích xuất từ vựng')!;
-    const clear = () => findPressableByLabel(tree!.root, 'Xóa văn bản')!;
+    // The Pressable itself (the one with the press handler and a11y state).
+    const clear = () =>
+      tree!.root.find(
+        node =>
+          node.props.accessibilityLabel === 'Xóa văn bản' &&
+          typeof node.props.style === 'function',
+      );
 
     expect(detectionChips()).toHaveLength(0);
     expect(helperTexts()).toHaveLength(1);
 
     expect(cta().props.disabled).toBe(true);
     expect(cta().props.accessibilityState).toEqual({disabled: true});
-    expect(cta().props.style({pressed: false})[0].opacity).toBeLessThan(1);
 
     expect(clear().props.disabled).toBe(true);
     expect(clear().props.accessibilityState).toEqual({disabled: true});
-    expect(clear().props.style({pressed: false}).opacity).toBeLessThan(1);
+    expect(
+      StyleSheet.flatten(clear().props.style({pressed: false})).opacity,
+    ).toBeLessThan(1);
 
     const input = tree!.root.findByType(TextInput);
     await ReactTestRenderer.act(async () => {
@@ -167,11 +174,12 @@ describe('PasteTextScreen', () => {
 
     expect(cta().props.disabled).toBe(false);
     expect(cta().props.accessibilityState).toEqual({disabled: false});
-    expect(cta().props.style({pressed: false})[0].opacity).toBe(1);
 
     expect(clear().props.disabled).toBe(false);
     expect(clear().props.accessibilityState).toEqual({disabled: false});
-    expect(clear().props.style({pressed: false}).opacity).toBe(1);
+    expect(
+      StyleSheet.flatten(clear().props.style({pressed: false})).opacity,
+    ).toBeUndefined();
   });
 
   it('blocks empty submission and does not navigate (TC-008)', async () => {

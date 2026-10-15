@@ -2,9 +2,9 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -12,20 +12,23 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {IconButton} from '@ui/components/IconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {PrimaryActionButton} from '@ui/components/PrimaryActionButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
-import {TextField} from '@ui/components/TextField';
+import {SoftActionButton} from '@ui/components/SoftActionButton';
+import {StickerButton} from '@ui/components/StickerButton';
+import {StickerFooter} from '@ui/components/StickerFooter';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import type {LearnerLessonCreationRequestBody} from '@core/schemas/lesson';
 
 import {readClipboardText} from '../logic/clipboardText';
 import type {LessonCreationState} from '../logic/useLessonCreation';
 import {creationErrorDisplay} from '../logic/youtubeCreationError';
+import {parseYouTubeVideoId} from '../logic/youtubeUrl';
 import {IndeterminateProgressBar} from './IndeterminateProgressBar';
 
 export type YouTubeCreationViewProps = {
@@ -143,6 +146,7 @@ export function YouTubeCreationView({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const floatingClearance = useFloatingTabBarClearance();
   const [pasteNotice, setPasteNotice] = useState(false);
+  const [urlFocused, setUrlFocused] = useState(false);
   const [submittedUrl, setSubmittedUrl] = useState('');
 
   const waiting = state.status === 'waiting_transcript';
@@ -176,11 +180,22 @@ export function YouTubeCreationView({
     setPasteNotice(true);
   };
 
+  const videoId = parseYouTubeVideoId(url);
+
   const renderLinkField = (editable: boolean) => (
     <View style={styles.urlFieldBlock}>
-      <AppText variant="label">{t('youtube.url_label')}</AppText>
-      <View style={styles.urlRow}>
-        <TextField
+      <AppText style={styles.urlLabel} variant="label">
+        {t('youtube.url_label')}
+      </AppText>
+      <View
+        style={[
+          themedStyles.urlCard,
+          urlFocused ? themedStyles.urlCardFocused : null,
+          videoId ? themedStyles.urlCardValid : null,
+        ]}
+      >
+        <MaterialIcon color={theme.colors.text.muted} name="share" size={18} />
+        <TextInput
           testID="lesson-creation-url-input"
           accessibilityLabel={t('lessonPlayer.create_url_label')}
           accessibilityHint={t('lessonPlayer.create_url_hint')}
@@ -188,8 +203,11 @@ export function YouTubeCreationView({
           autoCorrect={false}
           editable={editable && !processing}
           keyboardType="url"
+          onBlur={() => setUrlFocused(false)}
           onChangeText={setUrl}
+          onFocus={() => setUrlFocused(true)}
           placeholder={t('lessonPlayer.create_url_placeholder')}
+          placeholderTextColor={theme.colors.text.muted}
           style={themedStyles.urlInput}
           value={url}
         />
@@ -202,29 +220,45 @@ export function YouTubeCreationView({
             tone="bare"
           />
         ) : null}
+        {editable ? (
+          <SoftActionButton
+            accessibilityLabel={t('youtube.create.paste_link')}
+            icon="content_paste"
+            label={t('youtube.create.paste_short')}
+            onPress={() => {
+              handlePaste().catch(() => {});
+            }}
+            testID="lesson-creation-paste"
+          />
+        ) : null}
       </View>
-      {editable ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('youtube.create.paste_link')}
-          onPress={() => {
-            handlePaste().catch(() => {});
-          }}
-          style={({pressed}) => [
-            themedStyles.pasteButton,
-            pressed && styles.pastePressed,
-          ]}
-          testID="lesson-creation-paste"
-        >
+      {editable && videoId ? (
+        <View style={themedStyles.linkOk} testID="lesson-creation-link-ok">
+          <View style={themedStyles.linkOkThumb}>
+            <MaterialIcon
+              color={HERO_PALETTE.white}
+              name="play_arrow"
+              size={18}
+            />
+          </View>
+          <View style={styles.linkCardText}>
+            <AppText style={themedStyles.linkOkTitle} variant="label">
+              {t('youtube.create.link_ok')}
+            </AppText>
+            <AppText
+              numberOfLines={1}
+              style={themedStyles.linkOkSub}
+              variant="caption"
+            >
+              {`youtu.be/${videoId}`}
+            </AppText>
+          </View>
           <MaterialIcon
             color={theme.colors.primary}
-            name="content_paste"
-            size={18}
+            name="check_circle"
+            size={20}
           />
-          <AppText color="primary" variant="label">
-            {t('youtube.create.paste_link')}
-          </AppText>
-        </Pressable>
+        </View>
       ) : null}
       {pasteNotice ? (
         <AppText color="muted" variant="caption">
@@ -245,37 +279,41 @@ export function YouTubeCreationView({
         {showIdleInput ? (
           <>
             <View style={styles.headlineBlock}>
-              <AppText variant="h2">{t('youtube.create.headline')}</AppText>
+              <AppText variant="h1">{t('youtube.create.headline')}</AppText>
               <AppText color="secondary" variant="body">
                 {t('youtube.create.subhead')}
               </AppText>
             </View>
             {renderLinkField(true)}
-            <View style={styles.infoBlock}>
-              <View style={styles.infoRow}>
-                <MaterialIcon
-                  color={theme.colors.text.muted}
-                  name="subtitles"
-                  size={20}
-                />
+            <View style={themedStyles.infoCard}>
+              <View style={styles.infoListRow}>
+                <View style={[themedStyles.infoIcon, themedStyles.infoIconSky]}>
+                  <MaterialIcon
+                    color={HERO_PALETTE.skyInk}
+                    name="subtitles"
+                    size={17}
+                  />
+                </View>
                 <AppText
                   color="secondary"
                   style={styles.infoText}
-                  variant="body"
+                  variant="label"
                 >
                   {t('youtube.create.info_subtitles')}
                 </AppText>
               </View>
-              <View style={styles.infoRow}>
-                <MaterialIcon
-                  color={theme.colors.text.muted}
-                  name="shield"
-                  size={20}
-                />
+              <View style={[styles.infoListRow, themedStyles.infoDivider]}>
+                <View style={themedStyles.infoIcon}>
+                  <MaterialIcon
+                    color={theme.colors.primary}
+                    name="shield"
+                    size={17}
+                  />
+                </View>
                 <AppText
                   color="secondary"
                   style={styles.infoText}
-                  variant="body"
+                  variant="label"
                 >
                   {t('youtube.create.info_privacy')}
                 </AppText>
@@ -511,20 +549,20 @@ export function YouTubeCreationView({
         ) : null}
       </ScrollView>
 
-      <BottomActionBar
-        style={[themedStyles.actionBar, {paddingBottom: floatingClearance}]}
-      >
+      <StickerFooter bottomInset={floatingClearance}>
         {succeeded ? (
-          <PrimaryActionButton
+          <StickerButton
             accessibilityLabel={t('lessonPlayer.create_open')}
+            icon="play_arrow"
             label={t('lessonPlayer.create_open')}
             onPress={() => onOpenLesson(state.lessonId)}
             testID="lesson-creation-open"
           />
         ) : (
-          <PrimaryActionButton
+          <StickerButton
             accessibilityLabel={t('lessonPlayer.create_submit')}
             disabled={!body || processing || timedOut || waiting}
+            icon="auto_stories"
             label={
               processing
                 ? t('lessonPlayer.create_submitting')
@@ -536,17 +574,13 @@ export function YouTubeCreationView({
             testID="lesson-creation-submit"
           />
         )}
-      </BottomActionBar>
+      </StickerFooter>
     </AppScreen>
   );
 }
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    actionBar: {
-      backgroundColor: theme.colors.background,
-      borderTopColor: theme.colors.outlineVariant,
-    },
     content: {
       gap: theme.spacing.lg,
       paddingBottom: theme.spacing.lg,
@@ -560,17 +594,50 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.md,
       padding: theme.spacing.lg,
     },
-    pasteButton: {
+    infoCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      overflow: 'hidden',
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
+    },
+    infoDivider: {
+      borderTopColor: theme.colors.surfaceMuted,
+      borderTopWidth: 1.5,
+    },
+    infoIcon: {
       alignItems: 'center',
-      alignSelf: 'flex-start',
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.pill,
-      borderWidth: 1,
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 11,
+      height: 34,
+      justifyContent: 'center',
+      width: 34,
+    },
+    infoIconSky: {
+      backgroundColor: HERO_PALETTE.skySoft,
+    },
+    linkOk: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 16,
       flexDirection: 'row',
-      gap: theme.spacing.xs,
-      minHeight: 44,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm,
+      gap: 10,
+      padding: 9,
+      paddingRight: 12,
+    },
+    linkOkThumb: {
+      alignItems: 'center',
+      backgroundColor: HERO_PALETTE.faceFrom,
+      borderRadius: 9,
+      height: 40,
+      justifyContent: 'center',
+      width: 64,
+    },
+    linkOkTitle: {
+      color: theme.colors.accentInk,
+    },
+    linkOkSub: {
+      color: theme.colors.accentInk,
+      opacity: 0.8,
     },
     success: {
       alignItems: 'center',
@@ -588,11 +655,34 @@ function makeStyles(theme: AppTheme) {
       padding: theme.spacing.md,
       width: '100%',
     },
-    urlInput: {
-      borderColor: theme.colors.accentSoft,
-      borderRadius: theme.radius.xl,
+    urlCard: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.surface,
+      borderRadius: 20,
       borderWidth: 2,
+      flexDirection: 'row',
+      gap: 6,
+      paddingLeft: 14,
+      paddingRight: 6,
+      paddingVertical: 6,
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
+    },
+    urlCardFocused: {
+      borderColor: theme.colors.accent,
+    },
+    urlCardValid: {
+      borderColor: theme.colors.primary,
+    },
+    urlInput: {
+      color: theme.colors.text.primary,
       flex: 1,
+      fontFamily: theme.typography.fontFamily.primary,
+      fontSize: 15,
+      fontWeight: '600',
+      minHeight: 44,
+      minWidth: 0,
+      paddingVertical: 0,
     },
   });
 }
@@ -609,6 +699,13 @@ const styles = StyleSheet.create({
   },
   infoBlock: {
     gap: 10,
+  },
+  infoListRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
   },
   infoRow: {
     alignItems: 'flex-start',
@@ -634,9 +731,6 @@ const styles = StyleSheet.create({
     height: 54,
     justifyContent: 'center',
     width: 96,
-  },
-  pastePressed: {
-    opacity: 0.85,
   },
   processingBlock: {
     gap: 16,
@@ -681,11 +775,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   urlFieldBlock: {
-    gap: 8,
+    gap: 10,
   },
-  urlRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 4,
+  urlLabel: {
+    paddingHorizontal: 4,
   },
 });

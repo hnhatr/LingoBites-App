@@ -27,6 +27,7 @@ export type {
   SentenceAnalysisPanelProps,
   SentenceAnalysisPanelState,
 } from './components/SentenceAnalysisPanel';
+export {readClipboardText} from './logic/clipboardText';
 export {YouTubePlayer} from './components/YouTubePlayer';
 export type {
   YouTubePlayerErrorCode,

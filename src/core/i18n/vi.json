@@ -529,7 +529,9 @@
       "tip_cc": "Bấm nút CC trên YouTube để kiểm tra video có phụ đề.",
       "tip_public": "Video phải công khai và cho phép nhúng.",
       "retry_video": "Thử lại video này",
-      "retry_video_hint": "Gửi lại yêu cầu tạo bài với link hiện tại"
+      "retry_video_hint": "Gửi lại yêu cầu tạo bài với link hiện tại",
+      "paste_short": "Dán",
+      "link_ok": "Đã nhận link video"
     },
     "study": {
       "empty_cards": "Bài học chưa có câu nào.",
@@ -1360,7 +1362,7 @@
   },
   "paste": {
     "title": "Dán text",
-    "intro": "Dán hoặc nhập đoạn tiếng Anh — bài viết, thực đơn, tin nhắn — app sẽ biến thành bài học.",
+    "intro": "Bài viết, thực đơn, tin nhắn… Dán vào là app tìm từ vựng cho bạn.",
     "placeholder": "Dán đoạn text của bạn vào đây…",
     "clear": "Xóa văn bản",
     "clear_a11y": "Xóa văn bản",
@@ -1370,7 +1372,21 @@
     "submit": "Trích xuất từ vựng",
     "submit_a11y": "Trích xuất từ vựng",
     "submitting": "Đang khởi tạo bài học…",
-    "words_progress": "{{count}}/{{max}} từ"
+    "words_progress": "{{count}}/{{max}} từ",
+    "headline": "Biến đoạn tiếng Anh thành bài học",
+    "counter": "{{words}}/{{max}} từ · {{chars}} ký tự",
+    "paste": "Dán",
+    "paste_a11y": "Dán từ bộ nhớ tạm",
+    "paste_empty": "Bộ nhớ tạm chưa có chữ. Hãy sao chép đoạn tiếng Anh trước.",
+    "clear_short": "Xóa",
+    "examples_title": "Thử với ví dụ",
+    "example_hint": "Điền đoạn ví dụ vào ô nhập",
+    "example_menu": "Thực đơn quán cà phê",
+    "example_message": "Tin nhắn hẹn bạn",
+    "example_email": "Email công việc",
+    "paste_hint": "Dán đoạn chữ đã sao chép vào ô",
+    "clear_hint": "Xóa hết chữ trong ô",
+    "submit_hint": "Tạo bài học từ đoạn chữ này"
   },
   "ocr": {
     "title": "Kiểm tra text",
@@ -1395,7 +1411,18 @@
     "extract_a11y": "Trích xuất text",
     "ocr_card_title": "Đọc chữ trong ảnh",
     "ocr_card_body": "Đọc chữ tiếng Anh trong ảnh để bạn kiểm tra và tạo bài.",
-    "words_progress": "{{count}}/{{max}} từ"
+    "words_progress": "{{count}}/{{max}} từ",
+    "camera_unavailable_title": "Chưa mở được camera",
+    "camera_unavailable_body": "Máy này không có camera dùng được. Bạn vẫn có thể chọn ảnh có sẵn trong thư viện.",
+    "tips_title": "Ảnh dễ đọc nhất khi",
+    "tip_light": "Đủ sáng, không bị lóa hay đổ bóng lên chữ",
+    "tip_frame": "Chữ nằm ngang và chiếm gần hết khung ảnh",
+    "pick_from_gallery": "Chọn ảnh từ thư viện",
+    "type_instead": "Gõ text thay vì chụp",
+    "step_reading": "Đọc chữ trong ảnh",
+    "step_reading_now": "Đang đọc…",
+    "step_review": "Bạn kiểm tra lại đoạn chữ",
+    "cancel": "Hủy"
   },
   "moment": {
     "title": "Học từ tình huống",
@@ -1404,7 +1431,7 @@
     "choose_situation": "Chọn tình huống",
     "typed_label": "Hoặc tự mô tả (tiếng Việt hoặc tiếng Anh)",
     "typed_placeholder": "Ví dụ: mai đi khám răng, muốn nói bị ê buốt",
-    "send": "Tạo bài",
+    "send": "Tạo bài học",
     "kids_blocked": "Tạo bài từ ảnh, chữ và tình huống chưa dành cho tài khoản trẻ em.",
     "understood_title": "AI hiểu tình huống của bạn là:",
     "confirm_yes": "Đúng, tạo bài",
@@ -1477,7 +1504,16 @@
     "source_photo_hint": "Ảnh dùng để tạo bài học này.",
     "replay_listen_hint": "Đọc to câu này.",
     "delete_lesson_hint": "Xoá bài học khỏi tài khoản sau khi xác nhận.",
-    "library_retry_hint": "Tải lại danh sách khoảnh khắc."
+    "library_retry_hint": "Tải lại danh sách khoảnh khắc.",
+    "own_title": "Kể tình huống của bạn",
+    "own_subtitle": "Viết bằng tiếng Việt hoặc tiếng Anh",
+    "own_hint": "Hoặc chọn một gợi ý bên dưới",
+    "own_picked": "Đã chọn gợi ý, bạn có thể viết thêm",
+    "own_clear": "Xóa",
+    "own_clear_a11y": "Xóa nội dung đã viết",
+    "suggestions_title": "Gợi ý tình huống",
+    "quota_chip": "Còn {{count}}/{{limit}} lượt",
+    "quota_chip_none": "Hết lượt"
   },
   "wordPath": {
     "title": "Lộ trình từ",

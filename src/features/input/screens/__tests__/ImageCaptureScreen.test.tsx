@@ -6,7 +6,10 @@ import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
 
-import {pickImageFromGallery} from '../../logic/imagePicker';
+import {
+  pickImageFromCamera,
+  pickImageFromGallery,
+} from '../../logic/imagePicker';
 import {analyzeImage} from '../../logic/momentClient';
 import {ensurePhotoConsent} from '../../logic/photoConsent';
 import {ImageCaptureScreen} from '../ImageCaptureScreen';
@@ -62,19 +65,32 @@ function findPressableByLabel(
   return current;
 }
 
-async function renderScreen() {
+const mounted: ReactTestRenderer.ReactTestRenderer[] = [];
+
+async function renderScreen(screenRoute = route) {
   let tree!: ReactTestRenderer.ReactTestRenderer;
   await ReactTestRenderer.act(async () => {
     tree = ReactTestRenderer.create(
       <FeatureFlagProvider>
         <AppThemeProvider>
-          <ImageCaptureScreen navigation={navigation as never} route={route} />
+          <ImageCaptureScreen
+            navigation={navigation as never}
+            route={screenRoute}
+          />
         </AppThemeProvider>
       </FeatureFlagProvider>,
     );
   });
+  mounted.push(tree);
   return tree;
 }
+
+// The scanning photo animates in a loop until it unmounts.
+afterEach(() => {
+  ReactTestRenderer.act(() => {
+    mounted.splice(0).forEach(tree => tree.unmount());
+  });
+});
 
 describe('ImageCaptureScreen', () => {
   beforeEach(() => {
@@ -195,6 +211,30 @@ describe('ImageCaptureScreen', () => {
       sourceType: 'gallery',
       image: pickedImage,
       analysis,
+    });
+  });
+
+  it('offers the photo library when the device has no camera', async () => {
+    jest.mocked(pickImageFromCamera).mockResolvedValue({
+      ok: false,
+      reason: 'camera_unavailable',
+    });
+    const tree = await renderScreen({
+      ...route,
+      params: {sourceType: 'camera'},
+    });
+
+    const texts = tree.root
+      .findAllByType(Text)
+      .map(node => node.props.children);
+    expect(texts).toContain('Chưa mở được camera');
+    expect(texts).not.toContain('Camera is not available on this device.');
+
+    await ReactTestRenderer.act(async () => {
+      findPressableByLabel(tree.root, 'Chọn ảnh từ thư viện')?.props.onPress();
+    });
+    expect(navigation.replace).toHaveBeenCalledWith('ImageCapture', {
+      sourceType: 'gallery',
     });
   });
 });

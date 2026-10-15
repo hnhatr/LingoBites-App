@@ -529,7 +529,9 @@
       "tip_cc": "Tap CC on YouTube to confirm the video has subtitles.",
       "tip_public": "The video must be public and allow embedding.",
       "retry_video": "Retry this video",
-      "retry_video_hint": "Submit creation again with the current link"
+      "retry_video_hint": "Submit creation again with the current link",
+      "paste_short": "Paste",
+      "link_ok": "Video link received"
     },
     "study": {
       "empty_cards": "This lesson has no sentences yet.",
@@ -1360,7 +1362,7 @@
   },
   "paste": {
     "title": "Paste text",
-    "intro": "Paste or type a passage of English — an article, a menu, a message — and the app turns it into a lesson.",
+    "intro": "An article, a menu, a message… Paste it and the app finds the vocabulary for you.",
     "placeholder": "Paste your text here…",
     "clear": "Clear text",
     "clear_a11y": "Clear text",
@@ -1370,7 +1372,21 @@
     "submit": "Extract vocabulary",
     "submit_a11y": "Extract vocabulary",
     "submitting": "Creating your lesson…",
-    "words_progress": "{{count}}/{{max}} words"
+    "words_progress": "{{count}}/{{max}} words",
+    "headline": "Turn English text into a lesson",
+    "counter": "{{words}}/{{max}} words · {{chars}} characters",
+    "paste": "Paste",
+    "paste_a11y": "Paste from the clipboard",
+    "paste_empty": "The clipboard has no text. Copy some English first.",
+    "clear_short": "Clear",
+    "examples_title": "Try an example",
+    "example_hint": "Fills the box with the example text",
+    "example_menu": "Café menu",
+    "example_message": "Message to a friend",
+    "example_email": "Work email",
+    "paste_hint": "Pastes the copied text into the box",
+    "clear_hint": "Clears all the text in the box",
+    "submit_hint": "Creates a lesson from this text"
   },
   "ocr": {
     "title": "Check text",
@@ -1395,7 +1411,18 @@
     "extract_a11y": "Extract text",
     "ocr_card_title": "Read text in the photo",
     "ocr_card_body": "Read the English text in the photo so you can check it and make a lesson.",
-    "words_progress": "{{count}}/{{max}} words"
+    "words_progress": "{{count}}/{{max}} words",
+    "camera_unavailable_title": "The camera could not open",
+    "camera_unavailable_body": "This device has no camera the app can use. You can still pick a photo from your library.",
+    "tips_title": "Photos read best when",
+    "tip_light": "There is enough light and no glare or shadow on the text",
+    "tip_frame": "The text is level and fills most of the frame",
+    "pick_from_gallery": "Pick from library",
+    "type_instead": "Type the text instead",
+    "step_reading": "Reading the text in the photo",
+    "step_reading_now": "Reading…",
+    "step_review": "You check the text",
+    "cancel": "Cancel"
   },
   "moment": {
     "title": "Learn from a situation",
@@ -1477,7 +1504,16 @@
     "source_photo_hint": "The photo this lesson was made from.",
     "replay_listen_hint": "Reads this sentence aloud.",
     "delete_lesson_hint": "Deletes this lesson from your account after you confirm.",
-    "library_retry_hint": "Load the list of moments again."
+    "library_retry_hint": "Load the list of moments again.",
+    "own_title": "Describe your situation",
+    "own_subtitle": "Write in Vietnamese or English",
+    "own_hint": "Or pick a suggestion below",
+    "own_picked": "Suggestion picked, you can add more",
+    "own_clear": "Clear",
+    "own_clear_a11y": "Clear what you wrote",
+    "suggestions_title": "Suggested situations",
+    "quota_chip": "{{count}}/{{limit}} left",
+    "quota_chip_none": "None left"
   },
   "wordPath": {
     "title": "Word path",
