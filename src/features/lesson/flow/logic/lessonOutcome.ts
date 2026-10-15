@@ -20,7 +20,9 @@ import {answerExpired} from './taskEvaluation';
  * Server's `lesson_outcomes` row wins; without one (offline, not synced
  * yet) the device applies the same rule as PR 15: practice complete and
  * step 5 passed independently, by the scorer (not written instead of
- * spoken) or by a self- or rule-graded attempt.
+ * spoken) or by a self- or rule-graded attempt. A lesson without a step-5
+ * activity (a pronunciation lesson) is passed once its practice is complete,
+ * as the Server does for formats that pass on practice.
  */
 export type LessonOutcomeLabel =
   'passed' | 'awaiting_result' | 'practice_done' | 'in_progress';
@@ -39,6 +41,17 @@ function scorerPassed(answers: readonly TaskAnswer[]): boolean {
   );
 }
 
+/**
+ * Published communicative lessons always run their independent task on step
+ * 5; only a format without independent use (pronunciation) has none. The
+ * snapshot carries no format, so the blocks tell.
+ */
+function hasIndependentStep(snapshot: LessonSnapshot): boolean {
+  return snapshot.blocks.some(
+    block => block.type === 'activity' && block.step === 5,
+  );
+}
+
 export function lessonOutcomeView(
   snapshot: LessonSnapshot,
   attempts: readonly LessonActivityAttemptRow[],
@@ -51,6 +64,7 @@ export function lessonOutcomeView(
     practiceCompleted(snapshot, attempts) ||
     server?.practiceCompletedAt != null;
   if (!practiceDone) return {label: 'in_progress', confirmed: false};
+  if (!hasIndependentStep(snapshot)) return {label: 'passed', confirmed: false};
 
   const answers = listTaskAnswersForLesson(snapshot.id);
   const selfPassed = attempts.some(
