@@ -15,9 +15,11 @@ import {saveFlashcard} from '../../logic/FlashcardRepository';
 import {DailyReviewScreen} from '../DailyReviewScreen';
 
 const mockSpeak = jest.fn((_text: string) => Promise.resolve({ok: true}));
-jest.mock('@features/audio', () => ({
-  speak: (text: string) => mockSpeak(text),
-}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock((text: string) =>
+    mockSpeak(text),
+  ),
+);
 
 const navigation = {
   goBack: jest.fn(),

@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
+import {SpeechNotice, useSpeak} from '@features/audio';
 import {requestSync} from '@features/sync';
 
 import {AppButton} from '@ui/components/AppButton';
@@ -70,6 +70,7 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
   const [failed, setFailed] = useState(false);
   const [compared, setCompared] = useState(false);
   const [chosen, setChosen] = useState<number | null>(null);
+  const {speak: say, notice: speechNotice} = useSpeak();
   const current = queue.items[index];
   const recognition =
     current !== undefined && current.memory.stage < RECALL_FROM_STAGE;
@@ -132,10 +133,6 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
   };
 
   const total = queue.items.length;
-  const say = (text: string) => {
-    speak(text).catch(() => undefined);
-  };
-
   return (
     <AppScreen>
       <SessionHeader
@@ -151,6 +148,7 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
         total={total}
       />
       <ScrollView contentContainerStyle={themedStyles.container}>
+        <SpeechNotice notice={speechNotice} />
         {queue.missing > 0 ? (
           <AppText
             color="secondary"

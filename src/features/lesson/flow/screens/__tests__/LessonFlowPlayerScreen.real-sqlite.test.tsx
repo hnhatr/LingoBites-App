@@ -18,9 +18,11 @@ import {
 
 import {LessonFlowPlayerScreen} from '../LessonFlowPlayerScreen';
 
-jest.mock('@features/audio', () => ({
-  speak: jest.fn(() => Promise.resolve({ok: true})),
-}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock(
+    jest.fn(() => Promise.resolve({ok: true})),
+  ),
+);
 
 const mockRequestSync = jest.fn();
 jest.mock('@features/sync', () => ({requestSync: () => mockRequestSync()}));

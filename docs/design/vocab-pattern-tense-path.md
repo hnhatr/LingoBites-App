@@ -1,6 +1,7 @@
 # Thiết kế: Lộ trình Từ · Mẫu câu · Thì
 
-> Trạng thái: **💭 đề xuất, chờ duyệt**. Chưa có code.
+> Trạng thái: **P0–P5 ĐÃ CODE** (Server, admin-web, App). **P6 chưa code, P7 chưa thiết kế.** Xem bảng trạng thái ở [`vocab-pattern-tense-p2-p7-plan.md`](./vocab-pattern-tense-p2-p7-plan.md) §0. Rà lại ngày 2026-10-15.
+> Ký hiệu ✅ / 🔧 / 🆕 bên dưới là hiện trạng **lúc viết thiết kế** (2026-10-11), không cập nhật theo code.
 > Cập nhật: 2026-10-11 (bản 4: import CSV trên admin, giới hạn theo người dùng, không duyệt tay câu AI, chấm phát âm dời về giai đoạn cuối, kèm dữ liệu Oxford 3000/5000 và 25 mẫu câu).
 > Đối chiếu với [`architecture/lesson-design.md`](../architecture/lesson-design.md) và schema server
 > (`items`, `item_memory`, `situations`, `recordings`, `admin_settings`).
@@ -695,4 +696,4 @@ Ghi chú khi tách PDF:
 | Bản quyền Oxford | Cứ dùng, xử lý sau |
 | Cấp làm giàu | **Tất cả các cấp** A1 → C1, không chia đợt (thay cho thứ tự ở 9.2) |
 
-Kế hoạch triển khai P0 + P1: [`vocab-pattern-tense-p0-p1-plan.md`](./vocab-pattern-tense-p0-p1-plan.md).
+Kế hoạch triển khai P0 + P1: [`2026-10-11-vocab-pattern-tense-p0-p1.md`](../superpowers/archive/plans/2026-10-11-vocab-pattern-tense-p0-p1.md).

@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
+import {useScreenSpeak} from '@features/audio';
 
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
@@ -48,6 +48,7 @@ export function SpeakSelfCheck({
 }: SpeakSelfCheckProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
+  const speak = useScreenSpeak();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [support, setSupport] = useState<LessonSupportLevel>('none');
   const [judged, setJudged] = useState<EntryResult | null>(null);
@@ -84,7 +85,7 @@ export function SpeakSelfCheck({
               icon="volume_up"
               label={t('lessonFlow.listen_model')}
               onPress={() => {
-                speak(model).catch(() => undefined);
+                speak(model);
               }}
               testID="lesson-flow-listen-model"
             />
@@ -93,7 +94,7 @@ export function SpeakSelfCheck({
               icon="timer"
               label={t('lessonFlow.listen_slow')}
               onPress={() => {
-                speak(model, undefined, SLOW_TTS_RATE).catch(() => undefined);
+                speak(model, SLOW_TTS_RATE);
               }}
               testID="lesson-flow-listen-model-slow"
             />

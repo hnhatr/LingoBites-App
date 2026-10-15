@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import {speak} from '@features/audio';
+import {SpeakContext, SpeechNotice, useSpeak} from '@features/audio';
 import {getGamificationSnapshot} from '@features/engagement';
 
 import {AppButton} from '@ui/components/AppButton';
@@ -132,9 +132,7 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
     if (flow.step === 1 && reviewSkipped) goTo(2);
   }, [flow.step, flow.attempts.length, reviewSkipped, goTo]);
 
-  const handleSpeak = useCallback((text: string) => {
-    speak(text).catch(() => undefined);
-  }, []);
+  const {speak: handleSpeak, notice: speechNotice} = useSpeak();
 
   const finishActivity = flow.finishActivity;
   const handleFinished = useCallback(
@@ -427,6 +425,14 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
             )}
           </View>
         )}
+        {speechNotice ? (
+          <View style={themedStyles.speechNotice}>
+            <SpeechNotice
+              notice={speechNotice}
+              testID="lesson-flow-speech-notice"
+            />
+          </View>
+        ) : null}
         <ScrollView
           contentContainerStyle={themedStyles.content}
           ref={scrollRef}
@@ -434,7 +440,9 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
           style={themedStyles.scroll}
           testID="lesson-flow-screen"
         >
-          {renderBody()}
+          <SpeakContext.Provider value={handleSpeak}>
+            {renderBody()}
+          </SpeakContext.Provider>
         </ScrollView>
         {footerAction ? <FlowFooterBar action={footerAction} /> : null}
       </FlowFooterProvider>
@@ -460,6 +468,10 @@ function makeStyles(theme: AppTheme) {
     content: {
       gap: theme.spacing.lg,
       paddingBottom: theme.spacing.xl,
+      paddingHorizontal: theme.gutter,
+      paddingTop: theme.spacing.sm,
+    },
+    speechNotice: {
       paddingHorizontal: theme.gutter,
       paddingTop: theme.spacing.sm,
     },

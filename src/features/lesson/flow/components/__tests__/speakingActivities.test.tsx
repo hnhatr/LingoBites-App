@@ -17,9 +17,11 @@ import {ActivityRunner} from '../ActivityRunner';
 const mockSpeak = jest.fn((_text: string, ..._options: unknown[]) =>
   Promise.resolve({ok: true}),
 );
-jest.mock('@features/audio', () => ({
-  speak: (text: string, ...options: unknown[]) => mockSpeak(text, ...options),
-}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock(
+    (text: string, ...options: unknown[]) => mockSpeak(text, ...options),
+  ),
+);
 
 const mockRecorder = {
   startRecording: jest.fn(() =>

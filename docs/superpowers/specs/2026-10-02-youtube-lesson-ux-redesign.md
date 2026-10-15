@@ -1,7 +1,7 @@
 # Bài học YouTube: thiết kế lại UI/UX trên logic lesson mới — Design Specification
 
 **Date:** 2026-10-02
-**Status:** Design draft, chờ duyệt trước khi lập plan triển khai
+**Status:** Đã làm một phần. Rà với code ngày 2026-10-15: xem §7.1
 **Design files:** [`docs/design/youtube-lesson/`](../../design/youtube-lesson/README.md)
 **Liên quan:** LING-149 / PR #119 (squash `f295665`), LING-176 / PR #118
 
@@ -173,19 +173,41 @@ thiết kế lệch nhau, yêu cầu trong spec này là chuẩn.
 
 ## 7. Tiêu chí nghiệm thu
 
-- [ ] Từ ô YouTube ở Tạo bài và Home vào FR-01, không thấy hàng tab nguồn.
+- [x] Từ ô YouTube ở Tạo bài và Home vào FR-01, không thấy hàng tab nguồn.
 - [ ] Link không phải YouTube thì nút "Tạo bài học" bị khoá.
 - [ ] Tạo bài thành công thì tự mở bài; quá thời gian thì "Kiểm tra lại" không tạo bài trùng.
-- [ ] Lỗi hiện tiếng Việt, mã chưa biết dùng thông điệp mặc định.
-- [ ] Chạm câu ở thẻ hoặc transcript thì video tua đúng `start_ms`.
+- [x] Lỗi hiện tiếng Việt, mã chưa biết dùng thông điệp mặc định.
+- [x] Chạm câu ở thẻ hoặc transcript thì video tua đúng `start_ms`.
 - [ ] Lặp câu, lặp A–B và tốc độ hoạt động; trạng thái hiện trên nút công cụ.
 - [ ] Ẩn/hiện bản dịch và IPA áp dụng cho thẻ câu và transcript.
 - [ ] ♥ và lưu từ đồng bộ với Thư viện và ôn tập.
 - [ ] Học xong ghi `lesson_progress`; danh sách đã lưu hiện "Đã xong".
-- [ ] Ngoại tuyến vẫn đọc được câu; có bản mới thì hiện banner.
+- [x] Ngoại tuyến vẫn đọc được câu; có bản mới thì hiện banner.
 - [ ] Theme Sáng và Tối đúng token; không còn chữ tiếng Anh viết cứng trong giao diện YouTube.
 - [ ] Bài văn bản và OCR không đổi giao diện.
 - [ ] `yarn lint`, `yarn typecheck`, `yarn test` đều qua.
+
+### 7.1 Rà với code (2026-10-15)
+
+Rà bằng cách đọc code, chưa chạy app. Mục `[x]` ở trên là mục code đã đáp ứng.
+
+| Tiêu chí | Kết quả | Ghi chú |
+|---|---|---|
+| Vào FR-01 không thấy tab nguồn | ✅ | `LessonCreationScreen` trả về `YouTubeCreationView` khi `initialSource === 'youtube'` |
+| Link không phải YouTube thì khoá nút | ❌ | Nút "Tạo bài học" chỉ cần ô link không rỗng. `parseYouTubeVideoId` đã có nhưng chỉ dùng để tô thẻ link |
+| Tự mở bài; "Kiểm tra lại" không tạo trùng | 🟡 | "Kiểm tra lại" giữ `requestId` (`useLessonCreation.checkAgain`). Tạo xong vẫn phải bấm "Mở bài", chưa tự mở |
+| Lỗi tiếng Việt, có thông điệp mặc định | ✅ | `youtubeCreationError.ts`, khoá `youtube.create.error_default` |
+| Chạm câu thì tua video | ✅ | `handleSeek` gọi `youtubePlayerRef.seekTo` |
+| Lặp câu, lặp A–B, tốc độ | 🟡 | Có lặp câu (bật / tắt, chưa có 1× / 3× / 5× / ∞) và đổi tốc độ, nút tốc độ hiện mức đang dùng. **Chưa có lặp A–B** |
+| Ẩn/hiện dịch và IPA cho thẻ câu và transcript | 🟡 | Thẻ câu có cả hai. Transcript chỉ ẩn/hiện bản dịch, không có IPA |
+| ♥ và lưu từ đồng bộ | 🟡 | Lưu từ có (`SaveItemButton` trong phân tích câu). **Chưa có ♥ lưu câu** ở thẻ câu và transcript |
+| Học xong ghi `lesson_progress`, danh sách hiện "Đã xong" | ❌ | Màn học YouTube không gọi `recordLessonEvent`, chưa có màn FR-09. `VideoHub` không hiện "Đã xong" |
+| Ngoại tuyến đọc được câu, banner bản mới | ✅ | `LessonStatusBanners`; video lỗi có nút "Thử lại" |
+| Theme đúng token, không có chữ Anh viết cứng | 🟡 | Không tìm thấy mã màu hay chuỗi viết cứng trong `YouTube*.tsx`. Chưa xem trên máy ở theme Tối |
+| Bài văn bản và OCR không đổi | — | Không rà trong đợt này |
+| `yarn lint`, `typecheck`, `test` | — | Không chạy trong đợt này |
+
+Còn làm: khoá nút khi link sai, tự mở bài khi tạo xong, lặp A–B (và các mức lặp câu), IPA trong transcript, ♥ lưu câu, màn FR-09 kèm ghi `lesson_progress` và nhãn "Đã xong" ở danh sách video. Chưa có thông tin trả lời các câu hỏi ở mục 8.
 
 ## 8. Câu hỏi mở
 

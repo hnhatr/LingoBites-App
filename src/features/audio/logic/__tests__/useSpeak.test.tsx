@@ -2,11 +2,12 @@ import {jest} from '@jest/globals';
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
-const mockSpeak = jest.fn<(text: string) => Promise<unknown>>();
+const mockSpeak =
+  jest.fn<(text: string, ...options: unknown[]) => Promise<unknown>>();
 const mockStop = jest.fn(async () => ({ok: true}));
 
 jest.mock('../ttsService', () => ({
-  speak: (text: string) => mockSpeak(text),
+  speak: (text: string, ...options: unknown[]) => mockSpeak(text, ...options),
   stop: () => mockStop(),
 }));
 
@@ -61,6 +62,16 @@ describe('useSpeak', () => {
       latest.speak('ship');
     });
     expect(latest.notice).toBe('UNAVAILABLE');
+  });
+
+  it('passes a slow rate on to the speech engine', async () => {
+    mockSpeak.mockResolvedValueOnce({ok: true});
+    await mount();
+
+    await act(async () => {
+      latest.speak('ship', 0.3);
+    });
+    expect(mockSpeak).toHaveBeenCalledWith('ship', undefined, 0.3);
   });
 
   it('stops speech when the screen unmounts', async () => {

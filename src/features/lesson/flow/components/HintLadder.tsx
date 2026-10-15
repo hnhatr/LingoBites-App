@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
+import {useScreenSpeak} from '@features/audio';
 
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
@@ -41,6 +41,7 @@ export function HintLadder({
 }: HintLadderProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
+  const speak = useScreenSpeak();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [opened, setOpened] = useState(0);
   if (steps.length === 0) return null;
@@ -51,7 +52,7 @@ export function HintLadder({
     const next = opened + 1;
     setOpened(next);
     if (step.speak) {
-      speak(step.speak).catch(() => undefined);
+      speak(step.speak);
     }
     onSupportChange(supportLevelOf(steps.slice(0, next)));
   };

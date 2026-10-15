@@ -2,7 +2,7 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
+import {useScreenSpeak} from '@features/audio';
 
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -59,6 +59,7 @@ function QuestionCard({
 }) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
+  const speak = useScreenSpeak();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View style={styles.card}>
@@ -75,7 +76,7 @@ function QuestionCard({
           iconOnly
           label={t('lessonFlow.listen_line')}
           onPress={() => {
-            speak(promptEn).catch(() => undefined);
+            speak(promptEn);
           }}
           testID="lesson-flow-prompt-listen"
         />
