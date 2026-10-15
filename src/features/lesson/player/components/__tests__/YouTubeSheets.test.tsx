@@ -261,6 +261,46 @@ describe('YouTube sheets (AC-006, AC-008)', () => {
     expect(inactiveRow.props.accessibilityState?.selected).toBe(false);
   });
 
+  it('shows IPA under each transcript line only when IPA is on', async () => {
+    const sentences = snapshotWithThreeSentences().sentences;
+    const render = (showIpa: boolean) => (
+      <FeatureFlagProvider
+        releaseConfig={makeTestReleaseConfig(THEME_UI_FLAGS)}
+      >
+        <AppThemeProvider>
+          <YouTubeTranscriptSheet
+            activeIndex={0}
+            currentIndex={0}
+            onClose={jest.fn()}
+            onSelectSentence={jest.fn()}
+            sentences={sentences}
+            showIpa={showIpa}
+            showTranslation
+            videoPlaying
+            visible
+          />
+        </AppThemeProvider>
+      </FeatureFlagProvider>
+    );
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await act(async () => {
+      tree = ReactTestRenderer.create(render(false));
+    });
+    expect(
+      tree.root.findAll(
+        node => node.props.testID === `youtube-transcript-ipa-${S1}`,
+      ),
+    ).toHaveLength(0);
+
+    await act(async () => {
+      tree.update(render(true));
+    });
+    const ipa = tree.root
+      .findAll(node => node.props.testID === `youtube-transcript-ipa-${S1}`)
+      .find(node => typeof node.props.children === 'string');
+    expect(ipa?.props.children).toBe(sentences[0].ipa);
+  });
+
   it('highlights the study card row when video is paused (AC-002 S2)', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
     const sentences = snapshotWithThreeSentences().sentences;

@@ -546,6 +546,7 @@ export function YouTubeLessonStudy({
         onClose={handleCloseSheet}
         onSelectSentence={handleTranscriptSelect}
         sentences={orderedSentences}
+        showIpa={showIpa}
         showTranslation={showTranslation}
         videoPlaying={videoPlaying}
         visible={openSheet === 'transcript'}

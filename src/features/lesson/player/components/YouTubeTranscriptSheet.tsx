@@ -16,6 +16,7 @@ import {getStickerEdge} from '@ui/theme/hardShadow';
 import type {LessonSentence} from '@core/schemas/lesson';
 
 import {formatCueLabel} from '../logic/canonicalYouTubeCues';
+import {normalizeIpa} from '../logic/sentenceIpa';
 import {YouTubeSheet} from './YouTubeSheet';
 
 export type YouTubeTranscriptSheetProps = {
@@ -26,6 +27,8 @@ export type YouTubeTranscriptSheetProps = {
   /** When false, highlight follows the study card (AC-002 S2). */
   videoPlaying: boolean;
   showTranslation: boolean;
+  /** The study screen's IPA toggle also shows IPA under each line. */
+  showIpa?: boolean;
   onClose: () => void;
   onSelectSentence: (index: number, startMs: number | null) => void;
 };
@@ -37,6 +40,7 @@ export function YouTubeTranscriptSheet({
   currentIndex,
   videoPlaying,
   showTranslation,
+  showIpa = false,
   onClose,
   onSelectSentence,
 }: YouTubeTranscriptSheetProps) {
@@ -94,6 +98,15 @@ export function YouTubeTranscriptSheet({
             <AppText style={styles.en} variant="bodyLg">
               {item.text_en}
             </AppText>
+            {showIpa && item.ipa ? (
+              <AppText
+                color="muted"
+                testID={`youtube-transcript-ipa-${item.id}`}
+                variant="body"
+              >
+                {normalizeIpa(item.ipa)}
+              </AppText>
+            ) : null}
             {showTranslation ? (
               <AppText color="secondary" variant="body">
                 {item.text_vi}
@@ -103,7 +116,7 @@ export function YouTubeTranscriptSheet({
         </Pressable>
       );
     },
-    [highlightIndex, onSelectSentence, showTranslation, styles],
+    [highlightIndex, onSelectSentence, showIpa, showTranslation, styles],
   );
 
   const listHeader =
