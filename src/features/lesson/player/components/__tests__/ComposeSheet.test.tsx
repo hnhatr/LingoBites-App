@@ -233,7 +233,7 @@ describe('ComposeSheet (S4.3)', () => {
     const {tree} = renderSheet();
     await flush();
     expect(textOf(tree, 'compose-quota')).toBe(
-      'Hôm nay bạn đã tạo đủ bài 6 bước. Mai thử lại nhé.',
+      'Hôm nay bạn đã tạo đủ bài học theo lộ trình. Mai thử lại nhé.',
     );
     press(tree, `compose-sentence-${S1}`);
     press(tree, `compose-sentence-${S2}`);
