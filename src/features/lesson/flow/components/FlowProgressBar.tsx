@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {getStickerFace, isStickerTheme} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {FLOW_STEPS, type FlowStep} from '../logic/practiceCompletion';
 
@@ -17,8 +17,8 @@ export type FlowProgressBarProps = {
 };
 
 /**
- * The six steps as one segmented bar: done steps filled, the open step
- * highlighted. Every segment opens its step, like the old step chips.
+ * The six steps as one segmented bar: done steps mint, the open step coral,
+ * skipped ones faded. Every segment opens its step, like the old step chips.
  */
 export function FlowProgressBar({
   step,
@@ -75,14 +75,12 @@ export function FlowProgressBar({
 }
 
 function makeStyles(theme: AppTheme) {
-  const sticker = isStickerTheme(theme);
   return StyleSheet.create({
     current: {
-      backgroundColor: theme.colors.accent,
-      ...getStickerFace(theme, 0),
+      backgroundColor: HERO_PALETTE.coral,
     },
     done: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.colors.accent,
     },
     hit: {
       flex: 1,
@@ -96,13 +94,14 @@ function makeStyles(theme: AppTheme) {
     },
     segment: {
       borderRadius: theme.radius.pill,
-      height: sticker ? 12 : 10,
+      height: 10,
     },
     skipped: {
-      backgroundColor: theme.colors.accentSoft,
+      backgroundColor: theme.colors.outlineVariant,
+      opacity: 0.5,
     },
     upcoming: {
-      backgroundColor: theme.colors.surfaceHigh,
+      backgroundColor: theme.colors.outlineVariant,
     },
   });
 }

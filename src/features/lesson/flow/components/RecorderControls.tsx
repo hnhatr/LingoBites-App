@@ -3,21 +3,23 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {getStickerFace} from '@ui/theme/hardShadow';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {
   type SelfCheckRecorder,
   useSelfCheckRecorder,
 } from '../logic/useSelfCheckRecorder';
+import {SoftButton} from './SoftButton';
 
 /**
  * Record yourself and play it back (PR 10 G4). The take stays on the device
  * and is deleted when these controls go away; without a recorder they say
- * so and the learner carries on. Redesign: one large round mic button, with
- * "Nghe lại" next to it once there is a take.
+ * so and the learner carries on. A large coral mic; once there is a take it
+ * gives way to "Nghe lại" and "Ghi lại".
  */
 export function RecorderControls({
   recorder: owned,
@@ -39,74 +41,68 @@ export function RecorderControls({
     );
   }
   const recording = recorder.state === 'recording';
-  const recorded = recorder.state === 'recorded';
+  if (recorder.state === 'recorded') {
+    return (
+      <View style={themedStyles.takeRow}>
+        <SoftButton
+          accessibilityHint={t('lessonFlow.play_recording_hint')}
+          icon="play_arrow"
+          label={t('lessonFlow.play_recording')}
+          onPress={recorder.play}
+          testID="lesson-flow-play-recording"
+        />
+        <SoftButton
+          accessibilityHint={t('lessonFlow.record_hint')}
+          icon="mic"
+          label={t('lessonFlow.record_again')}
+          onPress={recorder.start}
+          testID="lesson-flow-record"
+        />
+      </View>
+    );
+  }
   const title = recording
     ? t('lessonFlow.stop_recording')
-    : recorded
-      ? t('lessonFlow.record_again')
-      : t('lessonFlow.record');
+    : t('lessonFlow.record');
   return (
     <View style={themedStyles.container}>
-      <View style={themedStyles.row}>
-        <View style={themedStyles.side} />
-        <View style={[themedStyles.halo, recording && themedStyles.haloLive]}>
-          <Pressable
-            accessibilityHint={
-              recording
-                ? t('lessonFlow.stop_recording_hint')
-                : t('lessonFlow.record_hint')
-            }
-            accessibilityLabel={title}
-            accessibilityRole="button"
-            onPress={recording ? recorder.stop : recorder.start}
-            style={({pressed}) => [
-              themedStyles.mic,
-              recording && themedStyles.micLive,
-              pressed && themedStyles.pressed,
-            ]}
-            testID={
-              recording ? 'lesson-flow-stop-recording' : 'lesson-flow-record'
-            }
-          >
-            <MaterialIcon
-              color={
-                recording ? theme.colors.text.inverse : theme.colors.accentInk
-              }
-              name={recording ? 'pause' : 'mic'}
-              size={38}
-            />
-          </Pressable>
-        </View>
-        <View style={themedStyles.side}>
-          {recorded ? (
-            <IconButton
-              accessibilityHint={t('lessonFlow.play_recording_hint')}
-              accessibilityLabel={t('lessonFlow.play_recording')}
-              icon="play_arrow"
-              onPress={recorder.play}
-              size={52}
-              testID="lesson-flow-play-recording"
-              tone="ghost"
-            />
-          ) : null}
-        </View>
+      <View style={[themedStyles.halo, recording && themedStyles.haloLive]}>
+        <Pressable
+          accessibilityHint={
+            recording
+              ? t('lessonFlow.stop_recording_hint')
+              : t('lessonFlow.record_hint')
+          }
+          accessibilityLabel={title}
+          accessibilityRole="button"
+          onPress={recording ? recorder.stop : recorder.start}
+          style={({pressed}) => [
+            themedStyles.mic,
+            recording && themedStyles.micLive,
+            pressed && themedStyles.pressed,
+          ]}
+          testID={
+            recording ? 'lesson-flow-stop-recording' : 'lesson-flow-record'
+          }
+        >
+          {recording ? (
+            <View style={themedStyles.stop} />
+          ) : (
+            <MaterialIcon color={HERO_PALETTE.white} name="mic" size={36} />
+          )}
+        </Pressable>
       </View>
-      <AppText
-        color={recording ? 'primary' : 'secondary'}
-        style={themedStyles.caption}
-        variant="label"
-      >
-        {recording ? t('lessonFlow.recording_now') : title}
+      <AppText color="secondary" style={themedStyles.caption} variant="label">
+        {recording ? t('lessonFlow.recording_now') : t('lessonFlow.record_tap')}
       </AppText>
     </View>
   );
 }
 
 const MIC_SIZE = 84;
-const HALO_SIZE = 112;
+const HALO_SIZE = 104;
 
 function makeStyles(theme: AppTheme) {
-  const {colors} = theme;
   return StyleSheet.create({
     caption: {
       textAlign: 'center',
@@ -118,38 +114,42 @@ function makeStyles(theme: AppTheme) {
     },
     halo: {
       alignItems: 'center',
-      backgroundColor: colors.accentSoft,
+      backgroundColor: HERO_PALETTE.coralRing,
       borderRadius: HALO_SIZE / 2,
       height: HALO_SIZE,
       justifyContent: 'center',
       width: HALO_SIZE,
     },
     haloLive: {
-      backgroundColor: colors.secondarySoft,
+      backgroundColor: withAlpha(HERO_PALETTE.coral, 0.4),
     },
     mic: {
       alignItems: 'center',
-      backgroundColor: colors.accent,
+      backgroundColor: HERO_PALETTE.coral,
       borderRadius: MIC_SIZE / 2,
       height: MIC_SIZE,
       justifyContent: 'center',
       width: MIC_SIZE,
-      ...getStickerFace(theme, 5),
+      ...getStickerEdge(5, HERO_PALETTE.coralShelf),
     },
     micLive: {
-      backgroundColor: colors.secondaryContainer,
+      backgroundColor: HERO_PALETTE.coralShelf,
     },
     pressed: {
       opacity: theme.states.pressedOpacity,
     },
-    row: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: theme.spacing.md,
+    stop: {
+      backgroundColor: HERO_PALETTE.white,
+      borderRadius: 6,
+      height: 24,
+      width: 24,
     },
-    side: {
-      alignItems: 'center',
-      width: 56,
+    takeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.sm,
+      justifyContent: 'center',
+      paddingVertical: theme.spacing.sm,
     },
   });
 }

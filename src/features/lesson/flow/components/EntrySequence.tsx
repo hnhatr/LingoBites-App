@@ -4,6 +4,7 @@ import {StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import type {LessonSupportLevel} from '@core/schemas/sync';
 
@@ -79,7 +80,20 @@ export function EntrySequence({
               },
       }
     : null;
-  const hosted = useFlowFooter(next, 2);
+  // Until this entry is done, "Câu tiếp" stays greyed out with a note.
+  const hosted = useFlowFooter(
+    next ?? {
+      title: last
+        ? t('lessonFlow.finish_activity')
+        : t('lessonFlow.next_entry'),
+      hint: t('lessonFlow.entry_locked_note'),
+      testID: 'lesson-flow-entry-next',
+      onPress: () => undefined,
+      disabled: true,
+      note: t('lessonFlow.entry_locked_note'),
+    },
+    2,
+  );
 
   return (
     <View style={themedStyles.container}>
@@ -91,24 +105,28 @@ export function EntrySequence({
         >
           {t('lessonFlow.entry_count', {current: index + 1, total: count})}
         </AppText>
-        {count > 1 ? (
-          <View style={themedStyles.dots}>
-            {Array.from({length: count}, (_, position) => (
-              <View
-                key={position}
-                style={[
-                  themedStyles.dot,
-                  position < index || (position === index && reported)
-                    ? themedStyles.dotDone
-                    : position === index
-                      ? themedStyles.dotCurrent
-                      : null,
-                ]}
-              />
-            ))}
-          </View>
-        ) : null}
       </View>
+      {count > 1 ? (
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={themedStyles.strip}
+        >
+          {Array.from({length: count}, (_, position) => (
+            <View
+              key={position}
+              style={[
+                themedStyles.segment,
+                position < index || (position === index && reported)
+                  ? themedStyles.segmentDone
+                  : position === index
+                    ? themedStyles.segmentCurrent
+                    : null,
+              ]}
+            />
+          ))}
+        </View>
+      ) : null}
       <View key={index}>{renderEntry(index, report)}</View>
       {next && !hosted ? <FlowFooterBar action={next} /> : null}
     </View>
@@ -120,27 +138,27 @@ function makeStyles(theme: AppTheme) {
     container: {
       gap: theme.spacing.md,
     },
-    dot: {
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: theme.radius.pill,
-      height: 8,
-      width: 8,
-    },
-    dotCurrent: {
-      backgroundColor: theme.colors.accent,
-      width: 20,
-    },
-    dotDone: {
-      backgroundColor: theme.colors.primary,
-    },
-    dots: {
-      flexDirection: 'row',
-      gap: theme.spacing.xs,
-    },
     header: {
       alignItems: 'center',
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
+      marginBottom: -theme.spacing.sm,
+    },
+    segment: {
+      backgroundColor: theme.colors.outlineVariant,
+      borderRadius: 4,
+      flex: 1,
+      height: 8,
+    },
+    segmentCurrent: {
+      backgroundColor: HERO_PALETTE.coral,
+    },
+    segmentDone: {
+      backgroundColor: theme.colors.accent,
+    },
+    strip: {
+      flexDirection: 'row',
+      gap: 4,
     },
   });
 }

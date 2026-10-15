@@ -1,0 +1,68 @@
+import React, {useMemo} from 'react';
+import {Pressable, StyleSheet} from 'react-native';
+
+import {AppText} from '@ui/components/AppText';
+import {withAlpha} from '@ui/components/layout';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
+import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+
+/** A light listen button with a soft edge, quieter than the content. */
+export function SoftButton({
+  label,
+  icon,
+  onPress,
+  accessibilityHint,
+  testID,
+}: {
+  label: string;
+  icon: HandoffIconName;
+  onPress: () => void;
+  accessibilityHint: string;
+  testID: string;
+}) {
+  const {theme} = useAppTheme();
+  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  return (
+    <Pressable
+      accessibilityHint={accessibilityHint}
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({pressed}) => [
+        themedStyles.soft,
+        pressed ? themedStyles.softPressed : null,
+      ]}
+      testID={testID}
+    >
+      <MaterialIcon color={theme.colors.primary} name={icon} size={17} />
+      <AppText style={themedStyles.softText}>{label}</AppText>
+    </Pressable>
+  );
+}
+
+function makeStyles(theme: AppTheme) {
+  const edge = withAlpha(theme.colors.primary, 0.22);
+  return StyleSheet.create({
+    soft: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 14,
+      flexDirection: 'row',
+      gap: 6,
+      minHeight: 40,
+      paddingHorizontal: 13,
+      ...getStickerEdge(3, edge),
+    },
+    softPressed: {
+      transform: [{translateY: 2}],
+      ...getStickerEdge(1, edge),
+    },
+    softText: {
+      color: theme.colors.primary,
+      fontSize: 13.5,
+      fontWeight: '700',
+    },
+  });
+}

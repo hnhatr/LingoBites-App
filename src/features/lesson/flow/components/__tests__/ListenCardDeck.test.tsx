@@ -5,6 +5,7 @@ import {speak} from '@features/audio';
 import {itemCardIds} from '@core/schemas/lesson';
 
 import {
+  byTestId,
   has,
   press,
   renderWithTheme,
@@ -38,7 +39,9 @@ describe('ListenCardDeck (step 2)', () => {
     expect(ids.length).toBeGreaterThan(1);
     expect(has(tree, `lesson-flow-card-${ids[0]}`)).toBe(true);
     expect(has(tree, `lesson-flow-card-${ids[1]}`)).toBe(false);
-    expect(textOf(tree, 'lesson-flow-card-count')).toBe(`1 / ${ids.length}`);
+    expect(textOf(tree, 'lesson-flow-card-progress-label')).toBe(
+      `1/${ids.length}`,
+    );
 
     press(tree, 'lesson-flow-card-next');
     expect(has(tree, `lesson-flow-card-${ids[1]}`)).toBe(true);
@@ -46,15 +49,37 @@ describe('ListenCardDeck (step 2)', () => {
     expect(has(tree, `lesson-flow-card-${ids[0]}`)).toBe(true);
   });
 
-  it('reveals the meaning when the card is tapped', () => {
+  it('flips to the meaning when the card is tapped', () => {
     const tree = renderWithTheme(
       <ListenCardDeck block={block} items={items} />,
     );
-    expect(has(tree, 'lesson-flow-card-meaning')).toBe(false);
-    press(tree, 'lesson-flow-card-reveal');
-    expect(textOf(tree, 'lesson-flow-card-meaning')).toBe(
+    const card = `lesson-flow-card-${ids[0]}`;
+    const flip = () =>
+      byTestId(tree, `${card}-flip`).find(
+        node => typeof node.props.onPress === 'function',
+      )!;
+    expect(flip().props.accessibilityLabel).not.toContain(
       items.get(ids[0]!)!.meaning_vi,
     );
+    press(tree, `${card}-flip`);
+    expect(flip().props.accessibilityLabel).toContain(
+      items.get(ids[0]!)!.meaning_vi,
+    );
+    expect(textOf(tree, `${card}-meaning`)).toBe(
+      items.get(ids[0]!)!.meaning_vi,
+    );
+  });
+
+  it('ends the deck with "Sang phần luyện"', () => {
+    const onDone = jest.fn();
+    const tree = renderWithTheme(
+      <ListenCardDeck block={block} items={items} onDone={onDone} />,
+    );
+    for (let i = 1; i < ids.length; i += 1)
+      press(tree, 'lesson-flow-card-next');
+    expect(has(tree, 'lesson-flow-card-next')).toBe(false);
+    press(tree, 'lesson-flow-card-done');
+    expect(onDone).toHaveBeenCalledTimes(1);
   });
 
   it('speaks a word at normal and slow speed', () => {

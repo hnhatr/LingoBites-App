@@ -19,6 +19,8 @@ type Props = {
   onPrevious: () => void;
   onNext: () => void;
   style?: StyleProp<ViewStyle>;
+  /** The sideways offset, when the parent animates other cards with it. */
+  drag?: Animated.Value;
   testID?: string;
 };
 
@@ -36,11 +38,13 @@ export function SwipeCard({
   onPrevious,
   onNext,
   style,
+  drag,
   testID,
 }: Props) {
   const {width} = useWindowDimensions();
   const reduceMotion = useReducedMotion();
-  const x = useRef(new Animated.Value(0)).current;
+  const own = useRef(new Animated.Value(0)).current;
+  const x = drag ?? own;
 
   // The responder is created once; read the latest values through a ref.
   const latest = useRef({canPrevious, canNext, onPrevious, onNext, width});

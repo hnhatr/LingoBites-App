@@ -4,6 +4,7 @@ import {StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonBlock, LessonSnapshot} from '@core/schemas/lesson';
@@ -14,6 +15,7 @@ import type {
 import type {LessonActivityAttemptRow} from '@core/sync/activityAttempts';
 
 import {CanonicalBlockView} from '../../player/components/CanonicalBlockView';
+import {studyCardStyle} from '../../player/components/StudyControls';
 import {flowActivity, type FlowItems, flowTask} from '../logic/flowContent';
 import {isIndependentBlock} from '../logic/independent';
 import {isSpeakingActivity} from '../logic/noSpeaking';
@@ -98,9 +100,21 @@ export function StepView({
 
   if (blocks.length === 0) {
     return (
-      <AppText color="secondary" testID="lesson-flow-step-empty">
-        {t('lessonFlow.step_empty')}
-      </AppText>
+      <View style={themedStyles.empty} testID="lesson-flow-step-empty">
+        <View style={themedStyles.emptyIcon}>
+          <MaterialIcon
+            color={theme.colors.onTertiaryContainer}
+            name="auto_awesome"
+            size={30}
+          />
+        </View>
+        <AppText style={themedStyles.emptyTitle} variant="h3">
+          {t('lessonFlow.step_empty_title')}
+        </AppText>
+        <AppText color="secondary" style={themedStyles.center}>
+          {t('lessonFlow.step_empty')}
+        </AppText>
+      </View>
     );
   }
   return (
@@ -151,7 +165,14 @@ export function StepView({
           );
         }
         if (!activity && step === 2 && block.type === 'item_cards') {
-          return <ListenCardDeck block={block} items={items} key={block.id} />;
+          return (
+            <ListenCardDeck
+              block={block}
+              items={items}
+              key={block.id}
+              onDone={onOpenStep ? () => onOpenStep(step + 1) : undefined}
+            />
+          );
         }
         return activity ? (
           <ActivityRunner
@@ -182,8 +203,29 @@ export function StepView({
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
+    center: {
+      textAlign: 'center',
+    },
     container: {
       gap: theme.spacing.lg,
+    },
+    empty: {
+      ...studyCardStyle(theme),
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.xl,
+    },
+    emptyIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 22,
+      height: 64,
+      justifyContent: 'center',
+      width: 64,
+    },
+    emptyTitle: {
+      textAlign: 'center',
     },
     tabs: {
       flexDirection: 'row',

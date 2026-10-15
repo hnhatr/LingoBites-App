@@ -8,11 +8,12 @@ import {
 } from '@features/speaking';
 
 import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
+import {withAlpha} from '@ui/components/layout';
 import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {solidOver} from '@ui/theme/colorUtils';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {createRequestId} from '@core/api/requestId';
 import type {RolePlayContent} from '@core/schemas/activityContent';
@@ -31,6 +32,10 @@ import {
   subscribeTaskAnswers,
 } from '@core/sync/taskAnswers';
 
+import {
+  StudyLabel,
+  StudyNavButton,
+} from '../../player/components/StudyControls';
 import type {FlowActivity, FlowItems} from '../logic/flowContent';
 import {
   criteriaOutcome,
@@ -52,6 +57,7 @@ import {PartnerBubble, TurnBubble} from './ChatBubble';
 import {CriteriaChecklist} from './CriteriaChecklist';
 import {EvaluationConsentPrompt} from './EvaluationConsentPrompt';
 import {EvaluationFeedback} from './EvaluationFeedback';
+import {type FlowFooterAction, useFlowFooter} from './FlowFooter';
 import {RecorderControls} from './RecorderControls';
 
 /** Decision A6: a step-5 spoken answer lasts at most 45 seconds. */
@@ -321,31 +327,82 @@ export function IndependentTaskView({
         ? recorder.state === 'recorded'
         : true;
 
-  return (
-    <AppCard testID={`lesson-flow-independent-${block.id}`}>
-      <View style={themedStyles.body}>
-        <View style={themedStyles.scenario}>
-          <Chip label={t('lessonFlow.independent_label')} tone="coralSoft" />
-          <AppText variant="h3">{task.title_vi || activity.titleVi}</AppText>
-          {situation ? (
-            <View style={themedStyles.body} testID="lesson-flow-situation">
-              <AppText>
-                {t('lessonFlow.situation_line', {
-                  speaker: situation.speaker,
-                  listener: situation.listener,
-                  place: situation.place,
-                })}
-              </AppText>
-              <AppText variant="label">
-                {t('lessonFlow.situation_purpose', {
-                  purpose: situation.purpose,
-                })}
-              </AppText>
-            </View>
-          ) : null}
-        </View>
-        <AppText testID="lesson-flow-task-prompt">{task.prompt_vi}</AppText>
+  // The answer's main button sits in the player's bottom bar.
+  const mainAction: FlowFooterAction | null =
+    phase === 'answer' && grading !== 'ask'
+      ? graded
+        ? {
+            title: t('lessonFlow.evaluation_send'),
+            hint: t('lessonFlow.evaluation_send_hint'),
+            testID: 'lesson-flow-evaluation-send',
+            onPress: send,
+            disabled: !canFinishAnswer,
+          }
+        : {
+            title: t('lessonFlow.independent_done'),
+            hint: t('lessonFlow.independent_done_hint'),
+            testID: 'lesson-flow-independent-done',
+            onPress: () => setPhase('judge'),
+            disabled: !canFinishAnswer,
+          }
+      : phase === 'judge'
+        ? {
+            title: t('lessonFlow.criteria_save'),
+            hint: t('lessonFlow.criteria_save_hint'),
+            testID: 'lesson-flow-criteria-save',
+            onPress: recordSelf,
+          }
+        : null;
+  const hosted = useFlowFooter(mainAction, 2);
+  const inlineAction =
+    mainAction && !hosted ? (
+      <StudyNavButton
+        accessibilityHint={mainAction.hint}
+        disabled={mainAction.disabled}
+        label={mainAction.title}
+        onPress={mainAction.onPress}
+        testID={mainAction.testID}
+        tone="coral"
+      />
+    ) : null;
 
+  return (
+    <View
+      style={themedStyles.page}
+      testID={`lesson-flow-independent-${block.id}`}
+    >
+      <AppText variant="h2">{task.title_vi || activity.titleVi}</AppText>
+      <View style={themedStyles.scenario}>
+        <StudyLabel color={theme.colors.primary}>
+          {t('lessonFlow.situation_label')}
+        </StudyLabel>
+        {situation ? (
+          <View style={themedStyles.body} testID="lesson-flow-situation">
+            <View style={themedStyles.roles}>
+              <RoleTile
+                label={t('lessonFlow.situation_you')}
+                me
+                name={situation.speaker}
+              />
+              <RoleTile
+                label={t('lessonFlow.situation_to')}
+                name={situation.listener}
+              />
+            </View>
+            <AppText>
+              {t('lessonFlow.situation_place', {place: situation.place})}
+            </AppText>
+            <AppText>
+              <AppText style={themedStyles.bold}>
+                {t('lessonFlow.situation_purpose_label')}
+              </AppText>
+              {` ${situation.purpose}`}
+            </AppText>
+          </View>
+        ) : null}
+        <AppText testID="lesson-flow-task-prompt">{task.prompt_vi}</AppText>
+      </View>
+      <View style={themedStyles.body}>
         {phase === 'answer' && grading === 'ask' ? (
           <EvaluationConsentPrompt onAnswer={answerConsent} />
         ) : null}
@@ -394,42 +451,18 @@ export function IndependentTaskView({
             ) : (
               <RecorderControls recorder={recorder} />
             )}
-            {graded ? (
-              <AppButton
-                accessibilityHint={t('lessonFlow.evaluation_send_hint')}
-                disabled={!canFinishAnswer}
-                onPress={send}
-                testID="lesson-flow-evaluation-send"
-                title={t('lessonFlow.evaluation_send')}
-              />
-            ) : (
-              <AppButton
-                accessibilityHint={t('lessonFlow.independent_done_hint')}
-                disabled={!canFinishAnswer}
-                onPress={() => setPhase('judge')}
-                testID="lesson-flow-independent-done"
-                title={t('lessonFlow.independent_done')}
-              />
-            )}
+            {inlineAction}
           </>
         ) : null}
 
         {phase === 'judge' ? (
           <>
-            <AppText variant="label">
-              {t('lessonFlow.criteria_question')}
-            </AppText>
             <CriteriaChecklist
               criteria={task.criteria}
               onToggle={toggle}
               ticked={ticked}
             />
-            <AppButton
-              accessibilityHint={t('lessonFlow.criteria_save_hint')}
-              onPress={recordSelf}
-              testID="lesson-flow-criteria-save"
-              title={t('lessonFlow.criteria_save')}
-            />
+            {inlineAction}
           </>
         ) : null}
 
@@ -504,21 +537,107 @@ export function IndependentTaskView({
           </View>
         ) : null}
       </View>
-    </AppCard>
+    </View>
+  );
+}
+
+/** "Bạn là / Nói với" and who, on a white tile. */
+function RoleTile({
+  label,
+  name,
+  me = false,
+}: {
+  label: string;
+  name: string;
+  me?: boolean;
+}) {
+  const {theme} = useAppTheme();
+  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  return (
+    <View style={themedStyles.role}>
+      <View
+        style={[
+          themedStyles.roleBadge,
+          me ? themedStyles.roleMe : themedStyles.roleOther,
+        ]}
+      >
+        <AppText
+          style={[
+            themedStyles.roleBadgeText,
+            me ? themedStyles.roleMeText : null,
+          ]}
+        >
+          {name.charAt(0).toUpperCase()}
+        </AppText>
+      </View>
+      <View style={themedStyles.flex}>
+        <AppText color="muted" variant="caption">
+          {label}
+        </AppText>
+        <AppText numberOfLines={2} style={themedStyles.bold}>
+          {name}
+        </AppText>
+      </View>
+    </View>
   );
 }
 
 function makeStyles(theme: AppTheme) {
+  const {colors} = theme;
   return StyleSheet.create({
     body: {
       gap: theme.spacing.sm,
     },
+    bold: {
+      fontWeight: '700',
+    },
+    flex: {
+      flex: 1,
+    },
+    page: {
+      gap: theme.spacing.md,
+    },
+    role: {
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      flex: 1,
+      flexDirection: 'row',
+      gap: 8,
+      padding: 6,
+      paddingRight: 10,
+    },
+    roleBadge: {
+      alignItems: 'center',
+      borderRadius: 10,
+      height: 30,
+      justifyContent: 'center',
+      width: 30,
+    },
+    roleBadgeText: {
+      color: HERO_PALETTE.skyInk,
+      fontWeight: '800',
+    },
+    roleMe: {
+      backgroundColor: HERO_PALETTE.coral,
+    },
+    roleMeText: {
+      color: HERO_PALETTE.white,
+    },
+    roleOther: {
+      backgroundColor: HERO_PALETTE.skySoft,
+    },
+    roles: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
     scenario: {
-      alignItems: 'flex-start',
-      backgroundColor: theme.colors.secondarySoft,
-      borderRadius: theme.radius.lg,
-      gap: theme.spacing.xs,
-      padding: theme.spacing.md,
+      backgroundColor: solidOver(colors.accentSoft, colors.surface),
+      borderColor: withAlpha(colors.accent, 0.45),
+      borderRadius: 20,
+      borderWidth: 1.5,
+      gap: theme.spacing.sm,
+      padding: 14,
     },
   });
 }

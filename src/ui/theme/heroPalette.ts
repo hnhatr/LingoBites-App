@@ -23,4 +23,8 @@ export const HERO_PALETTE = {
   sun: '#ffd166',
   sunShelf: '#e0a92e',
   ghostShelf: 'rgba(0,74,65,0.25)',
+  /** Light sky chips, e.g. the lesson player's "Loại một phương án sai". */
+  skySoft: '#e3f4ff',
+  skyInk: '#14507a',
+  skyShelf: '#bfe0f5',
 } as const;
