@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1, S2 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -68,7 +68,7 @@ Tất cả là API **mới**, chỉ thêm, không đổi API cũ. App cũ không
 ### 3.3 F8: tra từ trong bài tự tạo
 | Method | Path | Ghi chú |
 |---|---|---|
-| POST | `/v1/items/lookup` `{words: [{word, pos}] ≤ 30}` | Với mỗi từ: khớp `items.text` (không phân biệt hoa thường) → nếu không có, đưa về dạng gốc (động từ qua `inflect`, danh từ số nhiều `-s / -es / -ies`) rồi khớp lại. Ưu tiên item cùng loại từ. Chỉ item `published`, loại `word / phrase`. Trả `{word, matches: [{code, cefr_level, meaning_vi, part_of_speech}] ≤ 3}` |
+| POST | `/v1/items/lookup` `{words: [{word, pos?}] 1–30}` | Với mỗi từ (bỏ hoa thường, dấu câu ở đầu/cuối, `'s`): đoán các dạng gốc (bỏ `-s / -es / -ies / -ed / -ied / -ing`, phụ âm đôi, bảng động từ bất quy tắc, danh từ số nhiều bất quy tắc), rồi chỉ nhận item khi **chính dạng của item** cho lại đúng từ đó: viết y hệt, động từ qua `formsOf`, danh từ qua `pluralOf`. Cụm từ: biến đổi ở từ đầu (`looked after` → `look after`). Loại từ của Oxford (`n., v.`) và của AI (`noun`, `phrasal verb`) được quy về cùng nhóm; cùng nhóm xếp trước, rồi viết y hệt xếp trước. Chỉ item `published`, loại `word / phrase`. Trả `{word, matches: [{code, kind, text, cefr_level, meaning_vi, part_of_speech}] ≤ 3}` |
 
 Tra lúc đọc (không lưu vào bản phân tích), nên dùng được cho cả các bài đã tạo trước đây. Từ nhiều nghĩa (`bank-money` / `bank-river`) trả nhiều kết quả; App cho người học chọn.
 
@@ -89,8 +89,8 @@ Tra lúc đọc (không lưu vào bản phân tích), nên dùng được cho c�
 | File | Việc |
 |---|---|
 | `src/modules/library/` 🆕 (`controller/libraryRoutes.ts`, `service/libraryService.ts`) ✅ S1 | 3.1, 3.2. Dùng lại `WordPackItemSchema` (export từ `wordPackRoutes.ts`) |
-| `src/modules/items/service/itemLookup.ts` 🆕, `controller/itemLookupRoutes.ts` 🆕 | 3.3 |
-| `src/modules/grammar/inflect.ts` 🔧 | Thêm hàm đưa danh từ số nhiều về số ít (`singularOf`) |
+| `src/modules/items/service/itemLookup.ts` 🆕, `controller/itemLookupRoutes.ts` 🆕 ✅ S2 | 3.3 |
+| `src/modules/grammar/inflect.ts` 🔧 ✅ S2 | Thêm `pluralOf` (số nhiều của danh từ, kèm bảng bất quy tắc); việc đoán dạng gốc nằm trong `itemLookup.ts` |
 | `src/modules/curriculum/outcomes/service/vocabProgress.ts` 🆕 + route trong `outcomes/controller` | 3.4 |
 | `src/modules/curriculum/tasks/service/summativeChecklist.ts` 🆕 + route trong `tasks/controller` | 3.5 |
 | `src/app/server.ts` 🔧 | Đăng ký route |
@@ -185,7 +185,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 ## 6. Test
 
 **Server**
-- Unit: tra từ (động từ bất quy tắc, số nhiều, từ nhiều nghĩa, loại từ), `singularOf`, checklist (forms, fixed parts), coverage (thì có `confidence` thấp bị bỏ qua), đề xuất unit (không trùng từ giữa các unit, thiếu từ, thứ tự thì).
+- Unit: tra từ (động từ bất quy tắc, số nhiều, từ nhiều nghĩa, loại từ), `pluralOf`, checklist (forms, fixed parts), coverage (thì có `confidence` thấp bị bỏ qua), đề xuất unit (không trùng từ giữa các unit, thiếu từ, thứ tự thì).
 - DB: `/v1/items/learn` (chỉ `published`, item đã có lịch giữ nguyên, chặn `grammar` với App cũ), `/v1/me/vocab-progress`, tạo unit trong 1 transaction (lỗi giữa chừng thì không còn gì), migration 033 lên / xuống.
 - admin-web: `UnitBuilderPage` (đề xuất, sửa, tạo), nút ở `CurriculumPage`.
 
@@ -202,7 +202,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | # | Repo | Nội dung | Phát hành App? |
 |---|---|---|---|
 | S1 ✅ | Server | `feat(library): pattern and tense lists, learn single items` (3.1, 3.2) | Không |
-| S2 | Server | `feat(items): look up lesson words in the word list` (3.3) | Không |
+| S2 ✅ | Server | `feat(items): look up lesson words in the word list` (3.3) | Không |
 | S3 | Server | `feat(outcomes): vocab progress for the learner` (3.4) | Không |
 | S4 | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
 | S5 | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
