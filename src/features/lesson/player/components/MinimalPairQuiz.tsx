@@ -84,6 +84,7 @@ export function MinimalPairQuiz({
           return (
             <Pressable
               key={`${index}-${word}`}
+              accessibilityHint={t('lessonPlayer.pair_quiz_option_hint')}
               accessibilityLabel={word}
               accessibilityRole="button"
               accessibilityState={{disabled: answered, selected: picked}}

@@ -229,6 +229,7 @@ export function SentenceStudy({
             testID="sentence-study-swipe"
           >
             <View
+              accessibilityHint={t('lessonPlayer.study_swipe_sentences')}
               accessibilityLabel={`${t('lessonPlayer.sentence_counter', {
                 index: at + 1,
                 total,

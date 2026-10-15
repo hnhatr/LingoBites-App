@@ -4,6 +4,7 @@
  * buttons, the progress strip, the floating tab bar and the bookmark toggle.
  */
 import React, {useEffect, useMemo, useRef} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
@@ -188,6 +189,7 @@ export function PillTabs<T extends string>({
   testID,
 }: PillTabsProps<T>) {
   const {theme} = useAppTheme();
+  const {t} = useTranslation();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <View accessibilityRole="tablist" style={styles.tabs} testID={testID}>
@@ -196,6 +198,7 @@ export function PillTabs<T extends string>({
         const ink = on ? theme.colors.text.inverse : theme.colors.text.muted;
         return (
           <Pressable
+            accessibilityHint={t('lessonPlayer.study_tab_hint')}
             accessibilityLabel={
               tab.count !== undefined ? `${tab.label}, ${tab.count}` : tab.label
             }

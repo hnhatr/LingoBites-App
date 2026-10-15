@@ -89,6 +89,7 @@ export function LessonGrammarSection({
 
           {entry.formula ? (
             <View
+              accessibilityHint={t('lessonPlayer.grammar_formula_hint')}
               accessibilityLabel={`${t('lessonPlayer.grammar_formula')}: ${entry.formula}`}
               accessible
               style={styles.formula}
