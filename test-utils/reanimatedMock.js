@@ -9,8 +9,9 @@
  * immediately, and `useAnimatedStyle` evaluates its callback on every render.
  *
  * Keep this in sync with the Reanimated surface actually used in src:
- * Animated.View, Easing, interpolateColor, useAnimatedStyle,
- * useReducedMotion, useSharedValue, withTiming. Extend only when a
+ * Animated.View, Animated.FlatList, Easing, interpolateColor,
+ * useAnimatedScrollHandler, useAnimatedStyle, useReducedMotion,
+ * useSharedValue, withTiming. Extend only when a
  * component needs more.
  */
 const React = require('react');
@@ -46,6 +47,12 @@ function useSharedValue(init) {
 
 function useAnimatedStyle(updater) {
   return updater();
+}
+
+/** Runs the worklet on the JS thread with the scroll event's payload. */
+function useAnimatedScrollHandler(handler) {
+  const onScroll = typeof handler === 'function' ? handler : handler.onScroll;
+  return event => onScroll?.(event.nativeEvent);
 }
 
 function useReducedMotion() {
@@ -120,6 +127,7 @@ module.exports = {
   Easing,
   interpolateColor,
   ReduceMotion,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,

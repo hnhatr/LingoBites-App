@@ -35,7 +35,7 @@ export function CourseLevelsScreen({navigation, route}: Props) {
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {courseSlug, title, levelId, coverUrl} = route.params;
   const {state, refresh} = useCourseLevels(courseSlug);
-  const {solid, onScroll} = useHeroScroll();
+  const {scrollY, onScroll} = useHeroScroll();
   const screenTitle = title ?? t('course.levels_title');
 
   useFocusEffect(
@@ -66,6 +66,7 @@ export function CourseLevelsScreen({navigation, route}: Props) {
         glyph={curriculumGlyph(title, selected.title, selected.description)}
         imageUrl={heroUrl}
         level={selected.code}
+        scrollY={scrollY}
         testID="course-levels-cover"
       >
         <AppText testID="course-levels-title" variant="h1">
@@ -139,7 +140,7 @@ export function CourseLevelsScreen({navigation, route}: Props) {
       />
       <CurriculumHeroChrome
         onBack={() => navigation.goBack()}
-        solid={solid}
+        scrollY={scrollY}
         title={screenTitle}
       />
     </AppScreen>

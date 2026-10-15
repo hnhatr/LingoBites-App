@@ -1,7 +1,6 @@
 import {useFocusEffect} from '@react-navigation/native';
 import React, {useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
-import type {NativeScrollEvent, NativeSyntheticEvent} from 'react-native';
 
 import {LibraryCover} from '@ui/components/LibraryCover';
 import {useAppTheme} from '@ui/theme';
@@ -9,6 +8,7 @@ import {useAppTheme} from '@ui/theme';
 import type {CourseUnit} from '../logic/courseClient';
 import {curriculumGlyph} from '../logic/curriculumCover';
 import {useLevelUnits} from '../logic/useCurriculum';
+import type {HeroScrollHandler} from './CurriculumHeroChrome';
 import {CurriculumList} from './CurriculumList';
 import {RouteFinish} from './RouteFinish';
 import {type UnitRouteState, UnitRouteStop} from './UnitRouteStop';
@@ -20,7 +20,7 @@ type Props = {
   /** Shown above the units (e.g. the course screen's level switcher). */
   header?: React.ReactElement;
   onOpenUnit: (unit: CourseUnit) => void;
-  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onScroll?: HeroScrollHandler;
   testID: string;
 };
 
