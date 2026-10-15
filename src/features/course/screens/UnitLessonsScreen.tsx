@@ -59,7 +59,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
   const {state, refresh} = useUnitLessons(unitId);
   const {isBookmarked, toggleBookmark} = useLessonBookmarks();
   const breadcrumb = useCourseBreadcrumb(navigation, route.key);
-  const {solid, onScroll} = useHeroScroll();
+  const {scrollY, onScroll} = useHeroScroll();
   const [continuePressed, setContinuePressed] = useState(false);
   const screenTitle = title ?? t('course.lessons_title');
 
@@ -163,6 +163,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
         glyph={curriculumGlyph(title)}
         imageUrl={coverUrl}
         level={levelCode}
+        scrollY={scrollY}
         testID="unit-lessons-cover"
       >
         <View style={styles.titleRow}>
@@ -298,7 +299,7 @@ export function UnitLessonsScreen({navigation, route}: Props) {
       {hasLessons ? (
         <CurriculumHeroChrome
           onBack={() => navigation.goBack()}
-          solid={solid}
+          scrollY={scrollY}
           title={screenTitle}
         />
       ) : null}

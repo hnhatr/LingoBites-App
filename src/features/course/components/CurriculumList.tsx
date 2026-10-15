@@ -1,14 +1,7 @@
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-  ActivityIndicator,
-  FlatList,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
@@ -23,6 +16,8 @@ import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {Medallion} from '@ui/components/Medallion';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+
+import type {HeroScrollHandler} from './CurriculumHeroChrome';
 
 export type CurriculumRow = {
   id: string;
@@ -55,7 +50,7 @@ type Props = {
   /** Shown after the cards (e.g. the end of a unit route). */
   footer?: React.ReactElement;
   /** Scroll position, e.g. for `useHeroScroll`. */
-  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onScroll?: HeroScrollHandler;
   /** `grid`: two-column tiles (course list); `list`: one card per row. */
   layout?: 'list' | 'grid';
 };
@@ -110,7 +105,7 @@ export function CurriculumList({
   }
 
   return (
-    <FlatList
+    <Animated.FlatList
       testID={testID}
       data={rows}
       keyExtractor={item => item.id}

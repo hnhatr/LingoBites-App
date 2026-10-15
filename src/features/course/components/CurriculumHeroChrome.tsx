@@ -1,11 +1,12 @@
-import React, {useCallback, useContext, useMemo, useState} from 'react';
-import {
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {useContext, useMemo} from 'react';
+import {Pressable, StyleSheet, View} from 'react-native';
+import Animated, {
+  type SharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 
 import {AppText} from '@ui/components/AppText';
@@ -23,26 +24,28 @@ import {HERO_HEIGHT} from './CurriculumHeroCover';
 const BAR_HEIGHT = 56;
 
 /**
- * Whether the list has scrolled the hero picture away; pass `onScroll` to
- * the list and `solid` to `CurriculumHeroChrome`.
+ * The list's scroll offset on the UI thread; pass `onScroll` to the list and
+ * `scrollY` to `CurriculumHeroCover` and `CurriculumHeroChrome`.
  */
 export function useHeroScroll() {
-  const [solid, setSolid] = useState(false);
-  const onScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const next = event.nativeEvent.contentOffset.y > HERO_HEIGHT - BAR_HEIGHT;
-      setSolid(previous => (previous === next ? previous : next));
-    },
-    [],
-  );
-  return {solid, onScroll};
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler(event => {
+    scrollY.value = event.contentOffset.y;
+  });
+  return {scrollY, onScroll};
 }
+
+/** `onScroll` from `useHeroScroll`, for an animated list. */
+export type HeroScrollHandler = ReturnType<typeof useHeroScroll>['onScroll'];
 
 type Props = {
   title: string;
   onBack: () => void;
-  /** Hero scrolled away: show a solid bar with the title behind the button. */
-  solid: boolean;
+  /**
+   * The list's scroll offset (`useHeroScroll`): once the hero has scrolled
+   * away, a solid bar with the title fades in behind the button.
+   */
+  scrollY: SharedValue<number>;
   backLabel?: string;
 };
 
@@ -53,28 +56,33 @@ type Props = {
 export function CurriculumHeroChrome({
   title,
   onBack,
-  solid,
+  scrollY,
   backLabel = 'Quay lại',
 }: Props) {
   const {theme} = useAppTheme();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const topInset = useContext(SafeAreaInsetsContext)?.top ?? 0;
+  const barStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(scrollY.value > HERO_HEIGHT - BAR_HEIGHT ? 1 : 0, {
+      duration: 150,
+    }),
+  }));
 
   return (
     <View pointerEvents="box-none" style={styles.overlay}>
-      <View
+      <Animated.View
         pointerEvents="none"
         style={[
           themedStyles.bar,
           {height: topInset + BAR_HEIGHT, paddingTop: topInset},
-          !solid && styles.hidden,
+          barStyle,
         ]}
         testID="curriculum-hero-bar"
       >
         <AppText color="primary" numberOfLines={1} variant="h3">
           {title}
         </AppText>
-      </View>
+      </Animated.View>
       <Pressable
         accessibilityHint="Về màn trước"
         accessibilityLabel={backLabel}
@@ -118,9 +126,6 @@ function makeStyles(theme: AppTheme) {
 }
 
 const styles = StyleSheet.create({
-  hidden: {
-    opacity: 0,
-  },
   overlay: {
     left: 0,
     position: 'absolute',
