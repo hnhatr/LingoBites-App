@@ -14,6 +14,7 @@ import {AppText} from '@ui/components/AppText';
 import {HeroFill} from '@ui/components/HeroFill';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {ShelfSurface} from '@ui/components/ShelfSurface';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
@@ -243,7 +244,13 @@ export function TodayScreen({route}: Props = {}) {
 
         {/* Plan card: time, minutes by group, start (REQ-12, REQ-13), on
             the mint-to-sky face of Home's "Hôm nay" card. */}
-        <View style={themedStyles.planCard} testID="today-plan-card">
+        <ShelfSurface
+          borderRadius={26}
+          containerTestID="today-plan-card"
+          faceStyle={themedStyles.planCard}
+          shelfColor={HERO_PALETTE.shelf}
+          shelfHeight={6}
+        >
           <HeroFill id="todayPlanFace" />
           <View
             accessibilityRole="radiogroup"
@@ -379,7 +386,7 @@ export function TodayScreen({route}: Props = {}) {
               </View>
             </View>
           ) : null}
-        </View>
+        </ShelfSurface>
 
         {/* Activities grouped by kind; testIDs keep the plan order. */}
         {ACTIVITY_CATEGORY_ORDER.map(category => {
@@ -807,9 +814,6 @@ function makeStyles(theme: AppTheme) {
     },
     planCard: {
       backgroundColor: HERO_PALETTE.faceFrom,
-      borderBottomColor: HERO_PALETTE.shelf,
-      borderBottomWidth: 6,
-      borderRadius: 26,
       gap: theme.spacing.md,
       overflow: 'hidden',
       padding: theme.spacing.md,

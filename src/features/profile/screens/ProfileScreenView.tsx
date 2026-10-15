@@ -11,6 +11,7 @@ import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SectionHeader} from '@ui/components/SectionHeader';
 import {SettingsGroup} from '@ui/components/SettingsGroup';
+import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {StatTile} from '@ui/components/StatTile';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
@@ -101,9 +102,12 @@ export function ProfileScreenView({
 
         <View>
           <SectionHeader title="Tiến trình" />
-          <View
-            style={themedStyles.progressCard}
-            testID="profile-progress-card"
+          <ShelfSurface
+            borderRadius={theme.radius.xl}
+            containerTestID="profile-progress-card"
+            faceStyle={themedStyles.progressCard}
+            shelfColor={HERO_PALETTE.shelf}
+            shelfHeight={6}
           >
             <HeroFill id="profileProgressFace" />
             <View style={styles.cardStack}>
@@ -153,7 +157,7 @@ export function ProfileScreenView({
                 />
               </View>
             </View>
-          </View>
+          </ShelfSurface>
         </View>
 
         <SettingsGroup title="Học tập">
@@ -319,9 +323,6 @@ function makeStyles(theme: AppTheme) {
       fontWeight: '700',
     },
     progressCard: {
-      borderBottomColor: HERO_PALETTE.shelf,
-      borderBottomWidth: 6,
-      borderRadius: theme.radius.xl,
       overflow: 'hidden',
       padding: theme.spacing.md,
     },

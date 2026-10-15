@@ -9,6 +9,7 @@ import {HeroFill} from '@ui/components/HeroFill';
 import {LockedFeature} from '@ui/components/LockedFeature';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {HERO_PALETTE} from '@ui/theme/heroPalette';
@@ -136,31 +137,36 @@ export function CreateScreen(_props: Props) {
                 accessibilityState={{disabled: offline}}
                 disabled={offline}
                 onPress={openCamera}
-                style={({pressed}) => [
-                  styles.heroCamera,
-                  pressed && styles.pressed,
-                  offline && styles.locked,
-                ]}
                 testID="create-hero-camera"
               >
-                <HeroFill id="createHeroCameraFace" />
-                <View style={styles.heroCameraIcon}>
-                  <MaterialIcon
-                    color={HERO_PALETTE.teal}
-                    name="photo_camera"
-                    size={28}
-                  />
-                </View>
-                <AppText
-                  variant="h2"
-                  style={styles.heroCameraTitle}
-                  numberOfLines={2}
-                >
-                  {t('home.capture_photo')}
-                </AppText>
-                <AppText style={styles.heroCameraHint} numberOfLines={2}>
-                  {t('home.capture_photo_hint')}
-                </AppText>
+                {({pressed}) => (
+                  <ShelfSurface
+                    borderRadius={26}
+                    faceStyle={[styles.heroCamera, offline && styles.locked]}
+                    isPressed={pressed && !offline}
+                    shelfColor={HERO_PALETTE.shelf}
+                    shelfHeight={6}
+                  >
+                    <HeroFill id="createHeroCameraFace" />
+                    <View style={styles.heroCameraIcon}>
+                      <MaterialIcon
+                        color={HERO_PALETTE.teal}
+                        name="photo_camera"
+                        size={28}
+                      />
+                    </View>
+                    <AppText
+                      variant="h2"
+                      style={styles.heroCameraTitle}
+                      numberOfLines={2}
+                    >
+                      {t('home.capture_photo')}
+                    </AppText>
+                    <AppText style={styles.heroCameraHint} numberOfLines={2}>
+                      {t('home.capture_photo_hint')}
+                    </AppText>
+                  </ShelfSurface>
+                )}
               </Pressable>
             ) : null}
             {tiles.length > 0 ? (
@@ -271,9 +277,6 @@ function makeStyles(theme: AppTheme) {
     heroCamera: {
       alignItems: 'center',
       backgroundColor: HERO_PALETTE.faceFrom,
-      borderBottomColor: HERO_PALETTE.shelf,
-      borderBottomWidth: 6,
-      borderRadius: 26,
       gap: theme.spacing.sm,
       justifyContent: 'center',
       minHeight: 190,

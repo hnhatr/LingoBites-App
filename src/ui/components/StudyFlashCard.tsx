@@ -21,6 +21,7 @@ import {type AppTheme, useAppTheme} from '../theme';
 import {HERO_PALETTE as PALETTE} from '../theme/heroPalette';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
+import {ShelfSurface} from './ShelfSurface';
 import {formatIpa} from './WordCard';
 
 type Props = {
@@ -47,7 +48,13 @@ export function StudyFlashCard({
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <View style={styles.card} testID={testID}>
+    <ShelfSurface
+      borderRadius={28}
+      containerTestID={testID}
+      faceStyle={styles.card}
+      shelfColor={theme.shelf?.surface.color ?? theme.colors.border}
+      shelfHeight={6}
+    >
       <View style={styles.face}>
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
           <Svg height="100%" width="100%">
@@ -101,7 +108,7 @@ export function StudyFlashCard({
           </View>
         ) : null}
       </View>
-    </View>
+    </ShelfSurface>
   );
 }
 
@@ -109,9 +116,6 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     card: {
       backgroundColor: theme.colors.surface,
-      borderBottomColor: theme.shelf?.surface.color ?? theme.colors.border,
-      borderBottomWidth: 6,
-      borderRadius: 28,
       overflow: 'hidden',
     },
     face: {
