@@ -321,8 +321,8 @@ Thiết kế: [`superpowers/plans/2026-10-10-stage5-9-image-lesson-game-hub.md`]
 ### 8.2 UI bài YouTube: phần còn thiếu 🟡
 
 Thiết kế: [`superpowers/specs/2026-10-02-youtube-lesson-ux-redesign.md`](../superpowers/specs/2026-10-02-youtube-lesson-ux-redesign.md) + bộ màn [`design/youtube-lesson/`](../design/youtube-lesson/README.md).
-Đã có: màn học video, carousel câu, transcript, phân tích câu, tốc độ phát, mục video trong thư viện (`VideoHub`).
-Chưa thấy trong code: lặp A–B, màn "Học xong bài" riêng cho video. Cần rà lại 12 màn FR-01…FR-12 trước khi lập plan.
+Đã có: màn học video, carousel câu, transcript, phân tích câu, lặp câu, tốc độ phát, mục video trong thư viện (`VideoHub`).
+Còn thiếu (rà ngày 2026-10-15, chi tiết ở §7.1 của spec): khoá nút "Tạo bài học" khi link không phải YouTube, tự mở bài khi tạo xong, lặp A–B, IPA trong transcript, ♥ lưu câu, màn "Học xong bài" (FR-09) kèm ghi `lesson_progress` và nhãn "Đã xong" ở danh sách video.
 
 ### 8.3 Việc kiểm thử còn nợ ⏳
 
