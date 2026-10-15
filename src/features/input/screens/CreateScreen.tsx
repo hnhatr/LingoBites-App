@@ -221,7 +221,7 @@ export function CreateScreen(_props: Props) {
               <Pressable
                 accessibilityLabel={t('home.youtube_history_a11y')}
                 accessibilityRole="button"
-                onPress={appNavigation.openCatalog}
+                onPress={() => appNavigation.openLibrarySection('video')}
                 style={({pressed}) => [
                   styles.historyLink,
                   pressed && styles.linkPressed,

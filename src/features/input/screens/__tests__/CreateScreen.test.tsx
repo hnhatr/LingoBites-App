@@ -123,7 +123,9 @@ describe('CreateScreen (SETE-247)', () => {
       kind: 'youtube',
     });
     await pressByTestID(flaggedOn, 'create-history-link');
-    expect(mockAppNavigation.openCatalog).toHaveBeenCalled();
+    // The learner's own YouTube lessons, not the whole catalog.
+    expect(mockAppNavigation.openLibrarySection).toHaveBeenCalledWith('video');
+    expect(mockAppNavigation.openCatalog).not.toHaveBeenCalled();
     // The Create tab never reaches into another tab's stack.
     expect(nav.tabNavigate).not.toHaveBeenCalled();
     expect(nav.navigate).not.toHaveBeenCalled();
