@@ -18,6 +18,8 @@ export type LocalComboSet = {
 
 export type LocalComboSetSummary = Omit<LocalComboSet, 'sentences'> & {
   sentenceCount: number;
+  /** The set's first sentence, shown on its history card. */
+  preview?: {en: string; vi: string} | null;
 };
 
 type Row = {
@@ -75,14 +77,19 @@ export function listLocalComboSets(): LocalComboSetSummary[] {
       `SELECT id, item_code, grammar_code, situation_code, sentences_json, created_at
          FROM combo_sets_local ORDER BY created_at DESC;`,
     ),
-  ).map(row => ({
-    id: row.id,
-    itemCode: row.item_code,
-    grammarCode: row.grammar_code,
-    situationCode: row.situation_code,
-    sentenceCount: sentencesOf(row.sentences_json).length,
-    createdAt: row.created_at,
-  }));
+  ).map(row => {
+    const sentences = sentencesOf(row.sentences_json);
+    const first = sentences[0];
+    return {
+      id: row.id,
+      itemCode: row.item_code,
+      grammarCode: row.grammar_code,
+      situationCode: row.situation_code,
+      sentenceCount: sentences.length,
+      preview: first ? {en: first.text_en, vi: first.text_vi} : null,
+      createdAt: row.created_at,
+    };
+  });
 }
 
 export function readLocalComboSet(id: string): LocalComboSet | null {

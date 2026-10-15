@@ -835,10 +835,6 @@
     "block_unsupported": "Phiên bản ứng dụng này chưa hiển thị được loại nội dung này.",
     "video_unavailable": "Video không phát được. Bạn vẫn đọc được các câu bên dưới.",
     "video_offline": "Cần mạng để phát video, phụ đề vẫn học được.",
-    "catalog_title": "Tất cả bài học",
-    "catalog_load_failed": "Không tải được danh sách bài học.",
-    "catalog_row_hint": "Chạm để mở bài học",
-    "catalog_sentences": "{{count}} câu",
     "create_title": "Tạo bài học",
     "create_intro": "Dán hoặc nhập đoạn tiếng Anh, hoặc dán link YouTube. App sẽ biến nó thành bài học.",
     "create_source_text": "Văn bản",
@@ -1759,9 +1755,19 @@
     },
     "history": {
       "title": "Bộ câu đã học",
-      "empty": "Chưa có bộ câu nào trên máy.",
       "count": "{{count}} câu",
-      "open": "Mở"
+      "subtitle": "Bộ câu tổ hợp",
+      "open_a11y": "Mở bộ câu {{word}}",
+      "open_hint": "Mở các câu của bộ này",
+      "group_today": "Hôm nay",
+      "group_week": "Tuần này",
+      "group_earlier": "Trước đó",
+      "results": "{{count}} kết quả",
+      "empty_title": "Chưa có bộ câu nào",
+      "empty_body": "Mở một từ trong gói từ để tạo bộ câu. Bộ câu được lưu trên máy để học cả khi không có mạng.",
+      "empty_cta": "Mở gói từ",
+      "no_match_title": "Không có bộ câu nào khớp “{{query}}”",
+      "no_match_body": "Thử tìm từ khác, hoặc tạo bộ câu mới từ gói từ."
     }
   }
 }

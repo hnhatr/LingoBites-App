@@ -161,10 +161,10 @@ describe('TodayScreen entry points (LING-179 TASK-001)', () => {
     expect(mockAppNavigation.openLesson).toHaveBeenCalledWith(PLAYER_LESSON_ID);
   });
 
-  it('opens the catalog from a catalog activity', async () => {
+  it('opens the Lessons tab from a catalog activity', async () => {
     const tree = await renderTodayScreen();
     press(tree, 'activity-item-1');
-    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
+    expect(mockAppNavigation.goToTab).toHaveBeenCalledWith('Lessons');
   });
 
   it('reaches SpeakingRoom from a speaking activity', async () => {
@@ -183,7 +183,7 @@ describe('TodayScreen entry points (LING-179 TASK-001)', () => {
     mockHasDownloads = false;
     const tree = await renderTodayScreen();
     press(tree, 'today-go-download');
-    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
+    expect(mockAppNavigation.goToTab).toHaveBeenCalledWith('Lessons');
   });
 });
 

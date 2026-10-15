@@ -10,12 +10,12 @@ describe('resolveTodayNavigation', () => {
     ).toEqual({screen: 'CanonicalLessonPlayer', lessonId: 'lesson-1'});
   });
 
-  it('falls back to the catalog when a lesson target has no lesson id', () => {
+  it('falls back to the Lessons tab when a lesson target has no lesson id', () => {
     expect(
       resolveTodayNavigation({screen: 'CanonicalLessonPlayer', params: {}}),
-    ).toEqual({screen: 'CanonicalCatalog'});
+    ).toEqual({screen: 'LessonsTab'});
     expect(resolveTodayNavigation({screen: 'CanonicalLessonPlayer'})).toEqual({
-      screen: 'CanonicalCatalog',
+      screen: 'LessonsTab',
     });
   });
 

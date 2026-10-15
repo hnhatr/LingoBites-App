@@ -21,7 +21,6 @@ import type {
   VideoHubRouteParams,
 } from '@features/lesson/library';
 import type {
-  CanonicalCatalogRouteParams,
   CanonicalLessonPlayerRouteParams,
   LessonCreationRouteParams,
   LessonFlowPlayerRouteParams,
@@ -88,7 +87,6 @@ export type RootStackParamList = {
   SituationInput: SituationInputRouteParams;
   LessonCreation: LessonCreationRouteParams;
   // Lessons
-  CanonicalCatalog: CanonicalCatalogRouteParams;
   CanonicalLessonPlayer: CanonicalLessonPlayerRouteParams;
   LessonFlowPlayer: LessonFlowPlayerRouteParams;
   LibraryList: LibraryListRouteParams;

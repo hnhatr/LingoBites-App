@@ -835,10 +835,6 @@
     "block_unsupported": "This block type is not supported in this app version.",
     "video_unavailable": "Video is unavailable. Sentences remain readable below.",
     "video_offline": "Playing the video needs a connection. You can still study the subtitles.",
-    "catalog_title": "All lessons",
-    "catalog_load_failed": "Lessons failed to load.",
-    "catalog_row_hint": "Tap to open the lesson",
-    "catalog_sentences": "{{count}} sentences",
     "create_title": "Create lesson",
     "create_intro": "Paste or type English text, or paste a YouTube link. The app turns it into a lesson.",
     "create_source_text": "Text",
@@ -1759,9 +1755,19 @@
     },
     "history": {
       "title": "Combo sets",
-      "empty": "No sets on this device yet.",
       "count": "{{count}} sentences",
-      "open": "Open"
+      "subtitle": "Combo sentence set",
+      "open_a11y": "Open the {{word}} set",
+      "open_hint": "Opens the sentences of this set",
+      "group_today": "Today",
+      "group_week": "This week",
+      "group_earlier": "Earlier",
+      "results": "{{count}} results",
+      "empty_title": "No sentence sets yet",
+      "empty_body": "Open a word in a word pack to make a sentence set. Sets are kept on your phone so you can study offline.",
+      "empty_cta": "Open word packs",
+      "no_match_title": "No set matches “{{query}}”",
+      "no_match_body": "Try another word, or make a new set from a word pack."
     }
   }
 }

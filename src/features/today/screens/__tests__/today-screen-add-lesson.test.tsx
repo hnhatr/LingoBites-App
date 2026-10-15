@@ -156,7 +156,7 @@ describe('TodayScreen add lesson', () => {
     press(tree, 'add-lesson-create');
     expect(mockAppNavigation.openCreate).toHaveBeenCalledTimes(1);
     press(tree, 'add-lesson-library');
-    expect(mockAppNavigation.openCatalog).toHaveBeenCalledTimes(1);
+    expect(mockAppNavigation.goToTab).toHaveBeenCalledWith('Lessons');
     press(tree, 'add-lesson-course');
     expect(mockAppNavigation.openCourse).toHaveBeenCalledWith();
   });

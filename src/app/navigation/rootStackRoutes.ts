@@ -9,7 +9,6 @@ type RootRouteName = Extract<keyof RootStackParamList, string>;
 export const ROOT_FLOW_ROUTES = [
   'CreateHub',
   'LessonCreation',
-  'CanonicalCatalog',
   'CanonicalLessonPlayer',
   'LibraryList',
   'VideoHub',

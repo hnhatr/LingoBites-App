@@ -91,8 +91,6 @@ export interface AppNavigation {
    * lesson (or when the unit cannot load) show the unit instead.
    */
   openNextUnitLesson(target: LessonUnitTarget): void;
-  /** Open the lesson catalog. */
-  openCatalog(): void;
   /** Open one Library section's list (own lessons, words, or public). */
   openLibrarySection(section: LibrarySectionKey): void;
   /**
