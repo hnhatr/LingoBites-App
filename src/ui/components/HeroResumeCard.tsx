@@ -6,6 +6,7 @@ import {HERO_PALETTE} from '../theme/heroPalette';
 import {AppText} from './AppText';
 import {HeroFill} from './HeroFill';
 import {MaterialIcon} from './MaterialIcon';
+import {ShelfSurface} from './ShelfSurface';
 
 type Props = {
   /** Small line in the white chip, e.g. "Đang dở · câu 5/12". */
@@ -45,27 +46,40 @@ export function HeroResumeCard({
         .join('. ')}
       accessibilityRole="button"
       onPress={onPress}
-      style={({pressed}) => [styles.card, pressed && styles.pressed]}
       testID={testID}
     >
-      <HeroFill id={`${testID}-face`} />
-      <View style={styles.chip}>
-        <AppText style={styles.chipText} testID={chipTestID}>
-          {chip}
-        </AppText>
-      </View>
-      <AppText numberOfLines={2} style={styles.title}>
-        {title}
-      </AppText>
-      {subtitle ? (
-        <AppText numberOfLines={1} style={styles.subtitle}>
-          {subtitle}
-        </AppText>
-      ) : null}
-      <View style={styles.cta}>
-        <MaterialIcon color={HERO_PALETTE.white} name="play_circle" size={22} />
-        <AppText style={styles.ctaText}>{cta}</AppText>
-      </View>
+      {({pressed}) => (
+        <ShelfSurface
+          borderRadius={26}
+          faceStyle={styles.card}
+          isPressed={pressed}
+          shelfColor={HERO_PALETTE.shelf}
+          shelfHeight={6}
+        >
+          <HeroFill id={`${testID}-face`} />
+          <View style={styles.chip}>
+            <AppText style={styles.chipText} testID={chipTestID}>
+              {chip}
+            </AppText>
+          </View>
+          <AppText numberOfLines={2} style={styles.title}>
+            {title}
+          </AppText>
+          {subtitle ? (
+            <AppText numberOfLines={1} style={styles.subtitle}>
+              {subtitle}
+            </AppText>
+          ) : null}
+          <View style={styles.cta}>
+            <MaterialIcon
+              color={HERO_PALETTE.white}
+              name="play_circle"
+              size={22}
+            />
+            <AppText style={styles.ctaText}>{cta}</AppText>
+          </View>
+        </ShelfSurface>
+      )}
     </Pressable>
   );
 }
@@ -74,15 +88,9 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     card: {
       backgroundColor: HERO_PALETTE.faceFrom,
-      borderBottomColor: HERO_PALETTE.shelf,
-      borderBottomWidth: 6,
-      borderRadius: 26,
       gap: theme.spacing.sm,
       overflow: 'hidden',
       padding: theme.spacing.md,
-    },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
     },
     chip: {
       alignSelf: 'flex-start',

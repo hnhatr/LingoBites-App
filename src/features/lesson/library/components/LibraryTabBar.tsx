@@ -2,11 +2,13 @@ import React, {useMemo} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
+import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {solidOver} from '@ui/theme/colorUtils';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import type {LibraryTab, LibraryTabConfig} from '../logic/librarySections';
-import {stickerCard} from './LibraryShelf';
 import {libraryTone} from './libraryTones';
 
 export interface LibraryTabBarProps {
@@ -17,7 +19,9 @@ export interface LibraryTabBarProps {
 
 /**
  * The Library tabs, at the top of the screen: a small pastel bubble per tab
- * with its name underneath. The open tab fills with its colour and tilts.
+ * with its name underneath. Every bubble sits on a shelf of its own colour;
+ * the open tab fills with its colour on a darker shelf, and a short bar
+ * marks it under the name.
  */
 export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
   const {theme} = useAppTheme();
@@ -28,6 +32,9 @@ export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
       {tabs.map(tab => {
         const isSelected = tab.id === selected;
         const tone = libraryTone(theme, tab.tone);
+        const shelfColor = isSelected
+          ? solidOver(withAlpha('#000000', 0.3), tone.strong)
+          : solidOver(withAlpha(tone.strong, 0.38), tone.soft);
         return (
           <Pressable
             accessibilityHint={`Mở tab ${tab.title}`}
@@ -37,28 +44,40 @@ export function LibraryTabBar({tabs, selected, onSelect}: LibraryTabBarProps) {
             hitSlop={4}
             key={tab.id}
             onPress={() => onSelect(tab.id)}
-            style={({pressed}) => [styles.tab, pressed && styles.pressed]}
+            style={styles.tab}
             testID={`library-tab-${tab.id}`}
           >
-            <View
-              style={[
-                styles.bubble,
-                {backgroundColor: isSelected ? tone.strong : tone.soft},
-                isSelected && styles.bubbleOn,
-              ]}
-            >
-              <MaterialIcon
-                color={isSelected ? tone.onStrong : tone.ink}
-                name={tab.icon}
-                size={20}
-              />
-            </View>
-            <AppText
-              numberOfLines={1}
-              style={[styles.label, isSelected && styles.labelOn]}
-            >
-              {tab.title}
-            </AppText>
+            {({pressed}) => (
+              <>
+                <View
+                  style={[
+                    styles.bubble,
+                    {backgroundColor: isSelected ? tone.strong : tone.soft},
+                    getStickerEdge(pressed ? 1 : 3, shelfColor),
+                    pressed && styles.bubblePressed,
+                  ]}
+                >
+                  <MaterialIcon
+                    color={isSelected ? tone.onStrong : tone.ink}
+                    name={tab.icon}
+                    size={20}
+                  />
+                </View>
+                <AppText
+                  numberOfLines={1}
+                  style={[styles.label, isSelected && styles.labelOn]}
+                >
+                  {tab.title}
+                </AppText>
+                <View
+                  style={[
+                    styles.indicator,
+                    {backgroundColor: tone.strong},
+                    !isSelected && styles.indicatorOff,
+                  ]}
+                />
+              </>
+            )}
           </Pressable>
         );
       })}
@@ -78,10 +97,7 @@ function makeStyles(theme: AppTheme) {
     tab: {
       alignItems: 'center',
       flex: 1,
-      gap: 3,
-    },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
+      gap: 6,
     },
     bubble: {
       alignItems: 'center',
@@ -90,9 +106,8 @@ function makeStyles(theme: AppTheme) {
       justifyContent: 'center',
       width: 38,
     },
-    bubbleOn: {
-      transform: [{rotate: '-6deg'}],
-      ...stickerCard(theme, 2),
+    bubblePressed: {
+      transform: [{translateY: 2}],
     },
     label: {
       color: theme.colors.text.muted,
@@ -101,6 +116,15 @@ function makeStyles(theme: AppTheme) {
     },
     labelOn: {
       color: theme.colors.text.primary,
+    },
+    // Keeps its height on every tab so the names stay on one line.
+    indicator: {
+      borderRadius: theme.radius.pill,
+      height: 4,
+      width: 22,
+    },
+    indicatorOff: {
+      opacity: 0,
     },
   });
 }
