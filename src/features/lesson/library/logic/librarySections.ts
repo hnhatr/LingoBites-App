@@ -55,9 +55,11 @@ export interface LibrarySectionConfig {
   moments?: boolean;
   /** Vocab path P5: the combo sets kept on this device. */
   combos?: boolean;
+  /** Vocab path P5: the combo sentences saved with "Lưu". */
+  savedSentences?: boolean;
   /** Vocab path P5: the word packs to download and learn. */
   wordPath?: boolean;
-  unit: 'bài' | 'từ' | 'quy tắc' | 'bộ câu' | 'gói';
+  unit: 'bài' | 'từ' | 'quy tắc' | 'bộ câu' | 'câu' | 'gói';
 }
 
 /**
@@ -128,6 +130,16 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     emptyHint: 'Mở một bộ câu từ gói từ để bắt đầu',
     combos: true,
     unit: 'bộ câu',
+  },
+  {
+    id: 'comboSentences',
+    tab: 'saved',
+    icon: 'bookmark',
+    title: 'Câu đã lưu',
+    description: 'Câu bạn bấm Lưu trong các bộ câu',
+    emptyHint: 'Bấm Lưu dưới một câu trong bộ câu để giữ nó ở đây',
+    savedSentences: true,
+    unit: 'câu',
   },
   {
     id: 'wordPath',

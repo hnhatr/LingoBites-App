@@ -4,6 +4,8 @@ import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import type {ComboPolarity} from '../logic/comboClient';
 
@@ -41,9 +43,9 @@ export function PolarityMixPicker({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const total = mixTotal(mix);
   const colorOf: Record<ComboPolarity, string> = {
-    affirmative: theme.colors.primary,
-    negative: theme.colors.secondary,
-    question: theme.colors.tertiary,
+    affirmative: theme.colors.accent,
+    negative: HERO_PALETTE.coral,
+    question: HERO_PALETTE.sun,
   };
 
   const even = Math.floor(max / (polarities.length * step)) * step;
@@ -80,7 +82,7 @@ export function PolarityMixPicker({
         const name = t(`combo.setup.polarity_value.${polarity}`);
         return (
           <View key={polarity} style={themedStyles.row}>
-            <View style={[styles.dot, {backgroundColor: colorOf[polarity]}]} />
+            <View style={[styles.tag, {backgroundColor: colorOf[polarity]}]} />
             <View style={styles.label}>
               <AppText variant="label" style={themedStyles.name}>
                 {name}
@@ -103,7 +105,7 @@ export function PolarityMixPicker({
                 }
                 style={[
                   themedStyles.stepButton,
-                  value === 0 && themedStyles.disabled,
+                  value === 0 && themedStyles.stepOff,
                 ]}
                 testID={`combo-setup-mix-less-${polarity}`}
               >
@@ -131,7 +133,7 @@ export function PolarityMixPicker({
                 }
                 style={[
                   themedStyles.stepButton,
-                  total + step > max && themedStyles.disabled,
+                  total + step > max && themedStyles.stepOff,
                 ]}
                 testID={`combo-setup-mix-more-${polarity}`}
               >
@@ -141,19 +143,28 @@ export function PolarityMixPicker({
           </View>
         );
       })}
-      <View style={themedStyles.bar}>
-        {polarities.map(polarity =>
-          mix[polarity] ? (
-            <View
-              key={polarity}
-              style={{
-                backgroundColor: colorOf[polarity],
-                flexGrow: mix[polarity],
-              }}
-            />
-          ) : null,
-        )}
-        {total < max ? <View style={{flexGrow: max - total}} /> : null}
+      <View style={styles.total}>
+        <View style={themedStyles.bar}>
+          {polarities.map(polarity =>
+            mix[polarity] ? (
+              <View
+                key={polarity}
+                style={{
+                  backgroundColor: colorOf[polarity],
+                  flexGrow: mix[polarity],
+                }}
+              />
+            ) : null,
+          )}
+          {total < max ? <View style={{flexGrow: max - total}} /> : null}
+        </View>
+        <AppText
+          color="secondary"
+          testID="combo-setup-mix-total"
+          variant="caption"
+        >
+          {t('combo.setup.mix_total', {count: total, max})}
+        </AppText>
       </View>
       <AppText
         color={total === 0 ? 'danger' : 'muted'}
@@ -184,10 +195,16 @@ export function PolarityMixPicker({
 }
 
 const styles = StyleSheet.create({
-  dot: {
-    borderRadius: 5,
-    height: 10,
-    width: 10,
+  tag: {
+    borderRadius: 4,
+    height: 30,
+    width: 8,
+  },
+  total: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    paddingTop: 4,
   },
   label: {
     flex: 1,
@@ -207,64 +224,66 @@ const styles = StyleSheet.create({
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     bar: {
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: theme.radius.sm,
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 4,
+      flex: 1,
       flexDirection: 'row',
-      gap: 2,
       height: 8,
       overflow: 'hidden',
     },
     card: {
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.lg,
-      borderWidth: 1,
+      borderRadius: 20,
       gap: theme.spacing.sm,
-      paddingBottom: theme.spacing.md,
-      paddingHorizontal: theme.spacing.md,
-      paddingTop: theme.spacing.xs,
-    },
-    disabled: {
-      opacity: theme.states.disabledOpacity,
+      paddingBottom: 12,
+      paddingHorizontal: 14,
+      paddingTop: 4,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
     },
     name: {
       fontWeight: theme.typography.weight.bold,
     },
     preset: {
-      borderColor: theme.colors.outlineVariant,
+      backgroundColor: theme.colors.surfaceMuted,
       borderRadius: theme.radius.pill,
-      borderStyle: 'dashed',
-      borderWidth: 1,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.xs,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
     },
     row: {
       alignItems: 'center',
       borderBottomColor: theme.colors.surfaceHigh,
       borderBottomWidth: 1,
       flexDirection: 'row',
-      gap: theme.spacing.sm,
-      paddingVertical: theme.spacing.sm,
+      gap: 10,
+      paddingVertical: 10,
     },
     stepButton: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.md,
-      height: 36,
+      borderRadius: 11,
+      height: 32,
       justifyContent: 'center',
-      width: 36,
+      width: 32,
+      ...getStickerEdge(2, theme.colors.surfaceHigh),
+    },
+    stepOff: {
+      backgroundColor: theme.colors.surfaceMuted,
+      borderBottomWidth: 0,
+      opacity: theme.states.disabledOpacity,
+      shadowOpacity: 0,
     },
     stepGlyph: {
       color: theme.colors.primary,
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: theme.typography.weight.bold,
-      lineHeight: 24,
+      lineHeight: 22,
     },
     stepper: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surfaceLow,
-      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 14,
       flexDirection: 'row',
+      gap: 2,
       padding: 3,
     },
   });

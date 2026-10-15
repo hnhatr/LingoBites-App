@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 
-import {listLocalComboSets} from '@features/combo';
+import {listLocalComboSets, loadSavedComboSentences} from '@features/combo';
 import {getDueFlashcards} from '@features/review';
 
 import {AppText} from '@ui/components/AppText';
@@ -79,11 +79,22 @@ export function SavedTab() {
     if (ready) readLocal();
   }, [ready, readLocal]);
   const {dueCount, combos} = local;
+  // Saved combo sentences live in device storage, read after the rest.
+  const [sentences, setSentences] = useState<string[]>([]);
+  const readSentences = useCallback(() => {
+    loadSavedComboSentences().then(list =>
+      setSentences(list.map(entry => entry.textEn)),
+    );
+  }, []);
+  useEffect(() => {
+    if (ready) readSentences();
+  }, [ready, readSentences]);
 
   const refreshAll = useCallback(() => {
     refresh();
     readLocal();
-  }, [refresh, readLocal]);
+    readSentences();
+  }, [refresh, readLocal, readSentences]);
   useRefreshOnRefocus(refreshAll);
 
   if (!ready) {
@@ -113,6 +124,13 @@ export function SavedTab() {
       icon: 'style',
       tone: 'tertiary',
       items: combos.map(set => itemCodeLabel(set.itemCode)),
+    },
+    {
+      id: 'comboSentences',
+      title: 'Câu đã lưu',
+      icon: 'bookmark',
+      tone: 'accent',
+      items: sentences,
     },
   ];
   const nothingSaved = kinds.every(kind => kind.items.length === 0);

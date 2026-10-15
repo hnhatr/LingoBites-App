@@ -1643,14 +1643,14 @@
       "request_id": "Request ID: {{id}}"
     },
     "setup": {
-      "title": "Combo sentences",
+      "title": "Create a combo set",
       "load_failed": "The sentences could not be loaded. Try again when you are online.",
       "locked": "Fixed pattern: it has no tense, so there is nothing to choose.",
       "situation": "Situation",
       "tense": "Tense",
       "groups": "Subject",
       "count": "How many sentences",
-      "start": "Start",
+      "start": "Create the set",
       "start_failed": "The set could not be opened. Check your limits or try again.",
       "empty_ai_limit": "No new sentences can be made today. Pick another situation or tense, or try again tomorrow.",
       "empty_pool_only": "There are no ready sentences for this choice yet. Pick another situation or tense.",
@@ -1675,7 +1675,7 @@
       "close": "Close",
       "close_hint": "Closes the list of situations",
       "tense_hint": "Chooses this tense",
-      "tense_picked": "Chosen:",
+      "tense_picked": "Picked",
       "time": {
         "past": "Past",
         "present": "Present",
@@ -1727,7 +1727,19 @@
       "mix_more": "More {{name}} sentences",
       "mix_less_hint": "Removes {{count}} sentences",
       "mix_more_hint": "Adds {{count}} sentences",
-      "mix_preset_hint": "Uses this split"
+      "mix_preset_hint": "Uses this split",
+      "word_hint": "Write sentences with this word in the situation and tense you pick",
+      "tenses_open": "{{count}}/12 tenses open",
+      "count_max": "up to {{count}}",
+      "tense_locked": "{{name}}: not open",
+      "mix_total": "{{count}}/{{max}} sentences",
+      "aspect_full": {
+        "simple": "simple",
+        "continuous": "continuous",
+        "perfect": "perfect",
+        "perfect_continuous": "perfect continuous"
+      },
+      "tense_locked_hint": "This tense is not open for this word"
     },
     "set": {
       "title": "Combo set",
@@ -1736,15 +1748,28 @@
       "hide_vi": "Hide Vietnamese",
       "show_vi": "Show Vietnamese",
       "no_ipa": "No IPA for this word",
-      "report": "Report this sentence",
+      "report": "Report",
       "already_reported": "Reported",
-      "more": "Add a batch",
+      "more": "Add {{count}} sentences",
       "add_failed": "The batch could not be added. Try again when you are online.",
       "short_batch": "Fewer sentences than asked were available.",
       "reported": "Thank you. The sentence was reported.",
       "report_failed": "The report could not be sent. Try again when you are online.",
       "empty": "No sentences in this set yet.",
-      "back": "Back"
+      "count": "{{count}} sentences",
+      "tip": "Tap a word to see its IPA",
+      "token_hint": "Shows the IPA of this word",
+      "say_word": "Say {{word}}",
+      "grammar": "Grammar breakdown",
+      "listen": "Listen",
+      "listening": "Reading",
+      "listen_hint": "Reads this sentence aloud",
+      "save": "Save",
+      "saved": "Saved",
+      "save_hint": "Saves the sentence to Saved sentences in the Library",
+      "report_hint": "Pick why this sentence is wrong",
+      "report_question": "What is wrong with it?",
+      "say_word_hint": "Reads this word aloud"
     },
     "report": {
       "wrong_meaning": "The meaning is wrong",
@@ -1768,6 +1793,14 @@
       "empty_cta": "Open word packs",
       "no_match_title": "No set matches “{{query}}”",
       "no_match_body": "Try another word, or make a new set from a word pack."
+    },
+    "saved": {
+      "empty_title": "No sentences yet",
+      "empty_body": "Tap Save under a sentence in a combo set to keep it here.",
+      "no_match": "No sentence matches “{{query}}”.",
+      "open_hint": "Opens the set this sentence is in",
+      "unsave": "Remove this sentence",
+      "unsave_hint": "Removes it from Saved sentences"
     }
   }
 }

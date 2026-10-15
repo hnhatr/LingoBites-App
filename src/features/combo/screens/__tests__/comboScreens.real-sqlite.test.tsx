@@ -18,12 +18,19 @@ import {
   reportComboSentence,
 } from '../../logic/comboClient';
 import {listLocalComboSets, saveComboSet} from '../../logic/comboSetRepository';
+import {loadSavedComboSentences} from '../../logic/savedComboSentences';
 import {SITUATION_BOOKMARKS_KEY} from '../../logic/situationBookmarks';
 import {ComboHistoryList, ComboHistoryScreen} from '../ComboHistoryScreen';
 import {ComboSetScreen} from '../ComboSetScreen';
 import {ComboSetupScreen} from '../ComboSetupScreen';
+import {SavedComboSentencesList} from '../SavedComboSentencesList';
 
 /** Vocab path P5: the combo screens open a set, read it offline, add a batch, play the IPA and report. */
+
+const mockSpeak = jest.fn();
+jest.mock('@features/audio', () => ({
+  useSpeak: () => ({speak: mockSpeak, notice: null}),
+}));
 
 jest.mock('../../logic/comboClient', () => ({
   ...jest.requireActual('../../logic/comboClient'),
@@ -143,7 +150,21 @@ describe('ComboSetupScreen', () => {
     expect(has(tree, 'combo-setup-situation-sheet')).toBe(false);
     expect(textOf(tree, 'combo-setup-summary')).toContain('Câu lạc bộ');
     press(tree, 'combo-setup-tense-grammar:present-simple');
+    // One tense of the 12 is open; the others show a lock.
+    expect(JSON.stringify(tree.toJSON())).toContain('1/12 thì mở');
+    expect(
+      tree.root.findAll(
+        node =>
+          typeof node.props.accessibilityLabel === 'string' &&
+          node.props.accessibilityLabel.endsWith(': chưa mở') &&
+          typeof node.type === 'string',
+      ),
+    ).toHaveLength(11);
+    expect(textOf(tree, 'combo-setup-tense-picked')).toContain('Hiện tại đơn');
     press(tree, 'combo-setup-count-3');
+    expect(textOf(tree, 'combo-setup-summary')).toBe(
+      'Câu lạc bộ · Hiện tại đơn · 3 câu',
+    );
     await act(async () => {
       press(tree, 'combo-setup-start');
     });
@@ -523,6 +544,7 @@ describe('ComboSetScreen', () => {
     expect(has(tree, 'combo-sentence-s1')).toBe(true);
     press(tree, 'combo-token-s1-1');
     expect(textOf(tree, 'combo-ipa-s1')).toBe('pleɪ');
+    expect(JSON.stringify(tree.toJSON())).toContain('Thêm 2 câu');
 
     await act(async () => {
       press(tree, 'combo-set-more');
@@ -532,6 +554,104 @@ describe('ComboSetScreen', () => {
     expect(listLocalComboSets()).toEqual([
       expect.objectContaining({id: SET_ID, sentenceCount: 4}),
     ]);
+  });
+
+  it('opens the grammar breakdown the Server sent, and the parts from the words without one', () => {
+    saveComboSet(
+      {
+        id: SET_ID,
+        itemCode: 'word:june',
+        grammarCode: 'grammar:past-simple',
+        situationCode: 'club',
+        sentences: [
+          {
+            ...sentence('s1', 'She came in June.'),
+            analysis: {
+              tense: {
+                code: 'grammar:past-simple',
+                time: 'past',
+                aspect: 'simple',
+                name_vi: 'Quá khứ đơn',
+                polarity_vi: 'Khẳng định',
+                formula: 'S + V2/ed',
+              },
+              parts: [
+                {text: 'She', role: 'subject', label_vi: 'Chủ ngữ'},
+                {text: 'came', role: 'verb', label_vi: 'Động từ · V2 của come'},
+                {text: 'in June', role: 'item', label_vi: 'Thời gian'},
+              ],
+              notes: [
+                '**came** là dạng quá khứ (V2) bất quy tắc của **come**.',
+              ],
+            },
+          },
+          sentence('s2', 'I play today.'),
+        ],
+      },
+      new Date('2026-10-12T08:00:00.000Z'),
+    );
+    const tree = renderWithTheme(
+      <ComboSetScreen route={{params: {setId: SET_ID}}} />,
+    );
+    // The hero names the word and the tense.
+    const all = JSON.stringify(tree.toJSON());
+    expect(all).toContain('june');
+    expect(all).toContain('2 câu · Quá khứ đơn');
+    expect(has(tree, 'combo-grammar-s1')).toBe(false);
+    press(tree, 'combo-grammar-open-s1');
+    const grammar = textOf(tree, 'combo-grammar-s1');
+    expect(grammar).toContain('Quá khứ đơn · Khẳng định');
+    expect(grammar).toContain('S + V2/ed');
+    expect(grammar).toContain('Động từ · V2 của come');
+    expect(grammar).toContain('là dạng quá khứ (V2) bất quy tắc của');
+
+    press(tree, 'combo-grammar-open-s2');
+    const parts = textOf(tree, 'combo-grammar-s2');
+    expect(parts).toContain('Chủ ngữ');
+    expect(parts).toContain('Động từ');
+  });
+
+  it('reads a sentence aloud and saves it to the Library', async () => {
+    saveComboSet(
+      {
+        id: SET_ID,
+        itemCode: 'word:play',
+        grammarCode: 'grammar:present-simple',
+        situationCode: 'club',
+        sentences: [sentence('s1', 'I play here.')],
+      },
+      new Date('2026-10-12T08:00:00.000Z'),
+    );
+    const tree = renderWithTheme(
+      <ComboSetScreen route={{params: {setId: SET_ID}}} />,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    press(tree, 'combo-listen-s1');
+    expect(mockSpeak).toHaveBeenCalledWith('I play here.');
+    expect(textOf(tree, 'combo-listen-s1')).toContain('Đang đọc');
+
+    press(tree, 'combo-token-s1-1');
+    press(tree, 'combo-say-s1');
+    expect(mockSpeak).toHaveBeenLastCalledWith('play');
+
+    await act(async () => {
+      press(tree, 'combo-save-s1');
+    });
+    expect(textOf(tree, 'combo-save-s1')).toContain('Đã lưu');
+    expect(await loadSavedComboSentences()).toEqual([
+      expect.objectContaining({
+        id: 's1',
+        setId: SET_ID,
+        itemCode: 'word:play',
+        textEn: 'I play here.',
+      }),
+    ]);
+    await act(async () => {
+      press(tree, 'combo-save-s1');
+    });
+    expect(await loadSavedComboSentences()).toEqual([]);
   });
 
   it('reports a sentence with a reason', async () => {
@@ -558,6 +678,7 @@ describe('ComboSetScreen', () => {
     });
     expect(mocked.reportComboSentence).toHaveBeenCalledWith('s1', 'unnatural');
     expect(has(tree, 'combo-set-notice')).toBe(true);
+    expect(textOf(tree, 'combo-report-open-s1')).toContain('Đã báo');
   });
 });
 
@@ -631,5 +752,41 @@ describe('ComboHistoryList search', () => {
     expect(has(tree, 'combo-history-empty')).toBe(true);
     press(tree, 'combo-history-open-packs');
     expect(mockAppNavigation.openWordPath).toHaveBeenCalled();
+  });
+});
+
+describe('SavedComboSentencesList', () => {
+  it('lists the saved sentences, opens their set and unsaves one', async () => {
+    await AsyncStorage.setItem(
+      'combo_saved_sentences_v1',
+      JSON.stringify([
+        {
+          id: 's1',
+          setId: SET_ID,
+          itemCode: 'word:play',
+          textEn: 'I play here.',
+          textVi: 'Tôi chơi ở đây.',
+          savedAt: '2026-10-12T08:00:00.000Z',
+        },
+      ]),
+    );
+    const tree = renderWithTheme(<SavedComboSentencesList />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(textOf(tree, 'saved-sentence-s1')).toContain('Tôi chơi ở đây.');
+    press(tree, 'saved-sentence-listen-s1');
+    expect(mockSpeak).toHaveBeenCalledWith('I play here.');
+    const open = tree.root.findAll(
+      node =>
+        node.props.accessibilityHint === 'Mở bộ câu có câu này' &&
+        typeof node.props.onPress === 'function',
+    )[0]!;
+    act(() => open.props.onPress());
+    expect(mockAppNavigation.openComboSet).toHaveBeenCalledWith(SET_ID);
+    await act(async () => {
+      press(tree, 'saved-sentence-unsave-s1');
+    });
+    expect(has(tree, 'saved-sentences-empty')).toBe(true);
   });
 });

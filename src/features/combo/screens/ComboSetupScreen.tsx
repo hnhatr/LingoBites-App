@@ -2,18 +2,20 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {BottomActionBar} from '@ui/components/BottomActionBar';
-import {Chip} from '@ui/components/Chip';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {StickerButton} from '@ui/components/StickerButton';
+import {StickerFooter} from '@ui/components/StickerFooter';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import {useAppNavigation} from '@core/navigation';
 
+import {comboEdges} from '../components/comboEdges';
 import {
   mixTotal,
   type PolarityMix,
@@ -24,7 +26,7 @@ import {
   type Situation,
   SituationPickerSheet,
 } from '../components/SituationPickerSheet';
-import {TenseGrid} from '../components/TenseGrid';
+import {openTenseCount, TenseGrid, tenseNameVi} from '../components/TenseGrid';
 import {
   type ComboOptions,
   type ComboPolarity,
@@ -37,6 +39,7 @@ import {
   type ComboErrorNotice,
   comboFailureNotice,
 } from '../logic/comboErrors';
+import {comboWordLabel} from '../logic/comboHistoryGroups';
 import {
   listRecentSituationCodes,
   saveComboSet,
@@ -164,9 +167,11 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const situationTitle = situations.find(
     entry => entry.code === situation,
   )?.title_vi;
-  const tenseName = options?.tenses.find(
-    entry => entry.code === tense,
-  )?.name_en;
+  const pickedTense = options?.tenses.find(entry => entry.code === tense);
+  const tenseName = pickedTense ? tenseNameVi(t, pickedTense) : undefined;
+  const situationEn = situations.find(
+    entry => entry.code === situation,
+  )?.title_en;
   const countText =
     polarities.length > 1
       ? t('combo.setup.count_mix', {
@@ -233,6 +238,45 @@ export function ComboSetupScreen({navigation, route}: Props) {
     appNavigation.openComboSet(result.value.set_id);
   };
 
+  const step = (
+    number: number,
+    title: string,
+    aside: string | null,
+    body: React.ReactNode,
+  ) => (
+    <View style={styles.step}>
+      <View style={styles.stepHead}>
+        <View style={themedStyles.stepNumber}>
+          <AppText style={themedStyles.onTeal} variant="caption">
+            {number}
+          </AppText>
+        </View>
+        <AppText style={styles.grow} variant="h3">
+          {title}
+        </AppText>
+        {aside ? (
+          <AppText color="muted" variant="caption">
+            {aside}
+          </AppText>
+        ) : null}
+      </View>
+      {body}
+    </View>
+  );
+
+  const limit = (icon: HandoffIconName, label: string) => (
+    <View style={themedStyles.limit}>
+      <MaterialIcon
+        color={theme.colors.onTertiaryContainer}
+        name={icon}
+        size={13}
+      />
+      <AppText style={themedStyles.sunInk} variant="caption">
+        {label}
+      </AppText>
+    </View>
+  );
+
   return (
     <AppScreen>
       <ScreenHeader
@@ -249,129 +293,185 @@ export function ComboSetupScreen({navigation, route}: Props) {
           </AppCard>
         ) : null}
         {options ? (
-          <View style={styles.pills} testID="combo-setup-limits">
-            <Chip
-              label={t('combo.setup.ai_left', {count: options.ai_left_today})}
-              tone="gold"
-            />
-            <Chip
-              label={t('combo.setup.sets_left', {
-                count: options.sets_left_today,
-              })}
-              tone="gold"
-            />
-          </View>
-        ) : null}
-        {options ? (
-          <View style={styles.section}>
-            <AppText color="secondary" style={styles.heading} variant="label">
-              {t('combo.setup.situation')}
-            </AppText>
-            <Pressable
-              accessibilityHint={t('combo.setup.situation_field_hint')}
-              accessibilityLabel={
-                situationTitle ?? t('combo.setup.situation_placeholder')
-              }
-              accessibilityRole="button"
-              onPress={() => setPickerOpen(true)}
-              style={themedStyles.field}
-              testID="combo-setup-situation-field"
-            >
-              <AppText
-                color={situationTitle ? 'primary' : 'muted'}
-                style={styles.fieldText}
-              >
-                {situationTitle ?? t('combo.setup.situation_placeholder')}
-              </AppText>
-              <MaterialIcon
-                color={theme.colors.primary}
-                name="chevron_right"
-                size={22}
-              />
-            </Pressable>
-          </View>
-        ) : null}
-        {options ? (
-          <View style={styles.section}>
-            <AppText color="secondary" style={styles.heading} variant="label">
-              {t('combo.setup.tense')}
-            </AppText>
-            {locked ? (
-              <View style={themedStyles.note} testID="combo-setup-locked">
-                <AppText color="secondary">{t('combo.setup.locked')}</AppText>
-              </View>
-            ) : (
-              <TenseGrid
-                onSelect={setTense}
-                selected={tense}
-                tenses={options.tenses}
-              />
-            )}
-          </View>
-        ) : null}
-        {options ? (
-          <View style={styles.section}>
-            <View style={styles.headingRow}>
-              <AppText color="secondary" style={styles.heading} variant="label">
-                {t('combo.setup.groups')}
-              </AppText>
-              <AppText color="muted" variant="caption">
-                {t('combo.setup.groups_many')}
-              </AppText>
-            </View>
-            <View style={styles.chips}>
-              {options.subject_groups.map(group => (
-                <Chip
-                  key={group}
-                  label={t(`combo.setup.group.${group}`, {defaultValue: group})}
-                  onPress={() => toggleGroup(group)}
-                  selected={groups.includes(group)}
-                  testID={`combo-setup-group-${group}`}
+          <View style={themedStyles.word}>
+            <View style={styles.wordTop}>
+              <View style={themedStyles.tile}>
+                <MaterialIcon
+                  color={theme.colors.onTertiaryContainer}
+                  name="style"
+                  size={24}
                 />
-              ))}
+              </View>
+              <View style={styles.grow}>
+                <AppText numberOfLines={1} variant="h2">
+                  {comboWordLabel(itemCode)}
+                </AppText>
+                <AppText color="muted" variant="caption">
+                  {t('combo.setup.word_hint')}
+                </AppText>
+              </View>
+            </View>
+            <View style={styles.chips} testID="combo-setup-limits">
+              {limit(
+                'bolt',
+                t('combo.setup.ai_left', {count: options.ai_left_today}),
+              )}
+              {limit(
+                'style',
+                t('combo.setup.sets_left', {count: options.sets_left_today}),
+              )}
             </View>
           </View>
         ) : null}
-        {options ? (
-          <View style={styles.section}>
-            <AppText color="secondary" style={styles.heading} variant="label">
-              {polarities.length > 1
-                ? t('combo.setup.count_by_polarity')
-                : t('combo.setup.count')}
-            </AppText>
-            {polarities.length > 1 ? (
-              <PolarityMixPicker
-                max={Math.max(...batchSizes)}
-                mix={mix}
-                onChange={setMix}
-                polarities={polarities}
-                step={Math.min(...batchSizes)}
-              />
-            ) : (
-              <SegmentedChoice
-                accessibilityHint={t('combo.setup.choice_hint')}
-                onSelect={key =>
-                  setMix(polarities[0] ? {[polarities[0]]: Number(key)} : {})
+        {options
+          ? step(
+              1,
+              t('combo.setup.situation'),
+              null,
+              <Pressable
+                accessibilityHint={t('combo.setup.situation_field_hint')}
+                accessibilityLabel={
+                  situationTitle ?? t('combo.setup.situation_placeholder')
                 }
-                options={batchSizes.map(size => ({
-                  key: String(size),
-                  label: t('combo.setup.count_value', {count: size}),
-                  testID: `combo-setup-count-${size}`,
-                }))}
-                selected={String(total)}
-              />
-            )}
-          </View>
-        ) : null}
+                accessibilityRole="button"
+                onPress={() => setPickerOpen(true)}
+                style={themedStyles.field}
+                testID="combo-setup-situation-field"
+              >
+                <View style={themedStyles.fieldIcon}>
+                  <MaterialIcon
+                    color={theme.colors.primary}
+                    name="event_note"
+                    size={20}
+                  />
+                </View>
+                <View style={styles.grow}>
+                  <AppText
+                    color={situationTitle ? 'primary' : 'muted'}
+                    numberOfLines={1}
+                    variant="label"
+                  >
+                    {situationTitle ?? t('combo.setup.situation_placeholder')}
+                  </AppText>
+                  {situationEn ? (
+                    <AppText color="muted" numberOfLines={1} variant="caption">
+                      {situationEn}
+                    </AppText>
+                  ) : null}
+                </View>
+                <MaterialIcon
+                  color={theme.colors.text.muted}
+                  name="chevron_right"
+                  size={22}
+                />
+              </Pressable>,
+            )
+          : null}
+        {options
+          ? step(
+              2,
+              t('combo.setup.tense'),
+              locked
+                ? null
+                : t('combo.setup.tenses_open', {
+                    count: openTenseCount(options.tenses),
+                  }),
+              locked ? (
+                <View style={themedStyles.note} testID="combo-setup-locked">
+                  <AppText color="secondary">{t('combo.setup.locked')}</AppText>
+                </View>
+              ) : (
+                <TenseGrid
+                  onSelect={setTense}
+                  selected={tense}
+                  tenses={options.tenses}
+                />
+              ),
+            )
+          : null}
+        {options
+          ? step(
+              3,
+              t('combo.setup.groups'),
+              t('combo.setup.groups_many'),
+              <View style={styles.chips}>
+                {options.subject_groups.map(group => {
+                  const on = groups.includes(group);
+                  return (
+                    <Pressable
+                      accessibilityRole="checkbox"
+                      accessibilityState={{checked: on}}
+                      key={group}
+                      onPress={() => toggleGroup(group)}
+                      style={[
+                        themedStyles.subject,
+                        on ? themedStyles.subjectOn : null,
+                      ]}
+                      testID={`combo-setup-group-${group}`}
+                    >
+                      {on ? (
+                        <MaterialIcon
+                          color={theme.colors.primary}
+                          name="check_circle"
+                          size={15}
+                        />
+                      ) : null}
+                      <AppText
+                        style={on ? themedStyles.teal : themedStyles.plain}
+                        variant="label"
+                      >
+                        {t(`combo.setup.group.${group}`, {
+                          defaultValue: group,
+                        })}
+                      </AppText>
+                    </Pressable>
+                  );
+                })}
+              </View>,
+            )
+          : null}
+        {options
+          ? step(
+              4,
+              polarities.length > 1
+                ? t('combo.setup.count_by_polarity')
+                : t('combo.setup.count'),
+              batchSizes.length > 0
+                ? t('combo.setup.count_max', {count: Math.max(...batchSizes)})
+                : null,
+              polarities.length > 1 ? (
+                <PolarityMixPicker
+                  max={Math.max(...batchSizes)}
+                  mix={mix}
+                  onChange={setMix}
+                  polarities={polarities}
+                  step={Math.min(...batchSizes)}
+                />
+              ) : (
+                <SegmentedChoice
+                  accessibilityHint={t('combo.setup.choice_hint')}
+                  onSelect={key =>
+                    setMix(polarities[0] ? {[polarities[0]]: Number(key)} : {})
+                  }
+                  options={batchSizes.map(size => ({
+                    key: String(size),
+                    label: t('combo.setup.count_value', {count: size}),
+                    testID: `combo-setup-count-${size}`,
+                  }))}
+                  selected={String(total)}
+                />
+              ),
+            )
+          : null}
       </ScrollView>
       {options ? (
-        <BottomActionBar>
+        <StickerFooter>
           <AppText
-            color={ready ? 'primary' : 'muted'}
+            color={ready ? 'secondary' : 'muted'}
             numberOfLines={2}
             style={styles.summary}
             testID="combo-setup-summary"
-            variant="label"
+            variant="caption"
           >
             {summary}
           </AppText>
@@ -396,14 +496,14 @@ export function ComboSetupScreen({navigation, route}: Props) {
               {t('combo.errors.request_id', {id: startError.requestId})}
             </AppText>
           ) : null}
-          <AppButton
+          <StickerButton
             disabled={!ready || busy}
+            icon="auto_awesome"
+            label={t('combo.setup.start')}
             onPress={start}
             testID="combo-setup-start"
-            title={t('combo.setup.start')}
-            variant="secondary"
           />
-        </BottomActionBar>
+        </StickerFooter>
       ) : null}
       {pickerOpen ? (
         <SituationPickerSheet
@@ -426,50 +526,117 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  fieldText: {
-    flex: 1,
-  },
   fill: {
     flex: 1,
   },
-  heading: {
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+  grow: {
+    flex: 1,
+    minWidth: 0,
   },
-  headingRow: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  pills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  step: {
     gap: 8,
   },
-  section: {
+  stepHead: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: 8,
+    paddingHorizontal: 4,
   },
   summary: {
     textAlign: 'center',
   },
+  wordTop: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
 });
 
 function makeStyles(theme: AppTheme) {
+  const edge = theme.colors.surfaceHigh;
   return StyleSheet.create({
     container: {
-      gap: theme.spacing.lg,
-      padding: theme.spacing.md,
+      gap: 18,
+      paddingBottom: theme.spacing.xl,
+      paddingHorizontal: theme.gutter,
+      paddingTop: theme.spacing.xs,
+    },
+    word: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 22,
+      gap: 10,
+      padding: 14,
+      ...getStickerEdge(4, edge),
+    },
+    tile: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 16,
+      height: 48,
+      justifyContent: 'center',
+      width: 48,
+      ...getStickerEdge(3, comboEdges(theme).sun),
+    },
+    limit: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: theme.radius.pill,
+      flexDirection: 'row',
+      gap: 5,
+      paddingHorizontal: 9,
+      paddingVertical: 4,
+    },
+    sunInk: {
+      color: theme.colors.onTertiaryContainer,
+    },
+    stepNumber: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 8,
+      height: 22,
+      justifyContent: 'center',
+      width: 22,
+    },
+    onTeal: {
+      color: theme.colors.text.inverse,
     },
     field: {
       alignItems: 'center',
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.lg,
-      borderWidth: 1,
+      borderRadius: 18,
       flexDirection: 'row',
-      gap: theme.spacing.sm,
-      minHeight: 48,
-      paddingHorizontal: theme.spacing.md,
+      gap: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      ...getStickerEdge(3, edge),
+    },
+    fieldIcon: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: 12,
+      height: 36,
+      justifyContent: 'center',
+      width: 36,
+    },
+    subject: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 14,
+      flexDirection: 'row',
+      gap: 6,
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      ...getStickerEdge(3, edge),
+    },
+    subjectOn: {
+      backgroundColor: theme.colors.accentSoft,
+      ...getStickerEdge(3, comboEdges(theme).mint),
+    },
+    teal: {
+      color: theme.colors.primary,
+    },
+    plain: {
+      color: theme.colors.text.secondary,
     },
     note: {
       backgroundColor: theme.colors.surfaceLow,

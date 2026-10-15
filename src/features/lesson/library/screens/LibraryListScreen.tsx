@@ -7,7 +7,11 @@ import {
   View,
 } from 'react-native';
 
-import {ComboHistoryList, listLocalComboSets} from '@features/combo';
+import {
+  ComboHistoryList,
+  listLocalComboSets,
+  SavedComboSentencesList,
+} from '@features/combo';
 import {ComposeRequestCards} from '@features/lesson/player';
 import {WordPathList} from '@features/wordPath';
 
@@ -99,7 +103,13 @@ export function LibraryListScreen({navigation, route}: Props) {
       <SearchAndFilterBar
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        placeholder={section.combos ? 'Tìm theo từ…' : undefined}
+        placeholder={
+          section.combos
+            ? 'Tìm theo từ…'
+            : section.savedSentences
+              ? 'Tìm câu…'
+              : undefined
+        }
       />
       <View style={styles.content} testID={`library-list-${section.id}`}>
         {section.moments ? (
@@ -110,6 +120,8 @@ export function LibraryListScreen({navigation, route}: Props) {
             sets={listLocalComboSets()}
             showPackLink
           />
+        ) : section.savedSentences ? (
+          <SavedComboSentencesList query={searchQuery} />
         ) : section.wordPath ? (
           <WordPathList query={searchQuery} />
         ) : section.catalog ? (

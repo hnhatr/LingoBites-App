@@ -1,30 +1,42 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
-import {AppButton} from '@ui/components/AppButton';
+import {useSpeak} from '@features/audio';
+
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {StickerButton} from '@ui/components/StickerButton';
+import {StickerFooter} from '@ui/components/StickerFooter';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
-import {useAppNavigation} from '@core/navigation';
-
+import {comboEdges} from '../components/comboEdges';
+import {
+  ComboSentenceCard,
+  type ReportState,
+} from '../components/ComboSentenceCard';
 import {
   addToComboSet,
   type ComboReportReason,
   type ComboSentence,
-  type ComboToken,
   fetchComboSet,
   reportComboSentence,
 } from '../logic/comboClient';
 import {comboFailureNotice} from '../logic/comboErrors';
+import {comboWordLabel} from '../logic/comboHistoryGroups';
 import {
   type LocalComboSet,
   readLocalComboSet,
   saveComboSet,
 } from '../logic/comboSetRepository';
+import {
+  loadSavedComboSentences,
+  toggleSavedComboSentence,
+} from '../logic/savedComboSentences';
 import type {ComboSetRouteParams} from './navigationTypes';
 
 type Props = {
@@ -32,33 +44,24 @@ type Props = {
   route?: {params: ComboSetRouteParams};
 };
 
-const REASONS: ComboReportReason[] = [
-  'wrong_meaning',
-  'unnatural',
-  'wrong_tense',
-  'wrong_subject',
-  'other',
-];
-
-/** How a word is shown: the item and the verb stand out, the subject is plain. */
-function toneOf(token: ComboToken): 'item' | 'verb' | 'plain' {
-  if (token.role === 'item') return 'item';
-  if (token.role === 'verb') return 'verb';
-  return 'plain';
+/** How long "Đang đọc" stays on: about the time the sentence takes to read. */
+function readingMs(text: string): number {
+  return Math.max(1500, text.split(/\s+/).length * 450);
 }
 
 /**
- * Vocab path P5: a combo set. Sentences with their words coloured by role; tap a
- * word for its IPA; show or hide the Vietnamese; add a batch; report a sentence.
- * The set is read from the device when it is there, so it works offline.
+ * Vocab path P5: a combo set. Each sentence card shows its words (tap one for
+ * its IPA and to hear it), the Vietnamese, the grammar breakdown, and a bar to
+ * read it aloud, save it ("Câu đã lưu" in the Library) or report it. The set is
+ * read from the device when it is there, so it works offline.
  *
  * IGNORE_TAB_BAR_CLEARANCE: a root-stack screen, drawn above the tab bar.
  */
 export function ComboSetScreen({navigation, route}: Props) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
-  const appNavigation = useAppNavigation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const {speak} = useSpeak();
   const setId = route?.params.setId ?? '';
   const [set, setSet] = useState<LocalComboSet | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -67,10 +70,25 @@ export function ComboSetScreen({navigation, route}: Props) {
     sentence: string;
     index: number;
   } | null>(null);
+  const [grammarOpen, setGrammarOpen] = useState<Set<string>>(new Set());
+  const [playing, setPlaying] = useState<string | null>(null);
+  const playingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saved, setSaved] = useState<Set<string>>(new Set());
   const [reporting, setReporting] = useState<string | null>(null);
   const [reported, setReported] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    loadSavedComboSentences().then(list => {
+      if (active) setSaved(new Set(list.map(entry => entry.id)));
+    });
+    return () => {
+      active = false;
+      if (playingTimer.current) clearTimeout(playingTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -158,13 +176,74 @@ export function ComboSetScreen({navigation, route}: Props) {
     }
   };
 
+  const play = (sentence: ComboSentence) => {
+    if (playingTimer.current) clearTimeout(playingTimer.current);
+    setPlaying(sentence.id);
+    speak(sentence.text_en);
+    playingTimer.current = setTimeout(
+      () => setPlaying(null),
+      readingMs(sentence.text_en),
+    );
+  };
+
+  const toggleSave = async (sentence: ComboSentence) => {
+    const list = await toggleSavedComboSentence(
+      {
+        id: sentence.id,
+        setId,
+        itemCode: set?.itemCode ?? '',
+        textEn: sentence.text_en,
+        textVi: sentence.text_vi,
+      },
+      new Date(),
+    );
+    setSaved(new Set(list.map(entry => entry.id)));
+  };
+
+  const toggleIn = (
+    update: React.Dispatch<React.SetStateAction<Set<string>>>,
+    id: string,
+  ) =>
+    update(current => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const reportState = (id: string): ReportState =>
+    reported.has(id) ? 'done' : reporting === id ? 'open' : 'idle';
+
+  const header = (
+    <ScreenHeader
+      onBack={() => navigation?.goBack?.()}
+      rightAction={
+        set ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setShowVi(value => !value)}
+            style={themedStyles.pill}
+            testID="combo-set-toggle-vi"
+          >
+            <MaterialIcon
+              color={theme.colors.primary}
+              name="visibility"
+              size={15}
+            />
+            <AppText style={themedStyles.teal} variant="caption">
+              {showVi ? t('combo.set.hide_vi') : t('combo.set.show_vi')}
+            </AppText>
+          </Pressable>
+        ) : undefined
+      }
+      title={t('combo.set.title')}
+    />
+  );
+
   if (loadFailed) {
     return (
       <AppScreen>
-        <ScreenHeader
-          onBack={() => navigation?.goBack?.()}
-          title={t('combo.set.title')}
-        />
+        {header}
         <AppCard testID="combo-set-failed">
           <AppText color="secondary">{t('combo.set.load_failed')}</AppText>
         </AppCard>
@@ -172,126 +251,167 @@ export function ComboSetScreen({navigation, route}: Props) {
     );
   }
 
+  const word = set ? comboWordLabel(set.itemCode) : '';
+  const tenseName = set?.sentences.find(sentence => sentence.analysis?.tense)
+    ?.analysis?.tense?.name_vi;
+  const subline = set
+    ? [t('combo.set.count', {count: set.sentences.length}), tenseName]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
+
   return (
     <AppScreen>
-      <ScreenHeader
-        onBack={() => navigation?.goBack?.()}
-        title={t('combo.set.title')}
-      />
+      {header}
       <ScrollView contentContainerStyle={themedStyles.container}>
-        <AppButton
-          onPress={() => setShowVi(value => !value)}
-          testID="combo-set-toggle-vi"
-          title={showVi ? t('combo.set.hide_vi') : t('combo.set.show_vi')}
-          variant="outline"
-        />
         {set === null ? (
           <AppText color="secondary">{t('combo.set.loading')}</AppText>
-        ) : null}
-        {set?.sentences.map(sentence => (
-          <AppCard key={sentence.id} testID={`combo-sentence-${sentence.id}`}>
-            <View style={themedStyles.words}>
-              {sentence.tokens.map((token, index) => (
-                <Pressable
-                  key={`${sentence.id}-${index}`}
-                  accessibilityRole="button"
-                  onPress={() =>
-                    setTapped(current =>
-                      current?.sentence === sentence.id &&
-                      current.index === index
-                        ? null
-                        : {sentence: sentence.id, index},
-                    )
-                  }
-                  testID={`combo-token-${sentence.id}-${index}`}
-                >
-                  <AppText
-                    color={
-                      toneOf(token) === 'item'
-                        ? 'primary'
-                        : toneOf(token) === 'verb'
-                          ? 'secondary'
-                          : 'muted'
-                    }
-                    variant="h3"
-                  >
-                    {token.t}
-                  </AppText>
-                </Pressable>
-              ))}
-            </View>
-            {tapped?.sentence === sentence.id &&
-            sentence.tokens[tapped.index] ? (
-              <AppText color="secondary" testID={`combo-ipa-${sentence.id}`}>
-                {sentence.tokens[tapped.index]!.ipa ?? t('combo.set.no_ipa')}
-              </AppText>
-            ) : null}
-            {showVi ? (
-              <AppText color="secondary">{sentence.text_vi}</AppText>
-            ) : null}
-            {reported.has(sentence.id) ? (
-              <AppText color="muted">{t('combo.set.already_reported')}</AppText>
-            ) : reporting === sentence.id ? (
-              REASONS.map(reason => (
-                <AppButton
-                  key={reason}
-                  disabled={busy}
-                  onPress={() => report(sentence, reason)}
-                  testID={`combo-report-${sentence.id}-${reason}`}
-                  title={t(`combo.report.${reason}`)}
-                  variant="outline"
+        ) : (
+          <>
+            <View style={styles.hero}>
+              <View style={themedStyles.tile}>
+                <MaterialIcon
+                  color={theme.colors.onTertiaryContainer}
+                  name="style"
+                  size={24}
                 />
-              ))
-            ) : (
-              <AppButton
-                onPress={() => setReporting(sentence.id)}
-                testID={`combo-report-open-${sentence.id}`}
-                title={t('combo.set.report')}
-                variant="outline"
-              />
-            )}
-          </AppCard>
+              </View>
+              <View style={styles.heroText}>
+                <AppText numberOfLines={1} variant="h1">
+                  {word || t('combo.set.title')}
+                </AppText>
+                <AppText color="muted" variant="caption">
+                  {subline}
+                </AppText>
+              </View>
+            </View>
+            {set.sentences.length > 0 ? (
+              <View style={themedStyles.tip}>
+                <MaterialIcon
+                  color={theme.colors.onTertiaryContainer}
+                  name="lightbulb"
+                  size={16}
+                />
+                <AppText style={themedStyles.sunInk} variant="caption">
+                  {t('combo.set.tip')}
+                </AppText>
+              </View>
+            ) : null}
+          </>
+        )}
+        {set?.sentences.map((sentence, number) => (
+          <ComboSentenceCard
+            busy={busy}
+            grammarOpen={grammarOpen.has(sentence.id)}
+            key={sentence.id}
+            number={number + 1}
+            onOpenReport={() =>
+              setReporting(current =>
+                current === sentence.id ? null : sentence.id,
+              )
+            }
+            onPlay={() => play(sentence)}
+            onReport={reason => report(sentence, reason)}
+            onSayWord={speak}
+            onTapToken={index =>
+              setTapped(current =>
+                current?.sentence === sentence.id && current.index === index
+                  ? null
+                  : {sentence: sentence.id, index},
+              )
+            }
+            onToggleGrammar={() => toggleIn(setGrammarOpen, sentence.id)}
+            onToggleSave={() => toggleSave(sentence)}
+            playing={playing === sentence.id}
+            report={reportState(sentence.id)}
+            saved={saved.has(sentence.id)}
+            sentence={sentence}
+            showVi={showVi}
+            tappedIndex={tapped?.sentence === sentence.id ? tapped.index : null}
+          />
         ))}
         {set && set.sentences.length === 0 ? (
           <AppCard testID="combo-set-empty">
             <AppText color="secondary">{t('combo.set.empty')}</AppText>
           </AppCard>
         ) : null}
-        {set && lastBatch > 0 ? (
-          <AppButton
-            disabled={busy || batchSize === 0}
-            onPress={addBatch}
-            testID="combo-set-more"
-            title={t('combo.set.more')}
-            variant="secondary"
-          />
-        ) : null}
         {notice ? (
           <AppText color="secondary" testID="combo-set-notice">
             {notice}
           </AppText>
         ) : null}
-        <AppButton
-          onPress={() => appNavigation.goBack()}
-          testID="combo-set-back"
-          title={t('combo.set.back')}
-          variant="outline"
-        />
       </ScrollView>
+      {set && lastBatch > 0 ? (
+        <StickerFooter>
+          <StickerButton
+            disabled={busy || batchSize === 0}
+            icon="add"
+            label={t('combo.set.more', {count: batchSize})}
+            onPress={addBatch}
+            testID="combo-set-more"
+          />
+        </StickerFooter>
+      ) : null}
     </AppScreen>
   );
 }
 
+const styles = StyleSheet.create({
+  hero: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 4,
+  },
+  heroText: {
+    flex: 1,
+    gap: 1,
+    minWidth: 0,
+  },
+});
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
-      gap: theme.spacing.md,
-      padding: theme.spacing.md,
+      gap: 14,
+      paddingBottom: theme.spacing.xl,
+      paddingHorizontal: theme.gutter,
+      paddingTop: theme.spacing.xs,
     },
-    words: {
+    pill: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.pill,
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs,
+      gap: 6,
+      paddingHorizontal: 11,
+      paddingVertical: 7,
+      ...getStickerEdge(2, theme.colors.surfaceHigh),
+    },
+    teal: {
+      color: theme.colors.primary,
+    },
+    tile: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 16,
+      height: 48,
+      justifyContent: 'center',
+      width: 48,
+      ...getStickerEdge(3, comboEdges(theme).sun),
+    },
+    tip: {
+      alignItems: 'center',
+      backgroundColor: theme.colors.tertiarySoft,
+      borderRadius: 14,
+      flexDirection: 'row',
+      gap: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    sunInk: {
+      color: theme.colors.onTertiaryContainer,
+      flex: 1,
     },
   });
 }
