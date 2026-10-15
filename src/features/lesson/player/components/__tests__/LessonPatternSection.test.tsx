@@ -68,25 +68,14 @@ describe('LessonPatternSection', () => {
     ).toBe('cỡ: small, chạm để đổi');
   });
 
-  it('moves a slot to its next value on tap and wraps around', () => {
+  it("lists the first slot's values and rebuilds the sentence from a pick", () => {
     const onSpeakText = jest.fn();
     const tree = render({onSpeakText});
-    const slot = () => pressable(tree, `lesson-pattern-${KEY}-slot-size`);
-    act(() => slot().props.onPress());
-    act(() => slot().props.onPress());
-    expect(speakLabel(tree)).toBe('Nghe: Can I have a large coffee, please?');
-    act(() => slot().props.onPress());
-    act(() => pressable(tree, `lesson-pattern-${KEY}-speak`).props.onPress());
-    expect(onSpeakText).toHaveBeenCalledWith(
-      'Can I have a small coffee, please?',
-    );
-  });
-
-  it('lists every value on long press and picks one', () => {
-    const tree = render({onSpeakText: jest.fn()});
-    expect(byTestId(tree, `lesson-pattern-${KEY}-choices`)).toHaveLength(0);
+    expect(
+      byTestId(tree, `lesson-pattern-${KEY}-choices`).length,
+    ).toBeGreaterThan(0);
     act(() =>
-      pressable(tree, `lesson-pattern-${KEY}-slot-drink`).props.onLongPress(),
+      pressable(tree, `lesson-pattern-${KEY}-slot-drink`).props.onPress(),
     );
     act(() =>
       pressable(tree, `lesson-pattern-${KEY}-choice-drink-3`).props.onPress(),
@@ -94,12 +83,26 @@ describe('LessonPatternSection', () => {
     expect(speakLabel(tree)).toBe(
       'Nghe: Can I have a small orange juice, please?',
     );
-    expect(byTestId(tree, `lesson-pattern-${KEY}-choices`)).toHaveLength(0);
+    // The values stay open so the learner can try another one.
+    expect(
+      byTestId(tree, `lesson-pattern-${KEY}-choices`).length,
+    ).toBeGreaterThan(0);
+    act(() => pressable(tree, `lesson-pattern-${KEY}-speak`).props.onPress());
+    expect(onSpeakText).toHaveBeenCalledWith(
+      'Can I have a small orange juice, please?',
+    );
   });
 
   it('shows variants, common errors and examples', () => {
     const tree = render({});
     const entry = patterns()[0]!;
+    // Errors are open; the other two rows open on tap.
+    act(() =>
+      pressable(tree, `lesson-pattern-${KEY}-variants-toggle`).props.onPress(),
+    );
+    act(() =>
+      pressable(tree, `lesson-pattern-${KEY}-examples-toggle`).props.onPress(),
+    );
     const json = JSON.stringify(tree.toJSON());
     entry.variants.forEach(variant => expect(json).toContain(variant.text));
     entry.errors.forEach(error => {

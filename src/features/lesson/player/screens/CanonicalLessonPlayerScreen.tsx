@@ -280,6 +280,14 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
   }, [composeSheetShown, sheetRequested]);
   const isYouTube = isYouTubeStudy || isYouTubeLegacy;
   const inSection = snapshot !== null && !isYouTube && view !== 'hub';
+  // These sections page through their cards and keep their own scroll area
+  // above the previous / next buttons.
+  const pagedSection =
+    inSection &&
+    (view === 'sentences' ||
+      view === 'vocabulary' ||
+      view === 'patterns' ||
+      view === 'listening');
 
   const openView = useCallback((next: PlayerView) => {
     setView(next);
@@ -448,6 +456,8 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         analysisStates={analysisStates}
         onSpeakText={handleSpeak}
         vocabularySave={savedItems.vocabulary}
+        grammarSave={savedItems.grammar}
+        onFinish={() => openView('hub')}
         videoLessons={videoLessons}
         onOpenVideoLesson={appNavigation.openLesson}
         onPlayVideo={handlePlayVideo}
@@ -601,8 +611,10 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         return (
           <LessonVocabularySection
             entries={vocabulary}
+            onFinish={() => openView('hub')}
             onSpeakText={handleSpeak}
             saveControl={savedItems.vocabulary}
+            sentences={snapshot.sentences}
           />
         );
       case 'grammar':
@@ -616,6 +628,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         return (
           <LessonPatternSection
             entries={patterns}
+            onFinish={() => openView('hub')}
             onSpeakText={handleSpeak}
             saveControl={savedItems.patterns}
           />
@@ -631,6 +644,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
         return (
           <LessonListeningSection
             entries={listening}
+            onFinish={() => openView('hub')}
             onSpeakText={handleSpeak}
           />
         );
@@ -736,7 +750,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
           </AppText>
         </View>
       ) : null}
-      {studyReady ? (
+      {studyReady || pagedSection ? (
         <View style={themedStyles.study} testID="canonical-player-screen">
           {renderBody()}
         </View>

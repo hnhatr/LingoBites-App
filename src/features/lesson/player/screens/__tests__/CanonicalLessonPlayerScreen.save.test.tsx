@@ -308,6 +308,10 @@ describe('CanonicalLessonPlayerScreen save actions', () => {
       pressable(tree, 'lesson-vocabulary-save-word:coffee').props.onPress();
     });
     expect(label(tree, 'lesson-vocabulary-save-word:coffee')).toBe('Đã lưu');
+    // One flashcard at a time: move on to the next word.
+    act(() => {
+      pressable(tree, 'lesson-vocabulary-next').props.onPress();
+    });
     expect(label(tree, 'lesson-vocabulary-save-word:tea')).toBe('Lưu thẻ');
   });
 });

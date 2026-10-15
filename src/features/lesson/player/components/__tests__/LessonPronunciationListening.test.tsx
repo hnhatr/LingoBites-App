@@ -87,7 +87,9 @@ describe('LessonPronunciationSection', () => {
     const options = [0, 1].map(index =>
       pressable(tree, `${quizId}-option-${index}`),
     );
-    const wrong = options.find(option => option.props.title !== heard)!;
+    const wrong = options.find(
+      option => option.props.accessibilityLabel !== heard,
+    )!;
     act(() => wrong.props.onPress());
     expect(JSON.stringify(tree.toJSON())).toContain('Chưa đúng');
 
@@ -96,7 +98,7 @@ describe('LessonPronunciationSection', () => {
     const nextHeard = onSpeakText.mock.calls.at(-1)?.[0];
     const right = [0, 1]
       .map(index => pressable(tree, `${quizId}-option-${index}`))
-      .find(option => option.props.title === nextHeard)!;
+      .find(option => option.props.accessibilityLabel === nextHeard)!;
     act(() => right.props.onPress());
     expect(JSON.stringify(tree.toJSON())).toContain('Đúng rồi.');
   });
@@ -136,6 +138,32 @@ describe('LessonListeningSection', () => {
     act(() => pressable(tree, `${id}-reveal`).props.onPress());
     expect(byTestId(tree, `${id}-answer`).length).toBeGreaterThan(0);
     expect(JSON.stringify(tree.toJSON())).toContain('The size');
+  });
+
+  it('moves to the next question from the bottom button once revealed', () => {
+    const second: LessonListeningEntry = {
+      ...LISTENING,
+      key: 'listening:second',
+      questionEn: 'Second question?',
+    };
+    const onFinish = jest.fn();
+    const tree = render(
+      <LessonListeningSection
+        entries={[LISTENING, second]}
+        onFinish={onFinish}
+      />,
+    );
+    const first = `lesson-listening-${LISTENING.key}`;
+    expect(byTestId(tree, 'lesson-listening-next')).toHaveLength(0);
+    act(() => pressable(tree, `${first}-reveal`).props.onPress());
+    act(() => pressable(tree, 'lesson-listening-next').props.onPress());
+    expect(byTestId(tree, first)).toHaveLength(0);
+    expect(JSON.stringify(tree.toJSON())).toContain('Second question?');
+    act(() =>
+      pressable(tree, `lesson-listening-${second.key}-reveal`).props.onPress(),
+    );
+    act(() => pressable(tree, 'lesson-listening-done').props.onPress());
+    expect(onFinish).toHaveBeenCalledTimes(1);
   });
 
   it('shows an empty state', () => {
