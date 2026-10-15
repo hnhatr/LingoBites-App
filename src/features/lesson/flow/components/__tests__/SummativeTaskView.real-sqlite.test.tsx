@@ -19,7 +19,11 @@ jest.mock('@core/api/appConfig', () => ({getAppConfig: jest.fn()}));
 jest.mock('@core/api/authenticatedFetch', () => ({
   authenticatedFetch: jest.fn(),
 }));
-jest.mock('@features/audio', () => ({speak: jest.fn()}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock(
+    jest.fn(() => Promise.resolve({ok: true})),
+  ),
+);
 jest.mock('@features/speaking', () => ({
   isEvaluationConsentOn: () => false,
   loadLessonRecorder: () => null,

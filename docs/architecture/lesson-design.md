@@ -339,7 +339,7 @@ Còn lại (P6): `PatternLibraryScreen`, `TenseMapScreen`, ôn bậc 3 dạng vi
 
 Thiết kế: [`superpowers/plans/2026-10-12-pronunciation-architecture.md`](../superpowers/plans/2026-10-12-pronunciation-architecture.md) (so sánh hướng: [`2026-10-11-speech-pronunciation-feedback-options.md`](../superpowers/plans/2026-10-11-speech-pronunciation-feedback-options.md)).
 Đã có: nghe mẫu qua `useSpeak`, bài "Nghe và chọn" (`minimalPairQuiz.ts`).
-Chưa có: thử Azure trên clip thật (bước 0), server chấm (assessor, transcode, worker, API), màn luyện phát âm trên App. Cần trả lời 5 câu ở §11 của file thiết kế trước. Việc nhỏ còn nợ: cache kiểm tra giọng en-US; các lời gọi `speak` ở ôn tập, gợi ý, bài tập nói chưa dùng `useSpeak`.
+Chưa có: thử Azure trên clip thật (bước 0), server chấm (assessor, transcode, worker, API), màn luyện phát âm trên App. Cần trả lời 5 câu ở §11 của file thiết kế trước. Việc nhỏ còn nợ: cache kiểm tra giọng en-US; shadowing vẫn nuốt lỗi đọc mẫu (ôn tập, gợi ý, bài tập nói, kiểm tra đầu vào đã chuyển sang `useSpeak` ngày 2026-10-15).
 
 ### 8.6 Ý tưởng chưa có thiết kế 💭 (lộ trình 8 bước, Bước 7–8)
 

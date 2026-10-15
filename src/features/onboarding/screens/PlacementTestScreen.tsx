@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
+import {SpeechNotice, useSpeak} from '@features/audio';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
@@ -46,6 +46,7 @@ export function PlacementTestScreen({route}: Props) {
   const profile = useLearnerProfileStore(state => state.profile);
   const [phase, setPhase] = useState<Phase>({kind: 'loading'});
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const {speak, notice: speechNotice} = useSpeak();
 
   const load = useCallback(async () => {
     setPhase({kind: 'loading'});
@@ -65,8 +66,8 @@ export function PlacementTestScreen({route}: Props) {
     phase.kind === 'question' ? phase.questions[phase.index] : null;
 
   useEffect(() => {
-    if (question) speak(question.prompt_en).catch(() => {});
-  }, [question]);
+    if (question) speak(question.prompt_en);
+  }, [question, speak]);
 
   async function leave() {
     if (mode === 'onboarding' && profile) {
@@ -149,13 +150,12 @@ export function PlacementTestScreen({route}: Props) {
             <AppText>{question.prompt_vi}</AppText>
             <AppButton
               iconLeft="volume_up"
-              onPress={() => {
-                speak(question.prompt_en).catch(() => {});
-              }}
+              onPress={() => speak(question.prompt_en)}
               testID="placement-listen"
               title={t('learnerOnboarding.listen')}
               variant="secondary"
             />
+            <SpeechNotice notice={speechNotice} />
             <View style={styles.options}>
               {question.options.map(option => (
                 <AppButton

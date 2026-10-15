@@ -33,7 +33,11 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
-jest.mock('@features/audio', () => ({speak: jest.fn(() => Promise.resolve())}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock(
+    jest.fn(() => Promise.resolve({ok: true})),
+  ),
+);
 
 jest.mock('../../logic/learnerProfileClient', () => ({
   fetchLearnerProfile: jest.fn(),

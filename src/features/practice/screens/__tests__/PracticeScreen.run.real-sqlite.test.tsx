@@ -19,9 +19,11 @@ import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 
 import {PracticeScreen} from '../PracticeScreen';
 
-jest.mock('@features/audio', () => ({
-  speak: jest.fn(() => Promise.resolve({ok: true})),
-}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock(
+    jest.fn(() => Promise.resolve({ok: true})),
+  ),
+);
 jest.mock('@features/speaking', () => ({loadLessonRecorder: () => null}));
 
 const FIXTURE = path.join(

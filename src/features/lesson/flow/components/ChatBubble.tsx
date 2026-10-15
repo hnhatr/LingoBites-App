@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
+import {useScreenSpeak} from '@features/audio';
 
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
@@ -30,6 +30,7 @@ export function PartnerBubble({
 }: PartnerBubbleProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
+  const speak = useScreenSpeak();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [showMeaning, setShowMeaning] = useState(false);
   return (
@@ -57,7 +58,7 @@ export function PartnerBubble({
             accessibilityLabel={t('lessonFlow.listen_line')}
             icon="volume_up"
             onPress={() => {
-              speak(textEn).catch(() => undefined);
+              speak(textEn);
             }}
             tone="accent"
           />

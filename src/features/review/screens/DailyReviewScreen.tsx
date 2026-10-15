@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import {speak} from '@features/audio';
+import {type SpeakText, SpeechNotice, useSpeak} from '@features/audio';
 import {
   reconcileReminders,
   type ReviewSession,
@@ -42,11 +42,6 @@ import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
 
 const DEFAULT_SOFT_CAP = 10;
 
-/** Runs an async side effect without returning its promise to the caller. */
-function fireAndForget(task: Promise<unknown>): void {
-  task.catch(() => undefined);
-}
-
 type Props = {
   navigation?: {
     goBack?: () => void;
@@ -65,9 +60,11 @@ type Summary = {
 function FlashcardFace({
   card,
   side,
+  speak,
 }: {
   card: FlashcardRecord;
   side: 'front' | 'back';
+  speak: SpeakText;
 }) {
   const {t} = useTranslation();
 
@@ -93,7 +90,7 @@ function FlashcardFace({
     kind: card.kind,
   };
   const onSpeak = () => {
-    fireAndForget(speak(pattern ? (card.example ?? word) : card.word));
+    speak(pattern ? (card.example ?? word) : card.word);
   };
   if (side === 'back') {
     return (
@@ -142,6 +139,7 @@ export function DailyReviewScreen({
     listFlashcards,
     recordFlashcardRating,
   } = useFlashcardLibrary();
+  const {speak, notice: speechNotice} = useSpeak();
   const [allDueCount] = useState(() => getDueFlashcards().length);
   const [sessionCards] = useState(() => getDueFlashcards({limit: softCap}));
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -448,6 +446,7 @@ export function DailyReviewScreen({
 
       <View style={[styles.stage, {paddingHorizontal: theme.gutter}]}>
         {ratingError ? <ErrorCard message={ratingError} /> : null}
+        <SpeechNotice notice={speechNotice} />
         <View onLayout={handleStageLayout} style={styles.flex1}>
           {activeCard ? (
             <SwipeCard
@@ -459,10 +458,14 @@ export function DailyReviewScreen({
               testID="review-swipe-card"
             >
               <FlipCard
-                back={<FlashcardFace card={activeCard} side="back" />}
+                back={
+                  <FlashcardFace card={activeCard} side="back" speak={speak} />
+                }
                 backHint={t('review.swipe_hint')}
                 flipped={flipped}
-                front={<FlashcardFace card={activeCard} side="front" />}
+                front={
+                  <FlashcardFace card={activeCard} side="front" speak={speak} />
+                }
                 bare
                 frontHint={t('review.show_answer_hint')}
                 height={cardHeight}

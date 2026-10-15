@@ -17,9 +17,11 @@ import {flowActivity, flowItems, flowTask} from '../../logic/flowContent';
 import * as grading from '../../logic/taskEvaluation';
 import {IndependentTaskView} from '../IndependentTaskView';
 
-jest.mock('@features/audio', () => ({
-  speak: jest.fn(() => Promise.resolve({ok: true})),
-}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock(
+    jest.fn(() => Promise.resolve({ok: true})),
+  ),
+);
 const mockRecorder = {
   startRecording: jest.fn(() =>
     Promise.resolve({ok: true, filePath: '/rec/answer.m4a'}),

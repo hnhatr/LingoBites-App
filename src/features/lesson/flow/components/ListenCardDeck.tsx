@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
-import {speak} from '@features/audio';
+import {useScreenSpeak} from '@features/audio';
 
 import {AppText} from '@ui/components/AppText';
 import {formatIpa} from '@ui/components/WordCard';
@@ -139,6 +139,7 @@ function faceOf(item: CatalogItem) {
 /** One card: listen and listen slowly on both sides (not for patterns). */
 function ListenCard({id, item}: {id: string; item: CatalogItem}) {
   const {t} = useTranslation();
+  const speak = useScreenSpeak();
   const speakable = item.kind !== 'pattern';
   const actions = (side: 'front' | 'back') => {
     if (!speakable) return null;
@@ -149,7 +150,7 @@ function ListenCard({id, item}: {id: string; item: CatalogItem}) {
           accessibilityHint={t('lessonFlow.listen_model_hint')}
           accessibilityLabel={t('lessonFlow.listen_model')}
           onPress={() => {
-            speak(item.text).catch(() => undefined);
+            speak(item.text);
           }}
           onTint={side === 'back'}
           testID={`lesson-flow-card-listen${suffix}`}
@@ -159,7 +160,7 @@ function ListenCard({id, item}: {id: string; item: CatalogItem}) {
           accessibilityLabel={t('lessonFlow.listen_slow')}
           icon="timer"
           onPress={() => {
-            speak(item.text, undefined, SLOW_TTS_RATE).catch(() => undefined);
+            speak(item.text, SLOW_TTS_RATE);
           }}
           onTint={side === 'back'}
           testID={`lesson-flow-card-listen-slow${suffix}`}

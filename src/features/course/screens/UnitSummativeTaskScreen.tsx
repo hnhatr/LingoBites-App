@@ -3,6 +3,7 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ScrollView, StyleSheet} from 'react-native';
 
+import {SpeakContext, SpeechNotice, useSpeak} from '@features/audio';
 import {SummativeTaskView} from '@features/lesson';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -31,6 +32,7 @@ export function UnitSummativeTaskScreen({navigation, route}: Props) {
   const {state, refresh} = useSummativeTask(unitId);
   const breadcrumb = useCourseBreadcrumb(navigation, route.key);
   const floatingClearance = useFloatingTabBarClearance();
+  const {speak, notice} = useSpeak();
 
   return (
     <AppScreen>
@@ -62,7 +64,10 @@ export function UnitSummativeTaskScreen({navigation, route}: Props) {
           />
         ) : null}
         {state.status === 'ready' ? (
-          <SummativeTaskView task={state.task} />
+          <SpeakContext.Provider value={speak}>
+            <SpeechNotice notice={notice} />
+            <SummativeTaskView task={state.task} />
+          </SpeakContext.Provider>
         ) : null}
       </ScrollView>
     </AppScreen>

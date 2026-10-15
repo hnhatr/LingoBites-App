@@ -26,8 +26,8 @@ export function useSpeak() {
     };
   }, []);
 
-  const say = useCallback((text: string) => {
-    speak(text)
+  const say = useCallback((text: string, rate?: number) => {
+    speak(text, undefined, rate)
       .then(result => {
         if (mounted.current) {
           setNotice(result.ok ? null : result.errorCode);

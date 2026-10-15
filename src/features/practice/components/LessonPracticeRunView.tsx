@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ScrollView, StyleSheet, View} from 'react-native';
 
+import {SpeakContext, SpeechNotice, useSpeak} from '@features/audio';
 import {ActivityBody, isSpeakingActivity} from '@features/lesson';
 
 import {AppButton} from '@ui/components/AppButton';
@@ -40,6 +41,7 @@ export function LessonPracticeRunView({
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const [pickingSegment, setPickingSegment] = useState(false);
+  const {speak, notice} = useSpeak();
   const {state} = run;
   const segmentCount = run.segments.length;
   const segmented = segmentCount > 1 && run.segmentIndex !== null;
@@ -241,6 +243,7 @@ export function LessonPracticeRunView({
             })}
           </AppText>
         ) : null}
+        <SpeechNotice notice={notice} />
         <AppCard testID={`practice-run-section-${section.kind}`}>
           <View style={{gap: theme.spacing.md}}>
             <View style={{gap: theme.spacing.xs}}>
@@ -249,21 +252,23 @@ export function LessonPracticeRunView({
                 {t(`practice.run_instructions_${section.kind}`)}
               </AppText>
             </View>
-            <ActivityBody
-              activity={{
-                kind: section.kind,
-                content: section.content,
-                titleVi: label,
-                instructionsVi: null,
-                taskId: null,
-              }}
-              content={section.content}
-              items={NO_ITEMS}
-              key={`${runKey}:${sectionIndex}`}
-              onComplete={run.completeSection}
-              task={null}
-              youtubeVideoId={run.youtubeVideoId}
-            />
+            <SpeakContext.Provider value={speak}>
+              <ActivityBody
+                activity={{
+                  kind: section.kind,
+                  content: section.content,
+                  titleVi: label,
+                  instructionsVi: null,
+                  taskId: null,
+                }}
+                content={section.content}
+                items={NO_ITEMS}
+                key={`${runKey}:${sectionIndex}`}
+                onComplete={run.completeSection}
+                task={null}
+                youtubeVideoId={run.youtubeVideoId}
+              />
+            </SpeakContext.Provider>
             {isSpeakingActivity(section.kind) ? (
               <AppButton
                 accessibilityHint={t('practice.run_skip_speaking_hint')}

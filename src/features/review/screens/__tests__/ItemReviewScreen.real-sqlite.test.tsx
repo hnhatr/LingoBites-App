@@ -10,9 +10,11 @@ import {has, press, renderWithTheme, textOf} from '@test/support/lessonFlow';
 import type {ItemReviewQueue} from '../../logic/itemReview';
 import {ItemReviewScreen} from '../ItemReviewScreen';
 
-jest.mock('@features/audio', () => ({
-  speak: jest.fn(() => Promise.resolve({ok: true})),
-}));
+jest.mock('@features/audio', () =>
+  require('@test/support/audioModuleMock').audioModuleMock(
+    jest.fn(() => Promise.resolve({ok: true})),
+  ),
+);
 const mockRequestSync = jest.fn();
 jest.mock('@features/sync', () => ({requestSync: () => mockRequestSync()}));
 

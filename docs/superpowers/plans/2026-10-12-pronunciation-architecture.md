@@ -197,7 +197,9 @@ Migration: thêm hai bảng và một cột nullable. Không đổi bảng `eval
 
 **Chưa làm:** cache kiểm tra giọng en-US. Lần bấm nào cũng kiểm tra lại. Cache cần thiết kế lại cùng test, vì test hiện dùng mock chung.
 
-**Chưa sửa các lời gọi `speak` khác** (ôn tập, gợi ý, bài tập nói). Các chỗ này vẫn nuốt lỗi bằng `.catch(() => undefined)`. Nên đưa vào `useSpeak` ở đợt sau.
+**Đã sửa (2026-10-15) các lời gọi `speak` khác:** ôn tập (`DailyReviewScreen`, `ItemReviewScreen`), bài kiểm tra đầu vào (`PlacementTestScreen`) và các hoạt động trong bài (gợi ý, tự đánh giá nói, nhập vai, thẻ nghe, câu hỏi chọn) giờ đi qua `useSpeak` và hiện lý do khi không phát được (`SpeechNotice`). Các hoạt động lấy `speak` của màn bọc ngoài qua `SpeakContext` / `useScreenSpeak`. Ba màn bọc ngoài là bài 6 bước, nhiệm vụ tổng hợp unit và luyện bài tự tạo. Ngoài các màn đó, hoạt động vẫn phát được nhưng lỗi không hiện.
+
+**Còn nuốt lỗi:** shadowing (`useShadowingSession`) chờ đọc xong rồi mới chạy tiếp, nên có luồng riêng, chưa đổi.
 
 ## 8. Quy tắc cố định
 
