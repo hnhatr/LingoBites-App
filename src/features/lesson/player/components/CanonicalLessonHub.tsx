@@ -20,6 +20,7 @@ import type {FlowEntry} from '../../flow/logic/useFlowEntry';
 import {
   collectLessonOutcome,
   collectLessonPatterns,
+  collectLessonTense,
   collectLessonVocabulary,
   type LessonHubSection,
   type LessonHubSectionRow,
@@ -33,6 +34,7 @@ import {LessonHeroCard, type LessonHeroMeta} from './LessonHeroCard';
 import {LessonOutcomeCard} from './LessonOutcomeCard';
 import {LessonPathCard} from './LessonPathCard';
 import {LessonStatusBanners} from './LessonStatusBanners';
+import {LessonTenseCard} from './LessonTenseCard';
 import {SourcePhotoCard} from './SourcePhotoCard';
 
 export type {LessonHubSection};
@@ -156,6 +158,7 @@ export function CanonicalLessonHub({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const sentences = useMemo(() => sortedSentences(snapshot), [snapshot]);
   const outcome = useMemo(() => collectLessonOutcome(snapshot), [snapshot]);
+  const tense = useMemo(() => collectLessonTense(snapshot), [snapshot]);
   const [replayOpen, setReplayOpen] = useState(false);
   // E5 (S3): only lessons made from a situation can be replayed; no AI, works offline.
   const replay = useMemo(
@@ -307,6 +310,13 @@ export function CanonicalLessonHub({
         <View>
           <SectionHeader title={t('lessonPlayer.goal_section')} />
           <LessonOutcomeCard onOpenLesson={onOpenLesson} outcome={outcome} />
+        </View>
+      ) : null}
+
+      {tense ? (
+        <View>
+          <SectionHeader title={t('lessonPlayer.tense_title')} />
+          <LessonTenseCard tense={tense} />
         </View>
       ) : null}
 

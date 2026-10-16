@@ -892,7 +892,14 @@
     "word_path_added": "Đã trong lộ trình",
     "word_path_pick_sense": "Từ này có nhiều nghĩa, chọn nghĩa đúng trong câu:",
     "word_path_offline": "Cần mạng để thêm",
-    "word_path_failed": "Chưa thêm được, thử lại sau"
+    "word_path_failed": "Chưa thêm được, thử lại sau",
+    "tense_title": "Thì của bài",
+    "tense_formula": "Công thức",
+    "tense_practice": "Luyện câu",
+    "tense_practice_hint": "Tạo câu tổ hợp với thì này",
+    "tense_map": "Xem bản đồ thì",
+    "tense_map_hint": "Mở bản đồ thì trong thư viện",
+    "tense_open_hint": "Mở chi tiết thì này"
   },
   "lessonFlow": {
     "start_at": "Bắt đầu · {{label}}",

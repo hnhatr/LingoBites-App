@@ -892,7 +892,14 @@
     "word_path_added": "In your path",
     "word_path_pick_sense": "This word has several meanings; pick the one in this sentence:",
     "word_path_offline": "A connection is needed to add it",
-    "word_path_failed": "Could not add it, try again later"
+    "word_path_failed": "Could not add it, try again later",
+    "tense_title": "Tense of this lesson",
+    "tense_formula": "Formula",
+    "tense_practice": "Practise sentences",
+    "tense_practice_hint": "Make combo sentences in this tense",
+    "tense_map": "See the tense map",
+    "tense_map_hint": "Open the tense map in the library",
+    "tense_open_hint": "Open this tense"
   },
   "lessonFlow": {
     "start_at": "Start · {{label}}",

@@ -9,5 +9,11 @@ export type {
   TenseDetailRouteParams,
 } from './screens/navigationTypes';
 export {levelColors} from './components/memoryColors';
-export {memoryLevel, TENSE_ASPECTS, TENSE_TIMES} from './logic/libraryModel';
 export type {MemoryLevel} from './logic/libraryModel';
+export {
+  memoryLevel,
+  TENSE_ASPECTS,
+  TENSE_TIMES,
+  tenseInfo,
+} from './logic/libraryModel';
+export {memoryOf} from './logic/libraryRepository';

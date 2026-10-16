@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 → A5 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 → A5 và A6 "Thì của bài" (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -154,7 +154,7 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | Lưu trên máy | Nội dung item → `catalog_items` (`source = 'library'`); cấp, tag, bộ lọc, vị trí thì → một dòng `app_settings` mỗi danh sách. **Không tăng schema SQLite** |
 | `screens/PatternLibraryList.tsx` | Một mục của Thư viện: lọc theo ý muốn nói (function), cấp, kỳ thi; ô tìm kiếm khớp khung câu hoặc nghĩa (bỏ dấu) |
 | `screens/TenseMapView.tsx` | Một mục của Thư viện: lưới 3 thời gian × 4 khía cạnh; màu theo mức nhớ (chưa học · stage 0–1 · 2–3 · stage 4 hoặc đã ổn định); thì ngoài lưới (be going to) ở dưới; chú thích màu |
-| `screens/PatternDetailScreen.tsx`, `screens/TenseDetailScreen.tsx` | Route `PatternDetail`, `TenseDetail`. Mẫu: khung, nghĩa, cấp + chức năng, slot, ví dụ, **"Luyện câu tổ hợp"** (mở `ComboSetup`), **"Thêm vào ôn"**. Thì: công thức 3 thể, dấu hiệu, dùng khi, hay nhầm với (chạm để mở), ví dụ, mức nhớ, **"Thêm vào ôn"**. Trang thì **không** có nút luyện câu: bộ câu cần một từ hoặc mẫu đi kèm (sẽ có ở mục "Thì của bài") |
+| `screens/PatternDetailScreen.tsx`, `screens/TenseDetailScreen.tsx` | Route `PatternDetail`, `TenseDetail`. Mẫu: khung, nghĩa, cấp + chức năng, slot, ví dụ, **"Luyện câu tổ hợp"** (mở `ComboSetup`), **"Thêm vào ôn"**. Thì: công thức 3 thể, dấu hiệu, dùng khi, hay nhầm với (chạm để mở), ví dụ, mức nhớ, **"Thêm vào ôn"**. Trang thì **không** có nút luyện câu: bộ câu cần một từ hoặc mẫu đi kèm (có ở mục "Thì của bài" trên hub bài, A6) |
 | Điều hướng | `openPatternDetail`, `openTenseDetail`; mục Thư viện mới `patterns`, `tenses` (tab Khám phá); kệ "Mẫu câu & thì" trên tab Khám phá; bản đồ thì ẩn ô tìm kiếm |
 | `src/core/i18n/vi.json`, `en.json` 🔧 | Khối `patternTense` |
 
@@ -226,7 +226,8 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | A2 ✅ | App | `feat(review): stage 4 written practice` (5.2) | |
 | A3 ✅ | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
 | A4 ✅ | App | `feat(profile): words, patterns and tenses in the progress report` (5.4) | |
-| A5 ✅ | App | `feat(course): required items checklist in the summative task` (5.5) | ✅ gộp A1–A5 một bản |
+| A5 ✅ | App | `feat(course): required items checklist in the summative task` (5.5) | |
+| A6 ✅ | App | `feat(lesson): tense of the lesson on the hub` (thiết kế B §4.2) | ✅ gộp A1–A6 một bản |
 
 S1–S4 phải lên production trước khi phát hành App. S5–S7 làm song song với App; dựng nội dung theo đợt sau S7.
 

@@ -128,8 +128,11 @@ export interface AppNavigation {
   openPackLearn(packId: string): void;
   /** Vocab path P5: the quick known check of a pack. */
   openQuickKnownCheck(packId: string): void;
-  /** Vocab path P5: set up a combo set for one word. */
-  openComboSetup(itemCode: string): void;
+  /**
+   * Vocab path P5: set up a combo set for one word. P6: `grammarCode` picks
+   * that tense first when it is open for the word.
+   */
+  openComboSetup(itemCode: string, grammarCode?: string): void;
   /**
    * Vocab path P5: one combo set (sentences, IPA, batches, reports). `created`
    * is how many sentences were just made, so the set greets them.

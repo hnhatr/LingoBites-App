@@ -1,6 +1,6 @@
 # Thiết kế: lưu "thì của bài" (P6, trước S6)
 
-> Trạng thái: **ĐÃ CHỐT 2026-10-16: phương án B, App làm mới hoàn toàn (không còn App cũ), nên không có bước lọc theo phiên bản nào (bản trước có 3 rủi ro cho App cũ, nay không còn).** S5b đã code. Lập 2026-10-15, dựa trên code thật của LingoBites-Server và LingoBites-App.
+> Trạng thái: **ĐÃ CHỐT 2026-10-16: phương án B, App làm mới hoàn toàn (không còn App cũ), nên không có bước lọc theo phiên bản nào (bản trước có 3 rủi ro cho App cũ, nay không còn).** S5b và phần App (§4.2, A6) đã code. Lập 2026-10-15, dựa trên code thật của LingoBites-Server và LingoBites-App.
 > Liên quan: [`vocab-pattern-tense-path.md`](./vocab-pattern-tense-path.md) §3.6, [plan P6](../superpowers/plans/2026-10-15-vocab-pattern-tense-p6.md) §4.
 
 ## 1. Vấn đề
@@ -62,7 +62,7 @@ App được làm mới hoàn toàn, không còn bản cũ nào gọi Server, n�
 ### 4.2 App (gộp vào bản phát hành P6)
 | Chỗ | Việc |
 |---|---|
-| `features/lesson/player/logic/lessonHubContent.ts` + hub | Mục "Thì của bài": tên thì, công thức, nút "Luyện câu" (mở `ComboSetupScreen` với thì chọn sẵn) và "Xem bản đồ thì" |
+| `features/lesson/player/logic/lessonHubContent.ts` + hub | ✅ Mục "Thì của bài" (`collectLessonTense`, `LessonTenseCard`): tên thì, mức nhớ, công thức (thể khẳng định), nút "Luyện câu" (mở `ComboSetupScreen` với `grammarCode` chọn sẵn, trên mẫu đầu tiên không khoá thì, không có thì trên từ đầu tiên; thì chưa mở cho từ đó thì chọn thì đầu tiên như cũ), chạm tên thì mở trang thì, và "Xem bản đồ thì" |
 | Ôn tập, bản đồ thì, F9 | Không đổi: đã đọc `grammar` từ P5; nội dung thì lấy từ snapshot bài (`itemContents`) |
 | Bộ thẻ bước 1 (`ListenCardDeck`) | Không đổi: chỉ hiện item mà block nhắc tới |
 
