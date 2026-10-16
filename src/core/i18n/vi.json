@@ -1654,6 +1654,8 @@
     "filter_learned": "Đã nhớ",
     "filter_empty": "Không có mục nào ở đây.",
     "speak": "Nghe {{text}}",
+    "choice_hint": "Đặt từ này vào chỗ trống",
+    "speak_hint": "Đọc to câu này",
     "learn_hint": "Mở các thẻ của gói này"
   },
   "quickCheck": {
@@ -1909,6 +1911,13 @@
     "practise_combo": "Luyện câu tổ hợp",
     "add_to_review": "Thêm vào ôn",
     "in_review": "Đã có trong lịch ôn",
+    "in_review_short": "Đang ôn",
+    "slot_count": "{{count}} chỗ trống",
+    "pattern_count": "{{count}} mẫu câu",
+    "pattern_kicker": "Mẫu câu",
+    "slot_hint": "Chọn từ cho chỗ trống này",
+    "slot_a11y": "{{label}}: {{value}}",
+    "speak": "Nghe: {{text}}",
     "add_failed": "Chưa thêm được, thử lại sau",
     "not_on_device": "Chưa có trên máy. Mở lại danh sách khi có mạng.",
     "forms": "Công thức",

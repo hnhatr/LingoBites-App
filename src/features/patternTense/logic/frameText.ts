@@ -36,3 +36,23 @@ export function frameText(item: CatalogItem): string {
     (_, name: string) => `[${labels.get(name) ?? '…'}]`,
   );
 }
+
+/** A piece of a pattern frame: plain text, or a slot with what it takes. */
+export type FramePart =
+  {type: 'text'; value: string} | ({type: 'slot'} & FrameSlot);
+
+/** The frame cut into text and slots, in order, for drawing the slots apart. */
+export function frameParts(item: CatalogItem): FramePart[] {
+  const slots = new Map(frameSlots(item).map(slot => [slot.name, slot]));
+  return item.text
+    .split(/(\{[a-z][a-z_]*\})/g)
+    .filter(piece => piece !== '')
+    .map((piece): FramePart => {
+      const name = /^\{([a-z][a-z_]*)\}$/.exec(piece)?.[1];
+      if (!name) return {type: 'text', value: piece};
+      return {
+        type: 'slot',
+        ...(slots.get(name) ?? {name, labelVi: '…', values: []}),
+      };
+    });
+}
