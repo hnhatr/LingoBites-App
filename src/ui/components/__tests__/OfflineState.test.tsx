@@ -59,6 +59,18 @@ describe('offline UI (offline-mode.md §3)', () => {
     expect(banners(tree)).toHaveLength(0);
   });
 
+  it('marks a downloaded copy on the offline bar', async () => {
+    useConnectivityStore.setState({status: 'offline'});
+    const chips = (tree: ReactTestRenderer.ReactTestRenderer) =>
+      tree.root.findAll(
+        node => node.props.testID === 'offline-banner-downloaded',
+      );
+    expect(chips(await render(<AppScreen />))).toHaveLength(0);
+    expect(
+      chips(await render(<AppScreen offlineCopy />)).length,
+    ).toBeGreaterThan(0);
+  });
+
   it('retries by probing the connection', async () => {
     const mockFetch = jest.fn().mockResolvedValue({ok: true, status: 200});
     global.fetch = mockFetch as unknown as typeof fetch;

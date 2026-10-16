@@ -711,7 +711,7 @@ export function CanonicalLessonPlayerScreen({navigation, route}: Props) {
             });
 
   return (
-    <AppScreen>
+    <AppScreen offlineCopy={state.status === 'ready' && state.offline}>
       <ScreenHeader
         title={studyReady && snapshot ? snapshot.title : title}
         subtitle={

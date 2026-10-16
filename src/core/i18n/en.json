@@ -295,7 +295,9 @@
     "clear_all": "Clear all"
   },
   "offline": {
-    "banner": "You're offline — progress will sync when you're back online.",
+    "banner_title": "You're offline",
+    "banner_body": "Progress will sync when you're back online.",
+    "banner_downloaded": "Saved",
     "locked_title": "Connection needed",
     "locked_create": "Creating a lesson needs the internet for text recognition and analysis. You can still learn and review lessons already on this device.",
     "retry": "Try again",

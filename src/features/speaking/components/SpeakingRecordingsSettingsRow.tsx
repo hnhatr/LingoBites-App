@@ -1,7 +1,8 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, Switch, View} from 'react-native';
+import {Alert, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
+import {AppSwitch} from '@ui/components/AppSwitch';
 import {AppText} from '@ui/components/AppText';
 import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
 import {useAppTheme} from '@ui/theme';
@@ -128,7 +129,7 @@ export function SpeakingRecordingsSettingsRow() {
         <AppText color="secondary" variant="caption">
           Đồng bộ bản ghi luyện nói lên tài khoản
         </AppText>
-        <Switch
+        <AppSwitch
           accessibilityLabel="Tải bản ghi lên tài khoản"
           onValueChange={handleToggle}
           testID="speaking-recordings-upload-switch"

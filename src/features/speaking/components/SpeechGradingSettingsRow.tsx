@@ -1,6 +1,7 @@
 import React, {useCallback, useMemo, useState} from 'react';
-import {StyleSheet, Switch, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
+import {AppSwitch} from '@ui/components/AppSwitch';
 import {AppText} from '@ui/components/AppText';
 import {ProfileSettingsRow} from '@ui/components/ProfileSettingsRow';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -80,7 +81,7 @@ export function SpeechGradingSettingsRow() {
           Gửi bản ghi bài nói ở bước 5 để máy chấm. Bản ghi tự xoá sau 30 ngày.
           Tắt thì bạn tự đánh giá, bản ghi chỉ ở trên máy.
         </AppText>
-        <Switch
+        <AppSwitch
           accessibilityHint="Bật hoặc tắt chấm bài nói bằng máy"
           accessibilityLabel="Chấm bài nói bằng máy"
           onValueChange={handleToggle}

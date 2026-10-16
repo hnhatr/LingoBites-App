@@ -1,7 +1,7 @@
 import React from 'react';
-import {Switch} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
+import {AppSwitch} from '@ui/components/AppSwitch';
 import {AppThemeProvider} from '@ui/theme';
 
 import {resetDatabaseForTests} from '@core/db/database';
@@ -83,6 +83,6 @@ describe('SpeakingRecordingsSettingsRow', () => {
         </FeatureFlagProvider>,
       );
     });
-    expect(tree.root.findAllByType(Switch).length).toBeGreaterThan(0);
+    expect(tree.root.findAllByType(AppSwitch).length).toBeGreaterThan(0);
   });
 });
