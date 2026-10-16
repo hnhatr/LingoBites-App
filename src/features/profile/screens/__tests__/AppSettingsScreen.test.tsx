@@ -101,4 +101,20 @@ describe('AppSettingsScreen', () => {
     });
     expect(JSON.stringify(tree!.toJSON())).not.toContain('Giao diện');
   });
+
+  it('shows the voice settings regardless of themeSwitcher', async () => {
+    let tree!: ReactTestRenderer.ReactTestRenderer;
+    await ReactTestRenderer.act(async () => {
+      tree = ReactTestRenderer.create(
+        <FeatureFlagProvider
+          releaseConfig={makeTestReleaseConfig(OFFLINE_REVIEW_MVP)}
+        >
+          <AppThemeProvider>
+            <AppSettingsScreen navigation={navigation} route={route} />
+          </AppThemeProvider>
+        </FeatureFlagProvider>,
+      );
+    });
+    expect(JSON.stringify(tree!.toJSON())).toContain('Giọng đọc');
+  });
 });

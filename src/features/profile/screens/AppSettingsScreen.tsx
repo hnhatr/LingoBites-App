@@ -10,11 +10,12 @@ import {useAppTheme} from '@ui/theme';
 import {useFeatureFlags} from '@core/release';
 
 import {ProfileSubpage} from '../components/ProfileSubpage';
+import {VoiceSettingsGroup} from '../components/VoiceSettingsGroup';
 import type {ProfileStackParamList} from './navigationTypes';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'AppSettings'>;
 
-/** App-wide preferences (appearance for now; room for language, etc.). */
+/** App-wide preferences: appearance and the reading voice. */
 export function AppSettingsScreen({navigation}: Props) {
   const {theme} = useAppTheme();
   const {isFeatureEnabled} = useFeatureFlags();
@@ -31,6 +32,7 @@ export function AppSettingsScreen({navigation}: Props) {
           </View>
         </SettingsGroup>
       ) : null}
+      <VoiceSettingsGroup />
     </ProfileSubpage>
   );
 }

@@ -48,7 +48,6 @@ export function ProfileScreenView({
   reminderTrailingLabel,
   selectReminder,
   selectWeeklyGoal,
-  showThemePicker,
   statusMessage,
   streakSubtitle,
   streakTitle,
@@ -222,17 +221,15 @@ export function ProfileScreenView({
             onPress={openDataSettings}
             trailing={{text: audioCacheTrailingLabel}}
           />
-          {showThemePicker ? (
-            <ProfileSettingsRow
-              accessibilityHint="Chạm để mở"
-              accessibilityLabel="Cài đặt ứng dụng"
-              icon="settings"
-              label="Cài đặt ứng dụng"
-              medallionTone="coral"
-              onPress={openAppSettings}
-              trailing="chevron"
-            />
-          ) : null}
+          <ProfileSettingsRow
+            accessibilityHint="Chạm để mở"
+            accessibilityLabel="Cài đặt ứng dụng"
+            icon="settings"
+            label="Cài đặt ứng dụng"
+            medallionTone="coral"
+            onPress={openAppSettings}
+            trailing="chevron"
+          />
           <ProfileSettingsRow
             accessibilityHint="Chạm để mở"
             accessibilityLabel="Hỗ trợ và thông tin"
