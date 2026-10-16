@@ -885,7 +885,14 @@
     "create_failed": "Không tạo được bài học (mã {{code}}).",
     "create_ready": "Bài học đã sẵn sàng.",
     "create_open": "Mở bài học",
-    "create_open_hint": "Mở bài học vừa tạo"
+    "create_open_hint": "Mở bài học vừa tạo",
+    "word_path_add": "Thêm vào lộ trình",
+    "word_path_add_hint": "Đưa từ này vào lịch ôn của bạn",
+    "word_path_adding": "Đang thêm…",
+    "word_path_added": "Đã trong lộ trình",
+    "word_path_pick_sense": "Từ này có nhiều nghĩa, chọn nghĩa đúng trong câu:",
+    "word_path_offline": "Cần mạng để thêm",
+    "word_path_failed": "Chưa thêm được, thử lại sau"
   },
   "lessonFlow": {
     "start_at": "Bắt đầu · {{label}}",

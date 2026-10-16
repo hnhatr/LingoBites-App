@@ -572,6 +572,7 @@ export function YouTubeLessonStudy({
         sentenceId={currentSentenceId}
         vocabularySave={vocabularySave}
         visible={openSheet === 'analysis' && currentSentenceId.length > 0}
+        wordPath={snapshot.origin === 'learner'}
       />
       <YouTubeTranscriptSheet
         activeIndex={activeIndex}

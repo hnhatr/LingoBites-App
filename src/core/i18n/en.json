@@ -885,7 +885,14 @@
     "create_failed": "Lesson creation failed (code {{code}}).",
     "create_ready": "Your lesson is ready.",
     "create_open": "Open lesson",
-    "create_open_hint": "Opens the new lesson"
+    "create_open_hint": "Opens the new lesson",
+    "word_path_add": "Add to my path",
+    "word_path_add_hint": "Puts this word on your review schedule",
+    "word_path_adding": "Adding…",
+    "word_path_added": "In your path",
+    "word_path_pick_sense": "This word has several meanings; pick the one in this sentence:",
+    "word_path_offline": "A connection is needed to add it",
+    "word_path_failed": "Could not add it, try again later"
   },
   "lessonFlow": {
     "start_at": "Start · {{label}}",

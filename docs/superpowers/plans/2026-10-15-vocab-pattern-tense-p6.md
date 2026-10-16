@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1, A2 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 → A3 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -167,14 +167,14 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | `features/review/screens/ItemReviewScreen.tsx` 🔧 | `APPLY_FROM_STAGE = 4`. Stage ≥ 4 và có bài bậc 3 → thẻ bậc 3; không có bộ câu phù hợp → bậc 2 (nhớ lại) như cũ. Ghi như cũ (`kind = review`, `item_recall`), **không đổi Server** |
 | i18n | `itemReview.apply_*` (vi, en) |
 
-### 5.3 F8: "Thêm vào lộ trình" trong bài tự tạo
+### 5.3 F8: "Thêm vào lộ trình" trong bài tự tạo ✅ A3
 | File | Việc |
 |---|---|
-| `features/lesson/player/logic/itemLookupClient.ts` 🆕 | Gọi `/v1/items/lookup` khi mở phần phân tích của một câu (có mạng); cache theo câu trong phiên |
-| `features/lesson/player/components/SentenceAnalysisPanel.tsx` 🔧 | Từ khớp được: nhãn cấp (A1…C1) + nút "Thêm vào lộ trình" (hoặc "Đã trong lộ trình" nếu đã có `item_memory`). Nhiều nghĩa → sheet chọn nghĩa. Offline: không hiện nút |
-| Dùng lại `libraryClient` (5.1) | Gọi `/v1/items/learn`, lưu item vào `catalog_items` với `source = 'lesson'` |
-
-Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá học).
+| `features/lesson/player/logic/wordListMatches.ts` 🆕 | Client `/v1/items/lookup` (tối đa 30 từ) và hook `useWordListMatches(words, enabled)`: tra khi phần phân tích hiện ra, nhớ trong phiên theo (từ, loại từ); tắt hoặc offline thì không hiện gì |
+| `features/lesson/player/components/WordPathBadge.tsx` 🆕 | Nhãn cấp (`A2`, hoặc `A2 · B1` khi các nghĩa khác cấp) + **"Thêm vào lộ trình"**; từ nhiều nghĩa → chọn nghĩa ngay tại chỗ; đã có lịch ôn → "Đã trong lộ trình"; offline → báo cần mạng. Thêm bằng `addToReview` của A1 (export qua `@features/patternTense`), lưu nội dung item vào `catalog_items` |
+| `SentenceAnalysisTabs.tsx`, `SentenceAnalysisPanel.tsx` 🔧 | Prop `wordPath`; nhãn và nút dưới từng từ khớp |
+| `SentenceStudy.tsx`, `YouTubeAnalysisSheet.tsx`, `YouTubeLessonStudy.tsx` 🔧 | Bật `wordPath` khi `snapshot.origin === 'learner'` (bài người học tự tạo: văn bản, ảnh, YouTube). Bài khoá học không đổi |
+| i18n | `lessonPlayer.word_path_*` (vi, en) |
 
 ### 5.4 F9: tiến độ
 | File | Việc |
@@ -220,7 +220,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S7 ✅ | admin-web | `feat(admin): unit builder page` | Không |
 | A1 ✅ | App | `feat(patternTense): pattern library and tense map` (5.1) | |
 | A2 ✅ | App | `feat(review): stage 4 written practice` (5.2) | |
-| A3 | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
+| A3 ✅ | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
 | A4 | App | `feat(profile): words, patterns and tenses in the progress report` (5.4) | |
 | A5 | App | `feat(course): required items checklist in the summative task` (5.5) | ✅ gộp A1–A5 một bản |
 

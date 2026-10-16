@@ -31,6 +31,8 @@ export type YouTubeAnalysisSheetProps = {
   onRetryAnalysis?: (sentenceId: string) => void;
   onSpeakText?: (text: string) => void;
   vocabularySave?: VocabularySaveControl;
+  /** Vocab path P6 (F8): the learner's own lesson shows word-list levels and "Thêm vào lộ trình". */
+  wordPath?: boolean;
 };
 
 /**
@@ -49,6 +51,7 @@ export function YouTubeAnalysisSheet({
   onRetryAnalysis,
   onSpeakText,
   vocabularySave,
+  wordPath = false,
 }: YouTubeAnalysisSheetProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -65,6 +68,7 @@ export function YouTubeAnalysisSheet({
         sentenceId={sentenceId}
         state={{status: 'ready', analysis: stored}}
         vocabularySave={vocabularySave}
+        wordPath={wordPath}
       />
     );
   } else if (asyncState) {
@@ -76,6 +80,7 @@ export function YouTubeAnalysisSheet({
         onSpeakText={onSpeakText}
         sentenceId={sentenceId}
         state={asyncState}
+        wordPath={wordPath}
       />
     );
   } else if (offline) {

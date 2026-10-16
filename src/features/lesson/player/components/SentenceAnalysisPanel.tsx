@@ -12,7 +12,9 @@ import {vocabularyItemKey} from '@core/learning';
 import type {LessonAnalysis} from '@core/schemas/lesson';
 
 import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
+import {useWordListMatches} from '../logic/wordListMatches';
 import {SaveItemButton} from './SaveItemButton';
+import {WordPathBadge} from './WordPathBadge';
 
 export type SentenceAnalysisPanelState =
   | {status: 'loading'}
@@ -33,6 +35,8 @@ export type SentenceAnalysisPanelProps = {
   onSpeakText?: (text: string) => void;
   /** "Lưu thẻ" per analysed word; omitted = no save buttons. */
   vocabularySave?: VocabularySaveControl;
+  /** Vocab path P6 (F8): the learner's own lesson shows word-list levels and "Thêm vào lộ trình". */
+  wordPath?: boolean;
 };
 
 /**
@@ -46,10 +50,15 @@ export function SentenceAnalysisPanel({
   onRetry,
   onSpeakText,
   vocabularySave,
+  wordPath = false,
 }: SentenceAnalysisPanelProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const wordMatches = useWordListMatches(
+    state.status === 'ready' ? state.analysis.vocabulary : NO_WORDS,
+    wordPath,
+  );
 
   const retryButton = onRetry ? (
     <AppButton
@@ -120,35 +129,42 @@ export function SentenceAnalysisPanel({
             {t('lessonPlayer.analysis_vocabulary')}
           </AppText>
           {vocabulary.map(item => (
-            <WordCard
-              key={item.id}
-              actions={
-                vocabularySave ? (
-                  <SaveItemButton
-                    accessibilityHint={t('lessonPlayer.save_card_hint')}
-                    label={t('lessonPlayer.save_card')}
-                    onPress={() => vocabularySave.onToggle(item)}
-                    saved={vocabularySave.isSaved(
-                      vocabularyItemKey(item.word) ?? '',
-                    )}
-                    savedLabel={t('lessonPlayer.saved')}
-                    testID={`analysis-save-${item.id}`}
-                  />
-                ) : undefined
-              }
-              ipa={item.ipa}
-              meaning={item.meaning}
-              onSpeak={onSpeakText ? () => onSpeakText(item.word) : undefined}
-              pos={item.pos}
-              speakAccessibilityHint={t('lessonPlayer.speak_word_hint')}
-              speakAccessibilityLabel={t('lessonPlayer.speak_word', {
-                word: item.word,
-              })}
-              speakTestID={`analysis-speak-${item.id}`}
-              testID={`analysis-vocab-${item.id}`}
-              variant="inline"
-              word={item.word}
-            />
+            <View key={item.id}>
+              <WordCard
+                actions={
+                  vocabularySave ? (
+                    <SaveItemButton
+                      accessibilityHint={t('lessonPlayer.save_card_hint')}
+                      label={t('lessonPlayer.save_card')}
+                      onPress={() => vocabularySave.onToggle(item)}
+                      saved={vocabularySave.isSaved(
+                        vocabularyItemKey(item.word) ?? '',
+                      )}
+                      savedLabel={t('lessonPlayer.saved')}
+                      testID={`analysis-save-${item.id}`}
+                    />
+                  ) : undefined
+                }
+                ipa={item.ipa}
+                meaning={item.meaning}
+                onSpeak={onSpeakText ? () => onSpeakText(item.word) : undefined}
+                pos={item.pos}
+                speakAccessibilityHint={t('lessonPlayer.speak_word_hint')}
+                speakAccessibilityLabel={t('lessonPlayer.speak_word', {
+                  word: item.word,
+                })}
+                speakTestID={`analysis-speak-${item.id}`}
+                testID={`analysis-vocab-${item.id}`}
+                variant="inline"
+                word={item.word}
+              />
+              {wordMatches.has(item.id) ? (
+                <WordPathBadge
+                  matches={wordMatches.get(item.id)!}
+                  testID={`analysis-word-path-${item.id}`}
+                />
+              ) : null}
+            </View>
           ))}
         </View>
       ) : null}
@@ -212,6 +228,8 @@ function makeStyles(theme: AppTheme) {
     },
   });
 }
+
+const NO_WORDS: [] = [];
 
 const styles = StyleSheet.create({
   group: {

@@ -155,6 +155,7 @@ export function SentenceStudy({
         onSpeakText={onSpeakText}
         sentenceId={sentence.id}
         vocabularySave={vocabularySave}
+        wordPath={snapshot.origin === 'learner'}
       />
     );
     if (stored) return tabsFor(stored);
