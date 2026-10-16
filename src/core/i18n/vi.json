@@ -1245,7 +1245,9 @@
     "write_instead": "Viết thay nói",
     "write_instead_hint": "Trả lời bằng chữ thay vì ghi âm",
     "write_instead_note": "Bạn đang viết thay nói: bài vẫn được chấm nhưng chưa tính là đạt chương.",
-    "substitute_not_passing": "Viết thay nói chưa tính là đạt chương. Hãy nói lại khi có thể."
+    "substitute_not_passing": "Viết thay nói chưa tính là đạt chương. Hãy nói lại khi có thể.",
+    "checklist_title": "Cần dùng trong bài: {{done}}/{{total}}",
+    "checklist_on_send": "kiểm khi nộp"
   },
   "compose": {
     "entry_title": "Học theo lộ trình từ câu bạn chọn",

@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 → A4 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 → A5 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -184,11 +184,13 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | `features/profile/screens/ProgressReportScreen.tsx` 🔧 | Thêm `<VocabProgressSection />` trước "Nói & phản xạ" |
 | `features/patternTense/components/memoryColors.ts` 🆕 | Màu theo mức nhớ, tách ra từ `TenseMapView` để dùng chung; export `levelColors`, `memoryLevel`, `TENSE_TIMES`, `TENSE_ASPECTS` qua `@features/patternTense` |
 
-### 5.5 F7: viết đoạn cuối tuần
+### 5.5 F7: viết đoạn cuối tuần ✅ A5
 | File | Việc |
 |---|---|
-| `features/course/logic/summativeChecklist.ts` 🆕 | Tải checklist kèm nhiệm vụ; so khớp trên máy: từ / cụm từ theo `forms`, mẫu câu theo `fixed_parts` (đúng thứ tự). Thì chỉ đánh dấu sau khi kiểm trên Server |
-| `features/lesson/flow/components/SummativeTaskView.tsx` 🔧 | Danh sách item bắt buộc dưới ô viết, tick ngay khi gõ (debounce). Khi nộp: gọi `/coverage`, cập nhật dấu tick cho thì. Không chặn nộp nếu thiếu, chỉ nhắc |
+| `features/lesson/flow/logic/summativeChecklist.ts` 🆕 | Client checklist + coverage (S4); lưu checklist vào `app_settings` (`summative_checklist.<unitId>`) để mở offline; luật so khớp **chép từ Server** (`wordsOf`, `usesEntry`, ghi rõ COPY). Hook `useSummativeChecklist(unitId)`: bản trên máy trước, rồi bản Server |
+| `features/lesson/flow/components/SummativeChecklist.tsx` 🆕 | "Cần dùng trong bài: x/y"; mỗi item ✓ khi đã dùng; mẫu câu hiện khung với `…`; thì ghi "kiểm khi nộp" cho tới khi Server trả kết quả. Chỉ nhắc, **không chặn nộp** |
+| `features/lesson/flow/components/SummativeTaskView.tsx` 🔧 | Hiện checklist ở bước trả lời (tick theo chữ đang gõ; trả lời bằng giọng thì chỉ là danh sách nhắc). Khi nộp bài viết: gọi coverage với đúng nội dung đã nộp, hiện checklist cuối kèm kết quả thì |
+| i18n | `summativeTask.checklist_*` (vi, en) |
 
 ### Dữ liệu trên máy
 **Không tăng phiên bản schema SQLite.** Dùng lại `catalog_items` (`source` mới: `library`, `lesson`) và `combo_sets_local`.
@@ -224,7 +226,7 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | A2 ✅ | App | `feat(review): stage 4 written practice` (5.2) | |
 | A3 ✅ | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
 | A4 ✅ | App | `feat(profile): words, patterns and tenses in the progress report` (5.4) | |
-| A5 | App | `feat(course): required items checklist in the summative task` (5.5) | ✅ gộp A1–A5 một bản |
+| A5 ✅ | App | `feat(course): required items checklist in the summative task` (5.5) | ✅ gộp A1–A5 một bản |
 
 S1–S4 phải lên production trước khi phát hành App. S5–S7 làm song song với App; dựng nội dung theo đợt sau S7.
 

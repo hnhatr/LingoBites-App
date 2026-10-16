@@ -24,6 +24,10 @@ import {
 } from '@core/sync/taskAnswers';
 
 import {
+  checkSummativeCoverage,
+  useSummativeChecklist,
+} from '../logic/summativeChecklist';
+import {
   answerExpired,
   pollEvaluation,
   refreshSpeechEvaluation,
@@ -36,6 +40,7 @@ import {useSelfCheckRecorder} from '../logic/useSelfCheckRecorder';
 import {EvaluationConsentPrompt} from './EvaluationConsentPrompt';
 import {EvaluationFeedback} from './EvaluationFeedback';
 import {RecorderControls} from './RecorderControls';
+import {SummativeChecklist} from './SummativeChecklist';
 
 /** Server limit for a unit's spoken answer (recordings `lesson_task`, unit). */
 export const SUMMATIVE_MAX_RECORDING_MS = 90_000;
@@ -93,6 +98,12 @@ export function SummativeTaskView({task}: SummativeTaskViewProps) {
     answer != null && answer.source === 'text' && !answer.evaluation,
   );
   const [written, setWritten] = useState('');
+  // Vocab path P6 (F7): the required items, ticked while writing and checked again on send.
+  const checklist = useSummativeChecklist(task.unit_id);
+  const [sentText, setSentText] = useState<string | null>(null);
+  const [coverage, setCoverage] = useState<ReadonlyMap<string, boolean> | null>(
+    null,
+  );
   const mounted = useRef(true);
   const recorder = useSelfCheckRecorder(undefined, {
     forGrading: grading === 'speech',
@@ -192,6 +203,18 @@ export function SummativeTaskView({task}: SummativeTaskViewProps) {
     if (!text) return;
     setAttemptId(id);
     setPhase('grading');
+    if (checklist.length > 0) {
+      setSentText(text);
+      checkSummativeCoverage(task.unit_id, text)
+        .then(result => {
+          if (mounted.current && result.ok) {
+            setCoverage(
+              new Map(result.value.items.map(item => [item.code, item.used])),
+            );
+          }
+        })
+        .catch(() => undefined);
+    }
     submitWrittenAnswer({
       attemptId: id,
       target,
@@ -218,6 +241,8 @@ export function SummativeTaskView({task}: SummativeTaskViewProps) {
 
   const restart = () => {
     setWritten('');
+    setSentText(null);
+    setCoverage(null);
     setEvaluation(null);
     setWaitingNetwork(false);
     setAttemptId(null);
@@ -281,6 +306,13 @@ export function SummativeTaskView({task}: SummativeTaskViewProps) {
                 {t('summativeTask.write_instead_note')}
               </AppText>
             ) : null}
+            {checklist.length > 0 ? (
+              <SummativeChecklist
+                coverage={null}
+                entries={checklist}
+                text={grading === 'text' ? written : ''}
+              />
+            ) : null}
             {grading === 'text' ? (
               <TextField
                 accessibilityHint={t('lessonFlow.independent_write_hint')}
@@ -311,6 +343,14 @@ export function SummativeTaskView({task}: SummativeTaskViewProps) {
               title={t('lessonFlow.evaluation_send')}
             />
           </>
+        ) : null}
+
+        {phase !== 'answer' && sentText !== null && checklist.length > 0 ? (
+          <SummativeChecklist
+            coverage={coverage}
+            entries={checklist}
+            text={sentText}
+          />
         ) : null}
 
         {phase === 'grading' ? (

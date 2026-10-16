@@ -192,3 +192,133 @@ it('shows the last result when reopened', async () => {
   const again = renderWithTheme(<SummativeTaskView task={task} />);
   expect(has(again, 'lesson-flow-evaluation')).toBe(true);
 });
+
+/** Vocab path P6 (F7): the required items, ticked while writing and checked by the Server on send. */
+describe('summative checklist', () => {
+  const checklist = [
+    {
+      code: 'word:latte',
+      kind: 'word',
+      text: 'latte',
+      meaning_vi: 'cà phê sữa',
+      match: {type: 'forms', forms: ['latte', 'lattes']},
+    },
+    {
+      code: 'pattern:can-i-have',
+      kind: 'pattern',
+      text: 'Can I have a {drink}, please?',
+      meaning_vi: 'Cho tôi…',
+      match: {type: 'fixed_parts', parts: ['can i have a', 'please']},
+    },
+    {
+      code: 'grammar:present-simple',
+      kind: 'grammar',
+      text: 'Present simple',
+      meaning_vi: 'Hiện tại đơn',
+      match: {type: 'tense'},
+    },
+  ];
+
+  function answerWithChecklist(online = true) {
+    const evaluate = mockedFetch.getMockImplementation()!;
+    mockedFetch.mockImplementation(async (url: string, init: RequestInit) => {
+      const path = String(url);
+      if (path.endsWith('/summative-task/checklist')) {
+        if (!online) throw new TypeError('Network request failed');
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            request_id: 'r',
+            status: 'success',
+            task_id: fixtureTask.id,
+            items: checklist,
+          }),
+        };
+      }
+      if (path.endsWith('/summative-task/coverage')) {
+        expect(JSON.parse(String(init.body))).toEqual({
+          text: 'Can I have a large latte, please?',
+        });
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            request_id: 'r',
+            status: 'success',
+            task_id: fixtureTask.id,
+            items: [
+              {code: 'word:latte', used: true},
+              {code: 'pattern:can-i-have', used: true},
+              {code: 'grammar:present-simple', used: true},
+            ],
+          }),
+        };
+      }
+      return evaluate(url, init);
+    });
+  }
+
+  async function flush() {
+    await act(async () => {
+      await new Promise(resolve => setImmediate(resolve));
+    });
+  }
+
+  it('ticks words and patterns while writing and the tense once sent', async () => {
+    answerWith('pass_independent');
+    answerWithChecklist();
+    const task = {...fixtureTask, response_mode: 'write' as const};
+    const tree = renderWithTheme(<SummativeTaskView task={task} />);
+    await flush();
+    expect(has(tree, 'unit-summative-check-word:latte-missing')).toBe(true);
+    const field = tree.root.findAll(
+      node =>
+        node.props.testID === 'unit-summative-text' &&
+        typeof node.props.onChangeText === 'function',
+    )[0]!;
+    act(() => {
+      field.props.onChangeText('Can I have a latte');
+    });
+    expect(has(tree, 'unit-summative-check-word:latte-used')).toBe(true);
+    expect(has(tree, 'unit-summative-check-pattern:can-i-have-missing')).toBe(
+      true,
+    );
+    expect(has(tree, 'unit-summative-check-grammar:present-simple-later')).toBe(
+      true,
+    );
+
+    await typeAndSend(tree);
+    await flush();
+    expect(has(tree, 'unit-summative-check-pattern:can-i-have-used')).toBe(
+      true,
+    );
+    expect(has(tree, 'unit-summative-check-grammar:present-simple-used')).toBe(
+      true,
+    );
+  });
+
+  it('keeps the checklist for offline visits', async () => {
+    answerWith('pass_independent');
+    answerWithChecklist();
+    const task = {...fixtureTask, response_mode: 'write' as const};
+    const first = renderWithTheme(<SummativeTaskView task={task} />);
+    await flush();
+    act(() => {
+      first.unmount();
+    });
+    answerWith('pass_independent');
+    answerWithChecklist(false);
+    const offline = renderWithTheme(<SummativeTaskView task={task} />);
+    await flush();
+    expect(has(offline, 'unit-summative-checklist')).toBe(true);
+  });
+
+  it('shows no checklist when the task asks for nothing', async () => {
+    answerWith('pass_independent');
+    const task = {...fixtureTask, response_mode: 'write' as const};
+    const tree = renderWithTheme(<SummativeTaskView task={task} />);
+    await flush();
+    expect(has(tree, 'unit-summative-checklist')).toBe(false);
+  });
+});
