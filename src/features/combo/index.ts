@@ -3,10 +3,13 @@ export {
   ComboHistoryScreen,
 } from './screens/ComboHistoryScreen';
 export {
+  comboSituationsAvailable,
+  type ComboSentence,
+} from './logic/comboClient';
+export {
   listComboSentenceSetsFor,
   listLocalComboSets,
 } from './logic/comboSetRepository';
-export type {ComboSentence} from './logic/comboClient';
 export {
   loadSavedComboSentences,
   toggleSavedComboSentence,
