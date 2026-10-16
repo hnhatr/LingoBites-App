@@ -434,12 +434,11 @@ export function LessonCard(props: LessonCardProps) {
       {footer ? <View style={styles.footer}>{footer}</View> : null}
       {onToggleBookmark ? (
         <SaveToggle
-          backdrop={hasCover}
           hitSlop={4}
-          iconSize={22}
           onPress={onToggleBookmark}
+          onTint={hasCover}
+          raised="row"
           saved={bookmarked}
-          size={hasCover ? 36 : 40}
           style={[styles.bookmark, hasCover && styles.bookmarkOnCover]}
           testID={testID ? `${testID}-bookmark` : undefined}
         />

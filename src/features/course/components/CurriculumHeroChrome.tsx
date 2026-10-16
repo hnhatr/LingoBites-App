@@ -1,5 +1,5 @@
 import React, {useContext, useMemo} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import Animated, {
   type SharedValue,
   useAnimatedScrollHandler,
@@ -11,15 +11,10 @@ import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 
 import {AppText} from '@ui/components/AppText';
 import {
-  HEADER_BUTTON_HIT_SLOP,
-  HEADER_BUTTON_RADIUS,
   HEADER_BUTTON_SIZE,
-  HEADER_ICON_SIZE,
+  HeaderIconButton,
 } from '@ui/components/HeaderIconButton';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {getStickerEdge} from '@ui/theme/hardShadow';
-import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {HERO_HEIGHT} from './CurriculumHeroCover';
 
@@ -85,21 +80,15 @@ export function CurriculumHeroChrome({
           {title}
         </AppText>
       </Animated.View>
-      <Pressable
-        accessibilityHint="Về màn trước"
-        accessibilityLabel={backLabel}
-        accessibilityRole="button"
-        hitSlop={HEADER_BUTTON_HIT_SLOP}
-        onPress={onBack}
-        style={[themedStyles.back, {top: topInset + 8}]}
-        testID="screen-header-back"
-      >
-        <MaterialIcon
-          color={theme.colors.primary}
-          name="arrow_back"
-          size={HEADER_ICON_SIZE}
+      <View style={[themedStyles.back, {top: topInset + 8}]}>
+        <HeaderIconButton
+          accessibilityHint="Về màn trước"
+          accessibilityLabel={backLabel}
+          icon="arrow_back"
+          onPress={onBack}
+          testID="screen-header-back"
         />
-      </Pressable>
+      </View>
     </View>
   );
 }
@@ -107,15 +96,8 @@ export function CurriculumHeroChrome({
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     back: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: HEADER_BUTTON_RADIUS,
-      height: HEADER_BUTTON_SIZE,
-      justifyContent: 'center',
       left: theme.gutter,
       position: 'absolute',
-      width: HEADER_BUTTON_SIZE,
-      ...getStickerEdge(3, HERO_PALETTE.ghostShelf),
     },
     bar: {
       backgroundColor: theme.colors.background,
