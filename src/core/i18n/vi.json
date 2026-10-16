@@ -273,16 +273,7 @@
     "summary_keep": "Cố lên nhé!",
     "summary_accuracy": "đã nhớ",
     "summary_accuracy_a11y": "Đã nhớ {{percent}}% số thẻ",
-    "summary_subtitle": "Bạn vừa ôn {{count}} thẻ",
-    "write_try": "Viết thử",
-    "write_try_hint": "Viết từ này bằng bàn phím ô chữ trước khi lật thẻ",
-    "write_try_title": "Viết từ này bằng tiếng Anh",
-    "write_check": "Kiểm tra",
-    "write_check_hint": "Kiểm tra từ bạn vừa viết",
-    "write_right": "Chính xác!",
-    "write_wrong": "Chưa đúng. Đáp án: {{word}}",
-    "write_show_card": "Xem thẻ",
-    "write_show_card_hint": "Lật thẻ để xem đáp án và tự chấm"
+    "summary_subtitle": "Bạn vừa ôn {{count}} thẻ"
   },
   "rating": {
     "forgot_label": "Quên",
@@ -1974,5 +1965,21 @@
     "use_system_keyboard_hint": "Chuyển sang bàn phím của điện thoại",
     "use_tiles": "Dùng bàn phím ô chữ",
     "use_tiles_hint": "Chuyển sang bàn phím ô chữ"
+  },
+  "writeWord": {
+    "button": "Viết từ",
+    "button_phrase": "Viết cụm từ",
+    "button_hint": "Nhìn nghĩa tiếng Việt và ghép lại từ bằng bàn phím ô chữ",
+    "title": "Viết từ này bằng tiếng Anh",
+    "title_phrase": "Viết cụm từ này bằng tiếng Anh",
+    "input_hint": "Ghép từ tiếng Anh bằng các ô chữ",
+    "check": "Kiểm tra",
+    "check_hint": "Kiểm tra từ bạn vừa viết",
+    "cancel": "Huỷ",
+    "cancel_hint": "Quay lại thẻ mà không kiểm tra",
+    "right": "Chính xác!",
+    "wrong": "Chưa đúng. Đáp án: {{word}}",
+    "done": "Xem lại thẻ",
+    "done_hint": "Quay lại thẻ từ"
   }
 }

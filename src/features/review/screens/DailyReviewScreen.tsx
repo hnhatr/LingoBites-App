@@ -31,13 +31,14 @@ import {RatingControl} from '@ui/components/RatingControl';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {SessionHeader} from '@ui/components/StudySession';
 import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
+import {canWriteWord, WriteWordButton} from '@ui/components/WriteWordButton';
+import {WriteWordPanel} from '@ui/components/WriteWordPanel';
 import {useAppTheme} from '@ui/theme';
 
 import type {FlashcardRecord, ReviewRating} from '@core/db/types';
 import {renderFrameWithLabels} from '@core/learning';
 import {useFeatureEnabled} from '@core/release';
 
-import {RecallWritePanel} from '../components/RecallWritePanel';
 import {ReviewCardBack, ReviewCardFront} from '../components/ReviewCardFaces';
 import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
 
@@ -453,15 +454,19 @@ export function DailyReviewScreen({
         <SpeechNotice notice={speechNotice} />
         <View onLayout={handleStageLayout} style={styles.flex1}>
           {activeCard && writing ? (
-            <RecallWritePanel
-              key={activeCard.id}
-              meaningVi={activeCard.meaningVi}
-              onDone={() => {
-                setWriting(false);
-                setFlipped(true);
-              }}
-              word={activeCard.word}
-            />
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <WriteWordPanel
+                ipa={activeCard.ipa}
+                key={activeCard.id}
+                meaningVi={activeCard.meaningVi}
+                onDone={() => {
+                  setWriting(false);
+                  setFlipped(true);
+                }}
+                testID="review-write"
+                word={activeCard.word}
+              />
+            </ScrollView>
           ) : activeCard ? (
             <SwipeCard
               cardKey={activeCard.id}
@@ -492,14 +497,15 @@ export function DailyReviewScreen({
       </View>
 
       <View style={[styles.actions, {paddingHorizontal: theme.gutter}]}>
-        {activeCard && !flipped && !writing && activeCard.kind !== 'pattern' ? (
-          <AppButton
-            accessibilityHint={t('review.write_try_hint')}
-            iconLeft="edit"
+        {activeCard &&
+        !flipped &&
+        !writing &&
+        activeCard.kind !== 'pattern' &&
+        canWriteWord(activeCard.word) ? (
+          <WriteWordButton
             onPress={() => setWriting(true)}
             testID="review-write-try"
-            title={t('review.write_try')}
-            variant="ghost"
+            text={activeCard.word}
           />
         ) : null}
         <RatingControl

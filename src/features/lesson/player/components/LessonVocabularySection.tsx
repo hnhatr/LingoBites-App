@@ -5,6 +5,8 @@ import {StyleSheet, View} from 'react-native';
 import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
 import {formatIpa} from '@ui/components/WordCard';
+import {canWriteWord, WriteWordButton} from '@ui/components/WriteWordButton';
+import {WriteWordPanel} from '@ui/components/WriteWordPanel';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonSentence} from '@core/schemas/lesson';
@@ -65,6 +67,8 @@ export function LessonVocabularySection({
   const grouped = entries.some(entry => entry.role !== null);
   const [role, setRole] = useState<LessonItemRole>('required');
   const [index, setIndex] = useState(0);
+  // "Viết từ": the card swaps for the writing panel (practice only).
+  const [writing, setWriting] = useState(false);
 
   if (entries.length === 0) {
     return (
@@ -85,8 +89,10 @@ export function LessonVocabularySection({
   const at = Math.min(index, total - 1);
   const entry = list[at]!;
   const last = at >= total - 1;
-  const goTo = (next: number) =>
+  const goTo = (next: number) => {
+    setWriting(false);
     setIndex(Math.min(Math.max(next, 0), total - 1));
+  };
 
   const footer = (
     <StudyNavRow>
@@ -133,6 +139,7 @@ export function LessonVocabularySection({
           onChange={next => {
             setRole(next);
             setIndex(0);
+            setWriting(false);
           }}
           tabs={groups.map(candidate => ({
             id: candidate.role,
@@ -150,25 +157,45 @@ export function LessonVocabularySection({
         testID="lesson-vocabulary-progress"
         total={total}
       />
-      <FlashcardDeck
-        faceOf={k => faceOf(list[k]!)}
-        index={at}
-        onIndexChange={goTo}
-        renderCard={() => (
-          <VocabularyCard
-            entry={entry}
-            key={entry.key}
-            onSpeakText={onSpeakText}
-            saveControl={saveControl}
-            sentence={sentenceWith(sentences, entry.word)}
+      {writing ? (
+        <WriteWordPanel
+          ipa={entry.ipa ? formatIpa(entry.ipa) : null}
+          key={entry.key}
+          meaningVi={entry.meaning}
+          onDone={() => setWriting(false)}
+          testID="lesson-vocabulary-write"
+          word={entry.word}
+        />
+      ) : (
+        <>
+          <FlashcardDeck
+            faceOf={k => faceOf(list[k]!)}
+            index={at}
+            onIndexChange={goTo}
+            renderCard={() => (
+              <VocabularyCard
+                entry={entry}
+                key={entry.key}
+                onSpeakText={onSpeakText}
+                saveControl={saveControl}
+                sentence={sentenceWith(sentences, entry.word)}
+              />
+            )}
+            testID="lesson-vocabulary-swipe"
+            total={total}
           />
-        )}
-        testID="lesson-vocabulary-swipe"
-        total={total}
-      />
-      <AppText color="muted" style={styles.hint}>
-        {t('lessonPlayer.flashcard_swipe_hint')}
-      </AppText>
+          {canWriteWord(entry.word) ? (
+            <WriteWordButton
+              onPress={() => setWriting(true)}
+              testID="lesson-vocabulary-write-word"
+              text={entry.word}
+            />
+          ) : null}
+          <AppText color="muted" style={styles.hint}>
+            {t('lessonPlayer.flashcard_swipe_hint')}
+          </AppText>
+        </>
+      )}
     </StudyPage>
   );
 }

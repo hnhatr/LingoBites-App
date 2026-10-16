@@ -16,6 +16,8 @@ import {
   StudyQuestion,
 } from '@ui/components/StudySession';
 import {SwipeCard, type SwipeDirection} from '@ui/components/SwipeCard';
+import {canWriteWord, WriteWordButton} from '@ui/components/WriteWordButton';
+import {WriteWordPanel} from '@ui/components/WriteWordPanel';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {readCatalogItems} from '@core/db/catalogItems';
@@ -71,6 +73,8 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
   const [chosen, setChosen] = useState<number | null>(null);
   const [learned, setLearned] = useState<string[]>([]);
   const [failed, setFailed] = useState(false);
+  // "Viết từ": the current card swaps for the writing panel (practice only).
+  const [writing, setWriting] = useState(false);
   const card = items[cardIndex];
   const question = questions[questionIndex];
 
@@ -120,13 +124,17 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
     ? topic.charAt(0).toUpperCase() + topic.slice(1)
     : null;
   const nextCard = () => {
+    setWriting(false);
     if (cardIndex + 1 < items.length) {
       setCardIndex(value => value + 1);
     } else {
       setStage('recognition');
     }
   };
-  const prevCard = () => setCardIndex(value => Math.max(0, value - 1));
+  const prevCard = () => {
+    setWriting(false);
+    setCardIndex(value => Math.max(0, value - 1));
+  };
   const onSwipe = (direction: SwipeDirection) =>
     direction === 'left' ? nextCard() : prevCard();
   const close = () => navigation?.goBack?.();
@@ -172,7 +180,17 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
           />
         ) : null}
 
-        {stage === 'cards' && card ? (
+        {stage === 'cards' && card && writing ? (
+          <WriteWordPanel
+            ipa={card.ipa}
+            key={card.code}
+            meaningVi={card.meaning_vi}
+            onDone={() => setWriting(false)}
+            testID="pack-learn-write"
+            word={card.text}
+          />
+        ) : null}
+        {stage === 'cards' && card && !writing ? (
           <SwipeCard
             cardKey={card.code}
             directions={cardIndex === 0 ? ['left'] : ['left', 'right']}
@@ -193,7 +211,14 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
             />
           </SwipeCard>
         ) : null}
-        {stage === 'cards' && card ? (
+        {stage === 'cards' && card && !writing && canWriteWord(card.text) ? (
+          <WriteWordButton
+            onPress={() => setWriting(true)}
+            testID="pack-learn-write-word"
+            text={card.text}
+          />
+        ) : null}
+        {stage === 'cards' && card && !writing ? (
           <AppText
             color="muted"
             style={themedStyles.swipeHint}
@@ -234,7 +259,7 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
         ) : null}
       </ScrollView>
 
-      {stage === 'cards' && card ? (
+      {stage === 'cards' && card && !writing ? (
         <View style={themedStyles.footer}>
           <ActionIconButton
             accessibilityHint={t('packLearn.prev_hint')}

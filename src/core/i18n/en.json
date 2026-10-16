@@ -273,16 +273,7 @@
     "summary_keep": "Keep going!",
     "summary_accuracy": "remembered",
     "summary_accuracy_a11y": "Remembered {{percent}}% of cards",
-    "summary_subtitle": "You just reviewed {{count}} cards",
-    "write_try": "Try writing",
-    "write_try_hint": "Write this word with the tile keyboard before flipping",
-    "write_try_title": "Write this word in English",
-    "write_check": "Check",
-    "write_check_hint": "Checks the word you wrote",
-    "write_right": "Correct!",
-    "write_wrong": "Not quite. Answer: {{word}}",
-    "write_show_card": "Show card",
-    "write_show_card_hint": "Flips the card to see the answer and rate it"
+    "summary_subtitle": "You just reviewed {{count}} cards"
   },
   "rating": {
     "forgot_label": "Forgot",
@@ -1974,5 +1965,21 @@
     "use_system_keyboard_hint": "Switches to the phone keyboard",
     "use_tiles": "Use tile keyboard",
     "use_tiles_hint": "Switches to the tile keyboard"
+  },
+  "writeWord": {
+    "button": "Write the word",
+    "button_phrase": "Write the phrase",
+    "button_hint": "Look at the Vietnamese meaning and build the word with the tile keyboard",
+    "title": "Write this word in English",
+    "title_phrase": "Write this phrase in English",
+    "input_hint": "Build the English word with the tiles",
+    "check": "Check",
+    "check_hint": "Checks what you wrote",
+    "cancel": "Cancel",
+    "cancel_hint": "Back to the card without checking",
+    "right": "Correct!",
+    "wrong": "Not quite. Answer: {{word}}",
+    "done": "Back to the card",
+    "done_hint": "Returns to the word card"
   }
 }

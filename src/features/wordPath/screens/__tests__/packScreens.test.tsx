@@ -122,6 +122,26 @@ describe('QuickKnownCheckScreen', () => {
 });
 
 describe('PackLearnScreen', () => {
+  it('writes the word from its meaning, then goes back to the same card', () => {
+    const tree = renderWithTheme(
+      <PackLearnScreen
+        items={[coffee, tea]}
+        route={{params: {packId: 'pack-2'}}}
+      />,
+    );
+    press(tree, 'pack-learn-write-word');
+    expect(textOf(tree, 'pack-learn-write-meaning')).toBe('cà phê');
+    expect(has(tree, 'pack-learn-next-card')).toBe(false);
+    for (const key of coffee.text.split('')) {
+      press(tree, `pack-learn-write-input-key-${key}`);
+    }
+    press(tree, 'pack-learn-write-check');
+    expect(textOf(tree, 'pack-learn-write-verdict')).toBe('Chính xác!');
+    press(tree, 'pack-learn-write-done');
+    expect(has(tree, `pack-learn-card-${coffee.code}`)).toBe(true);
+    expect(mockLearn).not.toHaveBeenCalled();
+  });
+
   it('learns the words answered right in the recognition pass', async () => {
     const tree = renderWithTheme(
       <PackLearnScreen
