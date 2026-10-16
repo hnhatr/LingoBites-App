@@ -3,7 +3,9 @@ import {useTranslation} from 'react-i18next';
 import {Modal, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -92,26 +94,22 @@ export function SituationPickerSheet({
             />
           ) : null}
         </Pressable>
-        <Pressable
+        <SaveToggle
           accessibilityHint={t('combo.setup.bookmark_hint')}
           accessibilityLabel={
             marked
-              ? t('combo.setup.unbookmark', {name: entry.title_vi})
+              ? t('combo.setup.unbookmark', {
+                  name: entry.title_vi,
+                })
               : t('combo.setup.bookmark', {name: entry.title_vi})
           }
-          accessibilityRole="button"
-          accessibilityState={{selected: marked}}
           hitSlop={8}
           onPress={() => onToggleBookmark(entry.code)}
+          raised="compact"
+          saved={marked}
           style={styles.bookmark}
           testID={`combo-setup-bookmark-${entry.code}`}
-        >
-          <MaterialIcon
-            color={marked ? theme.colors.primary : theme.colors.outline}
-            name={marked ? 'bookmark' : 'bookmark_add'}
-            size={22}
-          />
-        </Pressable>
+        />
       </View>
     );
   };
@@ -133,20 +131,13 @@ export function SituationPickerSheet({
       <View style={themedStyles.sheet} testID="combo-setup-situation-sheet">
         <View style={styles.head}>
           <AppText variant="h3">{t('combo.setup.situation_pick')}</AppText>
-          <Pressable
+          <HeaderIconButton
             accessibilityHint={t('combo.setup.close_hint')}
             accessibilityLabel={t('combo.setup.close')}
-            accessibilityRole="button"
-            hitSlop={8}
+            icon="close"
             onPress={onDismiss}
             testID="combo-setup-situation-close"
-          >
-            <MaterialIcon
-              color={theme.colors.text.secondary}
-              name="close"
-              size={24}
-            />
-          </Pressable>
+          />
         </View>
         <TextField
           accessibilityHint={t('combo.setup.situation_search_hint')}
@@ -204,10 +195,7 @@ export function SituationPickerSheet({
 
 const styles = StyleSheet.create({
   bookmark: {
-    alignItems: 'center',
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
+    marginHorizontal: 6,
   },
   empty: {
     paddingVertical: 24,

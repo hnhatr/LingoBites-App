@@ -37,6 +37,7 @@ describe('findVideoInProgress', () => {
       title: 'Lesson yt-2',
       sentenceCount: 2,
       youtubeDurationMs: 60_000,
+      youtubeVideoId: 'v',
     });
   });
 

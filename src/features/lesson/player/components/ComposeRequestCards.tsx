@@ -2,8 +2,8 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -112,13 +112,12 @@ export function ComposeRequestCards({testID = 'compose-cards'}) {
               </View>
             </Pressable>
             {running ? null : (
-              <IconButton
+              <ActionIconButton
                 accessibilityHint={t('compose.dismiss_hint')}
                 accessibilityLabel={t('compose.dismiss')}
                 icon="close"
                 onPress={() => dismissCompose(entry.requestId)}
                 testID={`compose-card-dismiss-${entry.requestId}`}
-                tone="ghost"
               />
             )}
           </View>

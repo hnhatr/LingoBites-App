@@ -2,6 +2,7 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -120,20 +121,15 @@ export function ComboSentenceCard({
       </View>
       {tapped ? (
         <View style={themedStyles.ipa}>
-          <Pressable
+          <ActionIconButton
             accessibilityHint={t('combo.set.say_word_hint')}
             accessibilityLabel={t('combo.set.say_word', {word: tapped.t})}
-            accessibilityRole="button"
+            icon="volume_up"
             onPress={() => onSayWord(tapped.t)}
-            style={themedStyles.say}
+            onTint
+            size="compact"
             testID={`combo-say-${sentence.id}`}
-          >
-            <MaterialIcon
-              color={theme.colors.primary}
-              name="volume_up"
-              size={14}
-            />
-          </Pressable>
+          />
           <AppText style={themedStyles.inkTeal} variant="label">
             {tapped.t}
           </AppText>
@@ -258,13 +254,13 @@ export function ComboSentenceCard({
           testID={`combo-listen-${sentence.id}`}
         >
           <MaterialIcon
-            color={playing ? theme.colors.text.inverse : theme.colors.primary}
+            color={theme.colors.primary}
             name="volume_up"
             size={16}
           />
           <AppText
             numberOfLines={1}
-            style={playing ? themedStyles.inkWhite : themedStyles.inkTeal}
+            style={themedStyles.inkTeal}
             variant="caption"
           >
             {playing ? t('combo.set.listening') : t('combo.set.listen')}
@@ -283,13 +279,13 @@ export function ComboSentenceCard({
           testID={`combo-save-${sentence.id}`}
         >
           <MaterialIcon
-            color={saved ? HERO_PALETTE.ink : theme.colors.onTertiaryContainer}
+            color={saved ? theme.colors.primary : theme.colors.text.muted}
             name={saved ? 'bookmark' : 'bookmark_add'}
             size={16}
           />
           <AppText
             numberOfLines={1}
-            style={saved ? themedStyles.inkInk : themedStyles.inkSun}
+            style={saved ? themedStyles.inkTeal : themedStyles.inkMuted}
             variant="caption"
           >
             {saved ? t('combo.set.saved') : t('combo.set.save')}
@@ -435,14 +431,6 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: 10,
       paddingVertical: 5,
     },
-    say: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 7,
-      height: 24,
-      justifyContent: 'center',
-      width: 24,
-    },
     grammar: {
       backgroundColor: theme.colors.background,
       borderRadius: 16,
@@ -521,24 +509,24 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: 4,
     },
     listen: {
+      backgroundColor: theme.colors.surfaceMuted,
+      ...getStickerEdge(2, theme.colors.surfaceHigh),
+    },
+    listenOn: {
       backgroundColor: theme.colors.accentSoft,
       ...getStickerEdge(2, comboEdges(theme).mint),
     },
-    listenOn: {
-      backgroundColor: theme.colors.primary,
-      ...getStickerEdge(2, comboEdges(theme).teal),
-    },
     save: {
-      backgroundColor: theme.colors.tertiarySoft,
-      ...getStickerEdge(2, comboEdges(theme).sun),
+      backgroundColor: theme.colors.surfaceMuted,
+      ...getStickerEdge(2, theme.colors.surfaceHigh),
     },
     saveOn: {
-      backgroundColor: HERO_PALETTE.sun,
-      ...getStickerEdge(2, HERO_PALETTE.sunShelf),
+      backgroundColor: theme.colors.accentSoft,
+      ...getStickerEdge(2, comboEdges(theme).mint),
     },
     flag: {
-      backgroundColor: theme.colors.secondarySoft,
-      ...getStickerEdge(2, comboEdges(theme).coral),
+      backgroundColor: theme.colors.surfaceMuted,
+      ...getStickerEdge(2, theme.colors.surfaceHigh),
     },
     flagOn: {
       backgroundColor: HERO_PALETTE.coral,
@@ -564,9 +552,6 @@ function makeStyles(theme: AppTheme) {
     },
     inkWhite: {
       color: theme.colors.text.inverse,
-    },
-    inkInk: {
-      color: HERO_PALETTE.ink,
     },
   });
 }

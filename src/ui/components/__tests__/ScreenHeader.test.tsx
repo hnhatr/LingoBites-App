@@ -136,7 +136,7 @@ describe('HeaderIconButton', () => {
     return findHostByTestID(tree, 'btn');
   }
 
-  it('is a 40px circle with a 44px touch target', async () => {
+  it('is a 42px rounded square with a 44px touch target', async () => {
     const button = await renderButton();
     const style = StyleSheet.flatten(button.props.style);
     expect(style.width).toBe(HEADER_BUTTON_SIZE);

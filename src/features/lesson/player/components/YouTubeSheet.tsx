@@ -12,7 +12,7 @@ import {useReducedMotion} from 'react-native-reanimated';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 export type YouTubeSheetProps = {
@@ -67,12 +67,11 @@ export function YouTubeSheet({
           <AppText numberOfLines={1} style={styles.title} variant="h3">
             {title}
           </AppText>
-          <IconButton
+          <HeaderIconButton
             accessibilityLabel={t('youtube.study.sheet_close_a11y')}
             icon="close"
             onPress={onClose}
             testID="youtube-sheet-close"
-            tone="ghost"
           />
         </View>
         {scrollable ? (

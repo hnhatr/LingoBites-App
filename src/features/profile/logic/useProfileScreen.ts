@@ -21,7 +21,6 @@ import {useLearnerProfileStore} from '@features/onboarding';
 import {formatLastSyncedLabel, readLastSyncedAt} from '@features/sync';
 
 import {useOptionalAppNavigation} from '@core/navigation';
-import {useFeatureFlags} from '@core/release';
 
 import type {ProfileStackParamList} from '../screens/navigationTypes';
 import {formatProfileAccuracy, formatProfileWordCount} from './profileMetrics';
@@ -87,7 +86,6 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
       .join('')
       .toUpperCase() || PROFILE_PLACEHOLDER.initials;
   const profileSubtitle = PROFILE_PLACEHOLDER.subtitle;
-  const {isFeatureEnabled} = useFeatureFlags();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const {getAudioCacheStats} = useAudioLibrary();
   const {getCapabilityProgressReport} = useProgressReport();
@@ -95,7 +93,6 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
   const audioCacheTrailingLabel = `${formatCacheBytes(
     audioCacheStats.readyBytes,
   )} · ${audioCacheStats.chapterCount} chương`;
-  const showThemePicker = isFeatureEnabled('themeSwitcher');
 
   const [gamification, setGamification] = useState<GamificationSnapshot>(() =>
     getGamificationSnapshot(),
@@ -249,7 +246,6 @@ export function useProfileScreen(navigation: ProfileScreenNavigation) {
     reminderTrailingLabel: reminderTrailingLabel(reminderSettings),
     selectReminder,
     selectWeeklyGoal,
-    showThemePicker,
     statusMessage,
     streakSubtitle,
     streakTitle,

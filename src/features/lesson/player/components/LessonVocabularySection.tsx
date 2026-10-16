@@ -2,6 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
+import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
 import {formatIpa} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -16,7 +17,6 @@ import type {VocabularySaveControl} from '../logic/useLessonSavedItems';
 import {Flashcard, FlashcardDeck} from './FlashcardDeck';
 import {
   BookmarkToggle,
-  PillTabs,
   SpeakSquare,
   StudyNavButton,
   StudyNavRow,
@@ -128,7 +128,8 @@ export function LessonVocabularySection({
       testID="lesson-vocabulary-section"
     >
       {group ? (
-        <PillTabs
+        <AppTabs
+          accessibilityHint={t('lessonPlayer.study_tab_hint')}
           onChange={next => {
             setRole(next);
             setIndex(0);

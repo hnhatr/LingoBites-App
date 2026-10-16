@@ -6,11 +6,11 @@ import {SpeechNotice, useSpeak} from '@features/audio';
 import {listComboSentenceSetsFor} from '@features/combo';
 import {requestSync} from '@features/sync';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {SessionHeader, StudyQuestion} from '@ui/components/StudySession';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -246,7 +246,7 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
                   {revealed ? current.item.meaning_vi : t('itemReview.reveal')}
                 </AppText>
               </Pressable>
-              <IconButton
+              <ActionIconButton
                 accessibilityHint={t('itemReview.listen_hint')}
                 accessibilityLabel={t('itemReview.listen')}
                 icon="volume_up"

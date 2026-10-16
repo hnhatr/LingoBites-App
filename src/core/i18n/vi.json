@@ -1588,9 +1588,7 @@
     "download_failed": "Chưa tải được gói. Hãy thử lại khi có mạng.",
     "combo_history": "Bộ câu đã học",
     "tab_words": "Gói từ",
-    "tab_words_sub": "Từ vựng đơn lẻ",
     "tab_sentences": "Gói câu",
-    "tab_sentences_sub": "Cụm từ và mẫu câu",
     "tab_hint": "Chỉ hiện loại gói này.",
     "empty_words": "Chưa có gói từ nào.",
     "empty_sentences": "Chưa có gói câu nào. Gói gồm cụm từ và mẫu câu sẽ hiện ở đây.",
@@ -1642,6 +1640,8 @@
     "in_pack": "Trong gói này",
     "review": "Ôn lại gói này",
     "combo_hint": "Tạo bộ câu từ mục này.",
+    "combo_no_situation": "Chưa có tình huống phù hợp với từ này.",
+    "combo_check_failed": "Chưa kiểm tra được tình huống. Hãy thử lại.",
     "continue_one": "Học tiếp ({{count}} mục)",
     "continue_other": "Học tiếp ({{count}} mục)",
     "stat_learned_label": "Đã nhớ",
@@ -1695,6 +1695,7 @@
   "combo": {
     "errors": {
       "situation_not_enabled": "Tình huống này chưa được bật cho bộ câu. Hãy chọn tình huống khác.",
+      "situation_not_suitable": "Tình huống này không hợp với từ đã chọn. Hãy chọn tình huống khác.",
       "not_found": "Không tìm thấy từ, thì hoặc tình huống này trên máy chủ.",
       "invalid_choice": "Lựa chọn này nằm ngoài gói của bạn. Hãy đổi loại câu hoặc số câu.",
       "no_subject_groups": "Không còn chủ ngữ nào phù hợp với lựa chọn này. Hãy chọn thêm chủ ngữ.",

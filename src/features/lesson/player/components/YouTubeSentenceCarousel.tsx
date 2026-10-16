@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import {useReducedMotion} from 'react-native-reanimated';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
-import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
 
@@ -167,7 +168,7 @@ function SentenceCarouselCardBody({
             ) : null}
             <View style={styles.headerSpacer} />
             {onOpenAnalysis ? (
-              <Pressable
+              <ActionIconButton
                 accessibilityHint={
                   analysis
                     ? t('youtube.study.view_analysis_hint')
@@ -178,81 +179,41 @@ function SentenceCarouselCardBody({
                     ? t('youtube.study.view_analysis')
                     : t('lessonPlayer.analyze')
                 }
-                accessibilityRole="button"
-                onPress={() => onOpenAnalysis(sentence.id)}
-                style={({pressed}) => [
-                  styles.analyzePill,
-                  analysis ? styles.analyzePillDone : null,
-                  pressed ? styles.pressed : null,
-                ]}
-                testID={`youtube-open-analysis-${sentence.id}`}
-              >
-                <MaterialIcon
-                  color={
-                    analysis
-                      ? theme.colors.primary
-                      : theme.colors.onTertiaryContainer
-                  }
-                  name="auto_awesome"
-                  size={16}
-                />
-                <AppText
-                  style={[
-                    styles.analyzeText,
-                    analysis ? styles.analyzeTextDone : null,
-                  ]}
-                  variant="label"
-                >
-                  {analysis
+                icon="auto_awesome"
+                label={
+                  analysis
                     ? t('youtube.study.view_analysis_short')
-                    : t('youtube.study.analyze_short')}
-                </AppText>
-              </Pressable>
+                    : t('youtube.study.analyze_short')
+                }
+                onPress={() => onOpenAnalysis(sentence.id)}
+                testID={`youtube-open-analysis-${sentence.id}`}
+                tone="mint"
+              />
             ) : null}
             {onSpeakText ? (
-              <Pressable
+              <ActionIconButton
+                accessibilityHint={t('lessonPlayer.speak_sentence_hint')}
                 accessibilityLabel={t('lessonPlayer.speak_sentence', {
                   index: index + 1,
                 })}
-                accessibilityHint={t('lessonPlayer.speak_sentence_hint')}
-                accessibilityRole="button"
+                icon="volume_up"
                 onPress={() => onSpeakText(sentence.text_en)}
-                style={({pressed}) => [
-                  styles.speak,
-                  pressed ? styles.pressed : null,
-                ]}
                 testID={`canonical-speak-${sentence.id}`}
-              >
-                <MaterialIcon
-                  color={theme.colors.primary}
-                  name="volume_up"
-                  size={18}
-                />
-              </Pressable>
+              />
             ) : null}
             {onToggleSave ? (
-              <Pressable
+              <SaveToggle
                 accessibilityHint={t('youtube.study.save_sentence_hint')}
                 accessibilityLabel={
                   saved
                     ? t('youtube.study.unsave_sentence_a11y')
                     : t('youtube.study.save_sentence_a11y')
                 }
-                accessibilityRole="button"
-                accessibilityState={{selected: saved}}
                 onPress={() => onToggleSave(sentence)}
-                style={({pressed}) => [
-                  styles.speak,
-                  pressed ? styles.pressed : null,
-                ]}
+                raised="row"
+                saved={saved}
                 testID={`youtube-save-sentence-${sentence.id}`}
-              >
-                <MaterialIcon
-                  color={saved ? theme.colors.danger : theme.colors.primary}
-                  name={saved ? 'heart' : 'heart_outline'}
-                  size={18}
-                />
-              </Pressable>
+              />
             ) : null}
           </View>
           <View
@@ -522,29 +483,7 @@ export function YouTubeSentenceCarousel({
 }
 
 function cardStyles(theme: AppTheme) {
-  const mintEdge = withAlpha(theme.colors.primaryContainer, 0.45);
   return StyleSheet.create({
-    analyzePill: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.tertiarySoft,
-      borderRadius: 14,
-      flexDirection: 'row',
-      gap: theme.spacing.xs,
-      minHeight: 40,
-      paddingHorizontal: 12,
-      ...getStickerEdge(3, theme.colors.tertiaryBorder),
-    },
-    analyzePillDone: {
-      backgroundColor: theme.colors.accentSoft,
-      ...getStickerEdge(3, mintEdge),
-    },
-    analyzeText: {
-      color: theme.colors.onTertiaryContainer,
-      fontWeight: '800',
-    },
-    analyzeTextDone: {
-      color: theme.colors.primary,
-    },
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: 24,
@@ -599,18 +538,6 @@ function cardStyles(theme: AppTheme) {
     },
     loopText: {
       color: theme.colors.onTertiaryContainer,
-    },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
-    },
-    speak: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: 14,
-      height: 40,
-      justifyContent: 'center',
-      width: 40,
-      ...getStickerEdge(3, theme.colors.surfaceHigh),
     },
     timeChip: {
       alignItems: 'center',

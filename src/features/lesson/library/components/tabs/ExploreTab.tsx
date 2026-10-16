@@ -14,27 +14,28 @@ import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
-import type {LessonCatalogItem} from '@core/schemas/lesson';
 
 import {catalogCoverUrl} from '../../logic/catalogCover';
+import {
+  EMPTY_LESSON_CARD_STATE,
+  readLessonCardLocalState,
+  useLessonBookmarks,
+} from '../../logic/lessonCardData';
 import {
   getLibrarySection,
   type LibrarySectionConfig,
 } from '../../logic/librarySections';
 import {useRefreshOnRefocus} from '../../logic/useLibrarySegments';
-import {
-  type CardAction,
-  ToneCard,
-  VideoHeroCard,
-  VideoRowCard,
-} from '../ExploreCards';
+import {type CardAction, ToneCard} from '../ExploreCards';
 import {LibraryShelf, type ShelfStatus} from '../LibraryShelf';
 import {cardToneAt, libraryTone} from '../libraryTones';
 import {PackStack} from '../PackStack';
+import {videoContextLabel} from '../PublicLessonsList';
+import {createdAction, createdProgressLabel} from './CreatedTab';
 
 /** How many packs the stack holds before "Tất cả". */
 export const SHELF_LIMIT = 3;
-/** How many videos: one large, then a short list. */
+/** How many videos the shelf shows before "Tất cả". */
 export const VIDEO_LIMIT = 3;
 
 const PUBLIC_VIDEOS = getLibrarySection('publicVideo');
@@ -261,30 +262,23 @@ function useSectionCatalog(section: LibrarySectionConfig) {
   return catalog;
 }
 
-/** Public videos: the first one large, the next ones as a list. */
+/** Public videos, drawn like the "Video công khai" list. */
 function VideoShelf() {
   const testID = 'library-shelf-videos';
+  const {theme} = useAppTheme();
   const appNavigation = useAppNavigation();
   const {state, refresh} = useSectionCatalog(PUBLIC_VIDEOS);
+  const {isBookmarked, toggleBookmark} = useLessonBookmarks();
   const count = catalogCount(state);
   const videos =
     state.status === 'ready' ? state.lessons.slice(0, VIDEO_LIMIT) : [];
-
-  const cardProps = (item: LessonCatalogItem, index: number) => ({
-    cover: {
-      imageUrl: catalogCoverUrl(item),
-      level: item.cefr_level,
-      duration: item.youtube_duration_ms
-        ? formatVideoDuration(item.youtube_duration_ms)
-        : null,
-    },
-    // The play disc already says "video"; only the lesson count is left.
-    meta: item.video_lesson_count ? `${item.video_lesson_count} bài học` : null,
-    onPress: () => appNavigation.openLesson(item.id),
-    testID: `${testID}-${item.id}`,
-    title: splitLessonTitle(item.title).title,
-    tone: cardToneAt(index),
-  });
+  const localState = useMemo(
+    () =>
+      state.status === 'ready'
+        ? readLessonCardLocalState()
+        : EMPTY_LESSON_CARD_STATE,
+    [state.status],
+  );
 
   return (
     <LibraryShelf
@@ -298,13 +292,51 @@ function VideoShelf() {
       title="Xem & học"
       tone="coral"
     >
-      {videos.map((item, index) =>
-        index === 0 ? (
-          <VideoHeroCard key={item.id} {...cardProps(item, index)} />
-        ) : (
-          <VideoRowCard key={item.id} {...cardProps(item, index)} />
-        ),
-      )}
+      {videos.map((item, index) => {
+        const contextLabel = videoContextLabel(item);
+        const progress = localState.progress.get(item.id);
+        return (
+          <ToneCard
+            accessibilityHint="Mở video"
+            action={
+              progress
+                ? createdAction(progress)
+                : {label: 'Xem', glyph: 'play', solid: true}
+            }
+            bookmark={{
+              saved: isBookmarked(item.id),
+              onToggle: () =>
+                toggleBookmark({
+                  lessonId: item.id,
+                  title: item.title,
+                  sourceType: item.source_type,
+                  sentenceCount: item.sentence_count,
+                  estimatedMinutes: item.estimated_minutes ?? null,
+                  contextLabel,
+                }),
+            }}
+            cover={{imageUrl: catalogCoverUrl(item), glyph: 'subtitles'}}
+            description={[
+              item.youtube_duration_ms
+                ? formatVideoDuration(item.youtube_duration_ms)
+                : null,
+              item.cefr_level,
+              localState.downloadedIds.has(item.id) ? 'Đã tải' : null,
+              createdProgressLabel(progress),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+            eyebrow={contextLabel}
+            gutter={theme.spacing.md}
+            key={item.id}
+            onPress={() => appNavigation.openLesson(item.id)}
+            testID={`${testID}-${item.id}`}
+            title={splitLessonTitle(item.title).title}
+            tone={cardToneAt(index)}
+            video
+          />
+        );
+      })}
     </LibraryShelf>
   );
 }

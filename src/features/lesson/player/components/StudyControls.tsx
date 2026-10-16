@@ -1,16 +1,16 @@
 /**
  * Shared pieces of the lesson's study screens (Học từng câu, Từ & cụm, Mẫu
  * câu, Nghe hiểu, Phát âm, Ngữ pháp): the page layout with its bottom
- * buttons, the progress strip, the floating tab bar and the bookmark toggle.
+ * buttons, the progress strip and the bookmark toggle.
  */
 import React, {useEffect, useMemo, useRef} from 'react';
-import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
-import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge, getStickerFace} from '@ui/theme/hardShadow';
@@ -167,68 +167,6 @@ export function StudyProgress({
   );
 }
 
-export type PillTab<T extends string> = {
-  id: T;
-  label: string;
-  icon?: HandoffIconName;
-  count?: number;
-};
-
-type PillTabsProps<T extends string> = {
-  tabs: PillTab<T>[];
-  value: T;
-  onChange: (id: T) => void;
-  testID: string;
-};
-
-/** A floating pill bar of tabs, as on the lesson page. */
-export function PillTabs<T extends string>({
-  tabs,
-  value,
-  onChange,
-  testID,
-}: PillTabsProps<T>) {
-  const {theme} = useAppTheme();
-  const {t} = useTranslation();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  return (
-    <View accessibilityRole="tablist" style={styles.tabs} testID={testID}>
-      {tabs.map(tab => {
-        const on = tab.id === value;
-        const ink = on ? theme.colors.text.inverse : theme.colors.text.muted;
-        return (
-          <Pressable
-            accessibilityHint={t('lessonPlayer.study_tab_hint')}
-            accessibilityLabel={
-              tab.count !== undefined ? `${tab.label}, ${tab.count}` : tab.label
-            }
-            accessibilityRole="tab"
-            accessibilityState={{selected: on}}
-            key={tab.id}
-            onPress={() => onChange(tab.id)}
-            style={[styles.tab, on ? styles.tabOn : null]}
-            testID={`${testID}-${tab.id}`}
-          >
-            {tab.icon ? (
-              <MaterialIcon color={ink} name={tab.icon} size={16} />
-            ) : null}
-            <AppText numberOfLines={1} style={[styles.tabText, {color: ink}]}>
-              {tab.label}
-            </AppText>
-            {tab.count !== undefined ? (
-              <View style={[styles.tabCount, on ? styles.tabCountOn : null]}>
-                <AppText style={[styles.tabCountText, {color: ink}]}>
-                  {tab.count}
-                </AppText>
-              </View>
-            ) : null}
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
-
 type BookmarkProps = {
   saved: boolean;
   onPress: () => void;
@@ -241,7 +179,7 @@ type BookmarkProps = {
   testID: string;
 };
 
-/** Square bookmark button: grey while unsaved, sun yellow once saved. */
+/** Bookmark button: the shared save toggle as a raised square. */
 export function BookmarkToggle({
   saved,
   onPress,
@@ -251,30 +189,16 @@ export function BookmarkToggle({
   onTint = false,
   testID,
 }: BookmarkProps) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <Pressable
-      accessibilityHint={accessibilityHint}
+    <SaveToggle
+      accessibilityHint={accessibilityHint ?? ''}
       accessibilityLabel={saved ? savedLabel : label}
-      accessibilityRole="button"
-      accessibilityState={{selected: saved}}
-      hitSlop={4}
       onPress={onPress}
-      style={({pressed}) => [
-        styles.square,
-        onTint ? styles.squareOnTint : null,
-        saved ? styles.bookmarkSaved : null,
-        pressed ? styles.navPressed : null,
-      ]}
+      onTint={onTint}
+      raised="row"
+      saved={saved}
       testID={testID}
-    >
-      <MaterialIcon
-        color={saved ? HERO_PALETTE.ink : theme.colors.text.muted}
-        name={saved ? 'bookmark' : 'bookmark_add'}
-        size={19}
-      />
-    </Pressable>
+    />
   );
 }
 
@@ -288,7 +212,7 @@ type SpeakSquareProps = {
   testID: string;
 };
 
-/** Square "listen" button matching the bookmark toggle. */
+/** "Listen" button matching the bookmark toggle. */
 export function SpeakSquare({
   onPress,
   icon = 'volume_up',
@@ -297,25 +221,15 @@ export function SpeakSquare({
   onTint = false,
   testID,
 }: SpeakSquareProps) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <Pressable
+    <ActionIconButton
       accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      hitSlop={4}
+      icon={icon}
       onPress={onPress}
-      style={({pressed}) => [
-        styles.square,
-        styles.speak,
-        onTint ? styles.squareOnTint : null,
-        pressed ? styles.navPressed : null,
-      ]}
+      onTint={onTint}
       testID={testID}
-    >
-      <MaterialIcon color={theme.colors.primary} name={icon} size={19} />
-    </Pressable>
+    />
   );
 }
 
@@ -424,61 +338,6 @@ function makeStyles(theme: AppTheme) {
       fontSize: 13,
       fontVariant: ['tabular-nums'],
       fontWeight: '800',
-    },
-    tabs: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      gap: 2,
-      padding: 4,
-      ...getStickerFace(theme, 3),
-    },
-    tab: {
-      alignItems: 'center',
-      borderRadius: theme.radius.pill,
-      flex: 1,
-      flexDirection: 'row',
-      gap: 6,
-      justifyContent: 'center',
-      minHeight: 42,
-      paddingHorizontal: 8,
-    },
-    tabOn: {
-      backgroundColor: theme.colors.primary,
-    },
-    tabText: {
-      flexShrink: 1,
-      fontSize: 14,
-      fontWeight: '800',
-    },
-    tabCount: {
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: 7,
-    },
-    tabCountOn: {
-      backgroundColor: withAlpha(theme.colors.text.inverse, 0.22),
-    },
-    tabCountText: {
-      fontSize: 11.5,
-      fontWeight: '800',
-    },
-    square: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: 12,
-      height: 40,
-      justifyContent: 'center',
-      width: 40,
-    },
-    squareOnTint: {
-      backgroundColor: theme.colors.surface,
-    },
-    speak: {
-      backgroundColor: theme.colors.secondarySoft,
-    },
-    bookmarkSaved: {
-      backgroundColor: HERO_PALETTE.sun,
     },
   });
 }

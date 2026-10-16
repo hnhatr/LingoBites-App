@@ -272,11 +272,11 @@ describe('ExploreTab', () => {
       testID: 'library-shelf-videos-own-cover-image',
     });
     expect(own.props.source).toEqual({uri: 'https://cdn.example/own.png'});
+    // The level moves from a chip on the picture to the card's line.
     expect(
-      tree.root.findAllByProps({
-        testID: 'library-shelf-videos-vid-cover-level',
-      }),
-    ).not.toHaveLength(0);
+      tree.root.findByProps({testID: 'library-shelf-videos-vid-description'})
+        .props.children,
+    ).toContain('A2');
   });
 
   it('counts each folder, with a plus when the server has more', () => {

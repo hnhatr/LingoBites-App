@@ -4,11 +4,11 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {useSpeak} from '@features/audio';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {StudyFlashCard} from '@ui/components/StudyFlashCard';
 import {
   SessionHeader,
@@ -236,15 +236,15 @@ export function PackLearnScreen({navigation, route, items: given}: Props) {
 
       {stage === 'cards' && card ? (
         <View style={themedStyles.footer}>
-          <IconButton
+          <ActionIconButton
             accessibilityHint={t('packLearn.prev_hint')}
             accessibilityLabel={t('packLearn.prev')}
             disabled={cardIndex === 0}
             icon="chevron_left"
             onPress={prevCard}
-            size={52}
+            onTint
+            size="bar"
             testID="pack-learn-prev-card"
-            tone="ghost"
           />
           <AppButton
             iconRight="chevron_right"

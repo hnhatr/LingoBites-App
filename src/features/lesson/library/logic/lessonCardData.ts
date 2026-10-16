@@ -20,14 +20,18 @@ export type {UseLessonBookmarksResult} from '@core/sync/useLessonBookmarks';
  * not hit the database: which lessons are downloaded, how far the learner got,
  * and how many exercises a downloaded lesson carries.
  */
+export type LessonDownloadInfo = {
+  sourceType: LessonSourceType;
+  sentenceCount: number;
+  /** The video a YouTube lesson was made from, for its thumbnail. */
+  youtubeVideoId?: string | null;
+};
+
 export type LessonCardLocalState = {
   downloadedIds: ReadonlySet<string>;
   activityCounts: ReadonlyMap<string, number>;
-  /** Source type and sentence count of downloaded lessons. */
-  downloads: ReadonlyMap<
-    string,
-    {sourceType: LessonSourceType; sentenceCount: number}
-  >;
+  /** Source type, sentence count and YouTube video of downloaded lessons. */
+  downloads: ReadonlyMap<string, LessonDownloadInfo>;
   progress: ReadonlyMap<string, LessonCardProgress>;
 };
 
@@ -47,10 +51,7 @@ export function readLessonCardLocalState(): LessonCardLocalState {
   // render) and then shows no status for that part.
   const downloadedIds = new Set<string>();
   const activityCounts = new Map<string, number>();
-  const downloads = new Map<
-    string,
-    {sourceType: LessonSourceType; sentenceCount: number}
-  >();
+  const downloads = new Map<string, LessonDownloadInfo>();
   try {
     for (const summary of listDownloadedLessonSummaries()) {
       downloadedIds.add(summary.lessonId);
@@ -58,6 +59,7 @@ export function readLessonCardLocalState(): LessonCardLocalState {
       downloads.set(summary.lessonId, {
         sourceType: summary.snapshot.source_type,
         sentenceCount: summary.snapshot.sentences.length,
+        youtubeVideoId: summary.snapshot.youtube?.video_id ?? null,
       });
     }
   } catch {

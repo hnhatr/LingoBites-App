@@ -1,11 +1,11 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
-import {IconButton} from '@ui/components/IconButton';
 import {useFloatingTabBarClearance} from '@ui/components/layout';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {useAppTheme} from '@ui/theme';
@@ -150,7 +150,7 @@ export function ShadowingSummaryScreen({
                     </AppText>
                   ) : null}
                   {showPlay ? (
-                    <IconButton
+                    <ActionIconButton
                       accessibilityLabel={`Nghe lại ${row.textEn}`}
                       icon="play_arrow"
                       onPress={() => {

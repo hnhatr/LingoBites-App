@@ -1,16 +1,19 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {useSpeak} from '@features/audio';
+import {comboSituationsAvailable} from '@features/combo';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
+import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {formatIpa} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import {readCatalogItems} from '@core/db/catalogItems';
 import {useAppNavigation} from '@core/navigation';
@@ -24,6 +27,9 @@ import {kindSummary} from './packText';
 
 const FILTERS = ['all', 'new', 'learned'] as const;
 type Filter = (typeof FILTERS)[number];
+
+/** The combo button's check of an item: under way, or why it stayed here. */
+type ComboCheck = {code: string; state: 'checking' | 'none' | 'error'};
 
 type Props = {
   navigation?: {goBack?: () => void};
@@ -53,6 +59,7 @@ export function WordPackScreen({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {speak: say} = useSpeak();
   const [filter, setFilter] = useState<Filter>('all');
+  const [comboCheck, setComboCheck] = useState<ComboCheck | null>(null);
   const packId = route?.params.packId ?? '';
   const pack = findDownloadedPack(packId);
   const items = useMemo(() => {
@@ -87,6 +94,19 @@ export function WordPackScreen({
       : t('wordPack.title'),
   );
 
+  // The setup opens only when some situation fits the item; otherwise the row says so.
+  const openCombo = async (code: string) => {
+    if (comboCheck?.state === 'checking') return;
+    setComboCheck({code, state: 'checking'});
+    const found = await comboSituationsAvailable(code);
+    if (found === 'ok') {
+      setComboCheck(null);
+      appNavigation.openComboSetup(code);
+      return;
+    }
+    setComboCheck({code, state: found});
+  };
+
   const shown = items.filter(item =>
     filter === 'all'
       ? true
@@ -94,6 +114,11 @@ export function WordPackScreen({
         ? learned.has(item.code)
         : !learned.has(item.code),
   );
+  const filterCounts: Record<Filter, number> = {
+    all: total,
+    new: left,
+    learned: learnedTotal,
+  };
 
   return (
     <AppScreen>
@@ -142,31 +167,16 @@ export function WordPackScreen({
         {total > 0 ? (
           <View style={styles.listHeader}>
             <AppText variant="h3">{t('wordPack.in_pack')}</AppText>
-            <View accessibilityRole="tablist" style={themedStyles.filters}>
-              {FILTERS.map(option => {
-                const on = option === filter;
-                return (
-                  <Pressable
-                    key={option}
-                    accessibilityRole="tab"
-                    accessibilityState={{selected: on}}
-                    hitSlop={4}
-                    onPress={() => setFilter(option)}
-                    style={[themedStyles.filter, on && themedStyles.filterOn]}
-                    testID={`word-pack-filter-${option}`}
-                  >
-                    <AppText
-                      style={[
-                        themedStyles.filterText,
-                        on && themedStyles.filterTextOn,
-                      ]}
-                    >
-                      {t(`wordPack.filter_${option}`)}
-                    </AppText>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <AppTabs
+              onChange={setFilter}
+              tabs={FILTERS.map(option => ({
+                id: option,
+                label: t(`wordPack.filter_${option}`),
+                count: filterCounts[option],
+              }))}
+              testID="word-pack-filter"
+              value={filter}
+            />
           </View>
         ) : null}
         {total > 0 ? (
@@ -178,63 +188,77 @@ export function WordPackScreen({
             ) : null}
             {shown.map((item, index) => {
               const isLearned = learned.has(item.code);
+              const check =
+                comboCheck?.code === item.code ? comboCheck.state : null;
               return (
                 <View
                   key={item.code}
-                  style={[
-                    styles.item,
-                    index > 0 ? themedStyles.itemDivider : null,
-                  ]}
+                  style={index > 0 ? themedStyles.itemDivider : null}
                   testID={`word-pack-item-${item.code}`}
                 >
-                  <View
-                    style={[
-                      themedStyles.status,
-                      isLearned ? themedStyles.statusOn : null,
-                    ]}
-                    testID={
-                      isLearned
-                        ? `word-pack-learned-${item.code}`
-                        : `word-pack-new-${item.code}`
-                    }
-                  >
-                    {isLearned ? (
-                      <AppText style={themedStyles.statusMark}>✓</AppText>
-                    ) : null}
-                  </View>
-                  <View style={styles.itemText}>
-                    <View style={styles.wordLine}>
-                      <AppText style={themedStyles.word}>{item.text}</AppText>
-                      {item.ipa ? (
-                        <AppText color="muted" variant="caption">
-                          {formatIpa(item.ipa)}
-                        </AppText>
+                  <View style={styles.item}>
+                    <View
+                      style={[
+                        themedStyles.status,
+                        isLearned ? themedStyles.statusOn : null,
+                      ]}
+                      testID={
+                        isLearned
+                          ? `word-pack-learned-${item.code}`
+                          : `word-pack-new-${item.code}`
+                      }
+                    >
+                      {isLearned ? (
+                        <AppText style={themedStyles.statusMark}>✓</AppText>
                       ) : null}
                     </View>
-                    <AppText color="secondary" variant="caption">
-                      {item.meaning_vi}
-                    </AppText>
+                    <View style={styles.itemText}>
+                      <View style={styles.wordLine}>
+                        <AppText style={themedStyles.word}>{item.text}</AppText>
+                        {item.ipa ? (
+                          <AppText color="muted" variant="caption">
+                            {formatIpa(item.ipa)}
+                          </AppText>
+                        ) : null}
+                      </View>
+                      <AppText color="secondary" variant="caption">
+                        {item.meaning_vi}
+                      </AppText>
+                    </View>
+                    <ActionIconButton
+                      accessibilityHint={t('packQuiz.speak_hint')}
+                      accessibilityLabel={t('wordPack.speak', {
+                        text: item.text,
+                      })}
+                      icon="volume_up"
+                      onPress={() => say(item.text)}
+                      testID={`word-pack-speak-${item.code}`}
+                    />
+                    <ActionIconButton
+                      accessibilityHint={t('wordPack.combo_hint')}
+                      accessibilityLabel={t('wordPack.combo')}
+                      disabled={check === 'checking'}
+                      icon="auto_awesome"
+                      onPress={() => openCombo(item.code)}
+                      testID={`word-pack-combo-${item.code}`}
+                      tone="mint"
+                    />
                   </View>
-                  <IconButton
-                    accessibilityHint={t('packQuiz.speak_hint')}
-                    accessibilityLabel={t('wordPack.speak', {text: item.text})}
-                    icon="volume_up"
-                    iconSize={18}
-                    onPress={() => say(item.text)}
-                    size={36}
-                    style={themedStyles.speak}
-                    testID={`word-pack-speak-${item.code}`}
-                  />
-                  <IconButton
-                    accessibilityHint={t('wordPack.combo_hint')}
-                    accessibilityLabel={t('wordPack.combo')}
-                    icon="auto_awesome"
-                    iconSize={18}
-                    onPress={() => appNavigation.openComboSetup(item.code)}
-                    size={36}
-                    style={themedStyles.combo}
-                    testID={`word-pack-combo-${item.code}`}
-                  />
+                  {check === 'none' || check === 'error' ? (
+                    <AppText
+                      accessibilityLiveRegion="polite"
+                      color="secondary"
+                      style={styles.comboNotice}
+                      testID={`word-pack-combo-notice-${item.code}`}
+                      variant="caption"
+                    >
+                      {t(
+                        check === 'none'
+                          ? 'wordPack.combo_no_situation'
+                          : 'wordPack.combo_check_failed',
+                      )}
+                    </AppText>
+                  ) : null}
                 </View>
               );
             })}
@@ -257,35 +281,10 @@ function makeStyles(theme: AppTheme) {
       padding: theme.spacing.md,
       paddingBottom: theme.spacing.xxl,
     },
-    filters: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      gap: 2,
-      padding: 3,
-    },
-    filter: {
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: 9,
-      paddingVertical: 4,
-    },
-    filterOn: {
-      backgroundColor: theme.colors.accentSoft,
-    },
-    filterText: {
-      color: theme.colors.text.muted,
-      fontSize: 12,
-      fontWeight: '700',
-    },
-    filterTextOn: {
-      color: theme.colors.primary,
-    },
     list: {
       backgroundColor: theme.colors.surface,
-      borderBottomColor: theme.shelf?.surface.color ?? theme.colors.border,
-      borderBottomWidth: 4,
       borderRadius: 22,
-      overflow: 'hidden',
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
     },
     itemDivider: {
       borderTopColor: theme.colors.surfaceMuted,
@@ -315,18 +314,15 @@ function makeStyles(theme: AppTheme) {
       fontSize: 16.5,
       fontWeight: '700',
     },
-    speak: {
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: 12,
-    },
-    combo: {
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: 12,
-    },
   });
 }
 
 const styles = StyleSheet.create({
+  comboNotice: {
+    paddingBottom: 11,
+    paddingHorizontal: 14,
+    textAlign: 'right',
+  },
   emptyFilter: {
     padding: 16,
     textAlign: 'center',
@@ -345,10 +341,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   listHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'space-between',
+    gap: 10,
     marginTop: 6,
   },
   wordLine: {

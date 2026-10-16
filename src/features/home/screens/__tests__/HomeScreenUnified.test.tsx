@@ -4,6 +4,7 @@ import ReactTestRenderer, {act} from 'react-test-renderer';
 import {trackEvent} from '@features/analytics';
 import {getGamificationSnapshot, listStudyEventsOn} from '@features/engagement';
 
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {AppThemeProvider} from '@ui/theme';
 
 import * as AuthSession from '@core/auth/authSession';
@@ -305,7 +306,10 @@ describe('HomeScreen unified rail (LING-179 TASK-001)', () => {
           node.props.testID ===
           'home-recent-item-33333333-3333-4333-8333-333333333331-bookmark',
       )
-      .find(node => typeof node.props.onPress === 'function');
+      .find(
+        node =>
+          typeof node.props.onPress === 'function' && node.type !== SaveToggle,
+      );
     if (!bookmark) throw new Error('No bookmark button on the saved card');
     expect(bookmark.props.accessibilityLabel).toBe('Bỏ lưu bài');
     await act(async () => {

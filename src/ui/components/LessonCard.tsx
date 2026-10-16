@@ -8,6 +8,7 @@ import {type AppTheme, useAppTheme} from '../theme';
 import {getStickerEdge, isStickerTheme} from '../theme/hardShadow';
 import {AppText} from './AppText';
 import {MaterialIcon} from './MaterialIcon';
+import {SaveToggle} from './SaveToggle';
 import {ShelfSurface} from './ShelfSurface';
 
 /**
@@ -432,34 +433,15 @@ export function LessonCard(props: LessonCardProps) {
       )}
       {footer ? <View style={styles.footer}>{footer}</View> : null}
       {onToggleBookmark ? (
-        <Pressable
-          accessibilityHint={
-            bookmarked
-              ? 'Bỏ bài khỏi danh sách đã lưu'
-              : 'Thêm bài vào danh sách đã lưu'
-          }
-          accessibilityLabel={bookmarked ? 'Bỏ lưu bài' : 'Lưu bài'}
-          accessibilityRole="button"
-          accessibilityState={{selected: bookmarked}}
+        <SaveToggle
           hitSlop={4}
           onPress={onToggleBookmark}
-          style={[
-            styles.bookmark,
-            hasCover && styles.bookmarkOnCover,
-            bookmarked && styles.bookmarkOn,
-          ]}
+          onTint={hasCover}
+          raised="row"
+          saved={bookmarked}
+          style={[styles.bookmark, hasCover && styles.bookmarkOnCover]}
           testID={testID ? `${testID}-bookmark` : undefined}
-        >
-          <MaterialIcon
-            color={
-              bookmarked
-                ? theme.colors.onTertiaryContainer
-                : theme.colors.text.muted
-            }
-            name={bookmarked ? 'bookmark' : 'bookmark_add'}
-            size={22}
-          />
-        </Pressable>
+        />
       ) : null}
     </ShelfSurface>
   );
@@ -630,24 +612,13 @@ function makeStyles(
       paddingHorizontal: compact ? 12 : 14,
     },
     bookmark: {
-      alignItems: 'center',
-      borderRadius: 12,
-      height: 40,
-      justifyContent: 'center',
       position: 'absolute',
       right: compact ? 6 : 8,
       top: compact ? 6 : 8,
-      width: 40,
     },
     bookmarkOnCover: {
-      backgroundColor: theme.colors.surface,
-      height: 36,
       right: compact ? 18 : 22,
       top: compact ? 18 : 22,
-      width: 36,
-    },
-    bookmarkOn: {
-      backgroundColor: theme.colors.tertiarySoft,
     },
   });
 }

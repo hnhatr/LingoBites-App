@@ -4,6 +4,7 @@ import {Pressable, StyleSheet, View} from 'react-native';
 import {AppText} from '@ui/components/AppText';
 import type {LessonCardProgress} from '@ui/components/LessonCard';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -170,28 +171,14 @@ export function LessonStep({
               ) : null}
             </View>
           </Pressable>
-          <Pressable
-            accessibilityHint={
-              bookmarked
-                ? 'Bỏ bài khỏi danh sách đã lưu'
-                : 'Thêm bài vào danh sách đã lưu'
-            }
-            accessibilityLabel={bookmarked ? 'Bỏ lưu bài' : 'Lưu bài'}
-            accessibilityRole="button"
-            accessibilityState={{selected: bookmarked}}
-            hitSlop={8}
+          <SaveToggle
+            hitSlop={4}
             onPress={onToggleBookmark}
+            raised="row"
+            saved={bookmarked}
             style={styles.bookmark}
             testID={`${testID}-bookmark`}
-          >
-            <MaterialIcon
-              color={
-                bookmarked ? theme.colors.primary : theme.colors.text.muted
-              }
-              name={bookmarked ? 'bookmark' : 'bookmark_add'}
-              size={20}
-            />
-          </Pressable>
+          />
         </CurriculumSurface>
       </View>
     </View>

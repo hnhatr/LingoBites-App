@@ -1,10 +1,11 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
+import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
 import {topicGlyph} from '@ui/components/LibraryCover';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
@@ -105,46 +106,22 @@ type KindTabsProps = {
 };
 
 function KindTabs({kind, counts, onChange}: KindTabsProps) {
-  const {theme} = useAppTheme();
   const {t} = useTranslation();
-  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const tabs: Array<{id: PackKind; title: string; sub: string}> = [
-    {
-      id: 'word',
-      title: t('wordPath.tab_words'),
-      sub: t('wordPath.tab_words_sub'),
-    },
-    {
-      id: 'sentence',
-      title: t('wordPath.tab_sentences'),
-      sub: t('wordPath.tab_sentences_sub'),
-    },
-  ];
   return (
-    <View accessibilityRole="tablist" style={themedStyles.tabs}>
-      {tabs.map(tab => {
-        const selected = tab.id === kind;
-        return (
-          <Pressable
-            accessibilityHint={t('wordPath.tab_hint')}
-            accessibilityLabel={`${tab.title} (${counts[tab.id]})`}
-            accessibilityRole="tab"
-            accessibilityState={{selected}}
-            key={tab.id}
-            onPress={() => onChange(tab.id)}
-            style={[themedStyles.tab, selected ? themedStyles.tabOn : null]}
-            testID={`word-path-tab-${tab.id}`}
-          >
-            <AppText color={selected ? 'primary' : 'secondary'} variant="label">
-              {`${tab.title} (${counts[tab.id]})`}
-            </AppText>
-            <AppText color="secondary" variant="caption">
-              {tab.sub}
-            </AppText>
-          </Pressable>
-        );
-      })}
-    </View>
+    <AppTabs
+      accessibilityHint={t('wordPath.tab_hint')}
+      onChange={onChange}
+      tabs={[
+        {id: 'word', label: t('wordPath.tab_words'), count: counts.word},
+        {
+          id: 'sentence',
+          label: t('wordPath.tab_sentences'),
+          count: counts.sentence,
+        },
+      ]}
+      testID="word-path-tab"
+      value={kind}
+    />
   );
 }
 
@@ -292,22 +269,6 @@ function makeStyles(theme: AppTheme) {
     container: {
       gap: theme.spacing.md,
       padding: theme.spacing.md,
-    },
-    tab: {
-      alignItems: 'center',
-      borderRadius: theme.radius.md,
-      flex: 1,
-      paddingVertical: theme.spacing.sm,
-    },
-    tabOn: {
-      backgroundColor: theme.colors.surface,
-    },
-    tabs: {
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: theme.radius.lg,
-      flexDirection: 'row',
-      gap: theme.spacing.xs,
-      padding: theme.spacing.xs,
     },
   });
 }

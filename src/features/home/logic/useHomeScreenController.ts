@@ -367,6 +367,7 @@ export function useHomeScreenController() {
       sentenceCount: item.sentenceCount,
       progress: local.progress.get(item.lessonId),
       exerciseCount: local.activityCounts.get(item.lessonId),
+      youtubeVideoId: local.downloads.get(item.lessonId)?.youtubeVideoId,
     }));
   }, [savedLessons, lessonCardState]);
 

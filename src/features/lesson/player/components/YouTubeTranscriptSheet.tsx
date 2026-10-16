@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {withAlpha} from '@ui/components/layout';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
 
@@ -119,18 +119,17 @@ export function YouTubeTranscriptSheet({
             ) : null}
           </View>
           {sentenceSave ? (
-            <IconButton
+            <SaveToggle
               accessibilityHint={t('youtube.study.save_sentence_hint')}
               accessibilityLabel={
                 sentenceSave.isSaved(item.id)
                   ? t('youtube.study.unsave_sentence_a11y')
                   : t('youtube.study.save_sentence_a11y')
               }
-              icon={sentenceSave.isSaved(item.id) ? 'heart' : 'heart_outline'}
               onPress={() => sentenceSave.toggle(item)}
-              size={40}
+              raised="row"
+              saved={sentenceSave.isSaved(item.id)}
               testID={`youtube-transcript-save-${item.id}`}
-              tone={sentenceSave.isSaved(item.id) ? 'danger' : 'bare'}
             />
           ) : null}
         </Pressable>

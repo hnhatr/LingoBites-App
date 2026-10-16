@@ -22,7 +22,12 @@ import {
   LibraryCover,
 } from '@ui/components/LibraryCover';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
+import {
+  VIDEO_PLAY_SIZE,
+  VideoPlayButton,
+} from '@ui/components/VideoCardButtons';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 
@@ -31,6 +36,8 @@ export const CARD_HEIGHT = 168;
 const ART_SHARE = 0.5;
 export const CARD_RADIUS = 26;
 export const CARD_SHELF_HEIGHT = 5;
+/** Where the play button sits across the picture: the part not faded out. */
+const PLAY_ACROSS_ART = 0.55;
 
 /** Colours of the tone cards, the same three as the Courses cards. */
 export type CardTone = 'accent' | 'tertiary' | 'secondary';
@@ -109,6 +116,11 @@ export interface ToneCardProps {
   width?: number;
   /** Save toggle in the top right corner, its own button. */
   bookmark?: {saved: boolean; onToggle: () => void};
+  /**
+   * A video: a play button over the picture, and the save toggle drawn as a
+   * green bookmark in a frosted square.
+   */
+  video?: boolean;
   /** Under the card, outside its button, e.g. a practice link. */
   footer?: React.ReactNode;
   /** Screen reader actions on the card, e.g. "Gói sau" in a stack. */
@@ -136,6 +148,7 @@ export function ToneCard({
   bookmark,
   footer,
   width: fixedWidth,
+  video = false,
   accessibilityActions,
   onAccessibilityAction,
 }: ToneCardProps) {
@@ -198,6 +211,24 @@ export function ToneCard({
             <Rect fill={`url(#${gradientId})`} height="100%" width="100%" />
           </Svg>
         </View>
+        {video ? (
+          <View
+            pointerEvents="none"
+            style={[
+              cardStyles.play,
+              {
+                left:
+                  cardWidth -
+                  artWidth +
+                  artWidth * PLAY_ACROSS_ART -
+                  VIDEO_PLAY_SIZE.width / 2,
+              },
+            ]}
+            testID={`${testID}-play`}
+          >
+            <VideoPlayButton ink={colors.ink} />
+          </View>
+        ) : null}
         <View
           pointerEvents="none"
           style={[styles.blob, {backgroundColor: colors.blob}]}
@@ -243,26 +274,15 @@ export function ToneCard({
     >
       {card}
       {bookmark ? (
-        <Pressable
-          accessibilityHint={
-            bookmark.saved
-              ? 'Bỏ bài khỏi danh sách đã lưu'
-              : 'Thêm bài vào danh sách đã lưu'
-          }
-          accessibilityLabel={bookmark.saved ? 'Bỏ lưu bài' : 'Lưu bài'}
-          accessibilityRole="button"
-          accessibilityState={{selected: bookmark.saved}}
-          hitSlop={6}
+        // The picture behind it is many-coloured, so it sits on white.
+        <SaveToggle
           onPress={bookmark.onToggle}
+          onTint
+          raised="row"
+          saved={bookmark.saved}
           style={styles.bookmark}
           testID={`${testID}-bookmark`}
-        >
-          <MaterialIcon
-            color={colors.ink}
-            name={bookmark.saved ? 'bookmark' : 'bookmark_add'}
-            size={20}
-          />
-        </Pressable>
+        />
       ) : null}
       {footer}
     </View>
@@ -305,6 +325,10 @@ const cardStyles = StyleSheet.create({
   artFill: {
     height: CARD_HEIGHT,
   },
+  play: {
+    position: 'absolute',
+    top: (CARD_HEIGHT - VIDEO_PLAY_SIZE.height) / 2,
+  },
   copy: {
     gap: 4,
     justifyContent: 'center',
@@ -331,15 +355,9 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.xs,
     },
     bookmark: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 18,
-      height: 36,
-      justifyContent: 'center',
       position: 'absolute',
-      right: 10,
-      top: 10,
-      width: 36,
+      right: 8,
+      top: 8,
     },
     cardFace: {
       height: CARD_HEIGHT,

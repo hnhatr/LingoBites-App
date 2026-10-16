@@ -81,6 +81,27 @@ const SHAPE_FALLBACK: Record<LibraryCoverShape, DefaultCoverKind> = {
   lesson: 'lesson',
 };
 
+/** A YouTube `hqdefault` thumbnail: 4:3 with the 16:9 picture in the middle. */
+const LETTERBOXED_THUMBNAIL = /i\.ytimg\.com\/vi\/[^/]+\/hqdefault\.jpg/;
+
+/**
+ * How much to enlarge a letterboxed YouTube thumbnail so its black bars fall
+ * outside a cover of this width-to-height ratio. A 16:9 or wider cover
+ * already crops them; a squarer one needs up to 4/3.
+ */
+export function letterboxScale(
+  imageUrl: string | null | undefined,
+  aspectRatio: number,
+): number {
+  if (!imageUrl || !LETTERBOXED_THUMBNAIL.test(imageUrl)) {
+    return 1;
+  }
+  // The image covers the box: its height is the box's, or more when wider.
+  const imageToBoxHeight = Math.max(1, aspectRatio * 0.75);
+  // The picture is the middle 3/4 of the image's height.
+  return Math.max(1, 1 / (0.75 * imageToBoxHeight));
+}
+
 const ASPECT: Record<LibraryCoverShape, number> = {
   pack: 1,
   video: 16 / 9,
@@ -134,12 +155,14 @@ export function LibraryCover({
   const chip = hideLevelChip ? null : cefrLevelOf(level);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const showImage = Boolean(imageUrl) && failedUrl !== imageUrl;
+  const boxAspect = aspectRatio ?? ASPECT[shape];
+  const imageScale = letterboxScale(imageUrl, boxAspect);
 
   return (
     <View
       style={[
         styles.cover,
-        {aspectRatio: aspectRatio ?? ASPECT[shape], backgroundColor: tone.soft},
+        {aspectRatio: boxAspect, backgroundColor: tone.soft},
       ]}
       testID={testID}
     >
@@ -149,7 +172,10 @@ export function LibraryCover({
           onError={() => setFailedUrl(imageUrl ?? null)}
           resizeMode="cover"
           source={{uri: imageUrl!}}
-          style={StyleSheet.absoluteFill}
+          style={[
+            StyleSheet.absoluteFill,
+            imageScale > 1 ? {transform: [{scale: imageScale}]} : null,
+          ]}
           testID={testID ? `${testID}-image` : undefined}
         />
       ) : (

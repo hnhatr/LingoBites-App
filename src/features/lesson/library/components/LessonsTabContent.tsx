@@ -20,6 +20,7 @@ import type {AppTheme} from '@ui/theme/types';
 import {useAppNavigation} from '@core/navigation';
 import type {LessonCatalogItem, LessonSourceType} from '@core/schemas/lesson';
 
+import {catalogCoverUrl, downloadedVideoCoverUrl} from '../logic/catalogCover';
 import type {LibraryLessonCardView} from '../logic/lesson';
 import {
   EMPTY_LESSON_CARD_STATE,
@@ -67,6 +68,8 @@ interface LessonItem {
   durationLabel: string | null;
   contextLabel: string | null;
   exerciseCount: number;
+  /** A video's thumbnail; null for other lessons and unknown videos. */
+  videoCoverUrl: string | null;
 }
 
 interface LessonSection {
@@ -155,6 +158,7 @@ export function LessonsTabContent({
         }),
         contextLabel: lesson.contextLabel ?? null,
         exerciseCount: lesson.activityCount ?? 0,
+        videoCoverUrl: downloadedVideoCoverUrl(localState, lesson.id),
       }));
 
       result.push({
@@ -182,13 +186,15 @@ export function LessonsTabContent({
           }),
           contextLabel: lessonContextLabel(lesson.unit),
           exerciseCount: lesson.activity_count ?? 0,
+          videoCoverUrl:
+            lesson.source_type === 'youtube' ? catalogCoverUrl(lesson) : null,
         })),
         type: 'catalog',
       });
     }
 
     return result;
-  }, [packagedLessons, catalogLessons, packagedTitle]);
+  }, [packagedLessons, catalogLessons, packagedTitle, localState]);
 
   const renderLessonItem = ({
     item,
@@ -219,7 +225,7 @@ export function LessonsTabContent({
             }),
         }}
         cover={{
-          imageUrl: null,
+          imageUrl: item.videoCoverUrl,
           glyph: COVER_GLYPHS[lessonCardKind(item.sourceType)],
         }}
         description={[
@@ -256,6 +262,7 @@ export function LessonsTabContent({
         testID={`lesson-item-${item.id}`}
         title={splitLessonTitle(item.title).title}
         tone={cardToneAt(index)}
+        video={lessonCardKind(item.sourceType) === 'video'}
       />
     );
   };

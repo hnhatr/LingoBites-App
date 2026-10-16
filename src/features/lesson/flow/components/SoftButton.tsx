@@ -2,7 +2,6 @@ import React, {useMemo} from 'react';
 import {Pressable, StyleSheet} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -45,7 +44,7 @@ export function SoftButton({
       <MaterialIcon
         color={theme.colors.primary}
         name={icon}
-        size={iconOnly ? 20 : 17}
+        size={iconOnly ? 19 : 17}
       />
       {iconOnly ? null : (
         <AppText style={themedStyles.softText}>{label}</AppText>
@@ -55,12 +54,12 @@ export function SoftButton({
 }
 
 function makeStyles(theme: AppTheme) {
-  const edge = withAlpha(theme.colors.primary, 0.22);
+  const edge = theme.colors.surfaceHigh;
   return StyleSheet.create({
     soft: {
       alignItems: 'center',
-      backgroundColor: theme.colors.accentSoft,
-      borderRadius: 14,
+      backgroundColor: theme.colors.surfaceMuted,
+      borderRadius: 12,
       flexDirection: 'row',
       gap: 6,
       minHeight: 40,
@@ -70,7 +69,7 @@ function makeStyles(theme: AppTheme) {
     iconOnly: {
       justifyContent: 'center',
       paddingHorizontal: 0,
-      width: 44,
+      width: 40,
     },
     softPressed: {
       transform: [{translateY: 2}],

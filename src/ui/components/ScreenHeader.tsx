@@ -27,7 +27,7 @@ type Props = {
   crumbHint?: string;
   /**
    * Buttons on the right, laid out in a row with a fixed gap. Use
-   * `HeaderIconButton` (or a 40px-tall CTA) so every header matches.
+   * `HeaderIconButton` (or a 42px-tall CTA) so every header matches.
    */
   rightAction?: React.ReactNode;
 };
