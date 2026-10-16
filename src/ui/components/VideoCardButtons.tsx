@@ -38,8 +38,9 @@ const LIFT = 2.6;
 
 const GREEN = '#22C55E';
 const GREEN_BASE = '#15803D';
-const GREEN_SHADE = '#0B3D1F';
-const GREEN_LIGHT = '#86EFAC';
+/** The unsaved bookmark: a see-through dark shape pressed into the square. */
+const SUNK_INK = '#000000';
+const SUNK_LIP = '#FFFFFF';
 
 const SAVE_BLUR_INTENSITY = 10;
 /** Frosted square behind the bookmark: a dark tint, a light one once saved. */
@@ -55,8 +56,8 @@ export interface VideoSaveButtonProps {
 }
 
 /**
- * The save toggle on a video card's picture: a green bookmark in a frosted
- * square. Unsaved, the bookmark is sunk into its base; saved, it stands up
+ * The save toggle on a video card's picture: a bookmark in a frosted square.
+ * Unsaved, a see-through dark bookmark is sunk into it; saved, a green one stands up
  * on a darker base with a white tick, on a light square.
  */
 export function VideoSaveButton({
@@ -126,29 +127,32 @@ function BookmarkIcon({saved}: {saved: boolean}) {
         <G strokeLinejoin="round">
           <Defs>
             <LinearGradient id="bookmarkSunk" x1="0" x2="0" y1="0" y2="1">
-              <Stop offset="0" stopColor={GREEN_BASE} />
-              <Stop offset="1" stopColor={GREEN} />
+              <Stop offset="0" stopColor={SUNK_INK} stopOpacity={0.5} />
+              <Stop offset="1" stopColor={SUNK_INK} stopOpacity={0.3} />
             </LinearGradient>
           </Defs>
           {/* A dark edge above and a light lip below: pressed in. */}
           <Path
             d={BOOKMARK}
             fill="none"
-            stroke={GREEN_SHADE}
+            stroke={SUNK_INK}
+            strokeOpacity={0.55}
             strokeWidth={1.6}
             transform="translate(0 1.5)"
           />
           <Path
             d={BOOKMARK}
             fill="none"
-            stroke={GREEN_LIGHT}
+            stroke={SUNK_LIP}
+            strokeOpacity={0.55}
             strokeWidth={1.2}
             transform="translate(0 4)"
           />
           <Path
             d={BOOKMARK}
             fill="url(#bookmarkSunk)"
-            stroke={GREEN_BASE}
+            stroke={SUNK_INK}
+            strokeOpacity={0.4}
             strokeWidth={1}
             transform={`translate(0 ${LIFT})`}
           />
