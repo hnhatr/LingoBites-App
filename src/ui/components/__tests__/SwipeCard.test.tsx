@@ -50,6 +50,7 @@ describe('ProgressRing', () => {
   it('exposes its value as a progressbar', async () => {
     const tree = await render(
       <ProgressRing
+        accessibilityHint="Tiến độ ghi nhớ thẻ"
         accessibilityLabel="Đã nhớ 75% số thẻ"
         caption="đã nhớ"
         progress={0.75}

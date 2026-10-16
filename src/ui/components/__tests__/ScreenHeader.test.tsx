@@ -82,11 +82,13 @@ describe('ScreenHeader', () => {
       rightAction: (
         <>
           <HeaderIconButton
+            accessibilityHint="Dịch"
             accessibilityLabel="a"
             icon="translate"
             onPress={() => {}}
           />
           <HeaderIconButton
+            accessibilityHint="Hiển thị phiên âm"
             accessibilityLabel="b"
             label="IPA"
             onPress={() => {}}
@@ -123,6 +125,7 @@ describe('HeaderIconButton', () => {
         <FeatureFlagProvider>
           <AppThemeProvider>
             <HeaderIconButton
+              accessibilityHint="Đóng màn hình"
               accessibilityLabel="Đóng"
               icon="close"
               onPress={() => {}}

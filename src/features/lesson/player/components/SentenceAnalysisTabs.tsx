@@ -15,12 +15,7 @@ import type {
   VocabularySaveControl,
 } from '../logic/useLessonSavedItems';
 import {useWordListMatches} from '../logic/wordListMatches';
-import {
-  BookmarkToggle,
-  PillTabs,
-  SpeakSquare,
-  studyCardStyle,
-} from './StudyControls';
+import {BookmarkToggle, SpeakSquare, studyCardStyle} from './StudyControls';
 import {WordPathBadge} from './WordPathBadge';
 
 type AnalysisTab = 'vocabulary' | 'grammar';

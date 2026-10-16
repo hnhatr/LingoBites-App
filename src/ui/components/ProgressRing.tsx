@@ -15,6 +15,7 @@ type Props = {
   size?: number;
   strokeWidth?: number;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   testID?: string;
 };
 
@@ -26,6 +27,7 @@ export function ProgressRing({
   size = 168,
   strokeWidth = 14,
   accessibilityLabel,
+  accessibilityHint,
   testID,
 }: Props) {
   const {theme} = useAppTheme();
@@ -36,6 +38,7 @@ export function ProgressRing({
   return (
     <View
       accessible
+      accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel ?? value}
       accessibilityRole="progressbar"
       accessibilityValue={{min: 0, max: 100, now: Math.round(clamped * 100)}}

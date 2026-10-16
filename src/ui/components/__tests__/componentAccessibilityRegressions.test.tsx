@@ -99,6 +99,7 @@ describe('component accessibility regressions', () => {
   it('enforces a minimum IconButton target even when visual size is smaller', async () => {
     const tree = await render(
       <IconButton
+        accessibilityHint="Lưu thẻ từ này"
         accessibilityLabel="Lưu từ"
         icon="bookmark"
         onPress={() => {}}
