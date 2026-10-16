@@ -1,3 +1,5 @@
+import {Platform} from 'react-native';
+
 import {
   assertSyncDrainOwnershipUnchanged,
   SyncOwnershipChangedError,
@@ -5,6 +7,7 @@ import {
 
 import {createAuthClient} from '../auth/authClient';
 import {ensureValidSession} from '../auth/authSession';
+import {getAppVersion} from './appConfig';
 import {trackReachability} from './connectivity';
 
 function mergeHeaders(
@@ -27,6 +30,13 @@ function mergeHeaders(
   }
   if (extra) {
     Object.assign(result, extra);
+  }
+  // The Server's version rules (`app.versions`) are per platform: the
+  // minimum it still serves, and from which version grammar items show.
+  const appVersion = getAppVersion();
+  if (appVersion) {
+    result['X-App-Version'] = appVersion;
+    result['X-App-Platform'] = Platform.OS;
   }
   return result;
 }
