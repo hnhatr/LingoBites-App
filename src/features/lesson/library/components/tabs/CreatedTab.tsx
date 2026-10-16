@@ -27,6 +27,7 @@ import {useAppNavigation} from '@core/navigation';
 import {useFeatureEnabled} from '@core/release';
 import type {LessonSourceType} from '@core/schemas/lesson';
 
+import {downloadedVideoCoverUrl} from '../../logic/catalogCover';
 import type {LibraryLessonCardView} from '../../logic/lesson';
 import {
   EMPTY_LESSON_CARD_STATE,
@@ -158,7 +159,7 @@ export function CreatedTab() {
             }),
         }}
         cover={{
-          imageUrl: null,
+          imageUrl: downloadedVideoCoverUrl(localState, item.id),
           glyph: COVER_GLYPHS[lessonCardKind(item.sourceType)],
         }}
         description={[
@@ -192,6 +193,7 @@ export function CreatedTab() {
         testID={`lesson-item-${item.id}`}
         title={splitLessonTitle(item.title).title}
         tone={cardToneAt(index)}
+        video={lessonCardKind(item.sourceType) === 'video'}
       />
     );
   };

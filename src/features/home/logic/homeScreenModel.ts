@@ -381,6 +381,8 @@ export type RecentItem = {
   sentenceCount?: number;
   progress?: LessonCardProgress;
   exerciseCount?: number;
+  /** The YouTube video of a downloaded video lesson, for its thumbnail. */
+  youtubeVideoId?: string | null;
 };
 
 export function typeLabelKeyForSource(sourceType: LessonSourceType): string {

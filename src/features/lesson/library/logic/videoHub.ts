@@ -7,6 +7,8 @@ export type VideoInProgress = {
   title: string;
   sentenceCount: number;
   youtubeDurationMs: number | null;
+  /** The YouTube video, for the card's thumbnail. */
+  youtubeVideoId: string | null;
 };
 
 /**
@@ -27,6 +29,7 @@ export function findVideoInProgress(): VideoInProgress | null {
           title: match.title,
           sentenceCount: match.snapshot.sentences.length,
           youtubeDurationMs: match.snapshot.youtube?.duration_ms ?? null,
+          youtubeVideoId: match.snapshot.youtube?.video_id ?? null,
         };
       }
     }

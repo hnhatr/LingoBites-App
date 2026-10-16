@@ -15,17 +15,19 @@ import {
   GridTile,
   useGridTileWidth,
 } from '@ui/components/GridTile';
-import {HeroResumeCard} from '@ui/components/HeroResumeCard';
 import {
   lessonCardDurationLabel,
   splitLessonTitle,
 } from '@ui/components/LessonCard';
+import {youtubeThumbnailUrl} from '@ui/components/LibraryCover';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
+import {ToneCard} from '@ui/components/ToneCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useIsOffline} from '@core/api/connectivity';
 import {useAppNavigation} from '@core/navigation';
 
+import {useLessonBookmarks} from '../logic/lessonCardData';
 import {getLibrarySection} from '../logic/librarySections';
 import {useLibraryCounts} from '../logic/useLibraryCounts';
 import {useRefreshOnRefocus} from '../logic/useLibrarySegments';
@@ -62,6 +64,7 @@ export function VideoHubScreen(_props: Props) {
   const offline = useIsOffline();
   const {counts, refresh: refreshCounts} = useLibraryCounts();
   const [inProgress, setInProgress] = useState(findVideoInProgress);
+  const {isBookmarked, toggleBookmark} = useLessonBookmarks();
 
   const refresh = useCallback(() => {
     refreshCounts();
@@ -94,16 +97,37 @@ export function VideoHubScreen(_props: Props) {
       >
         {inProgress && continueTitle ? (
           <View style={styles.section} testID="video-hub-continue">
-            <HeroResumeCard
+            <ToneCard
               accessibilityHint="Mở lại video đang học dở"
-              chip={['Đang học dở', continueDuration]
+              action={{label: 'Xem tiếp', glyph: 'play', solid: true}}
+              bookmark={{
+                saved: isBookmarked(inProgress.lessonId),
+                onToggle: () =>
+                  toggleBookmark({
+                    lessonId: inProgress.lessonId,
+                    title: inProgress.title,
+                    sourceType: 'youtube',
+                    sentenceCount: inProgress.sentenceCount,
+                    estimatedMinutes: null,
+                    contextLabel: null,
+                  }),
+              }}
+              cover={{
+                imageUrl: inProgress.youtubeVideoId
+                  ? youtubeThumbnailUrl(inProgress.youtubeVideoId)
+                  : null,
+                glyph: 'subtitles',
+              }}
+              description={[continueTitle.subtitle, continueDuration]
                 .filter(Boolean)
                 .join(' · ')}
-              cta="Xem tiếp"
+              eyebrow="Đang học dở"
+              gutter={theme.gutter}
               onPress={() => navigation.openLesson(inProgress.lessonId)}
-              subtitle={continueTitle.subtitle}
               testID="video-hub-continue-card"
               title={continueTitle.title}
+              tone="accent"
+              video
             />
           </View>
         ) : null}

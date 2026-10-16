@@ -2,7 +2,8 @@
  * ToneCard — a pack or lesson drawn like a Courses card, shared by the
  * Library and the word path list.
  */
-import React, {useMemo, useState} from 'react';
+import {BlurTargetView} from 'expo-blur';
+import React, {useMemo, useRef, useState} from 'react';
 import {
   type AccessibilityActionEvent,
   type AccessibilityActionInfo,
@@ -23,6 +24,11 @@ import {
 } from '@ui/components/LibraryCover';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
+import {
+  VIDEO_PLAY_SIZE,
+  VideoPlayButton,
+  VideoSaveButton,
+} from '@ui/components/VideoCardButtons';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 
@@ -31,6 +37,8 @@ export const CARD_HEIGHT = 168;
 const ART_SHARE = 0.5;
 export const CARD_RADIUS = 26;
 export const CARD_SHELF_HEIGHT = 5;
+/** Where the play button sits across the picture: the part not faded out. */
+const PLAY_ACROSS_ART = 0.55;
 
 /** Colours of the tone cards, the same three as the Courses cards. */
 export type CardTone = 'accent' | 'tertiary' | 'secondary';
@@ -109,6 +117,11 @@ export interface ToneCardProps {
   width?: number;
   /** Save toggle in the top right corner, its own button. */
   bookmark?: {saved: boolean; onToggle: () => void};
+  /**
+   * A video: a play button over the picture, and the save toggle drawn as a
+   * green bookmark in a frosted square.
+   */
+  video?: boolean;
   /** Under the card, outside its button, e.g. a practice link. */
   footer?: React.ReactNode;
   /** Screen reader actions on the card, e.g. "Gói sau" in a stack. */
@@ -136,6 +149,7 @@ export function ToneCard({
   bookmark,
   footer,
   width: fixedWidth,
+  video = false,
   accessibilityActions,
   onAccessibilityAction,
 }: ToneCardProps) {
@@ -147,6 +161,7 @@ export function ToneCard({
   const cardWidth = fixedWidth ?? width - gutter * 2;
   const artWidth = Math.max(0, cardWidth * ART_SHARE);
   const gradientId = `cardFade-${testID}`;
+  const artRef = useRef<View>(null);
 
   const card = (
     <Pressable
@@ -173,7 +188,7 @@ export function ToneCard({
         shelfHeight={CARD_SHELF_HEIGHT}
       >
         <View style={[cardStyles.art, {width: artWidth}]}>
-          <View style={cardStyles.artFill}>
+          <BlurTargetView ref={artRef} style={cardStyles.artFill}>
             <LibraryCover
               aspectRatio={artWidth > 0 ? artWidth / CARD_HEIGHT : undefined}
               glyph={cover.glyph}
@@ -182,7 +197,7 @@ export function ToneCard({
               shape="lesson"
               testID={`${testID}-cover`}
             />
-          </View>
+          </BlurTargetView>
           <Svg
             height={CARD_HEIGHT}
             pointerEvents="none"
@@ -198,6 +213,24 @@ export function ToneCard({
             <Rect fill={`url(#${gradientId})`} height="100%" width="100%" />
           </Svg>
         </View>
+        {video ? (
+          <View
+            pointerEvents="none"
+            style={[
+              cardStyles.play,
+              {
+                left:
+                  cardWidth -
+                  artWidth +
+                  artWidth * PLAY_ACROSS_ART -
+                  VIDEO_PLAY_SIZE.width / 2,
+              },
+            ]}
+            testID={`${testID}-play`}
+          >
+            <VideoPlayButton ink={colors.ink} />
+          </View>
+        ) : null}
         <View
           pointerEvents="none"
           style={[styles.blob, {backgroundColor: colors.blob}]}
@@ -242,7 +275,14 @@ export function ToneCard({
       ]}
     >
       {card}
-      {bookmark ? (
+      {bookmark && video ? (
+        <VideoSaveButton
+          blurTarget={artRef}
+          onToggle={bookmark.onToggle}
+          saved={bookmark.saved}
+          testID={`${testID}-bookmark`}
+        />
+      ) : bookmark ? (
         <Pressable
           accessibilityHint={
             bookmark.saved
@@ -304,6 +344,10 @@ const cardStyles = StyleSheet.create({
   },
   artFill: {
     height: CARD_HEIGHT,
+  },
+  play: {
+    position: 'absolute',
+    top: (CARD_HEIGHT - VIDEO_PLAY_SIZE.height) / 2,
   },
   copy: {
     gap: 4,

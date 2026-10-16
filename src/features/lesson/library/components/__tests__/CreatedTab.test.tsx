@@ -57,8 +57,9 @@ const mockLesson = (id: string, origin: string, sourceType: string) => ({
 });
 
 jest.mock('../../logic/lessonCardData', () => ({
-  EMPTY_LESSON_CARD_STATE: {progress: new Map()},
+  EMPTY_LESSON_CARD_STATE: {progress: new Map(), downloads: new Map()},
   readLessonCardLocalState: () => ({
+    downloads: new Map([['video', {youtubeVideoId: 'abc123'}]]),
     progress: new Map([['video', {state: 'in_progress', done: 3, total: 8}]]),
   }),
   useLessonBookmarks: () => ({
@@ -105,6 +106,20 @@ describe('CreatedTab', () => {
 
   it('lists only the lessons the learner made', () => {
     expect(shownIds(render())).toEqual(['text', 'photo', 'video']);
+  });
+
+  it('shows a YouTube lesson as a video card with its thumbnail', () => {
+    const tree = render();
+    expect(
+      tree.root.findByProps({testID: 'lesson-item-video-cover-image'}).props
+        .source,
+    ).toEqual({uri: 'https://i.ytimg.com/vi/abc123/hqdefault.jpg'});
+    expect(
+      tree.root.findAllByProps({testID: 'lesson-item-video-play'}),
+    ).not.toHaveLength(0);
+    expect(
+      tree.root.findAllByProps({testID: 'lesson-item-text-play'}),
+    ).toHaveLength(0);
   });
 
   it('opens a lesson, saves it and starts its practice', () => {
