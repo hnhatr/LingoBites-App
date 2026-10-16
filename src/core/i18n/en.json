@@ -1668,6 +1668,8 @@
     "filter_learned": "Learned",
     "filter_empty": "Nothing here.",
     "speak": "Listen to {{text}}",
+    "choice_hint": "Puts this word in the slot",
+    "speak_hint": "Reads the sentence aloud",
     "learn_hint": "Opens this pack's cards"
   },
   "quickCheck": {
@@ -1923,6 +1925,13 @@
     "practise_combo": "Practise combo sentences",
     "add_to_review": "Add to review",
     "in_review": "Already in your reviews",
+    "in_review_short": "In review",
+    "slot_count": "{{count}} slots",
+    "pattern_count": "{{count}} patterns",
+    "pattern_kicker": "Pattern",
+    "slot_hint": "Pick a word for this slot",
+    "slot_a11y": "{{label}}: {{value}}",
+    "speak": "Listen: {{text}}",
     "add_failed": "Could not add it, try again later",
     "not_on_device": "Not on this device yet. Open the list again when online.",
     "forms": "Forms",

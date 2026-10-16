@@ -130,6 +130,20 @@ test('the pattern library filters by function and opens a pattern', () => {
   );
 });
 
+test('the level tabs count and filter the patterns; scheduled ones say so', () => {
+  mockMemory.mockImplementation(code =>
+    code === 'pattern:worth' ? {stage: 1, stableAt: null} : null,
+  );
+  const tree = renderWithTheme(<PatternLibraryList query="" />);
+  expect(has(tree, 'pattern-row-pattern:worth-in-review')).toBe(true);
+  expect(has(tree, 'pattern-row-pattern:because-in-review')).toBe(false);
+  press(tree, 'pattern-filter-level-B1');
+  expect(has(tree, 'pattern-row-pattern:worth')).toBe(false);
+  expect(has(tree, 'pattern-row-pattern:because')).toBe(true);
+  press(tree, 'pattern-filter-level-all');
+  expect(has(tree, 'pattern-row-pattern:worth')).toBe(true);
+});
+
 test('the search box matches the meaning without accents', () => {
   const tree = renderWithTheme(<PatternLibraryList query="dang chu y" />);
   expect(has(tree, 'pattern-row-pattern:worth')).toBe(true);
@@ -181,7 +195,25 @@ test('a pattern shows its slots and examples, opens a combo set and adds itself 
       .props.onPress();
   });
   expect(mockAdd).toHaveBeenCalledWith('pattern:worth');
-  expect(textOf(tree, 'add-to-review-done')).toBe('Đã có trong lịch ôn');
+  expect(textOf(tree, 'add-to-review-done')).toBe('Đang ôn');
+});
+
+test('picking a value for a slot rebuilds the sentence', () => {
+  const free = catalogItem(
+    'pattern:free',
+    'pattern',
+    'Are you free on {day}?',
+    {
+      meaning_vi: 'Bạn có rảnh vào [thứ] không?',
+      payload: {slots: {day: {label_vi: 'thứ', values: ['Monday', 'Friday']}}},
+    },
+  );
+  const tree = renderWithTheme(
+    <PatternDetailScreen item={free} labels={['A2']} />,
+  );
+  expect(textOf(tree, 'pattern-sentence')).toBe('Are you free on Monday?');
+  press(tree, 'pattern-choice-day-1');
+  expect(textOf(tree, 'pattern-sentence')).toBe('Are you free on Friday?');
 });
 
 test('adding to review offline says a connection is needed', async () => {

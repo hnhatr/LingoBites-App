@@ -1,28 +1,23 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
-import {AppCard} from '@ui/components/AppCard';
+import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 
-import {frameText} from '../logic/frameText';
+import {PatternRow} from '../components/PatternRow';
 import {
   filterPatterns,
   functionLabels,
   type LibraryFilter,
   patternLevels,
 } from '../logic/libraryModel';
+import {memoryOf} from '../logic/libraryRepository';
 import {usePatternLibrary} from '../logic/useLibrary';
 
 type ChipRowProps = {
@@ -112,10 +107,26 @@ export function PatternLibraryList({query}: {query: string}) {
     );
   }
 
-  const levels = patternLevels(data.patterns).map(level => ({
-    code: level,
-    labelVi: level,
-  }));
+  const levels = patternLevels(data.patterns);
+  // Level counts follow the other filters, so each tab says what it opens.
+  const otherFilters = filterPatterns(data.patterns, {
+    text: query,
+    functionCode,
+    cefrLevel: null,
+    examCode,
+  });
+  const levelTabs = [
+    {
+      id: 'all',
+      label: t('patternTense.filter_all'),
+      count: otherFilters.length,
+    },
+    ...levels.map(level => ({
+      id: level,
+      label: level,
+      count: otherFilters.filter(pattern => pattern.cefrLevel === level).length,
+    })),
+  ];
 
   return (
     <ScrollView
@@ -134,13 +145,15 @@ export function PatternLibraryList({query}: {query: string}) {
         testID="pattern-filter-function"
         value={functionCode}
       />
-      <ChipRow
-        label={t('patternTense.filter_level')}
-        onChange={setCefrLevel}
-        options={levels}
-        testID="pattern-filter-level"
-        value={cefrLevel}
-      />
+      {levels.length > 0 ? (
+        <AppTabs
+          accessibilityHint={t('patternTense.filter_level')}
+          onChange={id => setCefrLevel(id === 'all' ? null : id)}
+          tabs={levelTabs}
+          testID="pattern-filter-level"
+          value={cefrLevel ?? 'all'}
+        />
+      ) : null}
       <ChipRow
         label={t('patternTense.filter_exam')}
         onChange={setExamCode}
@@ -153,31 +166,21 @@ export function PatternLibraryList({query}: {query: string}) {
           {t('patternTense.no_patterns')}
         </AppText>
       ) : (
-        shown.map(pattern => {
-          const labels = [
-            pattern.cefrLevel,
-            ...functionLabels(pattern, data.functions),
-          ].filter(Boolean);
-          return (
-            <Pressable
-              accessibilityHint={t('patternTense.open_pattern_hint')}
-              accessibilityRole="button"
+        <>
+          <AppText color="muted" variant="caption">
+            {t('patternTense.pattern_count', {count: shown.length})}
+          </AppText>
+          {shown.map(pattern => (
+            <PatternRow
+              inReview={memoryOf(pattern.item.code) !== null}
+              item={pattern.item}
               key={pattern.item.code}
+              labels={functionLabels(pattern, data.functions)}
+              level={pattern.cefrLevel}
               onPress={() => appNavigation.openPatternDetail(pattern.item.code)}
-              testID={`pattern-row-${pattern.item.code}`}
-            >
-              <AppCard style={styles.card}>
-                <AppText variant="subtitle">{frameText(pattern.item)}</AppText>
-                <AppText color="secondary">{pattern.item.meaning_vi}</AppText>
-                {labels.length > 0 ? (
-                  <AppText color="muted" variant="caption">
-                    {labels.join(' · ')}
-                  </AppText>
-                ) : null}
-              </AppCard>
-            </Pressable>
-          );
-        })
+            />
+          ))}
+        </>
       )}
     </ScrollView>
   );
@@ -185,10 +188,6 @@ export function PatternLibraryList({query}: {query: string}) {
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    card: {
-      gap: theme.spacing.xs,
-      marginBottom: theme.spacing.sm,
-    },
     chipBlock: {
       gap: theme.spacing.xs,
     },
@@ -197,9 +196,10 @@ function makeStyles(theme: AppTheme) {
       paddingVertical: 2,
     },
     content: {
-      gap: theme.spacing.md,
+      gap: 14,
       paddingBottom: theme.spacing.xl,
       paddingHorizontal: theme.spacing.md,
+      paddingTop: theme.spacing.xs,
     },
     empty: {
       marginTop: theme.spacing.lg,
