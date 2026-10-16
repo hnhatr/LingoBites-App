@@ -14,6 +14,7 @@ import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useAppNavigation} from '@core/navigation';
 
+import {levelColors} from '../components/memoryColors';
 import {
   type LibraryTense,
   type MemoryLevel,
@@ -31,21 +32,6 @@ const LEVELS: readonly MemoryLevel[] = [
   'recalling',
   'stable',
 ];
-
-/** Face and ink of a cell by how well the tense is remembered. */
-function levelColors(theme: AppTheme, level: MemoryLevel) {
-  const {colors} = theme;
-  switch (level) {
-    case 'new':
-      return {face: colors.surfaceContainer, ink: colors.text.secondary};
-    case 'started':
-      return {face: colors.tertiarySoft, ink: colors.text.primary};
-    case 'recalling':
-      return {face: colors.secondarySoft, ink: colors.text.primary};
-    case 'stable':
-      return {face: colors.accentSoft, ink: colors.accentInk};
-  }
-}
 
 type CellProps = {
   tense: LibraryTense;

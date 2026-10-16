@@ -16,6 +16,7 @@ import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import {useOptionalAppNavigation} from '@core/navigation';
 
+import {VocabProgressSection} from '../components/VocabProgressSection';
 import {
   type CapabilityProgressReport,
   useProgressReport,
@@ -128,6 +129,8 @@ export function ProgressReportScreen({navigation}: Props) {
             </View>
           </View>
         ) : null}
+
+        <VocabProgressSection />
 
         <SectionLabel styles={styles} title="Nói & phản xạ" />
         <View style={styles.grid}>

@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 → A3 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 → A4 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -176,11 +176,13 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | `SentenceStudy.tsx`, `YouTubeAnalysisSheet.tsx`, `YouTubeLessonStudy.tsx` 🔧 | Bật `wordPath` khi `snapshot.origin === 'learner'` (bài người học tự tạo: văn bản, ảnh, YouTube). Bài khoá học không đổi |
 | i18n | `lessonPlayer.word_path_*` (vi, en) |
 
-### 5.4 F9: tiến độ
+### 5.4 F9: tiến độ ✅ A4
 | File | Việc |
 |---|---|
-| `features/profile/logic/vocabProgressClient.ts` 🆕 | Gọi `/v1/me/vocab-progress` |
-| `features/profile/screens/ProgressReportScreen.tsx` 🔧 | Phần mới "Từ · Mẫu · Thì": thanh theo cấp "x / tổng", mẫu theo chức năng, lưới thì nhỏ (chạm mở `TenseMapScreen`). Offline: hiện thông báo cần mạng |
+| `features/profile/logic/vocabProgressClient.ts` 🆕 | Client `/v1/me/vocab-progress`; nhớ câu trả lời cuối **trong phiên, theo tài khoản** (`current_account_id`), để mất mạng vẫn xem được và đổi tài khoản không lộ số của người khác |
+| `features/profile/components/VocabProgressSection.tsx` 🆕 | Phần **"Từ · Mẫu · Thì"** ở đầu Báo cáo tiến độ: tổng từ đã nhớ "x / tổng", thanh theo cấp (đậm: đã nhớ, nhạt: đang học); mẫu câu "x / tổng" và tối đa 6 chức năng; lưới thì nhỏ 3 × 4 cùng màu với bản đồ thì (chạm mở trang thì) và "Xem bản đồ thì". Lần đầu không có mạng → "Cần mạng…" + Thử lại |
+| `features/profile/screens/ProgressReportScreen.tsx` 🔧 | Thêm `<VocabProgressSection />` trước "Nói & phản xạ" |
+| `features/patternTense/components/memoryColors.ts` 🆕 | Màu theo mức nhớ, tách ra từ `TenseMapView` để dùng chung; export `levelColors`, `memoryLevel`, `TENSE_TIMES`, `TENSE_ASPECTS` qua `@features/patternTense` |
 
 ### 5.5 F7: viết đoạn cuối tuần
 | File | Việc |
@@ -221,7 +223,7 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | A1 ✅ | App | `feat(patternTense): pattern library and tense map` (5.1) | |
 | A2 ✅ | App | `feat(review): stage 4 written practice` (5.2) | |
 | A3 ✅ | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
-| A4 | App | `feat(profile): words, patterns and tenses in the progress report` (5.4) | |
+| A4 ✅ | App | `feat(profile): words, patterns and tenses in the progress report` (5.4) | |
 | A5 | App | `feat(course): required items checklist in the summative task` (5.5) | ✅ gộp A1–A5 một bản |
 
 S1–S4 phải lên production trước khi phát hành App. S5–S7 làm song song với App; dựng nội dung theo đợt sau S7.
