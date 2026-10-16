@@ -1928,5 +1928,26 @@
     "level_started": "Just started",
     "level_recalling": "Remembering",
     "level_stable": "Remembered"
+  },
+  "tileComposer": {
+    "mode_words": "Words",
+    "mode_letters": "Letters",
+    "mode_keyboard": "A–Z",
+    "mode_hint": "Change how you write",
+    "placeholder_words": "Tap the words below to build the sentence",
+    "placeholder_letters": "Tap the letters below; your answer shows here",
+    "remove_word_tip": "Tap a word to remove it",
+    "remove_word_hint": "Removes this word from your answer",
+    "tile_hint": "Adds to your answer",
+    "space": "space",
+    "space_hint": "Adds a space",
+    "delete_hint": "Tap to delete a letter, hold to delete the word",
+    "bulb": "Hint the next key",
+    "bulb_hint": "Lights the key to tap next",
+    "suggestion_hint": "Fills in this word",
+    "use_system_keyboard": "Use phone keyboard",
+    "use_system_keyboard_hint": "Switches to the phone keyboard",
+    "use_tiles": "Use tile keyboard",
+    "use_tiles_hint": "Switches to the tile keyboard"
   }
 }
