@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S5 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S5, S5b đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -125,9 +125,9 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 `POST /v1/admin/levels/:id/units/from-proposal` `{proposal}` (bản admin đã sửa), trong 1 transaction:
 1. Tạo unit (`topic_tag`), 4 bài `draft` với focus items, `situation_id`, `cefr_level`.
 2. Tạo nhiệm vụ cuối unit.
-3. Sau transaction: đưa 4 bài vào hàng dựng của composer có sẵn (`/v1/admin/lessons/:id/compose`, cùng worker), và tạo **1 job sinh trước câu tổ hợp** cho các tổ hợp (mẫu câu của bài × thì của bài × tình huống của bài).
+3. Sau transaction: tạo **1 job sinh trước câu tổ hợp** cho các tổ hợp (mẫu câu của bài × thì của bài × tình huống của bài); trên staging chỉ sinh 1–2 bộ để thử.
 
-Admin xem và sửa từng bài bằng các trang có sẵn, rồi publish như hiện nay.
+**Đổi so với bản đầu (chốt 2026-10-16):** công cụ chỉ dựng **khung bài, không gọi AI**. Composer có sẵn không dùng được: nó dựng bài mới từ 1–8 câu của một bài nguồn và tự chọn item, không nhận danh sách từ. Mỗi bài nhận focus items = ~12 từ + 1 mẫu + **1 thì** (đều `required`; thì vào bài nhờ S5b). Nội dung 6 bước admin soạn trên trang bài có sẵn, rồi publish như hiện nay. Thiết kế lưu thì: [`vocab-pattern-tense-lesson-tense.md`](../../design/vocab-pattern-tense-lesson-tense.md).
 
 ### 4.5 Độ phủ
 `GET /v1/admin/courses/:id/coverage`: theo từng cấp, số từ đã dùng / tổng, chủ đề đã có unit, mẫu câu và thì đã dùng. Giúp dựng ~60–65 unit theo đợt mà không trùng.
@@ -211,6 +211,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S3 ✅ | Server | `feat(outcomes): vocab progress for the learner` (3.4) | Không |
 | S4 ✅ | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
 | S5 ✅ | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
+| S5b ✅ | Server, admin-web | `feat(curriculum): a lesson teaches one tense` (thì là focus item của bài, tối đa 1, `required`) ⚠️ hợp đồng giao bài | Không |
 | S6 | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
 | S7 | admin-web | `feat(admin): unit builder page` | Không |
 | A1 | App | `feat(library): pattern library and tense map` (5.1) | |
