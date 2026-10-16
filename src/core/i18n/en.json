@@ -1218,7 +1218,16 @@
     "back_hint": "Leaves the review",
     "compare_title": "Look at this one again: you got it wrong several times",
     "compare_ok": "Got it",
-    "next": "Next"
+    "next": "Next",
+    "apply_order_title": "Put the English sentence in order",
+    "apply_order_hint": "Tap the words below in the right order",
+    "apply_swap_title": "Change the subject",
+    "apply_swap_subject": "Write it again with: {{subject}}",
+    "apply_swap_blank": "Verb blank",
+    "apply_swap_hint": "Type the verb as it goes with the new subject",
+    "apply_check": "Check",
+    "apply_correct": "Correct!",
+    "apply_wrong": "Not quite. The sentence is:"
   },
   "summativeTask": {
     "title": "Unit task",

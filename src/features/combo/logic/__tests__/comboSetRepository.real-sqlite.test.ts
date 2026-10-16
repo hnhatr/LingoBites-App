@@ -5,6 +5,7 @@ import {openRealSqlite} from '@test/support/adversarial/realSqlite';
 
 import type {ComboSentence} from '../comboClient';
 import {
+  listComboSentenceSetsFor,
   listLocalComboSets,
   listRecentSituationCodes,
   readLocalComboSet,
@@ -113,4 +114,55 @@ it('lists the situations of the newest sets first, without repeats', () => {
   save('0b1f6c1e-2d3a-4b5c-8d9e-000000000003', 'club', '2026-10-12T08:00:00Z');
   save('0b1f6c1e-2d3a-4b5c-8d9e-000000000004', 'gym', '2026-10-09T08:00:00Z');
   expect(listRecentSituationCodes(2)).toEqual(['club', 'cafe']);
+});
+
+it('lists the sentences of the sets for an item or a tense, newest set first', () => {
+  const save = (
+    id: string,
+    itemCode: string,
+    grammarCode: string,
+    at: string,
+    texts: string[],
+  ) =>
+    saveComboSet(
+      {
+        id,
+        itemCode,
+        grammarCode,
+        situationCode: 'club',
+        sentences: texts.map((text, index) => sentence(`${id}-${index}`, text)),
+      },
+      new Date(at),
+    );
+  save(
+    SET_ID,
+    'word:play',
+    'grammar:present-simple',
+    '2026-10-12T08:00:00.000Z',
+    ['I play here.'],
+  );
+  save(
+    '0b1f6c1e-2d3a-4b5c-8d9e-444444444444',
+    'word:play',
+    'grammar:past-simple',
+    '2026-10-13T08:00:00.000Z',
+    ['I played here.', 'She played here.'],
+  );
+  save(
+    '0b1f6c1e-2d3a-4b5c-8d9e-555555555555',
+    'word:sing',
+    'grammar:past-simple',
+    '2026-10-14T08:00:00.000Z',
+    [],
+  );
+  const texts = (sets: ComboSentence[][]) =>
+    sets.map(set => set.map(entry => entry.text_en));
+  expect(texts(listComboSentenceSetsFor('word:play'))).toEqual([
+    ['I played here.', 'She played here.'],
+    ['I play here.'],
+  ]);
+  expect(texts(listComboSentenceSetsFor('grammar:past-simple'))).toEqual([
+    ['I played here.', 'She played here.'],
+  ]);
+  expect(listComboSentenceSetsFor('word:none')).toEqual([]);
 });

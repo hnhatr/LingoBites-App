@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1, A2 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -158,14 +158,14 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | Điều hướng | `openPatternDetail`, `openTenseDetail`; mục Thư viện mới `patterns`, `tenses` (tab Khám phá); kệ "Mẫu câu & thì" trên tab Khám phá; bản đồ thì ẩn ô tìm kiếm |
 | `src/core/i18n/vi.json`, `en.json` 🔧 | Khối `patternTense` |
 
-### 5.2 Ôn bậc 3 dạng viết
+### 5.2 Ôn bậc 3 dạng viết ✅ A2
 | File | Việc |
 |---|---|
-| `features/review/logic/applyExercise.ts` 🆕 | Từ item → chọn câu trong các bộ đã mở (`item_code` khớp, hoặc `grammar_code` khớp với item `grammar`) → dựng 1 trong 2 dạng; không có câu phù hợp thì trả `null` |
-| `features/combo/logic/comboSetRepository.ts` 🔧 | Thêm hàm đọc câu theo item / theo thì |
-| `features/review/components/WordOrderCard.tsx` 🆕 | Câu VI → chạm từng token EN (đã xáo) để xếp câu. Chấm: đúng thứ tự token, bỏ qua dấu câu và hoa thường |
-| `features/review/components/SwapSubjectCard.tsx` 🆕 | Hiện câu mẫu A (nhóm chủ ngữ X). Câu B cùng bộ, cùng thể, khác nhóm chủ ngữ, để trống token `aux + verb`, kèm nghĩa VI của B. Người học gõ phần trống. Chấm: so token, không phân biệt hoa thường, coi `hasn't` = `has not`… |
-| `features/review/screens/ItemReviewScreen.tsx` 🔧 | `APPLY_FROM_STAGE = 4`. Stage ≥ 4 và có bài bậc 3 → hỏi bậc 3 (xen kẽ 2 dạng); không có → bậc 2 như cũ. Ghi kết quả như cũ (`kind = review`, `item_recall`), **không đổi Server** |
+| `features/review/logic/applyExercise.ts` 🆕 (thuần) | Dựng và chấm bài. **Sắp xếp từ**: câu VI → các từ EN đã xáo (không bao giờ trùng thứ tự đúng), cần ≥ 3 từ. **Đổi chủ ngữ**: câu mẫu + một câu khác **cùng bộ**, khác nhóm chủ ngữ, cùng thể; để trống khối động từ (từ aux/verb đầu tiên, gồm aux, verb, `not`), kèm nghĩa VI; ưu tiên cặp có động từ khác nhau. Chấm: thứ tự từ phải khớp; chỗ trống không phân biệt hoa thường, khoảng trắng, dạng rút gọn (`hasn't` = `has not`). Seed theo mã item + vị trí thẻ: lẻ thử đổi chủ ngữ trước, chẵn thử sắp xếp trước; không được thì dạng còn lại. Token của câu là chữ thường, không dấu câu |
+| `features/combo/logic/comboSetRepository.ts` 🔧 | `listComboSentenceSetsFor(code)`: câu của các bộ trên máy theo `item_code` hoặc `grammar_code` (cho item thì), bộ mới trước, giữ nguyên từng bộ; export qua `@features/combo` |
+| `features/review/components/ApplyExerciseCard.tsx` 🆕 | Thẻ bậc 3: chạm từ để xếp (chạm lại để bỏ), ô gõ động từ; "Kiểm tra" ghi kết quả **một lần**, hiện đúng / sai và câu đúng, rồi "Tiếp" |
+| `features/review/screens/ItemReviewScreen.tsx` 🔧 | `APPLY_FROM_STAGE = 4`. Stage ≥ 4 và có bài bậc 3 → thẻ bậc 3; không có bộ câu phù hợp → bậc 2 (nhớ lại) như cũ. Ghi như cũ (`kind = review`, `item_recall`), **không đổi Server** |
+| i18n | `itemReview.apply_*` (vi, en) |
 
 ### 5.3 F8: "Thêm vào lộ trình" trong bài tự tạo
 | File | Việc |
@@ -219,7 +219,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S6 ✅ | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
 | S7 ✅ | admin-web | `feat(admin): unit builder page` | Không |
 | A1 ✅ | App | `feat(patternTense): pattern library and tense map` (5.1) | |
-| A2 | App | `feat(review): stage 4 written practice` (5.2) | |
+| A2 ✅ | App | `feat(review): stage 4 written practice` (5.2) | |
 | A3 | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
 | A4 | App | `feat(profile): words, patterns and tenses in the progress report` (5.4) | |
 | A5 | App | `feat(course): required items checklist in the summative task` (5.5) | ✅ gộp A1–A5 một bản |

@@ -40,7 +40,7 @@ function ChipRow({label, options, value, onChange, testID}: ChipRowProps) {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   if (options.length === 0) return null;
   return (
-    <View accessibilityLabel={label} style={styles.chipBlock} testID={testID}>
+    <View style={styles.chipBlock} testID={testID}>
       <AppText color="secondary" variant="caption">
         {label}
       </AppText>

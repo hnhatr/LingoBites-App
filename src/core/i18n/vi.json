@@ -1218,7 +1218,16 @@
     "back_hint": "Rời màn ôn",
     "compare_title": "Xem lại từ này: bạn đã trả lời sai nhiều lần",
     "compare_ok": "Đã hiểu",
-    "next": "Tiếp"
+    "next": "Tiếp",
+    "apply_order_title": "Sắp xếp thành câu tiếng Anh",
+    "apply_order_hint": "Chạm các từ bên dưới theo đúng thứ tự",
+    "apply_swap_title": "Đổi chủ ngữ",
+    "apply_swap_subject": "Viết lại với chủ ngữ: {{subject}}",
+    "apply_swap_blank": "Chỗ trống động từ",
+    "apply_swap_hint": "Gõ động từ đã chia theo chủ ngữ mới",
+    "apply_check": "Kiểm tra",
+    "apply_correct": "Đúng rồi!",
+    "apply_wrong": "Chưa đúng. Câu đúng là:"
   },
   "summativeTask": {
     "title": "Nhiệm vụ tổng hợp",

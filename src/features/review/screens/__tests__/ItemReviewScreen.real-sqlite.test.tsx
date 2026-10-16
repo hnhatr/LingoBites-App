@@ -1,4 +1,5 @@
 import React from 'react';
+import {act} from 'react-test-renderer';
 
 import {getDatabase, resetDatabaseForTests} from '@core/db/database';
 import {runMigrations} from '@core/db/migrations';
@@ -16,6 +17,10 @@ jest.mock('@features/audio', () =>
   ),
 );
 const mockRequestSync = jest.fn();
+const mockSentenceSets = jest.fn();
+jest.mock('@features/combo', () => ({
+  listComboSentenceSetsFor: (code: string) => mockSentenceSets(code),
+}));
 jest.mock('@features/sync', () => ({requestSync: () => mockRequestSync()}));
 
 /** PR 16 (G9): the item review screen. */
@@ -68,6 +73,8 @@ beforeEach(() => {
   resetDatabaseForTests(db);
   runMigrations(db);
   mockRequestSync.mockClear();
+  mockSentenceSets.mockReset();
+  mockSentenceSets.mockReturnValue([]);
 });
 
 afterEach(() => {
@@ -179,5 +186,113 @@ describe('item review tiers', () => {
     expect(has(tree, 'item-review-card-word:tea')).toBe(false);
     press(tree, 'item-review-compare-ok');
     expect(has(tree, 'item-review-card-word:tea')).toBe(true);
+  });
+});
+
+/** Vocab path P6: from stage 4 a card is a written exercise from the learner's combo sentences. */
+describe('stage 4 written review', () => {
+  const stage4: ItemReviewQueue = {
+    items: [
+      {
+        memory: memory('word:play', 4),
+        item: item(TEA_ID, 'word:play', 'play', 'chơi'),
+      },
+    ],
+    missing: 0,
+    doneToday: 0,
+  };
+  const comboSentence = (
+    id: string,
+    group: string,
+    subject: string,
+    tokens: Array<[string, string]>,
+  ) => ({
+    id,
+    position: 0,
+    batch: 1,
+    subject_group: group,
+    subject_text: subject,
+    polarity: 'affirmative',
+    text_en: `${tokens.map(([t]) => t).join(' ')}.`,
+    text_vi: `câu ${id}`,
+    tokens: tokens.map(([t, role]) => ({t, ipa: null, role})),
+  });
+  const recorded = () =>
+    getDatabase()
+      .execute(
+        `SELECT item_key, result FROM activity_attempts WHERE kind = 'review';`,
+      )
+      .rows?._array.map(row => [row.item_key, row.result]);
+
+  it('asks for the words in order and records the check once', () => {
+    mockSentenceSets.mockReturnValue([
+      [
+        comboSentence('s1', 'i', 'I', [
+          ['i', 'subject'],
+          ['play', 'verb'],
+          ['football', 'other'],
+          ['here', 'other'],
+        ]),
+      ],
+    ]);
+    const tree = renderWithTheme(<ItemReviewScreen queue={stage4} />);
+    expect(mockSentenceSets).toHaveBeenCalledWith('word:play');
+    expect(has(tree, 'item-review-apply-order')).toBe(true);
+    expect(textOf(tree, 'item-review-apply-prompt')).toBe('câu s1');
+    // Tap the shuffled words in the sentence's order.
+    for (const word of ['i', 'play', 'football', 'here']) {
+      const chip = tree.root.findAll(
+        node =>
+          typeof node.props.testID === 'string' &&
+          node.props.testID.startsWith('item-review-apply-word-') &&
+          node.props.label === word &&
+          typeof node.props.onPress === 'function',
+      )[0]!;
+      act(() => chip.props.onPress());
+    }
+    press(tree, 'item-review-apply-check');
+    expect(textOf(tree, 'item-review-apply-answer')).toBe(
+      'i play football here.',
+    );
+    expect(recorded()).toEqual([['word:play', 'correct']]);
+    press(tree, 'item-review-next');
+    expect(textOf(tree, 'item-review-summary')).toBe('Nhớ 1 · chưa nhớ 0');
+  });
+
+  it('asks for the verb with another subject and grades a wrong one', () => {
+    mockSentenceSets.mockReturnValue([
+      [
+        comboSentence('a', 'i', 'I', [
+          ['i', 'subject'],
+          ['play', 'verb'],
+        ]),
+        comboSentence('b', 'he_she', 'She', [
+          ['she', 'subject'],
+          ['plays', 'verb'],
+        ]),
+      ],
+    ]);
+    const tree = renderWithTheme(<ItemReviewScreen queue={stage4} />);
+    expect(has(tree, 'item-review-apply-swap')).toBe(true);
+    const input = tree.root.findAll(
+      node =>
+        node.props.testID === 'item-review-apply-input' &&
+        typeof node.props.onChangeText === 'function',
+    )[0]!;
+    act(() => input.props.onChangeText('play'));
+    press(tree, 'item-review-apply-check');
+    expect(has(tree, 'item-review-apply-verdict')).toBe(true);
+    expect(recorded()).toHaveLength(1);
+    expect(recorded()![0]![1]).toBe(
+      textOf(tree, 'item-review-apply-model') === 'i play.'
+        ? 'incorrect'
+        : 'correct',
+    );
+  });
+
+  it('asks a stage-4 card by recall when no opened set gives an exercise', () => {
+    const tree = renderWithTheme(<ItemReviewScreen queue={stage4} />);
+    expect(has(tree, 'item-review-card-word:play')).toBe(true);
+    expect(has(tree, 'item-review-apply-order')).toBe(false);
   });
 });

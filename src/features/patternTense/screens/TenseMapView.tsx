@@ -152,10 +152,7 @@ export function TenseMapView() {
                 tense={tense}
               />
             ) : (
-              <View
-                key={`${time}-${column}`}
-                style={styles.cell}
-              />
+              <View key={`${time}-${column}`} style={styles.cell} />
             ),
           )}
         </View>

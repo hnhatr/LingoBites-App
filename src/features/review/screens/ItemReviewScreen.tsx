@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {SpeechNotice, useSpeak} from '@features/audio';
+import {listComboSentenceSetsFor} from '@features/combo';
 import {requestSync} from '@features/sync';
 
 import {AppButton} from '@ui/components/AppButton';
@@ -17,6 +18,13 @@ import {createRequestId} from '@core/api/requestId';
 import {questionFor, type QuizQuestion} from '@core/learning/packQuiz';
 import {lapsesOf} from '@core/sync/learningOutcomes';
 
+import {ApplyExerciseCard} from '../components/ApplyExerciseCard';
+import {
+  type ApplyExercise,
+  type ApplySentence,
+  buildApplyExercise,
+  seedOf,
+} from '../logic/applyExercise';
 import {
   type ItemReviewQueue,
   itemReviewQueue,
@@ -25,8 +33,22 @@ import {
 
 /** Vocab path P5: a card at this stage or above is asked by recall; below it, by recognition (bậc 2 and bậc 1). */
 export const RECALL_FROM_STAGE = 2;
+/**
+ * Vocab path P6: from this stage (the 30-day wait) a card is asked by a
+ * written stage-3 exercise (bậc 3) built from the learner's combo sentences;
+ * without an opened set for the item it is asked by recall.
+ */
+export const APPLY_FROM_STAGE = 4;
 /** A card the learner has got wrong this many times is compared before it is asked again. */
 export const COMPARE_FROM_LAPSES = 4;
+
+function applySetsFor(code: string): ApplySentence[][] {
+  try {
+    return listComboSentenceSetsFor(code);
+  } catch {
+    return [];
+  }
+}
 
 function lapsesFor(code: string): number {
   try {
@@ -85,6 +107,14 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
       queue.items.map(entry => entry.item),
     );
   }, [current, recognition, queue.items]);
+  const exercise = useMemo<ApplyExercise | null>(() => {
+    if (!current || current.memory.stage < APPLY_FROM_STAGE) return null;
+    return buildApplyExercise(
+      applySetsFor(current.item.code),
+      seedOf(current.item.code, index),
+    );
+  }, [current, index]);
+  const recall = !recognition && exercise === null;
 
   const advance = () => {
     setIndex(value => value + 1);
@@ -112,11 +142,9 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
     requestSync();
   };
 
-  // Recognition: the learner picks the meaning; the pick is recorded and the next card waits for "Next".
-  const pickOption = (option: number) => {
-    if (!current || !question || chosen !== null) return;
-    setChosen(option);
-    const result = option === question.answerIndex ? 'correct' : 'incorrect';
+  // Recognition and stage 3: the answer is recorded at once and the next card waits for "Next".
+  const recordChecked = (result: 'correct' | 'incorrect') => {
+    if (!current) return;
     const ok = recordItemReview({
       itemCode: current.item.code,
       result,
@@ -130,6 +158,12 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
     setFailed(false);
     setTally(value => ({...value, [result]: value[result] + 1}));
     requestSync();
+  };
+
+  const pickOption = (option: number) => {
+    if (!current || !question || chosen !== null) return;
+    setChosen(option);
+    recordChecked(option === question.answerIndex ? 'correct' : 'incorrect');
   };
 
   const total = queue.items.length;
@@ -188,7 +222,16 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
         {current && !showCompare && recognition && failed ? (
           <AppText color="danger">{t('itemReview.save_failed')}</AppText>
         ) : null}
-        {current && !showCompare && !recognition ? (
+        {current && !showCompare && exercise ? (
+          <ApplyExerciseCard
+            exercise={exercise}
+            failed={failed}
+            key={index}
+            onNext={advance}
+            onResult={recordChecked}
+          />
+        ) : null}
+        {current && !showCompare && recall ? (
           <AppCard testID={`item-review-card-${current.item.code}`}>
             <View style={themedStyles.row}>
               <Pressable

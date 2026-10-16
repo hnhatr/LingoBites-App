@@ -125,3 +125,22 @@ export function listRecentSituationCodes(limit: number): string[] {
   }
   return out;
 }
+
+/**
+ * Vocab path P6 (stage-4 review): the sentences of the sets opened on the
+ * device for one item, or for one tense when the code is a grammar item;
+ * newest set first, one entry per set so a set's sentences stay together.
+ */
+export function listComboSentenceSetsFor(itemCode: string): ComboSentence[][] {
+  return rowsOf(
+    getDatabase().execute(
+      `SELECT id, item_code, grammar_code, situation_code, sentences_json, created_at
+         FROM combo_sets_local
+        WHERE item_code = ? OR grammar_code = ?
+        ORDER BY created_at DESC;`,
+      [itemCode, itemCode],
+    ),
+  )
+    .map(row => sentencesOf(row.sentences_json))
+    .filter(sentences => sentences.length > 0);
+}
