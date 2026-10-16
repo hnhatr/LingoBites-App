@@ -301,10 +301,9 @@ export function YouTubeLessonStudy({
     onPlayVideo?.();
   }, [currentStartMs, onPlayVideo, onSeek]);
 
-  const handleProgressSeek = useCallback(
-    (ratio: number) => {
+  const handleProgressSelect = useCallback(
+    (index: number) => {
       if (orderedSentences.length === 0) return;
-      const index = Math.floor(ratio * orderedSentences.length);
       setFollowVideo(false);
       setCarouselScrollAnimated(true);
       setCurrentIndex(index);
@@ -390,8 +389,6 @@ export function YouTubeLessonStudy({
   }, []);
 
   const position = orderedSentences.length === 0 ? 0 : currentIndex + 1;
-  const progressRatio =
-    orderedSentences.length === 0 ? 0 : position / orderedSentences.length;
   const atFirst = currentIndex <= 0 || orderedSentences.length === 0;
   const atLast =
     orderedSentences.length === 0 ||
@@ -442,10 +439,11 @@ export function YouTubeLessonStudy({
             now: position,
           }}
           count={`${position}/${orderedSentences.length}`}
-          onSeek={handleProgressSeek}
+          current={orderedSentences.length > 0 ? currentIndex : undefined}
+          onSelect={handleProgressSelect}
           style={styles.progress}
           testID="youtube-study-progress"
-          value={progressRatio}
+          total={orderedSentences.length}
         />
       </View>
 

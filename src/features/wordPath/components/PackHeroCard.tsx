@@ -25,6 +25,7 @@ import Svg, {
 } from 'react-native-svg';
 
 import {DEFAULT_COVERS} from '@ui/assets/covers';
+import {AppProgressBar} from '@ui/components/AppProgressBar';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
@@ -65,7 +66,6 @@ export function PackHeroCard({
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const share = total > 0 ? Math.min(1, learned / total) : 0;
 
   return (
     <ShelfSurface
@@ -121,11 +121,7 @@ export function PackHeroCard({
               <AppText style={styles.countText}>{`/${total}`}</AppText>
             </View>
           </View>
-          <View style={styles.track}>
-            {share > 0 ? (
-              <View style={[styles.fill, {width: `${share * 100}%`}]} />
-            ) : null}
-          </View>
+          <AppProgressBar compact done={learned} surface="hero" total={total} />
         </View>
 
         <View style={styles.ctas}>
@@ -306,23 +302,6 @@ function makeStyles(theme: AppTheme) {
       fontSize: 15,
       fontVariant: ['tabular-nums'],
       fontWeight: '800',
-    },
-    // The app's progress bar look (AppProgressBar, compact) in the card's
-    // fixed colours: a raised track, a mint fill on a darker shelf.
-    track: {
-      backgroundColor: PACK_PALETTE.track,
-      borderRadius: 999,
-      height: 10,
-      padding: 2,
-      ...getStickerEdge(2, PACK_PALETTE.ghostShelf),
-    },
-    fill: {
-      backgroundColor: PACK_PALETTE.faceFrom,
-      borderBottomWidth: 2,
-      borderColor: PACK_PALETTE.shelf,
-      borderRadius: 999,
-      height: '100%',
-      minWidth: 6,
     },
     ctas: {
       flexDirection: 'row',

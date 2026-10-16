@@ -1,8 +1,10 @@
 import React from 'react';
+import {StyleSheet} from 'react-native';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
 import {AppProgressBar} from '@ui/components/AppProgressBar';
 import {AppThemeProvider} from '@ui/theme';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {FeatureFlagProvider} from '@core/release';
 
@@ -12,12 +14,7 @@ function render(props: Partial<React.ComponentProps<typeof AppProgressBar>>) {
     tree = ReactTestRenderer.create(
       <FeatureFlagProvider>
         <AppThemeProvider>
-          <AppProgressBar
-            fillTestID="bar-fill"
-            testID="bar"
-            value={0.25}
-            {...props}
-          />
+          <AppProgressBar testID="bar" total={9} {...props} />
         </AppThemeProvider>
       </FeatureFlagProvider>,
     );
@@ -25,41 +22,45 @@ function render(props: Partial<React.ComponentProps<typeof AppProgressBar>>) {
   return tree;
 }
 
-function fillWidth(tree: ReactTestRenderer.ReactTestRenderer) {
-  const fill = tree.root.find(
-    node => node.props.testID === 'bar-fill' && Array.isArray(node.props.style),
-  );
-  return fill.props.style[2].width;
+/** Background colour of each note, left to right. */
+function noteColors(tree: ReactTestRenderer.ReactTestRenderer) {
+  return tree.root
+    .findAll(
+      node =>
+        typeof node.type === 'string' &&
+        StyleSheet.flatten(node.props.style)?.height === 12,
+    )
+    .map(node => StyleSheet.flatten(node.props.style).backgroundColor);
 }
 
 describe('AppProgressBar', () => {
-  it('fills to the value and shows the count chip', () => {
-    const tree = render({count: '3/12'});
-    expect(fillWidth(tree)).toBe('25%');
+  it('draws one note per item: done, the open one coral, then upcoming', () => {
+    const tree = render({current: 2, count: '3/9'});
+    const colors = noteColors(tree);
+    expect(colors).toHaveLength(9);
+    expect(colors[2]).toBe(HERO_PALETTE.coral);
+    expect(colors[0]).toBe(colors[1]);
+    expect(colors[0]).not.toBe(colors[3]);
     expect(
       tree.root.find(
         node => node.props.testID === 'bar-label' && node.props.children,
       ).props.children,
-    ).toBe('3/12');
+    ).toBe('3/9');
   });
 
-  it('draws no fill at zero and clamps above one', () => {
-    expect(
-      render({value: 0}).root.findAll(node => node.props.testID === 'bar-fill'),
-    ).toHaveLength(0);
-    expect(fillWidth(render({value: 1.4}))).toBe('100%');
+  it('groups long lists into at most twenty notes', () => {
+    expect(noteColors(render({total: 45, current: 16}))).toHaveLength(15);
   });
 
-  it('reports where the bar was tapped when it can seek', () => {
-    const onSeek = jest.fn();
-    const tree = render({onSeek});
+  it('jumps to the first item of the tapped note', () => {
+    const onSelect = jest.fn();
+    const tree = render({total: 45, current: 0, onSelect});
     const bar = tree.root
       .findAll(node => node.props.testID === 'bar')
       .find(node => typeof node.props.onPress === 'function')!;
-    act(() => bar.props.onLayout({nativeEvent: {layout: {width: 200}}}));
-    act(() => bar.props.onPress({nativeEvent: {locationX: 150}}));
-    expect(onSeek).toHaveBeenCalledWith(0.75);
-    act(() => bar.props.onPress({nativeEvent: {locationX: 260}}));
-    expect(onSeek).toHaveBeenLastCalledWith(0.9999);
+    act(() => bar.props.onLayout({nativeEvent: {layout: {width: 300}}}));
+    act(() => bar.props.onPress({nativeEvent: {locationX: 100}}));
+    // 15 notes of 3 items: x=100 is note 5, which starts at item 15.
+    expect(onSelect).toHaveBeenCalledWith(15);
   });
 });

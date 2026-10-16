@@ -5,7 +5,7 @@ import {StyleSheet, View} from 'react-native';
 import {AppProgressBar} from '@ui/components/AppProgressBar';
 import {AppText} from '@ui/components/AppText';
 
-import {type UnitProgress, unitProgressRatio} from '../logic/unitProgress';
+import type {UnitProgress} from '../logic/unitProgress';
 
 type Props = {
   progress: UnitProgress;
@@ -49,9 +49,9 @@ export function UnitProgressBar({progress, testID}: Props) {
       >
         <AppProgressBar
           compact
-          fillTestID={testID ? `${testID}-fill` : undefined}
-          onCard
-          value={unitProgressRatio(progress)}
+          done={progress.completed}
+          surface="card"
+          total={progress.total}
         />
       </View>
       <AppText color="secondary" variant="caption">

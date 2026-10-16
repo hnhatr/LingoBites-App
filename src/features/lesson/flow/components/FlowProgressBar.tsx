@@ -16,9 +16,9 @@ export type FlowProgressBarProps = {
 };
 
 /**
- * The six steps on the app's progress bar, filled up to the open step. Six
- * invisible buttons lie over it, one per step, so tapping a part of the bar
- * opens that step, like the old step chips; skipped steps stay closed.
+ * The six steps as the app's progress notes: done steps mint, the open step
+ * coral, skipped ones faded. An invisible button lies over each note, so
+ * tapping it opens that step, like the old step chips.
  */
 export function FlowProgressBar({
   step,
@@ -41,7 +41,12 @@ export function FlowProgressBar({
         importantForAccessibility="no-hide-descendants"
         style={styles.bar}
       >
-        <AppProgressBar value={step / FLOW_STEPS.length} />
+        <AppProgressBar
+          current={step - 1}
+          done={toIndexes(doneSteps)}
+          skipped={skippedSteps && toIndexes(skippedSteps)}
+          total={FLOW_STEPS.length}
+        />
       </View>
       {FLOW_STEPS.map(value => {
         const skipped = skippedSteps?.has(value) ?? false;
@@ -69,6 +74,11 @@ export function FlowProgressBar({
       })}
     </View>
   );
+}
+
+/** Steps are numbered from 1; the progress notes count from 0. */
+function toIndexes(steps: ReadonlySet<number>): Set<number> {
+  return new Set([...steps].map(value => value - 1));
 }
 
 const styles = StyleSheet.create({
