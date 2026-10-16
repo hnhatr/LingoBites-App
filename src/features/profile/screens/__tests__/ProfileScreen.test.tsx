@@ -243,7 +243,7 @@ describe('ProfileScreen', () => {
     expect(mockNavigate).toHaveBeenLastCalledWith('AccountSettings');
   });
 
-  it('hides app settings when themeSwitcher is disabled', async () => {
+  it('keeps app settings reachable when themeSwitcher is disabled', async () => {
     let tree!: ReactTestRenderer.ReactTestRenderer;
     await ReactTestRenderer.act(async () => {
       tree = ReactTestRenderer.create(
@@ -256,6 +256,7 @@ describe('ProfileScreen', () => {
         </FeatureFlagProvider>,
       );
     });
-    expect(JSON.stringify(tree!.toJSON())).not.toContain('Cài đặt ứng dụng');
+    // The voice picker lives there, so the row no longer depends on the flag.
+    expect(JSON.stringify(tree!.toJSON())).toContain('Cài đặt ứng dụng');
   });
 });
