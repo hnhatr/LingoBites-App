@@ -5,6 +5,7 @@ import {
 
 import {createAuthClient} from '../auth/authClient';
 import {ensureValidSession} from '../auth/authSession';
+import {getAppVersion} from './appConfig';
 import {trackReachability} from './connectivity';
 
 function mergeHeaders(
@@ -27,6 +28,12 @@ function mergeHeaders(
   }
   if (extra) {
     Object.assign(result, extra);
+  }
+  // The Server shows grammar items (tense map, tenses in packs) only to app
+  // versions from GRAMMAR_MIN_APP_VERSION up.
+  const appVersion = getAppVersion();
+  if (appVersion) {
+    result['X-App-Version'] = appVersion;
   }
   return result;
 }

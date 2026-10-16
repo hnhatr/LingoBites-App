@@ -1,3 +1,5 @@
+import Config from 'react-native-config';
+
 import {SyncOwnershipChangedError} from '@core/sync/syncDrainOwnership';
 
 import {ensureValidSession} from '../../auth/authSession';
@@ -80,6 +82,49 @@ describe('authenticatedFetch expectedUserId guard', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][1].headers.Authorization).toBe(
       'Bearer token',
+    );
+  });
+});
+
+describe('authenticatedFetch app version header', () => {
+  const fetchImpl = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    fetchImpl.mockResolvedValue({status: 200, ok: true});
+    mockedEnsure.mockResolvedValue({
+      status: 'valid',
+      userId: 'user-1',
+      session: {access_token: 'token'},
+    });
+  });
+
+  it('sends the store version as X-App-Version', async () => {
+    await authenticatedFetch(
+      'https://api.test/v1/library/tenses',
+      {method: 'GET'},
+      fetchImpl,
+    );
+
+    expect(fetchImpl.mock.calls[0][1].headers['X-App-Version']).toBe('1.0.1');
+  });
+
+  it('leaves the header out when the version is not set', async () => {
+    const mockedConfig = Config as jest.Mocked<typeof Config>;
+    const saved = mockedConfig.IOS_APP_VERSION_NAME;
+    mockedConfig.IOS_APP_VERSION_NAME = '';
+    try {
+      await authenticatedFetch(
+        'https://api.test/v1/library/tenses',
+        {method: 'GET'},
+        fetchImpl,
+      );
+    } finally {
+      mockedConfig.IOS_APP_VERSION_NAME = saved;
+    }
+
+    expect(fetchImpl.mock.calls[0][1].headers).not.toHaveProperty(
+      'X-App-Version',
     );
   });
 });

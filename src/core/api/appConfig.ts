@@ -1,3 +1,4 @@
+import {Platform} from 'react-native';
 import Config from 'react-native-config';
 
 import {DEFAULT_SUPPORT_EMAIL} from '../appMetadata';
@@ -52,4 +53,16 @@ export function getAppConfig(): AppConfig {
 
 export function getSupportEmail(): string {
   return getAppConfig().supportEmail;
+}
+
+/**
+ * The store version (iOS `MARKETING_VERSION`, Android `versionName`), from
+ * the same env values the native builds read. Empty when unset.
+ */
+export function getAppVersion(): string {
+  const raw =
+    Platform.OS === 'ios'
+      ? Config.IOS_APP_VERSION_NAME
+      : Config.ANDROID_APP_VERSION_NAME;
+  return raw?.trim() ?? '';
 }
