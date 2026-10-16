@@ -12,6 +12,9 @@ import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
 import {SessionHeader, StudyQuestion} from '@ui/components/StudySession';
+import {formatIpa} from '@ui/components/WordCard';
+import {canWriteWord, WriteWordButton} from '@ui/components/WriteWordButton';
+import {WriteWordPanel} from '@ui/components/WriteWordPanel';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {createRequestId} from '@core/api/requestId';
@@ -87,6 +90,8 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
   const [sessionId] = useState(createRequestId);
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  // "Viết từ": write the word before recalling (practice only).
+  const [writing, setWriting] = useState(false);
   const [shownAt, setShownAt] = useState(() => Date.now());
   const [tally, setTally] = useState({correct: 0, incorrect: 0});
   const [failed, setFailed] = useState(false);
@@ -119,6 +124,7 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
   const advance = () => {
     setIndex(value => value + 1);
     setRevealed(false);
+    setWriting(false);
     setChosen(null);
     setCompared(false);
     setShownAt(Date.now());
@@ -231,7 +237,20 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
             onResult={recordChecked}
           />
         ) : null}
-        {current && !showCompare && recall ? (
+        {current && !showCompare && recall && writing ? (
+          <WriteWordPanel
+            ipa={current.item.ipa ? formatIpa(current.item.ipa) : null}
+            key={current.item.code}
+            meaningVi={current.item.meaning_vi}
+            onDone={() => {
+              setWriting(false);
+              setRevealed(true);
+            }}
+            testID="item-review-write"
+            word={current.item.text}
+          />
+        ) : null}
+        {current && !showCompare && recall && !writing ? (
           <AppCard testID={`item-review-card-${current.item.code}`}>
             <View style={themedStyles.row}>
               <Pressable
@@ -253,6 +272,14 @@ export function ItemReviewScreen({navigation, queue: given}: Props) {
                 onPress={() => say(current.item.text)}
               />
             </View>
+            {current.item.kind !== 'pattern' &&
+            canWriteWord(current.item.text) ? (
+              <WriteWordButton
+                onPress={() => setWriting(true)}
+                testID="item-review-write-word"
+                text={current.item.text}
+              />
+            ) : null}
             <View style={themedStyles.row}>
               <AppButton
                 accessibilityHint={t('itemReview.remembered_hint')}

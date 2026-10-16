@@ -6,6 +6,8 @@ import {useScreenSpeak} from '@features/audio';
 
 import {AppText} from '@ui/components/AppText';
 import {formatIpa} from '@ui/components/WordCard';
+import {canWriteWord, WriteWordButton} from '@ui/components/WriteWordButton';
+import {WriteWordPanel} from '@ui/components/WriteWordPanel';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {
@@ -56,10 +58,14 @@ export function ListenCardDeck({block, items, onDone}: ListenCardDeckProps) {
     [block, items],
   );
   const [index, setIndex] = useState(0);
+  // "Viết từ": the card swaps for the writing panel (practice only).
+  const [writing, setWriting] = useState(false);
   const total = cards.length;
   const last = index + 1 >= total;
-  const goTo = (next: number) =>
+  const goTo = (next: number) => {
+    setWriting(false);
     setIndex(Math.min(Math.max(next, 0), total - 1));
+  };
 
   const previous =
     total > 1
@@ -111,19 +117,39 @@ export function ListenCardDeck({block, items, onDone}: ListenCardDeckProps) {
           total={total}
         />
       ) : null}
-      <FlashcardDeck
-        faceOf={k => faceOf(cards[k]!.item)}
-        index={index}
-        onIndexChange={goTo}
-        renderCard={() => (
-          <ListenCard id={card.id} item={card.item} key={card.id} />
-        )}
-        testID="lesson-flow-card-swipe"
-        total={total}
-      />
-      <AppText color="muted" style={themedStyles.hint}>
-        {t('lessonFlow.card_swipe_hint')}
-      </AppText>
+      {writing ? (
+        <WriteWordPanel
+          ipa={card.item.ipa ? formatIpa(card.item.ipa) : null}
+          key={card.id}
+          meaningVi={card.item.meaning_vi}
+          onDone={() => setWriting(false)}
+          testID="lesson-flow-card-write"
+          word={card.item.text}
+        />
+      ) : (
+        <>
+          <FlashcardDeck
+            faceOf={k => faceOf(cards[k]!.item)}
+            index={index}
+            onIndexChange={goTo}
+            renderCard={() => (
+              <ListenCard id={card.id} item={card.item} key={card.id} />
+            )}
+            testID="lesson-flow-card-swipe"
+            total={total}
+          />
+          {card.item.kind !== 'pattern' && canWriteWord(card.item.text) ? (
+            <WriteWordButton
+              onPress={() => setWriting(true)}
+              testID="lesson-flow-card-write-word"
+              text={card.item.text}
+            />
+          ) : null}
+          <AppText color="muted" style={themedStyles.hint}>
+            {t('lessonFlow.card_swipe_hint')}
+          </AppText>
+        </>
+      )}
       {action && !hosted ? <FlowFooterBar action={action} /> : null}
     </View>
   );
