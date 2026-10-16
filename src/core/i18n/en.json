@@ -1617,6 +1617,8 @@
     "in_pack": "In this pack",
     "review": "Review this pack",
     "combo_hint": "Makes a combo set from this item.",
+    "combo_no_situation": "No situation fits this item yet.",
+    "combo_check_failed": "Could not check the situations. Please try again.",
     "continue_one": "Continue ({{count}} item)",
     "continue_other": "Continue ({{count}} items)",
     "stat_learned_label": "Learned",
@@ -1670,6 +1672,7 @@
   "combo": {
     "errors": {
       "situation_not_enabled": "This situation is not enabled for sentence sets. Pick another one.",
+      "situation_not_suitable": "This situation does not fit the chosen item. Pick another one.",
       "not_found": "This word, tense or situation was not found on the server.",
       "invalid_choice": "This choice is outside your plan. Change the sentence types or the count.",
       "no_subject_groups": "No subject fits this choice. Pick more subjects.",

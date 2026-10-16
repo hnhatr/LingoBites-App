@@ -14,6 +14,7 @@ export type ComboErrorNotice = {
 
 const CODE_KEYS: Record<string, string> = {
   SITUATION_NOT_ENABLED: 'combo.errors.situation_not_enabled',
+  SITUATION_NOT_SUITABLE: 'combo.errors.situation_not_suitable',
   SITUATION_NOT_FOUND: 'combo.errors.not_found',
   ITEM_NOT_FOUND: 'combo.errors.not_found',
   GRAMMAR_NOT_FOUND: 'combo.errors.not_found',
