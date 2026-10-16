@@ -49,6 +49,7 @@ import {
   PlacementTestScreen,
   useLearnerProfileStore,
 } from '@features/onboarding';
+import {PatternDetailScreen, TenseDetailScreen} from '@features/patternTense';
 import {PracticeScreen} from '@features/practice';
 import {
   AccountSettingsScreen,
@@ -354,6 +355,8 @@ function AuthenticatedRootStack() {
       <RootStack.Screen component={ComboSetupScreen} name="ComboSetup" />
       <RootStack.Screen component={ComboSetScreen} name="ComboSet" />
       <RootStack.Screen component={ComboHistoryScreen} name="ComboHistory" />
+      <RootStack.Screen component={PatternDetailScreen} name="PatternDetail" />
+      <RootStack.Screen component={TenseDetailScreen} name="TenseDetail" />
       <RootStack.Screen
         component={PracticeScreen}
         name="Practice"

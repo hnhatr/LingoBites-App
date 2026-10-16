@@ -59,7 +59,11 @@ export interface LibrarySectionConfig {
   savedSentences?: boolean;
   /** Vocab path P5: the word packs to download and learn. */
   wordPath?: boolean;
-  unit: 'bài' | 'từ' | 'quy tắc' | 'bộ câu' | 'câu' | 'gói';
+  /** Vocab path P6: the pattern library. */
+  patternLibrary?: boolean;
+  /** Vocab path P6: the tense map. */
+  tenseMap?: boolean;
+  unit: 'bài' | 'từ' | 'quy tắc' | 'bộ câu' | 'câu' | 'gói' | 'mẫu' | 'thì';
 }
 
 /**
@@ -151,6 +155,26 @@ export const LIBRARY_SECTIONS: readonly LibrarySectionConfig[] = [
     emptyHint: 'Chưa có gói nào trên máy. Chạm để xem các gói có sẵn',
     wordPath: true,
     unit: 'gói',
+  },
+  {
+    id: 'patterns',
+    tab: 'explore',
+    icon: 'format_quote',
+    title: 'Kho mẫu câu',
+    description: 'Mẫu câu theo ý muốn nói, cấp độ và kỳ thi',
+    emptyHint: 'Chưa có mẫu câu',
+    patternLibrary: true,
+    unit: 'mẫu',
+  },
+  {
+    id: 'tenses',
+    tab: 'explore',
+    icon: 'schedule',
+    title: 'Bản đồ thì',
+    description: '12 thì theo thời gian và khía cạnh, tô màu theo mức nhớ',
+    emptyHint: 'Chưa có thì',
+    tenseMap: true,
+    unit: 'thì',
   },
   {
     id: 'public',

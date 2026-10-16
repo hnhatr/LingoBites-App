@@ -33,7 +33,10 @@ export type LibrarySectionKey =
   | 'publicVideo'
   | 'combos'
   | 'comboSentences'
-  | 'wordPath';
+  | 'wordPath'
+  /** Vocab path P6: the pattern library and the tense map. */
+  | 'patterns'
+  | 'tenses';
 
 export type CreateEntry =
   /** Open the paste-text composer. */
@@ -134,6 +137,10 @@ export interface AppNavigation {
   openComboSet(setId: string, created?: number): void;
   /** Vocab path P5: the combo sets kept on this device. */
   openComboHistory(): void;
+  /** Vocab path P6: one pattern of the pattern library. */
+  openPatternDetail(itemCode: string): void;
+  /** Vocab path P6: one tense of the tense map. */
+  openTenseDetail(itemCode: string): void;
   /** Open a quick-practice quiz generated from one downloaded lesson. */
   openPractice(lessonId: string): void;
   /**

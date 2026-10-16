@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 đã code** (Server + admin-web, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 (Server + admin-web) và A1 (App) đã code** (nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -147,15 +147,16 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 
 ## 5. App
 
-### 5.1 Kho mẫu câu và bản đồ thì
+### 5.1 Kho mẫu câu và bản đồ thì ✅ A1
 | File | Việc |
 |---|---|
-| `src/features/library/` 🆕 (`logic/libraryClient.ts`, `logic/libraryRepository.ts`, `screens/PatternLibraryScreen.tsx`, `screens/PatternDetailScreen.tsx`, `screens/TenseMapScreen.tsx`, `screens/TenseDetailScreen.tsx`) | Tải danh sách, lưu vào `catalog_items` với `source = 'library'` để mở offline. Lọc chức năng / cấp / kỳ thi trên máy |
-| `TenseMapScreen` | Lưới 3 × 4 (+ be going to). Màu ô theo `item_memory.stage`: chưa học · stage 0–1 · 2–3 · 4 / đã ổn định |
-| `PatternDetailScreen`, `TenseDetailScreen` | Ví dụ, công thức, dấu hiệu, thì hay nhầm (đọc payload `grammar` có sẵn); nút **"Luyện câu tổ hợp"** mở `ComboSetupScreen` có sẵn; nút **"Thêm vào ôn"** gọi `/v1/items/learn` |
-| `src/app/navigation/AppNavigator.tsx` 🔧 + navigation types | Route mới |
-| Thư viện 🔧 | Lối vào "Kho mẫu câu", "Bản đồ thì" |
-| `src/core/i18n/vi.json`, `en.json` 🔧 | Chuỗi mới |
+| `src/features/patternTense/` 🆕 (đặt tên khác `library` để không nhầm với `@features/lesson/library`) | `logic/libraryClient.ts` (3 API S1), `logic/libraryRepository.ts`, `logic/libraryModel.ts` (lọc, lưới thì, mức nhớ, đọc payload thì; thuần), `logic/frameText.ts` (khung câu và slot, đọc dễ dãi vì payload Server có thể có thêm `tense_mode`…), `logic/useLibrary.ts` (hiện bản trên máy ngay, rồi làm mới từ Server; offline vẫn dùng bản đã lưu), `logic/addToReview.ts` |
+| Lưu trên máy | Nội dung item → `catalog_items` (`source = 'library'`); cấp, tag, bộ lọc, vị trí thì → một dòng `app_settings` mỗi danh sách. **Không tăng schema SQLite** |
+| `screens/PatternLibraryList.tsx` | Một mục của Thư viện: lọc theo ý muốn nói (function), cấp, kỳ thi; ô tìm kiếm khớp khung câu hoặc nghĩa (bỏ dấu) |
+| `screens/TenseMapView.tsx` | Một mục của Thư viện: lưới 3 thời gian × 4 khía cạnh; màu theo mức nhớ (chưa học · stage 0–1 · 2–3 · stage 4 hoặc đã ổn định); thì ngoài lưới (be going to) ở dưới; chú thích màu |
+| `screens/PatternDetailScreen.tsx`, `screens/TenseDetailScreen.tsx` | Route `PatternDetail`, `TenseDetail`. Mẫu: khung, nghĩa, cấp + chức năng, slot, ví dụ, **"Luyện câu tổ hợp"** (mở `ComboSetup`), **"Thêm vào ôn"**. Thì: công thức 3 thể, dấu hiệu, dùng khi, hay nhầm với (chạm để mở), ví dụ, mức nhớ, **"Thêm vào ôn"**. Trang thì **không** có nút luyện câu: bộ câu cần một từ hoặc mẫu đi kèm (sẽ có ở mục "Thì của bài") |
+| Điều hướng | `openPatternDetail`, `openTenseDetail`; mục Thư viện mới `patterns`, `tenses` (tab Khám phá); kệ "Mẫu câu & thì" trên tab Khám phá; bản đồ thì ẩn ô tìm kiếm |
+| `src/core/i18n/vi.json`, `en.json` 🔧 | Khối `patternTense` |
 
 ### 5.2 Ôn bậc 3 dạng viết
 | File | Việc |
@@ -217,7 +218,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S5b ✅ | Server, admin-web | `feat(curriculum): a lesson teaches one tense` (thì là focus item của bài, tối đa 1, `required`) ⚠️ hợp đồng giao bài | Không |
 | S6 ✅ | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
 | S7 ✅ | admin-web | `feat(admin): unit builder page` | Không |
-| A1 | App | `feat(library): pattern library and tense map` (5.1) | |
+| A1 ✅ | App | `feat(patternTense): pattern library and tense map` (5.1) | |
 | A2 | App | `feat(review): stage 4 written practice` (5.2) | |
 | A3 | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
 | A4 | App | `feat(profile): words, patterns and tenses in the progress report` (5.4) | |

@@ -13,6 +13,7 @@ import {
   SavedComboSentencesList,
 } from '@features/combo';
 import {ComposeRequestCards} from '@features/lesson/player';
+import {PatternLibraryList, TenseMapView} from '@features/patternTense';
 import {WordPathList} from '@features/wordPath';
 
 import {AppScreen} from '@ui/components/AppScreen';
@@ -100,17 +101,21 @@ export function LibraryListScreen({navigation, route}: Props) {
   return (
     <AppScreen>
       <ScreenHeader title={section.title} onBack={() => navigation.goBack()} />
-      <SearchAndFilterBar
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        placeholder={
-          section.combos
-            ? 'Tìm theo từ…'
-            : section.savedSentences
-              ? 'Tìm câu…'
-              : undefined
-        }
-      />
+      {section.tenseMap ? null : (
+        <SearchAndFilterBar
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          placeholder={
+            section.combos
+              ? 'Tìm theo từ…'
+              : section.savedSentences
+                ? 'Tìm câu…'
+                : section.patternLibrary
+                  ? 'Tìm mẫu câu…'
+                  : undefined
+          }
+        />
+      )}
       <View style={styles.content} testID={`library-list-${section.id}`}>
         {section.moments ? (
           <MomentLibraryList emptyHint={section.emptyHint} />
@@ -124,6 +129,10 @@ export function LibraryListScreen({navigation, route}: Props) {
           <SavedComboSentencesList query={searchQuery} />
         ) : section.wordPath ? (
           <WordPathList query={searchQuery} />
+        ) : section.patternLibrary ? (
+          <PatternLibraryList query={searchQuery} />
+        ) : section.tenseMap ? (
+          <TenseMapView />
         ) : section.catalog ? (
           <PublicLessonsList
             origin={section.catalog.origin}

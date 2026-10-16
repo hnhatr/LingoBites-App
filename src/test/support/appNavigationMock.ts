@@ -32,6 +32,8 @@ export const mockAppNavigation: jest.Mocked<AppNavigation> = {
   openComboSetup: jest.fn(),
   openComboSet: jest.fn(),
   openComboHistory: jest.fn(),
+  openPatternDetail: jest.fn(),
+  openTenseDetail: jest.fn(),
   openPractice: jest.fn(),
   openToday: jest.fn(),
   openSpeakingRoom: jest.fn(),

@@ -86,6 +86,9 @@ describe('useLibraryCounts (real SQLite)', () => {
       grammar: 1,
       combos: 0,
       wordPath: 0,
+      // The pattern library and the tense map live on the server.
+      patterns: 0,
+      tenses: 0,
       public: 0,
       publicVideo: 0,
     });

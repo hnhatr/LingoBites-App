@@ -264,6 +264,8 @@ export function createAppNavigation(
     openComboSet: (setId, created) =>
       navigate('ComboSet', created ? {setId, created} : {setId}),
     openComboHistory: () => navigate('ComboHistory', undefined),
+    openPatternDetail: itemCode => navigate('PatternDetail', {itemCode}),
+    openTenseDetail: itemCode => navigate('TenseDetail', {itemCode}),
     openPractice: lessonId => navigate('Practice', {lessonId}),
     openToday: target => navigate('Today', target),
     openSpeakingRoom: () => navigate('SpeakingRoom', undefined),
