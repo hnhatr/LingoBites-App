@@ -112,6 +112,45 @@ describe('DailyReviewScreen', () => {
     ).toBeGreaterThan(0);
   });
 
+  it('lets the learner write the word before flipping, then rate it', async () => {
+    seedCards(1);
+    const tree = await renderScreen(
+      <DailyReviewScreen navigation={navigation() as never} softCap={5} />,
+    );
+
+    await act(async () => {
+      tree.root.findByProps({testID: 'review-write-try'}).props.onPress();
+    });
+    expect(
+      tree.root.findByProps({testID: 'review-write-meaning'}).props.children,
+    ).toBe('meaning-1');
+    expect(
+      tree.root.findAllByProps({testID: 'review-swipe-card'}),
+    ).toHaveLength(0);
+    const input = tree.root.find(
+      node =>
+        node.props.testID === 'review-write-input' &&
+        typeof node.props.onChangeText === 'function',
+    );
+    await act(async () => input.props.onChangeText('word-1'));
+    await act(async () => {
+      tree.root.findByProps({testID: 'review-write-check'}).props.onPress();
+    });
+    expect(
+      tree.root.findByProps({testID: 'review-write-verdict'}).props.children,
+    ).toBe('Chính xác!');
+    await act(async () => {
+      tree.root.findByProps({testID: 'review-write-done'}).props.onPress();
+    });
+    expect(tree.root.findAllByProps({testID: 'review-write-try'})).toHaveLength(
+      0,
+    );
+    await act(async () => {
+      tree.root.findByProps({testID: 'rating-remembered'}).props.onPress();
+    });
+    expect(tree.root.findByProps({testID: 'review-summary'})).toBeTruthy();
+  });
+
   it('skips through the session and renders the completion summary', async () => {
     seedCards(2);
     const nav = navigation();

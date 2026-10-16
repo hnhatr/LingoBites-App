@@ -74,3 +74,16 @@ export {
   practiceSeed,
   summarizeAnswers,
 } from './practice';
+export {
+  answerWords,
+  KEYBOARD_EXTRAS,
+  type LetterBank,
+  letterBank,
+  nextTile,
+  nextWord,
+  QWERTY_ROWS,
+  TILE_MODES,
+  type TileMode,
+  wordBank,
+  wordSuggestions,
+} from './tileBank';

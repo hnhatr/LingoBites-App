@@ -4,7 +4,8 @@ import {StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
-import {TextField} from '@ui/components/TextField';
+import {TileComposer} from '@ui/components/TileComposer';
+import {useTileMode} from '@ui/components/useTileMode';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {LessonSupportLevel} from '@core/schemas/sync';
@@ -22,10 +23,32 @@ export type TypedEntryProps = {
   /** Hints for this entry (PR 11); a right answer after one is supported. */
   hints: readonly HintStep[];
   onReport: (result: EntryResult, support: LessonSupportLevel) => void;
+  /** Fill-in: the words around the blank, shown in the stage. */
+  frame?: {before: string; after: string} | null;
+  /** Lesson words for noise tiles and the suggestion strip. */
+  vocabulary?: readonly string[];
 };
 
+const SUPPORT_ORDER: readonly LessonSupportLevel[] = [
+  'none',
+  'hint_1',
+  'hint_2',
+  'model',
+];
+
+/** The bulb counts as a first hint (decided with the user). */
+function withBulb(
+  support: LessonSupportLevel,
+  bulbUsed: boolean,
+): LessonSupportLevel {
+  if (!bulbUsed) return support;
+  return SUPPORT_ORDER.indexOf(support) >= SUPPORT_ORDER.indexOf('hint_1')
+    ? support
+    : 'hint_1';
+}
+
 /**
- * Type the answer in English. It is checked like on the Server (decision
+ * Write the answer in English with the tile keyboard (TileComposer). It is checked like on the Server (decision
  * G9); a wrong answer can be corrected, which then counts as a retry. The
  * typed text never leaves this component.
  */
@@ -34,6 +57,8 @@ export function TypedEntry({
   modelAnswer,
   hints,
   onReport,
+  frame = null,
+  vocabulary,
 }: TypedEntryProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
@@ -41,7 +66,11 @@ export function TypedEntry({
   const [value, setValue] = useState('');
   const [wrongTries, setWrongTries] = useState(0);
   const [finished, setFinished] = useState<'right' | 'shown' | null>(null);
-  const [support, setSupport] = useState<LessonSupportLevel>('none');
+  const [ladderSupport, setSupport] = useState<LessonSupportLevel>('none');
+  const [bulbUsed, setBulbUsed] = useState(false);
+  const [wrongValue, setWrongValue] = useState<string | null>(null);
+  const [mode, setMode] = useTileMode();
+  const support = withBulb(ladderSupport, bulbUsed);
 
   const check = () => {
     if (finished || value.trim() === '') return;
@@ -50,22 +79,34 @@ export function TypedEntry({
       onReport(wrongTries === 0 ? 'first_try' : 'after_retry', support);
     } else {
       setWrongTries(tries => tries + 1);
+      setWrongValue(value);
     }
   };
 
   return (
     <View style={themedStyles.container}>
-      <TextField
+      <TileComposer
         accessibilityHint={t('lessonFlow.answer_hint')}
         accessibilityLabel={t('lessonFlow.answer_label')}
-        autoCapitalize="none"
-        autoCorrect={false}
+        answer={modelAnswer}
         editable={finished === null}
+        frame={frame}
+        mode={mode}
+        modes={frame ? ['letters', 'keyboard'] : undefined}
         onChangeText={setValue}
-        onSubmitEditing={check}
-        placeholder={t('lessonFlow.answer_placeholder')}
+        onHint={() => setBulbUsed(true)}
+        onModeChange={setMode}
+        seed={modelAnswer}
+        status={
+          finished === 'right'
+            ? 'right'
+            : finished === null && wrongValue === value
+              ? 'wrong'
+              : null
+        }
         testID="lesson-flow-answer-input"
         value={value}
+        vocabulary={vocabulary}
       />
       {finished === null ? (
         <View style={themedStyles.actions}>

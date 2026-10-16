@@ -273,7 +273,16 @@
     "summary_keep": "Cố lên nhé!",
     "summary_accuracy": "đã nhớ",
     "summary_accuracy_a11y": "Đã nhớ {{percent}}% số thẻ",
-    "summary_subtitle": "Bạn vừa ôn {{count}} thẻ"
+    "summary_subtitle": "Bạn vừa ôn {{count}} thẻ",
+    "write_try": "Viết thử",
+    "write_try_hint": "Viết từ này bằng bàn phím ô chữ trước khi lật thẻ",
+    "write_try_title": "Viết từ này bằng tiếng Anh",
+    "write_check": "Kiểm tra",
+    "write_check_hint": "Kiểm tra từ bạn vừa viết",
+    "write_right": "Chính xác!",
+    "write_wrong": "Chưa đúng. Đáp án: {{word}}",
+    "write_show_card": "Xem thẻ",
+    "write_show_card_hint": "Lật thẻ để xem đáp án và tự chấm"
   },
   "rating": {
     "forgot_label": "Quên",
@@ -1147,7 +1156,12 @@
     "situation_place": "Ở {{place}}.",
     "situation_purpose_label": "Mục đích:",
     "criterion_required": "Cần có",
-    "open_unfinished_named": "Làm tiếp: {{name}}"
+    "open_unfinished_named": "Làm tiếp: {{name}}",
+    "listen_write_instead": "Viết thay vì nói",
+    "listen_write_instead_hint": "Nghe câu rồi ghép lại bằng bàn phím ô chữ",
+    "listen_speak_instead": "Nói thay vì viết",
+    "listen_speak_instead_hint": "Quay lại ghi âm và tự chấm phần nói",
+    "listen_write_title": "Nghe rồi viết lại câu bằng tiếng Anh"
   },
   "course": {
     "courses_title": "Khóa học",
@@ -1930,5 +1944,26 @@
     "level_started": "Mới học",
     "level_recalling": "Đang nhớ",
     "level_stable": "Đã nhớ"
+  },
+  "tileComposer": {
+    "mode_words": "Ghép từ",
+    "mode_letters": "Ghép chữ",
+    "mode_keyboard": "A–Z",
+    "mode_hint": "Đổi cách viết",
+    "placeholder_words": "Bấm các từ bên dưới để ghép câu",
+    "placeholder_letters": "Bấm các chữ cái bên dưới, câu sẽ hiện ở đây",
+    "remove_word_tip": "Chạm vào một từ để xoá",
+    "remove_word_hint": "Xoá từ này khỏi câu trả lời",
+    "tile_hint": "Thêm vào câu trả lời",
+    "space": "dấu cách",
+    "space_hint": "Thêm dấu cách",
+    "delete_hint": "Bấm để xoá một chữ, giữ để xoá cả từ",
+    "bulb": "Gợi ý phím tiếp theo",
+    "bulb_hint": "Làm sáng phím cần bấm tiếp",
+    "suggestion_hint": "Điền cả từ này",
+    "use_system_keyboard": "Dùng bàn phím máy",
+    "use_system_keyboard_hint": "Chuyển sang bàn phím của điện thoại",
+    "use_tiles": "Dùng bàn phím ô chữ",
+    "use_tiles_hint": "Chuyển sang bàn phím ô chữ"
   }
 }

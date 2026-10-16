@@ -273,7 +273,16 @@
     "summary_keep": "Keep going!",
     "summary_accuracy": "remembered",
     "summary_accuracy_a11y": "Remembered {{percent}}% of cards",
-    "summary_subtitle": "You just reviewed {{count}} cards"
+    "summary_subtitle": "You just reviewed {{count}} cards",
+    "write_try": "Try writing",
+    "write_try_hint": "Write this word with the tile keyboard before flipping",
+    "write_try_title": "Write this word in English",
+    "write_check": "Check",
+    "write_check_hint": "Checks the word you wrote",
+    "write_right": "Correct!",
+    "write_wrong": "Not quite. Answer: {{word}}",
+    "write_show_card": "Show card",
+    "write_show_card_hint": "Flips the card to see the answer and rate it"
   },
   "rating": {
     "forgot_label": "Forgot",
@@ -1147,7 +1156,12 @@
     "situation_place": "At {{place}}.",
     "situation_purpose_label": "Goal:",
     "criterion_required": "Required",
-    "open_unfinished_named": "Continue: {{name}}"
+    "open_unfinished_named": "Continue: {{name}}",
+    "listen_write_instead": "Write instead of speaking",
+    "listen_write_instead_hint": "Listen, then build the sentence with the tile keyboard",
+    "listen_speak_instead": "Speak instead of writing",
+    "listen_speak_instead_hint": "Back to recording and judging your speaking",
+    "listen_write_title": "Listen, then write the sentence in English"
   },
   "course": {
     "courses_title": "Courses",
@@ -1930,5 +1944,26 @@
     "level_started": "Just started",
     "level_recalling": "Remembering",
     "level_stable": "Remembered"
+  },
+  "tileComposer": {
+    "mode_words": "Words",
+    "mode_letters": "Letters",
+    "mode_keyboard": "A–Z",
+    "mode_hint": "Change how you write",
+    "placeholder_words": "Tap the words below to build the sentence",
+    "placeholder_letters": "Tap the letters below; your answer shows here",
+    "remove_word_tip": "Tap a word to remove it",
+    "remove_word_hint": "Removes this word from your answer",
+    "tile_hint": "Adds to your answer",
+    "space": "space",
+    "space_hint": "Adds a space",
+    "delete_hint": "Tap to delete a letter, hold to delete the word",
+    "bulb": "Hint the next key",
+    "bulb_hint": "Lights the key to tap next",
+    "suggestion_hint": "Fills in this word",
+    "use_system_keyboard": "Use phone keyboard",
+    "use_system_keyboard_hint": "Switches to the phone keyboard",
+    "use_tiles": "Use tile keyboard",
+    "use_tiles_hint": "Switches to the tile keyboard"
   }
 }

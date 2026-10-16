@@ -10,7 +10,6 @@ import {
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
 import {withAlpha} from '@ui/components/layout';
-import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {HERO_PALETTE} from '@ui/theme/heroPalette';
@@ -58,6 +57,7 @@ import {CriteriaChecklist} from './CriteriaChecklist';
 import {EvaluationConsentPrompt} from './EvaluationConsentPrompt';
 import {EvaluationFeedback} from './EvaluationFeedback';
 import {type FlowFooterAction, useFlowFooter} from './FlowFooter';
+import {FreeWritingEntry} from './FreeWritingEntry';
 import {RecorderControls} from './RecorderControls';
 
 /** Decision A6: a step-5 spoken answer lasts at most 45 seconds. */
@@ -120,6 +120,11 @@ export function IndependentTaskView({
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  // Lesson words for the tile keyboard's suggestion strip.
+  const independentVocabulary = useMemo(
+    () => [...items.values()].map(item => item.text),
+    [items],
+  );
   const [grading, setGrading] = useState<Grading>(() =>
     gradingFor(task, writeInstead),
   );
@@ -439,14 +444,11 @@ export function IndependentTaskView({
               </AppText>
             ) : null}
             {task.response_mode === 'write' || grading === 'text' ? (
-              <TextField
-                accessibilityHint={t('lessonFlow.independent_write_hint')}
-                accessibilityLabel={t('lessonFlow.answer_label')}
-                multiline
+              <FreeWritingEntry
                 onChangeText={setWritten}
-                placeholder={t('lessonFlow.answer_placeholder')}
                 testID="lesson-flow-independent-text"
                 value={written}
+                vocabulary={independentVocabulary}
               />
             ) : (
               <RecorderControls recorder={recorder} />

@@ -11,7 +11,6 @@ import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
-import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {createRequestId} from '@core/api/requestId';
@@ -39,6 +38,7 @@ import {
 import {useSelfCheckRecorder} from '../logic/useSelfCheckRecorder';
 import {EvaluationConsentPrompt} from './EvaluationConsentPrompt';
 import {EvaluationFeedback} from './EvaluationFeedback';
+import {FreeWritingEntry} from './FreeWritingEntry';
 import {RecorderControls} from './RecorderControls';
 import {SummativeChecklist} from './SummativeChecklist';
 
@@ -100,6 +100,11 @@ export function SummativeTaskView({task}: SummativeTaskViewProps) {
   const [written, setWritten] = useState('');
   // Vocab path P6 (F7): the required items, ticked while writing and checked again on send.
   const checklist = useSummativeChecklist(task.unit_id);
+  // The unit's checklist words for the tile keyboard's suggestion strip.
+  const summativeVocabulary = useMemo(
+    () => checklist.map(entry => entry.text),
+    [checklist],
+  );
   const [sentText, setSentText] = useState<string | null>(null);
   const [coverage, setCoverage] = useState<ReadonlyMap<string, boolean> | null>(
     null,
@@ -314,14 +319,11 @@ export function SummativeTaskView({task}: SummativeTaskViewProps) {
               />
             ) : null}
             {grading === 'text' ? (
-              <TextField
-                accessibilityHint={t('lessonFlow.independent_write_hint')}
-                accessibilityLabel={t('lessonFlow.answer_label')}
-                multiline
+              <FreeWritingEntry
                 onChangeText={setWritten}
-                placeholder={t('lessonFlow.answer_placeholder')}
                 testID="unit-summative-text"
                 value={written}
+                vocabulary={summativeVocabulary}
               />
             ) : (
               <>

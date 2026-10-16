@@ -5,8 +5,8 @@ import {StyleSheet, View} from 'react-native';
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {Chip} from '@ui/components/Chip';
-import {TextField} from '@ui/components/TextField';
+import {TileComposer} from '@ui/components/TileComposer';
+import {useTileMode} from '@ui/components/useTileMode';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {
@@ -50,17 +50,14 @@ function OrderCard({
   exercise,
   checked,
   onCheck,
-  styles,
 }: {
   exercise: OrderExercise;
   checked: boolean | null;
   onCheck: (correct: boolean) => void;
-  styles: ReturnType<typeof makeStyles>;
 }) {
   const {t} = useTranslation();
-  // Positions in `shuffled`, in the order the learner picked them.
-  const [picked, setPicked] = useState<number[]>([]);
-  const words = picked.map(index => exercise.shuffled[index]!);
+  const [typed, setTyped] = useState('');
+  const words = typed.split(' ').filter(Boolean);
   return (
     <>
       <AppText color="secondary" variant="label">
@@ -69,44 +66,21 @@ function OrderCard({
       <AppText testID="item-review-apply-prompt" variant="h3">
         {exercise.promptVi}
       </AppText>
-      <View style={styles.answerLine} testID="item-review-apply-line">
-        {picked.length === 0 ? (
-          <AppText color="muted">{t('itemReview.apply_order_hint')}</AppText>
-        ) : (
-          picked.map((position, index) => (
-            <Chip
-              key={`${position}-${index}`}
-              label={exercise.shuffled[position]!}
-              onPress={
-                checked === null
-                  ? () => setPicked(value => value.filter(p => p !== position))
-                  : undefined
-              }
-              selected
-              testID={`item-review-apply-picked-${index}`}
-            />
-          ))
-        )}
-      </View>
-      <View style={styles.pool}>
-        {exercise.shuffled.map((word, position) =>
-          picked.includes(position) ? null : (
-            <Chip
-              key={position}
-              label={word}
-              onPress={
-                checked === null
-                  ? () => setPicked(value => [...value, position])
-                  : undefined
-              }
-              testID={`item-review-apply-word-${position}`}
-            />
-          ),
-        )}
-      </View>
+      <TileComposer
+        accessibilityHint={t('itemReview.apply_order_hint')}
+        accessibilityLabel={t('itemReview.apply_order_title')}
+        editable={checked === null}
+        mode="words"
+        onChangeText={setTyped}
+        placeholder={t('itemReview.apply_order_hint')}
+        status={checked === null ? null : checked ? 'right' : 'wrong'}
+        testID="item-review-apply"
+        value={typed}
+        wordTiles={exercise.shuffled}
+      />
       {checked === null ? (
         <AppButton
-          disabled={picked.length !== exercise.shuffled.length}
+          disabled={words.length !== exercise.shuffled.length}
           onPress={() => onCheck(isOrderCorrect(exercise, words))}
           testID="item-review-apply-check"
           title={t('itemReview.apply_check')}
@@ -121,15 +95,14 @@ function SwapCard({
   exercise,
   checked,
   onCheck,
-  styles,
 }: {
   exercise: SwapExercise;
   checked: boolean | null;
   onCheck: (correct: boolean) => void;
-  styles: ReturnType<typeof makeStyles>;
 }) {
   const {t} = useTranslation();
   const [typed, setTyped] = useState('');
+  const [mode, setMode] = useTileMode();
   return (
     <>
       <AppText color="secondary" variant="label">
@@ -140,24 +113,22 @@ function SwapCard({
         {t('itemReview.apply_swap_subject', {subject: exercise.subject})}
       </AppText>
       <AppText color="secondary">{exercise.promptVi}</AppText>
-      <View style={styles.blankRow}>
-        {exercise.before ? <AppText>{exercise.before}</AppText> : null}
-        <TextField
-          accessibilityHint={t('itemReview.apply_swap_hint')}
-          accessibilityLabel={t('itemReview.apply_swap_blank')}
-          autoCapitalize="none"
-          autoCorrect={false}
-          editable={checked === null}
-          onChangeText={setTyped}
-          onSubmitEditing={() =>
-            typed.trim() ? onCheck(isSwapCorrect(exercise, typed)) : undefined
-          }
-          style={styles.blank}
-          testID="item-review-apply-input"
-          value={typed}
-        />
-        {exercise.after ? <AppText>{exercise.after}</AppText> : null}
-      </View>
+      <TileComposer
+        accessibilityHint={t('itemReview.apply_swap_hint')}
+        accessibilityLabel={t('itemReview.apply_swap_blank')}
+        answer={exercise.answer}
+        editable={checked === null}
+        extraLetters={exercise.model}
+        frame={{before: exercise.before, after: exercise.after}}
+        mode={mode}
+        modes={['letters', 'keyboard']}
+        onChangeText={setTyped}
+        onModeChange={setMode}
+        seed={exercise.sentenceId}
+        status={checked === null ? null : checked ? 'right' : 'wrong'}
+        testID="item-review-apply-input"
+        value={typed}
+      />
       {checked === null ? (
         <AppButton
           disabled={typed.trim() === ''}
@@ -189,19 +160,9 @@ export function ApplyExerciseCard({exercise, onResult, onNext, failed}: Props) {
   return (
     <AppCard style={styles.card} testID={`item-review-apply-${exercise.kind}`}>
       {exercise.kind === 'order' ? (
-        <OrderCard
-          checked={checked}
-          exercise={exercise}
-          onCheck={check}
-          styles={styles}
-        />
+        <OrderCard checked={checked} exercise={exercise} onCheck={check} />
       ) : (
-        <SwapCard
-          checked={checked}
-          exercise={exercise}
-          onCheck={check}
-          styles={styles}
-        />
+        <SwapCard checked={checked} exercise={exercise} onCheck={check} />
       )}
       {checked !== null ? (
         <>
@@ -224,31 +185,8 @@ export function ApplyExerciseCard({exercise, onResult, onNext, failed}: Props) {
 
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
-    answerLine: {
-      borderBottomColor: theme.colors.outlineVariant,
-      borderBottomWidth: 1,
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs,
-      minHeight: 44,
-      paddingVertical: theme.spacing.xs,
-    },
-    blank: {
-      minWidth: 120,
-    },
-    blankRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs,
-    },
     card: {
       gap: theme.spacing.sm,
-    },
-    pool: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.xs,
     },
     verdict: {
       gap: theme.spacing.xs,
