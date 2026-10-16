@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S6 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S7 đã code** (Server + admin-web, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -141,9 +141,9 @@ Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để bi�
 | `src/common/database/migrations/033_unit_topic_tag.sql` 🆕, `.down.sql` 🆕, `prisma/schema.prisma` 🔧 ✅ S5 | 4.2. Test down của 002 và 019 gỡ 033 trước (033 tham chiếu `tags`) |
 | `src/modules/curriculum/unitBuilder/` 🆕 ✅ S6 (`model/unitPlan.ts` luật thuần, `service/proposeUnit.ts`, `service/createUnit.ts`, `service/courseCoverage.ts`, `controller/unitBuilderRoutes.ts`) | 4.3 – 4.5. Thứ tự thì lấy từ dữ liệu, không có `tenseOrder.ts` |
 | `src/modules/combo/service/comboPrewarm.ts` 🔧 ✅ S6 | Nhận danh sách tổ hợp cụ thể (không chỉ "mọi tổ hợp của item") |
-| `admin-web/src/routes/UnitBuilderPage.tsx` 🆕 | Chọn chủ đề → xem đề xuất → sửa (đổi từ, mẫu, thì, tình huống) → tạo. Hiện ước tính số lần gọi AI (4 lần dựng bài + số bộ câu sinh trước) |
-| `admin-web/src/routes/CurriculumPage.tsx` 🔧 | Nút "Tạo unit từ chủ đề" ở mỗi cấp; khung độ phủ của khoá |
-| `admin-web/src/api/` 🔧 | Client cho các route trên |
+| `admin-web/src/routes/UnitBuilderPage.tsx` 🆕 ✅ S7 | Route `/levels/:levelId/unit-builder`. Chọn chủ đề (kèm số unit đã có ở cấp), số bài, số từ mỗi bài → **Propose** → hiện cảnh báo; sửa tên unit, từng bài (bỏ / thêm từ, đổi mẫu, đổi thì, chọn tình huống combo), nhiệm vụ cuối unit (tiêu đề, đề, item bắt buộc; bỏ hết = không tạo nhiệm vụ), số tổ hợp sinh trước (0–8) với ước tính lượt AI → **Create unit** → mở unit ở trang Curriculum. Lỗi `UNIT_BUILDER_INVALID` hiện theo từng bài. Khung độ phủ của khoá ở cuối trang |
+| `admin-web/src/routes/CurriculumPage.tsx` 🔧 ✅ S7 | Mục "Build unit from topic" trong menu của mỗi cấp. Khung độ phủ nằm ở trang Build unit (cho cả khoá) thay vì trên trang Curriculum |
+| `admin-web/src/api/` 🔧 ✅ S7 | `proposeUnit`, `createUnitFromProposal`, `getCourseCoverage` và các kiểu. Server: thêm `/admin/levels/:levelId/unit-builder` vào danh sách trang admin phục vụ khi tải lại |
 
 ## 5. App
 
@@ -216,7 +216,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S5 ✅ | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
 | S5b ✅ | Server, admin-web | `feat(curriculum): a lesson teaches one tense` (thì là focus item của bài, tối đa 1, `required`) ⚠️ hợp đồng giao bài | Không |
 | S6 ✅ | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
-| S7 | admin-web | `feat(admin): unit builder page` | Không |
+| S7 ✅ | admin-web | `feat(admin): unit builder page` | Không |
 | A1 | App | `feat(library): pattern library and tense map` (5.1) | |
 | A2 | App | `feat(review): stage 4 written practice` (5.2) | |
 | A3 | App | `feat(lesson): add words of own lessons to the path` (5.3) | |
