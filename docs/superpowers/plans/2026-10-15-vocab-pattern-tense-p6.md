@@ -1,6 +1,6 @@
 # Kế hoạch P6: khoá "Oxford 3000 + IELTS", kho mẫu câu, bản đồ thì, ôn bậc 3, F7 · F8 · F9
 
-> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S5, S5b đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
+> Trạng thái: **ĐÃ DUYỆT 2026-10-15. S1 → S6 đã code** (Server, nhánh `claude/eloquent-fermi-dkh3wj`); các bước còn lại chưa code. Lập ngày 2026-10-15, dựa trên code thật của LingoBites-App và LingoBites-Server lúc đó.
 > Thiết kế: [`vocab-pattern-tense-path.md`](../../design/vocab-pattern-tense-path.md) · Plan tổng: [`vocab-pattern-tense-p2-p7-plan.md`](../../design/vocab-pattern-tense-p2-p7-plan.md) (mục P6).
 > Repo: **Server** (server + `admin-web`) và **App**.
 
@@ -113,31 +113,34 @@ CREATE INDEX units_topic_tag_idx ON units (topic_tag) WHERE topic_tag IS NOT NUL
 ```
 Chỉ thêm cột null được, không đụng dữ liệu cũ. Dùng để biết unit thuộc chủ đề nào, để không đề xuất trùng chủ đề và để đếm độ phủ.
 
-### 4.3 Đề xuất unit (không gọi AI)
-`POST /v1/admin/levels/:id/unit-proposals` `{topic_tag}` → trả bản nháp, **chưa ghi gì**:
-- **Từ:** item `word / phrase` `published`, cùng cấp, có tag chủ đề, **chưa dùng ở unit khác của cùng khoá**. Lấy tối đa 48 từ, chia 4 bài × ~12. Thiếu từ thì báo số còn thiếu.
-- **Mẫu câu:** mỗi bài 1 mẫu, cấp ≤ cấp unit, ưu tiên chức năng chưa dùng trong cấp.
-- **Thì:** mỗi bài 1 thì, đi theo **thứ tự thì của cấp** (bảng cấu hình trong code, admin đổi được trong bản nháp).
-- **Tình huống:** 1–2 tình huống `combo_enabled`, có `situation_tags` khớp chủ đề, cấp phù hợp.
-- **Nhiệm vụ cuối unit:** viết đoạn ngắn, `item_codes` = tất cả mẫu + thì + 6 từ tiêu biểu của unit.
+### 4.3 Đề xuất unit (không gọi AI) ✅ S6
+`POST /v1/admin/levels/:id/unit-proposals` `{topic_tag, lesson_count? (1–6, mặc định 4), words_per_lesson? (1–20, mặc định 12)}` → bản nháp, **không ghi gì**. `levels.code` phải là cấp CEFR (không thì `422 LEVEL_NOT_CEFR`).
+- **Từ:** item `word / phrase` `published`, đúng cấp, có tag chủ đề, **chưa có trong bài nào của khoá**; xếp theo `frequency_rank` rồi mã; chia đều cho các bài (tối đa `words_per_lesson` mỗi bài).
+- **Mẫu câu:** `published`, cấp ≤ cấp unit (hoặc không có cấp); xếp: ít dùng trong khoá trước → có chức năng cấp này chưa dùng → mã. Bài thứ i lấy mẫu thứ i (quay vòng nếu thiếu).
+- **Thì:** item `grammar` thuộc họ `tense`, cấp ≤ cấp unit; xếp: ít dùng **trong cấp** trước → `payload.order` (thứ tự dạy) → mã. Thứ tự thì theo cấp lấy từ **dữ liệu thì** (cột `cefr` và `order` khi import), không ghi cứng trong code.
+- **Tình huống:** `published`, `combo_enabled`, cấp ≤ cấp unit; tình huống có tag chủ đề trước, rồi ít dùng trong khoá. **1 tình huống mỗi bài** (bài chỉ có một `situation_id`).
+- **Nhiệm vụ cuối unit:** viết đoạn ngắn; `item_ids` = mọi mẫu + thì của các bài + tối đa 6 từ (lấy lần lượt từ từng bài).
+- **Cảnh báo** (`warnings`): `TOPIC_ALREADY_IN_LEVEL`, `NOT_ENOUGH_WORDS`, `NO_PATTERN`, `NO_TENSE`, `NO_TOPIC_SITUATION`, `NO_SITUATION`.
 
-### 4.4 Tạo unit
-`POST /v1/admin/levels/:id/units/from-proposal` `{proposal}` (bản admin đã sửa), trong 1 transaction:
-1. Tạo unit (`topic_tag`), 4 bài `draft` với focus items, `situation_id`, `cefr_level`.
-2. Tạo nhiệm vụ cuối unit.
-3. Sau transaction: tạo **1 job sinh trước câu tổ hợp** cho các tổ hợp (mẫu câu của bài × thì của bài × tình huống của bài); trên staging chỉ sinh 1–2 bộ để thử.
+### 4.4 Tạo unit ✅ S6
+`POST /v1/admin/levels/:id/units/from-proposal` `{topic_tag, title, description?, lessons: [{title, word_ids, pattern_id, grammar_id, situation_id}], summative | null, prewarm_limit (0–8, mặc định 2)}`. Kiểm trước (`422 UNIT_BUILDER_INVALID` kèm `problems`: `missing`, `not_published`, `wrong_kind`, `not_a_tense`, `duplicate`, `too_many_items`, `situation_missing`, `not_in_unit`), rồi trong 1 transaction:
+1. Unit `draft` ở vị trí cuối của cấp, `topic_tag`, slug `<chủ đề>-<vị trí>`.
+2. Các bài `draft` (`origin = admin`, `source_type = admin`, `cefr_level`, `situation_id`, mã `A2-TRAVEL-U3-L1`), focus items = từ + mẫu + thì, đều `required`.
+3. Nhiệm vụ cuối unit (viết, tiêu chí mặc định) với các item đã chọn.
+4. Sau transaction: 1 job sinh trước câu cho tối đa `prewarm_limit` tổ hợp (mẫu × thì × tình huống của bài; bỏ mẫu `locked`). Job sinh trước nay nhận **danh sách tổ hợp cụ thể** (`filter.combinations`) bên cạnh cách cũ theo item.
+5. Ghi audit `unit_builder_create`.
 
-**Đổi so với bản đầu (chốt 2026-10-16):** công cụ chỉ dựng **khung bài, không gọi AI**. Composer có sẵn không dùng được: nó dựng bài mới từ 1–8 câu của một bài nguồn và tự chọn item, không nhận danh sách từ. Mỗi bài nhận focus items = ~12 từ + 1 mẫu + **1 thì** (đều `required`; thì vào bài nhờ S5b). Nội dung 6 bước admin soạn trên trang bài có sẵn, rồi publish như hiện nay. Thiết kế lưu thì: [`vocab-pattern-tense-lesson-tense.md`](../../design/vocab-pattern-tense-lesson-tense.md).
+**Đổi so với bản đầu (chốt 2026-10-16):** công cụ chỉ dựng **khung bài, không gọi AI**. Composer có sẵn không dùng được: nó dựng bài mới từ 1–8 câu của một bài nguồn và tự chọn item, không nhận danh sách từ. Nội dung 6 bước admin soạn trên trang bài có sẵn, rồi publish như hiện nay. Thiết kế lưu thì: [`vocab-pattern-tense-lesson-tense.md`](../../design/vocab-pattern-tense-lesson-tense.md).
 
-### 4.5 Độ phủ
-`GET /v1/admin/courses/:id/coverage`: theo từng cấp, số từ đã dùng / tổng, chủ đề đã có unit, mẫu câu và thì đã dùng. Giúp dựng ~60–65 unit theo đợt mà không trùng.
+### 4.5 Độ phủ ✅ S6
+`GET /v1/admin/courses/:id/coverage`: theo từng cấp, số từ đúng cấp CEFR các bài đã dạy / tổng số đã publish, chủ đề đã có unit (kèm số unit), số mẫu câu và danh sách thì đã dùng.
 
 ### File Server + admin-web (dự kiến)
 | File | Việc |
 |---|---|
 | `src/common/database/migrations/033_unit_topic_tag.sql` 🆕, `.down.sql` 🆕, `prisma/schema.prisma` 🔧 ✅ S5 | 4.2. Test down của 002 và 019 gỡ 033 trước (033 tham chiếu `tags`) |
-| `src/modules/curriculum/unitBuilder/` 🆕 (`model/tenseOrder.ts`, `service/proposeUnit.ts`, `service/createUnitFromProposal.ts`, `service/courseCoverage.ts`, `controller/unitBuilderRoutes.ts`) | 4.3 – 4.5 |
-| `src/modules/combo/service/comboPrewarm.ts` 🔧 | Nhận danh sách tổ hợp cụ thể (không chỉ "mọi tổ hợp của item") |
+| `src/modules/curriculum/unitBuilder/` 🆕 ✅ S6 (`model/unitPlan.ts` luật thuần, `service/proposeUnit.ts`, `service/createUnit.ts`, `service/courseCoverage.ts`, `controller/unitBuilderRoutes.ts`) | 4.3 – 4.5. Thứ tự thì lấy từ dữ liệu, không có `tenseOrder.ts` |
+| `src/modules/combo/service/comboPrewarm.ts` 🔧 ✅ S6 | Nhận danh sách tổ hợp cụ thể (không chỉ "mọi tổ hợp của item") |
 | `admin-web/src/routes/UnitBuilderPage.tsx` 🆕 | Chọn chủ đề → xem đề xuất → sửa (đổi từ, mẫu, thì, tình huống) → tạo. Hiện ước tính số lần gọi AI (4 lần dựng bài + số bộ câu sinh trước) |
 | `admin-web/src/routes/CurriculumPage.tsx` 🔧 | Nút "Tạo unit từ chủ đề" ở mỗi cấp; khung độ phủ của khoá |
 | `admin-web/src/api/` 🔧 | Client cho các route trên |
@@ -212,7 +215,7 @@ Chỉ hiện trong bài **người học tự tạo** (không đổi bài khoá 
 | S4 ✅ | Server | `feat(tasks): summative checklist and coverage` (3.5) | Không |
 | S5 ✅ | Server | `feat(curriculum): unit topic tag migration` (4.2) ⚠️ | Không |
 | S5b ✅ | Server, admin-web | `feat(curriculum): a lesson teaches one tense` (thì là focus item của bài, tối đa 1, `required`) ⚠️ hợp đồng giao bài | Không |
-| S6 | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
+| S6 ✅ | Server | `feat(curriculum): propose and create units from a topic, course coverage` (4.3 – 4.5) | Không |
 | S7 | admin-web | `feat(admin): unit builder page` | Không |
 | A1 | App | `feat(library): pattern library and tense map` (5.1) | |
 | A2 | App | `feat(review): stage 4 written practice` (5.2) | |
