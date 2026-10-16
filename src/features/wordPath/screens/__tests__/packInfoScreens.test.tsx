@@ -1,5 +1,7 @@
 import {act} from 'react-test-renderer';
 
+import {comboSituationsAvailable} from '@features/combo';
+
 import type {CatalogItem} from '@core/schemas/lesson';
 
 import {mockAppNavigation} from '@test/support/appNavigationMock';
@@ -32,6 +34,10 @@ jest.mock('../../logic/wordPackRepository', () => ({
   listDownloadedPacks: jest.fn(() => []),
   removeDownloadedPacks: jest.fn(),
   saveWordPack: jest.fn(),
+}));
+
+jest.mock('@features/combo', () => ({
+  comboSituationsAvailable: jest.fn(),
 }));
 
 jest.mock('@core/db/catalogItems', () => ({
@@ -190,7 +196,12 @@ describe('WordPackScreen', () => {
     word('phrase:bill', 'The bill, please.', 'phrase'),
   ];
 
-  it('shows the summary, counts and which items are learned', () => {
+  const mockSituations = comboSituationsAvailable as jest.MockedFunction<
+    typeof comboSituationsAvailable
+  >;
+
+  it('shows the summary, counts and which items are learned', async () => {
+    mockSituations.mockResolvedValue('ok');
     (findDownloadedPack as jest.Mock).mockReturnValue({
       packId: WORD_PACK,
       cefrLevel: 'A1',
@@ -216,8 +227,43 @@ describe('WordPackScreen', () => {
 
     press(tree, 'word-pack-learn');
     expect(mockAppNavigation.openPackLearn).toHaveBeenCalledWith(WORD_PACK);
-    press(tree, 'word-pack-combo-word:tea');
+    await act(async () => {
+      press(tree, 'word-pack-combo-word:tea');
+    });
+    expect(mockSituations).toHaveBeenCalledWith('word:tea');
     expect(mockAppNavigation.openComboSetup).toHaveBeenCalledWith('word:tea');
+    expect(has(tree, 'word-pack-combo-notice-word:tea')).toBe(false);
+  });
+
+  it('stays on the pack and says so when no situation fits the item', async () => {
+    mockSituations.mockResolvedValue('none');
+    mockAppNavigation.openComboSetup.mockClear();
+    const tree = renderWithTheme(
+      <WordPackScreen items={items} route={{params: {packId: WORD_PACK}}} />,
+    );
+    await act(async () => {
+      press(tree, 'word-pack-combo-word:tea');
+    });
+    expect(mockAppNavigation.openComboSetup).not.toHaveBeenCalled();
+    expect(textOf(tree, 'word-pack-combo-notice-word:tea')).toBe(
+      'Chưa có tình huống phù hợp với từ này.',
+    );
+    expect(has(tree, 'word-pack-combo-notice-word:hello')).toBe(false);
+  });
+
+  it('stays on the pack and asks to retry when the check fails', async () => {
+    mockSituations.mockResolvedValue('error');
+    mockAppNavigation.openComboSetup.mockClear();
+    const tree = renderWithTheme(
+      <WordPackScreen items={items} route={{params: {packId: WORD_PACK}}} />,
+    );
+    await act(async () => {
+      press(tree, 'word-pack-combo-word:hello');
+    });
+    expect(mockAppNavigation.openComboSetup).not.toHaveBeenCalled();
+    expect(textOf(tree, 'word-pack-combo-notice-word:hello')).toBe(
+      'Chưa kiểm tra được tình huống. Hãy thử lại.',
+    );
   });
 
   it('offers a review and no quick check once every item is learned', () => {

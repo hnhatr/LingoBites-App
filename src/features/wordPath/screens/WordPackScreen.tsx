@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {useSpeak} from '@features/audio';
+import {comboSituationsAvailable} from '@features/combo';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
@@ -24,6 +25,9 @@ import {kindSummary} from './packText';
 
 const FILTERS = ['all', 'new', 'learned'] as const;
 type Filter = (typeof FILTERS)[number];
+
+/** The combo button's check of an item: under way, or why it stayed here. */
+type ComboCheck = {code: string; state: 'checking' | 'none' | 'error'};
 
 type Props = {
   navigation?: {goBack?: () => void};
@@ -53,6 +57,7 @@ export function WordPackScreen({
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const {speak: say} = useSpeak();
   const [filter, setFilter] = useState<Filter>('all');
+  const [comboCheck, setComboCheck] = useState<ComboCheck | null>(null);
   const packId = route?.params.packId ?? '';
   const pack = findDownloadedPack(packId);
   const items = useMemo(() => {
@@ -86,6 +91,19 @@ export function WordPackScreen({
           t('wordPath.pack_title', {position: pack.position}))
       : t('wordPack.title'),
   );
+
+  // The setup opens only when some situation fits the item; otherwise the row says so.
+  const openCombo = async (code: string) => {
+    if (comboCheck?.state === 'checking') return;
+    setComboCheck({code, state: 'checking'});
+    const found = await comboSituationsAvailable(code);
+    if (found === 'ok') {
+      setComboCheck(null);
+      appNavigation.openComboSetup(code);
+      return;
+    }
+    setComboCheck({code, state: found});
+  };
 
   const shown = items.filter(item =>
     filter === 'all'
@@ -178,63 +196,82 @@ export function WordPackScreen({
             ) : null}
             {shown.map((item, index) => {
               const isLearned = learned.has(item.code);
+              const check =
+                comboCheck?.code === item.code ? comboCheck.state : null;
               return (
                 <View
                   key={item.code}
-                  style={[
-                    styles.item,
-                    index > 0 ? themedStyles.itemDivider : null,
-                  ]}
+                  style={index > 0 ? themedStyles.itemDivider : null}
                   testID={`word-pack-item-${item.code}`}
                 >
-                  <View
-                    style={[
-                      themedStyles.status,
-                      isLearned ? themedStyles.statusOn : null,
-                    ]}
-                    testID={
-                      isLearned
-                        ? `word-pack-learned-${item.code}`
-                        : `word-pack-new-${item.code}`
-                    }
-                  >
-                    {isLearned ? (
-                      <AppText style={themedStyles.statusMark}>✓</AppText>
-                    ) : null}
-                  </View>
-                  <View style={styles.itemText}>
-                    <View style={styles.wordLine}>
-                      <AppText style={themedStyles.word}>{item.text}</AppText>
-                      {item.ipa ? (
-                        <AppText color="muted" variant="caption">
-                          {formatIpa(item.ipa)}
-                        </AppText>
+                  <View style={styles.item}>
+                    <View
+                      style={[
+                        themedStyles.status,
+                        isLearned ? themedStyles.statusOn : null,
+                      ]}
+                      testID={
+                        isLearned
+                          ? `word-pack-learned-${item.code}`
+                          : `word-pack-new-${item.code}`
+                      }
+                    >
+                      {isLearned ? (
+                        <AppText style={themedStyles.statusMark}>✓</AppText>
                       ) : null}
                     </View>
-                    <AppText color="secondary" variant="caption">
-                      {item.meaning_vi}
-                    </AppText>
+                    <View style={styles.itemText}>
+                      <View style={styles.wordLine}>
+                        <AppText style={themedStyles.word}>{item.text}</AppText>
+                        {item.ipa ? (
+                          <AppText color="muted" variant="caption">
+                            {formatIpa(item.ipa)}
+                          </AppText>
+                        ) : null}
+                      </View>
+                      <AppText color="secondary" variant="caption">
+                        {item.meaning_vi}
+                      </AppText>
+                    </View>
+                    <IconButton
+                      accessibilityHint={t('packQuiz.speak_hint')}
+                      accessibilityLabel={t('wordPack.speak', {
+                        text: item.text,
+                      })}
+                      icon="volume_up"
+                      iconSize={18}
+                      onPress={() => say(item.text)}
+                      size={36}
+                      style={themedStyles.speak}
+                      testID={`word-pack-speak-${item.code}`}
+                    />
+                    <IconButton
+                      accessibilityHint={t('wordPack.combo_hint')}
+                      accessibilityLabel={t('wordPack.combo')}
+                      icon="auto_awesome"
+                      iconSize={18}
+                      disabled={check === 'checking'}
+                      onPress={() => openCombo(item.code)}
+                      size={36}
+                      style={themedStyles.combo}
+                      testID={`word-pack-combo-${item.code}`}
+                    />
                   </View>
-                  <IconButton
-                    accessibilityHint={t('packQuiz.speak_hint')}
-                    accessibilityLabel={t('wordPack.speak', {text: item.text})}
-                    icon="volume_up"
-                    iconSize={18}
-                    onPress={() => say(item.text)}
-                    size={36}
-                    style={themedStyles.speak}
-                    testID={`word-pack-speak-${item.code}`}
-                  />
-                  <IconButton
-                    accessibilityHint={t('wordPack.combo_hint')}
-                    accessibilityLabel={t('wordPack.combo')}
-                    icon="auto_awesome"
-                    iconSize={18}
-                    onPress={() => appNavigation.openComboSetup(item.code)}
-                    size={36}
-                    style={themedStyles.combo}
-                    testID={`word-pack-combo-${item.code}`}
-                  />
+                  {check === 'none' || check === 'error' ? (
+                    <AppText
+                      accessibilityLiveRegion="polite"
+                      color="secondary"
+                      style={styles.comboNotice}
+                      testID={`word-pack-combo-notice-${item.code}`}
+                      variant="caption"
+                    >
+                      {t(
+                        check === 'none'
+                          ? 'wordPack.combo_no_situation'
+                          : 'wordPack.combo_check_failed',
+                      )}
+                    </AppText>
+                  ) : null}
                 </View>
               );
             })}
@@ -327,6 +364,11 @@ function makeStyles(theme: AppTheme) {
 }
 
 const styles = StyleSheet.create({
+  comboNotice: {
+    paddingBottom: 11,
+    paddingHorizontal: 14,
+    textAlign: 'right',
+  },
   emptyFilter: {
     padding: 16,
     textAlign: 'center',

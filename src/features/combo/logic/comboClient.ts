@@ -161,6 +161,19 @@ export function fetchComboSituations(
   );
 }
 
+/**
+ * Whether any situation fits the item, asked before the setup screen opens:
+ * 'none' keeps the learner where they are with a message instead of a setup
+ * that cannot make a set.
+ */
+export async function comboSituationsAvailable(
+  itemCode: string,
+): Promise<'ok' | 'none' | 'error'> {
+  const result = await fetchComboSituations(itemCode);
+  if (!result.ok) return 'error';
+  return result.value.situations.length > 0 ? 'ok' : 'none';
+}
+
 export function openComboSet(
   input: OpenComboSetInput,
   options: JsonRequestOptions = {},
