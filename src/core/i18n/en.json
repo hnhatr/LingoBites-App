@@ -1154,7 +1154,12 @@
     "situation_place": "At {{place}}.",
     "situation_purpose_label": "Goal:",
     "criterion_required": "Required",
-    "open_unfinished_named": "Continue: {{name}}"
+    "open_unfinished_named": "Continue: {{name}}",
+    "listen_write_instead": "Write instead of speaking",
+    "listen_write_instead_hint": "Listen, then build the sentence with the tile keyboard",
+    "listen_speak_instead": "Speak instead of writing",
+    "listen_speak_instead_hint": "Back to recording and judging your speaking",
+    "listen_write_title": "Listen, then write the sentence in English"
   },
   "course": {
     "courses_title": "Courses",

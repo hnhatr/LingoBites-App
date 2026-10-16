@@ -1154,7 +1154,12 @@
     "situation_place": "Ở {{place}}.",
     "situation_purpose_label": "Mục đích:",
     "criterion_required": "Cần có",
-    "open_unfinished_named": "Làm tiếp: {{name}}"
+    "open_unfinished_named": "Làm tiếp: {{name}}",
+    "listen_write_instead": "Viết thay vì nói",
+    "listen_write_instead_hint": "Nghe câu rồi ghép lại bằng bàn phím ô chữ",
+    "listen_speak_instead": "Nói thay vì viết",
+    "listen_speak_instead_hint": "Quay lại ghi âm và tự chấm phần nói",
+    "listen_write_title": "Nghe rồi viết lại câu bằng tiếng Anh"
   },
   "course": {
     "courses_title": "Khóa học",

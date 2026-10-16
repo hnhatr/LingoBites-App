@@ -313,4 +313,28 @@ describe('rule-graded activities', () => {
     press(tree, 'lesson-flow-check');
     expect(has(tree, 'lesson-flow-feedback-right')).toBe(true);
   });
+
+  it('listen and repeat: writing instead of speaking reports like a typed answer', () => {
+    const {tree, onFinished} = run(
+      activityBlock({
+        activityKind: 'listen_and_repeat',
+        content: {
+          prompts: [
+            {id: 'p1', textEn: 'Good morning.', textVi: 'Chào buổi sáng.'},
+          ],
+        },
+      }),
+    );
+    expect(has(tree, 'lesson-flow-model-sentence')).toBe(true);
+    press(tree, 'lesson-flow-listen-write-switch');
+    expect(has(tree, 'lesson-flow-model-sentence')).toBe(false);
+    type(tree, 'good morning');
+    expect(has(tree, 'lesson-flow-listen-write-switch')).toBe(false);
+    next(tree);
+    expect(onFinished).toHaveBeenCalledWith(
+      'pass_independent',
+      'none',
+      expect.any(Number),
+    );
+  });
 });
