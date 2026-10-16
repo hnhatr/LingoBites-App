@@ -273,7 +273,16 @@
     "summary_keep": "Cố lên nhé!",
     "summary_accuracy": "đã nhớ",
     "summary_accuracy_a11y": "Đã nhớ {{percent}}% số thẻ",
-    "summary_subtitle": "Bạn vừa ôn {{count}} thẻ"
+    "summary_subtitle": "Bạn vừa ôn {{count}} thẻ",
+    "write_try": "Viết thử",
+    "write_try_hint": "Viết từ này bằng bàn phím ô chữ trước khi lật thẻ",
+    "write_try_title": "Viết từ này bằng tiếng Anh",
+    "write_check": "Kiểm tra",
+    "write_check_hint": "Kiểm tra từ bạn vừa viết",
+    "write_right": "Chính xác!",
+    "write_wrong": "Chưa đúng. Đáp án: {{word}}",
+    "write_show_card": "Xem thẻ",
+    "write_show_card_hint": "Lật thẻ để xem đáp án và tự chấm"
   },
   "rating": {
     "forgot_label": "Quên",

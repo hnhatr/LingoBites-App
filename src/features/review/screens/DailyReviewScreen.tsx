@@ -37,6 +37,7 @@ import type {FlashcardRecord, ReviewRating} from '@core/db/types';
 import {renderFrameWithLabels} from '@core/learning';
 import {useFeatureEnabled} from '@core/release';
 
+import {RecallWritePanel} from '../components/RecallWritePanel';
 import {ReviewCardBack, ReviewCardFront} from '../components/ReviewCardFaces';
 import {useFlashcardLibrary} from '../logic/useFlashcardLibrary';
 
@@ -144,6 +145,8 @@ export function DailyReviewScreen({
   const [sessionCards] = useState(() => getDueFlashcards({limit: softCap}));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  // "Viết thử": write the word before flipping (practice only).
+  const [writing, setWriting] = useState(false);
   const [ratingError, setRatingError] = useState<string | null>(null);
   const [summary, setSummary] = useState<Summary>({
     reviewed: 0,
@@ -167,6 +170,7 @@ export function DailyReviewScreen({
   function finishNext(nextSummary: Summary) {
     setRatingError(null);
     setFlipped(false);
+    setWriting(false);
     if (currentIndex + 1 >= sessionCards.length) {
       setSummary(nextSummary);
       setComplete(true);
@@ -448,7 +452,17 @@ export function DailyReviewScreen({
         {ratingError ? <ErrorCard message={ratingError} /> : null}
         <SpeechNotice notice={speechNotice} />
         <View onLayout={handleStageLayout} style={styles.flex1}>
-          {activeCard ? (
+          {activeCard && writing ? (
+            <RecallWritePanel
+              key={activeCard.id}
+              meaningVi={activeCard.meaningVi}
+              onDone={() => {
+                setWriting(false);
+                setFlipped(true);
+              }}
+              word={activeCard.word}
+            />
+          ) : activeCard ? (
             <SwipeCard
               cardKey={activeCard.id}
               enabled={flipped}
@@ -478,6 +492,16 @@ export function DailyReviewScreen({
       </View>
 
       <View style={[styles.actions, {paddingHorizontal: theme.gutter}]}>
+        {activeCard && !flipped && !writing && activeCard.kind !== 'pattern' ? (
+          <AppButton
+            accessibilityHint={t('review.write_try_hint')}
+            iconLeft="edit"
+            onPress={() => setWriting(true)}
+            testID="review-write-try"
+            title={t('review.write_try')}
+            variant="ghost"
+          />
+        ) : null}
         <RatingControl
           disabled={!flipped}
           onRate={handleRate}

@@ -273,7 +273,16 @@
     "summary_keep": "Keep going!",
     "summary_accuracy": "remembered",
     "summary_accuracy_a11y": "Remembered {{percent}}% of cards",
-    "summary_subtitle": "You just reviewed {{count}} cards"
+    "summary_subtitle": "You just reviewed {{count}} cards",
+    "write_try": "Try writing",
+    "write_try_hint": "Write this word with the tile keyboard before flipping",
+    "write_try_title": "Write this word in English",
+    "write_check": "Check",
+    "write_check_hint": "Checks the word you wrote",
+    "write_right": "Correct!",
+    "write_wrong": "Not quite. Answer: {{word}}",
+    "write_show_card": "Show card",
+    "write_show_card_hint": "Flips the card to see the answer and rate it"
   },
   "rating": {
     "forgot_label": "Forgot",
