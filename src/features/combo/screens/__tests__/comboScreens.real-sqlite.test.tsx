@@ -216,6 +216,51 @@ describe('ComboSetupScreen', () => {
     expect(mockAppNavigation.openComboSet).toHaveBeenCalledWith(SET_ID, 1);
   });
 
+  it("picks the lesson's tense first when it is open, else the first tense", async () => {
+    const tense = (code: string, name: string, time: string) => ({
+      code,
+      name_en: name,
+      time,
+      aspect: 'simple',
+    });
+    mocked.fetchComboOptions.mockResolvedValue({
+      ok: true,
+      value: {
+        request_id: 'r',
+        status: 'success',
+        tense_mode: 'free',
+        tenses: [
+          tense('grammar:present-simple', 'Present simple', 'present'),
+          tense('grammar:past-simple', 'Past simple', 'past'),
+        ],
+        subject_groups: ['i'],
+        polarities: ['affirmative'],
+        batch_sizes: [3],
+        max_per_set: 27,
+        ai_left_today: 4,
+        sets_left_today: 2,
+      },
+    });
+    mocked.fetchComboSituations.mockResolvedValue({
+      ok: true,
+      value: {request_id: 'r', status: 'success', situations: []},
+    });
+    const open = async (grammarCode: string) => {
+      const tree = renderWithTheme(
+        <ComboSetupScreen
+          route={{params: {itemCode: 'pattern:i-used-to', grammarCode}}}
+        />,
+      );
+      await act(async () => {
+        await Promise.resolve();
+      });
+      return textOf(tree, 'combo-setup-tense-picked');
+    };
+
+    expect(await open('grammar:past-simple')).toContain('Quá khứ đơn');
+    expect(await open('grammar:future-simple')).toContain('Hiện tại đơn');
+  });
+
   it('starts a locked pattern without a tense', async () => {
     mocked.fetchComboOptions.mockResolvedValue({
       ok: true,

@@ -31,6 +31,10 @@ import type {
   PlacementResultRouteParams,
   PlacementTestRouteParams,
 } from '@features/onboarding';
+import type {
+  PatternDetailRouteParams,
+  TenseDetailRouteParams,
+} from '@features/patternTense';
 import type {PracticeRouteParams} from '@features/practice';
 import type {ProfileStackParamList} from '@features/profile';
 import type {
@@ -101,6 +105,8 @@ export type RootStackParamList = {
   ComboSetup: ComboSetupRouteParams;
   ComboSet: ComboSetRouteParams;
   ComboHistory: undefined;
+  PatternDetail: PatternDetailRouteParams;
+  TenseDetail: TenseDetailRouteParams;
   Practice: PracticeRouteParams;
   Today: TodayRouteParams;
   SpeakingRoom: SpeakingRoomRouteParams;

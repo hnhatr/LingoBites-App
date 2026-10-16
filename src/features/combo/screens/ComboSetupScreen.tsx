@@ -89,6 +89,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
   const appNavigation = useAppNavigation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const itemCode = route?.params.itemCode ?? '';
+  const wantedTense = route?.params.grammarCode;
   const [options, setOptions] = useState<ComboOptions | null>(null);
   const [situations, setSituations] = useState<Situation[]>([]);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -133,7 +134,10 @@ export function ComboSetupScreen({navigation, route}: Props) {
         const first = opts.value.polarities.find(isPolarity);
         const size = opts.value.batch_sizes[0];
         setMix(first && size ? {[first]: size} : {});
-        setTense(opts.value.tenses[0]?.code ?? null);
+        const wanted = opts.value.tenses.find(
+          entry => entry.code === wantedTense,
+        );
+        setTense(wanted?.code ?? opts.value.tenses[0]?.code ?? null);
       })
       .catch(() => {
         if (active) setLoadFailed(true);
@@ -141,7 +145,7 @@ export function ComboSetupScreen({navigation, route}: Props) {
     return () => {
       active = false;
     };
-  }, [itemCode]);
+  }, [itemCode, wantedTense]);
 
   const locked = options?.tense_mode === 'locked';
   const polarities = options?.polarities.filter(isPolarity) ?? [];

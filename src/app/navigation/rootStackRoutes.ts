@@ -22,6 +22,8 @@ export const ROOT_FLOW_ROUTES = [
   'ComboSetup',
   'ComboSet',
   'ComboHistory',
+  'PatternDetail',
+  'TenseDetail',
   'Practice',
   'Today',
   'SpeakingRoom',

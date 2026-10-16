@@ -14,7 +14,14 @@ import type {
   GrammarSaveControl,
   VocabularySaveControl,
 } from '../logic/useLessonSavedItems';
-import {BookmarkToggle, SpeakSquare, studyCardStyle} from './StudyControls';
+import {useWordListMatches} from '../logic/wordListMatches';
+import {
+  BookmarkToggle,
+  PillTabs,
+  SpeakSquare,
+  studyCardStyle,
+} from './StudyControls';
+import {WordPathBadge} from './WordPathBadge';
 
 type AnalysisTab = 'vocabulary' | 'grammar';
 
@@ -29,6 +36,8 @@ export type SentenceAnalysisTabsProps = {
   grammarSave?: GrammarSaveControl;
   /** The saved id of a grammar point (the lesson-level one); default its id. */
   grammarKeyOf?: (item: {id: string; name: string}) => string;
+  /** Vocab path P6 (F8): the learner's own lesson shows word-list levels and "Thêm vào lộ trình". */
+  wordPath?: boolean;
 };
 
 /**
@@ -43,12 +52,14 @@ export function SentenceAnalysisTabs({
   vocabularySave,
   grammarSave,
   grammarKeyOf = item => item.id,
+  wordPath = false,
 }: SentenceAnalysisTabsProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const [tab, setTab] = useState<AnalysisTab>('vocabulary');
   const {vocabulary, grammar} = analysis;
+  const wordMatches = useWordListMatches(vocabulary, wordPath);
   const shown: AnalysisTab =
     vocabulary.length === 0
       ? 'grammar'
@@ -99,6 +110,12 @@ export function SentenceAnalysisTabs({
                   <AppText color="secondary" variant="caption">
                     {item.pos ? `${item.meaning} · ${item.pos}` : item.meaning}
                   </AppText>
+                  {wordMatches.has(item.id) ? (
+                    <WordPathBadge
+                      matches={wordMatches.get(item.id)!}
+                      testID={`analysis-word-path-${item.id}`}
+                    />
+                  ) : null}
                 </View>
                 {onSpeakText ? (
                   <SpeakSquare

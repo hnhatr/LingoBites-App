@@ -341,6 +341,47 @@ export function collectLessonPatterns(
   );
 }
 
+/**
+ * The lesson's tense (vocab path P6, design B): its one grammar item, which
+ * the Server keeps `required` and at most one per lesson.
+ */
+export type LessonTenseEntry = {
+  code: string;
+  name: string;
+  meaningVi: string;
+  /** The raw payload; `tenseInfo` of `@features/patternTense` reads it. */
+  payload: Record<string, unknown>;
+  /**
+   * What "Luyện câu" builds a combo set on: the first pattern that takes a
+   * tense, else the first word or phrase; null when the lesson has neither.
+   */
+  practiceItemCode: string | null;
+};
+
+function takesTense(entry: LessonItemEntry): boolean {
+  return entry.item.payload.tense_mode !== 'locked';
+}
+
+export function collectLessonTense(
+  snapshot: LessonSnapshot,
+): LessonTenseEntry | null {
+  const items = sortedLessonItems(snapshot);
+  const grammar = items.find(entry => entry.item.kind === 'grammar');
+  if (!grammar) return null;
+  const practice =
+    items.find(entry => entry.item.kind === 'pattern' && takesTense(entry)) ??
+    items.find(
+      entry => entry.item.kind === 'word' || entry.item.kind === 'phrase',
+    );
+  return {
+    code: grammar.item.code,
+    name: grammar.item.text,
+    meaningVi: grammar.item.meaning_vi,
+    payload: grammar.item.payload,
+    practiceItemCode: practice?.item.code ?? null,
+  };
+}
+
 /** Pronunciation points of a curriculum lesson. */
 export function collectLessonPronunciation(
   snapshot: LessonSnapshot,

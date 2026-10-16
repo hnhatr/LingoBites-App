@@ -885,7 +885,21 @@
     "create_failed": "Lesson creation failed (code {{code}}).",
     "create_ready": "Your lesson is ready.",
     "create_open": "Open lesson",
-    "create_open_hint": "Opens the new lesson"
+    "create_open_hint": "Opens the new lesson",
+    "word_path_add": "Add to my path",
+    "word_path_add_hint": "Puts this word on your review schedule",
+    "word_path_adding": "Adding…",
+    "word_path_added": "In your path",
+    "word_path_pick_sense": "This word has several meanings; pick the one in this sentence:",
+    "word_path_offline": "A connection is needed to add it",
+    "word_path_failed": "Could not add it, try again later",
+    "tense_title": "Tense of this lesson",
+    "tense_formula": "Formula",
+    "tense_practice": "Practise sentences",
+    "tense_practice_hint": "Make combo sentences in this tense",
+    "tense_map": "See the tense map",
+    "tense_map_hint": "Open the tense map in the library",
+    "tense_open_hint": "Open this tense"
   },
   "lessonFlow": {
     "start_at": "Start · {{label}}",
@@ -1218,7 +1232,16 @@
     "back_hint": "Leaves the review",
     "compare_title": "Look at this one again: you got it wrong several times",
     "compare_ok": "Got it",
-    "next": "Next"
+    "next": "Next",
+    "apply_order_title": "Put the English sentence in order",
+    "apply_order_hint": "Tap the words below in the right order",
+    "apply_swap_title": "Change the subject",
+    "apply_swap_subject": "Write it again with: {{subject}}",
+    "apply_swap_blank": "Verb blank",
+    "apply_swap_hint": "Type the verb as it goes with the new subject",
+    "apply_check": "Check",
+    "apply_correct": "Correct!",
+    "apply_wrong": "Not quite. The sentence is:"
   },
   "summativeTask": {
     "title": "Unit task",
@@ -1229,7 +1252,9 @@
     "write_instead": "Write instead",
     "write_instead_hint": "Answer in writing instead of recording",
     "write_instead_note": "You are writing instead of speaking: it is graded but does not pass the unit.",
-    "substitute_not_passing": "A written answer does not pass the unit. Speak it again when you can."
+    "substitute_not_passing": "A written answer does not pass the unit. Speak it again when you can.",
+    "checklist_title": "Use in your answer: {{done}}/{{total}}",
+    "checklist_on_send": "checked when you send"
   },
   "compose": {
     "entry_title": "Learn with a path from sentences you pick",
@@ -1862,5 +1887,46 @@
   "speech": {
     "voice_missing": "This device has no English (US) voice, so it cannot read aloud. Install one in system settings.",
     "unavailable": "Audio playback is not available on this device."
+  },
+  "patternTense": {
+    "filter_all": "All",
+    "filter_function": "What you want to say",
+    "filter_level": "Level",
+    "filter_exam": "Exam",
+    "no_patterns": "No pattern matches",
+    "no_tenses": "No tenses yet",
+    "needs_network": "A connection is needed the first time",
+    "retry": "Try again",
+    "offline_kept": "Offline: showing what is saved on this device.",
+    "open_pattern_hint": "Opens the pattern",
+    "open_tense_hint": "Opens this tense",
+    "pattern_title": "Pattern",
+    "tense_title": "Tense",
+    "slots": "Blanks",
+    "examples": "Examples",
+    "practise_combo": "Practise combo sentences",
+    "add_to_review": "Add to review",
+    "in_review": "Already in your reviews",
+    "add_failed": "Could not add it, try again later",
+    "not_on_device": "Not on this device yet. Open the list again when online.",
+    "forms": "Forms",
+    "form_affirmative": "Affirmative",
+    "form_negative": "Negative",
+    "form_question": "Question",
+    "signals": "Signal words",
+    "uses": "Used for",
+    "confused_with": "Often confused with",
+    "other_tenses": "Other structures",
+    "time_past": "Past",
+    "time_present": "Present",
+    "time_future": "Future",
+    "aspect_simple": "Simple",
+    "aspect_continuous": "Continuous",
+    "aspect_perfect": "Perfect",
+    "aspect_perfect_continuous": "Perfect cont.",
+    "level_new": "Not learned",
+    "level_started": "Just started",
+    "level_recalling": "Remembering",
+    "level_stable": "Remembered"
   }
 }

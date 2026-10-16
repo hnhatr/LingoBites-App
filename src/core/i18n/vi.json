@@ -885,7 +885,21 @@
     "create_failed": "Không tạo được bài học (mã {{code}}).",
     "create_ready": "Bài học đã sẵn sàng.",
     "create_open": "Mở bài học",
-    "create_open_hint": "Mở bài học vừa tạo"
+    "create_open_hint": "Mở bài học vừa tạo",
+    "word_path_add": "Thêm vào lộ trình",
+    "word_path_add_hint": "Đưa từ này vào lịch ôn của bạn",
+    "word_path_adding": "Đang thêm…",
+    "word_path_added": "Đã trong lộ trình",
+    "word_path_pick_sense": "Từ này có nhiều nghĩa, chọn nghĩa đúng trong câu:",
+    "word_path_offline": "Cần mạng để thêm",
+    "word_path_failed": "Chưa thêm được, thử lại sau",
+    "tense_title": "Thì của bài",
+    "tense_formula": "Công thức",
+    "tense_practice": "Luyện câu",
+    "tense_practice_hint": "Tạo câu tổ hợp với thì này",
+    "tense_map": "Xem bản đồ thì",
+    "tense_map_hint": "Mở bản đồ thì trong thư viện",
+    "tense_open_hint": "Mở chi tiết thì này"
   },
   "lessonFlow": {
     "start_at": "Bắt đầu · {{label}}",
@@ -1218,7 +1232,16 @@
     "back_hint": "Rời màn ôn",
     "compare_title": "Xem lại từ này: bạn đã trả lời sai nhiều lần",
     "compare_ok": "Đã hiểu",
-    "next": "Tiếp"
+    "next": "Tiếp",
+    "apply_order_title": "Sắp xếp thành câu tiếng Anh",
+    "apply_order_hint": "Chạm các từ bên dưới theo đúng thứ tự",
+    "apply_swap_title": "Đổi chủ ngữ",
+    "apply_swap_subject": "Viết lại với chủ ngữ: {{subject}}",
+    "apply_swap_blank": "Chỗ trống động từ",
+    "apply_swap_hint": "Gõ động từ đã chia theo chủ ngữ mới",
+    "apply_check": "Kiểm tra",
+    "apply_correct": "Đúng rồi!",
+    "apply_wrong": "Chưa đúng. Câu đúng là:"
   },
   "summativeTask": {
     "title": "Nhiệm vụ tổng hợp",
@@ -1229,7 +1252,9 @@
     "write_instead": "Viết thay nói",
     "write_instead_hint": "Trả lời bằng chữ thay vì ghi âm",
     "write_instead_note": "Bạn đang viết thay nói: bài vẫn được chấm nhưng chưa tính là đạt chương.",
-    "substitute_not_passing": "Viết thay nói chưa tính là đạt chương. Hãy nói lại khi có thể."
+    "substitute_not_passing": "Viết thay nói chưa tính là đạt chương. Hãy nói lại khi có thể.",
+    "checklist_title": "Cần dùng trong bài: {{done}}/{{total}}",
+    "checklist_on_send": "kiểm khi nộp"
   },
   "compose": {
     "entry_title": "Học theo lộ trình từ câu bạn chọn",
@@ -1862,5 +1887,46 @@
   "speech": {
     "voice_missing": "Máy chưa có giọng tiếng Anh (Mỹ) nên chưa đọc được. Hãy cài thêm giọng trong cài đặt hệ thống.",
     "unavailable": "Máy này chưa phát được âm thanh."
+  },
+  "patternTense": {
+    "filter_all": "Tất cả",
+    "filter_function": "Ý muốn nói",
+    "filter_level": "Cấp độ",
+    "filter_exam": "Kỳ thi",
+    "no_patterns": "Không có mẫu câu nào khớp",
+    "no_tenses": "Chưa có thì nào",
+    "needs_network": "Cần mạng để tải lần đầu",
+    "retry": "Thử lại",
+    "offline_kept": "Đang offline: hiện bản đã lưu trên máy.",
+    "open_pattern_hint": "Mở mẫu câu",
+    "open_tense_hint": "Mở thì này",
+    "pattern_title": "Mẫu câu",
+    "tense_title": "Thì",
+    "slots": "Chỗ trống",
+    "examples": "Ví dụ",
+    "practise_combo": "Luyện câu tổ hợp",
+    "add_to_review": "Thêm vào ôn",
+    "in_review": "Đã có trong lịch ôn",
+    "add_failed": "Chưa thêm được, thử lại sau",
+    "not_on_device": "Chưa có trên máy. Mở lại danh sách khi có mạng.",
+    "forms": "Công thức",
+    "form_affirmative": "Khẳng định",
+    "form_negative": "Phủ định",
+    "form_question": "Nghi vấn",
+    "signals": "Dấu hiệu",
+    "uses": "Dùng khi",
+    "confused_with": "Hay nhầm với",
+    "other_tenses": "Cấu trúc khác",
+    "time_past": "Quá khứ",
+    "time_present": "Hiện tại",
+    "time_future": "Tương lai",
+    "aspect_simple": "Đơn",
+    "aspect_continuous": "Tiếp diễn",
+    "aspect_perfect": "Hoàn thành",
+    "aspect_perfect_continuous": "HT tiếp diễn",
+    "level_new": "Chưa học",
+    "level_started": "Mới học",
+    "level_recalling": "Đang nhớ",
+    "level_stable": "Đã nhớ"
   }
 }

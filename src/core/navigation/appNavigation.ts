@@ -33,7 +33,10 @@ export type LibrarySectionKey =
   | 'publicVideo'
   | 'combos'
   | 'comboSentences'
-  | 'wordPath';
+  | 'wordPath'
+  /** Vocab path P6: the pattern library and the tense map. */
+  | 'patterns'
+  | 'tenses';
 
 export type CreateEntry =
   /** Open the paste-text composer. */
@@ -125,8 +128,11 @@ export interface AppNavigation {
   openPackLearn(packId: string): void;
   /** Vocab path P5: the quick known check of a pack. */
   openQuickKnownCheck(packId: string): void;
-  /** Vocab path P5: set up a combo set for one word. */
-  openComboSetup(itemCode: string): void;
+  /**
+   * Vocab path P5: set up a combo set for one word. P6: `grammarCode` picks
+   * that tense first when it is open for the word.
+   */
+  openComboSetup(itemCode: string, grammarCode?: string): void;
   /**
    * Vocab path P5: one combo set (sentences, IPA, batches, reports). `created`
    * is how many sentences were just made, so the set greets them.
@@ -134,6 +140,10 @@ export interface AppNavigation {
   openComboSet(setId: string, created?: number): void;
   /** Vocab path P5: the combo sets kept on this device. */
   openComboHistory(): void;
+  /** Vocab path P6: one pattern of the pattern library. */
+  openPatternDetail(itemCode: string): void;
+  /** Vocab path P6: one tense of the tense map. */
+  openTenseDetail(itemCode: string): void;
   /** Open a quick-practice quiz generated from one downloaded lesson. */
   openPractice(lessonId: string): void;
   /**

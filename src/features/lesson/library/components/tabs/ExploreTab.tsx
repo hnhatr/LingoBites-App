@@ -156,8 +156,49 @@ export function ExploreTab() {
           testID="library-pack-stack"
         />
       </LibraryShelf>
+      <PatternTenseShelf />
       <VideoShelf />
     </ScrollView>
+  );
+}
+
+/** Vocab path P6: the way into the pattern library and the tense map. */
+function PatternTenseShelf() {
+  const {theme} = useAppTheme();
+  const appNavigation = useAppNavigation();
+  const patterns = getLibrarySection('patterns');
+  const tenses = getLibrarySection('tenses');
+  return (
+    <LibraryShelf
+      label="mẫu câu và thì"
+      subtitle="Tra mẫu theo ý muốn nói, xem mình nhớ thì nào"
+      testID="library-shelf-patterns"
+      title="Mẫu câu & thì"
+      tone="violet"
+    >
+      <ToneCard
+        accessibilityHint="Mở kho mẫu câu"
+        action={{label: 'Xem', solid: true}}
+        cover={{imageUrl: null, glyph: 'chat'}}
+        description={patterns.description}
+        gutter={theme.spacing.md}
+        onPress={() => appNavigation.openLibrarySection(patterns.id)}
+        testID="library-patterns-card"
+        title={patterns.title}
+        tone={cardToneAt(0)}
+      />
+      <ToneCard
+        accessibilityHint="Mở bản đồ thì"
+        action={{label: 'Xem', solid: true}}
+        cover={{imageUrl: null, glyph: 'school'}}
+        description={tenses.description}
+        gutter={theme.spacing.md}
+        onPress={() => appNavigation.openLibrarySection(tenses.id)}
+        testID="library-tenses-card"
+        title={tenses.title}
+        tone={cardToneAt(1)}
+      />
+    </LibraryShelf>
   );
 }
 

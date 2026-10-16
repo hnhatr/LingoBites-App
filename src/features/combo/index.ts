@@ -2,8 +2,11 @@ export {
   ComboHistoryList,
   ComboHistoryScreen,
 } from './screens/ComboHistoryScreen';
-export {comboSituationsAvailable} from './logic/comboClient';
-export {listLocalComboSets} from './logic/comboSetRepository';
+export {
+  listComboSentenceSetsFor,
+  listLocalComboSets,
+} from './logic/comboSetRepository';
+export type {ComboSentence} from './logic/comboClient';
 export {
   loadSavedComboSentences,
   toggleSavedComboSentence,

@@ -260,10 +260,16 @@ export function createAppNavigation(
     openWordPack: packId => navigate('WordPack', {packId}),
     openPackLearn: packId => navigate('PackLearn', {packId}),
     openQuickKnownCheck: packId => navigate('QuickKnownCheck', {packId}),
-    openComboSetup: itemCode => navigate('ComboSetup', {itemCode}),
+    openComboSetup: (itemCode, grammarCode) =>
+      navigate(
+        'ComboSetup',
+        grammarCode ? {itemCode, grammarCode} : {itemCode},
+      ),
     openComboSet: (setId, created) =>
       navigate('ComboSet', created ? {setId, created} : {setId}),
     openComboHistory: () => navigate('ComboHistory', undefined),
+    openPatternDetail: itemCode => navigate('PatternDetail', {itemCode}),
+    openTenseDetail: itemCode => navigate('TenseDetail', {itemCode}),
     openPractice: lessonId => navigate('Practice', {lessonId}),
     openToday: target => navigate('Today', target),
     openSpeakingRoom: () => navigate('SpeakingRoom', undefined),

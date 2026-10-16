@@ -15,6 +15,7 @@ import {
   collectLessonOutcome,
   collectLessonPatterns,
   collectLessonPronunciation,
+  collectLessonTense,
   collectLessonVocabulary,
   lessonHubSections,
   mergeAnalyses,
@@ -421,5 +422,88 @@ describe('lessonHubContent', () => {
         }).map(row => row.section),
       ).toEqual(['sentences', 'vocabulary', 'grammar']);
     });
+  });
+});
+
+describe('collectLessonTense', () => {
+  const item = (
+    position: number,
+    kind: CatalogItem['kind'],
+    code: string,
+    payload: Record<string, unknown> = {},
+  ): LessonItemEntry => ({
+    role: 'required',
+    introduction: 'new',
+    position,
+    item: {
+      id: `55555555-5555-4555-8555-55555555550${position}`,
+      code,
+      kind,
+      text: code.split(':')[1]!,
+      meaning_vi: `nghĩa ${code}`,
+      ipa: null,
+      part_of_speech: null,
+      note_vi: null,
+      audience: 'all',
+      payload,
+      audio: null,
+      image: null,
+      examples: [],
+      variants: [],
+      errors: [],
+    },
+  });
+  const tensePayload = {
+    family: 'tense',
+    forms: {affirmative: 'S + V(s/es)', negative: 'n', question: 'q'},
+  };
+
+  it('is null without a grammar item', () => {
+    expect(
+      collectLessonTense({
+        ...specSnapshot(),
+        lesson_items: [item(0, 'word', 'word:tea')],
+      }),
+    ).toBeNull();
+  });
+
+  it('reads the grammar item and practises on the first pattern that takes a tense', () => {
+    expect(
+      collectLessonTense({
+        ...specSnapshot(),
+        lesson_items: [
+          item(3, 'pattern', 'pattern:open', {}),
+          item(0, 'word', 'word:tea'),
+          item(1, 'grammar', 'grammar:present-simple', tensePayload),
+          item(2, 'pattern', 'pattern:locked', {tense_mode: 'locked'}),
+        ],
+      }),
+    ).toEqual({
+      code: 'grammar:present-simple',
+      name: 'present-simple',
+      meaningVi: 'nghĩa grammar:present-simple',
+      payload: tensePayload,
+      practiceItemCode: 'pattern:open',
+    });
+  });
+
+  it('falls back to the first word, then to nothing', () => {
+    const base = specSnapshot();
+    expect(
+      collectLessonTense({
+        ...base,
+        lesson_items: [
+          item(0, 'grammar', 'grammar:past-simple', tensePayload),
+          item(1, 'pattern', 'pattern:locked', {tense_mode: 'locked'}),
+          item(2, 'phrase', 'phrase:wake up'),
+        ],
+      })?.practiceItemCode,
+    ).toBe('phrase:wake up');
+    expect(
+      collectLessonTense({
+        ...base,
+        lesson_items: [item(0, 'grammar', 'grammar:past-simple', tensePayload)],
+      })?.practiceItemCode,
+    ).toBeNull();
   });
 });
