@@ -26,6 +26,8 @@ export type TileComposerProps = {
   answer?: string | null;
   /** Lesson words: noise words and the suggestion strip. */
   vocabulary?: readonly string[];
+  /** More text whose letters join the letters bank (e.g. the model verb). */
+  extraLetters?: string;
   /** A fixed words bank (an ordering card), used as is. */
   wordTiles?: readonly string[];
   modes?: readonly TileMode[];
@@ -86,6 +88,7 @@ export function TileComposer({
   onChangeText,
   answer = null,
   vocabulary = [],
+  extraLetters = '',
   wordTiles,
   modes: modesProp,
   mode: modeProp,
@@ -124,8 +127,11 @@ export function TileComposer({
     [answer, vocabulary, wordTiles, seed],
   );
   const letters = useMemo(
-    () => (answer ? letterBank(answer, seed) : {letters: [], extras: []}),
-    [answer, seed],
+    () =>
+      answer
+        ? letterBank(`${answer} ${extraLetters}`, seed)
+        : {letters: [], extras: []},
+    [answer, extraLetters, seed],
   );
 
   useEffect(() => {
