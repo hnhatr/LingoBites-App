@@ -40,7 +40,6 @@ export function SessionHeader({
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const share = total > 0 ? Math.min(1, current / total) : 0;
   return (
     <View style={styles.header} testID={testID}>
       <HeaderIconButton
@@ -53,9 +52,11 @@ export function SessionHeader({
       <AppProgressBar
         accessibilityValue={{text: progressLabel}}
         count={`${current}/${total}`}
+        current={current > 0 && current <= total ? current - 1 : undefined}
+        done={Math.max(0, current - 1)}
         style={styles.progress}
         testID="pack-session-progress"
-        value={share}
+        total={total}
       />
     </View>
   );

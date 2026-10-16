@@ -126,8 +126,8 @@ type ProgressProps = {
 };
 
 /**
- * The app's progress bar with "3/9" after it. Tapping the bar jumps to that
- * page; screen readers use the page's own next / previous actions instead.
+ * The app's progress notes with "3/9" after them. Tapping a note jumps to
+ * that page; screen readers use the page's own next / previous actions.
  */
 export function StudyProgress({
   total,
@@ -140,9 +140,10 @@ export function StudyProgress({
     <AppProgressBar
       accessibilityValue={{min: 1, max: total, now: index + 1}}
       count={label}
-      onSeek={ratio => onSelect(Math.floor(ratio * total))}
+      current={index}
+      onSelect={onSelect}
       testID={testID}
-      value={total > 0 ? (index + 1) / total : 0}
+      total={total}
     />
   );
 }

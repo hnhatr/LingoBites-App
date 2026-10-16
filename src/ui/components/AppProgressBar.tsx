@@ -16,72 +16,129 @@ import {HERO_PALETTE} from '../theme/heroPalette';
 import {AppText} from './AppText';
 import {withAlpha} from './layout';
 
+/** Above this many items, several items share one note. */
+export const MAX_PROGRESS_NOTES = 20;
+
 export interface AppProgressBarProps {
-  /** How far along, 0 to 1. */
-  value: number;
+  /** How many items (cards, sentences, steps) the bar stands for. */
+  total: number;
+  /** The open item, 0-based: its note is coral. Leave out for a plain tally. */
+  current?: number;
+  /**
+   * Finished items: a count (the first n) or the set of finished indexes.
+   * Defaults to every item before `current`.
+   */
+  done?: number | ReadonlySet<number>;
+  /** Items with nothing to do: drawn faded. */
+  skipped?: ReadonlySet<number>;
   /** "3/9" in a mint chip after the bar; left out when not given. */
   count?: string;
-  /** Thinner bar for list rows and small cards. */
+  /** Thinner notes for list rows and small cards. */
   compact?: boolean;
-  /** On a white card: a beige track, so the white one does not vanish. */
-  onCard?: boolean;
   /**
-   * Makes the bar tappable: called with where it was tapped, from 0 up to
-   * (not including) 1, so a screen can jump to that page or sentence.
+   * What the bar sits on, which sets the upcoming notes: white on the page,
+   * beige on a white `card` so they do not vanish, pale mint on a `hero`
+   * card (fixed colours, the same in every theme).
    */
-  onSeek?: (ratio: number) => void;
+  surface?: 'page' | 'card' | 'hero';
+  /** Makes the bar tappable: called with the first item of the tapped note. */
+  onSelect?: (index: number) => void;
   accessibilityLabel?: string;
   accessibilityHint?: string;
   accessibilityValue?: AccessibilityValue;
   style?: StyleProp<ViewStyle>;
   testID?: string;
-  /** Put on the filled part, for tests that read its width. */
-  fillTestID?: string;
 }
 
+type NoteState = 'done' | 'current' | 'upcoming';
+
 /**
- * The app's one progress bar: a white track raised on a cream edge, the
- * covered part a mint bar with a darker shelf and a light streak on top.
+ * The app's one progress bar: a row of notes, one per item. Finished notes
+ * are mint on a darker shelf with a light streak, the open one coral with a
+ * soft ring, the rest white raised on a cream edge. Long lists group several
+ * items into a note so there are never more than {@link MAX_PROGRESS_NOTES}.
  */
 export function AppProgressBar({
-  value,
+  total,
+  current,
+  done,
+  skipped,
   count,
   compact = false,
-  onCard = false,
-  onSeek,
+  surface = 'page',
+  onSelect,
   accessibilityLabel,
   accessibilityHint,
   accessibilityValue,
   style,
   testID,
-  fillTestID,
 }: AppProgressBarProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const width = useRef(0);
-  const share = Number.isFinite(value) ? Math.min(Math.max(value, 0), 1) : 0;
+  const items = Math.max(0, Math.floor(total));
+  const perNote =
+    items > MAX_PROGRESS_NOTES ? Math.ceil(items / MAX_PROGRESS_NOTES) : 1;
+  const noteCount = Math.ceil(items / perNote);
 
-  const track = (
-    <View
-      pointerEvents="none"
-      style={[
-        styles.track,
-        compact ? styles.trackCompact : null,
-        onCard ? styles.trackOnCard : null,
-      ]}
-    >
-      {share > 0 ? (
+  const isDone = (index: number) => {
+    if (done === undefined) {
+      return current !== undefined && index < current;
+    }
+    return typeof done === 'number' ? index < done : done.has(index);
+  };
+
+  const notes = Array.from({length: noteCount}, (_, note) => {
+    const first = note * perNote;
+    const last = Math.min(items, first + perNote) - 1;
+    let state: NoteState = 'upcoming';
+    if (current !== undefined && current >= first && current <= last) {
+      state = 'current';
+    } else {
+      let allDone = true;
+      for (let k = first; k <= last; k += 1) {
+        allDone = allDone && isDone(k);
+      }
+      state = allDone ? 'done' : 'upcoming';
+    }
+    const faded = state !== 'current' && (skipped?.has(first) ?? false);
+    return (
+      <View key={note} style={styles.slot}>
+        {state === 'current' ? <View style={styles.ring} /> : null}
         <View
           style={[
-            styles.fill,
-            compact ? styles.fillCompact : null,
-            {width: `${share * 100}%`},
+            styles.note,
+            compact ? styles.noteCompact : null,
+            state === 'upcoming'
+              ? [
+                  styles.upcoming,
+                  surface === 'card' ? styles.upcomingOnCard : null,
+                  surface === 'hero' ? styles.upcomingOnHero : null,
+                ]
+              : null,
+            state === 'done' || faded
+              ? [styles.done, compact ? styles.shelfCompact : null]
+              : null,
+            state === 'current'
+              ? [styles.current, compact ? styles.shelfCompact : null]
+              : null,
+            faded ? styles.faded : null,
           ]}
-          testID={fillTestID}
         >
-          {compact ? null : <View style={styles.shine} />}
+          {!compact && state !== 'upcoming' ? (
+            <View style={styles.shine} />
+          ) : null}
         </View>
-      ) : null}
+      </View>
+    );
+  });
+
+  const row = (
+    <View
+      pointerEvents="none"
+      style={[styles.notes, compact ? styles.notesCompact : null]}
+    >
+      {notes}
     </View>
   );
 
@@ -91,15 +148,15 @@ export function AppProgressBar({
     accessibilityRole: 'progressbar' as const,
     accessibilityValue: accessibilityValue ?? {
       min: 0,
-      max: 100,
-      now: Math.round(share * 100),
+      max: items,
+      now: current !== undefined ? current + 1 : countDone(done, items),
     },
     testID,
   };
 
   return (
     <View style={[styles.row, style]}>
-      {onSeek ? (
+      {onSelect ? (
         <Pressable
           {...a11y}
           hitSlop={{top: 10, bottom: 10}}
@@ -107,19 +164,22 @@ export function AppProgressBar({
             width.current = event.nativeEvent.layout.width;
           }}
           onPress={(event: GestureResponderEvent) => {
-            if (width.current <= 0) {
+            if (width.current <= 0 || noteCount === 0) {
               return;
             }
             const ratio = event.nativeEvent.locationX / width.current;
-            onSeek(Math.max(0, Math.min(ratio, 0.9999)));
+            const note = Math.floor(
+              Math.max(0, Math.min(ratio, 0.9999)) * noteCount,
+            );
+            onSelect(Math.min(items - 1, note * perNote));
           }}
           style={styles.bar}
         >
-          {track}
+          {row}
         </Pressable>
       ) : (
         <View {...a11y} style={styles.bar}>
-          {track}
+          {row}
         </View>
       )}
       {count !== undefined ? (
@@ -136,6 +196,16 @@ export function AppProgressBar({
   );
 }
 
+function countDone(
+  done: number | ReadonlySet<number> | undefined,
+  items: number,
+): number {
+  if (done === undefined) {
+    return 0;
+  }
+  return typeof done === 'number' ? Math.min(done, items) : done.size;
+}
+
 function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     row: {
@@ -146,42 +216,72 @@ function makeStyles(theme: AppTheme) {
     bar: {
       flex: 1,
       justifyContent: 'center',
+      minHeight: 20,
     },
-    track: {
-      backgroundColor: theme.colors.surface,
+    notes: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 4,
+    },
+    notesCompact: {
+      gap: 3,
+    },
+    slot: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    ring: {
+      backgroundColor: HERO_PALETTE.coralRing,
       borderRadius: theme.radius.pill,
-      height: 16,
-      padding: 3,
+      bottom: -3,
+      left: -3,
+      position: 'absolute',
+      right: -3,
+      top: -3,
+    },
+    note: {
+      borderRadius: theme.radius.pill,
+      height: 12,
+      overflow: 'hidden',
+    },
+    noteCompact: {
+      height: 8,
+    },
+    upcoming: {
+      backgroundColor: theme.colors.surface,
       ...getStickerEdge(2, theme.colors.surfaceHigh),
     },
-    trackCompact: {
-      height: 10,
-      padding: 2,
-    },
-    trackOnCard: {
+    upcomingOnCard: {
       backgroundColor: theme.colors.surfaceMuted,
     },
-    fill: {
+    upcomingOnHero: {
+      backgroundColor: HERO_PALETTE.track,
+      ...getStickerEdge(2, HERO_PALETTE.ghostShelf),
+    },
+    done: {
       backgroundColor: theme.colors.accent,
       borderBottomWidth: 3,
       borderColor: HERO_PALETTE.shelf,
-      borderRadius: theme.radius.pill,
-      height: '100%',
-      minWidth: 10,
-      overflow: 'hidden',
     },
-    fillCompact: {
+    current: {
+      backgroundColor: HERO_PALETTE.coral,
+      borderBottomWidth: 3,
+      borderColor: HERO_PALETTE.coralShelf,
+    },
+    shelfCompact: {
       borderBottomWidth: 2,
-      minWidth: 6,
+    },
+    faded: {
+      opacity: 0.45,
     },
     shine: {
       backgroundColor: withAlpha(HERO_PALETTE.white, 0.55),
       borderRadius: theme.radius.pill,
-      height: 3,
-      left: 4,
+      height: 2,
+      left: 3,
       position: 'absolute',
-      right: 4,
-      top: 1,
+      right: 3,
+      top: 2,
     },
     count: {
       backgroundColor: theme.colors.accentSoft,
