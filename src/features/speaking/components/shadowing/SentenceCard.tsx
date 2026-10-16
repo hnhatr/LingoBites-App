@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
 import {withAlpha} from '@ui/components/layout';
@@ -116,28 +117,18 @@ export function SentenceCard({
               />
               <View style={styles.spacer} />
               {onToggleVietnamese ? (
-                <Pressable
+                <ActionIconButton
                   accessibilityHint="Che nghĩa để luyện nghe không nhìn bản dịch"
                   accessibilityLabel={
                     showVietnamese
                       ? 'Ẩn nghĩa tiếng Việt'
                       : 'Hiện nghĩa tiếng Việt'
                   }
-                  accessibilityRole="button"
-                  accessibilityState={{selected: !showVietnamese}}
+                  icon="visibility"
                   onPress={onToggleVietnamese}
-                  style={({pressed}) => [
-                    styles.eye,
-                    pressed && {opacity: theme.states.pressedOpacity},
-                  ]}
+                  selected={!showVietnamese}
                   testID="shadowing-toggle-vi"
-                >
-                  <MaterialIcon
-                    color={theme.colors.text.muted}
-                    name="visibility"
-                    size={19}
-                  />
-                </Pressable>
+                />
               ) : null}
             </View>
           </>
@@ -284,14 +275,6 @@ function makeStyles(theme: AppTheme) {
     sunOn: {
       backgroundColor: HERO_PALETTE.sun,
       ...getStickerEdge(3, HERO_PALETTE.sunShelf),
-    },
-    eye: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: 14,
-      height: 44,
-      justifyContent: 'center',
-      width: 44,
     },
   });
 }

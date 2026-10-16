@@ -12,12 +12,14 @@ import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 import {AppText} from '@ui/components/AppText';
 import {
   HEADER_BUTTON_HIT_SLOP,
+  HEADER_BUTTON_RADIUS,
   HEADER_BUTTON_SIZE,
   HEADER_ICON_SIZE,
 } from '@ui/components/HeaderIconButton';
-import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
+import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {HERO_HEIGHT} from './CurriculumHeroCover';
 
@@ -106,13 +108,14 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     back: {
       alignItems: 'center',
-      backgroundColor: withAlpha(theme.colors.surface, 0.9),
-      borderRadius: HEADER_BUTTON_SIZE / 2,
+      backgroundColor: theme.colors.surface,
+      borderRadius: HEADER_BUTTON_RADIUS,
       height: HEADER_BUTTON_SIZE,
       justifyContent: 'center',
       left: theme.gutter,
       position: 'absolute',
       width: HEADER_BUTTON_SIZE,
+      ...getStickerEdge(3, HERO_PALETTE.ghostShelf),
     },
     bar: {
       backgroundColor: theme.colors.background,

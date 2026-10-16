@@ -8,9 +8,9 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {type AppTheme, useAppTheme} from '../theme';
+import {ActionIconButton} from './ActionIconButton';
 import {AppText} from './AppText';
 import {HeaderIconButton} from './HeaderIconButton';
-import {IconButton} from './IconButton';
 
 type HeaderProps = {
   current: number;
@@ -125,13 +125,11 @@ export function StudyQuestion({
           <AppText adjustsFontSizeToFit numberOfLines={2} style={styles.prompt}>
             {prompt}
           </AppText>
-          <IconButton
+          <ActionIconButton
             accessibilityHint={t('packQuiz.speak_hint')}
             accessibilityLabel={t('packQuiz.speak')}
             icon="volume_up"
-            iconSize={20}
             onPress={onSpeak}
-            size={40}
           />
         </View>
       </View>

@@ -1,9 +1,9 @@
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SaveToggle} from '@ui/components/SaveToggle';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
@@ -67,23 +67,16 @@ export function WordBubble({
           {title}
         </AppText>
         {onSpeakText ? (
-          <Pressable
+          <ActionIconButton
             accessibilityHint={t('lessonPlayer.speak_word_hint')}
             accessibilityLabel={t('lessonPlayer.speak_word', {word: title})}
-            accessibilityRole="button"
+            hitSlop={0}
+            icon="volume_up"
             onPress={() => onSpeakText(title)}
-            style={({pressed}) => [
-              styles.mini,
-              pressed ? styles.pressed : null,
-            ]}
+            onTint
+            size="compact"
             testID="youtube-word-bubble-speak"
-          >
-            <MaterialIcon
-              color={theme.colors.primary}
-              name="volume_up"
-              size={17}
-            />
-          </Pressable>
+          />
         ) : null}
         {vocabulary && vocabularySave ? (
           <SaveToggle
@@ -91,24 +84,23 @@ export function WordBubble({
             accessibilityLabel={
               saved ? t('lessonPlayer.saved') : t('lessonPlayer.save_card')
             }
-            backdrop
             hitSlop={0}
-            iconSize={17}
             onPress={() => vocabularySave.onToggle(vocabulary)}
+            onTint
+            raised="compact"
             saved={saved}
-            size={32}
             testID="youtube-word-bubble-save"
           />
         ) : null}
-        <Pressable
+        <ActionIconButton
           accessibilityLabel={t('youtube.study.word_bubble_close')}
-          accessibilityRole="button"
+          hitSlop={0}
+          icon="close"
           onPress={onClose}
-          style={({pressed}) => [styles.mini, pressed ? styles.pressed : null]}
+          onTint
+          size="compact"
           testID="youtube-word-bubble-close"
-        >
-          <MaterialIcon color={theme.colors.primary} name="close" size={17} />
-        </Pressable>
+        />
       </View>
       {ipa ? (
         <AppText
@@ -174,14 +166,6 @@ function makeStyles(theme: AppTheme) {
       flexDirection: 'row',
       gap: theme.spacing.xs,
     },
-    mini: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 10,
-      height: 32,
-      justifyContent: 'center',
-      width: 32,
-    },
     pos: {
       backgroundColor: theme.colors.secondarySoft,
       borderRadius: 7,
@@ -191,9 +175,6 @@ function makeStyles(theme: AppTheme) {
     },
     posText: {
       color: theme.colors.onSecondaryContainer,
-    },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
     },
     strip: {
       backgroundColor: theme.colors.tertiarySoft,

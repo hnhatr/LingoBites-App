@@ -3,10 +3,10 @@ import {Pressable, StyleSheet, View} from 'react-native';
 
 import {useAppTheme} from '../theme';
 import type {AppTheme} from '../theme/types';
+import {ActionIconButton} from './ActionIconButton';
 import {AppCard} from './AppCard';
 import {AppText} from './AppText';
 import {Chip} from './Chip';
-import {IconButton} from './IconButton';
 
 /**
  * - `card`: standalone word card in a list (wrapped in `AppCard`).
@@ -139,13 +139,12 @@ export function WordCard({
   );
 
   const speakButton = onSpeak ? (
-    <IconButton
+    <ActionIconButton
       accessibilityHint={speakAccessibilityHint}
       accessibilityLabel={speakAccessibilityLabel ?? word}
       icon="volume_up"
       onPress={onSpeak}
       testID={speakTestID}
-      tone={variant === 'inline' ? 'ghost' : 'accent'}
     />
   ) : null;
 

@@ -72,7 +72,7 @@ describe('GrammarRowCard', () => {
     );
   });
 
-  it('shows unsaved heart when not saved', () => {
+  it('shows the unsaved bookmark when not saved', () => {
     const tree = render(
       <GrammarRowCard
         grammar={mockGrammar}
@@ -84,10 +84,10 @@ describe('GrammarRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart_outline');
+    expect(saveButton.props.saved).toBe(false);
   });
 
-  it('shows saved heart when saved', () => {
+  it('shows the saved bookmark when saved', () => {
     const tree = render(
       <GrammarRowCard
         grammar={mockGrammar}
@@ -99,10 +99,10 @@ describe('GrammarRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart');
+    expect(saveButton.props.saved).toBe(true);
   });
 
-  it('calls onSave when unsaved heart pressed', () => {
+  it('calls onSave when the unsaved bookmark is pressed', () => {
     const onSave = jest.fn();
     const onUnsave = jest.fn();
     const tree = render(
@@ -124,7 +124,7 @@ describe('GrammarRowCard', () => {
     expect(onUnsave).not.toHaveBeenCalled();
   });
 
-  it('calls onUnsave when saved heart pressed', () => {
+  it('calls onUnsave when the saved bookmark is pressed', () => {
     const onSave = jest.fn();
     const onUnsave = jest.fn();
     const tree = render(
@@ -197,7 +197,7 @@ describe('GrammarRowCard', () => {
     expect(contentText.props.color).toBe('secondary');
   });
 
-  it('heart button has bare tone styling', () => {
+  it('save button is the shared raised save toggle', () => {
     const tree = render(
       <GrammarRowCard
         grammar={mockGrammar}
@@ -209,7 +209,7 @@ describe('GrammarRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.tone).toBe('bare');
+    expect(saveButton.props.raised).toBe('row');
   });
 
   it('renders with correct accessibility labels', () => {
@@ -230,7 +230,7 @@ describe('GrammarRowCard', () => {
     expect(pressable.props.accessibilityRole).toBe('button');
   });
 
-  it('heart button has correct accessibility label when saved', () => {
+  it('save button has correct accessibility label when saved', () => {
     const tree = render(
       <GrammarRowCard
         grammar={mockGrammar}
@@ -247,7 +247,7 @@ describe('GrammarRowCard', () => {
     );
   });
 
-  it('heart button has correct accessibility label when not saved', () => {
+  it('save button has correct accessibility label when not saved', () => {
     const tree = render(
       <GrammarRowCard
         grammar={mockGrammar}
@@ -282,7 +282,7 @@ describe('GrammarRowCard', () => {
     expect(contentText.props.children).toBe('');
   });
 
-  it('updates heart icon when isSaved prop changes', () => {
+  it('updates the bookmark when isSaved prop changes', () => {
     const tree = render(
       <GrammarRowCard
         grammar={mockGrammar}
@@ -294,7 +294,7 @@ describe('GrammarRowCard', () => {
     );
 
     let saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart_outline');
+    expect(saveButton.props.saved).toBe(false);
 
     act(() => {
       tree.update(
@@ -313,7 +313,7 @@ describe('GrammarRowCard', () => {
     });
 
     saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('heart');
+    expect(saveButton.props.saved).toBe(true);
   });
 
   it('handles different grammar data', () => {

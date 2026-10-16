@@ -1,9 +1,8 @@
-import React, {useMemo} from 'react';
-import {Pressable, StyleSheet} from 'react-native';
+import React from 'react';
+import {StyleSheet} from 'react-native';
 
-import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
-import {type AppTheme, useAppTheme} from '@ui/theme';
+import {ActionIconButton} from '@ui/components/ActionIconButton';
+import {useAppTheme} from '@ui/theme';
 
 export type SaveItemButtonProps = {
   saved: boolean;
@@ -16,7 +15,11 @@ export type SaveItemButtonProps = {
   testID?: string;
 };
 
-/** Compact pill that saves a lesson item and shows "Đã lưu" once saved. */
+/**
+ * Save button with its label, in the colours of the shared save toggle:
+ * beige with a grey "bookmark +" while unsaved, mint with a filled bookmark
+ * and "Đã lưu" once saved.
+ */
 export function SaveItemButton({
   saved,
   label,
@@ -26,53 +29,25 @@ export function SaveItemButton({
   testID,
 }: SaveItemButtonProps) {
   const {theme} = useAppTheme();
-  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const text = saved ? savedLabel : label;
   return (
-    <Pressable
+    <ActionIconButton
       accessibilityHint={accessibilityHint}
       accessibilityLabel={text}
-      accessibilityRole="button"
-      accessibilityState={{selected: saved}}
+      icon={saved ? 'bookmark' : 'bookmark_add'}
+      iconColor={saved ? undefined : theme.colors.text.muted}
+      label={text}
       onPress={onPress}
+      selected={saved}
+      style={styles.button}
       testID={testID}
-      style={({pressed}) => [
-        themedStyles.pill,
-        saved ? themedStyles.pillSaved : null,
-        pressed ? {opacity: theme.states.pressedOpacity} : null,
-      ]}
-    >
-      <MaterialIcon
-        color={theme.colors.primary}
-        name={saved ? 'bookmark' : 'bookmark_add'}
-        size={18}
-      />
-      <AppText style={themedStyles.label} variant="label">
-        {text}
-      </AppText>
-    </Pressable>
+      tone={saved ? 'mint' : 'plain'}
+    />
   );
 }
 
-function makeStyles(theme: AppTheme) {
-  return StyleSheet.create({
-    label: {
-      color: theme.colors.primary,
-    },
-    pill: {
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      borderColor: theme.colors.outlineVariant,
-      borderRadius: theme.radius.pill,
-      borderWidth: 1,
-      flexDirection: 'row',
-      gap: theme.spacing.xs,
-      minHeight: 44,
-      paddingHorizontal: theme.spacing.md,
-    },
-    pillSaved: {
-      backgroundColor: theme.colors.accentSoft,
-      borderColor: theme.colors.accentSoft,
-    },
-  });
-}
+const styles = StyleSheet.create({
+  button: {
+    alignSelf: 'flex-start',
+  },
+});

@@ -7,6 +7,10 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import {
+  ActionIconButton,
+  type ActionIconSize,
+} from '@ui/components/ActionIconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -20,6 +24,14 @@ export interface SaveToggleProps {
    * a many-coloured face where the bare icon would get lost.
    */
   backdrop?: boolean;
+  /**
+   * Draws it as the app's raised action button at this size (beige while
+   * unsaved, mint once saved), for saves inside cards and list rows.
+   * `size`, `iconSize` and `backdrop` are then ignored.
+   */
+  raised?: ActionIconSize;
+  /** With `raised`: a white face, for a button on a beige card. */
+  onTint?: boolean;
   /** Width and height of the button. */
   size?: number;
   iconSize?: number;
@@ -39,30 +51,48 @@ export function SaveToggle({
   saved,
   onPress,
   backdrop = false,
+  raised,
+  onTint = false,
   size = 36,
   iconSize = 20,
   accessibilityLabel,
   accessibilityHint,
-  hitSlop = 6,
+  hitSlop,
   style,
   testID,
 }: SaveToggleProps) {
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
+  const hint =
+    accessibilityHint ??
+    (saved ? 'Bỏ bài khỏi danh sách đã lưu' : 'Thêm bài vào danh sách đã lưu');
+  const label = accessibilityLabel ?? (saved ? 'Bỏ lưu bài' : 'Lưu bài');
+  const icon = saved ? 'bookmark' : 'bookmark_add';
+  if (raised) {
+    return (
+      <ActionIconButton
+        accessibilityHint={hint}
+        accessibilityLabel={label}
+        hitSlop={hitSlop}
+        icon={icon}
+        iconColor={saved ? undefined : theme.colors.text.muted}
+        onPress={onPress}
+        onTint={onTint}
+        selected={saved}
+        size={raised}
+        style={style}
+        testID={testID}
+        tone={saved ? 'mint' : 'plain'}
+      />
+    );
+  }
   return (
     <Pressable
-      accessibilityHint={
-        accessibilityHint ??
-        (saved
-          ? 'Bỏ bài khỏi danh sách đã lưu'
-          : 'Thêm bài vào danh sách đã lưu')
-      }
-      accessibilityLabel={
-        accessibilityLabel ?? (saved ? 'Bỏ lưu bài' : 'Lưu bài')
-      }
+      accessibilityHint={hint}
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{selected: saved}}
-      hitSlop={hitSlop}
+      hitSlop={hitSlop ?? 6}
       onPress={onPress}
       style={({pressed}) => [
         styles.button,
@@ -75,7 +105,7 @@ export function SaveToggle({
     >
       <MaterialIcon
         color={saved ? theme.colors.primary : theme.colors.text.muted}
-        name={saved ? 'bookmark' : 'bookmark_add'}
+        name={icon}
         size={iconSize}
       />
     </Pressable>
