@@ -9,6 +9,7 @@ import {FeatureFlagProvider} from '@core/release';
 
 import {AppText} from '../AppText';
 import {
+  letterboxScale,
   LibraryCover,
   type LibraryCoverProps,
   topicGlyph,
@@ -86,5 +87,22 @@ describe('cover helpers', () => {
     expect(tone.strong).toBe('#e0456a');
     expect(tone.soft).toMatch(/^#[0-9a-f]{6}$/);
     expect(levelTone(themes.default, null).strong).not.toBe(tone.strong);
+  });
+});
+
+describe('letterboxScale', () => {
+  const thumb = youtubeThumbnailUrl('abc123');
+
+  it('enlarges a YouTube thumbnail so its black bars leave a square cover', () => {
+    expect(letterboxScale(thumb, 1)).toBeCloseTo(4 / 3);
+  });
+
+  it('leaves a 16:9 cover, which already crops the bars, alone', () => {
+    expect(letterboxScale(thumb, 16 / 9)).toBe(1);
+  });
+
+  it('leaves other pictures alone', () => {
+    expect(letterboxScale('https://cdn.example/a.png', 1)).toBe(1);
+    expect(letterboxScale(null, 1)).toBe(1);
   });
 });

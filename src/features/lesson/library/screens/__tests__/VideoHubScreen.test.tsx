@@ -77,6 +77,7 @@ describe('VideoHubScreen', () => {
       title: 'Coffee talk',
       sentenceCount: 12,
       youtubeDurationMs: 90_000,
+      youtubeVideoId: 'abc123',
     };
     const tree = render();
     expect(byTestID(tree, 'video-hub-continue').length).toBeGreaterThan(0);

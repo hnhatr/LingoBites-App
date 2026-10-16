@@ -202,6 +202,7 @@ export function PublicLessonsList({
             testID={`public-lesson-${item.id}`}
             title={splitLessonTitle(item.title).title}
             tone={cardToneAt(index)}
+            video={kind === 'video'}
           />
         );
       }}

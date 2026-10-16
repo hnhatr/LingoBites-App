@@ -13,6 +13,7 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {splitLessonTitle} from '@ui/components/LessonCard';
+import {youtubeThumbnailUrl} from '@ui/components/LibraryCover';
 import {cardToneAt, ToneCard} from '@ui/components/ToneCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -99,7 +100,9 @@ export function HomeSavedRail({items, onItem, onViewAll, onUnsave}: Props) {
                     : undefined
                 }
                 cover={{
-                  imageUrl: null,
+                  imageUrl: item.youtubeVideoId
+                    ? youtubeThumbnailUrl(item.youtubeVideoId)
+                    : null,
                   glyph: item.sourceType === 'youtube' ? 'subtitles' : 'book',
                 }}
                 description={[subtitle, meta].filter(Boolean).join(' · ')}
@@ -110,6 +113,7 @@ export function HomeSavedRail({items, onItem, onViewAll, onUnsave}: Props) {
                 testID={`home-recent-item-${item.id}`}
                 title={title}
                 tone={cardToneAt(index)}
+                video={item.sourceType === 'youtube'}
                 width={RAIL_CARD_WIDTH}
               />
             );
