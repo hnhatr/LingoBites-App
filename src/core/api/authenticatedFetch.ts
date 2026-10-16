@@ -1,3 +1,5 @@
+import {Platform} from 'react-native';
+
 import {
   assertSyncDrainOwnershipUnchanged,
   SyncOwnershipChangedError,
@@ -29,11 +31,12 @@ function mergeHeaders(
   if (extra) {
     Object.assign(result, extra);
   }
-  // The Server shows grammar items (tense map, tenses in packs) only to app
-  // versions from GRAMMAR_MIN_APP_VERSION up.
+  // The Server's version rules (`app.versions`) are per platform: the
+  // minimum it still serves, and from which version grammar items show.
   const appVersion = getAppVersion();
   if (appVersion) {
     result['X-App-Version'] = appVersion;
+    result['X-App-Platform'] = Platform.OS;
   }
   return result;
 }

@@ -99,14 +99,16 @@ describe('authenticatedFetch app version header', () => {
     });
   });
 
-  it('sends the store version as X-App-Version', async () => {
+  it('sends the store version and platform', async () => {
     await authenticatedFetch(
       'https://api.test/v1/library/tenses',
       {method: 'GET'},
       fetchImpl,
     );
 
-    expect(fetchImpl.mock.calls[0][1].headers['X-App-Version']).toBe('1.0.1');
+    const headers = fetchImpl.mock.calls[0][1].headers;
+    expect(headers['X-App-Version']).toBe('1.0.1');
+    expect(headers['X-App-Platform']).toBe('ios');
   });
 
   it('leaves the header out when the version is not set', async () => {
@@ -123,8 +125,8 @@ describe('authenticatedFetch app version header', () => {
       mockedConfig.IOS_APP_VERSION_NAME = saved;
     }
 
-    expect(fetchImpl.mock.calls[0][1].headers).not.toHaveProperty(
-      'X-App-Version',
-    );
+    const headers = fetchImpl.mock.calls[0][1].headers;
+    expect(headers).not.toHaveProperty('X-App-Version');
+    expect(headers).not.toHaveProperty('X-App-Platform');
   });
 });
