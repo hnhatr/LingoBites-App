@@ -1,19 +1,17 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {useSpeak} from '@features/audio';
 import {comboSituationsAvailable} from '@features/combo';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
-import {withAlpha} from '@ui/components/layout';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {formatIpa} from '@ui/components/WordCard';
-import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
 
@@ -227,7 +225,7 @@ export function WordPackScreen({
                         {item.meaning_vi}
                       </AppText>
                     </View>
-                    <RowButton
+                    <ActionIconButton
                       accessibilityHint={t('packQuiz.speak_hint')}
                       accessibilityLabel={t('wordPack.speak', {
                         text: item.text,
@@ -235,9 +233,8 @@ export function WordPackScreen({
                       icon="volume_up"
                       onPress={() => say(item.text)}
                       testID={`word-pack-speak-${item.code}`}
-                      tone="plain"
                     />
-                    <RowButton
+                    <ActionIconButton
                       accessibilityHint={t('wordPack.combo_hint')}
                       accessibilityLabel={t('wordPack.combo')}
                       disabled={check === 'checking'}
@@ -269,58 +266,6 @@ export function WordPackScreen({
         ) : null}
       </ScrollView>
     </AppScreen>
-  );
-}
-
-type RowButtonProps = {
-  icon: HandoffIconName;
-  tone: 'plain' | 'mint';
-  onPress: () => void;
-  disabled?: boolean;
-  accessibilityLabel: string;
-  accessibilityHint: string;
-  testID: string;
-};
-
-/**
- * A row's small square button on a soft edge, like "Dán": `plain` to listen,
- * `mint` for the combo. Pressing sinks it into its edge.
- */
-function RowButton({
-  icon,
-  tone,
-  onPress,
-  disabled = false,
-  accessibilityLabel,
-  accessibilityHint,
-  testID,
-}: RowButtonProps) {
-  const {theme} = useAppTheme();
-  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
-  const mint = tone === 'mint';
-  return (
-    <Pressable
-      accessibilityHint={accessibilityHint}
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      accessibilityState={{disabled}}
-      disabled={disabled}
-      hitSlop={4}
-      onPress={onPress}
-      style={({pressed}) => [
-        styles.rowButton,
-        mint ? themedStyles.mint : themedStyles.plain,
-        pressed && !disabled
-          ? mint
-            ? themedStyles.mintPressed
-            : themedStyles.plainPressed
-          : null,
-        disabled ? themedStyles.disabled : null,
-      ]}
-      testID={testID}
-    >
-      <MaterialIcon color={theme.colors.primary} name={icon} size={18} />
-    </Pressable>
   );
 }
 
@@ -369,25 +314,6 @@ function makeStyles(theme: AppTheme) {
       fontSize: 16.5,
       fontWeight: '700',
     },
-    plain: {
-      backgroundColor: theme.colors.surfaceMuted,
-      ...getStickerEdge(3, theme.colors.surfaceHigh),
-    },
-    plainPressed: {
-      transform: [{translateY: 2}],
-      ...getStickerEdge(1, theme.colors.surfaceHigh),
-    },
-    mint: {
-      backgroundColor: theme.colors.accentSoft,
-      ...getStickerEdge(3, withAlpha(theme.colors.primary, 0.22)),
-    },
-    mintPressed: {
-      transform: [{translateY: 2}],
-      ...getStickerEdge(1, withAlpha(theme.colors.primary, 0.22)),
-    },
-    disabled: {
-      opacity: theme.states.disabledOpacity,
-    },
   });
 }
 
@@ -417,13 +343,6 @@ const styles = StyleSheet.create({
   listHeader: {
     gap: 10,
     marginTop: 6,
-  },
-  rowButton: {
-    alignItems: 'center',
-    borderRadius: 12,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
   },
   wordLine: {
     alignItems: 'baseline',

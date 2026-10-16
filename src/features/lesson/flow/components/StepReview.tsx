@@ -10,10 +10,10 @@ import {
 } from '@features/review';
 import {requestSync} from '@features/sync';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import type {FlashcardRecord, ReviewRating} from '@core/db/types';
@@ -163,7 +163,7 @@ function ReviewCard({
             {revealed ? row.item.meaning_vi : t('lessonFlow.reveal_meaning')}
           </AppText>
         </Pressable>
-        <IconButton
+        <ActionIconButton
           accessibilityHint={t('lessonFlow.listen_line_hint')}
           accessibilityLabel={t('lessonFlow.listen_line')}
           icon="volume_up"

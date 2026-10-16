@@ -2,9 +2,9 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {HeroFill} from '@ui/components/HeroFill';
-import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {formatIpa} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -127,15 +127,14 @@ export function ReviewCardFront({
               </AppText>
             </View>
           ) : null}
-          <IconButton
+          <ActionIconButton
             accessibilityLabel={speakAccessibilityLabel}
             icon="volume_up"
-            iconSize={28}
             onPress={onSpeak}
-            size={64}
+            onTint
+            size="large"
             style={styles.speak}
             testID={speakTestID}
-            tone="accent"
           />
         </View>
         <View style={styles.hintRow}>
@@ -187,13 +186,12 @@ export function ReviewCardBack({
               </AppText>
             ) : null}
           </View>
-          <IconButton
+          <ActionIconButton
             accessibilityLabel={speakAccessibilityLabel}
             icon="volume_up"
             onPress={onSpeak}
-            size={44}
+            onTint
             testID={speakTestID}
-            tone="accent"
           />
         </View>
         <View style={themedStyles.backBody}>

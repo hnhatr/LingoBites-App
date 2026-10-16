@@ -4,9 +4,9 @@ import {StyleSheet, View} from 'react-native';
 
 import {useScreenSpeak} from '@features/audio';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
-import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerFace} from '@ui/theme/hardShadow';
 
@@ -53,14 +53,13 @@ export function PartnerBubble({
           </AppText>
         ) : null}
         <View style={themedStyles.actions}>
-          <IconButton
+          <ActionIconButton
             accessibilityHint={t('lessonFlow.listen_line_hint')}
             accessibilityLabel={t('lessonFlow.listen_line')}
             icon="volume_up"
             onPress={() => {
               speak(textEn);
             }}
-            tone="accent"
           />
           {textVi && !showMeaning ? (
             <Chip

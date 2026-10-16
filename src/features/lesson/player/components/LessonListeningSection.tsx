@@ -1,9 +1,9 @@
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
 import {getStickerEdge} from '@ui/theme/hardShadow';
@@ -128,23 +128,15 @@ export function LessonListeningSection({
         <View style={styles.listen} testID={testID}>
           <View pointerEvents="none" style={styles.blob} />
           {onSpeakText ? (
-            <Pressable
+            <ActionIconButton
               accessibilityHint={t('lessonPlayer.listening_play_hint')}
               accessibilityLabel={t('lessonPlayer.listening_play')}
-              accessibilityRole="button"
+              icon="play_arrow"
               onPress={() => onSpeakText(entry.text)}
-              style={({pressed}) => [
-                styles.play,
-                pressed ? styles.pressed : null,
-              ]}
+              onTint
+              size="large"
               testID={`${testID}-play`}
-            >
-              <MaterialIcon
-                color={HERO_PALETTE.white}
-                name="play_arrow"
-                size={38}
-              />
-            </Pressable>
+            />
           ) : null}
           <View
             accessibilityElementsHidden
@@ -215,19 +207,6 @@ function makeStyles(theme: AppTheme) {
       left: -50,
       position: 'absolute',
       width: 180,
-    },
-    play: {
-      alignItems: 'center',
-      backgroundColor: HERO_PALETTE.coral,
-      borderColor: HERO_PALETTE.coralRing,
-      borderRadius: 42,
-      borderWidth: 6,
-      height: 84,
-      justifyContent: 'center',
-      width: 84,
-    },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
     },
     wave: {
       alignItems: 'center',

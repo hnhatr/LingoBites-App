@@ -220,7 +220,7 @@ function makeStyles(theme: AppTheme) {
       height: 46,
       justifyContent: 'center',
       width: 46,
-      ...getStickerEdge(3, theme.colors.surfaceHigh),
+      ...getStickerEdge(3, HERO_PALETTE.ghostShelf),
     },
     buttonPressed: {
       transform: [{translateY: 2}],

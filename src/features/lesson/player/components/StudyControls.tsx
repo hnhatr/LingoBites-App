@@ -6,6 +6,7 @@
 import React, {useEffect, useMemo, useRef} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
@@ -178,7 +179,7 @@ type BookmarkProps = {
   testID: string;
 };
 
-/** Square bookmark button: the shared save toggle on the square face. */
+/** Bookmark button: the shared save toggle as a raised square. */
 export function BookmarkToggle({
   saved,
   onPress,
@@ -188,18 +189,14 @@ export function BookmarkToggle({
   onTint = false,
   testID,
 }: BookmarkProps) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
     <SaveToggle
       accessibilityHint={accessibilityHint ?? ''}
       accessibilityLabel={saved ? savedLabel : label}
-      hitSlop={4}
-      iconSize={19}
       onPress={onPress}
+      onTint={onTint}
+      raised="row"
       saved={saved}
-      size={40}
-      style={[styles.square, onTint ? styles.squareOnTint : null]}
       testID={testID}
     />
   );
@@ -215,7 +212,7 @@ type SpeakSquareProps = {
   testID: string;
 };
 
-/** Square "listen" button matching the bookmark toggle. */
+/** "Listen" button matching the bookmark toggle. */
 export function SpeakSquare({
   onPress,
   icon = 'volume_up',
@@ -224,25 +221,15 @@ export function SpeakSquare({
   onTint = false,
   testID,
 }: SpeakSquareProps) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <Pressable
+    <ActionIconButton
       accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      hitSlop={4}
+      icon={icon}
       onPress={onPress}
-      style={({pressed}) => [
-        styles.square,
-        styles.speak,
-        onTint ? styles.squareOnTint : null,
-        pressed ? styles.navPressed : null,
-      ]}
+      onTint={onTint}
       testID={testID}
-    >
-      <MaterialIcon color={theme.colors.primary} name={icon} size={19} />
-    </Pressable>
+    />
   );
 }
 
@@ -351,20 +338,6 @@ function makeStyles(theme: AppTheme) {
       fontSize: 13,
       fontVariant: ['tabular-nums'],
       fontWeight: '800',
-    },
-    square: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: 12,
-      height: 40,
-      justifyContent: 'center',
-      width: 40,
-    },
-    squareOnTint: {
-      backgroundColor: theme.colors.surface,
-    },
-    speak: {
-      backgroundColor: theme.colors.secondarySoft,
     },
   });
 }

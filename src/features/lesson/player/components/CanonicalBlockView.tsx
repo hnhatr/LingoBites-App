@@ -2,9 +2,9 @@ import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {Chip} from '@ui/components/Chip';
-import {IconButton} from '@ui/components/IconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -197,7 +197,7 @@ export function CanonicalBlockView({
             </View>
             <Chip label={t(`lessonPlayer.item_kind_${item.kind}`)} />
             {onSpeakText && item.kind !== 'pattern' ? (
-              <IconButton
+              <ActionIconButton
                 accessibilityHint={t('lessonPlayer.pattern_speak_hint')}
                 accessibilityLabel={t('lessonPlayer.pattern_speak', {
                   text: item.text,

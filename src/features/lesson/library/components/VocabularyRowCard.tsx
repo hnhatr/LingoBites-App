@@ -167,10 +167,9 @@ export function VocabularyRowCard({
                 ? t('library.vocabulary.unsave_a11y')
                 : t('library.vocabulary.save_a11y')
             }
-            iconSize={22}
             onPress={handleBookmarkPress}
+            raised="row"
             saved={isSaved}
-            size={40}
             testID="save-button"
           />
         }

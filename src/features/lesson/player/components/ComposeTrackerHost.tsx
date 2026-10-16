@@ -3,9 +3,9 @@ import {useTranslation} from 'react-i18next';
 import {AppState, StyleSheet, View} from 'react-native';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppButton} from '@ui/components/AppButton';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {useOptionalAppNavigation} from '@core/navigation';
@@ -110,7 +110,7 @@ export function ComposeTrackerHost() {
             variant="primary"
           />
         ) : null}
-        <IconButton
+        <ActionIconButton
           accessibilityHint={t('compose.dismiss_hint')}
           accessibilityLabel={t('compose.dismiss')}
           icon="close"
@@ -120,7 +120,6 @@ export function ComposeTrackerHost() {
               : dismissCompose(unseen.requestId)
           }
           testID="compose-banner-dismiss"
-          tone="ghost"
         />
       </View>
     </View>

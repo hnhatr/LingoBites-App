@@ -1,13 +1,12 @@
 import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppButton} from '@ui/components/AppButton';
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {TextField} from '@ui/components/TextField';
-import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {updateAccountProfile} from '../logic/accountProfile';
 import {validateDisplayName, validatePhone} from '../logic/profileValidation';
@@ -34,11 +33,9 @@ function copyPublicCode(code: string): void {
  * app never sends a verification code to it.
  */
 export function AccountProfileSection() {
-  const {theme} = useAppTheme();
   const {t} = useTranslation();
   const user = useAccountStore(state => state.user);
   const retry = useAccountStore(state => state.retry);
-  const themedStyles = React.useMemo(() => makeStyles(theme), [theme]);
 
   const [name, setName] = useState(user?.display_name ?? '');
   const [phone, setPhone] = useState(user?.phone_e164 ?? '');
@@ -121,7 +118,7 @@ export function AccountProfileSection() {
   return (
     <View style={styles.section}>
       <AppCard style={styles.card}>
-        <View style={themedStyles.codeRow}>
+        <View style={styles.codeRow}>
           <View style={styles.codeCopy}>
             <AppText color="secondary" variant="caption">
               {t('account.public_code_label')}
@@ -136,25 +133,15 @@ export function AccountProfileSection() {
               {user.public_code}
             </AppText>
           </View>
-          <Pressable
+          <ActionIconButton
             accessibilityHint={t('account.copy_code_hint')}
             accessibilityLabel={t('account.public_code_label')}
-            accessibilityRole="button"
+            icon="content_copy"
             onPress={() => {
               copyPublicCode(user.public_code);
               setCopied(true);
             }}
-            style={({pressed}) => [
-              themedStyles.copyButton,
-              pressed && themedStyles.pressed,
-            ]}
-          >
-            <MaterialIcon
-              color={theme.colors.accentInk}
-              name="content_copy"
-              size={20}
-            />
-          </Pressable>
+          />
         </View>
         <AppText color="secondary" variant="caption">
           {t('account.public_code_hint')}
@@ -228,25 +215,9 @@ const styles = StyleSheet.create({
   section: {
     gap: 10,
   },
+  codeRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
 });
-
-function makeStyles(theme: AppTheme) {
-  return StyleSheet.create({
-    codeRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 12,
-    },
-    copyButton: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.accent,
-      borderRadius: theme.radius.pill,
-      height: 40,
-      justifyContent: 'center',
-      width: 40,
-    },
-    pressed: {
-      opacity: 0.7,
-    },
-  });
-}

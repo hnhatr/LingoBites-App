@@ -4,8 +4,10 @@ import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {useSpeak} from '@features/audio';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
 
@@ -118,34 +120,21 @@ export function SavedComboSentencesList({query = ''}: {query?: string}) {
               </AppText>
             </Pressable>
             <View style={styles.actions}>
-              <Pressable
+              <ActionIconButton
                 accessibilityHint={t('combo.set.listen_hint')}
                 accessibilityLabel={t('combo.set.listen')}
-                accessibilityRole="button"
+                icon="volume_up"
                 onPress={() => speak(entry.textEn)}
-                style={[themedStyles.icon, themedStyles.listen]}
                 testID={`saved-sentence-listen-${entry.id}`}
-              >
-                <MaterialIcon
-                  color={theme.colors.primary}
-                  name="volume_up"
-                  size={17}
-                />
-              </Pressable>
-              <Pressable
+              />
+              <SaveToggle
                 accessibilityHint={t('combo.saved.unsave_hint')}
                 accessibilityLabel={t('combo.saved.unsave')}
-                accessibilityRole="button"
                 onPress={() => unsave(entry)}
-                style={[themedStyles.icon, themedStyles.saved]}
+                raised="row"
+                saved
                 testID={`saved-sentence-unsave-${entry.id}`}
-              >
-                <MaterialIcon
-                  color={theme.colors.onTertiaryContainer}
-                  name="bookmark"
-                  size={17}
-                />
-              </Pressable>
+              />
             </View>
           </View>
         );
@@ -188,19 +177,6 @@ function makeStyles(theme: AppTheme) {
     highlight: {
       color: theme.colors.primary,
       fontWeight: '700',
-    },
-    icon: {
-      alignItems: 'center',
-      borderRadius: 12,
-      height: 34,
-      justifyContent: 'center',
-      width: 34,
-    },
-    listen: {
-      backgroundColor: theme.colors.accentSoft,
-    },
-    saved: {
-      backgroundColor: theme.colors.tertiarySoft,
     },
     empty: {
       alignItems: 'center',

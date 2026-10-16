@@ -3,7 +3,7 @@ import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
 
@@ -88,17 +88,18 @@ export function GrammarRowCard({
             {grammarContent}
           </AppText>
         </View>
-        <IconButton
+        <SaveToggle
+          accessibilityHint={
+            isSaved ? 'Bỏ khỏi danh sách đã lưu' : 'Thêm vào danh sách đã lưu'
+          }
           accessibilityLabel={
             isSaved ? 'Bỏ lưu quy tắc ngữ pháp này' : 'Lưu quy tắc ngữ pháp này'
           }
-          icon={isSaved ? 'heart' : 'heart_outline'}
           onPress={handleBookmarkPress}
-          size={40}
-          iconSize={22}
-          tone="bare"
-          testID="save-button"
+          raised="row"
+          saved={isSaved}
           style={styles.bookmarkButton}
+          testID="save-button"
         />
       </View>
     </AppCard>

@@ -15,11 +15,16 @@ import {getGamificationSnapshot} from '@features/engagement';
 import {AppButton} from '@ui/components/AppButton';
 import {AppScreen} from '@ui/components/AppScreen';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {
+  HEADER_BUTTON_RADIUS,
+  HEADER_BUTTON_SIZE,
+  HeaderIconButton,
+} from '@ui/components/HeaderIconButton';
 import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {type AppTheme, useAppTheme} from '@ui/theme';
-import {getStickerFace} from '@ui/theme/hardShadow';
+import {solidOver} from '@ui/theme/colorUtils';
+import {getStickerEdge, getStickerFace} from '@ui/theme/hardShadow';
 import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 import {useAppNavigation} from '@core/navigation';
@@ -334,14 +339,12 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
       <FlowFooterProvider register={footer.register}>
         {shownStep !== null && showMap ? (
           <View style={themedStyles.header}>
-            <IconButton
+            <HeaderIconButton
               accessibilityHint={t('lessonFlow.close_lesson_hint')}
               accessibilityLabel={t('lessonFlow.close_lesson')}
               icon="close"
               onPress={appNavigation.closeLesson}
-              style={themedStyles.mapClose}
               testID="lesson-flow-close"
-              tone="surface"
             />
             <AppText
               color="secondary"
@@ -366,14 +369,12 @@ export function LessonFlowPlayerScreen({navigation, route}: Props) {
           </View>
         ) : (
           <View style={themedStyles.header}>
-            <IconButton
+            <HeaderIconButton
               accessibilityHint={t('lessonFlow.close_lesson_hint')}
               accessibilityLabel={t('lessonFlow.close_lesson')}
               icon="close"
               onPress={appNavigation.closeLesson}
-              style={themedStyles.mapClose}
               testID="lesson-flow-close"
-              tone="surface"
             />
             {shownStep !== null ? (
               <>
@@ -510,15 +511,19 @@ function makeStyles(theme: AppTheme) {
     },
     speakToggle: {
       alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 14,
-      height: 40,
+      backgroundColor: theme.colors.accentSoft,
+      borderRadius: HEADER_BUTTON_RADIUS,
+      height: HEADER_BUTTON_SIZE,
       justifyContent: 'center',
-      width: 40,
-      ...getStickerFace(theme, 3),
+      width: HEADER_BUTTON_SIZE,
+      ...getStickerEdge(3, withAlpha(theme.colors.primary, 0.3)),
     },
     speakToggleOn: {
-      backgroundColor: withAlpha(HERO_PALETTE.coral, 0.18),
+      backgroundColor: solidOver(
+        withAlpha(HERO_PALETTE.coral, 0.18),
+        theme.colors.surface,
+      ),
+      ...getStickerEdge(3, HERO_PALETTE.coralRing),
     },
     speakSlash: {
       backgroundColor: HERO_PALETTE.coralShelf,
@@ -530,9 +535,6 @@ function makeStyles(theme: AppTheme) {
     },
     title: {
       gap: 2,
-    },
-    mapClose: {
-      ...getStickerFace(theme, 3),
     },
     streak: {
       alignItems: 'center',

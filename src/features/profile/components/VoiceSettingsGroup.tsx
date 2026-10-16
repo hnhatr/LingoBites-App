@@ -3,9 +3,9 @@ import {Platform, Pressable, StyleSheet, View} from 'react-native';
 
 import type {TtsVoiceOption, TtsVoiceTier} from '@features/audio';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppText} from '@ui/components/AppText';
 import {Chip, type ChipTone} from '@ui/components/Chip';
-import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SettingsGroup} from '@ui/components/SettingsGroup';
 import {useAppTheme} from '@ui/theme';
 
@@ -102,25 +102,13 @@ function VoiceRow({
         </View>
       </Pressable>
       {onPreview ? (
-        <Pressable
+        <ActionIconButton
           accessibilityHint="Chỉ nghe thử, không đổi giọng đang dùng"
           accessibilityLabel={`Nghe thử giọng ${label}`}
-          accessibilityRole="button"
-          hitSlop={4}
+          icon="play_arrow"
           onPress={onPreview}
-          style={({pressed}) => [
-            styles.play,
-            {backgroundColor: theme.colors.accentSoft},
-            pressed && {opacity: theme.states.pressedOpacity},
-          ]}
           testID={`${testID}-preview`}
-        >
-          <MaterialIcon
-            color={theme.colors.primary}
-            name="play_arrow"
-            size={22}
-          />
-        </Pressable>
+        />
       ) : null}
     </View>
   );
@@ -212,13 +200,6 @@ const styles = StyleSheet.create({
   notes: {
     paddingHorizontal: 16,
     paddingTop: 8,
-  },
-  play: {
-    alignItems: 'center',
-    borderRadius: 999,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
   },
   radio: {
     alignItems: 'center',

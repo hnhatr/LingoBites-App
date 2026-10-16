@@ -8,9 +8,9 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, Switch, View} from 'react-native';
 
+import {ActionIconButton} from '@ui/components/ActionIconButton';
 import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
 import {LibraryCover} from '@ui/components/LibraryCover';
 import {formatIpa} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -123,16 +123,13 @@ export function LessonContentTabs({
                   </AppText>
                 </View>
                 {onSpeakText ? (
-                  <IconButton
+                  <ActionIconButton
                     accessibilityHint={t('lessonPlayer.speak_word_hint')}
                     accessibilityLabel={t('lessonPlayer.speak_word', {
                       word: entry.word,
                     })}
                     icon="volume_up"
-                    iconSize={18}
                     onPress={() => onSpeakText(entry.word)}
-                    size={36}
-                    style={styles.speak}
                     testID={`lesson-content-speak-word-${entry.key}`}
                   />
                 ) : null}
@@ -198,16 +195,14 @@ export function LessonContentTabs({
                   ) : null}
                 </View>
                 {onSpeakText ? (
-                  <IconButton
+                  <ActionIconButton
                     accessibilityHint={t('lessonPlayer.speak_sentence_hint')}
                     accessibilityLabel={t('lessonPlayer.speak_sentence', {
                       index: index + 1,
                     })}
                     icon="volume_up"
-                    iconSize={16}
                     onPress={() => onSpeakText(sentence.text_en)}
-                    size={32}
-                    style={styles.speak}
+                    size="compact"
                     testID={`lesson-content-speak-sentence-${sentence.id}`}
                   />
                 ) : null}
@@ -289,10 +284,6 @@ function makeStyles(theme: AppTheme) {
       fontWeight: '800',
       paddingTop: 3,
       width: 16,
-    },
-    speak: {
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: 12,
     },
     viBar: {
       alignItems: 'center',
