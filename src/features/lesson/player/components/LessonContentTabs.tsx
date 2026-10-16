@@ -6,9 +6,10 @@
  */
 import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, StyleSheet, Switch, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import {ActionIconButton} from '@ui/components/ActionIconButton';
+import {AppSwitch} from '@ui/components/AppSwitch';
 import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
 import {LibraryCover} from '@ui/components/LibraryCover';
@@ -160,16 +161,11 @@ export function LessonContentTabs({
                 <AppText variant="label">
                   {t('lessonPlayer.show_vietnamese')}
                 </AppText>
-                <Switch
+                <AppSwitch
                   accessibilityHint={t('lessonPlayer.show_vietnamese_hint')}
                   accessibilityLabel={t('lessonPlayer.show_vietnamese')}
                   onValueChange={setShowVi}
                   testID="lesson-content-vi-toggle"
-                  thumbColor={theme.colors.surface}
-                  trackColor={{
-                    false: theme.colors.outlineVariant,
-                    true: theme.colors.primary,
-                  }}
                   value={showVi}
                 />
               </View>

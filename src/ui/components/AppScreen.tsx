@@ -17,6 +17,8 @@ type Props = ViewProps & {
    * the status bar leave out `top`; the offline strip then clears it itself.
    */
   edges?: readonly Edge[];
+  /** The screen shows a copy saved on the device ("Đã tải" on the bar). */
+  offlineCopy?: boolean;
 };
 
 export function AppScreen({
@@ -24,6 +26,7 @@ export function AppScreen({
   children,
   showOfflineBanner = true,
   edges,
+  offlineCopy = false,
   ...rest
 }: Props) {
   const {theme} = useAppTheme();
@@ -40,7 +43,10 @@ export function AppScreen({
       {...rest}
     >
       {showOfflineBanner ? (
-        <OfflineBanner topInset={padsTop ? 0 : (insets?.top ?? 0)} />
+        <OfflineBanner
+          downloaded={offlineCopy}
+          topInset={padsTop ? 0 : (insets?.top ?? 0)}
+        />
       ) : null}
       <View style={styles.fill}>{children}</View>
     </SafeAreaView>

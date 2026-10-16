@@ -1,8 +1,9 @@
 import React, {useContext, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Modal, Pressable, StyleSheet, Switch, View} from 'react-native';
+import {Modal, Pressable, StyleSheet, View} from 'react-native';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 
+import {AppSwitch} from '@ui/components/AppSwitch';
 import {AppText} from '@ui/components/AppText';
 import {HeaderIconButton} from '@ui/components/HeaderIconButton';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
@@ -54,9 +55,8 @@ function ToggleRow({
       <AppText style={styles.rowLabel} variant="body">
         {label}
       </AppText>
-      <Switch
+      <AppSwitch
         accessibilityLabel={label}
-        accessibilityState={{selected: value}}
         onValueChange={onToggle}
         testID={testID}
         value={value}

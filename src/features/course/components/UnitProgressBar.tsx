@@ -1,9 +1,9 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
+import {AppProgressBar} from '@ui/components/AppProgressBar';
 import {AppText} from '@ui/components/AppText';
-import {type AppTheme, useAppTheme} from '@ui/theme';
 
 import {type UnitProgress, unitProgressRatio} from '../logic/unitProgress';
 
@@ -17,9 +17,7 @@ type Props = {
  * "đạt z" once the Server counts lessons as passed (PR 16).
  */
 export function UnitProgressBar({progress, testID}: Props) {
-  const {theme} = useAppTheme();
   const {t} = useTranslation();
-  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
   const label = progress.passed
     ? t('course.unit_progress_passed', {
         completed: progress.completed,
@@ -44,13 +42,16 @@ export function UnitProgressBar({progress, testID}: Props) {
       style={styles.row}
       testID={testID}
     >
-      <View style={themedStyles.track}>
-        <View
-          style={[
-            themedStyles.fill,
-            {width: `${unitProgressRatio(progress) * 100}%`},
-          ]}
-          testID={testID ? `${testID}-fill` : undefined}
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={styles.bar}
+      >
+        <AppProgressBar
+          compact
+          fillTestID={testID ? `${testID}-fill` : undefined}
+          onCard
+          value={unitProgressRatio(progress)}
         />
       </View>
       <AppText color="secondary" variant="caption">
@@ -60,24 +61,10 @@ export function UnitProgressBar({progress, testID}: Props) {
   );
 }
 
-function makeStyles(theme: AppTheme) {
-  return StyleSheet.create({
-    fill: {
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.radius.pill,
-      height: '100%',
-    },
-    track: {
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: theme.radius.pill,
-      flex: 1,
-      height: 6,
-      overflow: 'hidden',
-    },
-  });
-}
-
 const styles = StyleSheet.create({
+  bar: {
+    flex: 1,
+  },
   row: {
     alignItems: 'center',
     flexDirection: 'row',

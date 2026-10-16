@@ -1,8 +1,9 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppButton} from '@ui/components/AppButton';
+import {AppProgressBar} from '@ui/components/AppProgressBar';
 import {AppText} from '@ui/components/AppText';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
@@ -96,8 +97,6 @@ export type CurrentSentenceInfo = {
   startMs: number | null;
 };
 
-/** Above this many sentences the strip drops its per-sentence ticks. */
-const MAX_PROGRESS_TICKS = 60;
 /** Poll slack: loop a little before the cue end so the next line never shows. */
 const LOOP_END_SLACK_MS = 150;
 
@@ -146,7 +145,6 @@ export function YouTubeLessonStudy({
   const [followVideo, setFollowVideo] = useState(true);
   const [selectedWord, setSelectedWord] =
     useState<SentenceWordSelection | null>(null);
-  const [progressWidth, setProgressWidth] = useState(0);
   const currentIndexRef = useRef(0);
   currentIndexRef.current = currentIndex;
   // Set once a loop seek is sent; cleared when playback is back inside the
@@ -303,17 +301,16 @@ export function YouTubeLessonStudy({
     onPlayVideo?.();
   }, [currentStartMs, onPlayVideo, onSeek]);
 
-  const handleProgressPress = useCallback(
-    (locationX: number) => {
-      if (progressWidth <= 0 || orderedSentences.length === 0) return;
-      const ratio = Math.max(0, Math.min(locationX / progressWidth, 0.9999));
+  const handleProgressSeek = useCallback(
+    (ratio: number) => {
+      if (orderedSentences.length === 0) return;
       const index = Math.floor(ratio * orderedSentences.length);
       setFollowVideo(false);
       setCarouselScrollAnimated(true);
       setCurrentIndex(index);
       seekToSentence(index);
     },
-    [orderedSentences.length, progressWidth, seekToSentence],
+    [orderedSentences.length, seekToSentence],
   );
 
   const handlePressWord = useCallback(
@@ -395,10 +392,6 @@ export function YouTubeLessonStudy({
   const position = orderedSentences.length === 0 ? 0 : currentIndex + 1;
   const progressRatio =
     orderedSentences.length === 0 ? 0 : position / orderedSentences.length;
-  const knobRatio =
-    orderedSentences.length === 0
-      ? 0
-      : (currentIndex + 0.5) / orderedSentences.length;
   const atFirst = currentIndex <= 0 || orderedSentences.length === 0;
   const atLast =
     orderedSentences.length === 0 ||
@@ -437,52 +430,23 @@ export function YouTubeLessonStudy({
       </View>
 
       <View style={styles.progressRow}>
-        <Pressable
+        <AppProgressBar
           accessibilityHint={t('youtube.study.progress_a11y')}
           accessibilityLabel={t('lessonPlayer.sentence_counter', {
             index: position,
             total: orderedSentences.length,
           })}
-          accessibilityRole="progressbar"
           accessibilityValue={{
             min: 0,
             max: orderedSentences.length,
             now: position,
           }}
-          hitSlop={{top: 8, bottom: 8}}
-          onLayout={event => setProgressWidth(event.nativeEvent.layout.width)}
-          onPress={event => handleProgressPress(event.nativeEvent.locationX)}
+          count={`${position}/${orderedSentences.length}`}
+          onSeek={handleProgressSeek}
           style={styles.progress}
           testID="youtube-study-progress"
-        >
-          <View pointerEvents="none" style={styles.progressTrack}>
-            <View
-              style={[styles.progressDone, {width: `${progressRatio * 100}%`}]}
-            />
-            {orderedSentences.length <= MAX_PROGRESS_TICKS
-              ? orderedSentences.slice(1).map((sentence, index) => (
-                  <View
-                    key={sentence.id}
-                    style={[
-                      styles.progressTick,
-                      {
-                        left: `${((index + 1) / orderedSentences.length) * 100}%`,
-                      },
-                    ]}
-                  />
-                ))
-              : null}
-          </View>
-          {orderedSentences.length > 0 ? (
-            <View
-              pointerEvents="none"
-              style={[styles.progressKnob, {left: `${knobRatio * 100}%`}]}
-            />
-          ) : null}
-        </Pressable>
-        <AppText style={styles.progressCount} variant="label">
-          {`${position}/${orderedSentences.length}`}
-        </AppText>
+          value={progressRatio}
+        />
       </View>
 
       <ScrollView
@@ -594,29 +558,6 @@ function makeStyles(theme: AppTheme) {
   return StyleSheet.create({
     progress: {
       flex: 1,
-      height: 22,
-      justifyContent: 'center',
-    },
-    progressCount: {
-      color: theme.colors.text.secondary,
-      fontVariant: ['tabular-nums'],
-      minWidth: 40,
-      textAlign: 'right',
-    },
-    progressDone: {
-      backgroundColor: theme.colors.accent,
-      borderRadius: theme.radius.pill,
-      height: '100%',
-    },
-    progressKnob: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.surface,
-      borderRadius: 8,
-      borderWidth: 3,
-      height: 16,
-      marginLeft: -8,
-      position: 'absolute',
-      width: 16,
     },
     progressRow: {
       alignItems: 'center',
@@ -624,19 +565,6 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.sm,
       marginHorizontal: theme.gutter,
       marginTop: theme.spacing.sm,
-    },
-    progressTick: {
-      backgroundColor: theme.colors.background,
-      bottom: 0,
-      position: 'absolute',
-      top: 0,
-      width: 2,
-    },
-    progressTrack: {
-      backgroundColor: theme.colors.surfaceHigh,
-      borderRadius: theme.radius.pill,
-      height: 8,
-      overflow: 'hidden',
     },
     root: {
       flex: 1,

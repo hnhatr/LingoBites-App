@@ -9,6 +9,7 @@ import {Pressable, StyleSheet, View} from 'react-native';
 
 import {type AppTheme, useAppTheme} from '../theme';
 import {ActionIconButton} from './ActionIconButton';
+import {AppProgressBar} from './AppProgressBar';
 import {AppText} from './AppText';
 import {HeaderIconButton} from './HeaderIconButton';
 
@@ -49,17 +50,13 @@ export function SessionHeader({
         onPress={onClose}
         testID={closeTestID}
       />
-      <View
-        accessibilityRole="progressbar"
-        accessibilityValue={{
-          text: progressLabel,
-        }}
-        style={styles.track}
+      <AppProgressBar
+        accessibilityValue={{text: progressLabel}}
+        count={`${current}/${total}`}
+        style={styles.progress}
         testID="pack-session-progress"
-      >
-        <View style={[styles.fill, {width: `${share * 100}%`}]} />
-      </View>
-      <AppText style={styles.count}>{`${current}/${total}`}</AppText>
+        value={share}
+      />
     </View>
   );
 }
@@ -252,25 +249,8 @@ function makeStyles(theme: AppTheme) {
       paddingHorizontal: theme.spacing.md,
       paddingVertical: theme.spacing.sm,
     },
-    track: {
-      backgroundColor: theme.colors.surfaceContainer,
-      borderRadius: 6,
+    progress: {
       flex: 1,
-      height: 12,
-      overflow: 'hidden',
-    },
-    fill: {
-      backgroundColor: theme.colors.accent,
-      borderRadius: 6,
-      height: '100%',
-    },
-    count: {
-      color: theme.colors.text.secondary,
-      fontSize: 13,
-      fontVariant: ['tabular-nums'],
-      fontWeight: '700',
-      minWidth: 36,
-      textAlign: 'right',
     },
     steps: {
       flexDirection: 'row',

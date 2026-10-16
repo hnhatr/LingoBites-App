@@ -7,6 +7,7 @@ import React, {useEffect, useMemo, useRef} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {ActionIconButton} from '@ui/components/ActionIconButton';
+import {AppProgressBar} from '@ui/components/AppProgressBar';
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
@@ -125,9 +126,8 @@ type ProgressProps = {
 };
 
 /**
- * Segments for every page (done, current, still to come) with "3/9" after
- * them. Tapping a segment jumps there; screen readers use the page's own
- * next / previous actions instead.
+ * The app's progress bar with "3/9" after it. Tapping the bar jumps to that
+ * page; screen readers use the page's own next / previous actions instead.
  */
 export function StudyProgress({
   total,
@@ -136,34 +136,14 @@ export function StudyProgress({
   onSelect,
   testID = 'study-progress',
 }: ProgressProps) {
-  const {theme} = useAppTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <View style={styles.progress} testID={testID}>
-      <View
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        style={styles.segments}
-      >
-        {Array.from({length: total}, (_, k) => (
-          <Pressable
-            accessibilityRole="button"
-            hitSlop={{top: 10, bottom: 10}}
-            key={k}
-            onPress={() => onSelect(k)}
-            style={[
-              styles.segment,
-              k < index ? styles.segmentDone : null,
-              k === index ? styles.segmentOn : null,
-            ]}
-            testID={`${testID}-${k}`}
-          />
-        ))}
-      </View>
-      <AppText style={styles.progressLabel} testID={`${testID}-label`}>
-        {label}
-      </AppText>
-    </View>
+    <AppProgressBar
+      accessibilityValue={{min: 1, max: total, now: index + 1}}
+      count={label}
+      onSeek={ratio => onSelect(Math.floor(ratio * total))}
+      testID={testID}
+      value={total > 0 ? (index + 1) / total : 0}
+    />
   );
 }
 
@@ -309,34 +289,6 @@ function makeStyles(theme: AppTheme) {
     navText: {
       flexShrink: 1,
       fontSize: 16,
-      fontWeight: '800',
-    },
-    progress: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 10,
-    },
-    segments: {
-      flex: 1,
-      flexDirection: 'row',
-      gap: 4,
-    },
-    segment: {
-      backgroundColor: theme.colors.outlineVariant,
-      borderRadius: 4,
-      flex: 1,
-      height: 8,
-    },
-    segmentDone: {
-      backgroundColor: theme.colors.accent,
-    },
-    segmentOn: {
-      backgroundColor: HERO_PALETTE.coral,
-    },
-    progressLabel: {
-      color: theme.colors.text.muted,
-      fontSize: 13,
-      fontVariant: ['tabular-nums'],
       fontWeight: '800',
     },
   });

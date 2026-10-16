@@ -122,7 +122,9 @@ export function PackHeroCard({
             </View>
           </View>
           <View style={styles.track}>
-            <View style={[styles.fill, {width: `${share * 100}%`}]} />
+            {share > 0 ? (
+              <View style={[styles.fill, {width: `${share * 100}%`}]} />
+            ) : null}
           </View>
         </View>
 
@@ -305,16 +307,22 @@ function makeStyles(theme: AppTheme) {
       fontVariant: ['tabular-nums'],
       fontWeight: '800',
     },
+    // The app's progress bar look (AppProgressBar, compact) in the card's
+    // fixed colours: a raised track, a mint fill on a darker shelf.
     track: {
       backgroundColor: PACK_PALETTE.track,
-      borderRadius: 5,
+      borderRadius: 999,
       height: 10,
-      overflow: 'hidden',
+      padding: 2,
+      ...getStickerEdge(2, PACK_PALETTE.ghostShelf),
     },
     fill: {
-      backgroundColor: PACK_PALETTE.teal,
-      borderRadius: 5,
+      backgroundColor: PACK_PALETTE.faceFrom,
+      borderBottomWidth: 2,
+      borderColor: PACK_PALETTE.shelf,
+      borderRadius: 999,
       height: '100%',
+      minWidth: 6,
     },
     ctas: {
       flexDirection: 'row',
