@@ -103,7 +103,7 @@ describe('VocabularyRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('bookmark_add');
+    expect(saveButton.props.saved).toBe(false);
   });
 
   it('shows saved bookmark when saved', () => {
@@ -118,7 +118,7 @@ describe('VocabularyRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('bookmark');
+    expect(saveButton.props.saved).toBe(true);
   });
 
   it('calls onSave when unsaved bookmark pressed', () => {
@@ -269,7 +269,7 @@ describe('VocabularyRowCard', () => {
     ).toBe('Cô ấy cho tôi một quả táo đỏ');
   });
 
-  it('bookmark button has bare tone styling', () => {
+  it('bookmark button has no backdrop on the plain card', () => {
     const tree = render(
       <VocabularyRowCard
         flashcard={mockFlashcard}
@@ -281,7 +281,7 @@ describe('VocabularyRowCard', () => {
     );
 
     const saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.tone).toBe('bare');
+    expect(saveButton.props.backdrop).toBeFalsy();
   });
 
   it('renders with correct accessibility labels', () => {
@@ -313,7 +313,9 @@ describe('VocabularyRowCard', () => {
       />,
     );
 
-    const saveButton = tree.root.findByProps({testID: 'save-button'});
+    const saveButton = tree.root
+      .findAll(node => node.props.testID === 'save-button')
+      .find(node => typeof node.props.accessibilityLabel === 'string')!;
     expect(saveButton.props.accessibilityLabel).toBe('Bỏ lưu từ này');
   });
 
@@ -328,7 +330,9 @@ describe('VocabularyRowCard', () => {
       />,
     );
 
-    const saveButton = tree.root.findByProps({testID: 'save-button'});
+    const saveButton = tree.root
+      .findAll(node => node.props.testID === 'save-button')
+      .find(node => typeof node.props.accessibilityLabel === 'string')!;
     expect(saveButton.props.accessibilityLabel).toBe('Lưu từ này');
   });
 
@@ -344,7 +348,7 @@ describe('VocabularyRowCard', () => {
     );
 
     let saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('bookmark_add');
+    expect(saveButton.props.saved).toBe(false);
 
     act(() => {
       tree.update(
@@ -363,7 +367,7 @@ describe('VocabularyRowCard', () => {
     });
 
     saveButton = tree.root.findByProps({testID: 'save-button'});
-    expect(saveButton.props.icon).toBe('bookmark');
+    expect(saveButton.props.saved).toBe(true);
   });
 
   it('handles different flashcard data', () => {

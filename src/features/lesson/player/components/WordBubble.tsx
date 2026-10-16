@@ -4,6 +4,7 @@ import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge} from '@ui/theme/hardShadow';
 
@@ -85,27 +86,19 @@ export function WordBubble({
           </Pressable>
         ) : null}
         {vocabulary && vocabularySave ? (
-          <Pressable
+          <SaveToggle
             accessibilityHint={t('lessonPlayer.save_card_hint')}
             accessibilityLabel={
               saved ? t('lessonPlayer.saved') : t('lessonPlayer.save_card')
             }
-            accessibilityRole="button"
-            accessibilityState={{selected: saved}}
+            backdrop
+            hitSlop={0}
+            iconSize={17}
             onPress={() => vocabularySave.onToggle(vocabulary)}
-            style={({pressed}) => [
-              styles.mini,
-              saved ? styles.miniOn : null,
-              pressed ? styles.pressed : null,
-            ]}
+            saved={saved}
+            size={32}
             testID="youtube-word-bubble-save"
-          >
-            <MaterialIcon
-              color={saved ? theme.colors.text.inverse : theme.colors.primary}
-              name={saved ? 'bookmark' : 'bookmark_add'}
-              size={17}
-            />
-          </Pressable>
+          />
         ) : null}
         <Pressable
           accessibilityLabel={t('youtube.study.word_bubble_close')}
@@ -188,9 +181,6 @@ function makeStyles(theme: AppTheme) {
       height: 32,
       justifyContent: 'center',
       width: 32,
-    },
-    miniOn: {
-      backgroundColor: theme.colors.primary,
     },
     pos: {
       backgroundColor: theme.colors.secondarySoft,

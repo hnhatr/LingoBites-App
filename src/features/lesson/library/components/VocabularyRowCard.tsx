@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {WordCard} from '@ui/components/WordCard';
 import {useAppTheme} from '@ui/theme';
 import type {AppTheme} from '@ui/theme/types';
@@ -160,17 +160,17 @@ export function VocabularyRowCard({
         pressAccessibilityLabel={`${word} - ${flashcard.meaningVi}`}
         pressTestID="vocabulary-card-pressable"
         trailing={
-          <IconButton
+          <SaveToggle
+            accessibilityHint=""
             accessibilityLabel={
               isSaved
                 ? t('library.vocabulary.unsave_a11y')
                 : t('library.vocabulary.save_a11y')
             }
-            icon={isSaved ? 'bookmark' : 'bookmark_add'}
-            onPress={handleBookmarkPress}
-            size={40}
             iconSize={22}
-            tone="bare"
+            onPress={handleBookmarkPress}
+            saved={isSaved}
+            size={40}
             testID="save-button"
           />
         }

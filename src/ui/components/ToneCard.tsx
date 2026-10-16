@@ -2,8 +2,7 @@
  * ToneCard — a pack or lesson drawn like a Courses card, shared by the
  * Library and the word path list.
  */
-import {BlurTargetView} from 'expo-blur';
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {
   type AccessibilityActionEvent,
   type AccessibilityActionInfo,
@@ -23,11 +22,11 @@ import {
   LibraryCover,
 } from '@ui/components/LibraryCover';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {
   VIDEO_PLAY_SIZE,
   VideoPlayButton,
-  VideoSaveButton,
 } from '@ui/components/VideoCardButtons';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {solidOver} from '@ui/theme/colorUtils';
@@ -161,7 +160,6 @@ export function ToneCard({
   const cardWidth = fixedWidth ?? width - gutter * 2;
   const artWidth = Math.max(0, cardWidth * ART_SHARE);
   const gradientId = `cardFade-${testID}`;
-  const artRef = useRef<View>(null);
 
   const card = (
     <Pressable
@@ -188,7 +186,7 @@ export function ToneCard({
         shelfHeight={CARD_SHELF_HEIGHT}
       >
         <View style={[cardStyles.art, {width: artWidth}]}>
-          <BlurTargetView ref={artRef} style={cardStyles.artFill}>
+          <View style={cardStyles.artFill}>
             <LibraryCover
               aspectRatio={artWidth > 0 ? artWidth / CARD_HEIGHT : undefined}
               glyph={cover.glyph}
@@ -197,7 +195,7 @@ export function ToneCard({
               shape="lesson"
               testID={`${testID}-cover`}
             />
-          </BlurTargetView>
+          </View>
           <Svg
             height={CARD_HEIGHT}
             pointerEvents="none"
@@ -275,34 +273,16 @@ export function ToneCard({
       ]}
     >
       {card}
-      {bookmark && video ? (
-        <VideoSaveButton
-          blurTarget={artRef}
-          onToggle={bookmark.onToggle}
-          saved={bookmark.saved}
-          testID={`${testID}-bookmark`}
-        />
-      ) : bookmark ? (
-        <Pressable
-          accessibilityHint={
-            bookmark.saved
-              ? 'Bỏ bài khỏi danh sách đã lưu'
-              : 'Thêm bài vào danh sách đã lưu'
-          }
-          accessibilityLabel={bookmark.saved ? 'Bỏ lưu bài' : 'Lưu bài'}
-          accessibilityRole="button"
-          accessibilityState={{selected: bookmark.saved}}
-          hitSlop={6}
+      {bookmark ? (
+        // The picture behind it is many-coloured, so it sits on white.
+        <SaveToggle
+          backdrop
           onPress={bookmark.onToggle}
+          saved={bookmark.saved}
+          size={34}
           style={styles.bookmark}
           testID={`${testID}-bookmark`}
-        >
-          <MaterialIcon
-            color={colors.ink}
-            name={bookmark.saved ? 'bookmark' : 'bookmark_add'}
-            size={20}
-          />
-        </Pressable>
+        />
       ) : null}
       {footer}
     </View>
@@ -375,15 +355,9 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.xs,
     },
     bookmark: {
-      alignItems: 'center',
-      backgroundColor: theme.colors.surface,
-      borderRadius: 18,
-      height: 36,
-      justifyContent: 'center',
       position: 'absolute',
-      right: 10,
-      top: 10,
-      width: 36,
+      right: 8,
+      top: 8,
     },
     cardFace: {
       height: CARD_HEIGHT,
