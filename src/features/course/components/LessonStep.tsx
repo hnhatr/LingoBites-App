@@ -172,10 +172,10 @@ export function LessonStep({
             </View>
           </Pressable>
           <SaveToggle
-            hitSlop={8}
+            hitSlop={4}
             onPress={onToggleBookmark}
+            raised="row"
             saved={bookmarked}
-            size={28}
             style={styles.bookmark}
             testID={`${testID}-bookmark`}
           />

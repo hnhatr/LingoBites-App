@@ -276,10 +276,10 @@ export function ToneCard({
       {bookmark ? (
         // The picture behind it is many-coloured, so it sits on white.
         <SaveToggle
-          backdrop
           onPress={bookmark.onToggle}
+          onTint
+          raised="row"
           saved={bookmark.saved}
-          size={34}
           style={styles.bookmark}
           testID={`${testID}-bookmark`}
         />
