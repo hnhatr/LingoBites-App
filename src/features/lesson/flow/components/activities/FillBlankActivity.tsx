@@ -47,6 +47,10 @@ export function FillBlankActivity({
             ) : (
               <TypedEntry
                 accepted={[normalizeAnswer(question.answer)]}
+                frame={{
+                  before: question.beforeEn.trim(),
+                  after: question.afterEn.trim(),
+                }}
                 hints={hintLadder({task, model: question.answer})}
                 modelAnswer={question.answer}
                 onReport={report}

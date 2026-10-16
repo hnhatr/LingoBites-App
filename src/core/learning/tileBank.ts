@@ -37,6 +37,13 @@ export function answerWords(answer: string): string[] {
   return normalizeAnswer(answer).split(' ').filter(Boolean);
 }
 
+/** Lesson words fit for tiles: plain words, not pattern slots like `{verb}`. */
+function vocabularyWords(vocabulary: readonly string[]): string[] {
+  return vocabulary
+    .flatMap(entry => answerWords(entry))
+    .filter(word => /^[\p{L}'-]+$/u.test(word));
+}
+
 export type LetterBank = {
   /** Letters in ABC order: the answer's own and a few noise letters. */
   letters: string[];
@@ -78,10 +85,7 @@ export function wordBank(
   const taken = new Set(own);
   const random = createRandom(`words:${seed}`);
   const candidates = [
-    ...shuffled(
-      vocabulary.flatMap(entry => answerWords(entry)),
-      random,
-    ),
+    ...shuffled(vocabularyWords(vocabulary), random),
     ...shuffled(COMMON_WORDS, random),
   ];
   const noise: string[] = [];
@@ -142,7 +146,7 @@ export function wordSuggestions(
   if (prefix.length < 2) return [];
   const seen = new Set<string>();
   const result: string[] = [];
-  for (const word of vocabulary.flatMap(entry => answerWords(entry))) {
+  for (const word of vocabularyWords(vocabulary)) {
     if (result.length >= 4) break;
     if (word === prefix || !word.startsWith(prefix) || seen.has(word)) continue;
     seen.add(word);

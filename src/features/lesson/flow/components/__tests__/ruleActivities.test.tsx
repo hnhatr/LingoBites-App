@@ -265,4 +265,52 @@ describe('rule-graded activities', () => {
       expect.any(Number),
     );
   });
+
+  it('translation: the tile bulb counts as a first-level hint', () => {
+    const {tree, onFinished} = run(
+      activityBlock({
+        activityKind: 'translation',
+        content: {
+          sentences: [
+            {id: 's1', textVi: 'Tôi muốn trà.', modelEn: 'I want tea.'},
+          ],
+        },
+      }),
+    );
+    press(tree, 'lesson-flow-answer-input-bulb');
+    type(tree, 'I want tea');
+    next(tree);
+    expect(onFinished).toHaveBeenCalledWith(
+      'pass_with_support',
+      'hint_1',
+      expect.any(Number),
+    );
+  });
+
+  it('fill blank: the blank is written with letter tiles inside the sentence', () => {
+    const tree = run(
+      activityBlock({
+        activityKind: 'fill_blank',
+        content: {
+          questions: [
+            {
+              id: 'q1',
+              textVi: 'Tôi thích trà.',
+              beforeEn: 'I ',
+              afterEn: ' tea.',
+              answer: 'like',
+            },
+          ],
+        },
+      }),
+    ).tree;
+    for (const key of ['l', 'i', 'k', 'e']) {
+      press(tree, `lesson-flow-answer-input-key-${key}`);
+    }
+    expect(textOf(tree, 'lesson-flow-answer-input-stage')).toContain(
+      'I like tea.',
+    );
+    press(tree, 'lesson-flow-check');
+    expect(has(tree, 'lesson-flow-feedback-right')).toBe(true);
+  });
 });

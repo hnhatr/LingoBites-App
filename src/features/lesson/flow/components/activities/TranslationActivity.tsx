@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 
 import {AppText} from '@ui/components/AppText';
 
@@ -28,6 +28,11 @@ export function TranslationActivity({
   task,
   onComplete,
 }: TranslationActivityProps) {
+  // Lesson words: noise tiles and the suggestion strip.
+  const vocabulary = useMemo(
+    () => [...items.values()].map(item => item.text),
+    [items],
+  );
   return (
     <EntrySequence
       count={content.sentences.length}
@@ -51,6 +56,7 @@ export function TranslationActivity({
               hints={hintLadder({task, model: sentence.modelEn, frame})}
               modelAnswer={sentence.modelEn}
               onReport={report}
+              vocabulary={vocabulary}
             />
           </>
         );
