@@ -4,6 +4,7 @@ import {Modal, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {TextField} from '@ui/components/TextField';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 
@@ -92,26 +93,23 @@ export function SituationPickerSheet({
             />
           ) : null}
         </Pressable>
-        <Pressable
+        <SaveToggle
           accessibilityHint={t('combo.setup.bookmark_hint')}
           accessibilityLabel={
             marked
-              ? t('combo.setup.unbookmark', {name: entry.title_vi})
+              ? t('combo.setup.unbookmark', {
+                  name: entry.title_vi,
+                })
               : t('combo.setup.bookmark', {name: entry.title_vi})
           }
-          accessibilityRole="button"
-          accessibilityState={{selected: marked}}
           hitSlop={8}
+          iconSize={22}
           onPress={() => onToggleBookmark(entry.code)}
+          saved={marked}
+          size={32}
           style={styles.bookmark}
           testID={`combo-setup-bookmark-${entry.code}`}
-        >
-          <MaterialIcon
-            color={marked ? theme.colors.primary : theme.colors.outline}
-            name={marked ? 'bookmark' : 'bookmark_add'}
-            size={22}
-          />
-        </Pressable>
+        />
       </View>
     );
   };

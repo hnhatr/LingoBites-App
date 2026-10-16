@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactTestRenderer, {act} from 'react-test-renderer';
 
+import {SaveToggle} from '@ui/components/SaveToggle';
 import {AppThemeProvider} from '@ui/theme';
 
 import {FeatureFlagProvider} from '@core/release';
@@ -42,7 +43,10 @@ function render(props: Partial<LessonCardProps> = {}) {
 const button = (tree: ReactTestRenderer.ReactTestRenderer, testID: string) =>
   tree.root.find(
     node =>
-      node.props.testID === testID && typeof node.props.onPress === 'function',
+      node.props.testID === testID &&
+      typeof node.props.onPress === 'function' &&
+      // The pressable inside the shared save button, not the button itself.
+      node.type !== SaveToggle,
   );
 
 const chipIds = (tree: ReactTestRenderer.ReactTestRenderer) => [

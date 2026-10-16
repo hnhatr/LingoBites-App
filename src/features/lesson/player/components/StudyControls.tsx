@@ -11,6 +11,7 @@ import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
 import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
+import {SaveToggle} from '@ui/components/SaveToggle';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
 import {getStickerEdge, getStickerFace} from '@ui/theme/hardShadow';
@@ -241,7 +242,7 @@ type BookmarkProps = {
   testID: string;
 };
 
-/** Square bookmark button: grey while unsaved, sun yellow once saved. */
+/** Square bookmark button: the shared save toggle on the square face. */
 export function BookmarkToggle({
   saved,
   onPress,
@@ -254,27 +255,17 @@ export function BookmarkToggle({
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   return (
-    <Pressable
-      accessibilityHint={accessibilityHint}
+    <SaveToggle
+      accessibilityHint={accessibilityHint ?? ''}
       accessibilityLabel={saved ? savedLabel : label}
-      accessibilityRole="button"
-      accessibilityState={{selected: saved}}
       hitSlop={4}
+      iconSize={19}
       onPress={onPress}
-      style={({pressed}) => [
-        styles.square,
-        onTint ? styles.squareOnTint : null,
-        saved ? styles.bookmarkSaved : null,
-        pressed ? styles.navPressed : null,
-      ]}
+      saved={saved}
+      size={40}
+      style={[styles.square, onTint ? styles.squareOnTint : null]}
       testID={testID}
-    >
-      <MaterialIcon
-        color={saved ? HERO_PALETTE.ink : theme.colors.text.muted}
-        name={saved ? 'bookmark' : 'bookmark_add'}
-        size={19}
-      />
-    </Pressable>
+    />
   );
 }
 
@@ -476,9 +467,6 @@ function makeStyles(theme: AppTheme) {
     },
     speak: {
       backgroundColor: theme.colors.secondarySoft,
-    },
-    bookmarkSaved: {
-      backgroundColor: HERO_PALETTE.sun,
     },
   });
 }
