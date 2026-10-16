@@ -2,6 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {StyleSheet, View} from 'react-native';
 
+import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
 import {formatIpa} from '@ui/components/WordCard';
 import {type AppTheme, useAppTheme} from '@ui/theme';
@@ -13,12 +14,7 @@ import type {
   GrammarSaveControl,
   VocabularySaveControl,
 } from '../logic/useLessonSavedItems';
-import {
-  BookmarkToggle,
-  PillTabs,
-  SpeakSquare,
-  studyCardStyle,
-} from './StudyControls';
+import {BookmarkToggle, SpeakSquare, studyCardStyle} from './StudyControls';
 
 type AnalysisTab = 'vocabulary' | 'grammar';
 
@@ -62,7 +58,8 @@ export function SentenceAnalysisTabs({
   return (
     <View testID={`analysis-ready-${sentenceId}`} style={styles.ready}>
       {vocabulary.length > 0 && grammar.length > 0 ? (
-        <PillTabs
+        <AppTabs
+          accessibilityHint={t('lessonPlayer.study_tab_hint')}
           onChange={setTab}
           tabs={[
             {

@@ -22,7 +22,8 @@ export const HERO_PALETTE = {
   coralRing: 'rgba(254,116,136,0.25)',
   sun: '#ffd166',
   sunShelf: '#e0a92e',
-  ghostShelf: 'rgba(0,74,65,0.25)',
+  /** Edge under a white button on the bright face: near white, not grey. */
+  ghostShelf: '#dcefea',
   /** Light sky chips, e.g. the lesson player's "Loại một phương án sai". */
   skySoft: '#e3f4ff',
   skyInk: '#14507a',

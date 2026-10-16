@@ -1,15 +1,13 @@
 /**
  * Shared pieces of the lesson's study screens (Học từng câu, Từ & cụm, Mẫu
  * câu, Nghe hiểu, Phát âm, Ngữ pháp): the page layout with its bottom
- * buttons, the progress strip, the floating tab bar and the bookmark toggle.
+ * buttons, the progress strip and the bookmark toggle.
  */
 import React, {useEffect, useMemo, useRef} from 'react';
-import {useTranslation} from 'react-i18next';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 
 import {AppText} from '@ui/components/AppText';
 import {BottomActionBar} from '@ui/components/BottomActionBar';
-import {withAlpha} from '@ui/components/layout';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {SaveToggle} from '@ui/components/SaveToggle';
 import type {HandoffIconName} from '@ui/icons/iconRegistry';
@@ -164,68 +162,6 @@ export function StudyProgress({
       <AppText style={styles.progressLabel} testID={`${testID}-label`}>
         {label}
       </AppText>
-    </View>
-  );
-}
-
-export type PillTab<T extends string> = {
-  id: T;
-  label: string;
-  icon?: HandoffIconName;
-  count?: number;
-};
-
-type PillTabsProps<T extends string> = {
-  tabs: PillTab<T>[];
-  value: T;
-  onChange: (id: T) => void;
-  testID: string;
-};
-
-/** A floating pill bar of tabs, as on the lesson page. */
-export function PillTabs<T extends string>({
-  tabs,
-  value,
-  onChange,
-  testID,
-}: PillTabsProps<T>) {
-  const {theme} = useAppTheme();
-  const {t} = useTranslation();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
-  return (
-    <View accessibilityRole="tablist" style={styles.tabs} testID={testID}>
-      {tabs.map(tab => {
-        const on = tab.id === value;
-        const ink = on ? theme.colors.text.inverse : theme.colors.text.muted;
-        return (
-          <Pressable
-            accessibilityHint={t('lessonPlayer.study_tab_hint')}
-            accessibilityLabel={
-              tab.count !== undefined ? `${tab.label}, ${tab.count}` : tab.label
-            }
-            accessibilityRole="tab"
-            accessibilityState={{selected: on}}
-            key={tab.id}
-            onPress={() => onChange(tab.id)}
-            style={[styles.tab, on ? styles.tabOn : null]}
-            testID={`${testID}-${tab.id}`}
-          >
-            {tab.icon ? (
-              <MaterialIcon color={ink} name={tab.icon} size={16} />
-            ) : null}
-            <AppText numberOfLines={1} style={[styles.tabText, {color: ink}]}>
-              {tab.label}
-            </AppText>
-            {tab.count !== undefined ? (
-              <View style={[styles.tabCount, on ? styles.tabCountOn : null]}>
-                <AppText style={[styles.tabCountText, {color: ink}]}>
-                  {tab.count}
-                </AppText>
-              </View>
-            ) : null}
-          </Pressable>
-        );
-      })}
     </View>
   );
 }
@@ -414,44 +350,6 @@ function makeStyles(theme: AppTheme) {
       color: theme.colors.text.muted,
       fontSize: 13,
       fontVariant: ['tabular-nums'],
-      fontWeight: '800',
-    },
-    tabs: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      gap: 2,
-      padding: 4,
-      ...getStickerFace(theme, 3),
-    },
-    tab: {
-      alignItems: 'center',
-      borderRadius: theme.radius.pill,
-      flex: 1,
-      flexDirection: 'row',
-      gap: 6,
-      justifyContent: 'center',
-      minHeight: 42,
-      paddingHorizontal: 8,
-    },
-    tabOn: {
-      backgroundColor: theme.colors.primary,
-    },
-    tabText: {
-      flexShrink: 1,
-      fontSize: 14,
-      fontWeight: '800',
-    },
-    tabCount: {
-      backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: 7,
-    },
-    tabCountOn: {
-      backgroundColor: withAlpha(theme.colors.text.inverse, 0.22),
-    },
-    tabCountText: {
-      fontSize: 11.5,
       fontWeight: '800',
     },
     square: {

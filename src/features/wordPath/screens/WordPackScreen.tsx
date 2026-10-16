@@ -7,11 +7,15 @@ import {comboSituationsAvailable} from '@features/combo';
 
 import {AppCard} from '@ui/components/AppCard';
 import {AppScreen} from '@ui/components/AppScreen';
+import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
-import {IconButton} from '@ui/components/IconButton';
+import {withAlpha} from '@ui/components/layout';
+import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ScreenHeader} from '@ui/components/ScreenHeader';
 import {formatIpa} from '@ui/components/WordCard';
+import type {HandoffIconName} from '@ui/icons/iconRegistry';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 
 import {readCatalogItems} from '@core/db/catalogItems';
 import {useAppNavigation} from '@core/navigation';
@@ -112,6 +116,11 @@ export function WordPackScreen({
         ? learned.has(item.code)
         : !learned.has(item.code),
   );
+  const filterCounts: Record<Filter, number> = {
+    all: total,
+    new: left,
+    learned: learnedTotal,
+  };
 
   return (
     <AppScreen>
@@ -160,31 +169,16 @@ export function WordPackScreen({
         {total > 0 ? (
           <View style={styles.listHeader}>
             <AppText variant="h3">{t('wordPack.in_pack')}</AppText>
-            <View accessibilityRole="tablist" style={themedStyles.filters}>
-              {FILTERS.map(option => {
-                const on = option === filter;
-                return (
-                  <Pressable
-                    key={option}
-                    accessibilityRole="tab"
-                    accessibilityState={{selected: on}}
-                    hitSlop={4}
-                    onPress={() => setFilter(option)}
-                    style={[themedStyles.filter, on && themedStyles.filterOn]}
-                    testID={`word-pack-filter-${option}`}
-                  >
-                    <AppText
-                      style={[
-                        themedStyles.filterText,
-                        on && themedStyles.filterTextOn,
-                      ]}
-                    >
-                      {t(`wordPack.filter_${option}`)}
-                    </AppText>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <AppTabs
+              onChange={setFilter}
+              tabs={FILTERS.map(option => ({
+                id: option,
+                label: t(`wordPack.filter_${option}`),
+                count: filterCounts[option],
+              }))}
+              testID="word-pack-filter"
+              value={filter}
+            />
           </View>
         ) : null}
         {total > 0 ? (
@@ -233,28 +227,24 @@ export function WordPackScreen({
                         {item.meaning_vi}
                       </AppText>
                     </View>
-                    <IconButton
+                    <RowButton
                       accessibilityHint={t('packQuiz.speak_hint')}
                       accessibilityLabel={t('wordPack.speak', {
                         text: item.text,
                       })}
                       icon="volume_up"
-                      iconSize={18}
                       onPress={() => say(item.text)}
-                      size={36}
-                      style={themedStyles.speak}
                       testID={`word-pack-speak-${item.code}`}
+                      tone="plain"
                     />
-                    <IconButton
+                    <RowButton
                       accessibilityHint={t('wordPack.combo_hint')}
                       accessibilityLabel={t('wordPack.combo')}
-                      icon="auto_awesome"
-                      iconSize={18}
                       disabled={check === 'checking'}
+                      icon="auto_awesome"
                       onPress={() => openCombo(item.code)}
-                      size={36}
-                      style={themedStyles.combo}
                       testID={`word-pack-combo-${item.code}`}
+                      tone="mint"
                     />
                   </View>
                   {check === 'none' || check === 'error' ? (
@@ -282,6 +272,58 @@ export function WordPackScreen({
   );
 }
 
+type RowButtonProps = {
+  icon: HandoffIconName;
+  tone: 'plain' | 'mint';
+  onPress: () => void;
+  disabled?: boolean;
+  accessibilityLabel: string;
+  accessibilityHint: string;
+  testID: string;
+};
+
+/**
+ * A row's small square button on a soft edge, like "Dán": `plain` to listen,
+ * `mint` for the combo. Pressing sinks it into its edge.
+ */
+function RowButton({
+  icon,
+  tone,
+  onPress,
+  disabled = false,
+  accessibilityLabel,
+  accessibilityHint,
+  testID,
+}: RowButtonProps) {
+  const {theme} = useAppTheme();
+  const themedStyles = useMemo(() => makeStyles(theme), [theme]);
+  const mint = tone === 'mint';
+  return (
+    <Pressable
+      accessibilityHint={accessibilityHint}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      accessibilityState={{disabled}}
+      disabled={disabled}
+      hitSlop={4}
+      onPress={onPress}
+      style={({pressed}) => [
+        styles.rowButton,
+        mint ? themedStyles.mint : themedStyles.plain,
+        pressed && !disabled
+          ? mint
+            ? themedStyles.mintPressed
+            : themedStyles.plainPressed
+          : null,
+        disabled ? themedStyles.disabled : null,
+      ]}
+      testID={testID}
+    >
+      <MaterialIcon color={theme.colors.primary} name={icon} size={18} />
+    </Pressable>
+  );
+}
+
 /** "daily life" → "Daily life": topic labels come lower-case. */
 function capitalized(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -294,35 +336,10 @@ function makeStyles(theme: AppTheme) {
       padding: theme.spacing.md,
       paddingBottom: theme.spacing.xxl,
     },
-    filters: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      gap: 2,
-      padding: 3,
-    },
-    filter: {
-      borderRadius: theme.radius.pill,
-      paddingHorizontal: 9,
-      paddingVertical: 4,
-    },
-    filterOn: {
-      backgroundColor: theme.colors.accentSoft,
-    },
-    filterText: {
-      color: theme.colors.text.muted,
-      fontSize: 12,
-      fontWeight: '700',
-    },
-    filterTextOn: {
-      color: theme.colors.primary,
-    },
     list: {
       backgroundColor: theme.colors.surface,
-      borderBottomColor: theme.shelf?.surface.color ?? theme.colors.border,
-      borderBottomWidth: 4,
       borderRadius: 22,
-      overflow: 'hidden',
+      ...getStickerEdge(4, theme.colors.surfaceHigh),
     },
     itemDivider: {
       borderTopColor: theme.colors.surfaceMuted,
@@ -352,13 +369,24 @@ function makeStyles(theme: AppTheme) {
       fontSize: 16.5,
       fontWeight: '700',
     },
-    speak: {
+    plain: {
       backgroundColor: theme.colors.surfaceMuted,
-      borderRadius: 12,
+      ...getStickerEdge(3, theme.colors.surfaceHigh),
     },
-    combo: {
+    plainPressed: {
+      transform: [{translateY: 2}],
+      ...getStickerEdge(1, theme.colors.surfaceHigh),
+    },
+    mint: {
       backgroundColor: theme.colors.accentSoft,
-      borderRadius: 12,
+      ...getStickerEdge(3, withAlpha(theme.colors.primary, 0.22)),
+    },
+    mintPressed: {
+      transform: [{translateY: 2}],
+      ...getStickerEdge(1, withAlpha(theme.colors.primary, 0.22)),
+    },
+    disabled: {
+      opacity: theme.states.disabledOpacity,
     },
   });
 }
@@ -387,11 +415,15 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   listHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'space-between',
+    gap: 10,
     marginTop: 6,
+  },
+  rowButton: {
+    alignItems: 'center',
+    borderRadius: 12,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
   },
   wordLine: {
     alignItems: 'baseline',

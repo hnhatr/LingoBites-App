@@ -11,7 +11,7 @@
  *   [ ▶ Học tiếp (9 mục) ] [ Kiểm tra nhanh ]
  *                          [ Bỏ qua từ đã biết ]
  */
-import React, {useMemo, useState} from 'react';
+import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, View} from 'react-native';
 import Svg, {
@@ -29,6 +29,7 @@ import {AppText} from '@ui/components/AppText';
 import {MaterialIcon} from '@ui/components/MaterialIcon';
 import {ShelfSurface} from '@ui/components/ShelfSurface';
 import {type AppTheme, useAppTheme} from '@ui/theme';
+import {getStickerEdge} from '@ui/theme/hardShadow';
 import {HERO_PALETTE} from '@ui/theme/heroPalette';
 
 export const PACK_PALETTE = HERO_PALETTE;
@@ -64,7 +65,6 @@ export function PackHeroCard({
   const {t} = useTranslation();
   const {theme} = useAppTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const [learnDown, setLearnDown] = useState(false);
   const share = total > 0 ? Math.min(1, learned / total) : 0;
 
   return (
@@ -132,9 +132,7 @@ export function PackHeroCard({
             accessibilityLabel={learnTitle}
             accessibilityRole="button"
             onPress={onLearn}
-            onPressIn={() => setLearnDown(true)}
-            onPressOut={() => setLearnDown(false)}
-            style={[styles.learn, learnDown && styles.learnDown]}
+            style={({pressed}) => [styles.learn, pressed && styles.learnDown]}
             testID="word-pack-learn"
           >
             <MaterialIcon
@@ -152,7 +150,7 @@ export function PackHeroCard({
               accessibilityLabel={t('wordPack.check')}
               accessibilityRole="button"
               onPress={onCheck}
-              style={({pressed}) => [styles.check, pressed && styles.pressed]}
+              style={({pressed}) => [styles.check, pressed && styles.checkDown]}
               testID="word-pack-check"
             >
               <AppText numberOfLines={1} style={styles.checkText}>
@@ -242,9 +240,6 @@ function makeStyles(theme: AppTheme) {
       gap: 10,
       padding: 14,
     },
-    pressed: {
-      opacity: theme.states.pressedOpacity,
-    },
     chips: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -328,8 +323,6 @@ function makeStyles(theme: AppTheme) {
     learn: {
       alignItems: 'center',
       backgroundColor: PACK_PALETTE.coral,
-      borderBottomColor: PACK_PALETTE.coralShelf,
-      borderBottomWidth: 4,
       borderRadius: 18,
       flex: 1.35,
       flexDirection: 'row',
@@ -337,10 +330,11 @@ function makeStyles(theme: AppTheme) {
       justifyContent: 'center',
       minHeight: 52,
       paddingHorizontal: 12,
+      ...getStickerEdge(4, PACK_PALETTE.coralShelf),
     },
     learnDown: {
-      borderBottomWidth: 1,
-      transform: [{translateY: 3}],
+      transform: [{translateY: 2}],
+      ...getStickerEdge(2, PACK_PALETTE.coralShelf),
     },
     learnText: {
       color: PACK_PALETTE.white,
@@ -351,13 +345,16 @@ function makeStyles(theme: AppTheme) {
     check: {
       alignItems: 'center',
       backgroundColor: PACK_PALETTE.white,
-      borderBottomColor: PACK_PALETTE.ghostShelf,
-      borderBottomWidth: 4,
       borderRadius: 18,
       flex: 1,
       justifyContent: 'center',
       minHeight: 52,
       paddingHorizontal: 8,
+      ...getStickerEdge(4, PACK_PALETTE.ghostShelf),
+    },
+    checkDown: {
+      transform: [{translateY: 2}],
+      ...getStickerEdge(2, PACK_PALETTE.ghostShelf),
     },
     checkText: {
       color: PACK_PALETTE.tealInk,

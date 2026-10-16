@@ -8,6 +8,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Pressable, StyleSheet, Switch, View} from 'react-native';
 
+import {AppTabs} from '@ui/components/AppTabs';
 import {AppText} from '@ui/components/AppText';
 import {IconButton} from '@ui/components/IconButton';
 import {LibraryCover} from '@ui/components/LibraryCover';
@@ -72,28 +73,12 @@ export function LessonContentTabs({
     <View style={styles.section} testID="lesson-content">
       <AppText variant="h3">{t('lessonPlayer.content_title')}</AppText>
       {hasWords ? (
-        <View accessibilityRole="tablist" style={styles.tabs}>
-          {tabs.map(item => {
-            const on = item.id === shownTab;
-            return (
-              <Pressable
-                accessibilityRole="tab"
-                accessibilityState={{selected: on}}
-                key={item.id}
-                onPress={() => setTab(item.id)}
-                style={[styles.tab, on ? styles.tabOn : null]}
-                testID={`lesson-content-tab-${item.id}`}
-              >
-                <AppText
-                  numberOfLines={1}
-                  style={[styles.tabText, on ? styles.tabTextOn : null]}
-                >
-                  {item.label}
-                </AppText>
-              </Pressable>
-            );
-          })}
-        </View>
+        <AppTabs
+          onChange={setTab}
+          tabs={tabs}
+          testID="lesson-content-tab"
+          value={shownTab}
+        />
       ) : null}
 
       <View style={styles.card}>
@@ -258,33 +243,6 @@ function makeStyles(theme: AppTheme) {
       gap: theme.spacing.sm,
     },
     // Floating pill bar, apart from the card under it.
-    tabs: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radius.pill,
-      flexDirection: 'row',
-      gap: 2,
-      padding: 4,
-      ...getStickerFace(theme, 3),
-    },
-    tab: {
-      alignItems: 'center',
-      borderRadius: theme.radius.pill,
-      flex: 1,
-      minHeight: 40,
-      justifyContent: 'center',
-      paddingHorizontal: 8,
-    },
-    tabOn: {
-      backgroundColor: theme.colors.primary,
-    },
-    tabText: {
-      color: theme.colors.text.muted,
-      fontSize: 13.5,
-      fontWeight: '700',
-    },
-    tabTextOn: {
-      color: theme.colors.text.inverse,
-    },
     card: {
       backgroundColor: theme.colors.surface,
       borderRadius: 22,
